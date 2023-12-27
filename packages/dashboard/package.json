@@ -1,0 +1,20 @@
+{
+  "name": "flink-dashboard",
+  "version": "0.0.1",
+  "private": true,
+  "main": "index.js",
+  "scripts": {
+    "start": "tsc && node dist/index.js"
+  },
+  "dependencies": {
+    "@bull-board/api": "^5.10.2",
+    "@bull-board/fastify": "^5.10.2",
+    "bullmq": "^5.1.0",
+    "fastify": "^4.25.2",
+    "flink-common": "0.0.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.5",
+    "typescript": "^5.3.3"
+  }
+}

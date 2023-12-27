@@ -1,0 +1,11 @@
+{
+  "name": "flink",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "start:dashboard": "yarn workspace flink-dashboard start"
+  },
+  "workspaces": [
+    "packages/*"
+  ]
+}
