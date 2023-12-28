@@ -428,7 +428,6 @@ __metadata:
     "@flink/common": "npm:*"
     "@types/node": "npm:^20.10.5"
     bullmq: "npm:^5.1.0"
-    dotenv: "npm:^16.3.1"
     fastify: "npm:^4.25.2"
     typescript: "npm:^5.3.3"
   languageName: unknown
@@ -445,7 +444,6 @@ __metadata:
     "@flink/prisma": "npm:*"
     "@types/node": "npm:^20.10.5"
     bullmq: "npm:^5.1.0"
-    dotenv: "npm:^16.3.1"
     ethers: "npm:^6.9.1"
     typescript: "npm:^5.3.3"
   languageName: unknown
@@ -1179,13 +1177,6 @@ __metadata:
   version: 2.0.0
   resolution: "depd@npm:2.0.0"
   checksum: 58bd06ec20e19529b06f7ad07ddab60e504d9e0faca4bd23079fac2d279c3594334d736508dc350e06e510aba5e22e4594483b3a6562ce7c17dd797f4cc4ad2c
-  languageName: node
-  linkType: hard
-
-"dotenv@npm:^16.3.1":
-  version: 16.3.1
-  resolution: "dotenv@npm:16.3.1"
-  checksum: b95ff1bbe624ead85a3cd70dbd827e8e06d5f05f716f2d0cbc476532d54c7c9469c3bc4dd93ea519f6ad711cb522c00ac9a62b6eb340d5affae8008facc3fbd7
   languageName: node
   linkType: hard
 

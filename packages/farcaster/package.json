@@ -4,8 +4,8 @@
   "private": true,
   "scripts": {
     "build": "tsc",
-    "start:consumer": "node -r dotenv/config dist/consumer.js",
-    "start:publisher": "node -r dotenv/config dist/publisher.js"
+    "start:consumer": "node dist/consumer.js",
+    "start:publisher": "node dist/publisher.js"
   },
   "dependencies": {
     "@ethersproject/abstract-signer": "^5.7.0",
@@ -18,7 +18,6 @@
   },
   "devDependencies": {
     "@types/node": "^20.10.5",
-    "dotenv": "^16.3.1",
     "typescript": "^5.3.3"
   }
 }
