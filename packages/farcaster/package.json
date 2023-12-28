@@ -1,0 +1,24 @@
+{
+  "name": "@flink/farcaster",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "build": "tsc",
+    "start:consumer": "node -r dotenv/config dist/consumer.js",
+    "start:publisher": "node -r dotenv/config dist/publisher.js"
+  },
+  "dependencies": {
+    "@ethersproject/abstract-signer": "^5.7.0",
+    "@farcaster/fishery": "^2.2.3",
+    "@farcaster/hub-nodejs": "^0.10.5",
+    "@flink/common": "*",
+    "@flink/prisma": "*",
+    "bullmq": "^5.1.0",
+    "ethers": "^6.9.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.5",
+    "dotenv": "^16.3.1",
+    "typescript": "^5.3.3"
+  }
+}

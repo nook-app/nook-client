@@ -1,0 +1,151 @@
+// schema.prisma
+
+generator client {
+    provider = "prisma-client-js"
+    output   = "../generated/farcaster"
+}
+
+datasource db {
+    provider = "postgresql"
+    url      = env("FARCASTER_DATABASE_URL")
+}
+
+model Subscription {
+    id      String @id
+    eventId BigInt
+}
+
+model FarcasterUser {
+    fid      BigInt  @id
+    username String?
+    display  String?
+    pfp      String?
+    bio      String?
+    url      String?
+}
+
+model FarcasterUsernameProof {
+    username String @id
+    fid      BigInt
+    type     Int
+    address  String
+
+    timestamp DateTime
+    deletedAt DateTime?
+}
+
+model FarcasterVerification {
+    fid BigInt
+
+    address String
+    type    Int
+    chainId Int
+
+    timestamp DateTime
+    deletedAt DateTime?
+
+    @@id([fid, address])
+}
+
+model FarcasterCast {
+    hash String
+    fid  BigInt
+
+    text           String
+
+    parentFid      BigInt?
+    parentHash     String?
+    parentUrl      String?
+    rootParentFid  BigInt
+    rootParentHash String
+    rootParentUrl  String?
+
+    mentions FarcasterCastMention[]
+    casts    FarcasterCastEmbedCast[]
+    urls     FarcasterCastEmbedUrl[]
+
+    timestamp DateTime
+    deletedAt DateTime?
+
+    @@id([hash])
+}
+
+model FarcasterCastMention {
+    hash String
+    fid  BigInt
+
+    mention         BigInt
+    mentionPosition BigInt
+
+
+    timestamp DateTime
+    deletedAt DateTime?
+
+    cast FarcasterCast @relation(fields: [hash], references: [hash], onDelete: Cascade)
+
+    @@id([hash, mention, mentionPosition])
+}
+
+model FarcasterCastEmbedCast {
+    hash String
+    fid  BigInt
+
+    embedHash String
+    embedFid BigInt
+
+    timestamp DateTime
+    deletedAt DateTime?
+
+    cast FarcasterCast @relation(fields: [hash], references: [hash], onDelete: Cascade)
+
+    @@id([hash, embedHash])
+}
+
+model FarcasterCastEmbedUrl {
+    hash String
+    fid  BigInt
+
+    url  String
+
+    timestamp DateTime
+    deletedAt DateTime?
+
+    cast FarcasterCast @relation(fields: [hash], references: [hash], onDelete: Cascade)
+
+    @@id([hash, url])
+}
+
+model FarcasterCastReaction {
+    targetHash   String
+    reactionType Int
+    fid          BigInt
+
+    targetFid BigInt
+
+    timestamp DateTime
+    deletedAt DateTime?
+
+    @@id([targetHash, reactionType, fid])
+}
+
+model FarcasterUrlReaction {
+    targetUrl    String
+    reactionType Int
+    fid          BigInt
+
+    timestamp DateTime
+    deletedAt DateTime?
+
+    @@id([targetUrl, reactionType, fid])
+}
+
+model FarcasterLink {
+    fid       BigInt
+    linkType  String
+    targetFid BigInt
+
+    timestamp DateTime
+    deletedAt DateTime?
+
+    @@id([fid, linkType, targetFid])
+}

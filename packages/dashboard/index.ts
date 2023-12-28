@@ -1,11 +1,13 @@
 import { createBullBoard } from "@bull-board/api";
+import { BullMQAdapter } from "@bull-board/api/bullMQAdapter";
 import { FastifyAdapter } from "@bull-board/fastify";
+import { QueueName, getQueue } from "@flink/common";
 import fastify from "fastify";
 
 const setupBullBoardServerAdapter = () => {
   const serverAdapter = new FastifyAdapter();
   createBullBoard({
-    queues: [],
+    queues: [new BullMQAdapter(getQueue(QueueName.FarcasterEvent))],
     serverAdapter,
   });
   serverAdapter.setBasePath("/");

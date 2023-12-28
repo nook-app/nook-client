@@ -1,0 +1,23 @@
+{
+  "name": "@flink/prisma",
+  "version": "0.0.1",
+  "private": true,
+  "main": "./dist/index.js",
+  "scripts": {
+    "build": "npx prisma generate --schema ./prisma/farcaster.prisma && tsc && cp -r generated dist/generated",
+    "push": "npx prisma db push --schema ./prisma/farcaster.prisma"
+  },
+  "exports": {
+    ".": "./dist/index.js",
+    "./farcaster": "./dist/farcaster.js"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.7.1",
+    "bullmq": "^5.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.5",
+    "prisma": "^5.7.1",
+    "typescript": "^5.3.3"
+  }
+}

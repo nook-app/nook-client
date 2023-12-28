@@ -1,6 +1,16 @@
 {
-  "name": "flink-common",
+  "name": "@flink/common",
   "version": "0.0.1",
   "private": true,
-  "main": "index.js"
+  "main": "./dist/index.js",
+  "scripts": {
+    "build": "tsc"
+  },
+  "dependencies": {
+    "bullmq": "^5.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.5",
+    "typescript": "^5.3.3"
+  }
 }
