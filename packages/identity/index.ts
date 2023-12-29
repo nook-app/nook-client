@@ -15,11 +15,6 @@ type ByFidRequest = FastifyRequest<{
 }>;
 
 const run = async () => {
-  const hubRpcEndpoint = process.env.HUB_RPC_ENDPOINT;
-  if (!hubRpcEndpoint) {
-    throw new Error("Missing HUB_RPC_ENDPOINT");
-  }
-
   const server = fastify();
 
   server.get(
@@ -51,6 +46,7 @@ const run = async () => {
       });
 
       if (!identity) {
+        console.log(`[identity-api] [fid] [${fid}] creating new identity`);
         identity = await prisma.identity.create({
           data: {
             socialAccounts: {
@@ -69,9 +65,10 @@ const run = async () => {
             relatedLinks: true,
           },
         });
+        reply.status(201);
       }
 
-      return identity;
+      reply.send(identity);
     },
   );
 

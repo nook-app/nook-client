@@ -6,11 +6,10 @@
     "build": "yarn workspaces foreach --all --topological-dev run build",
     "start:dashboard": "yarn workspace @flink/dashboard start",
     "start:farcaster:consumer": "yarn workspace @flink/farcaster start:consumer",
-    "start:farcaster:publisher": "yarn workspace @flink/farcaster start:publisher"
+    "start:farcaster:publisher": "yarn workspace @flink/farcaster start:publisher",
+    "start:identity-api": "yarn workspace @flink/identity start"
   },
-  "workspaces": [
-    "packages/*"
-  ],
+  "workspaces": ["packages/*"],
   "devDependencies": {
     "@biomejs/biome": "1.4.1"
   },
