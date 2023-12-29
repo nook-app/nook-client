@@ -334,7 +334,7 @@ const publishNewCast = async (
       fid: cast.fid.toString(),
       hash: cast.hash,
       text: cast.text,
-      parentFid: cast.parentFid.toString(),
+      parentFid: cast.parentFid?.toString(),
       parentHash: cast.parentHash,
       parentUrl: cast.parentUrl,
       rootParentFid: cast.rootParentFid.toString(),
