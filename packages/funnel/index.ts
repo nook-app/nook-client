@@ -13,42 +13,43 @@ const run = async () => {
   const worker = getWorker(QueueName.Funnel, async (job: Job) => {
     const preprocessedEvent: PreprocessedEvent = job.data;
 
-    let userId: string | undefined;
-    let identityMapping = {};
+    let sourceUserId: string | undefined;
+    let preprocessedUserIds: string[] | undefined;
 
     if (preprocessedEvent.source === EventSource.FARCASTER) {
-      const sourceUserIds = [
+      preprocessedUserIds = [
         preprocessedEvent.data.fid,
         preprocessedEvent.data.parentFid,
         preprocessedEvent.data.rootParentFid,
+        ...preprocessedEvent.data.mentions.map((mention) => mention.mention),
+        ...preprocessedEvent.data.castEmbeds.map((embed) => embed.fid),
       ].filter(Boolean);
-
-      const userIds = await Promise.all(
-        sourceUserIds.map(async (sourceUserId) => {
-          const res = await fetch(
-            `${process.env.IDENTITY_SERVICE_URL}/identity/by-fid/${sourceUserId}`,
-          );
-          if (!res.ok) {
-            console.log(
-              `[funnel] error fetching identity for fid ${sourceUserId}`,
-            );
-            return;
-          }
-          const { id }: { id: string } = await res.json();
-          return { [sourceUserId]: id };
-        }),
-      );
-
-      identityMapping = userIds.reduce((acc, curr) => {
-        if (!curr) {
-          return acc;
-        }
-        // biome-ignore lint/performance/noAccumulatingSpread: <explanation>
-        return { ...acc, ...curr };
-      }, {});
-      userId = identityMapping[preprocessedEvent.data.fid];
+      sourceUserId = preprocessedEvent.data.fid;
     }
 
+    const userIds = await Promise.all(
+      preprocessedUserIds.map(async (userId) => {
+        const res = await fetch(
+          `${process.env.IDENTITY_SERVICE_URL}/identity/by-fid/${userId}`,
+        );
+        if (!res.ok) {
+          console.log(`[funnel] error fetching identity for fid ${userId}`);
+          return;
+        }
+        const { id }: { id: string } = await res.json();
+        return { [userId]: id };
+      }),
+    );
+
+    const identityMapping = userIds.reduce((acc, curr) => {
+      if (!curr) {
+        return acc;
+      }
+      // biome-ignore lint/performance/noAccumulatingSpread: <explanation>
+      return { ...acc, ...curr };
+    }, {});
+
+    const userId = identityMapping[sourceUserId];
     if (!userId) {
       throw new Error("Missing userId");
     }
