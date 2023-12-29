@@ -51,7 +51,7 @@ model FarcasterCast {
     hash String
     fid  BigInt
 
-    text           String
+    text String
 
     parentFid      BigInt?
     parentHash     String?
@@ -77,7 +77,6 @@ model FarcasterCastMention {
     mention         BigInt
     mentionPosition BigInt
 
-
     timestamp DateTime
     deletedAt DateTime?
 
@@ -91,7 +90,7 @@ model FarcasterCastEmbedCast {
     fid  BigInt
 
     embedHash String
-    embedFid BigInt
+    embedFid  BigInt
 
     timestamp DateTime
     deletedAt DateTime?
@@ -105,7 +104,7 @@ model FarcasterCastEmbedUrl {
     hash String
     fid  BigInt
 
-    url  String
+    url String
 
     timestamp DateTime
     deletedAt DateTime?

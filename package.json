@@ -8,7 +8,9 @@
     "start:farcaster:consumer": "yarn workspace @flink/farcaster start:consumer",
     "start:farcaster:publisher": "yarn workspace @flink/farcaster start:publisher"
   },
-  "workspaces": ["packages/*"],
+  "workspaces": [
+    "packages/*"
+  ],
   "devDependencies": {
     "@biomejs/biome": "1.4.1"
   },

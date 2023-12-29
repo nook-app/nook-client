@@ -1,2 +1,3 @@
 import * as farcaster from "./farcaster";
-export { farcaster };
+import * as identity from "./identity";
+export { farcaster, identity };

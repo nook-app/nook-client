@@ -4,12 +4,16 @@
   "private": true,
   "main": "./dist/index.js",
   "scripts": {
-    "build": "npx prisma generate --schema ./prisma/farcaster.prisma && tsc && cp -r generated dist/generated",
-    "push": "npx prisma db push --schema ./prisma/farcaster.prisma"
+    "generate:farcaster": "npx prisma generate --schema ./prisma/farcaster.prisma",
+    "generate:identity": "npx prisma generate --schema ./prisma/identity.prisma",
+    "build": "yarn generate:farcaster && yarn generate:identity && tsc && cp -r generated dist/generated",
+    "push:farcaster": "npx prisma db push --schema ./prisma/farcaster.prisma",
+    "push:identity": "npx prisma db push --schema ./prisma/identity.prisma"
   },
   "exports": {
     ".": "./dist/index.js",
-    "./farcaster": "./dist/farcaster.js"
+    "./farcaster": "./dist/farcaster.js",
+    "./identity": "./dist/identity.js"
   },
   "dependencies": {
     "@prisma/client": "^5.7.1",

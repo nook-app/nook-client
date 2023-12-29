@@ -1,0 +1,57 @@
+// schema.prisma
+
+generator client {
+    provider = "prisma-client-js"
+    output   = "../generated/identity"
+}
+
+datasource db {
+    provider = "postgresql"
+    url      = env("IDENTITY_DATABASE_URL")
+}
+
+model Identity {
+    id BigInt @id @default(autoincrement())
+
+    blockchainAccounts BlockchainAccount[]
+    socialAccounts     SocialAccount[]
+    relatedLinks       RelatedLink[]
+}
+
+model BlockchainAccount {
+    id         BigInt
+    blockchain String
+    address    String
+
+    source   String
+    verified Boolean
+
+    identity Identity @relation(fields: [id], references: [id])
+
+    @@id([id, blockchain, address])
+}
+
+model SocialAccount {
+    id         BigInt
+    platform   String
+    platformId String
+
+    source   String
+    verified Boolean
+
+    identity Identity @relation(fields: [id], references: [id])
+
+    @@id([id, platform, platformId])
+}
+
+model RelatedLink {
+    id  BigInt
+    url String
+
+    source   String
+    verified Boolean
+
+    identity Identity @relation(fields: [id], references: [id])
+
+    @@id([id, url])
+}
