@@ -10,7 +10,9 @@
     "start:identity-api": "yarn workspace @flink/identity start",
     "start:funnel": "yarn workspace @flink/funnel start"
   },
-  "workspaces": ["packages/*"],
+  "workspaces": [
+    "packages/*"
+  ],
   "devDependencies": {
     "@biomejs/biome": "1.4.1"
   },
