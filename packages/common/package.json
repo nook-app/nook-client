@@ -2,11 +2,13 @@
   "name": "@flink/common",
   "version": "0.0.1",
   "private": true,
+  "main": "./dist/index.js",
   "scripts": {
     "build": "tsc"
   },
   "exports": {
-    "./queue": "./dist/queue.js"
+    "./queue": "./dist/queue.js",
+    "./types": "./dist/types.js"
   },
   "dependencies": {
     "bullmq": "^5.1.0"

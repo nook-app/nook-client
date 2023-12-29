@@ -48,7 +48,7 @@ const run = async () => {
   worker.on("failed", (job, err) => {
     if (job) {
       console.log(
-        `[url-metadata-indexer] [${job.id}] failed with ${err.message}`,
+        `[farcaster-consumer] [${job.id}] failed with ${err.message}`,
       );
     }
   });

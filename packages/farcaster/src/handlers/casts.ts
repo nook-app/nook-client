@@ -8,6 +8,8 @@ import {
   PrismaClient,
 } from "@flink/prisma/farcaster";
 import { FidHandlerArgs, MessageHandlerArgs } from "../types";
+import { EventSource, PreprocessedEvent } from "@flink/common/types";
+import { QueueName, getQueue } from "@flink/common/queue";
 
 const prisma = new PrismaClient();
 
@@ -15,7 +17,7 @@ export const handleCastAdd = async ({
   message,
   client,
 }: MessageHandlerArgs) => {
-  const cast = await messageToCast(message);
+  const cast = messageToCast(message);
   if (!cast) return;
 
   if (cast.parentHash) {
@@ -81,6 +83,8 @@ export const handleCastAdd = async ({
   }
 
   console.log(`[cast-add] [${cast.fid}] added ${cast.hash}`);
+
+  await publishNewCast(cast, embedCasts, embedUrls, mentions);
 };
 
 export const handleCastRemove = async ({ message }: MessageHandlerArgs) => {
@@ -161,14 +165,25 @@ const messageToCastEmbedCast = (message: Message): FarcasterCastEmbedCast[] => {
 
 const messageToCastEmbedUrl = (message: Message): FarcasterCastEmbedUrl[] => {
   if (!message.data?.castAddBody) return [];
-  const embeds = message.data.castAddBody.embeds;
-  if (embeds.length === 0) return [];
 
   const hash = bufferToHex(message.hash);
   const fid = BigInt(message.data.fid);
   const timestamp = timestampToDate(message.data.timestamp);
 
   const embedUrls = [];
+
+  const embedsDeprecated = message.data.castAddBody.embedsDeprecated;
+  for (const url of embedsDeprecated) {
+    embedUrls.push({
+      hash,
+      fid,
+      url,
+      timestamp: timestamp,
+      deletedAt: null,
+    });
+  }
+
+  const embeds = message.data.castAddBody.embeds;
   for (const embed of embeds) {
     if (!embed.url) continue;
     embedUrls.push({
@@ -291,4 +306,52 @@ export const batchHandleCastAdd = async ({ client, fid }: FidHandlerArgs) => {
     data: mentions.flat(),
     skipDuplicates: true,
   });
+
+  await Promise.all(
+    messages.value.messages.map((message) => {
+      return publishNewCast(
+        messageToCast(message),
+        messageToCastEmbedCast(message),
+        messageToCastEmbedUrl(message),
+        messageToCastMentions(message),
+      );
+    }),
+  );
+};
+
+const publishNewCast = async (
+  cast: FarcasterCast,
+  embedCasts: FarcasterCastEmbedCast[],
+  embedUrls: FarcasterCastEmbedUrl[],
+  mentions: FarcasterCastMention[],
+) => {
+  const event: PreprocessedEvent = {
+    timestamp: cast.timestamp.getTime(),
+    source: EventSource.FARCASTER,
+    sourceId: cast.hash,
+    data: {
+      timestamp: cast.timestamp.getTime(),
+      fid: cast.fid.toString(),
+      hash: cast.hash,
+      text: cast.text,
+      parentFid: cast.parentFid.toString(),
+      parentHash: cast.parentHash,
+      parentUrl: cast.parentUrl,
+      rootParentFid: cast.rootParentFid.toString(),
+      rootParentHash: cast.rootParentHash,
+      rootParentUrl: cast.rootParentUrl,
+      mentions: mentions.map((m) => ({
+        mention: m.mention.toString(),
+        mentionPosition: m.mentionPosition.toString(),
+      })),
+      urlEmbeds: embedUrls.map((e) => e.url),
+      castEmbeds: embedCasts.map((e) => ({
+        fid: e.embedFid.toString(),
+        hash: e.embedHash,
+      })),
+    },
+  };
+
+  const queue = getQueue(QueueName.Funnel);
+  await queue.add(`${event.source}-${event.sourceId}`, event);
 };
