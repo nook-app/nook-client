@@ -449,6 +449,17 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@flink/funnel@workspace:packages/funnel":
+  version: 0.0.0-use.local
+  resolution: "@flink/funnel@workspace:packages/funnel"
+  dependencies:
+    "@flink/common": "npm:*"
+    "@types/node": "npm:^20.10.5"
+    bullmq: "npm:^5.1.0"
+    typescript: "npm:^5.3.3"
+  languageName: unknown
+  linkType: soft
+
 "@flink/identity@workspace:packages/identity":
   version: 0.0.0-use.local
   resolution: "@flink/identity@workspace:packages/identity"

@@ -1,5 +1,5 @@
 import { Message, getSSLHubRpcClient } from "@farcaster/hub-nodejs";
-import { QueueName, getWorker } from "@flink/common";
+import { QueueName, getWorker } from "@flink/common/queue";
 import { Job } from "bullmq";
 import { MessageType } from "@farcaster/hub-nodejs";
 import { handleCastAdd, handleCastRemove } from "./handlers/casts";
