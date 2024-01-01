@@ -1,5 +1,5 @@
 {
-  "name": "@flink/funnel",
+  "name": "@flink/events",
   "version": "0.0.1",
   "private": true,
   "scripts": {

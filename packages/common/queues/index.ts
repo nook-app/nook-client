@@ -1,9 +1,16 @@
 import { ConnectionOptions, Job, Queue, QueueOptions, Worker } from "bullmq";
+import { RawEvent } from "../types";
+import { Message } from "@farcaster/hub-nodejs";
 
 export enum QueueName {
-  FarcasterEvent = "farcaster-event",
-  Funnel = "funnel",
+  FarcasterIngress = "farcaster-ingress",
+  Events = "events",
 }
+
+type QueueType = {
+  [QueueName.FarcasterIngress]: Message;
+  [QueueName.Events]: RawEvent;
+};
 
 const connection: ConnectionOptions = {
   host: process.env.DRAGONFLY_HOST,
@@ -27,14 +34,16 @@ const formatQueueName = (queueName: QueueName) => {
   return `{${queueName}}`;
 };
 
-export const getQueue = (queueName: QueueName) => {
-  return new Queue(formatQueueName(queueName), queueOptions);
+export const getQueue = <N extends QueueName>(
+  queueName: N,
+): Queue<QueueType[N]> => {
+  return new Queue<QueueType[N]>(formatQueueName(queueName), queueOptions);
 };
 
-export const getWorker = (
-  queueName: QueueName,
-  jobFunction: (job: Job) => Promise<void>,
-) => {
+export const getWorker = <N extends QueueName>(
+  queueName: N,
+  jobFunction: (job: Job<QueueType[N]>) => Promise<void>,
+): Worker<QueueType[N]> => {
   return new Worker(formatQueueName(queueName), jobFunction, {
     connection,
   });

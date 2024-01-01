@@ -412,6 +412,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@flink/common@workspace:packages/common"
   dependencies:
+    "@farcaster/hub-nodejs": "npm:^0.10.19"
     "@types/node": "npm:^20.10.5"
     bullmq: "npm:^5.1.0"
     typescript: "npm:^5.3.3"
@@ -433,6 +434,18 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@flink/events@workspace:packages/events":
+  version: 0.0.0-use.local
+  resolution: "@flink/events@workspace:packages/events"
+  dependencies:
+    "@flink/common": "npm:*"
+    "@types/node": "npm:^20.10.5"
+    bullmq: "npm:^5.1.0"
+    mongodb: "npm:^6.3.0"
+    typescript: "npm:^5.3.3"
+  languageName: unknown
+  linkType: soft
+
 "@flink/farcaster@workspace:packages/farcaster":
   version: 0.0.0-use.local
   resolution: "@flink/farcaster@workspace:packages/farcaster"
@@ -445,18 +458,6 @@ __metadata:
     "@types/node": "npm:^20.10.5"
     bullmq: "npm:^5.1.0"
     ethers: "npm:^6.9.1"
-    typescript: "npm:^5.3.3"
-  languageName: unknown
-  linkType: soft
-
-"@flink/funnel@workspace:packages/funnel":
-  version: 0.0.0-use.local
-  resolution: "@flink/funnel@workspace:packages/funnel"
-  dependencies:
-    "@flink/common": "npm:*"
-    "@types/node": "npm:^20.10.5"
-    bullmq: "npm:^5.1.0"
-    mongodb: "npm:^6.3.0"
     typescript: "npm:^5.3.3"
   languageName: unknown
   linkType: soft

@@ -3,7 +3,7 @@ import {
   HubEventType,
   getSSLHubRpcClient,
 } from "@farcaster/hub-nodejs";
-import { QueueName, getQueue } from "@flink/common/queue";
+import { QueueName, getQueue } from "@flink/common/queues";
 import { PrismaClient } from "@flink/prisma/farcaster";
 
 const prisma = new PrismaClient();
@@ -32,7 +32,7 @@ const run = async () => {
     throw new Error("Failed to subscribe");
   }
 
-  const queue = getQueue(QueueName.FarcasterEvent);
+  const queue = getQueue(QueueName.FarcasterIngress);
 
   let processedEvents = 0;
   for await (const event of subscription.value) {

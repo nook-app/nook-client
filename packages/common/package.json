@@ -7,10 +7,12 @@
     "build": "tsc"
   },
   "exports": {
-    "./queue": "./dist/queue.js",
-    "./types": "./dist/types.js"
+    "./queues": "./dist/queues.js",
+    "./types": "./dist/types.js",
+    "./events": "./dist/events.js"
   },
   "dependencies": {
+    "@farcaster/hub-nodejs": "^0.10.19",
     "bullmq": "^5.1.0"
   },
   "devDependencies": {

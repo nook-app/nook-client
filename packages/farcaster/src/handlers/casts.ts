@@ -8,8 +8,8 @@ import {
   PrismaClient,
 } from "@flink/prisma/farcaster";
 import { FidHandlerArgs, MessageHandlerArgs } from "../types";
-import { EventSource, PreprocessedEvent } from "@flink/common/types";
-import { QueueName, getQueue } from "@flink/common/queue";
+import { EventSource } from "@flink/common/types";
+import { publishEvent } from "@flink/common/events";
 
 const prisma = new PrismaClient();
 
@@ -325,11 +325,11 @@ const publishNewCast = async (
   embedUrls: FarcasterCastEmbedUrl[],
   mentions: FarcasterCastMention[],
 ) => {
-  const event: PreprocessedEvent = {
-    timestamp: cast.timestamp.getTime(),
-    source: EventSource.FARCASTER,
-    sourceId: cast.hash,
-    data: {
+  await publishEvent(
+    EventSource.FARCASTER,
+    cast.hash,
+    cast.timestamp.getTime(),
+    {
       timestamp: cast.timestamp.getTime(),
       fid: cast.fid.toString(),
       hash: cast.hash,
@@ -350,8 +350,5 @@ const publishNewCast = async (
         hash: e.embedHash,
       })),
     },
-  };
-
-  const queue = getQueue(QueueName.Funnel);
-  await queue.add(`${event.source}-${event.sourceId}`, event);
+  );
 };

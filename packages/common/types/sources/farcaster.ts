@@ -1,8 +1,4 @@
-export enum EventSource {
-  FARCASTER = "farcaster",
-}
-
-export type FarcasterEventData = {
+export type RawFarcasterData = {
   timestamp: number;
   fid: string;
   hash: string;
@@ -22,16 +18,4 @@ export type FarcasterEventData = {
     fid: string;
     hash: string;
   }[];
-};
-
-export type PreprocessedEvent = {
-  timestamp: number;
-  source: EventSource;
-  sourceId: string;
-  data: FarcasterEventData;
-};
-
-export type Event = PreprocessedEvent & {
-  userId: string;
-  identityMapping: { [key: string]: string };
 };

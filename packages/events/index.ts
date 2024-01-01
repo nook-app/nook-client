@@ -1,7 +1,7 @@
-import { QueueName, getWorker } from "@flink/common/queue";
+import { QueueName, getWorker } from "@flink/common/queues";
 import { Job } from "bullmq";
 import { MongoClient } from "mongodb";
-import { Event, EventSource, PreprocessedEvent } from "@flink/common/types";
+import { Event, EventSource, RawEvent } from "@flink/common/types";
 
 const client = new MongoClient(process.env.EVENT_DATABASE_URL);
 
@@ -10,21 +10,21 @@ const run = async () => {
   const db = client.db("flink");
   const collection = db.collection("events");
 
-  const worker = getWorker(QueueName.Funnel, async (job: Job) => {
-    const preprocessedEvent: PreprocessedEvent = job.data;
+  const worker = getWorker(QueueName.Events, async (job) => {
+    const rawEvent = job.data;
 
     let sourceUserId: string | undefined;
     let preprocessedUserIds: string[] | undefined;
 
-    if (preprocessedEvent.source === EventSource.FARCASTER) {
+    if (rawEvent.source === EventSource.FARCASTER) {
       preprocessedUserIds = [
-        preprocessedEvent.data.fid,
-        preprocessedEvent.data.parentFid,
-        preprocessedEvent.data.rootParentFid,
-        ...preprocessedEvent.data.mentions.map((mention) => mention.mention),
-        ...preprocessedEvent.data.castEmbeds.map((embed) => embed.fid),
+        rawEvent.data.fid,
+        rawEvent.data.parentFid,
+        rawEvent.data.rootParentFid,
+        ...rawEvent.data.mentions.map((mention) => mention.mention),
+        ...rawEvent.data.castEmbeds.map((embed) => embed.fid),
       ].filter(Boolean);
-      sourceUserId = preprocessedEvent.data.fid;
+      sourceUserId = rawEvent.data.fid;
     }
 
     const userIds = await Promise.all(
@@ -33,7 +33,7 @@ const run = async () => {
           `${process.env.IDENTITY_SERVICE_URL}/identity/by-fid/${userId}`,
         );
         if (!res.ok) {
-          console.log(`[funnel] error fetching identity for fid ${userId}`);
+          console.log(`[events] error fetching identity for fid ${userId}`);
           return;
         }
         const { id }: { id: string } = await res.json();
@@ -55,19 +55,21 @@ const run = async () => {
     }
 
     const event: Event = {
-      ...preprocessedEvent,
+      ...rawEvent,
       userId,
-      identityMapping,
+      topics: [],
+      actions: [],
     };
 
+    // TODO: if not exists
     await collection.insertOne(event);
 
-    console.log(`[funnel] processed event ${job.id}`);
+    console.log(`[events] processed ${job.id}`);
   });
 
   worker.on("failed", (job, err) => {
     if (job) {
-      console.log(`[funnel] [${job.id}] failed with ${err.message}`);
+      console.log(`[events] [${job.id}] failed with ${err.message}`);
     }
   });
 };
@@ -76,3 +78,22 @@ run().catch((e) => {
   console.error(e);
   process.exit(1);
 });
+
+// weird scenario: replying to a transaction
+// re-evalute standardized fields
+
+/*
+use cases
+1. home feed
+2. post
+3. activity
+4. content
+5. user post feed
+6. user activity feed
+7. user content
+8. content post feed
+9. content activity feed
+11. rich embeds
+12. transaction referral
+13. notification topics
+*/

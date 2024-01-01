@@ -1,5 +1,5 @@
 import { Message, getSSLHubRpcClient } from "@farcaster/hub-nodejs";
-import { QueueName, getWorker } from "@flink/common/queue";
+import { QueueName, getWorker } from "@flink/common/queues";
 import { Job } from "bullmq";
 import { MessageType } from "@farcaster/hub-nodejs";
 import { handleCastAdd, handleCastRemove } from "./handlers/casts";
@@ -35,8 +35,8 @@ const run = async () => {
 
   const client = getSSLHubRpcClient(hubRpcEndpoint);
 
-  const worker = getWorker(QueueName.FarcasterEvent, async (job: Job) => {
-    const message: Message = job.data;
+  const worker = getWorker(QueueName.FarcasterIngress, async (job: Job) => {
+    const message = job.data;
     console.log(`[farcaster-consumer] processing event ${job.id}`);
 
     const handler = handlerForType[message.data.type];
