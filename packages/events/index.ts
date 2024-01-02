@@ -30,17 +30,23 @@ const run = async () => {
 
     const result = await actionsCollection.insertMany(data.actions);
 
+    const topics = [
+      ...new Set(data.actions.flatMap((action) => action.topics)),
+    ];
+
     const event: Event = {
       ...rawEvent,
       userId: data.userId,
       sourceUserId: data.sourceUserId,
       actions: Object.values(result.insertedIds),
-      topics: [...new Set(data.actions.flatMap((action) => action.topics))],
+      topics,
     };
 
     await eventsCollection.insertOne(event);
 
-    console.log(`[events] processed ${job.id}`);
+    console.log(
+      `[events] processed ${event.source} ${event.sourceEventId}: ${event.actions.length} actions, ${event.topics.length} topics`,
+    );
   });
 
   worker.on("failed", (job, err) => {

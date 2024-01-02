@@ -7,8 +7,10 @@ export const publishRawEvent = async (
   timestamp: number,
   data: RawEventData,
 ) => {
+  const eventId = `${source}-${sourceEventId}`;
   const queue = getQueue(QueueName.Events);
-  await queue.add(`${source}-${sourceEventId}`, {
+  await queue.add(eventId, {
+    eventId,
     timestamp,
     source,
     sourceEventId,

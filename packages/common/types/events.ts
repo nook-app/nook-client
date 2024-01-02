@@ -14,6 +14,9 @@ export enum EventSource {
  * Raw event payload sent from any source service
  */
 export type RawEvent = {
+  /** ID for the event */
+  eventId: string;
+
   /** Source for the event */
   source: EventSource;
 

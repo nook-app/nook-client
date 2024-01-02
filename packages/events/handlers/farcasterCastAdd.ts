@@ -34,7 +34,11 @@ export const handleFarcasterCastAdd = async (rawEvent: RawEvent) => {
 
   const thread =
     data.hash !== data.rootParentHash
-      ? await getAndFormatCast(data.rootParentHash, fidToIdentity)
+      ? await getAndFormatCast(
+          data.rootParentFid,
+          data.rootParentHash,
+          fidToIdentity,
+        )
       : undefined;
 
   const post = {
@@ -54,8 +58,9 @@ export const handleFarcasterCastAdd = async (rawEvent: RawEvent) => {
     topics.push(`channel:${data.rootParentUrl}`);
   }
 
-  if (data.parentHash) {
+  if (data.parentFid && data.parentHash) {
     actions.push({
+      eventId: rawEvent.eventId,
       source: rawEvent.source,
       sourceEventId: rawEvent.sourceEventId,
       timestamp: rawEvent.timestamp,
@@ -64,12 +69,17 @@ export const handleFarcasterCastAdd = async (rawEvent: RawEvent) => {
       type: EventActionType.REPLY,
       data: {
         ...post,
-        parent: await getAndFormatCast(data.parentHash, fidToIdentity),
+        parent: await getAndFormatCast(
+          data.parentFid,
+          data.parentHash,
+          fidToIdentity,
+        ),
       },
       topics: [...topics, `mention:${fidToIdentity[data.parentFid].id}`],
     });
   } else {
     actions.push({
+      eventId: rawEvent.eventId,
       source: rawEvent.source,
       sourceEventId: rawEvent.sourceEventId,
       timestamp: rawEvent.timestamp,
@@ -89,10 +99,11 @@ export const handleFarcasterCastAdd = async (rawEvent: RawEvent) => {
 };
 
 const getAndFormatCast = async (
+  fid: string,
   hash: string,
   fidToIdentity: Record<string, Identity>,
 ): Promise<EventActionPostData | undefined> => {
-  const cast = await getFarcasterCast(hash);
+  const cast = await getFarcasterCast(fid, hash);
   return formatCast(cast, fidToIdentity);
 };
 
@@ -104,17 +115,21 @@ const formatCast = (
   for (let i = cast.mentions.length - 1; i >= 0; i--) {
     const mention = cast.mentions[i].mention;
     const position = parseInt(cast.mentions[i].mentionPosition);
-    content = `${cast.text.slice(0, position)}{{user|${
-      fidToIdentity[mention]
-    }}}${cast.text.slice(position)}`;
+    content = `${content.slice(0, position)}{{user|${
+      fidToIdentity[mention].id
+    }}}${content.slice(position)}`;
   }
 
   return {
     userId: cast.fid,
     sourceUserId: cast.fid,
     content,
-    embeds: cast.urlEmbeds.concat(
-      cast.castEmbeds.map((embed) => `farcaster://cast/${embed.hash}`),
+    // @ts-ignore - temporary hack to support both old and new cast formats
+    embeds: (cast.urls || cast.urlEmbeds || []).concat(
+      // @ts-ignore - temporary hack to support both old and new cast formats
+      (cast.casts || cast.castEmbeds || []).map(
+        (embed) => `farcaster://cast/${embed.hash}`,
+      ),
     ),
   };
 };

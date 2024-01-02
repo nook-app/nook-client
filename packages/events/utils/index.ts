@@ -46,13 +46,21 @@ export const getIdentitiesForFids = async (
 };
 
 export const getFarcasterCast = async (
+  fid: string,
   hash: string,
 ): Promise<FarcasterCastData | undefined> => {
   const response = await fetch(
-    `${process.env.FARCASTER_SERVICE_URL}/cast/${hash}`,
+    `${process.env.FARCASTER_SERVICE_URL}/cast/${fid}/${hash}`,
   );
 
-  if (!response.ok) return;
+  if (!response.ok) {
+    if (response.status !== 404) {
+      console.log(
+        `[events] [get-cast] [${hash}] failed with ${response.status}`,
+      );
+    }
+    return undefined;
+  }
 
   const { cast } = await response.json();
 

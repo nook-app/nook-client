@@ -1,5 +1,8 @@
 import fastify, { FastifyRequest } from "fastify";
 import { PrismaClient } from "@flink/prisma/farcaster";
+import { getSSLHubRpcClient } from "@farcaster/hub-nodejs";
+import { hexToBuffer } from "./utils";
+import { handleCastAdd } from "./handlers/casts";
 
 const prisma = new PrismaClient();
 
@@ -10,6 +13,13 @@ BigInt.prototype.toJSON = function () {
 };
 
 const run = async () => {
+  const hubRpcEndpoint = process.env.HUB_RPC_ENDPOINT;
+  if (!hubRpcEndpoint) {
+    throw new Error("Missing HUB_RPC_ENDPOINT");
+  }
+
+  const client = getSSLHubRpcClient(hubRpcEndpoint);
+
   const server = fastify({
     ajv: {
       customOptions: {
@@ -19,15 +29,19 @@ const run = async () => {
   });
 
   server.get(
-    "/cast/:hash",
+    "/cast/:fid/:hash",
     {
       schema: {
         params: {
+          fid: { type: "string" },
           hash: { type: "string" },
         },
       },
     },
-    async (request: FastifyRequest<{ Params: { hash: string } }>, reply) => {
+    async (
+      request: FastifyRequest<{ Params: { fid: string; hash: string } }>,
+      reply,
+    ) => {
       const cast = await prisma.farcasterCast.findUnique({
         where: {
           hash: request.params.hash,
@@ -39,13 +53,22 @@ const run = async () => {
         },
       });
 
-      if (!cast) {
+      if (cast) {
+        reply.send({
+          cast: { ...cast, timestamp: cast.timestamp.getTime() },
+        });
+      }
+
+      const message = await client.getCast({
+        fid: parseInt(request.params.fid),
+        hash: hexToBuffer(request.params.hash),
+      });
+
+      if (message.isErr()) {
         return reply.status(404).send();
       }
 
-      reply.send({
-        cast: { ...cast, timestamp: cast.timestamp.getTime() },
-      });
+      return await handleCastAdd({ message: message.value, client });
     },
   );
 

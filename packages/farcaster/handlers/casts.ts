@@ -84,7 +84,7 @@ export const handleCastAdd = async ({
 
   console.log(`[cast-add] [${cast.fid}] added ${cast.hash}`);
 
-  await publishEvent(cast, embedCasts, embedUrls, mentions);
+  return await publishEvent(cast, embedCasts, embedUrls, mentions);
 };
 
 export const handleCastRemove = async ({ message }: MessageHandlerArgs) => {
@@ -325,30 +325,34 @@ const publishEvent = async (
   embedUrls: FarcasterCastEmbedUrl[],
   mentions: FarcasterCastMention[],
 ) => {
+  const data = {
+    timestamp: cast.timestamp.getTime(),
+    fid: cast.fid.toString(),
+    hash: cast.hash,
+    text: cast.text,
+    parentFid: cast.parentFid?.toString(),
+    parentHash: cast.parentHash,
+    parentUrl: cast.parentUrl,
+    rootParentFid: cast.rootParentFid.toString(),
+    rootParentHash: cast.rootParentHash,
+    rootParentUrl: cast.rootParentUrl,
+    mentions: mentions.map((m) => ({
+      mention: m.mention.toString(),
+      mentionPosition: m.mentionPosition.toString(),
+    })),
+    urls: embedUrls.map((e) => e.url),
+    casts: embedCasts.map((e) => ({
+      fid: e.embedFid.toString(),
+      hash: e.embedHash,
+    })),
+  };
+
   await publishRawEvent(
     EventSource.FARCASTER_CAST_ADD,
     cast.hash,
     cast.timestamp.getTime(),
-    {
-      timestamp: cast.timestamp.getTime(),
-      fid: cast.fid.toString(),
-      hash: cast.hash,
-      text: cast.text,
-      parentFid: cast.parentFid?.toString(),
-      parentHash: cast.parentHash,
-      parentUrl: cast.parentUrl,
-      rootParentFid: cast.rootParentFid.toString(),
-      rootParentHash: cast.rootParentHash,
-      rootParentUrl: cast.rootParentUrl,
-      mentions: mentions.map((m) => ({
-        mention: m.mention.toString(),
-        mentionPosition: m.mentionPosition.toString(),
-      })),
-      urlEmbeds: embedUrls.map((e) => e.url),
-      castEmbeds: embedCasts.map((e) => ({
-        fid: e.embedFid.toString(),
-        hash: e.embedHash,
-      })),
-    },
+    data,
   );
+
+  return data;
 };

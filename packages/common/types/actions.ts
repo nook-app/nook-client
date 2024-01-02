@@ -4,14 +4,17 @@ import { EventSource } from "./events";
  * Supported actions for events
  */
 export enum EventActionType {
-  POST = "post",
-  REPLY = "reply",
+  POST = "POST",
+  REPLY = "REPLY",
 }
 
 /**
  * Event action parsed from the event data
  */
 export type EventActionBase = {
+  /** ID for the event */
+  eventId: string;
+
   /** Source for the event */
   source: EventSource;
 
@@ -56,7 +59,7 @@ export type EventActionPostData = {
  */
 export type EventActionReplyData = EventActionPostData & {
   /** Parent post this is a reply to */
-  parent: EventActionPostData;
+  parent: EventActionPostData; // this will need to be a reference to the think Content collection
 };
 
 export type EventActionPost = EventActionBase & {
