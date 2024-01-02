@@ -46,7 +46,7 @@ export const handleFarcasterCastAdd = async (rawEvent: RawEvent) => {
 
   const post = {
     ...formatCast(data, fidToIdentity),
-    thread: formatCast(thread, fidToIdentity),
+    thread: thread ? formatCast(thread, fidToIdentity) : undefined,
   };
 
   const topics = [
