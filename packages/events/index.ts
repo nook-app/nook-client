@@ -1,17 +1,18 @@
 import { QueueName, getWorker } from "@flink/common/queues";
 import { MongoClient } from "mongodb";
-import { Event, EventAction, EventSource } from "@flink/common/types";
+import { Event, EventAction, EventSource, RawEvent } from "@flink/common/types";
 import { handleFarcasterCastAdd } from "./handlers/farcasterCastAdd";
+import { Job } from "bullmq";
 
 const client = new MongoClient(process.env.EVENT_DATABASE_URL);
 
-const run = async () => {
+export const getEventsHandler = async () => {
   await client.connect();
   const db = client.db("flink");
   const eventsCollection = db.collection("events");
   const actionsCollection = db.collection("actions");
 
-  const worker = getWorker(QueueName.Events, async (job) => {
+  return async (job: Job<RawEvent>) => {
     const rawEvent = job.data;
 
     let data: {
@@ -28,6 +29,9 @@ const run = async () => {
       throw new Error(`[events] unknown event source ${rawEvent.source}`);
     }
 
+    await actionsCollection.deleteMany({
+      eventId: rawEvent.eventId,
+    });
     const result = await actionsCollection.insertMany(data.actions);
 
     const topics = [
@@ -42,12 +46,25 @@ const run = async () => {
       topics,
     };
 
-    await eventsCollection.insertOne(event);
+    await eventsCollection.findOneAndUpdate(
+      {
+        eventId: rawEvent.eventId,
+      },
+      { $set: event },
+      {
+        upsert: true,
+      },
+    );
 
     console.log(
       `[events] processed ${event.source} ${event.sourceEventId}: ${event.actions.length} actions, ${event.topics.length} topics`,
     );
-  });
+  };
+};
+
+const run = async () => {
+  const handler = await getEventsHandler();
+  const worker = getWorker(QueueName.Events, handler);
 
   worker.on("failed", (job, err) => {
     if (job) {

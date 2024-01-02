@@ -10,14 +10,26 @@ import { FarcasterCastData } from "@flink/common/types/sources/farcaster";
 
 export const handleFarcasterCastAdd = async (rawEvent: RawEvent) => {
   const data: FarcasterCastData = rawEvent.data;
-  const identities = await getIdentitiesForFids(
-    [
-      data.fid,
-      data.parentFid,
-      data.rootParentFid,
-      ...data.mentions.map((mention) => mention.mention),
-    ].filter(Boolean),
-  );
+
+  const thread =
+    data.hash !== data.rootParentHash
+      ? await getFarcasterCast(data.rootParentFid, data.rootParentHash)
+      : undefined;
+
+  const parent =
+    data.parentFid && data.parentHash
+      ? await getFarcasterCast(data.parentFid, data.parentHash)
+      : undefined;
+
+  const relevantFids = extractFidsFromCast(data);
+  if (thread) {
+    relevantFids.push(...extractFidsFromCast(thread));
+  }
+  if (parent) {
+    relevantFids.push(...extractFidsFromCast(parent));
+  }
+
+  const identities = await getIdentitiesForFids([...new Set(relevantFids)]);
 
   const fidToIdentity = identities.reduce(
     (acc, identity) => {
@@ -32,18 +44,9 @@ export const handleFarcasterCastAdd = async (rawEvent: RawEvent) => {
 
   const actions: EventAction[] = [];
 
-  const thread =
-    data.hash !== data.rootParentHash
-      ? await getAndFormatCast(
-          data.rootParentFid,
-          data.rootParentHash,
-          fidToIdentity,
-        )
-      : undefined;
-
   const post = {
     ...formatCast(data, fidToIdentity),
-    thread,
+    thread: formatCast(thread, fidToIdentity),
   };
 
   const topics = [
@@ -69,11 +72,7 @@ export const handleFarcasterCastAdd = async (rawEvent: RawEvent) => {
       type: EventActionType.REPLY,
       data: {
         ...post,
-        parent: await getAndFormatCast(
-          data.parentFid,
-          data.parentHash,
-          fidToIdentity,
-        ),
+        parent: formatCast(parent, fidToIdentity),
       },
       topics: [...topics, `mention:${fidToIdentity[data.parentFid].id}`],
     });
@@ -96,15 +95,6 @@ export const handleFarcasterCastAdd = async (rawEvent: RawEvent) => {
     userId,
     actions,
   };
-};
-
-const getAndFormatCast = async (
-  fid: string,
-  hash: string,
-  fidToIdentity: Record<string, Identity>,
-): Promise<EventActionPostData | undefined> => {
-  const cast = await getFarcasterCast(fid, hash);
-  return formatCast(cast, fidToIdentity);
 };
 
 const formatCast = (
@@ -130,4 +120,13 @@ const formatCast = (
     content,
     embeds,
   };
+};
+
+const extractFidsFromCast = (cast: FarcasterCastData): string[] => {
+  return [
+    cast.fid,
+    cast.parentFid,
+    cast.rootParentFid,
+    ...cast.mentions.map((mention) => mention.mention),
+  ].filter(Boolean);
 };
