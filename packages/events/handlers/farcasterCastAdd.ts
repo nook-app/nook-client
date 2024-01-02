@@ -125,8 +125,8 @@ const formatCast = (
     .concat(cast.casts.map((cast) => `farcaster://cast/${cast.hash}`));
 
   return {
-    userId: cast.fid,
-    sourceUserId: fidToIdentity[cast.fid].id,
+    sourceUserId: cast.fid,
+    userId: fidToIdentity[cast.fid].id,
     content,
     embeds,
   };
