@@ -72,7 +72,7 @@ export const handleFarcasterCastAdd = async (rawEvent: RawEvent) => {
       type: EventActionType.REPLY,
       data: {
         ...post,
-        parent: formatCast(parent, fidToIdentity),
+        parent: parent ? formatCast(parent, fidToIdentity) : undefined,
       },
       topics: [...topics, `mention:${fidToIdentity[data.parentFid].id}`],
     });
