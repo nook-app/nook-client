@@ -5,7 +5,8 @@
   "scripts": {
     "build": "tsc",
     "start:consumer": "node dist/consumer.js",
-    "start:publisher": "node dist/publisher.js"
+    "start:publisher": "node dist/publisher.js",
+    "start:api": "node dist/index.js"
   },
   "dependencies": {
     "@ethersproject/abstract-signer": "^5.7.0",
@@ -14,7 +15,8 @@
     "@flink/common": "*",
     "@flink/prisma": "*",
     "bullmq": "^5.1.0",
-    "ethers": "^6.9.1"
+    "ethers": "^6.9.1",
+    "fastify": "^4.25.2"
   },
   "devDependencies": {
     "@types/node": "^20.10.5",

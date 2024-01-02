@@ -1,4 +1,4 @@
-export type RawFarcasterData = {
+export type FarcasterCastData = {
   timestamp: number;
   fid: string;
   hash: string;

@@ -9,7 +9,7 @@ import {
 } from "@flink/prisma/farcaster";
 import { FidHandlerArgs, MessageHandlerArgs } from "../types";
 import { EventSource } from "@flink/common/types";
-import { publishEvent } from "@flink/common/events";
+import { publishRawEvent } from "@flink/common/events";
 
 const prisma = new PrismaClient();
 
@@ -84,7 +84,7 @@ export const handleCastAdd = async ({
 
   console.log(`[cast-add] [${cast.fid}] added ${cast.hash}`);
 
-  await publishNewCast(cast, embedCasts, embedUrls, mentions);
+  await publishEvent(cast, embedCasts, embedUrls, mentions);
 };
 
 export const handleCastRemove = async ({ message }: MessageHandlerArgs) => {
@@ -309,7 +309,7 @@ export const batchHandleCastAdd = async ({ client, fid }: FidHandlerArgs) => {
 
   await Promise.all(
     messages.value.messages.map((message) => {
-      return publishNewCast(
+      return publishEvent(
         messageToCast(message),
         messageToCastEmbedCast(message),
         messageToCastEmbedUrl(message),
@@ -319,14 +319,14 @@ export const batchHandleCastAdd = async ({ client, fid }: FidHandlerArgs) => {
   );
 };
 
-const publishNewCast = async (
+const publishEvent = async (
   cast: FarcasterCast,
   embedCasts: FarcasterCastEmbedCast[],
   embedUrls: FarcasterCastEmbedUrl[],
   mentions: FarcasterCastMention[],
 ) => {
-  await publishEvent(
-    EventSource.FARCASTER,
+  await publishRawEvent(
+    EventSource.FARCASTER_CAST_ADD,
     cast.hash,
     cast.timestamp.getTime(),
     {

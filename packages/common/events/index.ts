@@ -1,19 +1,17 @@
 import { QueueName, getQueue } from "../queues";
 import { EventSource, RawEventData } from "../types";
 
-export const publishEvent = async (
+export const publishRawEvent = async (
   source: EventSource,
-  sourceId: string,
+  sourceEventId: string,
   timestamp: number,
   data: RawEventData,
 ) => {
-  const id = `${source}-${sourceId}`;
   const queue = getQueue(QueueName.Events);
-  await queue.add(id, {
-    id,
+  await queue.add(`${source}-${sourceEventId}`, {
     timestamp,
     source,
-    sourceId,
+    sourceEventId,
     data,
   });
 };

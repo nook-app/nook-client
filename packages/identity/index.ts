@@ -1,6 +1,7 @@
 import fastify, { FastifyRequest } from "fastify";
 import { PrismaClient } from "@flink/prisma/identity";
 import { SocialPlatform } from "./types";
+import { IdentitiesRequest, IdentityRequestType } from "@flink/common/types";
 
 const prisma = new PrismaClient();
 
@@ -10,65 +11,97 @@ BigInt.prototype.toJSON = function () {
   return this.toString();
 };
 
-type ByFidRequest = FastifyRequest<{
-  Params: { fid: string };
-}>;
-
 const run = async () => {
-  const server = fastify();
+  const server = fastify({
+    ajv: {
+      customOptions: {
+        allowUnionTypes: true,
+      },
+    },
+  });
 
-  server.get(
-    "/identity/by-fid/:fid",
+  server.post(
+    "/identities",
     {
       schema: {
-        params: {
-          fid: { type: "string" },
+        body: {
+          type: "object",
+          required: ["type", "ids"],
+          properties: {
+            type: { type: "string", enum: Object.values(IdentityRequestType) },
+            ids: {
+              type: "array",
+              items: { type: ["string", "number"] },
+            },
+          },
         },
       },
     },
-    async (request: ByFidRequest, reply) => {
-      const { fid } = request.params;
-
-      let identity = await prisma.identity.findFirst({
-        where: {
-          socialAccounts: {
-            some: {
-              platform: SocialPlatform.FARCASTER,
-              platformId: fid,
-            },
-          },
-        },
-        include: {
-          socialAccounts: true,
-          blockchainAccounts: true,
-          relatedLinks: true,
-        },
-      });
-
-      if (!identity) {
-        console.log(`[identity-api] [fid] [${fid}] creating new identity`);
-        identity = await prisma.identity.create({
-          data: {
+    async (request: FastifyRequest<{ Body: IdentitiesRequest }>, reply) => {
+      const type = request.body.type;
+      const ids = request.body.ids.map((id) => String(id));
+      if (type === IdentityRequestType.FID) {
+        const existingIdentities = await prisma.identity.findMany({
+          where: {
             socialAccounts: {
-              create: {
+              some: {
                 platform: SocialPlatform.FARCASTER,
-                platformId: fid,
-                source: "identity",
-                verified: true,
+                platformId: {
+                  in: ids,
+                },
               },
             },
           },
-          select: {
-            id: true,
+          include: {
             socialAccounts: true,
             blockchainAccounts: true,
             relatedLinks: true,
           },
         });
-        reply.status(201);
-      }
 
-      reply.send(identity);
+        const existingIds = existingIdentities.map(
+          (identity) => identity.socialAccounts[0].platformId,
+        );
+        const missingIds = ids.filter((id) => !existingIds.includes(id));
+
+        const newIdentities = await Promise.all(
+          missingIds.map(async (fid) => {
+            console.log(`[identity-api] [fid] [${fid}] creating new identity`);
+            return await prisma.identity.create({
+              data: {
+                socialAccounts: {
+                  create: {
+                    platform: SocialPlatform.FARCASTER,
+                    platformId: fid,
+                    source: "identity",
+                    verified: true,
+                  },
+                },
+              },
+              select: {
+                id: true,
+                socialAccounts: true,
+                blockchainAccounts: true,
+                relatedLinks: true,
+              },
+            });
+          }),
+        );
+
+        const fidToIdentity = [...existingIdentities, ...newIdentities].reduce(
+          (acc, identity) => {
+            acc[identity.socialAccounts[0].platformId] = identity;
+            return acc;
+          },
+          {},
+        );
+
+        const identities = ids.map((id) => fidToIdentity[id]);
+
+        reply.send({
+          identities,
+        });
+      }
     },
   );
 

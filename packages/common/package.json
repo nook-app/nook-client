@@ -9,11 +9,13 @@
   "exports": {
     "./queues": "./dist/queues/index.js",
     "./types": "./dist/types/index.js",
-    "./events": "./dist/events/index.js"
+    "./events": "./dist/events/index.js",
+    "./identities": "./dist/identities/index.js"
   },
   "dependencies": {
     "@farcaster/hub-nodejs": "^0.10.19",
-    "bullmq": "^5.1.0"
+    "bullmq": "^5.1.0",
+    "mongodb": "^6.3.0"
   },
   "devDependencies": {
     "@types/node": "^20.10.5",

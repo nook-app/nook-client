@@ -1,37 +1,27 @@
-import { RawFarcasterData } from "./sources/farcaster";
+import { FarcasterCastData } from "./sources/farcaster";
+import { ObjectId } from "mongodb";
 
-export type RawEventData = RawFarcasterData;
-export type EventActionData = object;
+export type RawEventData = FarcasterCastData;
 
 /**
  * Supported event sources
  */
 export enum EventSource {
-  FARCASTER = "farcaster",
-}
-
-/**
- * Supported actions for events
- */
-export enum EventActionType {
-  CAST_ADD = "cast_add",
+  FARCASTER_CAST_ADD = "farcaster_cast_add",
 }
 
 /**
  * Raw event payload sent from any source service
  */
 export type RawEvent = {
-  /** ID for the event in the form `${source}-${sourceId}` */
-  id: string;
-
-  /** Timestamp for when the event occurred */
-  timestamp: number;
-
   /** Source for the event */
   source: EventSource;
 
   /** ID of the event in the source system */
-  sourceId: string;
+  sourceEventId: string;
+
+  /** Timestamp for when the event occurred */
+  timestamp: number;
 
   /** Raw data sent from the source */
   data: RawEventData;
@@ -44,23 +34,12 @@ export type Event = RawEvent & {
   /** Identity of user who triggered the event */
   userId: string;
 
-  /** List of topics this event is relevant for */
+  /** Source identity of user who triggered the event */
+  sourceUserId: string;
+
+  /** List of references to event actions parsed from this event */
+  actions: ObjectId[];
+
+  /** Set of topics the actions for this event are relevant for */
   topics: string[];
-
-  /** List of event actions parsed from this event */
-  actions: EventAction[];
-};
-
-/**
- * Event action parsed from the event data
- */
-export type EventAction = {
-  /** Type of event action */
-  type: EventActionType;
-
-  /** List of topics this event action is relevant for */
-  topics: string[];
-
-  /** Formatted data object for the action */
-  data: EventActionData;
 };

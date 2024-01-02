@@ -415,6 +415,7 @@ __metadata:
     "@farcaster/hub-nodejs": "npm:^0.10.19"
     "@types/node": "npm:^20.10.5"
     bullmq: "npm:^5.1.0"
+    mongodb: "npm:^6.3.0"
     typescript: "npm:^5.3.3"
   languageName: unknown
   linkType: soft
@@ -458,6 +459,7 @@ __metadata:
     "@types/node": "npm:^20.10.5"
     bullmq: "npm:^5.1.0"
     ethers: "npm:^6.9.1"
+    fastify: "npm:^4.25.2"
     typescript: "npm:^5.3.3"
   languageName: unknown
   linkType: soft

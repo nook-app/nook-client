@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "build": "tsc",
-    "start": "node dist/index.js"
+    "start:api": "node dist/index.js"
   },
   "dependencies": {
     "@farcaster/hub-nodejs": "^0.10.19",

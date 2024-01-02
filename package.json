@@ -5,9 +5,10 @@
   "scripts": {
     "build": "yarn workspaces foreach --all --topological-dev run build",
     "start:dashboard": "yarn workspace @flink/dashboard start",
+    "start:farcaster:api": "yarn workspace @flink/farcaster start:api",
     "start:farcaster:consumer": "yarn workspace @flink/farcaster start:consumer",
     "start:farcaster:publisher": "yarn workspace @flink/farcaster start:publisher",
-    "start:identity-api": "yarn workspace @flink/identity start",
+    "start:identity:api": "yarn workspace @flink/identity start:api",
     "start:events": "yarn workspace @flink/events start"
   },
   "workspaces": [
