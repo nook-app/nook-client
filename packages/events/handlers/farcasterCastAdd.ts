@@ -120,16 +120,14 @@ const formatCast = (
     }}}${content.slice(position)}`;
   }
 
+  const embeds = cast.urls
+    .map((url) => url.url)
+    .concat(cast.casts.map((cast) => `farcaster://cast/${cast.hash}`));
+
   return {
     userId: cast.fid,
-    sourceUserId: cast.fid,
+    sourceUserId: fidToIdentity[cast.fid].id,
     content,
-    // @ts-ignore - temporary hack to support both old and new cast formats
-    embeds: (cast.urls || cast.urlEmbeds || []).concat(
-      // @ts-ignore - temporary hack to support both old and new cast formats
-      (cast.casts || cast.castEmbeds || []).map(
-        (embed) => `farcaster://cast/${embed.hash}`,
-      ),
-    ),
+    embeds,
   };
 };

@@ -340,7 +340,7 @@ const publishEvent = async (
       mention: m.mention.toString(),
       mentionPosition: m.mentionPosition.toString(),
     })),
-    urls: embedUrls.map((e) => e.url),
+    urls: embedUrls.map((e) => ({ url: e.url })),
     casts: embedCasts.map((e) => ({
       fid: e.embedFid.toString(),
       hash: e.embedHash,

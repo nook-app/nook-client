@@ -13,7 +13,7 @@ export type FarcasterCastData = {
     mention: string;
     mentionPosition: string;
   }[];
-  urls: string[];
+  urls: { url: string }[];
   casts: {
     fid: string;
     hash: string;
