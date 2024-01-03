@@ -1,15 +1,17 @@
 import { ConnectionOptions, Job, Queue, QueueOptions, Worker } from "bullmq";
-import { RawEvent } from "../types";
+import { Content, RawEvent } from "../types";
 import { Message } from "@farcaster/hub-nodejs";
 
 export enum QueueName {
   FarcasterIngress = "farcaster-ingress",
   Events = "events",
+  ContentIngress = "content-ingress",
 }
 
 type QueueType = {
   [QueueName.FarcasterIngress]: Message;
   [QueueName.Events]: RawEvent;
+  [QueueName.ContentIngress]: Content;
 };
 
 const connection: ConnectionOptions = {

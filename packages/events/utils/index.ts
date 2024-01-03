@@ -1,5 +1,5 @@
 import {
-  FarcasterCastData,
+  FarcasterCastRawData,
   IdentitiesRequest,
   Identity,
   IdentityRequestType,
@@ -48,7 +48,7 @@ export const getIdentitiesForFids = async (
 export const getFarcasterCast = async (
   fid: string,
   hash: string,
-): Promise<FarcasterCastData | undefined> => {
+): Promise<FarcasterCastRawData | undefined> => {
   const response = await fetch(
     `${process.env.FARCASTER_SERVICE_URL}/cast/${fid}/${hash}`,
   );

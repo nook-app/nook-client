@@ -1,6 +1,12 @@
-import { QueueName, getWorker } from "@flink/common/queues";
+import { QueueName, getQueue, getWorker } from "@flink/common/queues";
 import { MongoClient } from "mongodb";
-import { Event, EventAction, EventSource, RawEvent } from "@flink/common/types";
+import {
+  Content,
+  Event,
+  EventAction,
+  EventSourceService,
+  RawEvent,
+} from "@flink/common/types";
 import { handleFarcasterCastAdd } from "./handlers/farcasterCastAdd";
 import { Job } from "bullmq";
 
@@ -12,20 +18,26 @@ export const getEventsHandler = async () => {
   const eventsCollection = db.collection("events");
   const actionsCollection = db.collection("actions");
 
+  const contentQueue = getQueue(QueueName.ContentIngress);
+
   return async (job: Job<RawEvent>) => {
     const rawEvent = job.data;
 
-    let data: {
-      sourceUserId?: string;
-      userId?: string;
-      actions?: EventAction[];
-    };
+    let data:
+      | {
+          sourceUserId: string;
+          userId: string;
+          actions: EventAction[];
+          content: Content[];
+          createdAt: Date;
+        }
+      | undefined;
 
-    if (rawEvent.source === EventSource.FARCASTER_CAST_ADD) {
+    if (rawEvent.source.service === EventSourceService.FARCASTER_CAST_ADD) {
       data = await handleFarcasterCastAdd(rawEvent);
     }
 
-    if (!data?.sourceUserId || !data?.userId || !data?.actions) {
+    if (!data) {
       throw new Error(`[events] unknown event source ${rawEvent.source}`);
     }
 
@@ -44,6 +56,7 @@ export const getEventsHandler = async () => {
       sourceUserId: data.sourceUserId,
       actions: Object.values(result.insertedIds),
       topics,
+      createdAt: data.createdAt,
     };
 
     await eventsCollection.findOneAndUpdate(
@@ -56,8 +69,12 @@ export const getEventsHandler = async () => {
       },
     );
 
+    for (const content of data.content) {
+      await contentQueue.add(content.contentId, content);
+    }
+
     console.log(
-      `[events] processed ${event.source} ${event.sourceEventId}: ${event.actions.length} actions, ${event.topics.length} topics`,
+      `[events] processed ${event.source.service} ${event.source.id}: ${event.actions.length} actions, ${event.topics.length} topics`,
     );
   };
 };

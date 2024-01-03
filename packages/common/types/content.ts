@@ -1,39 +1,38 @@
+import { FarcasterPostData, FarcasterReplyData } from "./sources/farcaster";
+
 export enum ContentType {
-  WEBPAGE = "webpage",
-  IMAGE = "image",
-  VIDEO = "video",
-  AUDIO = "audio",
-  TEXT = "text",
-  JSON = "json",
-  OTHER = "other",
-  FARCASTER_CAST = "farcaster_cast",
+  FARCASTER_POST = "FARCASTER_POST",
+  FARCASTER_REPLY = "FARCASTER_REPLY",
+  URL = "URL",
 }
 
-export type ContentMetadata = {
-  source: string;
-  data: object;
-};
-
-// this needs to be in mongo
-// i.e. collection group
-// special url-speicfic rich metadata embeds
-// etc
-export type Content = {
-  id: string;
-  type: ContentType;
-  mimeType?: string;
-  length?: number;
-  source: string;
-  metadata: ContentMetadata;
-  createdAt: Date;
-  updatedAt: Date;
-};
-
-export type ContentReference = {
-  id: string;
+export type ContentBase = {
+  /** ID for the content in URI format */
   contentId: string;
-  metadataSource: string;
-  metadata: object;
+
+  /** Identity of user who first submitted the content */
+  submitterId: string;
+
+  /** Source identity of user who submitted the content */
+  creatorId?: string;
+
+  /** Date content was created */
   createdAt: Date;
-  updatedAt: Date;
 };
+
+export type FarcasterPostContent = ContentBase & {
+  type: ContentType.FARCASTER_POST;
+  data: FarcasterPostData;
+};
+
+export type FarcasterReplyContent = ContentBase & {
+  type: ContentType.FARCASTER_REPLY;
+  data: FarcasterReplyData;
+};
+
+export type URLContent = ContentBase & {
+  type: ContentType.URL;
+  url: string;
+};
+
+export type Content = FarcasterPostContent | FarcasterReplyContent | URLContent;

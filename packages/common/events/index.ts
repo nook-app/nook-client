@@ -3,17 +3,15 @@ import { EventSource, RawEventData } from "../types";
 
 export const publishRawEvent = async (
   source: EventSource,
-  sourceEventId: string,
   timestamp: number,
   data: RawEventData,
 ) => {
-  const eventId = `${source}-${sourceEventId}`;
+  const eventId = `${source.service}-${source.id}`;
   const queue = getQueue(QueueName.Events);
   await queue.add(eventId, {
     eventId,
     timestamp,
     source,
-    sourceEventId,
     data,
   });
 };

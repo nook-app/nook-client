@@ -420,6 +420,18 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@flink/content@workspace:packages/content":
+  version: 0.0.0-use.local
+  resolution: "@flink/content@workspace:packages/content"
+  dependencies:
+    "@flink/common": "npm:*"
+    "@types/node": "npm:^20.10.5"
+    bullmq: "npm:^5.1.0"
+    mongodb: "npm:^6.3.0"
+    typescript: "npm:^5.3.3"
+  languageName: unknown
+  linkType: soft
+
 "@flink/dashboard@workspace:packages/dashboard":
   version: 0.0.0-use.local
   resolution: "@flink/dashboard@workspace:packages/dashboard"

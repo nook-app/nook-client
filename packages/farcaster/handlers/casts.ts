@@ -8,7 +8,7 @@ import {
   PrismaClient,
 } from "@flink/prisma/farcaster";
 import { FidHandlerArgs, MessageHandlerArgs } from "../types";
-import { EventSource } from "@flink/common/types";
+import { EventSource, EventSourceService } from "@flink/common/types";
 import { publishRawEvent } from "@flink/common/events";
 
 const prisma = new PrismaClient();
@@ -348,8 +348,11 @@ const publishEvent = async (
   };
 
   await publishRawEvent(
-    EventSource.FARCASTER_CAST_ADD,
-    cast.hash,
+    {
+      service: EventSourceService.FARCASTER_CAST_ADD,
+      id: cast.hash,
+      userId: cast.fid.toString(),
+    },
     cast.timestamp.getTime(),
     data,
   );

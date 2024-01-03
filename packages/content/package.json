@@ -1,0 +1,19 @@
+{
+  "name": "@flink/content",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "start:manual": "tsc && node dist/manual.js"
+  },
+  "dependencies": {
+    "@flink/common": "*",
+    "bullmq": "^5.1.0",
+    "mongodb": "^6.3.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.5",
+    "typescript": "^5.3.3"
+  }
+}

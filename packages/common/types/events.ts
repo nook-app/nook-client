@@ -1,14 +1,25 @@
-import { FarcasterCastData } from "./sources/farcaster";
+import { FarcasterCastRawData } from "./sources/farcaster";
 import { ObjectId } from "mongodb";
 
-export type RawEventData = FarcasterCastData;
+export type RawEventData = FarcasterCastRawData;
 
 /**
  * Supported event sources
  */
-export enum EventSource {
-  FARCASTER_CAST_ADD = "farcaster_cast_add",
+export enum EventSourceService {
+  FARCASTER_CAST_ADD = "FARCASTER_CAST_ADD",
 }
+
+export type EventSource = {
+  /** Service the event was made on */
+  service: EventSourceService;
+
+  /** ID in the source system */
+  id: string;
+
+  /** User ID in the source system */
+  userId: string;
+};
 
 /**
  * Raw event payload sent from any source service
@@ -17,11 +28,8 @@ export type RawEvent = {
   /** ID for the event */
   eventId: string;
 
-  /** Source for the event */
+  /** Source data */
   source: EventSource;
-
-  /** ID of the event in the source system */
-  sourceEventId: string;
 
   /** Timestamp for when the event occurred */
   timestamp: number;
@@ -45,4 +53,7 @@ export type Event = RawEvent & {
 
   /** Set of topics the actions for this event are relevant for */
   topics: string[];
+
+  /** Timestamp for when the event was created */
+  createdAt: Date;
 };

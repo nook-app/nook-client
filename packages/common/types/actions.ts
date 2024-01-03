@@ -1,11 +1,19 @@
 import { EventSource } from "./events";
+import { FarcasterPostData, FarcasterReplyData } from "./sources/farcaster";
 
 /**
  * Supported actions for events
  */
 export enum EventActionType {
-  POST = "POST",
-  REPLY = "REPLY",
+  FARCASTER_POST = "FARCASTER_POST",
+  FARCASTER_REPLY = "FARCASTER_REPLY",
+}
+
+/**
+ * Supported post types
+ */
+export enum PostType {
+  FARCASTER = "FARCASTER",
 }
 
 /**
@@ -15,11 +23,8 @@ export type EventActionBase = {
   /** ID for the event */
   eventId: string;
 
-  /** Source for the event */
+  /** Source data */
   source: EventSource;
-
-  /** ID of the event in the source system */
-  sourceEventId: string;
 
   /** Timestamp for when the event occurred */
   timestamp: number;
@@ -27,49 +32,33 @@ export type EventActionBase = {
   /** Identity of user who triggered the event */
   userId: string;
 
-  /** Source identity of user who triggered the event */
-  sourceUserId: string;
-
   /** Set of topics this event action is relevant for */
   topics: string[];
-};
 
-/**
- * Action: Post (i.e. Farcaster cast)
- */
-export type EventActionPostData = {
-  /** Identity of user who posted */
-  userId: string;
+  /** Set of contentIds involved in this action */
+  contentIds: string[];
 
-  /** Source identity of user who posted */
-  sourceUserId: string;
+  /** Set of userIds involved in this action */
+  userIds: string[];
 
-  /** Content of the post */
-  content: string;
+  /** Timestamp for when the event action was created */
+  createdAt: Date;
 
-  /** List of references to content embedded in the post */
-  embeds: string[]; // this will need to be contentIds and references to think Content collection
+  /** Type of action */
+  type: EventActionType;
 
-  /** Thread this post is a part of, undefined if this post is the thread root */
-  thread?: EventActionPostData;
-};
-
-/**
- * Action: Reply to a post (i.e. Farcaster cast reply)
- */
-export type EventActionReplyData = EventActionPostData & {
-  /** Parent post this is a reply to */
-  parent: EventActionPostData; // this will need to be a reference to the think Content collection
+  /** Data for the action */
+  data: FarcasterPostData | FarcasterReplyData;
 };
 
 export type EventActionPost = EventActionBase & {
-  type: EventActionType.POST;
-  data: EventActionPostData;
+  type: EventActionType.FARCASTER_POST;
+  data: FarcasterPostData;
 };
 
 export type EventActionReply = EventActionBase & {
-  type: EventActionType.REPLY;
-  data: EventActionReplyData;
+  type: EventActionType.FARCASTER_REPLY;
+  data: FarcasterReplyData;
 };
 
 export type EventAction = EventActionPost | EventActionReply;

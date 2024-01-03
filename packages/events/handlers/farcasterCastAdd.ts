@@ -3,13 +3,15 @@ import {
   Identity,
   EventAction,
   EventActionType,
-  EventActionPostData,
+  FarcasterCastRawData,
+  FarcasterPostData,
+  Content,
+  ContentType,
 } from "@flink/common/types";
 import { getFarcasterCast, getIdentitiesForFids } from "../utils";
-import { FarcasterCastData } from "@flink/common/types/sources/farcaster";
 
 export const handleFarcasterCastAdd = async (rawEvent: RawEvent) => {
-  const data: FarcasterCastData = rawEvent.data;
+  const data: FarcasterCastRawData = rawEvent.data;
 
   const thread =
     data.hash !== data.rootParentHash
@@ -20,6 +22,11 @@ export const handleFarcasterCastAdd = async (rawEvent: RawEvent) => {
     data.parentFid && data.parentHash
       ? await getFarcasterCast(data.parentFid, data.parentHash)
       : undefined;
+  if (data.parentFid && data.parentHash && !parent) {
+    throw new Error(
+      `[events] could not find parent ${data.parentFid}/${data.parentHash}`,
+    );
+  }
 
   const relevantFids = extractFidsFromCast(data);
   if (thread) {
@@ -43,6 +50,7 @@ export const handleFarcasterCastAdd = async (rawEvent: RawEvent) => {
   const userId = fidToIdentity[sourceUserId].id;
 
   const actions: EventAction[] = [];
+  const content: Content[] = [];
 
   const post = {
     ...formatCast(data, fidToIdentity),
@@ -61,32 +69,45 @@ export const handleFarcasterCastAdd = async (rawEvent: RawEvent) => {
     topics.push(`channel:${data.rootParentUrl}`);
   }
 
-  if (data.parentFid && data.parentHash) {
-    actions.push({
-      eventId: rawEvent.eventId,
-      source: rawEvent.source,
-      sourceEventId: rawEvent.sourceEventId,
-      timestamp: rawEvent.timestamp,
-      sourceUserId,
-      userId,
-      type: EventActionType.REPLY,
-      data: {
-        ...post,
-        parent: parent ? formatCast(parent, fidToIdentity) : undefined,
-      },
-      topics: [...topics, `mention:${fidToIdentity[data.parentFid].id}`],
-    });
-  } else {
-    actions.push({
-      eventId: rawEvent.eventId,
-      source: rawEvent.source,
-      sourceEventId: rawEvent.sourceEventId,
-      timestamp: rawEvent.timestamp,
-      sourceUserId,
-      userId,
-      type: EventActionType.POST,
-      data: post,
-      topics,
+  const createdAt = new Date();
+
+  const actionType = parent
+    ? EventActionType.FARCASTER_REPLY
+    : EventActionType.FARCASTER_POST;
+  const contentData = {
+    ...post,
+    parent: parent ? formatCast(parent, fidToIdentity) : undefined,
+  };
+
+  actions.push({
+    eventId: rawEvent.eventId,
+    source: rawEvent.source,
+    timestamp: rawEvent.timestamp,
+    userId,
+    type: actionType,
+    data: contentData,
+    topics,
+    userIds: [],
+    contentIds: [],
+    createdAt,
+  });
+
+  content.push({
+    contentId: post.contentId,
+    submitterId: userId,
+    creatorId: userId,
+    type: parent ? ContentType.FARCASTER_REPLY : ContentType.FARCASTER_POST,
+    data: contentData,
+    createdAt,
+  });
+
+  for (const url of contentData.embeds) {
+    content.push({
+      contentId: url,
+      submitterId: userId,
+      type: ContentType.URL,
+      url,
+      createdAt,
     });
   }
 
@@ -94,39 +115,42 @@ export const handleFarcasterCastAdd = async (rawEvent: RawEvent) => {
     sourceUserId,
     userId,
     actions,
+    content,
+    createdAt,
   };
 };
 
 const formatCast = (
-  cast: FarcasterCastData,
+  cast: FarcasterCastRawData,
   fidToIdentity: Record<string, Identity>,
-): EventActionPostData => {
-  let content = cast.text;
-  for (let i = cast.mentions.length - 1; i >= 0; i--) {
-    const mention = cast.mentions[i].mention;
-    const position = parseInt(cast.mentions[i].mentionPosition);
-    content = `${content.slice(0, position)}{{user|${
-      fidToIdentity[mention].id
-    }}}${content.slice(position)}`;
-  }
-
+): FarcasterPostData => {
   const embeds = cast.urls
     .map((url) => url.url)
-    .concat(cast.casts.map((cast) => `farcaster://cast/${cast.hash}`));
+    .concat(cast.casts.map(castToContentId));
 
   return {
-    sourceUserId: cast.fid,
+    contentId: castToContentId(cast),
+    fid: cast.fid,
+    hash: cast.hash,
     userId: fidToIdentity[cast.fid].id,
-    content,
+    mentions: cast.mentions.map(({ mention, mentionPosition }) => ({
+      userId: fidToIdentity[mention].id,
+      position: parseInt(mentionPosition),
+    })),
     embeds,
+    channel: cast.rootParentUrl,
   };
 };
 
-const extractFidsFromCast = (cast: FarcasterCastData): string[] => {
+const extractFidsFromCast = (cast: FarcasterCastRawData): string[] => {
   return [
     cast.fid,
     cast.parentFid,
     cast.rootParentFid,
     ...cast.mentions.map((mention) => mention.mention),
   ].filter(Boolean);
+};
+
+const castToContentId = ({ fid, hash }: { fid: string; hash: string }) => {
+  return `farcaster://cast/${fid}/${hash}`;
 };
