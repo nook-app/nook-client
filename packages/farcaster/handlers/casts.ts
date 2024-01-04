@@ -6,7 +6,7 @@ import {
   FarcasterCastEmbedUrl,
   FarcasterCastMention,
   PrismaClient,
-} from "@flink/prisma/farcaster";
+} from "@flink/common/prisma/farcaster";
 import { FidHandlerArgs, MessageHandlerArgs } from "../types";
 import { EventSource, EventSourceService } from "@flink/common/types";
 import { publishRawEvent } from "@flink/common/events";

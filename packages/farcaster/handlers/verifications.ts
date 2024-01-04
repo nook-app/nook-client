@@ -1,4 +1,7 @@
-import { PrismaClient, FarcasterVerification } from "@flink/prisma/farcaster";
+import {
+  PrismaClient,
+  FarcasterVerification,
+} from "@flink/common/prisma/farcaster";
 import { bufferToHex, timestampToDate } from "../utils";
 import { FidHandlerArgs, MessageHandlerArgs } from "../types";
 import { Message } from "@farcaster/hub-nodejs";

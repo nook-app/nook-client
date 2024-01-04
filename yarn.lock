@@ -83,36 +83,36 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@bull-board/api@npm:5.10.2, @bull-board/api@npm:^5.10.2":
-  version: 5.10.2
-  resolution: "@bull-board/api@npm:5.10.2"
+"@bull-board/api@npm:5.10.3, @bull-board/api@npm:^5.10.2":
+  version: 5.10.3
+  resolution: "@bull-board/api@npm:5.10.3"
   dependencies:
     redis-info: "npm:^3.0.8"
   peerDependencies:
-    "@bull-board/ui": 5.10.2
-  checksum: 78ff22f44323b8d424a8010e9c2eb1302e2958973ac11f84d944c7c45447cd177223cd3fde034a2c167d9a5c8f56b5f6cf326cc747a7e807ee1beac58cae33e9
+    "@bull-board/ui": 5.10.3
+  checksum: 1461312aea846777b08edfedcf0de75b1c818d505bd4b61923e96fd607646f8fe4034dddd760e7e2daea5d5eb112af986a237561a95eb1307b71975fc6c74d1e
   languageName: node
   linkType: hard
 
 "@bull-board/fastify@npm:^5.10.2":
-  version: 5.10.2
-  resolution: "@bull-board/fastify@npm:5.10.2"
+  version: 5.10.3
+  resolution: "@bull-board/fastify@npm:5.10.3"
   dependencies:
-    "@bull-board/api": "npm:5.10.2"
-    "@bull-board/ui": "npm:5.10.2"
+    "@bull-board/api": "npm:5.10.3"
+    "@bull-board/ui": "npm:5.10.3"
     "@fastify/static": "npm:^6.11.2"
     "@fastify/view": "npm:^8.1.0"
     ejs: "npm:^3.1.9"
-  checksum: ddbc8988fa6b24170f6ffd8131bc095fd2b760fdadc8bde28cadcc53c86c7fa174e635369ec903fd3a71c32e8f932dcc725fa09cad06cf9d6536ea5a536c2474
+  checksum: 98b9a6085ff0bcdb69b399fca75beafb93337831745e5c748a11380242182f0b6385e9f0475da80b2d8cfa4ddfac3f792f61f8fbe21e993c411a24e50119d0af
   languageName: node
   linkType: hard
 
-"@bull-board/ui@npm:5.10.2, @bull-board/ui@npm:^5.10.2":
-  version: 5.10.2
-  resolution: "@bull-board/ui@npm:5.10.2"
+"@bull-board/ui@npm:5.10.3, @bull-board/ui@npm:^5.10.2":
+  version: 5.10.3
+  resolution: "@bull-board/ui@npm:5.10.3"
   dependencies:
-    "@bull-board/api": "npm:5.10.2"
-  checksum: ee7d5dcb0768b1a8ff6fc6d641f5ee318d3e9197109ef4500b4379d804923920834046e6b7f7d432a34dd274e4d6d74e12f3c481fdbe1d72ad690bd0ab780a10
+    "@bull-board/api": "npm:5.10.3"
+  checksum: 48e09a2af7a0ee8362124d642174c13bba14ee7eb64d833f7059ba54e404584848dd47f31987cebbf2bb2263a1cd69149bc6a8279144bf805b33f318b2912705
   languageName: node
   linkType: hard
 
@@ -295,9 +295,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@farcaster/core@npm:0.13.3":
-  version: 0.13.3
-  resolution: "@farcaster/core@npm:0.13.3"
+"@farcaster/core@npm:0.13.4":
+  version: 0.13.4
+  resolution: "@farcaster/core@npm:0.13.4"
   dependencies:
     "@noble/curves": "npm:^1.0.0"
     "@noble/hashes": "npm:^1.3.0"
@@ -305,7 +305,7 @@ __metadata:
     neverthrow: "npm:^6.0.0"
     ref-napi: "npm:^3.0.3"
     viem: "npm:^1.12.2"
-  checksum: 0dfc757f363c4763699ffb0ad6c8c623bccc04740a98badfbeb23eeda8aea5fe910fce2944a3b2162e10495bf7dac0f5bfed6d345108d381c5e8eb9846ed6652
+  checksum: 63115e52ed65c494e123e61ed2ccc842b6480f54af907b2ad77245d6150d57dbd9bfa8da080e0427e632c91da195ba281a6595a17ca4f5ce8b5e7cbc8c4837fc
   languageName: node
   linkType: hard
 
@@ -319,14 +319,14 @@ __metadata:
   linkType: hard
 
 "@farcaster/hub-nodejs@npm:^0.10.19, @farcaster/hub-nodejs@npm:^0.10.5":
-  version: 0.10.19
-  resolution: "@farcaster/hub-nodejs@npm:0.10.19"
+  version: 0.10.20
+  resolution: "@farcaster/hub-nodejs@npm:0.10.20"
   dependencies:
-    "@farcaster/core": "npm:0.13.3"
+    "@farcaster/core": "npm:0.13.4"
     "@grpc/grpc-js": "npm:~1.8.21"
     "@noble/hashes": "npm:^1.3.0"
     neverthrow: "npm:^6.0.0"
-  checksum: 77b313e144b7315baba329f74695f3b5389f96fcc0b00e9367aff8b2c9e005f7ba888a50a50a723ec7fdcf25826bff5f9a19e5c9f0281ed7f212d0183f4f8b5f
+  checksum: 2b03cb62fb0557cc9589a9dfa2cfa3b0427bbb769ad04cb7aeb160d9ac475bed33584aabfba608a4840e4f1f6d5bc918c210241c2d29c6cee4820ebeaed0cee2
   languageName: node
   linkType: hard
 
@@ -413,9 +413,11 @@ __metadata:
   resolution: "@flink/common@workspace:packages/common"
   dependencies:
     "@farcaster/hub-nodejs": "npm:^0.10.19"
+    "@prisma/client": "npm:5.7.1"
     "@types/node": "npm:^20.10.5"
     bullmq: "npm:^5.1.0"
     mongodb: "npm:^6.3.0"
+    prisma: "npm:5.7.1"
     typescript: "npm:^5.3.3"
   languageName: unknown
   linkType: soft
@@ -467,7 +469,6 @@ __metadata:
     "@farcaster/fishery": "npm:^2.2.3"
     "@farcaster/hub-nodejs": "npm:^0.10.5"
     "@flink/common": "npm:*"
-    "@flink/prisma": "npm:*"
     "@types/node": "npm:^20.10.5"
     bullmq: "npm:^5.1.0"
     ethers: "npm:^6.9.1"
@@ -481,21 +482,8 @@ __metadata:
   resolution: "@flink/identity@workspace:packages/identity"
   dependencies:
     "@farcaster/hub-nodejs": "npm:^0.10.19"
-    "@flink/prisma": "npm:*"
     "@types/node": "npm:^20.10.5"
     fastify: "npm:^4.25.2"
-    typescript: "npm:^5.3.3"
-  languageName: unknown
-  linkType: soft
-
-"@flink/prisma@npm:*, @flink/prisma@workspace:packages/prisma":
-  version: 0.0.0-use.local
-  resolution: "@flink/prisma@workspace:packages/prisma"
-  dependencies:
-    "@prisma/client": "npm:^5.7.1"
-    "@types/node": "npm:^20.10.5"
-    bullmq: "npm:^5.1.0"
-    prisma: "npm:^5.7.1"
     typescript: "npm:^5.3.3"
   languageName: unknown
   linkType: soft
@@ -664,7 +652,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@prisma/client@npm:^5.7.1":
+"@prisma/client@npm:5.7.1":
   version: 5.7.1
   resolution: "@prisma/client@npm:5.7.1"
   peerDependencies:
@@ -831,11 +819,11 @@ __metadata:
   linkType: hard
 
 "@types/node@npm:>=12.12.47, @types/node@npm:>=13.7.0, @types/node@npm:^20.10.5":
-  version: 20.10.5
-  resolution: "@types/node@npm:20.10.5"
+  version: 20.10.6
+  resolution: "@types/node@npm:20.10.6"
   dependencies:
     undici-types: "npm:~5.26.4"
-  checksum: be30609aae0bfe492097815f166ccc07f465220cb604647fa4e5ec05a1d16c012a41b82b5f11ecfe2485cbb479d4d20384b95b809ca0bcff6d94d5bbafa645bb
+  checksum: 6692ccfa8552ef60c4069fda3c8de726c23e8d403cdf788e3c7efa769987e80fbda5f02723dd857f9de7df24a5fa40b3ed4580ec3c5cbac04eba44cf7b2ab1dc
   languageName: node
   linkType: hard
 
@@ -1079,8 +1067,8 @@ __metadata:
   linkType: hard
 
 "bullmq@npm:^5.1.0":
-  version: 5.1.0
-  resolution: "bullmq@npm:5.1.0"
+  version: 5.1.1
+  resolution: "bullmq@npm:5.1.1"
   dependencies:
     cron-parser: "npm:^4.6.0"
     glob: "npm:^8.0.3"
@@ -1091,7 +1079,7 @@ __metadata:
     semver: "npm:^7.5.4"
     tslib: "npm:^2.0.0"
     uuid: "npm:^9.0.0"
-  checksum: 7ebafc0a991e498c94fd1ed652ae24ea19af06cabf463a57ee4ef83ae16e19c4626e5c025457f1083d894e6c4316cc9134bc6701551fe94297b7a404997be41a
+  checksum: f93d56a0647095c482ce55e68b7d4b78b9a9a9071ecae3efe382b1b9a913ecc0e33681bb8260c42613d128589c9ca44d75bb501d3559f7aba4ef53d8171e3046
   languageName: node
   linkType: hard
 
@@ -1336,8 +1324,8 @@ __metadata:
   linkType: hard
 
 "ethers@npm:^6.9.1":
-  version: 6.9.1
-  resolution: "ethers@npm:6.9.1"
+  version: 6.9.2
+  resolution: "ethers@npm:6.9.2"
   dependencies:
     "@adraffy/ens-normalize": "npm:1.10.0"
     "@noble/curves": "npm:1.2.0"
@@ -1346,7 +1334,7 @@ __metadata:
     aes-js: "npm:4.0.0-beta.5"
     tslib: "npm:2.4.0"
     ws: "npm:8.5.0"
-  checksum: eaa1701abbdbafb6bad299d0d11167b60eb5217d8331752a3c4c6865a91f7a617a1a35aa54844ca63b7f728b50bfe13b62704e6c76daa46d63775c6376844262
+  checksum: 0e3e59c933375f1ea3704e9b2c2b2449eef4306ae0acc78563b65de75316838b1c0d13f1cdb3f0fd014bf8aadcf5b87d7d06da34665624ce8324bf2e98f3f522
   languageName: node
   linkType: hard
 
@@ -2188,14 +2176,14 @@ __metadata:
   linkType: hard
 
 "msgpackr@npm:^1.6.2":
-  version: 1.10.0
-  resolution: "msgpackr@npm:1.10.0"
+  version: 1.10.1
+  resolution: "msgpackr@npm:1.10.1"
   dependencies:
     msgpackr-extract: "npm:^3.0.2"
   dependenciesMeta:
     msgpackr-extract:
       optional: true
-  checksum: fcc5b8c6d741a6dfb84de9e1cb2e1ff87a886eebb146277e556b33238d94590e7b71489cef27f991772de8c68dd7de0f735109671772d396b7c71382662afc44
+  checksum: 2e6ed91af89ec15d1e5595c5b837a4adcbb185b0fbd4773d728ced89ab4abbdd3401f6777b193d487d9807e1cb0cf3da1ba9a0bd2d5a553e22355cea84a36bab
   languageName: node
   linkType: hard
 
@@ -2371,7 +2359,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"prisma@npm:^5.7.1":
+"prisma@npm:5.7.1":
   version: 5.7.1
   resolution: "prisma@npm:5.7.1"
   dependencies:
@@ -2917,8 +2905,8 @@ __metadata:
   linkType: hard
 
 "viem@npm:^1.12.2":
-  version: 1.21.1
-  resolution: "viem@npm:1.21.1"
+  version: 1.21.4
+  resolution: "viem@npm:1.21.4"
   dependencies:
     "@adraffy/ens-normalize": "npm:1.10.0"
     "@noble/curves": "npm:1.2.0"
@@ -2933,7 +2921,7 @@ __metadata:
   peerDependenciesMeta:
     typescript:
       optional: true
-  checksum: e94bd6671560d7453f563c2eb0c8afd0b5985d25318be708fb09040b3416db714350d7c9e63c379132a21371ece6c23d340b2e2bdf282b4f4ee40bf69baf7706
+  checksum: 8b29c790181e44c4c95b9ffed1a8c1b6c2396eb949b95697cc390ca8c49d88ef9e2cd56bd4800b90a9bbc93681ae8d63045fc6fa06e00d84f532bef77967e751
   languageName: node
   linkType: hard
 

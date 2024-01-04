@@ -13,11 +13,14 @@ export type ContentBase = {
   /** Identity of user who first submitted the content */
   submitterId: string;
 
-  /** Source identity of user who submitted the content */
+  /** Identity of user who created the content */
   creatorId?: string;
 
   /** Date content was created */
   createdAt: Date;
+
+  /** Type of content */
+  type: ContentType;
 };
 
 export type FarcasterPostContent = ContentBase & {
@@ -30,9 +33,4 @@ export type FarcasterReplyContent = ContentBase & {
   data: FarcasterReplyData;
 };
 
-export type URLContent = ContentBase & {
-  type: ContentType.URL;
-  url: string;
-};
-
-export type Content = FarcasterPostContent | FarcasterReplyContent | URLContent;
+export type Content = FarcasterPostContent | FarcasterReplyContent;

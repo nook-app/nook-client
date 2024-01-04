@@ -4,21 +4,28 @@
   "private": true,
   "main": "./dist/index.js",
   "scripts": {
-    "build": "tsc"
+    "build": "yarn generate:prisma && tsc && cp -r prisma/generated dist/prisma/generated",
+    "generate:prisma": "npx prisma generate --schema ./prisma/schemas/farcaster.prisma && npx prisma generate --schema ./prisma/schemas/identity.prisma",
+    "push:farcaster": "npx prisma db push --schema ./prisma/schemas/farcaster.prisma",
+    "push:identity": "npx prisma db push --schema ./prisma/schemas/identity.prisma"
   },
   "exports": {
     "./queues": "./dist/queues/index.js",
     "./types": "./dist/types/index.js",
     "./events": "./dist/events/index.js",
-    "./identities": "./dist/identities/index.js"
+    "./identities": "./dist/identities/index.js",
+    "./prisma/farcaster": "./dist/prisma/farcaster.js",
+    "./prisma/identity": "./dist/prisma/identity.js"
   },
   "dependencies": {
     "@farcaster/hub-nodejs": "^0.10.19",
+    "@prisma/client": "5.7.1",
     "bullmq": "^5.1.0",
     "mongodb": "^6.3.0"
   },
   "devDependencies": {
     "@types/node": "^20.10.5",
+    "prisma": "5.7.1",
     "typescript": "^5.3.3"
   }
 }

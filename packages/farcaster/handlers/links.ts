@@ -1,5 +1,5 @@
 import { Message } from "@farcaster/hub-nodejs";
-import { PrismaClient, FarcasterLink } from "@flink/prisma/farcaster";
+import { PrismaClient, FarcasterLink } from "@flink/common/prisma/farcaster";
 import { timestampToDate } from "../utils";
 import { FidHandlerArgs, MessageHandlerArgs } from "../types";
 

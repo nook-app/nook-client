@@ -4,7 +4,7 @@ import {
   getSSLHubRpcClient,
 } from "@farcaster/hub-nodejs";
 import { QueueName, getQueue } from "@flink/common/queues";
-import { PrismaClient } from "@flink/prisma/farcaster";
+import { PrismaClient } from "@flink/common/prisma/farcaster";
 
 const prisma = new PrismaClient();
 

@@ -1,5 +1,5 @@
 import { QueueName, getQueue } from "@flink/common/queues";
-import { getEventsHandler } from ".";
+import { getEventsHandler } from "./handler";
 
 const run = async () => {
   const queue = getQueue(QueueName.Events);

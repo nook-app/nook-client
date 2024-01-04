@@ -1,5 +1,5 @@
 import fastify, { FastifyRequest } from "fastify";
-import { PrismaClient } from "@flink/prisma/identity";
+import { PrismaClient } from "@flink/common/prisma/identity";
 import { SocialPlatform } from "./types";
 import { IdentitiesRequest, IdentityRequestType } from "@flink/common/types";
 

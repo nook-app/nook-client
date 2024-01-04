@@ -1,6 +1,6 @@
 import { QueueName, getWorker } from "@flink/common/queues";
 import { MongoClient } from "mongodb";
-import { Content } from "@flink/common/types";
+import { ContentBase } from "@flink/common/types";
 import { Job } from "bullmq";
 
 const client = new MongoClient(process.env.EVENT_DATABASE_URL);
@@ -10,7 +10,7 @@ export const getContentHandler = async () => {
   const db = client.db("flink");
   const contentCollection = db.collection("content");
 
-  return async (job: Job<Content>) => {
+  return async (job: Job<ContentBase>) => {
     const content = job.data;
 
     await contentCollection.findOneAndUpdate(

@@ -1,5 +1,5 @@
 import fastify, { FastifyRequest } from "fastify";
-import { PrismaClient } from "@flink/prisma/farcaster";
+import { PrismaClient } from "@flink/common/prisma/farcaster";
 import { getSSLHubRpcClient } from "@farcaster/hub-nodejs";
 import { hexToBuffer } from "./utils";
 import { handleCastAdd } from "./handlers/casts";
@@ -28,23 +28,41 @@ const run = async () => {
     },
   });
 
-  server.get(
-    "/cast/:fid/:hash",
+  server.post(
+    "/casts",
     {
       schema: {
-        params: {
-          fid: { type: "string" },
-          hash: { type: "string" },
+        body: {
+          type: "object",
+          required: ["ids"],
+          properties: {
+            ids: {
+              type: "array",
+              items: {
+                type: "object",
+                required: ["fid", "hash"],
+                properties: {
+                  fid: { type: "string" },
+                  hash: { type: "string" },
+                },
+              },
+            },
+          },
         },
       },
     },
     async (
-      request: FastifyRequest<{ Params: { fid: string; hash: string } }>,
+      request: FastifyRequest<{
+        Body: { ids: { fid: string; hash: string }[] };
+      }>,
       reply,
     ) => {
-      const cast = await prisma.farcasterCast.findUnique({
+      const existingCasts = await prisma.farcasterCast.findMany({
         where: {
-          hash: request.params.hash,
+          OR: request.body.ids.map(({ fid, hash }) => ({
+            fid: BigInt(fid),
+            hash,
+          })),
         },
         include: {
           mentions: true,
@@ -53,22 +71,47 @@ const run = async () => {
         },
       });
 
-      if (cast) {
-        reply.send({
-          cast: { ...cast, timestamp: cast.timestamp.getTime() },
-        });
-      }
+      const existingHashes = existingCasts.map((cast) => cast.hash);
+      const missingCasts = request.body.ids.filter(
+        ({ hash }) => !existingHashes.includes(hash),
+      );
 
-      const message = await client.getCast({
-        fid: parseInt(request.params.fid),
-        hash: hexToBuffer(request.params.hash),
+      const newCasts = await Promise.all(
+        missingCasts.map(async ({ fid, hash }) => {
+          const message = await client.getCast({
+            fid: parseInt(fid),
+            hash: hexToBuffer(hash),
+          });
+
+          if (message.isErr()) {
+            return undefined;
+          }
+
+          return await handleCastAdd({ message: message.value, client });
+        }),
+      );
+
+      const hashToCast = [...existingCasts, ...newCasts]
+        .filter(Boolean)
+        .reduce((acc, cast) => {
+          acc[`${cast.fid}-${cast.hash}`] = cast;
+          return acc;
+        }, {});
+
+      const casts = request.body.ids
+        .map(({ fid, hash }) => hashToCast[`${fid}-${hash}`])
+        .map((cast) =>
+          cast
+            ? {
+                ...cast,
+                timestamp: cast.timestamp.getTime(),
+              }
+            : undefined,
+        );
+
+      reply.send({
+        casts,
       });
-
-      if (message.isErr()) {
-        return reply.status(404).send();
-      }
-
-      return await handleCastAdd({ message: message.value, client });
     },
   );
 

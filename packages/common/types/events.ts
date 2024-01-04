@@ -41,7 +41,7 @@ export type RawEvent = {
 /**
  * Event object after being processed by the event service
  */
-export type Event = RawEvent & {
+export type UserEvent = RawEvent & {
   /** Identity of user who triggered the event */
   userId: string;
 
@@ -50,9 +50,6 @@ export type Event = RawEvent & {
 
   /** List of references to event actions parsed from this event */
   actions: ObjectId[];
-
-  /** Set of topics the actions for this event are relevant for */
-  topics: string[];
 
   /** Timestamp for when the event was created */
   createdAt: Date;

@@ -21,18 +21,16 @@ export type FarcasterCastRawData = {
 };
 
 export type FarcasterPostData = {
-  /** Content ID of the post */
+  /** ID of the post */
   contentId: string;
-
-  /** Fid of user who posted */
-  fid: string;
-
-  /** Hash of post */
-  hash: string;
 
   /** Identity of user who posted */
   userId: string;
 
+  /* Text content of the post */
+  text: string;
+
+  /** ID and position of mentions */
   mentions: {
     userId: string;
     position: number;
@@ -42,7 +40,7 @@ export type FarcasterPostData = {
   embeds: string[];
 
   /** Channel the post was made in */
-  channel?: string;
+  channelId?: string;
 
   /** Root post */
   rootParent?: FarcasterPostData;

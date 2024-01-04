@@ -7,6 +7,8 @@ import {
   FarcasterPostData,
   Content,
   ContentType,
+  Topic,
+  TopicType,
 } from "@flink/common/types";
 import { getFarcasterCast, getIdentitiesForFids } from "../utils";
 
@@ -57,27 +59,54 @@ export const handleFarcasterCastAdd = async (rawEvent: RawEvent) => {
     thread: thread ? formatCast(thread, fidToIdentity) : undefined,
   };
 
-  const topics = [
-    `user:${userId}`,
-    `thread:${rawEvent.source}-${data.rootParentHash}`,
-    ...data.mentions.map(
-      ({ mention }) => `mention:${fidToIdentity[mention].id}`,
-    ),
-  ];
-
-  if (data.rootParentUrl) {
-    topics.push(`channel:${data.rootParentUrl}`);
-  }
-
   const createdAt = new Date();
 
-  const actionType = parent
-    ? EventActionType.FARCASTER_REPLY
-    : EventActionType.FARCASTER_POST;
+  const actionType = parent ? EventActionType.REPLY : EventActionType.POST;
   const contentData = {
     ...post,
     parent: parent ? formatCast(parent, fidToIdentity) : undefined,
   };
+
+  const topics: Topic[] = [
+    {
+      type: TopicType.USER,
+      id: userId,
+    },
+    {
+      type: TopicType.ROOT_PARENT,
+      id: `farcaster://cast/${data.rootParentFid}/${data.rootParentHash}`,
+    },
+    {
+      type: TopicType.ROOT_PARENT_USER,
+      id: fidToIdentity[data.rootParentFid].id,
+    },
+    ...contentData.mentions.map(({ userId }) => ({
+      type: TopicType.MENTION,
+      id: userId,
+    })),
+    ...contentData.embeds.map((embedId) => ({
+      type: TopicType.EMBED,
+      id: embedId,
+    })),
+  ];
+
+  if (data.parentFid && data.parentHash) {
+    topics.push({
+      type: TopicType.PARENT,
+      id: `farcaster://cast/${data.parentFid}/${data.parentHash}`,
+    });
+    topics.push({
+      type: TopicType.PARENT_USER,
+      id: fidToIdentity[data.parentFid].id,
+    });
+  }
+
+  if (data.rootParentUrl) {
+    topics.push({
+      type: TopicType.CHANNEL,
+      id: data.rootParentUrl,
+    });
+  }
 
   actions.push({
     eventId: rawEvent.eventId,
@@ -101,16 +130,6 @@ export const handleFarcasterCastAdd = async (rawEvent: RawEvent) => {
     createdAt,
   });
 
-  for (const url of contentData.embeds) {
-    content.push({
-      contentId: url,
-      submitterId: userId,
-      type: ContentType.URL,
-      url,
-      createdAt,
-    });
-  }
-
   return {
     sourceUserId,
     userId,
@@ -130,15 +149,14 @@ const formatCast = (
 
   return {
     contentId: castToContentId(cast),
-    fid: cast.fid,
-    hash: cast.hash,
+    text: cast.text,
     userId: fidToIdentity[cast.fid].id,
     mentions: cast.mentions.map(({ mention, mentionPosition }) => ({
       userId: fidToIdentity[mention].id,
       position: parseInt(mentionPosition),
     })),
     embeds,
-    channel: cast.rootParentUrl,
+    channelId: cast.rootParentUrl,
   };
 };
 

@@ -2,7 +2,7 @@ import {
   PrismaClient,
   FarcasterUsernameProof,
   FarcasterUser,
-} from "@flink/prisma/farcaster";
+} from "@flink/common/prisma/farcaster";
 import { bufferToHex, timestampToDate } from "../utils";
 import { FidHandlerArgs, MessageHandlerArgs } from "../types";
 

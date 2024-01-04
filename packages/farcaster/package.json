@@ -13,7 +13,6 @@
     "@farcaster/fishery": "^2.2.3",
     "@farcaster/hub-nodejs": "^0.10.5",
     "@flink/common": "*",
-    "@flink/prisma": "*",
     "bullmq": "^5.1.0",
     "ethers": "^6.9.1",
     "fastify": "^4.25.2"
