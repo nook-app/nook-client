@@ -1,6 +1,5 @@
 import { getIdentitiesForFids } from "../identity";
 import {
-  ContentType,
   FarcasterCastRawData,
   FarcasterPostData,
   FarcasterReplyData,
@@ -167,7 +166,9 @@ const getExternalCastData = async (cast: FarcasterCastRawData) => {
     });
   }
 
-  const casts = await getFarcasterCastsByFidHashes(castRequests);
+  const casts = (await getFarcasterCastsByFidHashes(castRequests)).filter(
+    Boolean,
+  );
 
   const relevantFids = extractFidsFromCast(cast);
   relevantFids.push(...casts.flatMap(extractFidsFromCast));
