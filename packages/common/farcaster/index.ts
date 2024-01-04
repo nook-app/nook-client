@@ -79,7 +79,9 @@ export const toFarcasterURI = (fid: string, hash: string) => {
 };
 
 export const generateFarcasterPost = async (cast: FarcasterCastRawData) => {
-  const { thread, parent, identities } = await getExternalCastData(cast);
+  const identities = await getIdentitiesForFids([
+    ...new Set(extractFidsFromCast(cast)),
+  ]);
 
   const fidToIdentity = identities.reduce(
     (acc, identity) => {
@@ -92,7 +94,6 @@ export const generateFarcasterPost = async (cast: FarcasterCastRawData) => {
   return {
     ...formatCast(cast, fidToIdentity),
     rootParentId: toFarcasterURI(cast.rootParentFid, cast.rootParentHash),
-    rootParent: thread ? formatCast(thread, fidToIdentity) : undefined,
   } as FarcasterPostData;
 };
 
@@ -168,8 +169,8 @@ const getExternalCastData = async (cast: FarcasterCastRawData) => {
   const identities = await getIdentitiesForFids([...new Set(relevantFids)]);
 
   return {
-    thread: casts.find((cast) => cast.hash === cast.rootParentHash),
-    parent: casts.find((cast) => cast.hash === cast.parentHash),
+    thread: casts.find((c) => c.hash === cast.rootParentHash),
+    parent: casts.find((c) => c.hash === cast.parentHash),
     identities,
   };
 };
