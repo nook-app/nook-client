@@ -1,5 +1,6 @@
 import { getIdentitiesForFids } from "../identity";
 import {
+  ContentType,
   FarcasterCastRawData,
   FarcasterPostData,
   FarcasterReplyData,
@@ -34,6 +35,7 @@ export const getFarcasterCastByFidHash = async (
 export const getFarcasterCastsByURIs = async (
   uris: string[],
 ): Promise<FarcasterCastRawData[] | undefined> => {
+  if (uris.length === 0) return [];
   const casts = await getFarcasterCasts(uris, null);
   if (!casts) {
     return undefined;
@@ -44,6 +46,7 @@ export const getFarcasterCastsByURIs = async (
 export const getFarcasterCastsByFidHashes = async (
   fidHashes: FidHash[],
 ): Promise<FarcasterCastRawData[] | undefined> => {
+  if (fidHashes.length === 0) return [];
   const casts = await getFarcasterCasts(null, fidHashes);
   if (!casts) {
     return undefined;
@@ -84,9 +87,7 @@ export const toFarcasterURI = (fid: string, hash: string) => {
   return `farcaster://cast/${fid}/${hash}`;
 };
 
-export const generateFarcasterContent = async (
-  cast: FarcasterCastRawData,
-): Promise<FarcasterPostData | FarcasterReplyData> => {
+export const generateFarcasterPost = async (cast: FarcasterCastRawData) => {
   const { thread, parent, identities } = await getExternalCastData(cast);
 
   const fidToIdentity = identities.reduce(
@@ -101,11 +102,27 @@ export const generateFarcasterContent = async (
     ...formatCast(cast, fidToIdentity),
     rootParentId: toFarcasterURI(cast.rootParentFid, cast.rootParentHash),
     rootParent: thread ? formatCast(thread, fidToIdentity) : undefined,
-    parentId: cast.parentHash
-      ? toFarcasterURI(cast.parentFid, cast.parentHash)
-      : undefined,
+  } as FarcasterPostData;
+};
+
+export const generateFarcasterReply = async (cast: FarcasterCastRawData) => {
+  const { thread, parent, identities } = await getExternalCastData(cast);
+
+  const fidToIdentity = identities.reduce(
+    (acc, identity) => {
+      acc[identity.socialAccounts[0].platformId] = identity;
+      return acc;
+    },
+    {} as Record<string, Identity>,
+  );
+
+  return {
+    ...formatCast(cast, fidToIdentity),
+    rootParentId: toFarcasterURI(cast.rootParentFid, cast.rootParentHash),
+    rootParent: thread ? formatCast(thread, fidToIdentity) : undefined,
+    parentId: toFarcasterURI(cast.parentFid, cast.parentHash),
     parent: parent ? formatCast(parent, fidToIdentity) : undefined,
-  };
+  } as FarcasterReplyData;
 };
 
 const formatCast = (

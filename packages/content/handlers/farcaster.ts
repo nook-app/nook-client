@@ -1,6 +1,7 @@
 import { Content, ContentBase, ContentType } from "@flink/common/types";
 import {
-  generateFarcasterContent,
+  generateFarcasterPost,
+  generateFarcasterReply,
   getFarcasterCastByURI,
 } from "@flink/common/farcaster";
 
@@ -8,9 +9,8 @@ export const handleFarcasterContent = async (
   content: ContentBase,
 ): Promise<Content> => {
   const cast = await getFarcasterCastByURI(content.contentId);
-  const data = await generateFarcasterContent(cast);
-
-  if ("parentId" in data) {
+  if (cast.parentHash) {
+    const data = await generateFarcasterReply(cast);
     return {
       ...content,
       type: ContentType.FARCASTER_REPLY,
@@ -21,6 +21,6 @@ export const handleFarcasterContent = async (
   return {
     ...content,
     type: ContentType.FARCASTER_POST,
-    data,
+    data: await generateFarcasterPost(cast),
   };
 };

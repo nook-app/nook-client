@@ -3,7 +3,7 @@ import { getEventsHandler } from "./handler";
 
 const run = async () => {
   const queue = getQueue(QueueName.Events);
-  console.log(process.argv[2]);
+  console.log(`Running for event ${process.argv[2]}`);
   const job = await queue.getJob(process.argv[2]);
   if (job) {
     const handler = await getEventsHandler();

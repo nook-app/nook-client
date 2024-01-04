@@ -10,13 +10,22 @@ import {
   ContentType,
   ContentBase,
 } from "@flink/common/types";
-import { generateFarcasterContent } from "@flink/common/farcaster";
+import {
+  generateFarcasterReply,
+  generateFarcasterPost,
+} from "@flink/common/farcaster";
 
 export const handleFarcasterCastAdd = async (rawEvent: RawEvent) => {
-  const data = await generateFarcasterContent(rawEvent.data);
+  if (rawEvent.data.parentHash) {
+    return await handleCastReply(rawEvent);
+  }
+  return await handleCastPost(rawEvent);
+};
+
+const handleCastPost = async (rawEvent: RawEvent) => {
+  const data = await generateFarcasterPost(rawEvent.data);
 
   const actions: EventAction[] = [];
-  const content: Content[] = [];
 
   const action = {
     eventId: rawEvent.eventId,
@@ -27,20 +36,32 @@ export const handleFarcasterCastAdd = async (rawEvent: RawEvent) => {
     userIds: [
       data.userId,
       data.rootParentUserId,
-      ...("parentUserId" in data && data.parentUserId
-        ? [data.parentUserId]
-        : []),
       ...data.mentions.map(({ userId }) => userId),
     ],
     contentIds: [
       data.contentId,
       data.rootParentId,
-      ...("parentId" in data && data.parentId ? [data.parentId] : []),
       ...data.embeds,
       data.channelId,
     ],
     createdAt: new Date(),
   };
+
+  actions.push({
+    ...action,
+    type: EventActionType.POST,
+    data,
+  });
+
+  const content: Content[] = [
+    {
+      contentId: data.contentId,
+      type: ContentType.FARCASTER_POST,
+      submitterId: data.userId,
+      data,
+      createdAt: action.createdAt,
+    },
+  ];
 
   const additionalContent: ContentBase[] = [
     {
@@ -55,38 +76,75 @@ export const handleFarcasterCastAdd = async (rawEvent: RawEvent) => {
     })),
   ];
 
-  if ("parentId" in data) {
-    actions.push({
-      ...action,
-      type: EventActionType.REPLY,
-      data,
-    });
-    content.push({
+  return {
+    userId: action.userId,
+    actions,
+    content,
+    additionalContent,
+    createdAt: action.createdAt,
+  };
+};
+
+export const handleCastReply = async (rawEvent: RawEvent) => {
+  const data = await generateFarcasterReply(rawEvent.data);
+
+  const actions: EventAction[] = [];
+
+  const action = {
+    eventId: rawEvent.eventId,
+    source: rawEvent.source,
+    timestamp: rawEvent.timestamp,
+    userId: data.userId,
+    topics: generateTopics(data),
+    userIds: [
+      data.userId,
+      data.rootParentUserId,
+      data.parentUserId,
+      ...data.mentions.map(({ userId }) => userId),
+    ],
+    contentIds: [
+      data.contentId,
+      data.rootParentId,
+      data.parentId,
+      ...data.embeds,
+      data.channelId,
+    ],
+    createdAt: new Date(),
+  };
+
+  actions.push({
+    ...action,
+    type: EventActionType.REPLY,
+    data,
+  });
+
+  const content: Content[] = [
+    {
       contentId: data.contentId,
       type: ContentType.FARCASTER_REPLY,
       submitterId: data.userId,
       data,
       createdAt: action.createdAt,
-    });
-    additionalContent.push({
+    },
+  ];
+
+  const additionalContent: ContentBase[] = [
+    {
+      contentId: data.rootParentId,
+      submitterId: data.rootParentUserId,
+      createdAt: action.createdAt,
+    },
+    {
       contentId: data.parentId,
       submitterId: data.parentUserId,
       createdAt: action.createdAt,
-    });
-  } else {
-    actions.push({
-      ...action,
-      type: EventActionType.POST,
-      data,
-    });
-    content.push({
-      contentId: data.contentId,
-      type: ContentType.FARCASTER_POST,
+    },
+    ...data.embeds.map((embedId) => ({
+      contentId: embedId,
       submitterId: data.userId,
-      data,
       createdAt: action.createdAt,
-    });
-  }
+    })),
+  ];
 
   return {
     userId: action.userId,
