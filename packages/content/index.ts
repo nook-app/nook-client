@@ -16,7 +16,7 @@ export const getContentHandler = async () => {
 
     let content: Content | undefined;
 
-    if (content.contentId.startsWith("farcaster://cast/")) {
+    if (job.data.contentId.startsWith("farcaster://cast/")) {
       content = await handleFarcasterContent(job.data);
     } else {
       console.log(
