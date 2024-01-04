@@ -33,17 +33,25 @@ const handleCastPost = async (rawEvent: RawEvent) => {
     timestamp: rawEvent.timestamp,
     userId: data.userId,
     topics: generateTopics(data),
-    userIds: [
-      data.userId,
-      data.rootParentUserId,
-      ...data.mentions.map(({ userId }) => userId),
-    ],
-    contentIds: [
-      data.contentId,
-      data.rootParentId,
-      ...data.embeds,
-      data.channelId,
-    ],
+    userIds: Array.from(
+      new Set(
+        [
+          data.userId,
+          data.rootParentUserId,
+          ...data.mentions.map(({ userId }) => userId),
+        ].filter(Boolean),
+      ),
+    ),
+    contentIds: Array.from(
+      new Set(
+        [
+          data.contentId,
+          data.rootParentId,
+          ...data.embeds,
+          data.channelId,
+        ].filter(Boolean),
+      ),
+    ),
     createdAt: new Date(),
   };
 
@@ -171,14 +179,23 @@ const generateTopics = (
       type: TopicType.ROOT_PARENT_USER,
       id: data.rootParentUserId,
     },
-    ...data.mentions.map(({ userId }) => ({
-      type: TopicType.MENTION,
-      id: userId,
-    })),
-    ...data.embeds.map((embedId) => ({
-      type: TopicType.EMBED,
-      id: embedId,
-    })),
+    ...data.mentions
+      .filter(
+        (value, index, self) =>
+          self.findIndex((m) => m.userId === value.userId) === index,
+      )
+      .map(({ userId }) => ({
+        type: TopicType.MENTION,
+        id: userId,
+      })),
+    ...data.embeds
+      .filter(
+        (value, index, self) => self.findIndex((m) => m === value) === index,
+      )
+      .map((embedId) => ({
+        type: TopicType.EMBED,
+        id: embedId,
+      })),
   ];
 
   if ("parentId" in data) {
