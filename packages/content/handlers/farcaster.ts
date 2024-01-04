@@ -7,8 +7,12 @@ import {
 
 export const handleFarcasterContent = async (
   content: ContentBase,
-): Promise<Content> => {
+): Promise<Content | undefined> => {
   const cast = await getFarcasterCastByURI(content.contentId);
+  if (!cast) {
+    return;
+  }
+
   if (cast.parentHash) {
     const data = await generateFarcasterReply(cast);
     return {

@@ -18,6 +18,7 @@ export const getContentHandler = async () => {
 
     if (job.data.contentId.startsWith("farcaster://cast/")) {
       content = await handleFarcasterContent(job.data);
+      if (!content) return;
     } else {
       console.log(
         `[content] not processing url content right now ${job.data.contentId}`,

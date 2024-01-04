@@ -11,44 +11,36 @@ type FidHash = {
   hash: string;
 };
 
-export const getFarcasterCastByURI = async (
-  uri: string,
-): Promise<FarcasterCastRawData | undefined> => {
+export const getFarcasterCastByURI = async (uri: string) => {
   const casts = await getFarcasterCasts([uri], null);
   if (!casts) {
-    return undefined;
+    return;
   }
   return casts[0];
 };
 
-export const getFarcasterCastByFidHash = async (
-  fidHash: FidHash,
-): Promise<FarcasterCastRawData | undefined> => {
+export const getFarcasterCastByFidHash = async (fidHash: FidHash) => {
   const casts = await getFarcasterCasts(null, [fidHash]);
   if (!casts) {
-    return undefined;
+    return;
   }
   return casts[0];
 };
 
-export const getFarcasterCastsByURIs = async (
-  uris: string[],
-): Promise<FarcasterCastRawData[] | undefined> => {
+export const getFarcasterCastsByURIs = async (uris: string[]) => {
   if (uris.length === 0) return [];
   const casts = await getFarcasterCasts(uris, null);
   if (!casts) {
-    return undefined;
+    return;
   }
   return casts;
 };
 
-export const getFarcasterCastsByFidHashes = async (
-  fidHashes: FidHash[],
-): Promise<FarcasterCastRawData[] | undefined> => {
+export const getFarcasterCastsByFidHashes = async (fidHashes: FidHash[]) => {
   if (fidHashes.length === 0) return [];
   const casts = await getFarcasterCasts(null, fidHashes);
   if (!casts) {
-    return undefined;
+    return;
   }
   return casts;
 };
