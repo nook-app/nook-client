@@ -1,7 +1,8 @@
 import { QueueName, getWorker } from "@flink/common/queues";
 import { MongoClient } from "mongodb";
-import { ContentBase } from "@flink/common/types";
+import { Content, ContentBase } from "@flink/common/types";
 import { Job } from "bullmq";
+import { handleFarcasterContent } from "./handlers/farcaster";
 
 const client = new MongoClient(process.env.EVENT_DATABASE_URL);
 
@@ -11,7 +12,22 @@ export const getContentHandler = async () => {
   const contentCollection = db.collection("content");
 
   return async (job: Job<ContentBase>) => {
-    const content = job.data;
+    console.log(`[content] processing ${job.data.contentId}`);
+
+    let content: Content | undefined;
+
+    if (content.contentId.startsWith("farcaster://cast/")) {
+      content = await handleFarcasterContent(job.data);
+    } else {
+      console.log(
+        `[content] not processing url content right now ${job.data.contentId}`,
+      );
+      return;
+    }
+
+    if (!content) {
+      throw new Error(`[content] unknown content type ${job.data.contentId}`);
+    }
 
     await contentCollection.findOneAndUpdate(
       {

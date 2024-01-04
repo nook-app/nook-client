@@ -18,9 +18,6 @@ export type ContentBase = {
 
   /** Date content was created */
   createdAt: Date;
-
-  /** Type of content */
-  type: ContentType;
 };
 
 export type FarcasterPostContent = ContentBase & {
@@ -33,4 +30,9 @@ export type FarcasterReplyContent = ContentBase & {
   data: FarcasterReplyData;
 };
 
-export type Content = FarcasterPostContent | FarcasterReplyContent;
+export type URLContent = ContentBase & {
+  type: ContentType.URL;
+  data: object;
+};
+
+export type Content = FarcasterPostContent | FarcasterReplyContent | URLContent;

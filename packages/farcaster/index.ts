@@ -34,7 +34,6 @@ const run = async () => {
       schema: {
         body: {
           type: "object",
-          required: ["ids"],
           properties: {
             ids: {
               type: "array",
@@ -47,19 +46,39 @@ const run = async () => {
                 },
               },
             },
+            uris: {
+              type: "array",
+              items: {
+                type: "string",
+              },
+            },
           },
         },
       },
     },
     async (
       request: FastifyRequest<{
-        Body: { ids: { fid: string; hash: string }[] };
+        Body: { ids?: { fid: string; hash: string }[]; uris?: string[] };
       }>,
       reply,
     ) => {
+      const ids = [];
+      if (request.body.ids) {
+        ids.push(...request.body.ids);
+      }
+
+      if (request.body.uris) {
+        ids.push(
+          ...request.body.uris.map((uri) => {
+            const [fid, hash] = uri.replace("farcaster://cast/", "").split("/");
+            return { fid, hash };
+          }),
+        );
+      }
+
       const existingCasts = await prisma.farcasterCast.findMany({
         where: {
-          OR: request.body.ids.map(({ fid, hash }) => ({
+          OR: ids.map(({ fid, hash }) => ({
             fid: BigInt(fid),
             hash,
           })),
@@ -72,7 +91,7 @@ const run = async () => {
       });
 
       const existingHashes = existingCasts.map((cast) => cast.hash);
-      const missingCasts = request.body.ids.filter(
+      const missingCasts = ids.filter(
         ({ hash }) => !existingHashes.includes(hash),
       );
 
@@ -98,7 +117,7 @@ const run = async () => {
           return acc;
         }, {});
 
-      const casts = request.body.ids
+      const casts = ids
         .map(({ fid, hash }) => hashToCast[`${fid}-${hash}`])
         .map((cast) =>
           cast

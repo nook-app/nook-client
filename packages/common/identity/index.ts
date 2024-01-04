@@ -1,5 +1,4 @@
 import {
-  FarcasterCastRawData,
   IdentitiesRequest,
   Identity,
   IdentityRequestType,
@@ -43,26 +42,4 @@ export const getIdentitiesForFids = async (
     type: IdentityRequestType.FID,
     ids: fids,
   });
-};
-
-export const getFarcasterCast = async (
-  fid: string,
-  hash: string,
-): Promise<FarcasterCastRawData | undefined> => {
-  const response = await fetch(
-    `${process.env.FARCASTER_SERVICE_URL}/cast/${fid}/${hash}`,
-  );
-
-  if (!response.ok) {
-    if (response.status !== 404) {
-      console.log(
-        `[events] [get-cast] [${hash}] failed with ${response.status}`,
-      );
-    }
-    return undefined;
-  }
-
-  const { cast } = await response.json();
-
-  return cast;
 };

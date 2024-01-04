@@ -1,174 +1,145 @@
 import {
   RawEvent,
-  Identity,
   EventAction,
   EventActionType,
-  FarcasterCastRawData,
   FarcasterPostData,
-  Content,
-  ContentType,
   Topic,
   TopicType,
+  FarcasterReplyData,
+  Content,
+  ContentType,
+  ContentBase,
 } from "@flink/common/types";
-import { getFarcasterCast, getIdentitiesForFids } from "../utils";
+import { generateFarcasterContent } from "@flink/common/farcaster";
 
 export const handleFarcasterCastAdd = async (rawEvent: RawEvent) => {
-  const data: FarcasterCastRawData = rawEvent.data;
-
-  const thread =
-    data.hash !== data.rootParentHash
-      ? await getFarcasterCast(data.rootParentFid, data.rootParentHash)
-      : undefined;
-
-  const parent =
-    data.parentFid && data.parentHash
-      ? await getFarcasterCast(data.parentFid, data.parentHash)
-      : undefined;
-  if (data.parentFid && data.parentHash && !parent) {
-    throw new Error(
-      `[events] could not find parent ${data.parentFid}/${data.parentHash}`,
-    );
-  }
-
-  const relevantFids = extractFidsFromCast(data);
-  if (thread) {
-    relevantFids.push(...extractFidsFromCast(thread));
-  }
-  if (parent) {
-    relevantFids.push(...extractFidsFromCast(parent));
-  }
-
-  const identities = await getIdentitiesForFids([...new Set(relevantFids)]);
-
-  const fidToIdentity = identities.reduce(
-    (acc, identity) => {
-      acc[identity.socialAccounts[0].platformId] = identity;
-      return acc;
-    },
-    {} as Record<string, Identity>,
-  );
-
-  const sourceUserId = data.fid;
-  const userId = fidToIdentity[sourceUserId].id;
+  const data = await generateFarcasterContent(rawEvent.data);
 
   const actions: EventAction[] = [];
   const content: Content[] = [];
 
-  const post = {
-    ...formatCast(data, fidToIdentity),
-    thread: thread ? formatCast(thread, fidToIdentity) : undefined,
+  const action = {
+    eventId: rawEvent.eventId,
+    source: rawEvent.source,
+    timestamp: rawEvent.timestamp,
+    userId: data.userId,
+    topics: generateTopics(data),
+    userIds: [
+      data.userId,
+      data.rootParentUserId,
+      ...("parentUserId" in data && data.parentUserId
+        ? [data.parentUserId]
+        : []),
+      ...data.mentions.map(({ userId }) => userId),
+    ],
+    contentIds: [
+      data.contentId,
+      data.rootParentId,
+      ...("parentId" in data && data.parentId ? [data.parentId] : []),
+      ...data.embeds,
+      data.channelId,
+    ],
+    createdAt: new Date(),
   };
 
-  const createdAt = new Date();
+  const additionalContent: ContentBase[] = [
+    {
+      contentId: data.rootParentId,
+      submitterId: data.rootParentUserId,
+      createdAt: action.createdAt,
+    },
+    ...data.embeds.map((embedId) => ({
+      contentId: embedId,
+      submitterId: data.userId,
+      createdAt: action.createdAt,
+    })),
+  ];
 
-  const actionType = parent ? EventActionType.REPLY : EventActionType.POST;
-  const contentData = {
-    ...post,
-    parent: parent ? formatCast(parent, fidToIdentity) : undefined,
+  if ("parentId" in data) {
+    actions.push({
+      ...action,
+      type: EventActionType.REPLY,
+      data,
+    });
+    content.push({
+      contentId: data.contentId,
+      type: ContentType.FARCASTER_REPLY,
+      submitterId: data.userId,
+      data,
+      createdAt: action.createdAt,
+    });
+    additionalContent.push({
+      contentId: data.parentId,
+      submitterId: data.parentUserId,
+      createdAt: action.createdAt,
+    });
+  } else {
+    actions.push({
+      ...action,
+      type: EventActionType.POST,
+      data,
+    });
+    content.push({
+      contentId: data.contentId,
+      type: ContentType.FARCASTER_POST,
+      submitterId: data.userId,
+      data,
+      createdAt: action.createdAt,
+    });
+  }
+
+  return {
+    userId: action.userId,
+    actions,
+    content,
+    additionalContent,
+    createdAt: action.createdAt,
   };
+};
 
+const generateTopics = (
+  data: FarcasterPostData | FarcasterReplyData,
+): Topic[] => {
   const topics: Topic[] = [
     {
       type: TopicType.USER,
-      id: userId,
+      id: data.userId,
     },
     {
       type: TopicType.ROOT_PARENT,
-      id: `farcaster://cast/${data.rootParentFid}/${data.rootParentHash}`,
+      id: data.rootParentId,
     },
     {
       type: TopicType.ROOT_PARENT_USER,
-      id: fidToIdentity[data.rootParentFid].id,
+      id: data.rootParentUserId,
     },
-    ...contentData.mentions.map(({ userId }) => ({
+    ...data.mentions.map(({ userId }) => ({
       type: TopicType.MENTION,
       id: userId,
     })),
-    ...contentData.embeds.map((embedId) => ({
+    ...data.embeds.map((embedId) => ({
       type: TopicType.EMBED,
       id: embedId,
     })),
   ];
 
-  if (data.parentFid && data.parentHash) {
+  if ("parentId" in data) {
     topics.push({
       type: TopicType.PARENT,
-      id: `farcaster://cast/${data.parentFid}/${data.parentHash}`,
+      id: data.parentId,
     });
     topics.push({
       type: TopicType.PARENT_USER,
-      id: fidToIdentity[data.parentFid].id,
+      id: data.parentUserId,
     });
   }
 
-  if (data.rootParentUrl) {
+  if (data.channelId) {
     topics.push({
       type: TopicType.CHANNEL,
-      id: data.rootParentUrl,
+      id: data.channelId,
     });
   }
 
-  actions.push({
-    eventId: rawEvent.eventId,
-    source: rawEvent.source,
-    timestamp: rawEvent.timestamp,
-    userId,
-    type: actionType,
-    data: contentData,
-    topics,
-    userIds: [],
-    contentIds: [],
-    createdAt,
-  });
-
-  content.push({
-    contentId: post.contentId,
-    submitterId: userId,
-    creatorId: userId,
-    type: parent ? ContentType.FARCASTER_REPLY : ContentType.FARCASTER_POST,
-    data: contentData,
-    createdAt,
-  });
-
-  return {
-    sourceUserId,
-    userId,
-    actions,
-    content,
-    createdAt,
-  };
-};
-
-const formatCast = (
-  cast: FarcasterCastRawData,
-  fidToIdentity: Record<string, Identity>,
-): FarcasterPostData => {
-  const embeds = cast.urls
-    .map((url) => url.url)
-    .concat(cast.casts.map(castToContentId));
-
-  return {
-    contentId: castToContentId(cast),
-    text: cast.text,
-    userId: fidToIdentity[cast.fid].id,
-    mentions: cast.mentions.map(({ mention, mentionPosition }) => ({
-      userId: fidToIdentity[mention].id,
-      position: parseInt(mentionPosition),
-    })),
-    embeds,
-    channelId: cast.rootParentUrl,
-  };
-};
-
-const extractFidsFromCast = (cast: FarcasterCastRawData): string[] => {
-  return [
-    cast.fid,
-    cast.parentFid,
-    cast.rootParentFid,
-    ...cast.mentions.map((mention) => mention.mention),
-  ].filter(Boolean);
-};
-
-const castToContentId = ({ fid, hash }: { fid: string; hash: string }) => {
-  return `farcaster://cast/${fid}/${hash}`;
+  return topics;
 };

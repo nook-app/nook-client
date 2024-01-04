@@ -2,6 +2,7 @@ import { QueueName, getQueue } from "@flink/common/queues";
 import { MongoClient } from "mongodb";
 import {
   Content,
+  ContentBase,
   EventAction,
   EventSourceService,
   RawEvent,
@@ -17,6 +18,7 @@ export const getEventsHandler = async () => {
   const db = client.db("flink");
   const eventsCollection = db.collection("events");
   const actionsCollection = db.collection("actions");
+  const contentCollection = db.collection("content");
 
   const contentQueue = getQueue(QueueName.ContentIngress);
 
@@ -25,10 +27,10 @@ export const getEventsHandler = async () => {
 
     let data:
       | {
-          sourceUserId: string;
           userId: string;
           actions: EventAction[];
           content: Content[];
+          additionalContent: ContentBase[];
           createdAt: Date;
         }
       | undefined;
@@ -49,7 +51,6 @@ export const getEventsHandler = async () => {
     const event: UserEvent = {
       ...rawEvent,
       userId: data.userId,
-      sourceUserId: data.sourceUserId,
       actions: Object.values(result.insertedIds),
       createdAt: data.createdAt,
     };
@@ -65,6 +66,18 @@ export const getEventsHandler = async () => {
     );
 
     for (const content of data.content) {
+      await contentCollection.findOneAndUpdate(
+        {
+          contentId: content.contentId,
+        },
+        { $set: content },
+        {
+          upsert: true,
+        },
+      );
+    }
+
+    for (const content of data.additionalContent) {
       await contentQueue.add(content.contentId, content);
     }
 

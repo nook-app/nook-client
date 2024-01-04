@@ -45,9 +45,6 @@ export type UserEvent = RawEvent & {
   /** Identity of user who triggered the event */
   userId: string;
 
-  /** Source identity of user who triggered the event */
-  sourceUserId: string;
-
   /** List of references to event actions parsed from this event */
   actions: ObjectId[];
 

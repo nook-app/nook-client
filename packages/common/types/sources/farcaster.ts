@@ -21,7 +21,7 @@ export type FarcasterCastRawData = {
 };
 
 export type FarcasterPostData = {
-  /** ID of the post */
+  /** ID of the content */
   contentId: string;
 
   /** Identity of user who posted */
@@ -42,11 +42,23 @@ export type FarcasterPostData = {
   /** Channel the post was made in */
   channelId?: string;
 
-  /** Root post */
+  /** ID of root post */
+  rootParentId: string;
+
+  /** ID of user who posted the root post */
+  rootParentUserId: string;
+
+  /** Root post - Optional because doesn't exist if this post is the root */
   rootParent?: FarcasterPostData;
 };
 
 export type FarcasterReplyData = FarcasterPostData & {
-  /** Parent post */
-  parent: FarcasterPostData;
+  /** ID of the parent content */
+  parentId: string;
+
+  /** ID of user who posted the parent content */
+  parentUserId: string;
+
+  /** Parent post - Optional because of Farcaster data retention */
+  parent?: FarcasterPostData;
 };
