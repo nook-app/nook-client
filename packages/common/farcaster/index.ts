@@ -156,7 +156,11 @@ const getExternalCastData = async (cast: FarcasterCastRawData) => {
       hash: cast.rootParentHash,
     });
   }
-  if (cast.parentFid && cast.parentHash) {
+  if (
+    cast.parentFid &&
+    cast.parentHash &&
+    cast.parentHash !== cast.rootParentHash
+  ) {
     castRequests.push({
       fid: cast.parentFid,
       hash: cast.parentHash,

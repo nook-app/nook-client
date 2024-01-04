@@ -45,12 +45,14 @@ const run = async () => {
                   hash: { type: "string" },
                 },
               },
+              nullable: true,
             },
             uris: {
               type: "array",
               items: {
                 type: "string",
               },
+              nullable: true,
             },
           },
         },
