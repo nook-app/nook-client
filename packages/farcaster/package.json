@@ -8,6 +8,9 @@
     "start:publisher": "node dist/publisher/index.js",
     "start:api": "node dist/api/index.js"
   },
+  "exports": {
+    "./utils": "./dist/utils/index.js"
+  },
   "dependencies": {
     "@ethersproject/abstract-signer": "^5.7.0",
     "@farcaster/fishery": "^2.2.3",

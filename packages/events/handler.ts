@@ -34,7 +34,9 @@ export const getEventsHandler = async () => {
     }
 
     if (!data) {
-      throw new Error(`[events] unknown event source ${rawEvent.source}`);
+      throw new Error(
+        `[events] unknown event source ${rawEvent.source.service} ${rawEvent.source.type} ${rawEvent.source.id}`,
+      );
     }
 
     await actionsCollection.deleteMany({

@@ -7,6 +7,9 @@
     "start": "node dist/worker.js",
     "start:manual": "tsc && node dist/manual.js"
   },
+  "exports": {
+    "./handlers/farcaster": "./dist/handlers/farcaster.js"
+  },
   "dependencies": {
     "@flink/common": "*",
     "@flink/farcaster": "*",
