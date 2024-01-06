@@ -413,6 +413,7 @@ __metadata:
   resolution: "@flink/common@workspace:packages/common"
   dependencies:
     "@farcaster/hub-nodejs": "npm:^0.10.19"
+    "@flink/farcaster": "npm:*"
     "@prisma/client": "npm:5.7.1"
     "@types/node": "npm:^20.10.5"
     bullmq: "npm:^5.1.0"
@@ -422,11 +423,13 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@flink/content@workspace:packages/content":
+"@flink/content@npm:*, @flink/content@workspace:packages/content":
   version: 0.0.0-use.local
   resolution: "@flink/content@workspace:packages/content"
   dependencies:
     "@flink/common": "npm:*"
+    "@flink/farcaster": "npm:*"
+    "@flink/sdk": "npm:*"
     "@types/node": "npm:^20.10.5"
     bullmq: "npm:^5.1.0"
     mongodb: "npm:^6.3.0"
@@ -454,6 +457,7 @@ __metadata:
   resolution: "@flink/events@workspace:packages/events"
   dependencies:
     "@flink/common": "npm:*"
+    "@flink/content": "npm:*"
     "@types/node": "npm:^20.10.5"
     bullmq: "npm:^5.1.0"
     mongodb: "npm:^6.3.0"
@@ -461,7 +465,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@flink/farcaster@workspace:packages/farcaster":
+"@flink/farcaster@npm:*, @flink/farcaster@workspace:packages/farcaster":
   version: 0.0.0-use.local
   resolution: "@flink/farcaster@workspace:packages/farcaster"
   dependencies:
@@ -469,6 +473,7 @@ __metadata:
     "@farcaster/fishery": "npm:^2.2.3"
     "@farcaster/hub-nodejs": "npm:^0.10.5"
     "@flink/common": "npm:*"
+    "@flink/identity": "npm:*"
     "@types/node": "npm:^20.10.5"
     bullmq: "npm:^5.1.0"
     ethers: "npm:^6.9.1"
@@ -477,11 +482,24 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@flink/identity@workspace:packages/identity":
+"@flink/identity@npm:*, @flink/identity@workspace:packages/identity":
   version: 0.0.0-use.local
   resolution: "@flink/identity@workspace:packages/identity"
   dependencies:
     "@farcaster/hub-nodejs": "npm:^0.10.19"
+    "@types/node": "npm:^20.10.5"
+    fastify: "npm:^4.25.2"
+    typescript: "npm:^5.3.3"
+  languageName: unknown
+  linkType: soft
+
+"@flink/sdk@npm:*, @flink/sdk@workspace:packages/sdk":
+  version: 0.0.0-use.local
+  resolution: "@flink/sdk@workspace:packages/sdk"
+  dependencies:
+    "@farcaster/hub-nodejs": "npm:^0.10.19"
+    "@flink/farcaster": "npm:*"
+    "@flink/identity": "npm:*"
     "@types/node": "npm:^20.10.5"
     fastify: "npm:^4.25.2"
     typescript: "npm:^5.3.3"

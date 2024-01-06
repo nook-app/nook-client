@@ -4,11 +4,12 @@
   "private": true,
   "scripts": {
     "build": "tsc",
-    "start": "node dist/index.js",
+    "start": "node dist/worker.js",
     "start:manual": "tsc && node dist/manual.js"
   },
   "dependencies": {
     "@flink/common": "*",
+    "@flink/content": "*",
     "bullmq": "^5.1.0",
     "mongodb": "^6.3.0"
   },

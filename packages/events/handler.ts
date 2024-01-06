@@ -1,15 +1,13 @@
-import { QueueName, getQueue } from "@flink/common/queues";
 import { MongoClient } from "mongodb";
 import {
   Content,
-  ContentBase,
   EventAction,
-  EventSourceService,
+  EventService,
   RawEvent,
   UserEvent,
 } from "@flink/common/types";
 import { Job } from "bullmq";
-import { handleFarcasterCastAdd } from "./handlers/farcasterCastAdd";
+import { transformCastAddToEvent } from "./handlers/farcaster/castAdd";
 
 const client = new MongoClient(process.env.EVENT_DATABASE_URL);
 
@@ -20,23 +18,19 @@ export const getEventsHandler = async () => {
   const actionsCollection = db.collection("actions");
   const contentCollection = db.collection("content");
 
-  const contentQueue = getQueue(QueueName.ContentIngress);
-
   return async (job: Job<RawEvent>) => {
     const rawEvent = job.data;
 
     let data:
       | {
-          userId: string;
+          event: UserEvent;
           actions: EventAction[];
           content: Content[];
-          additionalContent: ContentBase[];
-          createdAt: Date;
         }
       | undefined;
 
-    if (rawEvent.source.service === EventSourceService.FARCASTER_CAST_ADD) {
-      data = await handleFarcasterCastAdd(rawEvent);
+    if (rawEvent.source.service === EventService.FARCASTER) {
+      data = await transformCastAddToEvent(rawEvent);
     }
 
     if (!data) {
@@ -44,22 +38,15 @@ export const getEventsHandler = async () => {
     }
 
     await actionsCollection.deleteMany({
-      eventId: rawEvent.eventId,
+      eventId: data.event._id,
     });
-    const result = await actionsCollection.insertMany(data.actions);
-
-    const event: UserEvent = {
-      ...rawEvent,
-      userId: data.userId,
-      actions: Object.values(result.insertedIds),
-      createdAt: data.createdAt,
-    };
+    await actionsCollection.insertMany(data.actions);
 
     await eventsCollection.findOneAndUpdate(
       {
-        eventId: rawEvent.eventId,
+        source: rawEvent.source,
       },
-      { $set: event },
+      { $set: data.event },
       {
         upsert: true,
       },
@@ -77,12 +64,8 @@ export const getEventsHandler = async () => {
       );
     }
 
-    for (const content of data.additionalContent) {
-      await contentQueue.add(content.contentId, content);
-    }
-
     console.log(
-      `[events] processed ${event.source.service} ${event.source.id}: ${event.actions.length} actions`,
+      `[events] processed ${data.event.source.service} ${data.event.source.id}: ${data.actions.length} actions`,
     );
   };
 };

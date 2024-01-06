@@ -2,11 +2,9 @@ import {
   IdentitiesRequest,
   Identity,
   IdentityRequestType,
-} from "@flink/common/types";
+} from "@flink/identity/types";
 
-export const getIdentities = async (
-  request: IdentitiesRequest,
-): Promise<Identity[]> => {
+export const get = async (request: IdentitiesRequest): Promise<Identity[]> => {
   const response = await fetch(
     `${process.env.IDENTITY_SERVICE_URL}/identities`,
     {
@@ -35,10 +33,8 @@ export const getIdentities = async (
   return identities;
 };
 
-export const getIdentitiesForFids = async (
-  fids: string[],
-): Promise<Identity[]> => {
-  return getIdentities({
+export const getForFids = async (fids: string[]): Promise<Identity[]> => {
+  return get({
     type: IdentityRequestType.FID,
     ids: fids,
   });

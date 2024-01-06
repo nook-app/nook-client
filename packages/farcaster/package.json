@@ -4,15 +4,16 @@
   "private": true,
   "scripts": {
     "build": "tsc",
-    "start:consumer": "node dist/consumer.js",
-    "start:publisher": "node dist/publisher.js",
-    "start:api": "node dist/index.js"
+    "start:consumer": "node dist/consumer/index.js",
+    "start:publisher": "node dist/publisher/index.js",
+    "start:api": "node dist/api/index.js"
   },
   "dependencies": {
     "@ethersproject/abstract-signer": "^5.7.0",
     "@farcaster/fishery": "^2.2.3",
     "@farcaster/hub-nodejs": "^0.10.5",
     "@flink/common": "*",
+    "@flink/identity": "*",
     "bullmq": "^5.1.0",
     "ethers": "^6.9.1",
     "fastify": "^4.25.2"

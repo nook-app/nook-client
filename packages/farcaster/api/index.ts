@@ -1,8 +1,8 @@
 import fastify, { FastifyRequest } from "fastify";
 import { PrismaClient } from "@flink/common/prisma/farcaster";
 import { getSSLHubRpcClient } from "@farcaster/hub-nodejs";
-import { hexToBuffer } from "./utils";
-import { handleCastAdd } from "./handlers/casts";
+import { hexToBuffer } from "../utils";
+import { handleCastAdd } from "../consumer/handlers/casts";
 
 const prisma = new PrismaClient();
 

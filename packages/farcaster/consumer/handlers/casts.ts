@@ -1,5 +1,11 @@
 import { HubRpcClient, Message } from "@farcaster/hub-nodejs";
-import { bufferToHex, hexToBuffer, timestampToDate } from "../utils";
+import {
+  bufferToHex,
+  hexToBuffer,
+  timestampToDate,
+  FidHandlerArgs,
+  MessageHandlerArgs,
+} from "../../utils";
 import {
   FarcasterCast,
   FarcasterCastEmbedCast,
@@ -7,8 +13,7 @@ import {
   FarcasterCastMention,
   PrismaClient,
 } from "@flink/common/prisma/farcaster";
-import { FidHandlerArgs, MessageHandlerArgs } from "../types";
-import { EventSource, EventSourceService } from "@flink/common/types";
+import { EventService, EventType } from "@flink/common/types";
 import { publishRawEvent } from "@flink/common/events";
 
 const prisma = new PrismaClient();
@@ -349,7 +354,8 @@ const publishEvent = async (
 
   await publishRawEvent(
     {
-      service: EventSourceService.FARCASTER_CAST_ADD,
+      service: EventService.FARCASTER,
+      type: EventType.CAST_ADD,
       id: cast.hash,
       userId: cast.fid.toString(),
     },

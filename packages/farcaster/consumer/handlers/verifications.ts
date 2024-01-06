@@ -2,8 +2,12 @@ import {
   PrismaClient,
   FarcasterVerification,
 } from "@flink/common/prisma/farcaster";
-import { bufferToHex, timestampToDate } from "../utils";
-import { FidHandlerArgs, MessageHandlerArgs } from "../types";
+import {
+  bufferToHex,
+  timestampToDate,
+  FidHandlerArgs,
+  MessageHandlerArgs,
+} from "../../utils";
 import { Message } from "@farcaster/hub-nodejs";
 
 const prisma = new PrismaClient();

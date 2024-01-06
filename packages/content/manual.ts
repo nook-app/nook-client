@@ -1,5 +1,5 @@
 import { QueueName, getQueue } from "@flink/common/queues";
-import { getContentHandler } from ".";
+import { getContentHandler } from "./handler";
 
 const run = async () => {
   const queue = getQueue(QueueName.ContentIngress);
