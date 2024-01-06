@@ -7,6 +7,9 @@
     "build": "tsc",
     "start:api": "node dist/api/index.js"
   },
+  "exports": {
+    "./types": "./dist/types/index.js"
+  },
   "dependencies": {
     "@farcaster/hub-nodejs": "^0.10.19",
     "fastify": "^4.25.2"

@@ -2,7 +2,7 @@
   "name": "@flink/sdk",
   "version": "0.0.1",
   "private": true,
-  "main": "index.js",
+  "main": "./dist/index.js",
   "scripts": {
     "build": "tsc"
   },
