@@ -44,27 +44,17 @@ export const getEventsHandler = async () => {
     });
     await actionsCollection.insertMany(data.actions);
 
-    await eventsCollection.findOneAndUpdate(
-      {
-        source: rawEvent.source,
-      },
-      { $set: data.event },
-      {
-        upsert: true,
-      },
-    );
+    await eventsCollection.deleteOne({
+      source: rawEvent.source,
+    });
+    await eventsCollection.insertOne(data.event);
 
     for (const content of data.content) {
-      await contentCollection.findOneAndUpdate(
-        {
-          contentId: content.contentId,
-        },
-        { $set: content },
-        {
-          upsert: true,
-        },
-      );
+      await contentCollection.deleteOne({
+        contentId: content.contentId,
+      });
     }
+    await contentCollection.insertMany(data.content);
 
     console.log(
       `[events] processed ${data.event.source.service} ${data.event.source.id}: ${data.actions.length} actions`,

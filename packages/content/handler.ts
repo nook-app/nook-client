@@ -28,15 +28,10 @@ export const getContentHandler = async () => {
       throw new Error(`[content] unknown content type ${job.data.contentId}`);
     }
 
-    await contentCollection.findOneAndUpdate(
-      {
-        contentId: content.contentId,
-      },
-      { $set: content },
-      {
-        upsert: true,
-      },
-    );
+    await contentCollection.deleteOne({
+      contentId: content.contentId,
+    });
+    await contentCollection.insertOne(content);
 
     console.log(`[content] processed ${content.contentId}`);
   };
