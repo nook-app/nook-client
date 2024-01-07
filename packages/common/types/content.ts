@@ -14,39 +14,26 @@ export enum ContentType {
   URL = "URL",
 }
 
+export enum ContentEngagementType {
+  LIKES = "likes",
+  REPOSTS = "reposts",
+  REPLIES = "replies",
+  ROOT_REPLIES = "rootReplies",
+  EMBEDS = "embeds",
+}
+
+export type ContentEngagement = {
+  [key in ContentEngagementType]?: {
+    [key in EventService]?: number;
+  };
+};
+
 export type ContentRequest = {
   /** ID for the content in URI format */
   contentId: string;
 
   /** Identity of user who first submitted the content */
   submitterId: string;
-};
-
-export type ContentEngagement = {
-  /** Number of likes for this content */
-  likes?: {
-    [key in EventService]?: number;
-  };
-
-  /** Number of reposts for this content */
-  reposts?: {
-    [key in EventService]?: number;
-  };
-
-  /** Number of replies for this content */
-  replies?: {
-    [key in EventService]?: number;
-  };
-
-  /** Number of root replies for this content */
-  rootReplies?: {
-    [key in EventService]?: number;
-  };
-
-  /** Numbe of embeds for this content */
-  embeds?: {
-    [key in EventService]?: number;
-  };
 };
 
 export type ContentBase = {
@@ -70,6 +57,9 @@ export type ContentBase = {
 
   /** Engagement metrics */
   engagement?: ContentEngagement;
+
+  /** Set of userIds involved in this content */
+  userIds: string[];
 
   /** Date record was created at */
   createdAt: Date;

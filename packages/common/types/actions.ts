@@ -1,6 +1,9 @@
 import { ObjectId } from "mongodb";
 import { EventSource } from "./events";
-import { PostData, ReplyData } from "./contentTypes/post";
+import { ReactionData } from "./actionTypes";
+import { PostData, ReplyData } from "./contentTypes";
+
+export type EventActionData = PostData | ReplyData | ReactionData;
 
 /**
  * Supported actions for events
@@ -8,6 +11,10 @@ import { PostData, ReplyData } from "./contentTypes/post";
 export enum EventActionType {
   POST = "POST",
   REPLY = "REPLY",
+  LIKE = "LIKE",
+  REPOST = "REPOST",
+  UNLIKE = "UNLIKE",
+  UNREPOST = "UNREPOST",
 }
 
 /**
@@ -45,7 +52,7 @@ export type EventActionBase = {
   createdAt: Date;
 };
 
-export type EventAction = EventActionBase & {
+export type EventAction<T> = EventActionBase & {
   type: EventActionType;
-  data: PostData | ReplyData;
+  data: T;
 };

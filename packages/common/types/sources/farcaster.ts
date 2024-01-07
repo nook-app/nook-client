@@ -24,3 +24,24 @@ export type FarcasterCastAddData = {
     hash: string;
   }[];
 };
+
+export enum FarcasterReactionType {
+  NONE = "none",
+  LIKE = "like",
+  RECAST = "recast",
+}
+
+export type FarcasterCastReactionData = {
+  timestamp: number;
+  fid: string;
+  reactionType: FarcasterReactionType;
+  targetFid: string;
+  targetHash: string;
+};
+
+export type FarcasterUrlReactionData = {
+  timestamp: number;
+  fid: string;
+  reactionType: FarcasterReactionType;
+  url: string;
+};

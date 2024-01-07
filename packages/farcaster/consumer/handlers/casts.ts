@@ -13,8 +13,13 @@ import {
   FarcasterCastMention,
   PrismaClient,
 } from "@flink/common/prisma/farcaster";
-import { EventService, EventType } from "@flink/common/types";
-import { publishRawEvent } from "@flink/common/events";
+import {
+  EventService,
+  EventType,
+  FarcasterCastAddData,
+  RawEvent,
+} from "@flink/common/types";
+import { publishRawEvent, publishRawEvents } from "@flink/common/events";
 
 const prisma = new PrismaClient();
 
@@ -89,7 +94,9 @@ export const handleCastAdd = async ({
 
   console.log(`[cast-add] [${cast.fid}] added ${cast.hash}`);
 
-  return await publishEvent(cast, embedCasts, embedUrls, mentions);
+  const event = transformToEvent(cast, embedCasts, embedUrls, mentions);
+  await publishRawEvent(event);
+  return event.data;
 };
 
 export const handleCastRemove = async ({ message }: MessageHandlerArgs) => {
@@ -312,56 +319,52 @@ export const batchHandleCastAdd = async ({ client, fid }: FidHandlerArgs) => {
     skipDuplicates: true,
   });
 
-  await Promise.all(
-    messages.value.messages.map((message) => {
-      return publishEvent(
-        messageToCast(message),
-        messageToCastEmbedCast(message),
-        messageToCastEmbedUrl(message),
-        messageToCastMentions(message),
-      );
-    }),
-  );
+  const events = messages.value.messages.map((message) => {
+    return transformToEvent(
+      messageToCast(message),
+      messageToCastEmbedCast(message),
+      messageToCastEmbedUrl(message),
+      messageToCastMentions(message),
+    );
+  });
+
+  await publishRawEvents(events);
 };
 
-const publishEvent = async (
+const transformToEvent = (
   cast: FarcasterCast,
   embedCasts: FarcasterCastEmbedCast[],
   embedUrls: FarcasterCastEmbedUrl[],
   mentions: FarcasterCastMention[],
-) => {
-  const data = {
-    timestamp: cast.timestamp.getTime(),
-    fid: cast.fid.toString(),
-    hash: cast.hash,
-    text: cast.text,
-    parentFid: cast.parentFid?.toString(),
-    parentHash: cast.parentHash,
-    parentUrl: cast.parentUrl,
-    rootParentFid: cast.rootParentFid.toString(),
-    rootParentHash: cast.rootParentHash,
-    rootParentUrl: cast.rootParentUrl,
-    mentions: mentions.map((m) => ({
-      mention: m.mention.toString(),
-      mentionPosition: m.mentionPosition.toString(),
-    })),
-    urls: embedUrls.map((e) => ({ url: e.url })),
-    casts: embedCasts.map((e) => ({
-      fid: e.embedFid.toString(),
-      hash: e.embedHash,
-    })),
-  };
-
-  await publishRawEvent(
-    {
+): RawEvent<FarcasterCastAddData> => {
+  return {
+    source: {
       service: EventService.FARCASTER,
       type: EventType.CAST_ADD,
       id: cast.hash,
       userId: cast.fid.toString(),
     },
-    cast.timestamp.getTime(),
-    data,
-  );
-
-  return data;
+    timestamp: cast.timestamp,
+    data: {
+      timestamp: cast.timestamp.getTime(),
+      fid: cast.fid.toString(),
+      hash: cast.hash,
+      text: cast.text,
+      parentFid: cast.parentFid?.toString(),
+      parentHash: cast.parentHash,
+      parentUrl: cast.parentUrl,
+      rootParentFid: cast.rootParentFid.toString(),
+      rootParentHash: cast.rootParentHash,
+      rootParentUrl: cast.rootParentUrl,
+      mentions: mentions.map((m) => ({
+        mention: m.mention.toString(),
+        mentionPosition: m.mentionPosition.toString(),
+      })),
+      urls: embedUrls.map((e) => ({ url: e.url })),
+      casts: embedCasts.map((e) => ({
+        fid: e.embedFid.toString(),
+        hash: e.embedHash,
+      })),
+    },
+  };
 };

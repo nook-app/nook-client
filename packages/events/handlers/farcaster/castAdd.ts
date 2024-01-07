@@ -1,42 +1,44 @@
-import { UserEvent, EventAction, EventActionType } from "@flink/common/types";
+import {
+  UserEvent,
+  EventAction,
+  EventActionType,
+  FarcasterCastAddData,
+  RawEvent,
+  EventActionData,
+  ContentEngagementType,
+} from "@flink/common/types";
 import {
   transformCastAddToPost,
   transformCastAddToReply,
 } from "@flink/content/handlers/farcaster";
-import { HandlerArgs } from "../../types";
-import { MongoCollection } from "@flink/common/mongo";
+import { MongoClient, MongoCollection } from "@flink/common/mongo";
 import { ObjectId } from "mongodb";
 
-export const handleCastAdd = async (args: HandlerArgs) => {
-  if (args.rawEvent.data.parentHash) {
-    return await transformCastAddToReplyEvent(args);
+export const handleCastAdd = async (
+  client: MongoClient,
+  rawEvent: RawEvent<FarcasterCastAddData>,
+) => {
+  if (rawEvent.data.parentHash) {
+    return await transformCastAddToReplyEvent(client, rawEvent);
   }
-  return await transformCastAddToPostEvent(args);
+  return await transformCastAddToPostEvent(client, rawEvent);
 };
 
-const transformCastAddToPostEvent = async ({
-  client,
-  rawEvent,
-}: HandlerArgs) => {
+const transformCastAddToPostEvent = async (
+  client: MongoClient,
+  rawEvent: RawEvent<FarcasterCastAddData>,
+) => {
   const content = await transformCastAddToPost(client, rawEvent.data);
 
   const eventId = new ObjectId();
-  const actions: EventAction[] = [
+  const actions: EventAction<EventActionData>[] = [
     {
       _id: new ObjectId(),
       eventId,
       source: rawEvent.source,
       timestamp: rawEvent.timestamp,
       userId: content.data.userId,
-      userIds: Array.from(
-        new Set(
-          [
-            content.data.userId,
-            content.data.rootParentUserId,
-            ...content.data.mentions.map(({ userId }) => userId),
-          ].filter(Boolean),
-        ),
-      ),
+      userIds: content.userIds,
       contentIds: Array.from(
         new Set(
           [
@@ -53,7 +55,7 @@ const transformCastAddToPostEvent = async ({
     },
   ];
 
-  const event: UserEvent = {
+  const event: UserEvent<FarcasterCastAddData> = {
     ...rawEvent,
     _id: eventId,
     userId: content.data.userId,
@@ -64,26 +66,21 @@ const transformCastAddToPostEvent = async ({
   await Promise.all([client.upsertEvent(event), client.upsertActions(actions)]);
 };
 
-const transformCastAddToReplyEvent = async ({
-  client,
-  rawEvent,
-}: HandlerArgs) => {
+const transformCastAddToReplyEvent = async (
+  client: MongoClient,
+  rawEvent: RawEvent<FarcasterCastAddData>,
+) => {
   const content = await transformCastAddToReply(client, rawEvent.data);
 
   const eventId = new ObjectId();
-  const actions: EventAction[] = [
+  const actions: EventAction<EventActionData>[] = [
     {
       _id: new ObjectId(),
       eventId,
       source: rawEvent.source,
       timestamp: rawEvent.timestamp,
       userId: content.data.userId,
-      userIds: [
-        content.data.userId,
-        content.data.rootParentUserId,
-        content.data.parentUserId,
-        ...content.data.mentions.map(({ userId }) => userId),
-      ],
+      userIds: content.userIds,
       contentIds: [
         content.data.contentId,
         content.data.rootParentId,
@@ -97,7 +94,7 @@ const transformCastAddToReplyEvent = async ({
     },
   ];
 
-  const event: UserEvent = {
+  const event: UserEvent<FarcasterCastAddData> = {
     ...rawEvent,
     _id: eventId,
     userId: content.data.userId,
@@ -105,30 +102,18 @@ const transformCastAddToReplyEvent = async ({
     createdAt: content.createdAt,
   };
 
-  const incrementReplyCount = async (contentId: string) => {
-    const collection = client.getCollection(MongoCollection.Content);
-    await collection.updateOne(
-      { contentId },
-      {
-        $inc: { [`engagement.reply.${rawEvent.source.service}`]: 1 },
-      },
-    );
-  };
-
-  const incrementRootReplyCount = async (contentId: string) => {
-    const collection = client.getCollection(MongoCollection.Content);
-    await collection.updateOne(
-      { contentId },
-      {
-        $inc: { [`engagement.rootReply.${rawEvent.source.service}`]: 1 },
-      },
-    );
-  };
-
   await Promise.all([
     client.upsertEvent(event),
     client.upsertActions(actions),
-    incrementReplyCount(content.data.parentId),
-    incrementRootReplyCount(content.data.rootParentId),
+    client.incrementEngagement(
+      content.data.parentId,
+      ContentEngagementType.REPLIES,
+      event.source.service,
+    ),
+    client.incrementEngagement(
+      content.data.rootParentId,
+      ContentEngagementType.ROOT_REPLIES,
+      event.source.service,
+    ),
   ]);
 };

@@ -1,5 +1,12 @@
 import { Db, MongoClient as Client, Collection } from "mongodb";
-import { Content, EventAction, UserEvent } from "../types";
+import {
+  Content,
+  ContentEngagementType,
+  EventAction,
+  EventActionData,
+  EventService,
+  UserEvent,
+} from "../types";
 
 const DB_NAME = "flink";
 
@@ -8,12 +15,6 @@ export enum MongoCollection {
   Actions = "actions",
   Content = "content",
 }
-
-type MongoCollectionType = {
-  [MongoCollection.Content]: Content;
-  [MongoCollection.Events]: UserEvent;
-  [MongoCollection.Actions]: EventAction;
-};
 
 export class MongoClient {
   private client: Client;
@@ -36,10 +37,8 @@ export class MongoClient {
     return this.db;
   }
 
-  getCollection<T extends MongoCollection>(
-    collection: T,
-  ): Collection<MongoCollectionType[T]> {
-    return this.getDb().collection<MongoCollectionType[T]>(collection);
+  getCollection(collection: string): Collection {
+    return this.getDb().collection(collection);
   }
 
   findContent = async (contentId: string) => {
@@ -64,7 +63,7 @@ export class MongoClient {
     );
   };
 
-  upsertEvent = async (event: UserEvent) => {
+  upsertEvent = async <T>(event: UserEvent<T>) => {
     const collection = this.getCollection(MongoCollection.Events);
     await collection.deleteOne({
       source: event.source,
@@ -72,12 +71,48 @@ export class MongoClient {
     await collection.insertOne(event);
   };
 
-  upsertActions = async (actions: EventAction[]) => {
+  upsertActions = async (actions: EventAction<EventActionData>[]) => {
     if (actions.length === 0) return;
     const collection = this.getCollection(MongoCollection.Actions);
     await collection.deleteMany({
       eventId: actions[0].eventId,
     });
     await collection.insertMany(actions);
+  };
+
+  incrementEngagement = async (
+    contentId: string,
+    engagementType: ContentEngagementType,
+    service: EventService,
+  ) => {
+    const collection = this.getCollection(MongoCollection.Content);
+    await collection.updateOne(
+      {
+        contentId,
+      },
+      {
+        $inc: {
+          [`engagement.${engagementType}.${service}`]: 1,
+        },
+      },
+    );
+  };
+
+  decrementEngagement = async (
+    contentId: string,
+    engagementType: ContentEngagementType,
+    service: EventService,
+  ) => {
+    const collection = this.getCollection(MongoCollection.Content);
+    await collection.updateOne(
+      {
+        contentId,
+      },
+      {
+        $inc: {
+          [`engagement.${engagementType}.${service}`]: -1,
+        },
+      },
+    );
   };
 }

@@ -10,6 +10,15 @@ import {
   FidHandlerArgs,
   MessageHandlerArgs,
 } from "../../utils";
+import { publishRawEvent, publishRawEvents } from "@flink/common/events";
+import {
+  EventService,
+  EventType,
+  FarcasterCastReactionData,
+  FarcasterReactionType,
+  FarcasterUrlReactionData,
+  RawEvent,
+} from "@flink/common/types";
 
 const prisma = new PrismaClient();
 
@@ -42,6 +51,12 @@ const handleCastReactionAdd = async ({ message }: MessageHandlerArgs) => {
   console.log(
     `[reaction-add] [${reaction.fid}] added ${reaction.reactionType} from ${reaction.targetHash}`,
   );
+
+  const event = transformToCastReactionEvent(
+    EventType.CAST_REACTION_ADD,
+    reaction,
+  );
+  await publishRawEvent(event);
 };
 
 const handleUrlReactionAdd = async ({ message }: MessageHandlerArgs) => {
@@ -63,6 +78,12 @@ const handleUrlReactionAdd = async ({ message }: MessageHandlerArgs) => {
   console.log(
     `[reaction-add] [${reaction.fid}] added ${reaction.reactionType} from ${reaction.targetUrl}`,
   );
+
+  const event = transformToUrlReactionEvent(
+    EventType.URL_REACTION_ADD,
+    reaction,
+  );
+  await publishRawEvent(event);
 };
 
 const handleCastReactionRemove = async ({ message }: MessageHandlerArgs) => {
@@ -83,6 +104,12 @@ const handleCastReactionRemove = async ({ message }: MessageHandlerArgs) => {
   console.log(
     `[reaction-remove] [${reaction.fid}] removed ${reaction.reactionType} from ${reaction.targetHash}`,
   );
+
+  const event = transformToCastReactionEvent(
+    EventType.CAST_REACTION_REMOVE,
+    reaction,
+  );
+  await publishRawEvent(event);
 };
 
 const handleUrlReactionRemove = async ({ message }: MessageHandlerArgs) => {
@@ -103,6 +130,12 @@ const handleUrlReactionRemove = async ({ message }: MessageHandlerArgs) => {
   console.log(
     `[reaction-remove] [${reaction.fid}] removed ${reaction.reactionType} from ${reaction.targetUrl}`,
   );
+
+  const event = transformToUrlReactionEvent(
+    EventType.URL_REACTION_REMOVE,
+    reaction,
+  );
+  await publishRawEvent(event);
 };
 
 const messageToCastReaction = (
@@ -166,4 +199,72 @@ export const batchHandleReactionAdd = async ({
     data: urlReactions,
     skipDuplicates: true,
   });
+
+  await publishRawEvents(
+    castReactions.map((reaction) =>
+      transformToCastReactionEvent(EventType.CAST_REACTION_ADD, reaction),
+    ),
+  );
+  await publishRawEvents(
+    urlReactions.map((reaction) =>
+      transformToUrlReactionEvent(EventType.URL_REACTION_ADD, reaction),
+    ),
+  );
+};
+
+const transformToCastReactionEvent = (
+  type: EventType,
+  reaction: FarcasterCastReaction,
+): RawEvent<FarcasterCastReactionData> => {
+  let reactionType = FarcasterReactionType.NONE;
+  if (reaction.reactionType === 1) {
+    reactionType = FarcasterReactionType.LIKE;
+  } else if (reaction.reactionType === 2) {
+    reactionType = FarcasterReactionType.RECAST;
+  }
+
+  return {
+    source: {
+      service: EventService.FARCASTER,
+      type,
+      id: `${reaction.fid}-${reaction.targetHash}-${reaction.reactionType}`,
+      userId: reaction.fid.toString(),
+    },
+    timestamp: reaction.timestamp,
+    data: {
+      timestamp: reaction.timestamp.getTime(),
+      fid: reaction.fid.toString(),
+      reactionType,
+      targetFid: reaction.targetFid.toString(),
+      targetHash: reaction.targetHash,
+    },
+  };
+};
+
+const transformToUrlReactionEvent = (
+  type: EventType,
+  reaction: FarcasterUrlReaction,
+): RawEvent<FarcasterUrlReactionData> => {
+  let reactionType = FarcasterReactionType.NONE;
+  if (reaction.reactionType === 1) {
+    reactionType = FarcasterReactionType.LIKE;
+  } else if (reaction.reactionType === 2) {
+    reactionType = FarcasterReactionType.RECAST;
+  }
+
+  return {
+    source: {
+      service: EventService.FARCASTER,
+      type,
+      id: `${reaction.fid}-${reaction.targetUrl}-${reaction.reactionType}`,
+      userId: reaction.fid.toString(),
+    },
+    timestamp: reaction.timestamp,
+    data: {
+      timestamp: reaction.timestamp.getTime(),
+      fid: reaction.fid.toString(),
+      reactionType,
+      url: reaction.targetUrl,
+    },
+  };
 };

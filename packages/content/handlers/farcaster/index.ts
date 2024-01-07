@@ -68,6 +68,15 @@ export const transformCastAddToPost = async (
     type: ContentType.POST,
     data,
     relations: [],
+    userIds: Array.from(
+      new Set(
+        [
+          data.userId,
+          data.rootParentUserId,
+          ...data.mentions.map(({ userId }) => userId),
+        ].filter(Boolean),
+      ),
+    ),
     engagement: await getEngagementData(client, contentId),
   };
 
@@ -151,6 +160,16 @@ export const transformCastAddToReply = async (
     type: ContentType.REPLY,
     data,
     relations: [],
+    userIds: Array.from(
+      new Set(
+        [
+          data.userId,
+          data.rootParentUserId,
+          data.parentUserId,
+          ...data.mentions.map(({ userId }) => userId),
+        ].filter(Boolean),
+      ),
+    ),
     engagement: await getEngagementData(client, contentId),
   };
 
@@ -219,7 +238,7 @@ const getEngagementData = async (
   contentId: string,
 ): Promise<ContentEngagement> => {
   const collection = client.getCollection(MongoCollection.Actions);
-  const [replies, rootReplies] = await Promise.all([
+  const [replies, rootReplies, embeds] = await Promise.all([
     collection.countDocuments({
       type: EventActionType.REPLY,
       "data.parentId": contentId,
@@ -227,6 +246,10 @@ const getEngagementData = async (
     collection.countDocuments({
       type: EventActionType.REPLY,
       "data.rootParentId": contentId,
+    }),
+    collection.countDocuments({
+      $or: [{ type: EventActionType.POST }, { type: EventActionType.REPLY }],
+      "data.embeds": contentId,
     }),
   ]);
 
@@ -236,6 +259,9 @@ const getEngagementData = async (
     },
     rootReplies: {
       [EventService.FARCASTER]: rootReplies,
+    },
+    embeds: {
+      [EventService.FARCASTER]: embeds,
     },
   };
 };

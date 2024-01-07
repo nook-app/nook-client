@@ -8,9 +8,9 @@ export enum QueueName {
   ContentIngress = "content-ingress",
 }
 
-type QueueType = {
+type QueueType<T> = {
   [QueueName.FarcasterIngress]: Message;
-  [QueueName.Events]: RawEvent;
+  [QueueName.Events]: RawEvent<T>;
   [QueueName.ContentIngress]: ContentRequest;
 };
 
@@ -36,16 +36,16 @@ const formatQueueName = (queueName: QueueName) => {
   return `{${queueName}}`;
 };
 
-export const getQueue = <N extends QueueName>(
+export const getQueue = <N extends QueueName, T>(
   queueName: N,
-): Queue<QueueType[N]> => {
-  return new Queue<QueueType[N]>(formatQueueName(queueName), queueOptions);
+): Queue<QueueType<T>[N]> => {
+  return new Queue<QueueType<T>[N]>(formatQueueName(queueName), queueOptions);
 };
 
-export const getWorker = <N extends QueueName>(
+export const getWorker = <N extends QueueName, T>(
   queueName: N,
-  jobFunction: (job: Job<QueueType[N]>) => Promise<void>,
-): Worker<QueueType[N]> => {
+  jobFunction: (job: Job<QueueType<T>[N]>) => Promise<void>,
+): Worker<QueueType<T>[N]> => {
   return new Worker(formatQueueName(queueName), jobFunction, {
     connection,
   });

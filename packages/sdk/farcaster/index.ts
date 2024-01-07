@@ -22,6 +22,10 @@ export const getCasts = async ({
 }: { uris?: string[]; fidHashes?: FidHash[] }): Promise<
   FarcasterCastAddData[] | undefined
 > => {
+  if (!uris?.length && !fidHashes?.length) {
+    return [];
+  }
+
   const response = await fetch(`${process.env.FARCASTER_SERVICE_URL}/casts`, {
     method: "POST",
     headers: {
