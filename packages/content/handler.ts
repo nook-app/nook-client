@@ -13,6 +13,15 @@ export const getContentHandler = async () => {
   return async (job: Job<ContentRequest>) => {
     console.log(`[content] processing ${job.data.contentId}`);
 
+    if (
+      await contentCollection.findOne({
+        contentId: job.data.contentId,
+      })
+    ) {
+      console.log(`[content] already processed ${job.data.contentId}`);
+      return;
+    }
+
     let content: Content | undefined;
 
     if (job.data.contentId.startsWith("farcaster://cast/")) {
