@@ -9,7 +9,7 @@ export const publishRawEvent = async (
   const eventId = `${source.service}-${source.id}`;
   const queue = getQueue(QueueName.Events);
   await queue.add(eventId, {
-    timestamp,
+    timestamp: new Date(timestamp),
     source,
     data,
   });

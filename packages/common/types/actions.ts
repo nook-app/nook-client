@@ -24,7 +24,7 @@ export type EventActionBase = {
   source: EventSource;
 
   /** Timestamp for when the event occurred */
-  timestamp: number;
+  timestamp: Date;
 
   /** Identity of user who triggered the event */
   userId: string;

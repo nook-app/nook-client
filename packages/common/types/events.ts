@@ -11,7 +11,7 @@ export enum EventService {
 }
 
 export enum EventType {
-  CAST_ADD = "cast_add",
+  CAST_ADD = "castAdd",
 }
 
 export type EventSource = {
@@ -36,7 +36,7 @@ export type RawEvent = {
   source: EventSource;
 
   /** Timestamp for when the event occurred */
-  timestamp: number;
+  timestamp: Date;
 
   /** Raw data sent from the source */
   data: RawEventData;

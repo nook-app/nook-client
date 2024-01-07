@@ -17,7 +17,8 @@
     "./events": "./dist/events/index.js",
     "./identities": "./dist/identities/index.js",
     "./prisma/farcaster": "./dist/prisma/farcaster.js",
-    "./prisma/identity": "./dist/prisma/identity.js"
+    "./prisma/identity": "./dist/prisma/identity.js",
+    "./mongo": "./dist/mongo/index.js"
   },
   "dependencies": {
     "@farcaster/hub-nodejs": "^0.10.19",

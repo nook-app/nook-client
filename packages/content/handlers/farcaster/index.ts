@@ -1,8 +1,10 @@
 import {
   Application,
-  Content,
+  ContentEngagement,
   ContentRequest,
   ContentType,
+  EventActionType,
+  EventService,
   FarcasterCastAddData,
   PostContent,
   PostData,
@@ -13,31 +15,34 @@ import {
 import { toFarcasterURI } from "@flink/farcaster/utils";
 import { Identity } from "@flink/identity/types";
 import { sdk } from "@flink/sdk";
-import { ObjectId } from "mongodb";
-import { publishContentRequests } from "../utils";
+import { publishContentRequests } from "../../utils";
+import { HandlerArgs } from "../../types";
+import { MongoClient, MongoCollection } from "@flink/common/mongo";
 
-export const getAndTransformCastAddToContent = async (
-  contentId: string,
-): Promise<Content | undefined> => {
-  const cast = await sdk.farcaster.getCastByURI(contentId);
+export const getAndTransformCastAddToContent = async ({
+  client,
+  request,
+}: HandlerArgs) => {
+  const content = await client.findContent(request.contentId);
+  if (content?.engagement) {
+    console.log(`[content] already processed ${request.contentId}`);
+    return;
+  }
+
+  const cast = await sdk.farcaster.getCastByURI(request.contentId);
   if (!cast) {
     return;
   }
 
-  return transformCastAddToContent(cast);
-};
-
-export const transformCastAddToContent = async (
-  cast: FarcasterCastAddData,
-): Promise<Content> => {
   if (cast.parentHash) {
-    return await transformCastAddToReply(cast);
+    await transformCastAddToReply(client, cast);
   }
 
-  return await transformCastAddToPost(cast);
+  await transformCastAddToPost(client, cast);
 };
 
 export const transformCastAddToPost = async (
+  client: MongoClient,
   cast: FarcasterCastAddData,
 ): Promise<PostContent> => {
   const identities = await sdk.identity.getForFids([
@@ -54,15 +59,16 @@ export const transformCastAddToPost = async (
 
   const data = transformCast(cast, fidToIdentity);
 
+  const contentId = toFarcasterURI(cast);
   const content: PostContent = {
-    _id: new ObjectId(),
-    contentId: toFarcasterURI(cast),
+    contentId,
     submitterId: data.userId,
     createdAt: new Date(),
-    timestamp: cast.timestamp,
+    timestamp: new Date(cast.timestamp),
     type: ContentType.POST,
     data,
     relations: [],
+    engagement: await getEngagementData(client, contentId),
   };
 
   const contentRequests: ContentRequest[] = [
@@ -76,12 +82,16 @@ export const transformCastAddToPost = async (
     })),
   ];
 
-  await publishContentRequests(contentRequests);
+  await Promise.all([
+    publishContentRequests(contentRequests),
+    client.upsertContent(content),
+  ]);
 
   return content;
 };
 
 export const transformCastAddToReply = async (
+  client: MongoClient,
   cast: FarcasterCastAddData,
 ): Promise<ReplyContent> => {
   const casts = (
@@ -132,18 +142,19 @@ export const transformCastAddToReply = async (
     parent: parent ? transformCast(parent, fidToIdentity) : undefined,
   } as ReplyData;
 
+  const contentId = toFarcasterURI(cast);
   const content: ReplyContent = {
-    _id: new ObjectId(),
-    contentId: toFarcasterURI(cast),
+    contentId,
     submitterId: data.userId,
     createdAt: new Date(),
-    timestamp: cast.timestamp,
+    timestamp: new Date(cast.timestamp),
     type: ContentType.REPLY,
     data,
     relations: [],
+    engagement: await getEngagementData(client, contentId),
   };
 
-  const additionalContent: ContentRequest[] = [
+  const contentRequests: ContentRequest[] = [
     {
       contentId: content.data.rootParentId,
       submitterId: content.data.rootParentUserId,
@@ -158,7 +169,10 @@ export const transformCastAddToReply = async (
     })),
   ];
 
-  await publishContentRequests(additionalContent);
+  await Promise.all([
+    publishContentRequests(contentRequests),
+    client.upsertContent(content),
+  ]);
 
   return content;
 };
@@ -198,4 +212,30 @@ const extractFidsFromCast = (cast: FarcasterCastAddData): string[] => {
     cast.rootParentFid,
     ...cast.mentions.map((mention) => mention.mention),
   ].filter(Boolean);
+};
+
+const getEngagementData = async (
+  client: MongoClient,
+  contentId: string,
+): Promise<ContentEngagement> => {
+  const collection = client.getCollection(MongoCollection.Actions);
+  const [replies, rootReplies] = await Promise.all([
+    collection.countDocuments({
+      type: EventActionType.REPLY,
+      "data.parentId": contentId,
+    }),
+    collection.countDocuments({
+      type: EventActionType.REPLY,
+      "data.rootParentId": contentId,
+    }),
+  ]);
+
+  return {
+    replies: {
+      [EventService.FARCASTER]: replies,
+    },
+    rootReplies: {
+      [EventService.FARCASTER]: rootReplies,
+    },
+  };
 };

@@ -1,5 +1,6 @@
 import { ObjectId } from "mongodb";
 import { PostData, ReplyData } from "./contentTypes/post";
+import { EventService } from "./events";
 
 export enum RelationType {
   PARENT = "PARENT",
@@ -21,10 +22,34 @@ export type ContentRequest = {
   submitterId: string;
 };
 
-export type ContentBase = {
-  /** ID */
-  _id: ObjectId;
+export type ContentEngagement = {
+  /** Number of likes for this content */
+  likes?: {
+    [key in EventService]?: number;
+  };
 
+  /** Number of reposts for this content */
+  reposts?: {
+    [key in EventService]?: number;
+  };
+
+  /** Number of replies for this content */
+  replies?: {
+    [key in EventService]?: number;
+  };
+
+  /** Number of root replies for this content */
+  rootReplies?: {
+    [key in EventService]?: number;
+  };
+
+  /** Numbe of embeds for this content */
+  embeds?: {
+    [key in EventService]?: number;
+  };
+};
+
+export type ContentBase = {
   /** ID for the content in URI format */
   contentId: string;
 
@@ -35,13 +60,16 @@ export type ContentBase = {
   creatorId?: string;
 
   /** Timestamp content was created at */
-  timestamp: number;
+  timestamp: Date;
 
   /** Related content */
   relations: {
     type: RelationType;
     contentId: string;
   }[];
+
+  /** Engagement metrics */
+  engagement?: ContentEngagement;
 
   /** Date record was created at */
   createdAt: Date;

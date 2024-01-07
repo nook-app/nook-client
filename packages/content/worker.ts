@@ -1,5 +1,5 @@
 import { QueueName, getWorker } from "@flink/common/queues";
-import { getContentHandler } from "./handler";
+import { getContentHandler } from "./handlers";
 
 const run = async () => {
   const handler = await getContentHandler();
