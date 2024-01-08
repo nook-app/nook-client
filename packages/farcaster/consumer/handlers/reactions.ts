@@ -7,7 +7,6 @@ import {
 import {
   bufferToHex,
   timestampToDate,
-  FidHandlerArgs,
   MessageHandlerArgs,
   hexToBuffer,
 } from "../../utils";
@@ -223,6 +222,7 @@ const transformToCastReactionEvent = (
   }
 
   return {
+    eventId: `${type}-${reaction.fid}-${reaction.targetHash}-${reaction.reactionType}`,
     source: {
       service: EventService.FARCASTER,
       type,
@@ -254,6 +254,7 @@ const transformToUrlReactionEvent = (
   }
 
   return {
+    eventId: `${type}-${reaction.fid}-${reaction.targetUrl}`,
     source: {
       service: EventService.FARCASTER,
       type,

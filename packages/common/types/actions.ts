@@ -25,7 +25,7 @@ export type EventActionBase = {
   _id: ObjectId;
 
   /** Event ID */
-  eventId: ObjectId;
+  eventId: string;
 
   /** Source data */
   source: EventSource;

@@ -66,7 +66,7 @@ export class MongoClient {
   upsertEvent = async <T>(event: UserEvent<T>) => {
     const collection = this.getCollection(MongoCollection.Events);
     await collection.deleteOne({
-      source: event.source,
+      eventId: event.eventId,
     });
     await collection.insertOne(event);
   };

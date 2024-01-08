@@ -56,23 +56,26 @@ export const handleCastReactionAddOrRemove = async (
 
   const eventId = new ObjectId();
   const userId = fidToIdentity[rawEvent.data.fid].id;
+  const targetUserId = fidToIdentity[rawEvent.data.targetFid].id;
   const contentId = toFarcasterURI({
     fid: rawEvent.data.targetFid,
     hash: rawEvent.data.targetHash,
   });
+
   const actions: EventAction<EventActionData>[] = [
     {
       _id: new ObjectId(),
-      eventId,
+      eventId: rawEvent.eventId,
       source: rawEvent.source,
       timestamp: rawEvent.timestamp,
       userId,
-      userIds: [userId],
+      userIds: [userId, targetUserId],
       contentIds: [contentId],
       createdAt: new Date(),
       type: eventActionType,
       data: {
         userId,
+        targetUserId,
         contentId,
       },
     },
@@ -80,7 +83,6 @@ export const handleCastReactionAddOrRemove = async (
 
   const event: UserEvent<FarcasterCastReactionData> = {
     ...rawEvent,
-    _id: eventId,
     userId,
     actions: actions.map(({ _id }) => _id),
     createdAt: actions[0].createdAt,
@@ -91,7 +93,7 @@ export const handleCastReactionAddOrRemove = async (
     client.upsertActions(actions),
     incrementOrDecrement(client, contentId, rawEvent),
     publishContentRequest({
-      submitterId: fidToIdentity[rawEvent.data.targetFid].id,
+      submitterId: targetUserId,
       contentId,
     }),
   ]);

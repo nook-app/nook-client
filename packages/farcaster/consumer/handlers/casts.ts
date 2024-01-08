@@ -3,7 +3,6 @@ import {
   bufferToHex,
   hexToBuffer,
   timestampToDate,
-  FidHandlerArgs,
   MessageHandlerArgs,
 } from "../../utils";
 import {
@@ -354,6 +353,7 @@ const transformToEvent = (
   backfill = false,
 ): RawEvent<FarcasterCastAddData> => {
   return {
+    eventId: `${EventType.CAST_ADD}-${cast.fid}-${cast.hash}`,
     source: {
       service: EventService.FARCASTER,
       type: EventType.CAST_ADD,

@@ -38,6 +38,9 @@ export type EventSource = {
  * Raw event payload sent from any source service
  */
 export type RawEvent<T> = {
+  /** Event ID */
+  eventId: string;
+
   /** Source data */
   source: EventSource;
 
@@ -55,9 +58,6 @@ export type RawEvent<T> = {
  * Event object after being processed by the event service
  */
 export type UserEvent<T> = RawEvent<T> & {
-  /** ID */
-  _id: ObjectId;
-
   /** Identity of user who triggered the event */
   userId: string;
 

@@ -30,11 +30,10 @@ const transformCastAddToPostEvent = async (
 ) => {
   const content = await transformCastAddToPost(client, rawEvent.data);
 
-  const eventId = new ObjectId();
   const actions: EventAction<EventActionData>[] = [
     {
       _id: new ObjectId(),
-      eventId,
+      eventId: rawEvent.eventId,
       source: rawEvent.source,
       timestamp: rawEvent.timestamp,
       userId: content.data.userId,
@@ -57,7 +56,6 @@ const transformCastAddToPostEvent = async (
 
   const event: UserEvent<FarcasterCastAddData> = {
     ...rawEvent,
-    _id: eventId,
     userId: content.data.userId,
     actions: actions.map(({ _id }) => _id),
     createdAt: content.createdAt,
@@ -72,11 +70,10 @@ const transformCastAddToReplyEvent = async (
 ) => {
   const content = await transformCastAddToReply(client, rawEvent.data);
 
-  const eventId = new ObjectId();
   const actions: EventAction<EventActionData>[] = [
     {
       _id: new ObjectId(),
-      eventId,
+      eventId: rawEvent.eventId,
       source: rawEvent.source,
       timestamp: rawEvent.timestamp,
       userId: content.data.userId,
@@ -96,7 +93,6 @@ const transformCastAddToReplyEvent = async (
 
   const event: UserEvent<FarcasterCastAddData> = {
     ...rawEvent,
-    _id: eventId,
     userId: content.data.userId,
     actions: actions.map(({ _id }) => _id),
     createdAt: content.createdAt,
