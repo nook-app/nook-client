@@ -86,8 +86,6 @@ const incrementOrDecrement = async (
   contentId: string,
   rawEvent: RawEvent<FarcasterUrlReactionData>,
 ) => {
-  if (rawEvent.backfill) return;
-
   const contentEngagementType =
     rawEvent.data.reactionType === FarcasterReactionType.LIKE
       ? ContentEngagementType.LIKES
