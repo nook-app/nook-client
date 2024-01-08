@@ -1,4 +1,4 @@
-import { MongoClient } from "@flink/common/mongo";
+import { MongoClient, MongoCollection } from "@flink/common/mongo";
 import {
   ContentEngagementType,
   EventAction,
@@ -96,6 +96,24 @@ export const handleCastReactionAddOrRemove = async (
       contentId,
     }),
   ]);
+
+  if (isRemove) {
+    const collection = client.getCollection(MongoCollection.Actions);
+    await collection.updateOne(
+      {
+        "source.id": rawEvent.source.id,
+        type:
+          eventActionType === EventActionType.UNLIKE
+            ? EventActionType.LIKE
+            : EventActionType.REPOST,
+      },
+      {
+        $set: {
+          deletedAt: new Date(),
+        },
+      },
+    );
+  }
 };
 
 const incrementOrDecrement = async (

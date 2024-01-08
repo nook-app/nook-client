@@ -5,6 +5,13 @@ import {
   FidHandlerArgs,
   MessageHandlerArgs,
 } from "../../utils";
+import {
+  EventService,
+  EventType,
+  FarcasterLinkData,
+  RawEvent,
+} from "@flink/common/types";
+import { publishRawEvent, publishRawEvents } from "@flink/common/queues";
 
 const prisma = new PrismaClient();
 
@@ -27,6 +34,9 @@ export const handleLinkAdd = async ({ message }: MessageHandlerArgs) => {
   console.log(
     `[link-add] [${link.fid}] added ${link.linkType} to ${link.targetFid}`,
   );
+
+  const event = transformToLinkEvent(EventType.LINK_ADD, link);
+  await publishRawEvent(event);
 };
 
 export const handleLinkRemove = async ({ message }: MessageHandlerArgs) => {
@@ -47,6 +57,9 @@ export const handleLinkRemove = async ({ message }: MessageHandlerArgs) => {
   console.log(
     `[link-remove] [${link.fid}] removed ${link.linkType} to ${link.targetFid}`,
   );
+
+  const event = transformToLinkEvent(EventType.LINK_REMOVE, link);
+  await publishRawEvent(event);
 };
 
 const messageToLink = (message: Message): FarcasterLink | undefined => {
@@ -66,4 +79,31 @@ export const backfillLinks = async (messages: Message[]) => {
     data: links,
     skipDuplicates: true,
   });
+
+  await publishRawEvents(
+    links.map((link) => transformToLinkEvent(EventType.LINK_ADD, link)),
+    true,
+  );
+};
+
+const transformToLinkEvent = (
+  type: EventType,
+  link: FarcasterLink,
+): RawEvent<FarcasterLinkData> => {
+  return {
+    eventId: `${type}-${link.fid}-${link.linkType}-${link.targetFid}`,
+    source: {
+      service: EventService.FARCASTER,
+      type,
+      id: `${link.fid}-${link.linkType}-${link.targetFid}`,
+      userId: link.fid.toString(),
+    },
+    timestamp: link.timestamp,
+    data: {
+      fid: link.fid.toString(),
+      linkType: link.linkType,
+      targetFid: link.targetFid.toString(),
+      timestamp: link.timestamp.getTime(),
+    },
+  };
 };

@@ -37,7 +37,7 @@ export class MongoClient {
     return this.db;
   }
 
-  getCollection(collection: string): Collection {
+  getCollection(collection: MongoCollection): Collection {
     return this.getDb().collection(collection);
   }
 

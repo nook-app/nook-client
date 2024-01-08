@@ -8,3 +8,11 @@ export type ReactionData = {
   /** Content user reacted to */
   contentId: string;
 };
+
+export type FollowData = {
+  /** Identity of user who followed */
+  userId: string;
+
+  /** Identity of user who was followed */
+  targetUserId: string;
+};

@@ -18,6 +18,8 @@ export enum EventType {
   CAST_REACTION_REMOVE = "castReactionRemove",
   URL_REACTION_ADD = "urlReactionAdd",
   URL_REACTION_REMOVE = "urlReactionRemove",
+  LINK_ADD = "linkAdd",
+  LINK_REMOVE = "linkRemove",
 }
 
 export type EventSource = {

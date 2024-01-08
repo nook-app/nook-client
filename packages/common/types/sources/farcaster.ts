@@ -45,3 +45,10 @@ export type FarcasterUrlReactionData = {
   reactionType: FarcasterReactionType;
   url: string;
 };
+
+export type FarcasterLinkData = {
+  timestamp: number;
+  fid: string;
+  linkType: string;
+  targetFid: string;
+};

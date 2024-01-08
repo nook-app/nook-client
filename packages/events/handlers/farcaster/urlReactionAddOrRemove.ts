@@ -1,4 +1,4 @@
-import { MongoClient } from "@flink/common/mongo";
+import { MongoClient, MongoCollection } from "@flink/common/mongo";
 import {
   ContentEngagementType,
   EventAction,
@@ -41,7 +41,6 @@ export const handleUrlReactionAddOrRemove = async (
 
   const identities = await sdk.identity.getForFids([rawEvent.data.fid]);
 
-  const eventId = new ObjectId();
   const userId = identities[0].id;
   const contentId = rawEvent.data.url;
   const actions: EventAction<EventActionData>[] = [
@@ -78,6 +77,24 @@ export const handleUrlReactionAddOrRemove = async (
       contentId,
     }),
   ]);
+
+  if (isRemove) {
+    const collection = client.getCollection(MongoCollection.Actions);
+    await collection.updateOne(
+      {
+        "source.id": rawEvent.source.id,
+        type:
+          eventActionType === EventActionType.UNLIKE
+            ? EventActionType.LIKE
+            : EventActionType.REPOST,
+      },
+      {
+        $set: {
+          deletedAt: new Date(),
+        },
+      },
+    );
+  }
 };
 
 const incrementOrDecrement = async (

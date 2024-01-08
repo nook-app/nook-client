@@ -3,6 +3,7 @@ import {
   EventType,
   FarcasterCastAddData,
   FarcasterCastReactionData,
+  FarcasterLinkData,
   FarcasterUrlReactionData,
   RawEvent,
 } from "@flink/common/types";
@@ -11,6 +12,7 @@ import { Job } from "bullmq";
 import { handleCastAdd } from "./farcaster/castAdd";
 import { handleCastReactionAddOrRemove } from "./farcaster/castReactionAddOrRemove";
 import { handleUrlReactionAddOrRemove } from "./farcaster/urlReactionAddOrRemove";
+import { handleLinkAddOrRemove } from "./farcaster/linkAddOrRemove";
 
 export const getEventsHandler = async () => {
   const client = new MongoClient();
@@ -40,6 +42,13 @@ export const getEventsHandler = async () => {
             await handleUrlReactionAddOrRemove(
               client,
               rawEvent as RawEvent<FarcasterUrlReactionData>,
+            );
+            break;
+          case EventType.LINK_ADD:
+          case EventType.LINK_REMOVE:
+            await handleLinkAddOrRemove(
+              client,
+              rawEvent as RawEvent<FarcasterLinkData>,
             );
             break;
           default:
