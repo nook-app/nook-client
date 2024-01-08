@@ -42,6 +42,7 @@ export const handleUrlReactionAddOrRemove = async (
 
   const eventId = new ObjectId();
   const userId = identities[0].id;
+  const contentId = rawEvent.data.url;
   const actions: EventAction<EventActionData>[] = [
     {
       _id: new ObjectId(),
@@ -50,12 +51,12 @@ export const handleUrlReactionAddOrRemove = async (
       timestamp: rawEvent.timestamp,
       userId,
       userIds: [userId],
-      contentIds: [rawEvent.data.url],
+      contentIds: [contentId],
       createdAt: new Date(),
       type: eventActionType,
       data: {
         userId,
-        contentId: rawEvent.data.url,
+        contentId,
       },
     },
   ];
@@ -68,24 +69,29 @@ export const handleUrlReactionAddOrRemove = async (
     createdAt: actions[0].createdAt,
   };
 
-  const isLike = [EventActionType.LIKE, EventActionType.UNLIKE].includes(
-    eventActionType,
-  );
-
-  const incrementFn = [
-    EventActionType.UNLIKE,
-    EventActionType.UNREPOST,
-  ].includes(eventActionType)
-    ? client.decrementEngagement
-    : client.incrementEngagement;
-
   await Promise.all([
     client.upsertEvent(event),
     client.upsertActions(actions),
-    incrementFn(
-      rawEvent.data.url,
-      isLike ? ContentEngagementType.LIKES : ContentEngagementType.REPOSTS,
-      event.source.service,
-    ),
+    incrementOrDecrement(client, contentId, rawEvent),
   ]);
+};
+
+const incrementOrDecrement = async (
+  client: MongoClient,
+  contentId: string,
+  rawEvent: RawEvent<FarcasterUrlReactionData>,
+) => {
+  if (rawEvent.backfill) return;
+
+  const contentEngagementType =
+    rawEvent.data.reactionType === FarcasterReactionType.LIKE
+      ? ContentEngagementType.LIKES
+      : ContentEngagementType.REPOSTS;
+
+  const fn =
+    rawEvent.source.type === EventType.URL_REACTION_REMOVE
+      ? client.decrementEngagement
+      : client.incrementEngagement;
+
+  await fn(contentId, contentEngagementType, rawEvent.source.service);
 };

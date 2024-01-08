@@ -11,7 +11,7 @@ import {
   transformCastAddToPost,
   transformCastAddToReply,
 } from "@flink/content/handlers/farcaster";
-import { MongoClient, MongoCollection } from "@flink/common/mongo";
+import { MongoClient } from "@flink/common/mongo";
 import { ObjectId } from "mongodb";
 
 export const handleCastAdd = async (

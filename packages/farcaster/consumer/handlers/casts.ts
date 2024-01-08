@@ -17,6 +17,7 @@ import {
   EventService,
   EventType,
   FarcasterCastAddData,
+  FidHash,
   RawEvent,
 } from "@flink/common/types";
 import { publishRawEvent, publishRawEvents } from "@flink/common/events";
@@ -265,17 +266,28 @@ const findRootParent = async (client: HubRpcClient, cast: FarcasterCast) => {
   };
 };
 
-export const batchHandleCastAdd = async ({ client, fid }: FidHandlerArgs) => {
-  const messages = await client.getCastsByFid({ fid });
-  if (messages.isErr()) {
-    throw new Error(messages.error.message);
-  }
+export const backfillCasts = async (
+  client: HubRpcClient,
+  fidHashes: FidHash[],
+) => {
+  const messages = (
+    await Promise.all(
+      fidHashes.map(async ({ fid, hash }) => {
+        const message = await client.getCast({
+          fid: parseInt(fid),
+          hash: hexToBuffer(hash),
+        });
 
-  const casts = messages.value.messages
-    .map(messageToCast)
-    .filter(Boolean) as FarcasterCast[];
+        if (message.isErr()) {
+          return undefined;
+        }
 
-  console.log(`[backfill] [${fid}] added ${casts.length} casts`);
+        return message.value;
+      }),
+    )
+  ).filter(Boolean);
+
+  const casts = messages.map(messageToCast).filter(Boolean);
 
   const rootParents = await Promise.all(
     casts.map((cast) => findRootParent(client, cast)),
@@ -292,7 +304,7 @@ export const batchHandleCastAdd = async ({ client, fid }: FidHandlerArgs) => {
     skipDuplicates: true,
   });
 
-  const embedCasts = messages.value.messages
+  const embedCasts = messages
     .map(messageToCastEmbedCast)
     .filter(Boolean) as FarcasterCastEmbedCast[][];
 
@@ -301,7 +313,7 @@ export const batchHandleCastAdd = async ({ client, fid }: FidHandlerArgs) => {
     skipDuplicates: true,
   });
 
-  const embedUrls = messages.value.messages
+  const embedUrls = messages
     .map(messageToCastEmbedUrl)
     .filter(Boolean) as FarcasterCastEmbedUrl[][];
 
@@ -310,7 +322,7 @@ export const batchHandleCastAdd = async ({ client, fid }: FidHandlerArgs) => {
     skipDuplicates: true,
   });
 
-  const mentions = messages.value.messages
+  const mentions = messages
     .map(messageToCastMentions)
     .filter(Boolean) as FarcasterCastMention[][];
 
@@ -319,16 +331,19 @@ export const batchHandleCastAdd = async ({ client, fid }: FidHandlerArgs) => {
     skipDuplicates: true,
   });
 
-  const events = messages.value.messages.map((message) => {
+  const events = messages.map((message) => {
     return transformToEvent(
       messageToCast(message),
       messageToCastEmbedCast(message),
       messageToCastEmbedUrl(message),
       messageToCastMentions(message),
+      true,
     );
   });
 
   await publishRawEvents(events);
+
+  return events.map((event) => event.data);
 };
 
 const transformToEvent = (
@@ -336,6 +351,7 @@ const transformToEvent = (
   embedCasts: FarcasterCastEmbedCast[],
   embedUrls: FarcasterCastEmbedUrl[],
   mentions: FarcasterCastMention[],
+  backfill = false,
 ): RawEvent<FarcasterCastAddData> => {
   return {
     source: {
@@ -366,5 +382,6 @@ const transformToEvent = (
         hash: e.embedHash,
       })),
     },
+    backfill,
   };
 };

@@ -9,6 +9,7 @@ import {
   timestampToDate,
   FidHandlerArgs,
   MessageHandlerArgs,
+  hexToBuffer,
 } from "../../utils";
 import { publishRawEvent, publishRawEvents } from "@flink/common/events";
 import {
@@ -17,6 +18,7 @@ import {
   FarcasterCastReactionData,
   FarcasterReactionType,
   FarcasterUrlReactionData,
+  FidHash,
   RawEvent,
 } from "@flink/common/types";
 
@@ -167,47 +169,43 @@ const messageToUrlReaction = (
   };
 };
 
-export const batchHandleReactionAdd = async ({
-  client,
-  fid,
-}: FidHandlerArgs) => {
-  const messages = await client.getReactionsByFid({ fid });
-  if (messages.isErr()) {
-    throw new Error(messages.error.message);
-  }
+export const backfillCastReactions = async (
+  client: HubRpcClient,
+  fidHashes: FidHash[],
+) => {
+  const messages = (
+    await Promise.all(
+      fidHashes.map(async ({ fid, hash }) => {
+        const message = await client.getReactionsByCast({
+          targetCastId: {
+            fid: parseInt(fid),
+            hash: hexToBuffer(hash),
+          },
+        });
 
-  const castReactions = messages.value.messages
+        if (message.isErr()) {
+          return undefined;
+        }
+
+        return message.value.messages;
+      }),
+    )
+  )
+    .filter(Boolean)
+    .flat();
+
+  const castReactions = messages
     .map(messageToCastReaction)
     .filter(Boolean) as FarcasterCastReaction[];
-
-  const urlReactions = messages.value.messages
-    .map(messageToUrlReaction)
-    .filter(Boolean) as FarcasterUrlReaction[];
-
-  console.log(
-    `[backfill] [${fid}] added ${
-      castReactions.length + urlReactions.length
-    } reactions`,
-  );
 
   await prisma.farcasterCastReaction.createMany({
     data: castReactions,
     skipDuplicates: true,
   });
 
-  await prisma.farcasterUrlReaction.createMany({
-    data: urlReactions,
-    skipDuplicates: true,
-  });
-
   await publishRawEvents(
     castReactions.map((reaction) =>
-      transformToCastReactionEvent(EventType.CAST_REACTION_ADD, reaction),
-    ),
-  );
-  await publishRawEvents(
-    urlReactions.map((reaction) =>
-      transformToUrlReactionEvent(EventType.URL_REACTION_ADD, reaction),
+      transformToCastReactionEvent(EventType.CAST_REACTION_ADD, reaction, true),
     ),
   );
 };
@@ -215,6 +213,7 @@ export const batchHandleReactionAdd = async ({
 const transformToCastReactionEvent = (
   type: EventType,
   reaction: FarcasterCastReaction,
+  backfill = false,
 ): RawEvent<FarcasterCastReactionData> => {
   let reactionType = FarcasterReactionType.NONE;
   if (reaction.reactionType === 1) {
@@ -238,12 +237,14 @@ const transformToCastReactionEvent = (
       targetFid: reaction.targetFid.toString(),
       targetHash: reaction.targetHash,
     },
+    backfill,
   };
 };
 
 const transformToUrlReactionEvent = (
   type: EventType,
   reaction: FarcasterUrlReaction,
+  backfill = false,
 ): RawEvent<FarcasterUrlReactionData> => {
   let reactionType = FarcasterReactionType.NONE;
   if (reaction.reactionType === 1) {
@@ -266,5 +267,6 @@ const transformToUrlReactionEvent = (
       reactionType,
       url: reaction.targetUrl,
     },
+    backfill,
   };
 };

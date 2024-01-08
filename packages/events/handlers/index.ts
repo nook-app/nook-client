@@ -28,13 +28,15 @@ export const getEventsHandler = async () => {
               rawEvent as RawEvent<FarcasterCastAddData>,
             );
             break;
-          case EventType.CAST_REACTION_ADD || EventType.CAST_REACTION_REMOVE:
+          case EventType.CAST_REACTION_ADD:
+          case EventType.CAST_REACTION_REMOVE:
             await handleCastReactionAddOrRemove(
               client,
               rawEvent as RawEvent<FarcasterCastReactionData>,
             );
             break;
-          case EventType.URL_REACTION_ADD || EventType.URL_REACTION_REMOVE:
+          case EventType.URL_REACTION_ADD:
+          case EventType.URL_REACTION_REMOVE:
             await handleUrlReactionAddOrRemove(
               client,
               rawEvent as RawEvent<FarcasterUrlReactionData>,

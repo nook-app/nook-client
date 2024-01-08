@@ -73,24 +73,29 @@ export const handleCastReactionAddOrRemove = async (
     createdAt: actions[0].createdAt,
   };
 
-  const isLike = [EventActionType.LIKE, EventActionType.UNLIKE].includes(
-    eventActionType,
-  );
-
-  const incrementFn = [
-    EventActionType.UNLIKE,
-    EventActionType.UNREPOST,
-  ].includes(eventActionType)
-    ? client.decrementEngagement
-    : client.incrementEngagement;
-
   await Promise.all([
     client.upsertEvent(event),
     client.upsertActions(actions),
-    incrementFn(
-      contentId,
-      isLike ? ContentEngagementType.LIKES : ContentEngagementType.REPOSTS,
-      event.source.service,
-    ),
+    incrementOrDecrement(client, contentId, rawEvent),
   ]);
+};
+
+const incrementOrDecrement = async (
+  client: MongoClient,
+  contentId: string,
+  rawEvent: RawEvent<FarcasterCastReactionData>,
+) => {
+  if (rawEvent.backfill) return;
+
+  const contentEngagementType =
+    rawEvent.data.reactionType === FarcasterReactionType.LIKE
+      ? ContentEngagementType.LIKES
+      : ContentEngagementType.REPOSTS;
+
+  const fn =
+    rawEvent.source.type === EventType.CAST_REACTION_REMOVE
+      ? client.decrementEngagement
+      : client.incrementEngagement;
+
+  await fn(contentId, contentEngagementType, rawEvent.source.service);
 };

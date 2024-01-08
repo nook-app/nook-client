@@ -46,6 +46,9 @@ export type RawEvent<T> = {
 
   /** Raw data sent from the source */
   data: T;
+
+  /** Whether this event is a backfill event */
+  backfill?: boolean;
 };
 
 /**
