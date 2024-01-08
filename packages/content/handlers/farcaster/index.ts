@@ -24,7 +24,7 @@ export const getAndTransformCastAddToContent = async ({
   request,
 }: HandlerArgs) => {
   const content = await client.findContent(request.contentId);
-  if (content?.engagement) {
+  if (content?.engagement && "likes" in content.engagement) {
     console.log(`[content] already processed ${request.contentId}`);
     return;
   }
@@ -238,7 +238,7 @@ const getEngagementData = async (
   contentId: string,
 ): Promise<ContentEngagement> => {
   const collection = client.getCollection(MongoCollection.Actions);
-  const [replies, rootReplies, embeds] = await Promise.all([
+  const [replies, rootReplies, embeds, likes, reposts] = await Promise.all([
     collection.countDocuments({
       type: EventActionType.REPLY,
       "data.parentId": contentId,
@@ -251,6 +251,14 @@ const getEngagementData = async (
       $or: [{ type: EventActionType.POST }, { type: EventActionType.REPLY }],
       "data.embeds": contentId,
     }),
+    collection.countDocuments({
+      type: EventActionType.LIKE,
+      "data.contentId": contentId,
+    }),
+    collection.countDocuments({
+      type: EventActionType.REPOST,
+      "data.contentId": contentId,
+    }),
   ]);
 
   return {
@@ -262,6 +270,12 @@ const getEngagementData = async (
     },
     embeds: {
       [EventService.FARCASTER]: embeds,
+    },
+    likes: {
+      [EventService.FARCASTER]: likes,
+    },
+    reposts: {
+      [EventService.FARCASTER]: reposts,
     },
   };
 };

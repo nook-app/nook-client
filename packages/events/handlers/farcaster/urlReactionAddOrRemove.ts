@@ -12,6 +12,7 @@ import {
 } from "@flink/common/types";
 import { ObjectId } from "mongodb";
 import { sdk } from "@flink/sdk";
+import { publishContentRequest } from "@flink/content/utils";
 
 export const handleUrlReactionAddOrRemove = async (
   client: MongoClient,
@@ -73,6 +74,10 @@ export const handleUrlReactionAddOrRemove = async (
     client.upsertEvent(event),
     client.upsertActions(actions),
     incrementOrDecrement(client, contentId, rawEvent),
+    publishContentRequest({
+      submitterId: userId,
+      contentId,
+    }),
   ]);
 };
 
