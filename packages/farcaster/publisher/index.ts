@@ -44,7 +44,9 @@ const run = async () => {
 
     console.log(`[farcaster-publisher] published event ${typedEvent.id}`);
 
-    await queue.add(typedEvent.id.toString(), message);
+    await queue.add(typedEvent.id.toString(), message, {
+      jobId: `fc-${typedEvent.id.toString()}`,
+    });
 
     processedEvents++;
     if (processedEvents % EVENT_UPDATE_INTERVAL === 0) {

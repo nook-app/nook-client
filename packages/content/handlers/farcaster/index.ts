@@ -15,9 +15,9 @@ import {
 import { toFarcasterURI } from "@flink/farcaster/utils";
 import { Identity } from "@flink/identity/types";
 import { sdk } from "@flink/sdk";
-import { publishContentRequests } from "../../utils";
 import { HandlerArgs } from "../../types";
 import { MongoClient, MongoCollection } from "@flink/common/mongo";
+import { publishContentRequests } from "@flink/common/queues";
 
 export const getAndTransformCastAddToContent = async ({
   client,

@@ -7,7 +7,7 @@ const run = async () => {
 
   worker.on("failed", (job, err) => {
     if (job) {
-      console.log(`[events] [${job.id}] failed with ${err.message}`);
+      console.log(`[content] [${job.id}] failed with ${err.message}`);
     }
   });
 };

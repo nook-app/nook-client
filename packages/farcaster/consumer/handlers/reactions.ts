@@ -10,7 +10,6 @@ import {
   MessageHandlerArgs,
   hexToBuffer,
 } from "../../utils";
-import { publishRawEvent, publishRawEvents } from "@flink/common/events";
 import {
   EventService,
   EventType,
@@ -20,6 +19,7 @@ import {
   FidHash,
   RawEvent,
 } from "@flink/common/types";
+import { publishRawEvent, publishRawEvents } from "@flink/common/queues";
 
 const prisma = new PrismaClient();
 

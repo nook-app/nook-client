@@ -13,8 +13,8 @@ import {
 import { ObjectId } from "mongodb";
 import { sdk } from "@flink/sdk";
 import { toFarcasterURI } from "@flink/farcaster/utils";
-import { publishContentRequest } from "@flink/content/utils";
 import { Identity } from "@flink/identity/types";
+import { publishContentRequest } from "@flink/common/queues";
 
 export const handleCastReactionAddOrRemove = async (
   client: MongoClient,
@@ -54,7 +54,6 @@ export const handleCastReactionAddOrRemove = async (
     {} as Record<string, Identity>,
   );
 
-  const eventId = new ObjectId();
   const userId = fidToIdentity[rawEvent.data.fid].id;
   const targetUserId = fidToIdentity[rawEvent.data.targetFid].id;
   const contentId = toFarcasterURI({

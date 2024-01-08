@@ -8,8 +8,7 @@
     "start:manual": "tsc && node dist/manual.js"
   },
   "exports": {
-    "./handlers/farcaster": "./dist/handlers/farcaster/index.js",
-    "./utils": "./dist/utils/index.js"
+    "./handlers/farcaster": "./dist/handlers/farcaster/index.js"
   },
   "dependencies": {
     "@flink/common": "*",

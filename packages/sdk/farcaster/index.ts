@@ -39,7 +39,7 @@ export const getCasts = async ({
 
   if (!response.ok) {
     if (response.status !== 404) {
-      console.log(
+      throw new Error(
         `[farcaster] [get-cast] failed with ${response.status} for ${uris}`,
       );
     }

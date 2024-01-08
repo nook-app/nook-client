@@ -19,7 +19,7 @@ import {
   FidHash,
   RawEvent,
 } from "@flink/common/types";
-import { publishRawEvent, publishRawEvents } from "@flink/common/events";
+import { publishRawEvent, publishRawEvents } from "@flink/common/queues";
 
 const prisma = new PrismaClient();
 

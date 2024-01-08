@@ -12,7 +12,7 @@ import {
 } from "@flink/common/types";
 import { ObjectId } from "mongodb";
 import { sdk } from "@flink/sdk";
-import { publishContentRequest } from "@flink/content/utils";
+import { publishContentRequest } from "@flink/common/queues";
 
 export const handleUrlReactionAddOrRemove = async (
   client: MongoClient,

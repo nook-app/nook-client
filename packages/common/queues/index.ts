@@ -1,3 +1,5 @@
+export * from "./enqueue";
+
 import { ConnectionOptions, Job, Queue, QueueOptions, Worker } from "bullmq";
 import { ContentRequest, RawEvent } from "../types";
 import { Message } from "@farcaster/hub-nodejs";
