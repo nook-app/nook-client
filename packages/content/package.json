@@ -9,7 +9,7 @@
   },
   "exports": {
     "./handlers/farcaster": "./dist/handlers/farcaster/index.js",
-    "./utils": "./dist/handlers/utils/index.js"
+    "./utils": "./dist/utils/index.js"
   },
   "dependencies": {
     "@flink/common": "*",
