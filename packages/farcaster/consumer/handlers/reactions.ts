@@ -168,7 +168,7 @@ const messageToUrlReaction = (
   };
 };
 
-export const backfillCastReactions = async (
+export const getAndBackfillCastReactions = async (
   client: HubRpcClient,
   fidHashes: FidHash[],
 ) => {
@@ -193,26 +193,41 @@ export const backfillCastReactions = async (
     .filter(Boolean)
     .flat();
 
-  const castReactions = messages
-    .map(messageToCastReaction)
-    .filter(Boolean) as FarcasterCastReaction[];
+  return await backfillReactions(messages);
+};
+
+export const backfillReactions = async (messages: Message[]) => {
+  const castReactions = messages.map(messageToCastReaction).filter(Boolean);
+  const urlReactions = messages.map(messageToUrlReaction).filter(Boolean);
 
   await prisma.farcasterCastReaction.createMany({
     data: castReactions,
     skipDuplicates: true,
   });
 
+  await prisma.farcasterUrlReaction.createMany({
+    data: urlReactions,
+    skipDuplicates: true,
+  });
+
   await publishRawEvents(
     castReactions.map((reaction) =>
-      transformToCastReactionEvent(EventType.CAST_REACTION_ADD, reaction, true),
+      transformToCastReactionEvent(EventType.CAST_REACTION_ADD, reaction),
     ),
+    true,
+  );
+
+  await publishRawEvents(
+    urlReactions.map((reaction) =>
+      transformToUrlReactionEvent(EventType.URL_REACTION_ADD, reaction),
+    ),
+    true,
   );
 };
 
 const transformToCastReactionEvent = (
   type: EventType,
   reaction: FarcasterCastReaction,
-  backfill = false,
 ): RawEvent<FarcasterCastReactionData> => {
   let reactionType = FarcasterReactionType.NONE;
   if (reaction.reactionType === 1) {
@@ -237,14 +252,12 @@ const transformToCastReactionEvent = (
       targetFid: reaction.targetFid.toString(),
       targetHash: reaction.targetHash,
     },
-    backfill,
   };
 };
 
 const transformToUrlReactionEvent = (
   type: EventType,
   reaction: FarcasterUrlReaction,
-  backfill = false,
 ): RawEvent<FarcasterUrlReactionData> => {
   let reactionType = FarcasterReactionType.NONE;
   if (reaction.reactionType === 1) {
@@ -268,6 +281,5 @@ const transformToUrlReactionEvent = (
       reactionType,
       url: reaction.targetUrl,
     },
-    backfill,
   };
 };

@@ -1,8 +1,8 @@
 import fastify, { FastifyRequest } from "fastify";
 import { PrismaClient } from "@flink/common/prisma/farcaster";
 import { getSSLHubRpcClient } from "@farcaster/hub-nodejs";
-import { backfillCasts } from "../consumer/handlers/casts";
-import { backfillCastReactions } from "../consumer/handlers/reactions";
+import { getAndBackfillCasts } from "../consumer/handlers/casts";
+import { getAndBackfillCastReactions } from "../consumer/handlers/reactions";
 
 const prisma = new PrismaClient();
 
@@ -99,8 +99,8 @@ const run = async () => {
 
       let newCasts = [];
       if (missingCasts.length > 0) {
-        await backfillCastReactions(client, missingCasts);
-        newCasts = await backfillCasts(client, missingCasts);
+        await getAndBackfillCastReactions(client, missingCasts);
+        newCasts = await getAndBackfillCasts(client, missingCasts);
       }
 
       const hashToCast = [...existingCasts, ...newCasts]

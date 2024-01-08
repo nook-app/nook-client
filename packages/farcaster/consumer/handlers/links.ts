@@ -60,18 +60,8 @@ const messageToLink = (message: Message): FarcasterLink | undefined => {
   };
 };
 
-export const batchHandleLinkAdd = async ({ client, fid }: FidHandlerArgs) => {
-  const messages = await client.getLinksByFid({ fid });
-  if (messages.isErr()) {
-    throw new Error(messages.error.message);
-  }
-
-  const links = messages.value.messages
-    .map(messageToLink)
-    .filter(Boolean) as FarcasterLink[];
-
-  console.log(`[backfill] [${fid}] added ${links.length} links`);
-
+export const backfillLinks = async (messages: Message[]) => {
+  const links = messages.map(messageToLink).filter(Boolean) as FarcasterLink[];
   await prisma.farcasterLink.createMany({
     data: links,
     skipDuplicates: true,

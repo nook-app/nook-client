@@ -75,23 +75,8 @@ const messageToVerification = (
   };
 };
 
-export const batchHandleVerificationAdd = async ({
-  client,
-  fid,
-}: FidHandlerArgs) => {
-  const messages = await client.getVerificationsByFid({ fid });
-  if (messages.isErr()) {
-    throw new Error(messages.error.message);
-  }
-
-  const verifications = messages.value.messages
-    .map(messageToVerification)
-    .filter(Boolean) as FarcasterVerification[];
-
-  console.log(
-    `[backfill] [${fid}] added ${verifications.length} verifications`,
-  );
-
+export const backfillVerifications = async (messages: Message[]) => {
+  const verifications = messages.map(messageToVerification).filter(Boolean);
   await prisma.farcasterVerification.createMany({
     data: verifications,
     skipDuplicates: true,

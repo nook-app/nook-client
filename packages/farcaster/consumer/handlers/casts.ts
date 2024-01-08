@@ -265,7 +265,7 @@ const findRootParent = async (client: HubRpcClient, cast: FarcasterCast) => {
   };
 };
 
-export const backfillCasts = async (
+export const getAndBackfillCasts = async (
   client: HubRpcClient,
   fidHashes: FidHash[],
 ) => {
@@ -286,6 +286,13 @@ export const backfillCasts = async (
     )
   ).filter(Boolean);
 
+  return await backfillCasts(client, messages);
+};
+
+export const backfillCasts = async (
+  client: HubRpcClient,
+  messages: Message[],
+) => {
   const casts = messages.map(messageToCast).filter(Boolean);
 
   const rootParents = await Promise.all(
@@ -336,11 +343,10 @@ export const backfillCasts = async (
       messageToCastEmbedCast(message),
       messageToCastEmbedUrl(message),
       messageToCastMentions(message),
-      true,
     );
   });
 
-  await publishRawEvents(events);
+  await publishRawEvents(events, true);
 
   return events.map((event) => event.data);
 };
@@ -350,7 +356,6 @@ const transformToEvent = (
   embedCasts: FarcasterCastEmbedCast[],
   embedUrls: FarcasterCastEmbedUrl[],
   mentions: FarcasterCastMention[],
-  backfill = false,
 ): RawEvent<FarcasterCastAddData> => {
   return {
     eventId: `${EventType.CAST_ADD}-${cast.fid}-${cast.hash}`,
@@ -382,6 +387,5 @@ const transformToEvent = (
         hash: e.embedHash,
       })),
     },
-    backfill,
   };
 };

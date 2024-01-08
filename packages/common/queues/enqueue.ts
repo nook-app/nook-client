@@ -1,17 +1,27 @@
 import { QueueName, getQueue } from ".";
 import { ContentRequest, RawEvent } from "../types";
 
-export const publishRawEvent = async <T>(event: RawEvent<T>) => {
+export const publishRawEvent = async <T>(
+  event: RawEvent<T>,
+  backfill = false,
+) => {
   const eventId = `${event.source.service}-${event.source.id}`;
-  const queue = getQueue(QueueName.Events);
+  const queue = getQueue(
+    backfill ? QueueName.EventsBackfill : QueueName.Events,
+  );
   await queue.add(eventId, event, {
     jobId: eventId,
   });
 };
 
-export const publishRawEvents = async <T>(events: RawEvent<T>[]) => {
+export const publishRawEvents = async <T>(
+  events: RawEvent<T>[],
+  backfill = false,
+) => {
   if (!events.length) return;
-  const queue = getQueue(QueueName.Events);
+  const queue = getQueue(
+    backfill ? QueueName.EventsBackfill : QueueName.Events,
+  );
   await queue.addBulk(
     events.map((event) => ({
       name: event.eventId,
@@ -23,15 +33,25 @@ export const publishRawEvents = async <T>(events: RawEvent<T>[]) => {
   );
 };
 
-export const publishContentRequest = async (request: ContentRequest) => {
-  const queue = getQueue(QueueName.ContentIngress);
+export const publishContentRequest = async (
+  request: ContentRequest,
+  backfill = false,
+) => {
+  const queue = getQueue(
+    backfill ? QueueName.ContentBackfill : QueueName.ContentIngress,
+  );
   await queue.add(request.contentId, request, {
     jobId: request.contentId,
   });
 };
 
-export const publishContentRequests = async (requests: ContentRequest[]) => {
-  const queue = getQueue(QueueName.ContentIngress);
+export const publishContentRequests = async (
+  requests: ContentRequest[],
+  backfill = false,
+) => {
+  const queue = getQueue(
+    backfill ? QueueName.ContentBackfill : QueueName.ContentIngress,
+  );
   await queue.addBulk(
     requests.map((request) => ({
       name: request.contentId,

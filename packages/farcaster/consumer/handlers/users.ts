@@ -1,14 +1,6 @@
-import {
-  PrismaClient,
-  FarcasterUsernameProof,
-  FarcasterUser,
-} from "@flink/common/prisma/farcaster";
-import {
-  bufferToHex,
-  timestampToDate,
-  FidHandlerArgs,
-  MessageHandlerArgs,
-} from "../../utils";
+import { PrismaClient, FarcasterUser } from "@flink/common/prisma/farcaster";
+import { MessageHandlerArgs } from "../../utils";
+import { Message } from "@farcaster/hub-nodejs";
 
 const prisma = new PrismaClient();
 
@@ -18,44 +10,18 @@ export const handleUserDataAdd = async ({
 }: MessageHandlerArgs) => {
   const fid = message.data?.fid;
   if (!fid) return;
-  await handlerUserUpdate({ client, fid });
-};
-
-export const handleUsernameProofAdd = async ({
-  message,
-}: MessageHandlerArgs) => {
-  if (!message.data?.usernameProofBody) return;
-
-  const proof: FarcasterUsernameProof = {
-    fid: BigInt(message.data.fid),
-    username: Buffer.from(message.data.usernameProofBody.name).toString(),
-    address: bufferToHex(message.data.usernameProofBody.owner),
-    type: message.data.usernameProofBody.type,
-    timestamp: timestampToDate(message.data.timestamp),
-    deletedAt: null,
-  };
-
-  await prisma.farcasterUsernameProof.upsert({
-    where: {
-      username: proof.username,
-    },
-    create: proof,
-    update: proof,
-  });
-
-  console.log(`[username-proof-add] [${proof.fid}] added ${proof.username}`);
-};
-
-export const handlerUserUpdate = async ({ client, fid }: FidHandlerArgs) => {
   console.log(`[user-update] [${fid}] updating user`);
 
-  const userDataMessages = await client.getUserDataByFid({ fid });
-  if (userDataMessages.isErr()) {
-    throw new Error(userDataMessages.error.message);
+  const userDatas = await client.getUserDataByFid({ fid });
+  if (userDatas.isErr()) {
+    throw new Error(userDatas.error.message);
   }
 
-  const messages = userDataMessages.value.messages;
+  await backfillUser(userDatas.value.messages);
+};
 
+export const backfillUser = async (messages: Message[]) => {
+  const fid = messages[0].data?.fid;
   const user: FarcasterUser = {
     fid: BigInt(fid),
     pfp: null,
