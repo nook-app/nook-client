@@ -86,7 +86,9 @@ export const transformCastToPost = async (
       (cast) => cast.fid === cast.parentFid && cast.hash === cast.parentHash,
     );
     data.rootParent = transformCast(rootParent, fidToIdentity);
-    data.parent = transformCast(parent, fidToIdentity);
+    if (parent) {
+      data.parent = transformCast(parent, fidToIdentity);
+    }
     data.parentId = toFarcasterURI({
       fid: cast.parentFid,
       hash: cast.parentHash,
