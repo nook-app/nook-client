@@ -1,7 +1,10 @@
 import fastify, { FastifyRequest } from "fastify";
 import { PrismaClient } from "@flink/common/prisma/farcaster";
 import { getSSLHubRpcClient } from "@farcaster/hub-nodejs";
-import { getAndBackfillCasts } from "../consumer/handlers/casts";
+import {
+  getAndBackfillCasts,
+  transformToCastData,
+} from "../consumer/handlers/casts";
 
 const prisma = new PrismaClient();
 
@@ -77,50 +80,32 @@ const run = async () => {
         );
       }
 
-      const existingCasts = await prisma.farcasterCast.findMany({
-        where: {
-          OR: ids.map(({ fid, hash }) => ({
-            fid: BigInt(fid),
-            hash,
-          })),
-        },
-        include: {
-          mentions: true,
-          casts: true,
-          urls: true,
-        },
-      });
+      const casts = (
+        await prisma.farcasterCast.findMany({
+          where: {
+            hash: {
+              in: ids.map(({ hash }) => hash),
+            },
+          },
+        })
+      ).map(transformToCastData);
 
-      const existingHashes = existingCasts.map((cast) => cast.hash);
+      const existingHashes = casts.map((cast) => cast.hash);
       const missingCasts = ids.filter(
         ({ hash }) => !existingHashes.includes(hash),
       );
 
-      let newCasts = [];
       if (missingCasts.length > 0) {
-        newCasts = await getAndBackfillCasts(client, missingCasts);
+        casts.push(...(await getAndBackfillCasts(client, missingCasts)));
       }
 
-      const hashToCast = [...existingCasts, ...newCasts]
-        .filter(Boolean)
-        .reduce((acc, cast) => {
-          acc[`${cast.fid}-${cast.hash}`] = cast;
-          return acc;
-        }, {});
-
-      const casts = ids
-        .map(({ fid, hash }) => hashToCast[`${fid}-${hash}`])
-        .map((cast) =>
-          cast
-            ? {
-                ...cast,
-                timestamp: cast.timestamp.getTime(),
-              }
-            : undefined,
-        );
+      const hashToCast = casts.filter(Boolean).reduce((acc, cast) => {
+        acc[`${cast.fid}-${cast.hash}`] = cast;
+        return acc;
+      }, {});
 
       reply.send({
-        casts,
+        casts: ids.map(({ fid, hash }) => hashToCast[`${fid}-${hash}`]),
       });
     },
   );

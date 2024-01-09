@@ -4,10 +4,10 @@
   "private": true,
   "main": "./dist/index.js",
   "scripts": {
-    "build": "yarn generate:prisma && tsc && cp -r prisma/generated dist/prisma/generated",
-    "generate:prisma": "npx prisma generate --schema ./prisma/schemas/farcaster.prisma && npx prisma generate --schema ./prisma/schemas/identity.prisma",
-    "push:farcaster": "npx prisma db push --schema ./prisma/schemas/farcaster.prisma",
-    "push:identity": "npx prisma db push --schema ./prisma/schemas/identity.prisma"
+    "build": "yarn db:generate && tsc && cp -r prisma/generated dist/prisma/generated",
+    "db:generate": "npx prisma generate --schema ./prisma/schemas/farcaster.prisma && npx prisma generate --schema ./prisma/schemas/identity.prisma",
+    "db:push:farcaster": "npx prisma db push --schema ./prisma/schemas/farcaster.prisma",
+    "db:push:identity": "npx prisma db push --schema ./prisma/schemas/identity.prisma"
   },
   "exports": {
     "./queues": "./dist/queues/index.js",

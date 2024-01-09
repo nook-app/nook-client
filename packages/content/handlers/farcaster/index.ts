@@ -92,13 +92,7 @@ export const transformCastToPost = async (
     });
   }
 
-  const content = await transformPostToContent(
-    client,
-    toFarcasterURI(cast),
-    data,
-  );
-
-  const promises = [client.upsertContent(content)];
+  const promises = [getAndUpsertContent(client, toFarcasterURI(cast), data)];
 
   const contentRequests: ContentRequest[] = data.embeds.map((contentId) => ({
     contentId,
@@ -127,9 +121,9 @@ export const transformCastToPost = async (
     }
   }
 
-  promises.push(publishContentRequests(contentRequests));
+  promises.push(void publishContentRequests(contentRequests));
 
-  await Promise.all(promises);
+  const [content] = await Promise.all(promises);
 
   return content;
 };
@@ -138,9 +132,9 @@ const transformCast = (
   cast: FarcasterCastData,
   fidToIdentity: Record<string, Identity>,
 ): PostData => {
-  const embeds = cast.urls
+  const embeds = cast.urlEmbeds
     .map((url) => url.url)
-    .concat(cast.casts.map((c) => toFarcasterURI(c)));
+    .concat(cast.castEmbeds.map((c) => toFarcasterURI(c)));
 
   return {
     protocol: Protocol.FARCASTER,
@@ -176,9 +170,9 @@ const getAndUpsertContent = async (
   contentId: string,
   post: PostData,
 ) => {
-  await client.upsertContent(
-    await transformPostToContent(client, contentId, post),
-  );
+  const content = await transformPostToContent(client, contentId, post);
+  await client.upsertContent(content);
+  return content;
 };
 
 const transformPostToContent = async (

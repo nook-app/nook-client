@@ -11,6 +11,7 @@ import {
   FarcasterCastEmbedUrl,
   FarcasterCastMention,
   PrismaClient,
+  Prisma,
 } from "@flink/common/prisma/farcaster";
 import {
   EventService,
@@ -94,13 +95,7 @@ export const handleCastAdd = async ({
 
   console.log(`[cast-add] [${cast.fid}] added ${cast.hash}`);
 
-  const event = transformToCastEvent(
-    EventType.CAST_ADD,
-    cast,
-    embedCasts,
-    embedUrls,
-    mentions,
-  );
+  const event = transformToCastEvent(EventType.CAST_ADD, cast);
   await publishRawEvent(event);
   return event.data;
 };
@@ -133,23 +128,9 @@ export const handleCastRemove = async ({ message }: MessageHandlerArgs) => {
 
   console.log(`[cast-remove] [${message.data?.fid}] removed ${hash}`);
 
-  const cast = await prisma.farcasterCast.findUnique({
-    where: { hash },
-    include: {
-      casts: true,
-      urls: true,
-      mentions: true,
-    },
-  });
-
+  const cast = await prisma.farcasterCast.findUnique({ where: { hash } });
   if (cast) {
-    const event = transformToCastEvent(
-      EventType.CAST_REMOVE,
-      cast,
-      cast.casts,
-      cast.urls,
-      cast.mentions,
-    );
+    const event = transformToCastEvent(EventType.CAST_REMOVE, cast);
     await publishRawEvent(event);
   }
 };
@@ -160,6 +141,37 @@ const messageToCast = (message: Message): FarcasterCast | undefined => {
   const hash = bufferToHex(message.hash);
   const fid = BigInt(message.data.fid);
   const parentCast = message.data.castAddBody.parentCastId;
+
+  let rawMentions = null;
+  let rawCastEmbeds = null;
+  let rawUrlEmbeds = null;
+
+  if (message.data.castAddBody.mentions.length > 0) {
+    const mentionPositions = message.data.castAddBody.mentionsPositions;
+    rawMentions = message.data.castAddBody.mentions.map((m, i) => ({
+      mention: m,
+      mentionPosition: mentionPositions[i],
+    }));
+  }
+
+  if (message.data.castAddBody.embedsDeprecated.length > 0) {
+    rawUrlEmbeds = message.data.castAddBody.embedsDeprecated;
+  }
+
+  if (message.data.castAddBody.embeds.length > 0) {
+    for (const embed of message.data.castAddBody.embeds) {
+      if (embed.castId) {
+        if (rawCastEmbeds === null) rawCastEmbeds = [];
+        rawCastEmbeds.push({
+          embedHash: bufferToHex(embed.castId.hash),
+          embedFid: BigInt(embed.castId.fid),
+        });
+      } else {
+        if (rawUrlEmbeds === null) rawUrlEmbeds = [];
+        rawUrlEmbeds.push(embed.url);
+      }
+    }
+  }
 
   return {
     hash,
@@ -173,6 +185,9 @@ const messageToCast = (message: Message): FarcasterCast | undefined => {
     rootParentUrl: message.data.castAddBody.parentUrl || null,
     timestamp: timestampToDate(message.data.timestamp),
     deletedAt: null,
+    rawMentions: rawMentions || Prisma.DbNull,
+    rawCastEmbeds: rawCastEmbeds || Prisma.DbNull,
+    rawUrlEmbeds: rawUrlEmbeds || Prisma.DbNull,
   };
 };
 
@@ -364,13 +379,7 @@ export const backfillCasts = async (
   });
 
   const events = messages.map((message) => {
-    return transformToCastEvent(
-      EventType.CAST_ADD,
-      messageToCast(message),
-      messageToCastEmbedCast(message),
-      messageToCastEmbedUrl(message),
-      messageToCastMentions(message),
-    );
+    return transformToCastEvent(EventType.CAST_ADD, messageToCast(message));
   });
 
   await publishRawEvents(events, true);
@@ -381,9 +390,6 @@ export const backfillCasts = async (
 export const transformToCastEvent = (
   type: EventType,
   cast: FarcasterCast,
-  embedCasts: FarcasterCastEmbedCast[],
-  embedUrls: FarcasterCastEmbedUrl[],
-  mentions: FarcasterCastMention[],
 ): RawEvent<FarcasterCastData> => {
   return {
     eventId: `${EventType.CAST_ADD}-${cast.fid}-${cast.hash}`,
@@ -394,26 +400,51 @@ export const transformToCastEvent = (
       userId: cast.fid.toString(),
     },
     timestamp: cast.timestamp,
-    data: {
-      timestamp: cast.timestamp,
-      fid: cast.fid.toString(),
-      hash: cast.hash,
-      text: cast.text,
-      parentFid: cast.parentFid?.toString(),
-      parentHash: cast.parentHash,
-      parentUrl: cast.parentUrl,
-      rootParentFid: cast.rootParentFid.toString(),
-      rootParentHash: cast.rootParentHash,
-      rootParentUrl: cast.rootParentUrl,
-      mentions: mentions.map((m) => ({
-        mention: m.mention.toString(),
-        mentionPosition: m.mentionPosition.toString(),
-      })),
-      urls: embedUrls.map((e) => ({ url: e.url })),
-      casts: embedCasts.map((e) => ({
-        fid: e.embedFid.toString(),
-        hash: e.embedHash,
-      })),
-    },
+    data: transformToCastData(cast),
+  };
+};
+
+export const transformToCastData = (cast: FarcasterCast): FarcasterCastData => {
+  const mentions = [];
+  if (cast.rawMentions && (cast.rawMentions as unknown) !== Prisma.DbNull) {
+    for (const mention of cast.rawMentions as unknown as FarcasterCastMention[]) {
+      mentions.push({
+        mention: mention.mention.toString(),
+        mentionPosition: mention.mentionPosition.toString(),
+      });
+    }
+  }
+
+  const urlEmbeds = [];
+  if (cast.rawUrlEmbeds && (cast.rawUrlEmbeds as unknown) !== Prisma.DbNull) {
+    for (const url of cast.rawUrlEmbeds as unknown as FarcasterCastEmbedUrl[]) {
+      urlEmbeds.push({ url: url.url });
+    }
+  }
+
+  const castEmbeds = [];
+  if (cast.rawCastEmbeds && (cast.rawCastEmbeds as unknown) !== Prisma.DbNull) {
+    for (const embed of cast.rawCastEmbeds as unknown as FarcasterCastEmbedCast[]) {
+      castEmbeds.push({
+        fid: embed.embedFid.toString(),
+        hash: embed.embedHash,
+      });
+    }
+  }
+
+  return {
+    timestamp: cast.timestamp,
+    fid: cast.fid.toString(),
+    hash: cast.hash,
+    text: cast.text,
+    parentFid: cast.parentFid?.toString(),
+    parentHash: cast.parentHash,
+    parentUrl: cast.parentUrl,
+    rootParentFid: cast.rootParentFid.toString(),
+    rootParentHash: cast.rootParentHash,
+    rootParentUrl: cast.rootParentUrl,
+    mentions,
+    urlEmbeds,
+    castEmbeds,
   };
 };

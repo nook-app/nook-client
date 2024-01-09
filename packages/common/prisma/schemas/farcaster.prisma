@@ -60,9 +60,13 @@ model FarcasterCast {
     rootParentHash String
     rootParentUrl  String?
 
-    mentions FarcasterCastMention[]
-    casts    FarcasterCastEmbedCast[]
-    urls     FarcasterCastEmbedUrl[]
+    rawMentions   Json?
+    rawCastEmbeds Json?
+    rawUrlEmbeds  Json?
+
+    mentions   FarcasterCastMention[]
+    castEmbeds FarcasterCastEmbedCast[]
+    urlEmbeds  FarcasterCastEmbedUrl[]
 
     timestamp DateTime
     deletedAt DateTime?

@@ -64,6 +64,8 @@ export const getEventsHandler = async () => {
         );
     }
 
+    console.timeEnd("getEventsHandler");
+
     console.log(
       `[events] [${rawEvent.source.service}] [${rawEvent.source.type}] processed ${rawEvent.source.id} by ${rawEvent.source.userId}`,
     );

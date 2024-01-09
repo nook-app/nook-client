@@ -18,8 +18,8 @@ export type FarcasterCastData = {
     mention: string;
     mentionPosition: string;
   }[];
-  urls: { url: string }[];
-  casts: {
+  urlEmbeds: { url: string }[];
+  castEmbeds: {
     fid: string;
     hash: string;
   }[];

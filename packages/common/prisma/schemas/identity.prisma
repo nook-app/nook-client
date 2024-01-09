@@ -29,6 +29,7 @@ model BlockchainAccount {
     identity Identity @relation(fields: [id], references: [id])
 
     @@id([id, blockchain, address])
+    @@index([blockchain, address])
 }
 
 model SocialAccount {
@@ -42,6 +43,7 @@ model SocialAccount {
     identity Identity @relation(fields: [id], references: [id])
 
     @@id([id, platform, platformId])
+    @@index([platform, platformId])
 }
 
 model RelatedLink {
@@ -54,4 +56,5 @@ model RelatedLink {
     identity Identity @relation(fields: [id], references: [id])
 
     @@id([id, url])
+    @@index([url])
 }

@@ -57,8 +57,6 @@ const run = async () => {
           },
           include: {
             socialAccounts: true,
-            blockchainAccounts: true,
-            relatedLinks: true,
           },
         });
 
