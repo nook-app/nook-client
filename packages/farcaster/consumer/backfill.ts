@@ -36,6 +36,14 @@ const run = async () => {
 
     await backfillUsernameProofs(usernameProofs.value.proofs);
 
+    const verifications = await client.getVerificationsByFid({ fid });
+    if (verifications.isErr()) {
+      console.error(verifications.error);
+      process.exit(1);
+    }
+
+    await backfillVerifications(verifications.value.messages);
+
     const casts = await client.getCastsByFid({ fid });
     if (casts.isErr()) {
       console.error(casts.error);
@@ -44,29 +52,21 @@ const run = async () => {
 
     await backfillCasts(client, casts.value.messages);
 
-    const reactions = await client.getReactionsByFid({ fid });
-    if (reactions.isErr()) {
-      console.error(reactions.error);
-      process.exit(1);
-    }
+    // const reactions = await client.getReactionsByFid({ fid });
+    // if (reactions.isErr()) {
+    //   console.error(reactions.error);
+    //   process.exit(1);
+    // }
 
-    await backfillReactions(reactions.value.messages);
+    // await backfillReactions(reactions.value.messages);
 
-    const links = await client.getLinksByFid({ fid });
-    if (links.isErr()) {
-      console.error(links.error);
-      process.exit(1);
-    }
+    // const links = await client.getLinksByFid({ fid });
+    // if (links.isErr()) {
+    //   console.error(links.error);
+    //   process.exit(1);
+    // }
 
-    await backfillLinks(links.value.messages);
-
-    const verifications = await client.getVerificationsByFid({ fid });
-    if (verifications.isErr()) {
-      console.error(verifications.error);
-      process.exit(1);
-    }
-
-    await backfillVerifications(verifications.value.messages);
+    // await backfillLinks(links.value.messages);
   });
 
   worker.on("failed", (job, err) => {

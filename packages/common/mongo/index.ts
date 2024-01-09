@@ -94,27 +94,27 @@ export class MongoClient {
         actions.countDocuments({
           type: EventActionType.REPLY,
           "data.parentId": contentId,
-          deletedAt: { $exists: false },
+          deletedAt: null,
         }),
         actions.countDocuments({
           type: EventActionType.REPLY,
           "data.rootParentId": contentId,
-          deletedAt: { $exists: false },
+          deletedAt: null,
         }),
         actions.countDocuments({
           type: EventActionType.LIKE,
           "data.contentId": contentId,
-          deletedAt: { $exists: false },
+          deletedAt: null,
         }),
         actions.countDocuments({
           type: EventActionType.REPOST,
           "data.contentId": contentId,
-          deletedAt: { $exists: false },
+          deletedAt: null,
         }),
         actions.countDocuments({
           type: EventActionType.POST,
           "data.embeds": contentId,
-          deletedAt: { $exists: false },
+          deletedAt: null,
         }),
       ]);
       await content.updateOne(
@@ -137,32 +137,32 @@ export class MongoClient {
           actions.countDocuments({
             type: EventActionType.REPLY,
             "data.parent.embeds": contentId,
-            deletedAt: { $exists: false },
+            deletedAt: null,
           }),
           actions.countDocuments({
             type: EventActionType.REPLY,
             "data.rootParent.embeds": contentId,
-            deletedAt: { $exists: false },
+            deletedAt: null,
           }),
           actions.countDocuments({
             type: EventActionType.LIKE,
             "data.embeds": contentId,
-            deletedAt: { $exists: false },
+            deletedAt: null,
           }),
           actions.countDocuments({
             type: EventActionType.REPOST,
             "data.embeds": contentId,
-            deletedAt: { $exists: false },
+            deletedAt: null,
           }),
           actions.countDocuments({
             type: EventActionType.POST,
             "data.embeds": contentId,
-            deletedAt: { $exists: false },
+            deletedAt: null,
           }),
           actions.countDocuments({
             type: EventActionType.POST,
             "data.channelId": contentId,
-            deletedAt: { $exists: false },
+            deletedAt: null,
           }),
         ]);
       await content.updateOne(
