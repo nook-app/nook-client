@@ -5,6 +5,7 @@
   "scripts": {
     "build": "tsc",
     "start:consumer": "node dist/consumer/index.js",
+    "start:manual": "tsc && node dist/consumer/manual.js",
     "start:publisher": "node dist/publisher/index.js",
     "start:api": "node dist/api/index.js",
     "start:backfill": "node dist/consumer/backfill.js"

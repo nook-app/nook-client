@@ -142,14 +142,16 @@ export const handleCastRemove = async ({ message }: MessageHandlerArgs) => {
     },
   });
 
-  const event = transformToCastEvent(
-    EventType.CAST_REMOVE,
-    cast,
-    cast.casts,
-    cast.urls,
-    cast.mentions,
-  );
-  await publishRawEvent(event);
+  if (cast) {
+    const event = transformToCastEvent(
+      EventType.CAST_REMOVE,
+      cast,
+      cast.casts,
+      cast.urls,
+      cast.mentions,
+    );
+    await publishRawEvent(event);
+  }
 };
 
 const messageToCast = (message: Message): FarcasterCast | undefined => {
