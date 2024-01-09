@@ -378,7 +378,7 @@ export const backfillCasts = async (
   return events.map((event) => event.data);
 };
 
-const transformToCastEvent = (
+export const transformToCastEvent = (
   type: EventType,
   cast: FarcasterCast,
   embedCasts: FarcasterCastEmbedCast[],
@@ -395,7 +395,7 @@ const transformToCastEvent = (
     },
     timestamp: cast.timestamp,
     data: {
-      timestamp: cast.timestamp.getTime(),
+      timestamp: cast.timestamp,
       fid: cast.fid.toString(),
       hash: cast.hash,
       text: cast.text,

@@ -114,5 +114,7 @@ export const handleCastReactionAddOrRemove = async (
     );
   }
 
+  await Promise.all(promises);
+
   await client.refreshEngagement(contentId);
 };

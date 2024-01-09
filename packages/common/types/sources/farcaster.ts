@@ -4,7 +4,7 @@ export type FidHash = {
 };
 
 export type FarcasterCastData = {
-  timestamp: number;
+  timestamp: Date;
   fid: string;
   hash: string;
   text: string;
@@ -32,7 +32,7 @@ export enum FarcasterReactionType {
 }
 
 export type FarcasterCastReactionData = {
-  timestamp: number;
+  timestamp: Date;
   fid: string;
   reactionType: FarcasterReactionType;
   targetFid: string;
@@ -40,14 +40,14 @@ export type FarcasterCastReactionData = {
 };
 
 export type FarcasterUrlReactionData = {
-  timestamp: number;
+  timestamp: Date;
   fid: string;
   reactionType: FarcasterReactionType;
   url: string;
 };
 
 export type FarcasterLinkData = {
-  timestamp: number;
+  timestamp: Date;
   fid: string;
   linkType: string;
   targetFid: string;

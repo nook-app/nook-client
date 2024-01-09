@@ -218,7 +218,7 @@ const transformToCastReactionEvent = (
     },
     timestamp: reaction.timestamp,
     data: {
-      timestamp: reaction.timestamp.getTime(),
+      timestamp: reaction.timestamp,
       fid: reaction.fid.toString(),
       reactionType,
       targetFid: reaction.targetFid.toString(),
@@ -248,7 +248,7 @@ const transformToUrlReactionEvent = (
     },
     timestamp: reaction.timestamp,
     data: {
-      timestamp: reaction.timestamp.getTime(),
+      timestamp: reaction.timestamp,
       fid: reaction.fid.toString(),
       reactionType,
       url: reaction.targetUrl,

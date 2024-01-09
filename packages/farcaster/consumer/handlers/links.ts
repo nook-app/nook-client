@@ -103,7 +103,7 @@ const transformToLinkEvent = (
       fid: link.fid.toString(),
       linkType: link.linkType,
       targetFid: link.targetFid.toString(),
-      timestamp: link.timestamp.getTime(),
+      timestamp: link.timestamp,
     },
   };
 };
