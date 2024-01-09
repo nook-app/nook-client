@@ -12,6 +12,7 @@ export const getContentHandler = async () => {
       await getAndTransformCastToContent(client, job.data.contentId);
       await client.refreshEngagement(job.data.contentId);
       console.log(`[content] [${job.data.contentId}] processed`);
+      return;
     }
 
     throw new Error(`[content] [${job.data.contentId}] no handler found`);
