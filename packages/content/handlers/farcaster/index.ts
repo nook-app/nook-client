@@ -82,17 +82,22 @@ export const transformCastToPost = async (
       (cast) =>
         cast.fid === cast.rootParentFid && cast.hash === cast.rootParentHash,
     );
+    if (rootParent) {
+      data.rootParent = transformCast(rootParent, fidToIdentity);
+    }
+
     const parent = casts.find(
       (cast) => cast.fid === cast.parentFid && cast.hash === cast.parentHash,
     );
-    data.rootParent = transformCast(rootParent, fidToIdentity);
     if (parent) {
       data.parent = transformCast(parent, fidToIdentity);
     }
+
     data.parentId = toFarcasterURI({
       fid: cast.parentFid,
       hash: cast.parentHash,
     });
+
     relations.push({
       type: ContentRelationType.PARENT,
       contentId: data.parentId,

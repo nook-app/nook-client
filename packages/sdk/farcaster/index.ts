@@ -40,7 +40,7 @@ export const getCasts = async ({
   if (!response.ok) {
     if (response.status !== 404) {
       throw new Error(
-        `[farcaster] [get-cast] failed with ${response.status} for ${uris}`,
+        `[farcaster] [get-cast] failed with ${response.status} for ${fidHashes} and ${uris}`,
       );
     }
     return undefined;
