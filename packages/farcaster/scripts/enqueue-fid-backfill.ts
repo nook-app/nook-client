@@ -9,11 +9,12 @@ const run = async () => {
     throw new Error("Missing HUB_RPC_ENDPOINT");
   }
 
-  const { fid } = await prisma.farcasterUser.findFirst({
-    orderBy: {
-      fid: "desc",
-    },
-  });
+  // const { fid } = await prisma.farcasterUser.findFirst({
+  //   orderBy: {
+  //     fid: "desc",
+  //   },
+  // });
+  const fid = 100;
 
   const array = Array.from({ length: Number(fid) }, (_, i) => i + 1);
 
@@ -28,7 +29,11 @@ const run = async () => {
   );
 };
 
-run().catch((e) => {
-  console.error(e);
-  process.exit(1);
-});
+run()
+  .catch((e) => {
+    console.error(e);
+    process.exit(1);
+  })
+  .finally(() => {
+    process.exit(0);
+  });

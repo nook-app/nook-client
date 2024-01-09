@@ -4,28 +4,24 @@ import {
   EventActionType,
   FarcasterCastData,
   RawEvent,
-  EventActionData,
   EventType,
-  PostData,
+  PostActionData,
+  ContentEngagementType,
+  ContentType,
 } from "@flink/common/types";
 import { transformCastToPost } from "@flink/content/handlers/farcaster";
-import { MongoClient } from "@flink/common/mongo";
+import { MongoClient, MongoCollection } from "@flink/common/mongo";
 import { ObjectId } from "mongodb";
 
 export const handleCastAddOrRemove = async (
   client: MongoClient,
   rawEvent: RawEvent<FarcasterCastData>,
 ) => {
-  await transformCastAddToPostEvent(client, rawEvent);
-};
-
-const transformCastAddToPostEvent = async (
-  client: MongoClient,
-  rawEvent: RawEvent<FarcasterCastData>,
-) => {
   const content = await transformCastToPost(client, rawEvent.data);
+  const isRemove = rawEvent.source.type === EventType.CAST_REMOVE;
+  const isReply = content.type === ContentType.REPLY;
 
-  const actions: EventAction<PostData>[] = [
+  const actions: EventAction<PostActionData>[] = [
     {
       _id: new ObjectId(),
       eventId: rawEvent.eventId,
@@ -34,24 +30,23 @@ const transformCastAddToPostEvent = async (
       userId: content.data.userId,
       userIds: content.userIds,
       contentIds: [
-        content.data.contentId,
-        content.data.rootParentId,
-        content.data.parentId,
-        ...content.data.embeds,
-        content.data.channelId,
-      ].filter(Boolean),
+        content.contentId,
+        ...content.relations.map((relation) => relation.contentId),
+      ],
       createdAt: new Date(),
-      type:
-        rawEvent.source.type === EventType.CAST_REMOVE
-          ? content.data.parentId
-            ? EventActionType.UNREPLY
-            : EventActionType.UNPOST
-          : content.data.parentId
-            ? EventActionType.REPLY
-            : EventActionType.POST,
-      data: content.data,
-      deletedAt:
-        rawEvent.source.type === EventType.CAST_REMOVE ? new Date() : undefined,
+      type: isRemove
+        ? isReply
+          ? EventActionType.UNREPLY
+          : EventActionType.UNPOST
+        : isReply
+          ? EventActionType.REPLY
+          : EventActionType.POST,
+      data: {
+        userId: content.data.userId,
+        contentId: content.contentId,
+        content: content.data,
+      },
+      deletedAt: isRemove ? new Date() : undefined,
     },
   ];
 
@@ -62,7 +57,56 @@ const transformCastAddToPostEvent = async (
     createdAt: content.createdAt,
   };
 
-  await Promise.all([client.upsertEvent(event), client.upsertActions(actions)]);
+  const promises = [client.upsertEvent(event), client.upsertActions(actions)];
 
-  await client.refreshEngagement(content.data.contentId);
+  if (isReply) {
+    promises.push(
+      updateEngagement(
+        client,
+        content.data.parentId,
+        ContentEngagementType.REPLIES,
+        isRemove ? -1 : 1,
+      ),
+      updateEngagement(
+        client,
+        content.data.rootParentId,
+        ContentEngagementType.ROOT_REPLIES,
+        isRemove ? -1 : 1,
+      ),
+    );
+  }
+
+  if (isRemove) {
+    promises.push(
+      void client.getCollection(MongoCollection.Actions).updateOne(
+        {
+          "source.id": rawEvent.source.id,
+          type: isReply ? EventActionType.REPLY : EventActionType.POST,
+        },
+        {
+          $set: {
+            deletedAt: new Date(),
+          },
+        },
+      ),
+    );
+  }
+
+  await Promise.all(promises);
+};
+
+const updateEngagement = async (
+  client: MongoClient,
+  contentId: string,
+  engagementType: ContentEngagementType,
+  increment: number,
+) => {
+  await client.getCollection(MongoCollection.Content).updateOne(
+    { contentId },
+    {
+      $inc: {
+        [`data.engagement.${engagementType}`]: increment,
+      },
+    },
+  );
 };

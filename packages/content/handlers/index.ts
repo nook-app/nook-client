@@ -10,7 +10,6 @@ export const getContentHandler = async () => {
   return async (job: Job<ContentRequest>) => {
     if (job.data.contentId.startsWith("farcaster://cast/")) {
       await getAndTransformCastToContent(client, job.data.contentId);
-      await client.refreshEngagement(job.data.contentId);
       console.log(`[content] [${job.data.contentId}] processed`);
       return;
     }

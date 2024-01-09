@@ -46,6 +46,7 @@ export const handleLinkAddOrRemove = async (
       createdAt: new Date(),
       type: isRemove ? EventActionType.UNFOLLOW : EventActionType.FOLLOW,
       data: {
+        userId,
         targetUserId,
       },
       deletedAt: isRemove ? new Date() : undefined,

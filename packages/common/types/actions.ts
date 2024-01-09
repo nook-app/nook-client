@@ -1,9 +1,15 @@
 import { ObjectId } from "mongodb";
 import { EventSource } from "./events";
-import { PostData } from "./contentTypes";
-import { ContentActionData, UserActionData } from "./actionTypes";
+import {
+  ContentActionData,
+  PostActionData,
+  UserActionData,
+} from "./actionTypes";
 
-export type EventActionData = PostData | ContentActionData | UserActionData;
+export type EventActionData =
+  | PostActionData
+  | ContentActionData
+  | UserActionData;
 
 /**
  * Supported actions for events

@@ -54,6 +54,7 @@ export const handleUrlReactionAddOrRemove = async (
       createdAt: new Date(),
       type: eventActionType,
       data: {
+        userId,
         contentId,
       },
       deletedAt: isRemove ? new Date() : undefined,
@@ -74,6 +75,7 @@ export const handleUrlReactionAddOrRemove = async (
       submitterId: userId,
       contentId,
     }),
+    updateEngagement(client, contentId, eventActionType),
   ];
 
   if (isRemove) {
@@ -96,4 +98,35 @@ export const handleUrlReactionAddOrRemove = async (
   }
 
   await Promise.all(promises);
+};
+
+const updateEngagement = async (
+  client: MongoClient,
+  contentId: string,
+  type: EventActionType,
+) => {
+  let $inc: Record<string, number> = {};
+  if (type === EventActionType.LIKE) {
+    $inc = {
+      "data.engagement.likes": 1,
+    };
+  } else if (type === EventActionType.UNLIKE) {
+    $inc = {
+      "data.engagement.likes": -1,
+    };
+  } else if (type === EventActionType.REPOST) {
+    $inc = {
+      "data.engagement.reposts": 1,
+    };
+  } else if (type === EventActionType.UNREPOST) {
+    $inc = {
+      "data.engagement.reposts": -1,
+    };
+  }
+
+  if (!$inc) return;
+
+  await client
+    .getCollection(MongoCollection.Content)
+    .updateOne({ contentId }, { $inc });
 };

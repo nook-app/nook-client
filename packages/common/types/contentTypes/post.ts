@@ -7,9 +7,6 @@ export enum Application {
 }
 
 export type PostData = {
-  /** ID of the content */
-  contentId: string;
-
   /** Protocol event was a part of */
   protocol: Protocol;
 
@@ -18,6 +15,9 @@ export type PostData = {
 
   /** Identity of user who posted */
   userId: string;
+
+  /** Timestamp for when the post was made */
+  timestamp: Date;
 
   /* Text content of the post */
   text: string;

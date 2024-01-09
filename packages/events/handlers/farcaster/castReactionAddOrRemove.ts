@@ -5,7 +5,7 @@ import {
   EventType,
   FarcasterCastReactionData,
   FarcasterReactionType,
-  PostData,
+  PostActionData,
   RawEvent,
   UserEvent,
 } from "@flink/common/types";
@@ -13,7 +13,6 @@ import { ObjectId } from "mongodb";
 import { sdk } from "@flink/sdk";
 import { toFarcasterURI } from "@flink/farcaster/utils";
 import { Identity } from "@flink/identity/types";
-import { publishContentRequest } from "@flink/common/queues";
 import { getAndTransformCastToContent } from "@flink/content/handlers/farcaster";
 
 export const handleCastReactionAddOrRemove = async (
@@ -41,10 +40,7 @@ export const handleCastReactionAddOrRemove = async (
     );
   }
 
-  const identities = await sdk.identity.getForFids([
-    rawEvent.data.fid,
-    rawEvent.data.targetFid,
-  ]);
+  const identities = await sdk.identity.getForFids([rawEvent.data.fid]);
 
   const fidToIdentity = identities.reduce(
     (acc, identity) => {
@@ -55,7 +51,6 @@ export const handleCastReactionAddOrRemove = async (
   );
 
   const userId = fidToIdentity[rawEvent.data.fid].id;
-  const targetUserId = fidToIdentity[rawEvent.data.targetFid].id;
   const contentId = toFarcasterURI({
     fid: rawEvent.data.targetFid,
     hash: rawEvent.data.targetHash,
@@ -63,18 +58,25 @@ export const handleCastReactionAddOrRemove = async (
 
   const content = await getAndTransformCastToContent(client, contentId);
 
-  const actions: EventAction<PostData>[] = [
+  const actions: EventAction<PostActionData>[] = [
     {
       _id: new ObjectId(),
       eventId: rawEvent.eventId,
       source: rawEvent.source,
       timestamp: rawEvent.timestamp,
       userId,
-      userIds: [userId, targetUserId],
-      contentIds: [contentId],
+      userIds: [userId, ...content.userIds],
+      contentIds: [
+        content.contentId,
+        ...content.relations.map((relation) => relation.contentId),
+      ],
       createdAt: new Date(),
       type: eventActionType,
-      data: content.data,
+      data: {
+        userId,
+        contentId: content.contentId,
+        content: content.data,
+      },
       deletedAt: isRemove ? new Date() : undefined,
     },
   ];
@@ -89,10 +91,7 @@ export const handleCastReactionAddOrRemove = async (
   const promises = [
     client.upsertEvent(event),
     client.upsertActions(actions),
-    publishContentRequest({
-      submitterId: targetUserId,
-      contentId,
-    }),
+    updateEngagement(client, contentId, eventActionType),
   ];
 
   if (isRemove) {
@@ -115,6 +114,35 @@ export const handleCastReactionAddOrRemove = async (
   }
 
   await Promise.all(promises);
+};
 
-  await client.refreshEngagement(contentId);
+const updateEngagement = async (
+  client: MongoClient,
+  contentId: string,
+  type: EventActionType,
+) => {
+  let $inc: Record<string, number> = {};
+  if (type === EventActionType.LIKE) {
+    $inc = {
+      "data.engagement.likes": 1,
+    };
+  } else if (type === EventActionType.UNLIKE) {
+    $inc = {
+      "data.engagement.likes": -1,
+    };
+  } else if (type === EventActionType.REPOST) {
+    $inc = {
+      "data.engagement.reposts": 1,
+    };
+  } else if (type === EventActionType.UNREPOST) {
+    $inc = {
+      "data.engagement.reposts": -1,
+    };
+  }
+
+  if (!$inc) return;
+
+  await client
+    .getCollection(MongoCollection.Content)
+    .updateOne({ contentId }, { $inc });
 };
