@@ -7,8 +7,9 @@ import {
 } from "./verifications";
 import { handleReactionAdd, handleReactionRemove } from "./reactions";
 import { handleLinkAdd, handleLinkRemove } from "./links";
-import { handleUserDataAdd, handleUsernameProofAdd } from "./users";
+import { handleUserDataAdd } from "./users";
 import { Job } from "bullmq";
+import { handleUsernameProofAdd } from "./usernames";
 
 export const getFarcasterHandler = () => {
   const hubRpcEndpoint = process.env.HUB_RPC_ENDPOINT;

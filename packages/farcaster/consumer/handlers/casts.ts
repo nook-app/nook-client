@@ -15,7 +15,7 @@ import {
 import {
   EventService,
   EventType,
-  FarcasterCastAddData,
+  FarcasterCastData,
   FidHash,
   RawEvent,
 } from "@flink/common/types";
@@ -94,7 +94,13 @@ export const handleCastAdd = async ({
 
   console.log(`[cast-add] [${cast.fid}] added ${cast.hash}`);
 
-  const event = transformToEvent(cast, embedCasts, embedUrls, mentions);
+  const event = transformToCastEvent(
+    EventType.CAST_ADD,
+    cast,
+    embedCasts,
+    embedUrls,
+    mentions,
+  );
   await publishRawEvent(event);
   return event.data;
 };
@@ -126,6 +132,24 @@ export const handleCastRemove = async ({ message }: MessageHandlerArgs) => {
   });
 
   console.log(`[cast-remove] [${message.data?.fid}] removed ${hash}`);
+
+  const cast = await prisma.farcasterCast.findUnique({
+    where: { hash },
+    include: {
+      casts: true,
+      urls: true,
+      mentions: true,
+    },
+  });
+
+  const event = transformToCastEvent(
+    EventType.CAST_REMOVE,
+    cast,
+    cast.casts,
+    cast.urls,
+    cast.mentions,
+  );
+  await publishRawEvent(event);
 };
 
 const messageToCast = (message: Message): FarcasterCast | undefined => {
@@ -338,7 +362,8 @@ export const backfillCasts = async (
   });
 
   const events = messages.map((message) => {
-    return transformToEvent(
+    return transformToCastEvent(
+      EventType.CAST_ADD,
       messageToCast(message),
       messageToCastEmbedCast(message),
       messageToCastEmbedUrl(message),
@@ -351,17 +376,18 @@ export const backfillCasts = async (
   return events.map((event) => event.data);
 };
 
-const transformToEvent = (
+const transformToCastEvent = (
+  type: EventType,
   cast: FarcasterCast,
   embedCasts: FarcasterCastEmbedCast[],
   embedUrls: FarcasterCastEmbedUrl[],
   mentions: FarcasterCastMention[],
-): RawEvent<FarcasterCastAddData> => {
+): RawEvent<FarcasterCastData> => {
   return {
     eventId: `${EventType.CAST_ADD}-${cast.fid}-${cast.hash}`,
     source: {
       service: EventService.FARCASTER,
-      type: EventType.CAST_ADD,
+      type,
       id: cast.hash,
       userId: cast.fid.toString(),
     },

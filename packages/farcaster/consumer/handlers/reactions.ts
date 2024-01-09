@@ -168,34 +168,6 @@ const messageToUrlReaction = (
   };
 };
 
-export const getAndBackfillCastReactions = async (
-  client: HubRpcClient,
-  fidHashes: FidHash[],
-) => {
-  const messages = (
-    await Promise.all(
-      fidHashes.map(async ({ fid, hash }) => {
-        const message = await client.getReactionsByCast({
-          targetCastId: {
-            fid: parseInt(fid),
-            hash: hexToBuffer(hash),
-          },
-        });
-
-        if (message.isErr()) {
-          return undefined;
-        }
-
-        return message.value.messages;
-      }),
-    )
-  )
-    .filter(Boolean)
-    .flat();
-
-  return await backfillReactions(messages);
-};
-
 export const backfillReactions = async (messages: Message[]) => {
   const castReactions = messages.map(messageToCastReaction).filter(Boolean);
   const urlReactions = messages.map(messageToUrlReaction).filter(Boolean);

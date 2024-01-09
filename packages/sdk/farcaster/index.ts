@@ -1,4 +1,4 @@
-import { FarcasterCastAddData, FidHash } from "@flink/common/types";
+import { FarcasterCastData, FidHash } from "@flink/common/types";
 
 export const getCastByURI = async (uri: string) => {
   const casts = await getCasts({ uris: [uri] });
@@ -20,7 +20,7 @@ export const getCasts = async ({
   uris,
   fidHashes,
 }: { uris?: string[]; fidHashes?: FidHash[] }): Promise<
-  FarcasterCastAddData[] | undefined
+  FarcasterCastData[] | undefined
 > => {
   if (!uris?.length && !fidHashes?.length) {
     return [];

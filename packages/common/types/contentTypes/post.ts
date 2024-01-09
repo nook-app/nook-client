@@ -42,14 +42,12 @@ export type PostData = {
 
   /** Root post - Optional because doesn't exist if this post is the root */
   rootParent?: PostData;
-};
 
-export type ReplyData = PostData & {
   /** ID of the parent content */
-  parentId: string;
+  parentId?: string;
 
   /** ID of user who posted the parent content */
-  parentUserId: string;
+  parentUserId?: string;
 
   /** Parent post - Optional because of Farcaster data retention */
   parent?: PostData;

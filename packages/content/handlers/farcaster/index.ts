@@ -1,122 +1,54 @@
 import {
   Application,
-  ContentEngagement,
+  Content,
+  ContentRelation,
+  ContentRelationType,
   ContentRequest,
   ContentType,
-  EventActionType,
-  EventService,
-  FarcasterCastAddData,
-  PostContent,
+  FarcasterCastData,
   PostData,
   Protocol,
-  ReplyContent,
-  ReplyData,
 } from "@flink/common/types";
 import { toFarcasterURI } from "@flink/farcaster/utils";
 import { Identity } from "@flink/identity/types";
 import { sdk } from "@flink/sdk";
-import { HandlerArgs } from "../../types";
-import { MongoClient, MongoCollection } from "@flink/common/mongo";
+import { MongoClient } from "@flink/common/mongo";
 import { publishContentRequests } from "@flink/common/queues";
 
-export const getAndTransformCastAddToContent = async ({
-  client,
-  request,
-}: HandlerArgs) => {
-  const content = await client.findContent(request.contentId);
-  if (content?.engagement && "likes" in content.engagement) {
-    console.log(`[content] already processed ${request.contentId}`);
-    return;
+export const getAndTransformCastToContent = async (
+  client: MongoClient,
+  contentId: string,
+): Promise<Content<PostData>> => {
+  const content = await client.findContent(contentId);
+  if (content) {
+    return content;
   }
 
-  const cast = await sdk.farcaster.getCastByURI(request.contentId);
+  const cast = await sdk.farcaster.getCastByURI(contentId);
   if (!cast) {
     return;
   }
 
+  return await transformCastToPost(client, cast);
+};
+
+export const transformCastToPost = async (
+  client: MongoClient,
+  cast: FarcasterCastData,
+): Promise<Content<PostData>> => {
+  const fidHashes = [];
   if (cast.parentHash) {
-    await transformCastAddToReply(client, cast);
+    fidHashes.push({
+      fid: cast.parentFid,
+      hash: cast.parentHash,
+    });
+    fidHashes.push({
+      fid: cast.rootParentFid,
+      hash: cast.rootParentHash,
+    });
   }
 
-  await transformCastAddToPost(client, cast);
-};
-
-export const transformCastAddToPost = async (
-  client: MongoClient,
-  cast: FarcasterCastAddData,
-): Promise<PostContent> => {
-  const identities = await sdk.identity.getForFids([
-    ...new Set(extractFidsFromCast(cast)),
-  ]);
-
-  const fidToIdentity = identities.reduce(
-    (acc, identity) => {
-      acc[identity.socialAccounts[0].platformId] = identity;
-      return acc;
-    },
-    {} as Record<string, Identity>,
-  );
-
-  const data = transformCast(cast, fidToIdentity);
-
-  const contentId = toFarcasterURI(cast);
-  const content: PostContent = {
-    contentId,
-    submitterId: data.userId,
-    createdAt: new Date(),
-    timestamp: new Date(cast.timestamp),
-    type: ContentType.POST,
-    data,
-    relations: [],
-    userIds: Array.from(
-      new Set(
-        [
-          data.userId,
-          data.rootParentUserId,
-          ...data.mentions.map(({ userId }) => userId),
-        ].filter(Boolean),
-      ),
-    ),
-    engagement: await getEngagementData(client, contentId),
-  };
-
-  const contentRequests: ContentRequest[] = [
-    {
-      contentId: content.data.rootParentId,
-      submitterId: content.data.rootParentUserId,
-    },
-    ...content.data.embeds.map((embedId) => ({
-      contentId: embedId,
-      submitterId: content.data.userId,
-    })),
-  ];
-
-  await Promise.all([
-    publishContentRequests(contentRequests),
-    client.upsertContent(content),
-  ]);
-
-  return content;
-};
-
-export const transformCastAddToReply = async (
-  client: MongoClient,
-  cast: FarcasterCastAddData,
-): Promise<ReplyContent> => {
-  const casts = (
-    await sdk.farcaster.getCasts({
-      fidHashes: [
-        {
-          fid: cast.rootParentFid,
-          hash: cast.rootParentHash,
-        },
-        {
-          fid: cast.parentFid,
-          hash: cast.parentHash,
-        },
-      ],
-    })
-  ).filter(Boolean);
+  const casts = (await sdk.farcaster.getCasts({ fidHashes })).filter(Boolean);
 
   const identities = await sdk.identity.getForFids([
     ...new Set([
@@ -133,33 +65,54 @@ export const transformCastAddToReply = async (
     {} as Record<string, Identity>,
   );
 
-  const rootParent = casts.find(
-    (cast) =>
-      cast.fid === cast.rootParentFid && cast.hash === cast.rootParentHash,
-  );
+  const data: PostData = transformCast(cast, fidToIdentity);
 
-  const parent = casts.find(
-    (cast) => cast.fid === cast.parentFid && cast.hash === cast.parentHash,
-  );
+  const relations: ContentRelation[] = data.embeds.map((embedId) => ({
+    type: ContentRelationType.EMBED,
+    contentId: embedId,
+  }));
 
-  const data = {
-    ...transformCast(cast, fidToIdentity),
-    rootParent: rootParent
-      ? transformCast(rootParent, fidToIdentity)
-      : undefined,
-    parentId: toFarcasterURI({ fid: cast.parentFid, hash: cast.parentHash }),
-    parent: parent ? transformCast(parent, fidToIdentity) : undefined,
-  } as ReplyData;
+  relations.push({
+    type: ContentRelationType.ROOT_PARENT,
+    contentId: data.rootParentId,
+  });
+
+  if (cast.parentHash) {
+    const rootParent = casts.find(
+      (cast) =>
+        cast.fid === cast.rootParentFid && cast.hash === cast.rootParentHash,
+    );
+    const parent = casts.find(
+      (cast) => cast.fid === cast.parentFid && cast.hash === cast.parentHash,
+    );
+    data.rootParent = transformCast(rootParent, fidToIdentity);
+    data.parent = transformCast(parent, fidToIdentity);
+    data.parentId = toFarcasterURI({
+      fid: cast.parentFid,
+      hash: cast.parentHash,
+    });
+    relations.push({
+      type: ContentRelationType.PARENT,
+      contentId: data.parentId,
+    });
+  }
+
+  if (data.channelId) {
+    relations.push({
+      type: ContentRelationType.CHANNEL,
+      contentId: data.channelId,
+    });
+  }
 
   const contentId = toFarcasterURI(cast);
-  const content: ReplyContent = {
+  const content: Content<PostData> = {
     contentId,
     submitterId: data.userId,
     createdAt: new Date(),
     timestamp: new Date(cast.timestamp),
-    type: ContentType.REPLY,
+    type: cast.parentHash ? ContentType.REPLY : ContentType.POST,
     data,
-    relations: [],
+    relations,
     userIds: Array.from(
       new Set(
         [
@@ -170,23 +123,25 @@ export const transformCastAddToReply = async (
         ].filter(Boolean),
       ),
     ),
-    engagement: await getEngagementData(client, contentId),
   };
 
-  const contentRequests: ContentRequest[] = [
-    {
-      contentId: content.data.rootParentId,
-      submitterId: content.data.rootParentUserId,
-    },
-    {
-      contentId: content.data.parentId,
-      submitterId: content.data.parentUserId,
-    },
-    ...content.data.embeds.map((embedId) => ({
+  const contentRequests: ContentRequest[] = content.data.embeds.map(
+    (embedId) => ({
       contentId: embedId,
       submitterId: content.data.userId,
-    })),
-  ];
+    }),
+  );
+
+  if (cast.parentHash) {
+    contentRequests.push({
+      contentId: content.data.parentId,
+      submitterId: content.data.parentUserId,
+    });
+    contentRequests.push({
+      contentId: content.data.rootParentId,
+      submitterId: content.data.rootParentUserId,
+    });
+  }
 
   await Promise.all([
     publishContentRequests(contentRequests),
@@ -197,7 +152,7 @@ export const transformCastAddToReply = async (
 };
 
 const transformCast = (
-  cast: FarcasterCastAddData,
+  cast: FarcasterCastData,
   fidToIdentity: Record<string, Identity>,
 ): PostData => {
   const embeds = cast.urls
@@ -224,58 +179,11 @@ const transformCast = (
   };
 };
 
-const extractFidsFromCast = (cast: FarcasterCastAddData): string[] => {
+const extractFidsFromCast = (cast: FarcasterCastData): string[] => {
   return [
     cast.fid,
     cast.parentFid,
     cast.rootParentFid,
     ...cast.mentions.map((mention) => mention.mention),
   ].filter(Boolean);
-};
-
-const getEngagementData = async (
-  client: MongoClient,
-  contentId: string,
-): Promise<ContentEngagement> => {
-  const collection = client.getCollection(MongoCollection.Actions);
-  const [replies, rootReplies, embeds, likes, reposts] = await Promise.all([
-    collection.countDocuments({
-      type: EventActionType.REPLY,
-      "data.parentId": contentId,
-    }),
-    collection.countDocuments({
-      type: EventActionType.REPLY,
-      "data.rootParentId": contentId,
-    }),
-    collection.countDocuments({
-      $or: [{ type: EventActionType.POST }, { type: EventActionType.REPLY }],
-      "data.embeds": contentId,
-    }),
-    collection.countDocuments({
-      type: EventActionType.LIKE,
-      "data.contentId": contentId,
-    }),
-    collection.countDocuments({
-      type: EventActionType.REPOST,
-      "data.contentId": contentId,
-    }),
-  ]);
-
-  return {
-    replies: {
-      [EventService.FARCASTER]: replies,
-    },
-    rootReplies: {
-      [EventService.FARCASTER]: rootReplies,
-    },
-    embeds: {
-      [EventService.FARCASTER]: embeds,
-    },
-    likes: {
-      [EventService.FARCASTER]: likes,
-    },
-    reposts: {
-      [EventService.FARCASTER]: reposts,
-    },
-  };
 };

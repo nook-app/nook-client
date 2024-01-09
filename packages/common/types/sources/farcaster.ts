@@ -3,7 +3,7 @@ export type FidHash = {
   hash: string;
 };
 
-export type FarcasterCastAddData = {
+export type FarcasterCastData = {
   timestamp: number;
   fid: string;
   hash: string;

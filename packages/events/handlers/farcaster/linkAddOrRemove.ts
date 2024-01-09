@@ -1,7 +1,6 @@
 import { MongoClient, MongoCollection } from "@flink/common/mongo";
 import {
   EventAction,
-  EventActionData,
   EventActionType,
   EventType,
   FarcasterLinkData,
@@ -11,6 +10,7 @@ import {
 import { ObjectId } from "mongodb";
 import { sdk } from "@flink/sdk";
 import { Identity } from "@flink/identity/types";
+import { UserActionData } from "@flink/common/types/actionTypes";
 
 export const handleLinkAddOrRemove = async (
   client: MongoClient,
@@ -34,7 +34,7 @@ export const handleLinkAddOrRemove = async (
   const userId = fidToIdentity[rawEvent.data.fid].id;
   const targetUserId = fidToIdentity[rawEvent.data.targetFid].id;
 
-  const actions: EventAction<EventActionData>[] = [
+  const actions: EventAction<UserActionData>[] = [
     {
       _id: new ObjectId(),
       eventId: rawEvent.eventId,
@@ -46,9 +46,9 @@ export const handleLinkAddOrRemove = async (
       createdAt: new Date(),
       type: isRemove ? EventActionType.UNFOLLOW : EventActionType.FOLLOW,
       data: {
-        userId,
         targetUserId,
       },
+      deletedAt: isRemove ? new Date() : undefined,
     },
   ];
 
@@ -59,20 +59,23 @@ export const handleLinkAddOrRemove = async (
     createdAt: actions[0].createdAt,
   };
 
-  await Promise.all([client.upsertEvent(event), client.upsertActions(actions)]);
+  const promises = [client.upsertEvent(event), client.upsertActions(actions)];
 
   if (isRemove) {
-    const collection = client.getCollection(MongoCollection.Actions);
-    await collection.updateOne(
-      {
-        "source.id": rawEvent.source.id,
-        type: EventActionType.FOLLOW,
-      },
-      {
-        $set: {
-          deletedAt: new Date(),
+    promises.push(
+      void client.getCollection(MongoCollection.Actions).updateOne(
+        {
+          "source.id": rawEvent.source.id,
+          type: EventActionType.FOLLOW,
         },
-      },
+        {
+          $set: {
+            deletedAt: new Date(),
+          },
+        },
+      ),
     );
   }
+
+  await Promise.all(promises);
 };

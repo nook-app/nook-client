@@ -1,12 +1,6 @@
-import { ObjectId } from "mongodb";
-import { PostData, ReplyData } from "./contentTypes/post";
-import { EventService } from "./events";
+import { PostData } from "./contentTypes/post";
 
-export enum RelationType {
-  PARENT = "PARENT",
-  ROOT_PARENT = "ROOT_PARENT",
-  EMBED = "EMBED",
-}
+export type ContentData = PostData;
 
 export enum ContentType {
   POST = "POST",
@@ -14,18 +8,29 @@ export enum ContentType {
   URL = "URL",
 }
 
+export enum ContentRelationType {
+  PARENT = "PARENT",
+  ROOT_PARENT = "ROOT_PARENT",
+  EMBED = "EMBED",
+  CHANNEL = "CHANNEL",
+}
+
+export type ContentRelation = {
+  type: ContentRelationType;
+  contentId: string;
+};
+
 export enum ContentEngagementType {
-  LIKES = "likes",
-  REPOSTS = "reposts",
+  POSTS = "posts",
   REPLIES = "replies",
   ROOT_REPLIES = "rootReplies",
+  LIKES = "likes",
+  REPOSTS = "reposts",
   EMBEDS = "embeds",
 }
 
 export type ContentEngagement = {
-  [key in ContentEngagementType]?: {
-    [key in EventService]?: number;
-  };
+  [key in ContentEngagementType]?: number;
 };
 
 export type ContentRequest = {
@@ -50,10 +55,7 @@ export type ContentBase = {
   timestamp: Date;
 
   /** Related content */
-  relations: {
-    type: RelationType;
-    contentId: string;
-  }[];
+  relations: ContentRelation[];
 
   /** Engagement metrics */
   engagement?: ContentEngagement;
@@ -65,24 +67,7 @@ export type ContentBase = {
   createdAt: Date;
 };
 
-export type ContentData = {
+export type Content<T> = ContentBase & {
   type: ContentType;
-  data: PostData | ReplyData | object;
+  data: T;
 };
-
-export type PostContent = ContentBase & {
-  type: ContentType.POST;
-  data: PostData;
-};
-
-export type ReplyContent = ContentBase & {
-  type: ContentType.REPLY;
-  data: ReplyData;
-};
-
-export type UrlContent = ContentBase & {
-  type: ContentType.URL;
-  data: object;
-};
-
-export type Content = PostContent | ReplyContent | UrlContent;

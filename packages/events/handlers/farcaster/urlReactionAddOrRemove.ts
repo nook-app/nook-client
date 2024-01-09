@@ -1,8 +1,6 @@
 import { MongoClient, MongoCollection } from "@flink/common/mongo";
 import {
-  ContentEngagementType,
   EventAction,
-  EventActionData,
   EventActionType,
   EventType,
   FarcasterReactionType,
@@ -13,6 +11,7 @@ import {
 import { ObjectId } from "mongodb";
 import { sdk } from "@flink/sdk";
 import { publishContentRequest } from "@flink/common/queues";
+import { ContentActionData } from "@flink/common/types/actionTypes";
 
 export const handleUrlReactionAddOrRemove = async (
   client: MongoClient,
@@ -43,7 +42,7 @@ export const handleUrlReactionAddOrRemove = async (
 
   const userId = identities[0].id;
   const contentId = rawEvent.data.url;
-  const actions: EventAction<EventActionData>[] = [
+  const actions: EventAction<ContentActionData>[] = [
     {
       _id: new ObjectId(),
       eventId: rawEvent.eventId,
@@ -55,9 +54,9 @@ export const handleUrlReactionAddOrRemove = async (
       createdAt: new Date(),
       type: eventActionType,
       data: {
-        userId,
         contentId,
       },
+      deletedAt: isRemove ? new Date() : undefined,
     },
   ];
 
@@ -68,49 +67,33 @@ export const handleUrlReactionAddOrRemove = async (
     createdAt: actions[0].createdAt,
   };
 
-  await Promise.all([
+  const promises = [
     client.upsertEvent(event),
     client.upsertActions(actions),
-    incrementOrDecrement(client, contentId, rawEvent),
     publishContentRequest({
       submitterId: userId,
       contentId,
     }),
-  ]);
+  ];
 
   if (isRemove) {
-    const collection = client.getCollection(MongoCollection.Actions);
-    await collection.updateOne(
-      {
-        "source.id": rawEvent.source.id,
-        type:
-          eventActionType === EventActionType.UNLIKE
-            ? EventActionType.LIKE
-            : EventActionType.REPOST,
-      },
-      {
-        $set: {
-          deletedAt: new Date(),
+    promises.push(
+      void client.getCollection(MongoCollection.Actions).updateOne(
+        {
+          "source.id": rawEvent.source.id,
+          type:
+            eventActionType === EventActionType.UNLIKE
+              ? EventActionType.LIKE
+              : EventActionType.REPOST,
         },
-      },
+        {
+          $set: {
+            deletedAt: new Date(),
+          },
+        },
+      ),
     );
   }
-};
 
-const incrementOrDecrement = async (
-  client: MongoClient,
-  contentId: string,
-  rawEvent: RawEvent<FarcasterUrlReactionData>,
-) => {
-  const contentEngagementType =
-    rawEvent.data.reactionType === FarcasterReactionType.LIKE
-      ? ContentEngagementType.LIKES
-      : ContentEngagementType.REPOSTS;
-
-  const fn =
-    rawEvent.source.type === EventType.URL_REACTION_REMOVE
-      ? client.decrementEngagement
-      : client.incrementEngagement;
-
-  await fn(contentId, contentEngagementType, rawEvent.source.service);
+  await Promise.all(promises);
 };

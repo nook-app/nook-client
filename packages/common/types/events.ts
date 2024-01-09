@@ -1,9 +1,4 @@
 import { ObjectId } from "mongodb";
-import {
-  FarcasterCastAddData,
-  FarcasterCastReactionData,
-  FarcasterUrlReactionData,
-} from "./sources";
 
 /**
  * Supported event services
@@ -14,6 +9,7 @@ export enum EventService {
 
 export enum EventType {
   CAST_ADD = "castAdd",
+  CAST_REMOVE = "castRemove",
   CAST_REACTION_ADD = "castReactionAdd",
   CAST_REACTION_REMOVE = "castReactionRemove",
   URL_REACTION_ADD = "urlReactionAdd",

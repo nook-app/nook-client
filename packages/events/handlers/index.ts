@@ -1,7 +1,7 @@
 import {
   EventService,
   EventType,
-  FarcasterCastAddData,
+  FarcasterCastData,
   FarcasterCastReactionData,
   FarcasterLinkData,
   FarcasterUrlReactionData,
@@ -9,7 +9,7 @@ import {
 } from "@flink/common/types";
 import { MongoClient } from "@flink/common/mongo";
 import { Job } from "bullmq";
-import { handleCastAdd } from "./farcaster/castAdd";
+import { handleCastAddOrRemove } from "./farcaster/castAddOrRemove";
 import { handleCastReactionAddOrRemove } from "./farcaster/castReactionAddOrRemove";
 import { handleUrlReactionAddOrRemove } from "./farcaster/urlReactionAddOrRemove";
 import { handleLinkAddOrRemove } from "./farcaster/linkAddOrRemove";
@@ -25,9 +25,10 @@ export const getEventsHandler = async () => {
       case EventService.FARCASTER:
         switch (rawEvent.source.type) {
           case EventType.CAST_ADD:
-            await handleCastAdd(
+          case EventType.CAST_REMOVE:
+            await handleCastAddOrRemove(
               client,
-              rawEvent as RawEvent<FarcasterCastAddData>,
+              rawEvent as RawEvent<FarcasterCastData>,
             );
             break;
           case EventType.CAST_REACTION_ADD:

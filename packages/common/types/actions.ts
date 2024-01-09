@@ -1,16 +1,18 @@
 import { ObjectId } from "mongodb";
 import { EventSource } from "./events";
-import { ReactionData, FollowData } from "./actionTypes";
-import { PostData, ReplyData } from "./contentTypes";
+import { PostData } from "./contentTypes";
+import { ContentActionData, UserActionData } from "./actionTypes";
 
-export type EventActionData = PostData | ReplyData | ReactionData | FollowData;
+export type EventActionData = PostData | ContentActionData | UserActionData;
 
 /**
  * Supported actions for events
  */
 export enum EventActionType {
   POST = "POST",
+  UNPOST = "UNPOST",
   REPLY = "REPLY",
+  UNREPLY = "UNREPLY",
   LIKE = "LIKE",
   REPOST = "REPOST",
   UNLIKE = "UNLIKE",
@@ -22,7 +24,7 @@ export enum EventActionType {
 /**
  * Event action parsed from the event data
  */
-export type EventActionBase = {
+export type EventAction<T> = {
   /** ID */
   _id: ObjectId;
 
@@ -52,9 +54,13 @@ export type EventActionBase = {
 
   /** Timestamp for when the event action was created */
   createdAt: Date;
-};
 
-export type EventAction<T> = EventActionBase & {
+  /** Timestamp for when the event action was deleted */
+  deletedAt?: Date;
+
+  /** Type of action */
   type: EventActionType;
+
+  /** Data for the action */
   data: T;
 };
