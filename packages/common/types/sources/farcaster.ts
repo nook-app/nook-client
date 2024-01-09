@@ -18,11 +18,7 @@ export type FarcasterCastData = {
     mention: string;
     mentionPosition: string;
   }[];
-  urlEmbeds: { url: string }[];
-  castEmbeds: {
-    fid: string;
-    hash: string;
-  }[];
+  embeds: string[];
 };
 
 export enum FarcasterReactionType {

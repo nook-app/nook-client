@@ -132,10 +132,6 @@ const transformCast = (
   cast: FarcasterCastData,
   fidToIdentity: Record<string, Identity>,
 ): PostData => {
-  const embeds = cast.urlEmbeds
-    .map((url) => url.url)
-    .concat(cast.castEmbeds.map((c) => toFarcasterURI(c)));
-
   return {
     protocol: Protocol.FARCASTER,
     application: Application.TBD,
@@ -146,7 +142,7 @@ const transformCast = (
       userId: fidToIdentity[mention].id,
       position: parseInt(mentionPosition),
     })),
-    embeds,
+    embeds: cast.embeds,
     channelId: cast.rootParentUrl,
     rootParentId: toFarcasterURI({
       fid: cast.rootParentFid,

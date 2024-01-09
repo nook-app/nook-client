@@ -4,6 +4,7 @@ import {
   hexToBuffer,
   timestampToDate,
   MessageHandlerArgs,
+  toFarcasterURI,
 } from "../../utils";
 import {
   FarcasterCast,
@@ -415,20 +416,21 @@ export const transformToCastData = (cast: FarcasterCast): FarcasterCastData => {
     }
   }
 
-  const urlEmbeds = [];
+  const embeds = [];
   if (cast.rawUrlEmbeds && (cast.rawUrlEmbeds as unknown) !== Prisma.DbNull) {
     for (const url of cast.rawUrlEmbeds as unknown as FarcasterCastEmbedUrl[]) {
-      urlEmbeds.push({ url: url.url });
+      embeds.push(url);
     }
   }
 
-  const castEmbeds = [];
   if (cast.rawCastEmbeds && (cast.rawCastEmbeds as unknown) !== Prisma.DbNull) {
     for (const embed of cast.rawCastEmbeds as unknown as FarcasterCastEmbedCast[]) {
-      castEmbeds.push({
-        fid: embed.embedFid.toString(),
-        hash: embed.embedHash,
-      });
+      embeds.push(
+        toFarcasterURI({
+          fid: embed.embedFid.toString(),
+          hash: embed.embedHash,
+        }),
+      );
     }
   }
 
@@ -444,7 +446,6 @@ export const transformToCastData = (cast: FarcasterCast): FarcasterCastData => {
     rootParentHash: cast.rootParentHash,
     rootParentUrl: cast.rootParentUrl,
     mentions,
-    urlEmbeds,
-    castEmbeds,
+    embeds,
   };
 };
