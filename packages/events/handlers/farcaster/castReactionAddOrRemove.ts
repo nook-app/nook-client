@@ -40,6 +40,7 @@ export const handleCastReactionAdd = async (
     client,
     contentId,
   );
+  if (!content) return;
 
   const type =
     rawEvent.data.reactionType === FarcasterReactionType.LIKE
@@ -81,6 +82,7 @@ export const handleCastReactionRemove = async (
     client,
     contentId,
   );
+  if (!content) return;
 
   const type =
     rawEvent.data.reactionType === FarcasterReactionType.LIKE

@@ -27,6 +27,10 @@ export const getOrCreateFarcasterPostOrReplyByContentId = async (
   }
 
   const cast = await sdk.farcaster.getCastByURI(contentId);
+  if (!cast) {
+    return { content: undefined, created: false };
+  }
+
   return {
     content: await createFarcasterPostOrReply(client, cast),
     created: true,
