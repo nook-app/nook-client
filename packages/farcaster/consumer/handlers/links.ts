@@ -4,6 +4,7 @@ import {
   timestampToDate,
   FidHandlerArgs,
   MessageHandlerArgs,
+  bufferToHex,
 } from "../../utils";
 import {
   EventService,
@@ -70,6 +71,11 @@ const messageToLink = (message: Message): FarcasterLink | undefined => {
     targetFid: BigInt(message.data.linkBody.targetFid),
     timestamp: timestampToDate(message.data.timestamp),
     deletedAt: null,
+    hash: bufferToHex(message.hash),
+    hashScheme: message.hashScheme,
+    signer: bufferToHex(message.signer),
+    signatureScheme: message.signatureScheme,
+    signature: bufferToHex(message.signature),
   };
 };
 

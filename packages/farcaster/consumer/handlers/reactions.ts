@@ -151,6 +151,11 @@ const messageToCastReaction = (
     reactionType: message.data.reactionBody.type,
     timestamp: timestampToDate(message.data.timestamp),
     deletedAt: null,
+    hash: bufferToHex(message.hash),
+    hashScheme: message.hashScheme,
+    signer: bufferToHex(message.signer),
+    signatureScheme: message.signatureScheme,
+    signature: bufferToHex(message.signature),
   };
 };
 
@@ -165,6 +170,11 @@ const messageToUrlReaction = (
     reactionType: message.data.reactionBody.type,
     timestamp: timestampToDate(message.data.timestamp),
     deletedAt: null,
+    hash: bufferToHex(message.hash),
+    hashScheme: message.hashScheme,
+    signer: bufferToHex(message.signer),
+    signatureScheme: message.signatureScheme,
+    signature: bufferToHex(message.signature),
   };
 };
 

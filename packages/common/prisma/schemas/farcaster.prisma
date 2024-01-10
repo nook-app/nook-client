@@ -35,6 +35,12 @@ model FarcasterUsernameProof {
 }
 
 model FarcasterVerification {
+    hash            String
+    hashScheme      Int
+    signature       String
+    signatureScheme Int
+    signer          String
+
     fid BigInt
 
     address String
@@ -48,9 +54,13 @@ model FarcasterVerification {
 }
 
 model FarcasterCast {
-    hash String
-    fid  BigInt
+    hash            String
+    hashScheme      Int
+    signature       String
+    signatureScheme Int
+    signer          String
 
+    fid  BigInt
     text String
 
     parentFid      BigInt?
@@ -120,6 +130,12 @@ model FarcasterCastEmbedUrl {
 }
 
 model FarcasterCastReaction {
+    hash            String
+    hashScheme      Int
+    signature       String
+    signatureScheme Int
+    signer          String
+
     targetHash   String
     reactionType Int
     fid          BigInt
@@ -133,6 +149,12 @@ model FarcasterCastReaction {
 }
 
 model FarcasterUrlReaction {
+    hash            String
+    hashScheme      Int
+    signature       String
+    signatureScheme Int
+    signer          String
+
     targetUrl    String
     reactionType Int
     fid          BigInt
@@ -144,6 +166,12 @@ model FarcasterUrlReaction {
 }
 
 model FarcasterLink {
+    hash            String
+    hashScheme      Int
+    signature       String
+    signatureScheme Int
+    signer          String
+
     fid       BigInt
     linkType  String
     targetFid BigInt

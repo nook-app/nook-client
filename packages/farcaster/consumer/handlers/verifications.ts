@@ -72,6 +72,11 @@ const messageToVerification = (
     chainId: message.data.verificationAddEthAddressBody.chainId,
     timestamp: timestampToDate(message.data.timestamp),
     deletedAt: null,
+    hash: bufferToHex(message.hash),
+    hashScheme: message.hashScheme,
+    signer: bufferToHex(message.signer),
+    signatureScheme: message.signatureScheme,
+    signature: bufferToHex(message.signature),
   };
 };
 

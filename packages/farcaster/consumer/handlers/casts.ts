@@ -189,6 +189,10 @@ const messageToCast = (message: Message): FarcasterCast | undefined => {
     rawMentions: rawMentions || Prisma.DbNull,
     rawCastEmbeds: rawCastEmbeds || Prisma.DbNull,
     rawUrlEmbeds: rawUrlEmbeds || Prisma.DbNull,
+    hashScheme: message.hashScheme,
+    signer: bufferToHex(message.signer),
+    signatureScheme: message.signatureScheme,
+    signature: bufferToHex(message.signature),
   };
 };
 

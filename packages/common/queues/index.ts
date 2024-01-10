@@ -11,7 +11,6 @@ export enum QueueName {
   Events = "events",
   EventsBackfill = "events-backfill",
   ContentIngress = "content-ingress",
-  ContentBackfill = "content-backfill",
 }
 
 type QueueType<T> = {
@@ -20,7 +19,6 @@ type QueueType<T> = {
   [QueueName.Events]: RawEvent<T>;
   [QueueName.EventsBackfill]: RawEvent<T>;
   [QueueName.ContentIngress]: ContentRequest;
-  [QueueName.ContentBackfill]: ContentRequest;
 };
 
 const connection: ConnectionOptions = {

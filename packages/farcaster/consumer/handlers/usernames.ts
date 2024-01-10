@@ -1,4 +1,4 @@
-import { Message, UserNameProof } from "@farcaster/hub-nodejs";
+import { UserNameProof } from "@farcaster/hub-nodejs";
 import {
   PrismaClient,
   FarcasterUsernameProof,
