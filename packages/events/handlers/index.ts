@@ -54,18 +54,16 @@ export const getEventsHandler = async () => {
             break;
           default:
             throw new Error(
-              `[events] [${rawEvent.source.service}] [${rawEvent.source.type}] no handler found`,
+              `[${rawEvent.source.service}] [${rawEvent.source.type}] no handler found`,
             );
         }
         break;
       default:
-        throw new Error(
-          `[events] [${rawEvent.source.service}] no handler found`,
-        );
+        throw new Error(`[${rawEvent.source.service}] no handler found`);
     }
 
     console.log(
-      `[events] [${rawEvent.source.service}] [${rawEvent.source.type}] processed ${rawEvent.source.id} by ${rawEvent.source.userId}`,
+      `[${rawEvent.source.service}] [${rawEvent.source.type}] processed ${rawEvent.source.id} by ${rawEvent.source.userId}`,
     );
   };
 };

@@ -42,7 +42,7 @@ const run = async () => {
       continue;
     }
 
-    console.log(`[farcaster-publisher] published event ${typedEvent.id}`);
+    console.log(`published event ${typedEvent.id}`);
 
     await queue.add(typedEvent.id.toString(), message, {
       jobId: `fc-${typedEvent.id.toString()}`,

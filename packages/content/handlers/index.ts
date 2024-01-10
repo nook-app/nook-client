@@ -13,7 +13,7 @@ export const getContentHandler = async () => {
         client,
         job.data.contentId,
       );
-      console.log(`[content] [${job.data.contentId}] processed`);
+      console.log(`[${job.data.contentId}] processed`);
       return;
     }
   };

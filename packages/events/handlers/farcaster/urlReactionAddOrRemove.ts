@@ -32,12 +32,6 @@ export const handleUrlReactionAddOrRemove = async (
       : EventActionType.REPOST;
   }
 
-  if (!eventActionType) {
-    throw new Error(
-      `[events] [${rawEvent.source.service}] [${rawEvent.source.type}] unknown reaction type`,
-    );
-  }
-
   const fidToIdentity = await sdk.identity.getFidIdentityMap([
     rawEvent.data.fid,
   ]);

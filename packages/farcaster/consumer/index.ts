@@ -6,9 +6,7 @@ const run = async () => {
 
   worker.on("failed", (job, err) => {
     if (job) {
-      console.log(
-        `[farcaster-consumer] [${job.id}] failed with ${err.message}`,
-      );
+      console.log(`[${job.id}] failed with ${err.message}`);
     }
   });
 };

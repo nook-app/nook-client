@@ -18,7 +18,7 @@ const run = async () => {
   const worker = getWorker(QueueName.FarcasterBackfill, async (job) => {
     const fid = Number(job.data.fid);
 
-    console.log(`[backfill-enqueue] processing fid: ${fid}`);
+    console.log(`processing fid: ${fid}`);
 
     const userDatas = await client.getUserDataByFid({ fid });
     if (userDatas.isErr()) {
@@ -71,9 +71,7 @@ const run = async () => {
 
   worker.on("failed", (job, err) => {
     if (job) {
-      console.log(
-        `[farcaster-backfill] [${job.id}] failed with ${err.message}`,
-      );
+      console.log(`[${job.id}] failed with ${err.message}`);
     }
   });
 };
