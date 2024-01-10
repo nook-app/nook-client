@@ -32,8 +32,8 @@ export const getCasts = async ({
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      ids: fidHashes,
-      uris,
+      ids: Array.from(new Set(fidHashes)),
+      uris: Array.from(new Set(uris)),
     }),
   });
 

@@ -18,18 +18,10 @@ export const handleLinkAddOrRemove = async (
 ) => {
   const isRemove = rawEvent.source.type === EventType.LINK_REMOVE;
 
-  const identities = await sdk.identity.getForFids([
+  const fidToIdentity = await sdk.identity.getFidIdentityMap([
     rawEvent.data.fid,
     rawEvent.data.targetFid,
   ]);
-
-  const fidToIdentity = identities.reduce(
-    (acc, identity) => {
-      acc[identity.socialAccounts[0].platformId] = identity;
-      return acc;
-    },
-    {} as Record<string, Identity>,
-  );
 
   const userId = fidToIdentity[rawEvent.data.fid].id;
   const targetUserId = fidToIdentity[rawEvent.data.targetFid].id;

@@ -72,6 +72,7 @@ model FarcasterCast {
     deletedAt DateTime?
 
     @@id([hash])
+    @@index([fid, hash])
 }
 
 model FarcasterCastMention {

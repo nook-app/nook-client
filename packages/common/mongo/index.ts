@@ -54,7 +54,7 @@ export class MongoClient {
     const collection = this.getCollection<Content<ContentData>>(
       MongoCollection.Content,
     );
-    await collection.updateOne(
+    const updateResult = await collection.updateOne(
       {
         contentId: content.contentId,
       },
@@ -65,14 +65,23 @@ export class MongoClient {
         upsert: true,
       },
     );
+    return updateResult.upsertedCount > 0;
   };
 
   upsertEvent = async <T>(event: UserEvent<T>) => {
     const collection = this.getCollection<UserEvent<T>>(MongoCollection.Events);
-    await collection.deleteOne({
-      eventId: event.eventId,
-    });
-    await collection.insertOne(event);
+    const updateResult = await collection.updateOne(
+      {
+        eventId: event.eventId,
+      },
+      {
+        $set: event,
+      },
+      {
+        upsert: true,
+      },
+    );
+    return updateResult.upsertedCount > 0;
   };
 
   upsertActions = async (actions: EventAction<EventActionData>[]) => {
@@ -80,9 +89,12 @@ export class MongoClient {
     const collection = this.getCollection<EventAction<EventActionData>>(
       MongoCollection.Actions,
     );
-    await collection.deleteMany({
-      eventId: actions[0].eventId,
+    const deleteResult = await collection.deleteMany({
+      eventId: {
+        $in: actions.map((action) => action.eventId),
+      },
     });
-    await collection.insertMany(actions);
+    const insertResult = await collection.insertMany(actions);
+    return insertResult.insertedCount > deleteResult.deletedCount;
   };
 }

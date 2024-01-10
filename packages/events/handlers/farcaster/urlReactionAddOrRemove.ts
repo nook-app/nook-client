@@ -38,9 +38,11 @@ export const handleUrlReactionAddOrRemove = async (
     );
   }
 
-  const identities = await sdk.identity.getForFids([rawEvent.data.fid]);
+  const fidToIdentity = await sdk.identity.getFidIdentityMap([
+    rawEvent.data.fid,
+  ]);
 
-  const userId = identities[0].id;
+  const userId = fidToIdentity[rawEvent.data.fid].id;
   const contentId = rawEvent.data.url;
   const actions: EventAction<ContentActionData>[] = [
     {

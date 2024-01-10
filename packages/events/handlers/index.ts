@@ -21,6 +21,8 @@ export const getEventsHandler = async () => {
   return async <T>(job: Job<RawEvent<T>>) => {
     const rawEvent = job.data;
 
+    console.time("handleEvent");
+
     switch (rawEvent.source.service) {
       case EventService.FARCASTER:
         switch (rawEvent.source.type) {
@@ -63,6 +65,8 @@ export const getEventsHandler = async () => {
           `[events] [${rawEvent.source.service}] no handler found`,
         );
     }
+
+    console.timeEnd("handleEvent");
 
     console.log(
       `[events] [${rawEvent.source.service}] [${rawEvent.source.type}] processed ${rawEvent.source.id} by ${rawEvent.source.userId}`,

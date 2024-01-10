@@ -17,115 +17,173 @@ import { sdk } from "@flink/sdk";
 import { MongoClient, MongoCollection } from "@flink/common/mongo";
 import { publishContentRequests } from "@flink/common/queues";
 
-export const getAndTransformCastToContent = async (
+export const getOrCreateFarcasterPostOrReplyByContentId = async (
   client: MongoClient,
   contentId: string,
-): Promise<Content<PostData>> => {
+) => {
   const content = await client.findContent(contentId);
   if (content) {
-    return content;
+    return { content: content as Content<PostData>, created: false };
   }
 
   const cast = await sdk.farcaster.getCastByURI(contentId);
-  if (!cast) {
-    return;
-  }
-
-  return await transformCastToPost(client, cast);
+  return {
+    content: await createFarcasterPostOrReply(client, cast),
+    created: true,
+  };
 };
 
-export const transformCastToPost = async (
+export const getOrCreateFarcasterPostOrReplyByData = async (
+  client: MongoClient,
+  cast: FarcasterCastData,
+) => {
+  const content = await client.findContent(toFarcasterURI(cast));
+  if (content) {
+    return { content: content as Content<PostData>, created: false };
+  }
+
+  return {
+    content: await createFarcasterPostOrReply(client, cast),
+    created: true,
+  };
+};
+
+export const createFarcasterPostOrReply = async (
   client: MongoClient,
   cast: FarcasterCastData,
 ): Promise<Content<PostData>> => {
-  const fidHashes = [];
   if (cast.parentHash) {
-    fidHashes.push({
-      fid: cast.parentFid,
-      hash: cast.parentHash,
-    });
-    fidHashes.push({
-      fid: cast.rootParentFid,
-      hash: cast.rootParentHash,
-    });
+    return await createFarcasterReply(client, cast);
   }
 
-  // TODO: Optimize by looking in collection first
-  const casts = (await sdk.farcaster.getCasts({ fidHashes })).filter(Boolean);
+  return await createFarcasterPost(client, cast);
+};
 
-  const identities = await sdk.identity.getForFids([
-    ...new Set([
-      ...extractFidsFromCast(cast),
-      ...casts.flatMap(extractFidsFromCast),
-    ]),
-  ]);
-
-  const fidToIdentity = identities.reduce(
-    (acc, identity) => {
-      acc[identity.socialAccounts[0].platformId] = identity;
-      return acc;
-    },
-    {} as Record<string, Identity>,
+export const createFarcasterPost = async (
+  client: MongoClient,
+  cast: FarcasterCastData,
+): Promise<Content<PostData>> => {
+  const identities = await sdk.identity.getFidIdentityMap(
+    extractFidsFromCasts([cast]),
   );
 
-  const data: PostData = transformCast(cast, fidToIdentity);
+  const data: PostData = transformCast(cast, identities);
 
-  if (cast.parentHash) {
-    const rootParent = casts.find(
-      (cast) =>
-        cast.fid === cast.rootParentFid && cast.hash === cast.rootParentHash,
-    );
-    if (rootParent) {
-      data.rootParent = transformCast(rootParent, fidToIdentity);
-    }
+  const [content] = await Promise.all([
+    upsertContent(client, toFarcasterURI(cast), data),
+    void getAndPublishContentRequests(data),
+  ]);
 
-    const parent = casts.find(
-      (cast) => cast.fid === cast.parentFid && cast.hash === cast.parentHash,
-    );
-    if (parent) {
-      data.parent = transformCast(parent, fidToIdentity);
-    }
+  return content;
+};
 
-    data.parentId = toFarcasterURI({
-      fid: cast.parentFid,
-      hash: cast.parentHash,
-    });
+export const createFarcasterReply = async (
+  client: MongoClient,
+  cast: FarcasterCastData,
+): Promise<Content<PostData>> => {
+  const { existingParent, existingRoot, newParent, newRoot } =
+    await getParentAndRootCasts(client, cast);
+
+  const casts = [cast];
+  if (newParent) casts.push(newParent);
+  if (newRoot) casts.push(newRoot);
+
+  const identities = await sdk.identity.getFidIdentityMap(
+    extractFidsFromCasts(casts),
+  );
+
+  const data: PostData = transformCast(cast, identities);
+  data.rootParent = existingRoot?.data || transformCast(newRoot, identities);
+  data.parent = existingParent?.data || transformCast(newParent, identities);
+  data.parentId = toFarcasterURI({
+    fid: cast.parentFid,
+    hash: cast.parentHash,
+  });
+
+  const promises = [
+    upsertContent(client, toFarcasterURI(cast), data),
+    void getAndPublishContentRequests(data),
+  ];
+
+  if (newRoot) {
+    promises.push(upsertContent(client, data.rootParentId, data.rootParent));
   }
 
-  const promises = [getAndUpsertContent(client, toFarcasterURI(cast), data)];
-
-  const contentRequests: ContentRequest[] = data.embeds.map((contentId) => ({
-    contentId,
-    submitterId: data.userId,
-  }));
-
-  if (data.rootParent) {
+  if (newParent && data.parent.rootParentId === data.rootParentId) {
     promises.push(
-      getAndUpsertContent(client, data.rootParentId, data.rootParent),
+      upsertContent(client, data.parentId, {
+        ...data.parent,
+        rootParentId: data.rootParentId,
+        rootParentUserId: data.rootParentUserId,
+        rootParent: data.rootParent,
+      }),
     );
-
-    if (data.parent && data.parent.rootParentId === data.rootParentId) {
-      promises.push(
-        getAndUpsertContent(client, data.rootParentId, {
-          ...data.parent,
-          rootParentId: data.rootParentId,
-          rootParentUserId: data.rootParentUserId,
-          rootParent: data.rootParent,
-        }),
-      );
-    } else if (data.parent) {
-      contentRequests.push({
-        contentId: data.parentId,
-        submitterId: data.parentUserId,
-      });
-    }
   }
-
-  promises.push(void publishContentRequests(contentRequests));
 
   const [content] = await Promise.all(promises);
 
   return content;
+};
+
+const getParentAndRootCasts = async (
+  client: MongoClient,
+  cast: FarcasterCastData,
+) => {
+  const parentUri = toFarcasterURI({
+    fid: cast.parentFid,
+    hash: cast.parentHash,
+  });
+  const rootUri = toFarcasterURI({
+    fid: cast.rootParentFid,
+    hash: cast.rootParentHash,
+  });
+
+  const uris = [parentUri, rootUri];
+
+  const existingContent: Content<PostData>[] = await client
+    .getCollection<Content<PostData>>(MongoCollection.Content)
+    .find({
+      contentId: {
+        $in: uris,
+      },
+    })
+    .toArray();
+
+  const existingParent = existingContent.find(
+    (content) => content.contentId === parentUri,
+  );
+
+  const existingRoot = existingContent.find(
+    (content) => content.contentId === rootUri,
+  );
+
+  let newParent: FarcasterCastData;
+
+  let newRoot: FarcasterCastData;
+
+  if (!existingParent || !existingRoot) {
+    const missingUris = uris.filter(
+      (uri) => !existingContent.find((content) => content.contentId === uri),
+    );
+
+    const casts = await sdk.farcaster.getCasts({ uris: missingUris });
+
+    newParent = casts.find(
+      (cast) => cast.fid === cast.parentFid && cast.hash === cast.parentHash,
+    );
+
+    newRoot = casts.find(
+      (cast) =>
+        cast.fid === cast.rootParentFid && cast.hash === cast.rootParentHash,
+    );
+  }
+
+  return {
+    existingParent,
+    existingRoot,
+    newParent,
+    newRoot,
+  };
 };
 
 const transformCast = (
@@ -152,26 +210,32 @@ const transformCast = (
   };
 };
 
-const extractFidsFromCast = (cast: FarcasterCastData): string[] => {
-  return [
-    cast.fid,
-    cast.parentFid,
-    cast.rootParentFid,
-    ...cast.mentions.map((mention) => mention.mention),
-  ].filter(Boolean);
+const extractFidsFromCasts = (casts: FarcasterCastData[]): string[] => {
+  return Array.from(
+    new Set(
+      casts.flatMap((cast) =>
+        [
+          cast.fid,
+          cast.parentFid,
+          cast.rootParentFid,
+          ...cast.mentions.map((mention) => mention.mention),
+        ].filter(Boolean),
+      ),
+    ),
+  );
 };
 
-const getAndUpsertContent = async (
+const upsertContent = async (
   client: MongoClient,
   contentId: string,
   post: PostData,
 ) => {
-  const content = await transformPostToContent(client, contentId, post);
+  const content = await formatContent(client, contentId, post);
   await client.upsertContent(content);
   return content;
 };
 
-const transformPostToContent = async (
+const formatContent = async (
   client: MongoClient,
   contentId: string,
   post: PostData,
@@ -183,13 +247,13 @@ const transformPostToContent = async (
     timestamp: new Date(post.timestamp),
     type: post.parentId ? ContentType.REPLY : ContentType.POST,
     data: post,
-    relations: generateRelations(post),
-    userIds: generateUserIds(post),
+    relations: getRelations(post),
+    userIds: getUserIds(post),
     engagement: await getEngagement(client, contentId),
   };
 };
 
-const generateRelations = (post: PostData): ContentRelation[] => {
+const getRelations = (post: PostData): ContentRelation[] => {
   const relations: ContentRelation[] = post.embeds.map((contentId) => ({
     type: ContentRelationType.EMBED,
     contentId,
@@ -217,7 +281,7 @@ const generateRelations = (post: PostData): ContentRelation[] => {
   return relations;
 };
 
-const generateUserIds = (post: PostData): string[] => {
+const getUserIds = (post: PostData): string[] => {
   const userIds: string[] = [post.userId];
 
   if (post.rootParentUserId && !userIds.includes(post.rootParentUserId)) {
@@ -237,7 +301,7 @@ const generateUserIds = (post: PostData): string[] => {
   return userIds;
 };
 
-const getEngagement = async (
+export const getEngagement = async (
   client: MongoClient,
   contentId: string,
 ): Promise<ContentEngagement> => {
@@ -283,4 +347,20 @@ const getEngagement = async (
     likes,
     reposts,
   };
+};
+
+const getAndPublishContentRequests = async (data: PostData) => {
+  const contentRequests: ContentRequest[] = data.embeds.map((contentId) => ({
+    contentId,
+    submitterId: data.userId,
+  }));
+
+  if (data.parent && data.parent.parentId !== data.rootParentId) {
+    contentRequests.push({
+      contentId: data.parentId,
+      submitterId: data.parentUserId,
+    });
+  }
+
+  await publishContentRequests(contentRequests);
 };

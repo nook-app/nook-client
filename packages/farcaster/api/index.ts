@@ -5,6 +5,7 @@ import {
   getAndBackfillCasts,
   transformToCastData,
 } from "../consumer/handlers/casts";
+import { getAndBackfillReactions } from "../consumer/handlers/reactions";
 
 const prisma = new PrismaClient();
 
@@ -83,9 +84,10 @@ const run = async () => {
       const casts = (
         await prisma.farcasterCast.findMany({
           where: {
-            hash: {
-              in: ids.map(({ hash }) => hash),
-            },
+            OR: ids.map(({ fid, hash }) => ({
+              fid: Number(fid),
+              hash,
+            })),
           },
         })
       ).map(transformToCastData);
@@ -97,6 +99,7 @@ const run = async () => {
 
       if (missingCasts.length > 0) {
         casts.push(...(await getAndBackfillCasts(client, missingCasts)));
+        await getAndBackfillReactions(client, missingCasts);
       }
 
       const hashToCast = casts.filter(Boolean).reduce((acc, cast) => {

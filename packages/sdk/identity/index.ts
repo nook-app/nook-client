@@ -33,9 +33,19 @@ export const get = async (request: IdentitiesRequest): Promise<Identity[]> => {
   return identities;
 };
 
-export const getForFids = async (fids: string[]): Promise<Identity[]> => {
-  return get({
+export const getFidIdentityMap = async (
+  fids: string[],
+): Promise<Record<string, Identity>> => {
+  const identities = await get({
     type: IdentityRequestType.FID,
     ids: fids,
   });
+
+  return identities.reduce(
+    (acc, identity) => {
+      acc[identity.socialAccounts[0].platformId] = identity;
+      return acc;
+    },
+    {} as Record<string, Identity>,
+  );
 };
