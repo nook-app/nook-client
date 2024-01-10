@@ -16,7 +16,5 @@ export const getContentHandler = async () => {
       console.log(`[content] [${job.data.contentId}] processed`);
       return;
     }
-
-    throw new Error(`[content] [${job.data.contentId}] no handler found`);
   };
 };

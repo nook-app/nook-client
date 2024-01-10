@@ -1,17 +1,19 @@
 import { QueueName, getQueue } from ".";
-import { ContentRequest, RawEvent } from "../types";
+import { ContentRequest, EventSource, RawEvent } from "../types";
+
+export const toJobId = (source: EventSource) => {
+  return `${source.service}-${source.type}-${source.id}`;
+};
 
 export const publishRawEvent = async <T>(
   event: RawEvent<T>,
   backfill = false,
 ) => {
-  const eventId = `${event.source.service}-${event.source.id}`;
+  const jobId = toJobId(event.source);
   const queue = getQueue(
     backfill ? QueueName.EventsBackfill : QueueName.Events,
   );
-  await queue.add(eventId, event, {
-    jobId: eventId,
-  });
+  await queue.add(jobId, event, { jobId });
 };
 
 export const publishRawEvents = async <T>(
@@ -23,13 +25,14 @@ export const publishRawEvents = async <T>(
     backfill ? QueueName.EventsBackfill : QueueName.Events,
   );
   await queue.addBulk(
-    events.map((event) => ({
-      name: event.eventId,
-      data: event,
-      opts: {
-        jobId: event.eventId,
-      },
-    })),
+    events.map((event) => {
+      const jobId = toJobId(event.source);
+      return {
+        name: jobId,
+        data: event,
+        opts: { jobId },
+      };
+    }),
   );
 };
 

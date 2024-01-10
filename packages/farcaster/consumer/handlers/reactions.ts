@@ -19,7 +19,11 @@ import {
   FidHash,
   RawEvent,
 } from "@flink/common/types";
-import { publishRawEvent, publishRawEvents } from "@flink/common/queues";
+import {
+  publishRawEvent,
+  publishRawEvents,
+  toJobId,
+} from "@flink/common/queues";
 
 const prisma = new PrismaClient();
 
@@ -244,14 +248,16 @@ export const transformToCastReactionEvent = (
     reactionType = FarcasterReactionType.RECAST;
   }
 
+  const source = {
+    service: EventService.FARCASTER,
+    type,
+    id: reaction.hash,
+    userId: reaction.fid.toString(),
+  };
+
   return {
-    eventId: `${type}-${reaction.fid}-${reaction.targetHash}-${reaction.reactionType}`,
-    source: {
-      service: EventService.FARCASTER,
-      type,
-      id: `${reaction.fid}-${reaction.targetHash}-${reaction.reactionType}`,
-      userId: reaction.fid.toString(),
-    },
+    eventId: toJobId(source),
+    source,
     timestamp: reaction.timestamp,
     data: {
       timestamp: reaction.timestamp,
@@ -274,14 +280,16 @@ const transformToUrlReactionEvent = (
     reactionType = FarcasterReactionType.RECAST;
   }
 
+  const source = {
+    service: EventService.FARCASTER,
+    type,
+    id: reaction.hash,
+    userId: reaction.fid.toString(),
+  };
+
   return {
-    eventId: `${type}-${reaction.fid}-${reaction.targetUrl}`,
-    source: {
-      service: EventService.FARCASTER,
-      type,
-      id: `${reaction.fid}-${reaction.targetUrl}-${reaction.reactionType}`,
-      userId: reaction.fid.toString(),
-    },
+    eventId: toJobId(source),
+    source,
     timestamp: reaction.timestamp,
     data: {
       timestamp: reaction.timestamp,

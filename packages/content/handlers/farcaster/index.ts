@@ -93,8 +93,12 @@ export const createFarcasterReply = async (
   );
 
   const data: PostData = transformCast(cast, identities);
-  data.rootParent = existingRoot?.data || transformCast(newRoot, identities);
-  data.parent = existingParent?.data || transformCast(newParent, identities);
+  data.rootParent =
+    existingRoot?.data ||
+    (newRoot ? transformCast(newRoot, identities) : undefined);
+  data.parent =
+    existingParent?.data ||
+    (newParent ? transformCast(newParent, identities) : undefined);
   data.parentId = toFarcasterURI({
     fid: cast.parentFid,
     hash: cast.parentHash,
@@ -166,15 +170,16 @@ const getParentAndRootCasts = async (
       (uri) => !existingContent.find((content) => content.contentId === uri),
     );
 
-    const casts = await sdk.farcaster.getCasts({ uris: missingUris });
+    const casts = (await sdk.farcaster.getCasts({ uris: missingUris })).filter(
+      Boolean,
+    );
 
     newParent = casts.find(
-      (cast) => cast.fid === cast.parentFid && cast.hash === cast.parentHash,
+      (c) => c.fid === cast.parentFid && c.hash === cast.parentHash,
     );
 
     newRoot = casts.find(
-      (cast) =>
-        cast.fid === cast.rootParentFid && cast.hash === cast.rootParentHash,
+      (c) => c.fid === cast.rootParentFid && c.hash === cast.rootParentHash,
     );
   }
 

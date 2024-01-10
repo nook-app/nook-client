@@ -12,7 +12,11 @@ import {
   FarcasterLinkData,
   RawEvent,
 } from "@flink/common/types";
-import { publishRawEvent, publishRawEvents } from "@flink/common/queues";
+import {
+  publishRawEvent,
+  publishRawEvents,
+  toJobId,
+} from "@flink/common/queues";
 
 const prisma = new PrismaClient();
 
@@ -96,14 +100,15 @@ const transformToLinkEvent = (
   type: EventType,
   link: FarcasterLink,
 ): RawEvent<FarcasterLinkData> => {
+  const source = {
+    service: EventService.FARCASTER,
+    type,
+    id: link.hash,
+    userId: link.fid.toString(),
+  };
   return {
-    eventId: `${type}-${link.fid}-${link.linkType}-${link.targetFid}`,
-    source: {
-      service: EventService.FARCASTER,
-      type,
-      id: `${link.fid}-${link.linkType}-${link.targetFid}`,
-      userId: link.fid.toString(),
-    },
+    eventId: toJobId(source),
+    source,
     timestamp: link.timestamp,
     data: {
       fid: link.fid.toString(),

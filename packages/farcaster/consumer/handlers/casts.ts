@@ -21,7 +21,11 @@ import {
   FidHash,
   RawEvent,
 } from "@flink/common/types";
-import { publishRawEvent, publishRawEvents } from "@flink/common/queues";
+import {
+  publishRawEvent,
+  publishRawEvents,
+  toJobId,
+} from "@flink/common/queues";
 
 const prisma = new PrismaClient();
 
@@ -396,14 +400,15 @@ export const transformToCastEvent = (
   type: EventType,
   cast: FarcasterCast,
 ): RawEvent<FarcasterCastData> => {
+  const source = {
+    service: EventService.FARCASTER,
+    type,
+    id: cast.hash,
+    userId: cast.fid.toString(),
+  };
   return {
-    eventId: `${EventType.CAST_ADD}-${cast.fid}-${cast.hash}`,
-    source: {
-      service: EventService.FARCASTER,
-      type,
-      id: cast.hash,
-      userId: cast.fid.toString(),
-    },
+    eventId: toJobId(source),
+    source,
     timestamp: cast.timestamp,
     data: transformToCastData(cast),
   };
