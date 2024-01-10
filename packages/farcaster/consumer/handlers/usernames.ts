@@ -13,7 +13,8 @@ const messageToUsernameProof = (
   return {
     fid: BigInt(message.fid),
     username: Buffer.from(message.name).toString(),
-    address: bufferToHex(message.owner),
+    owner: bufferToHex(message.owner),
+    signature: bufferToHex(message.signature),
     type: message.type,
     timestamp: timestampToDate(message.timestamp),
     deletedAt: null,

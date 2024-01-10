@@ -1,11 +1,11 @@
 import { QueueName, getWorker } from "@flink/common/queues";
 import { getSSLHubRpcClient } from "@farcaster/hub-nodejs";
 import { backfillCasts } from "./handlers/casts";
+import { backfillVerifications } from "./handlers/verifications";
+import { backfillUsernameProofs } from "./handlers/usernames";
+import { backfillUserDatas } from "./handlers/users";
 import { backfillReactions } from "./handlers/reactions";
 import { backfillLinks } from "./handlers/links";
-import { backfillVerifications } from "./handlers/verifications";
-import { backfillUser } from "./handlers/users";
-import { backfillUsernameProofs } from "./handlers/usernames";
 
 const run = async () => {
   const hubRpcEndpoint = process.env.HUB_RPC_ENDPOINT;
@@ -26,7 +26,7 @@ const run = async () => {
       process.exit(1);
     }
 
-    await backfillUser(userDatas.value.messages);
+    await backfillUserDatas(userDatas.value.messages);
 
     const usernameProofs = await client.getUserNameProofsByFid({ fid });
     if (usernameProofs.isErr()) {
@@ -52,21 +52,21 @@ const run = async () => {
 
     await backfillCasts(client, casts.value.messages);
 
-    // const reactions = await client.getReactionsByFid({ fid });
-    // if (reactions.isErr()) {
-    //   console.error(reactions.error);
-    //   process.exit(1);
-    // }
+    const reactions = await client.getReactionsByFid({ fid });
+    if (reactions.isErr()) {
+      console.error(reactions.error);
+      process.exit(1);
+    }
 
-    // await backfillReactions(reactions.value.messages);
+    await backfillReactions(reactions.value.messages);
 
-    // const links = await client.getLinksByFid({ fid });
-    // if (links.isErr()) {
-    //   console.error(links.error);
-    //   process.exit(1);
-    // }
+    const links = await client.getLinksByFid({ fid });
+    if (links.isErr()) {
+      console.error(links.error);
+      process.exit(1);
+    }
 
-    // await backfillLinks(links.value.messages);
+    await backfillLinks(links.value.messages);
   });
 
   worker.on("failed", (job, err) => {

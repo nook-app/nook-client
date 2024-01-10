@@ -1,57 +1,61 @@
-import { PrismaClient, FarcasterUser } from "@flink/common/prisma/farcaster";
-import { MessageHandlerArgs } from "../../utils";
+import {
+  PrismaClient,
+  FarcasterUserData,
+} from "@flink/common/prisma/farcaster";
+import { MessageHandlerArgs, bufferToHex } from "../../utils";
 import { Message } from "@farcaster/hub-nodejs";
 
 const prisma = new PrismaClient();
 
-export const handleUserDataAdd = async ({
-  message,
-  client,
-}: MessageHandlerArgs) => {
-  const fid = message.data?.fid;
-  if (!fid) return;
-  console.log(`[user-update] [${fid}] updating user`);
+export const handleUserDataAdd = async ({ message }: MessageHandlerArgs) => {
+  const userData = messageToUserData(message);
+  if (!userData) return;
 
-  const userDatas = await client.getUserDataByFid({ fid });
-  if (userDatas.isErr()) {
-    throw new Error(userDatas.error.message);
-  }
+  await prisma.farcasterUserData.upsert({
+    where: {
+      fid_type: {
+        fid: userData.fid,
+        type: userData.type,
+      },
+    },
+    create: userData,
+    update: userData,
+  });
 
-  await backfillUser(userDatas.value.messages);
+  console.log(
+    `[user-data-add] [${userData.fid}] added ${userData.type} with value ${userData.value}`,
+  );
 };
 
-export const backfillUser = async (messages: Message[]) => {
-  const fid = messages[0].data?.fid;
-  const user: FarcasterUser = {
-    fid: BigInt(fid),
-    pfp: null,
-    display: null,
-    bio: null,
-    url: null,
-    username: null,
+const messageToUserData = (message: Message): FarcasterUserData | undefined => {
+  if (!message.data?.userDataBody) return;
+
+  const fid = BigInt(message.data.fid);
+
+  return {
+    fid,
+    type: message.data.userDataBody.type,
+    value: message.data.userDataBody.value,
+    hash: bufferToHex(message.hash),
+    hashScheme: message.hashScheme,
+    signer: bufferToHex(message.signer),
+    signatureScheme: message.signatureScheme,
+    signature: bufferToHex(message.signature),
   };
+};
 
-  for (const message of messages) {
-    if (!message.data?.userDataBody) continue;
-    const data = message.data.userDataBody;
-    if (data.type === 1) {
-      user.pfp = data.value;
-    } else if (data.type === 2) {
-      user.display = data.value;
-    } else if (data.type === 3) {
-      user.bio = data.value;
-    } else if (data.type === 5) {
-      user.url = data.value;
-    } else if (data.type === 6) {
-      user.username = data.value;
-    }
-  }
-
-  await prisma.farcasterUser.upsert({
+export const backfillUserDatas = async (messages: Message[]) => {
+  const userDatas = messages.map(messageToUserData).filter(Boolean);
+  await prisma.farcasterUserData.deleteMany({
     where: {
-      fid: user.fid,
+      OR: userDatas.map((userData) => ({
+        fid: userData.fid,
+        type: userData.type,
+      })),
     },
-    create: user,
-    update: user,
+  });
+  await prisma.farcasterUserData.createMany({
+    data: userDatas,
+    skipDuplicates: true,
   });
 };

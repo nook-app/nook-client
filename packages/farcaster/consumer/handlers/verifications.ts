@@ -1,13 +1,8 @@
 import {
   PrismaClient,
-  FarcasterVerification,
+  FarcasterEthVerification,
 } from "@flink/common/prisma/farcaster";
-import {
-  bufferToHex,
-  timestampToDate,
-  FidHandlerArgs,
-  MessageHandlerArgs,
-} from "../../utils";
+import { bufferToHex, timestampToDate, MessageHandlerArgs } from "../../utils";
 import { Message } from "@farcaster/hub-nodejs";
 
 const prisma = new PrismaClient();
@@ -18,7 +13,7 @@ export const handleVerificationAdd = async ({
   const verification = messageToVerification(message);
   if (!verification) return;
 
-  await prisma.farcasterVerification.upsert({
+  await prisma.farcasterEthVerification.upsert({
     where: {
       fid_address: {
         fid: verification.fid,
@@ -42,7 +37,7 @@ export const handleVerificationRemove = async ({
   const fid = BigInt(message.data.fid);
   const address = bufferToHex(message.data.verificationRemoveBody.address);
 
-  await prisma.farcasterVerification.updateMany({
+  await prisma.farcasterEthVerification.updateMany({
     where: {
       fid,
       address,
@@ -57,7 +52,7 @@ export const handleVerificationRemove = async ({
 
 const messageToVerification = (
   message: Message,
-): FarcasterVerification | undefined => {
+): FarcasterEthVerification | undefined => {
   if (!message.data?.verificationAddEthAddressBody) return;
 
   const fid = BigInt(message.data.fid);
@@ -70,6 +65,12 @@ const messageToVerification = (
     address,
     type: message.data.verificationAddEthAddressBody.verificationType,
     chainId: message.data.verificationAddEthAddressBody.chainId,
+    ethSignature: bufferToHex(
+      message.data.verificationAddEthAddressBody.ethSignature,
+    ),
+    blockHash: bufferToHex(
+      message.data.verificationAddEthAddressBody.blockHash,
+    ),
     timestamp: timestampToDate(message.data.timestamp),
     deletedAt: null,
     hash: bufferToHex(message.hash),
@@ -82,7 +83,7 @@ const messageToVerification = (
 
 export const backfillVerifications = async (messages: Message[]) => {
   const verifications = messages.map(messageToVerification).filter(Boolean);
-  await prisma.farcasterVerification.createMany({
+  await prisma.farcasterEthVerification.createMany({
     data: verifications,
     skipDuplicates: true,
   });

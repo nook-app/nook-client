@@ -15,26 +15,32 @@ model Subscription {
     eventId BigInt
 }
 
-model FarcasterUser {
-    fid      BigInt  @id
-    username String?
-    display  String?
-    pfp      String?
-    bio      String?
-    url      String?
+model FarcasterUserData {
+    hash            String
+    hashScheme      Int
+    signature       String
+    signatureScheme Int
+    signer          String
+
+    fid   BigInt
+    type  Int
+    value String
+
+    @@id([fid, type])
 }
 
 model FarcasterUsernameProof {
-    username String @id
-    fid      BigInt
-    type     Int
-    address  String
+    username  String @id
+    fid       BigInt
+    type      Int
+    owner     String
+    signature String
 
     timestamp DateTime
     deletedAt DateTime?
 }
 
-model FarcasterVerification {
+model FarcasterEthVerification {
     hash            String
     hashScheme      Int
     signature       String
@@ -43,9 +49,11 @@ model FarcasterVerification {
 
     fid BigInt
 
-    address String
-    type    Int
-    chainId Int
+    address      String
+    type         Int
+    chainId      Int
+    ethSignature String
+    blockHash    String
 
     timestamp DateTime
     deletedAt DateTime?
