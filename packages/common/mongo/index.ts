@@ -4,7 +4,6 @@ import {
   ContentData,
   EventAction,
   EventActionData,
-  EventActionType,
   UserEvent,
 } from "../types";
 

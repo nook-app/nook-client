@@ -63,7 +63,7 @@ export const createFarcasterPostOrReply = async (
   return await createFarcasterPost(client, cast);
 };
 
-export const createFarcasterPost = async (
+const createFarcasterPost = async (
   client: MongoClient,
   cast: FarcasterCastData,
 ): Promise<Content<PostData>> => {
@@ -81,7 +81,7 @@ export const createFarcasterPost = async (
   return content;
 };
 
-export const createFarcasterReply = async (
+const createFarcasterReply = async (
   client: MongoClient,
   cast: FarcasterCastData,
 ): Promise<Content<PostData>> => {

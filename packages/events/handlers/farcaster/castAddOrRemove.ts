@@ -22,8 +22,9 @@ export const handleCastAddOrRemove = async (
   if (rawEvent.source.type === EventType.CAST_ADD) {
     if (rawEvent.data.parentHash) {
       await handleCastAddReply(client, rawEvent);
+    } else {
+      await handleCastAddPost(client, rawEvent);
     }
-    await handleCastAddPost(client, rawEvent);
   } else if (rawEvent.source.type === EventType.CAST_REMOVE) {
     await handleCastRemove(client, rawEvent);
   }
