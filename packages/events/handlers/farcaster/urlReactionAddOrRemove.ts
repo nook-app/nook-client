@@ -1,4 +1,3 @@
-import { MongoClient } from "@flink/common/mongo";
 import {
   EventAction,
   EventActionType,
@@ -13,7 +12,6 @@ import { sdk } from "@flink/sdk";
 import { ContentActionData } from "@flink/common/types/actionTypes";
 
 export const handleUrlReactionAddOrRemove = async (
-  client: MongoClient,
   rawEvent: RawEvent<FarcasterUrlReactionData>,
 ) => {
   let eventActionType: EventActionType | undefined;
@@ -63,5 +61,5 @@ export const handleUrlReactionAddOrRemove = async (
     createdAt: actions[0].createdAt,
   };
 
-  await Promise.all([client.upsertEvent(event), client.upsertActions(actions)]);
+  return { event, actions };
 };

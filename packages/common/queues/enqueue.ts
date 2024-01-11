@@ -1,5 +1,11 @@
 import { QueueName, getQueue } from ".";
-import { ContentRequest, EventSource, RawEvent } from "../types";
+import {
+  ContentRequest,
+  EventAction,
+  EventActionData,
+  EventSource,
+  RawEvent,
+} from "../types";
 
 export const toJobId = (source: EventSource) => {
   return `${source.service}-${source.type}-${source.id}`;
@@ -50,6 +56,19 @@ export const publishContentRequests = async (requests: ContentRequest[]) => {
       name: request.contentId,
       data: request,
       opts: { jobId: request.contentId },
+    })),
+  );
+};
+
+export const publishActionRequests = async (
+  actions: EventAction<EventActionData>[],
+) => {
+  const queue = getQueue(QueueName.Actions);
+  await queue.addBulk(
+    actions.map((action) => ({
+      name: `${action.eventId}-${action.type}`,
+      data: action,
+      opts: { jobId: `${action.eventId}-${action.type}` },
     })),
   );
 };

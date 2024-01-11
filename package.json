@@ -11,11 +11,10 @@
     "start:farcaster:publisher": "yarn workspace @flink/farcaster start:publisher",
     "start:identity:api": "yarn workspace @flink/identity start:api",
     "start:events": "yarn workspace @flink/events start",
+    "start:actions": "yarn workspace @flink/actions start",
     "start:content": "yarn workspace @flink/content start"
   },
-  "workspaces": [
-    "packages/*"
-  ],
+  "workspaces": ["packages/*"],
   "devDependencies": {
     "@biomejs/biome": "1.4.1"
   },

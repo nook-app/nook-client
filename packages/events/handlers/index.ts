@@ -1,4 +1,6 @@
 import {
+  EventAction,
+  EventActionData,
   EventService,
   EventType,
   FarcasterCastData,
@@ -6,6 +8,8 @@ import {
   FarcasterLinkData,
   FarcasterUrlReactionData,
   RawEvent,
+  UserEvent,
+  UserEventData,
 } from "@flink/common/types";
 import { MongoClient } from "@flink/common/mongo";
 import { Job } from "bullmq";
@@ -13,6 +17,7 @@ import { handleCastAddOrRemove } from "./farcaster/castAddOrRemove";
 import { handleCastReactionAddOrRemove } from "./farcaster/castReactionAddOrRemove";
 import { handleUrlReactionAddOrRemove } from "./farcaster/urlReactionAddOrRemove";
 import { handleLinkAddOrRemove } from "./farcaster/linkAddOrRemove";
+import { publishActionRequests } from "@flink/common/queues";
 
 export const getEventsHandler = async () => {
   const client = new MongoClient();
@@ -21,34 +26,37 @@ export const getEventsHandler = async () => {
   return async <T>(job: Job<RawEvent<T>>) => {
     const rawEvent = job.data;
 
+    let response: {
+      event: UserEvent<UserEventData>;
+      actions: EventAction<EventActionData>[];
+    };
+
     switch (rawEvent.source.service) {
       case EventService.FARCASTER:
         switch (rawEvent.source.type) {
           case EventType.CAST_ADD:
           case EventType.CAST_REMOVE:
-            await handleCastAddOrRemove(
+            response = await handleCastAddOrRemove(
               client,
               rawEvent as RawEvent<FarcasterCastData>,
             );
             break;
           case EventType.CAST_REACTION_ADD:
           case EventType.CAST_REACTION_REMOVE:
-            await handleCastReactionAddOrRemove(
+            response = await handleCastReactionAddOrRemove(
               client,
               rawEvent as RawEvent<FarcasterCastReactionData>,
             );
             break;
           case EventType.URL_REACTION_ADD:
           case EventType.URL_REACTION_REMOVE:
-            await handleUrlReactionAddOrRemove(
-              client,
+            response = await handleUrlReactionAddOrRemove(
               rawEvent as RawEvent<FarcasterUrlReactionData>,
             );
             break;
           case EventType.LINK_ADD:
           case EventType.LINK_REMOVE:
-            await handleLinkAddOrRemove(
-              client,
+            response = await handleLinkAddOrRemove(
               rawEvent as RawEvent<FarcasterLinkData>,
             );
             break;
@@ -61,6 +69,12 @@ export const getEventsHandler = async () => {
       default:
         throw new Error(`[${rawEvent.source.service}] no handler found`);
     }
+
+    await Promise.all([
+      client.upsertEvent(response.event),
+      client.upsertActions(response.actions),
+      publishActionRequests(response.actions),
+    ]);
 
     console.log(
       `[${rawEvent.source.service}] [${rawEvent.source.type}] processed ${rawEvent.source.id} by ${rawEvent.source.userId}`,

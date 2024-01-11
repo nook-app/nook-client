@@ -1,4 +1,16 @@
 import { ObjectId } from "mongodb";
+import {
+  FarcasterCastData,
+  FarcasterCastReactionData,
+  FarcasterLinkData,
+  FarcasterUrlReactionData,
+} from "./sources/farcaster";
+
+export type UserEventData =
+  | FarcasterCastData
+  | FarcasterCastReactionData
+  | FarcasterLinkData
+  | FarcasterUrlReactionData;
 
 /**
  * Supported event services
