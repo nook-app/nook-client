@@ -44,13 +44,13 @@ export type EventAction<T> = {
   timestamp: Date;
 
   /** Identity of user who triggered the event */
-  userId: string;
+  userId: ObjectId;
 
   /** Set of contentIds involved in this action */
   contentIds: string[];
 
   /** Set of userIds involved in this action */
-  userIds: string[];
+  userIds: ObjectId[];
 
   /** Optional parent of the action */
   parent?: ObjectId;

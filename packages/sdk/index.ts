@@ -1,6 +1,5 @@
 import * as farcaster from "./farcaster";
-import * as identity from "./identity";
 
-const sdk = { farcaster, identity };
+const sdk = { farcaster };
 
 export { sdk };

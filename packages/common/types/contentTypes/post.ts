@@ -1,3 +1,5 @@
+import { ObjectId } from "mongodb";
+
 export enum Protocol {
   FARCASTER = "FARCASTER",
 }
@@ -14,7 +16,7 @@ export type PostData = {
   application: Application;
 
   /** Identity of user who posted */
-  userId: string;
+  userId: ObjectId;
 
   /** Timestamp for when the post was made */
   timestamp: Date;
@@ -24,7 +26,7 @@ export type PostData = {
 
   /** ID and position of mentions */
   mentions: {
-    userId: string;
+    userId: ObjectId;
     position: number;
   }[];
 
@@ -38,7 +40,7 @@ export type PostData = {
   rootParentId: string;
 
   /** ID of user who posted the root post */
-  rootParentUserId: string;
+  rootParentUserId: ObjectId;
 
   /** Root post - Optional because doesn't exist if this post is the root */
   rootParent?: PostData;
@@ -47,7 +49,7 @@ export type PostData = {
   parentId?: string;
 
   /** ID of user who posted the parent content */
-  parentUserId?: string;
+  parentUserId?: ObjectId;
 
   /** Parent post - Optional because of Farcaster data retention */
   parent?: PostData;

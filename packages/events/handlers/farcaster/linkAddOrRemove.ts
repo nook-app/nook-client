@@ -7,21 +7,22 @@ import {
   UserEvent,
 } from "@flink/common/types";
 import { ObjectId } from "mongodb";
-import { sdk } from "@flink/sdk";
 import { UserActionData } from "@flink/common/types/actionTypes";
+import { MongoClient } from "@flink/common/mongo";
 
 export const handleLinkAddOrRemove = async (
+  client: MongoClient,
   rawEvent: RawEvent<FarcasterLinkData>,
 ) => {
   const isRemove = rawEvent.source.type === EventType.LINK_REMOVE;
 
-  const fidToIdentity = await sdk.identity.getFidIdentityMap([
+  const fidToIdentity = await client.findOrInsertIdentities([
     rawEvent.data.fid,
     rawEvent.data.targetFid,
   ]);
 
-  const userId = fidToIdentity[rawEvent.data.fid].id;
-  const targetUserId = fidToIdentity[rawEvent.data.targetFid].id;
+  const userId = fidToIdentity[rawEvent.data.fid]._id;
+  const targetUserId = fidToIdentity[rawEvent.data.targetFid]._id;
 
   const actions: EventAction<UserActionData>[] = [
     {

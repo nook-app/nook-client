@@ -10,7 +10,6 @@ import {
   UserEvent,
 } from "@flink/common/types";
 import { ObjectId } from "mongodb";
-import { sdk } from "@flink/sdk";
 import { toFarcasterURI } from "@flink/farcaster/utils";
 import { getFarcasterPostOrReplyByContentId } from "@flink/content/utils";
 
@@ -42,9 +41,9 @@ export const handleCastReactionAddOrRemove = async (
         : EventActionType.UNREPOST;
   }
 
-  const identities = await sdk.identity.getFidIdentityMap([rawEvent.data.fid]);
+  const identities = await client.findOrInsertIdentities([rawEvent.data.fid]);
 
-  const userId = identities[rawEvent.data.fid].id;
+  const userId = identities[rawEvent.data.fid]._id;
   const actions: EventAction<PostActionData>[] = [
     {
       _id: new ObjectId(),

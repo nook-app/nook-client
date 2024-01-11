@@ -5,7 +5,7 @@
   "scripts": {
     "build": "tsc",
     "start": "node dist/worker.js",
-    "start:manual": "tsc && node dist/manual.js"
+    "start:manual": "tsc && node --enable-source-maps dist/manual.js"
   },
   "dependencies": {
     "@flink/common": "*",

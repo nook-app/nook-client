@@ -485,21 +485,9 @@ __metadata:
     "@farcaster/fishery": "npm:^2.2.3"
     "@farcaster/hub-nodejs": "npm:^0.10.5"
     "@flink/common": "npm:*"
-    "@flink/identity": "npm:*"
     "@types/node": "npm:^20.10.5"
     bullmq: "npm:^5.1.0"
     ethers: "npm:^6.9.1"
-    fastify: "npm:^4.25.2"
-    typescript: "npm:^5.3.3"
-  languageName: unknown
-  linkType: soft
-
-"@flink/identity@npm:*, @flink/identity@workspace:packages/identity":
-  version: 0.0.0-use.local
-  resolution: "@flink/identity@workspace:packages/identity"
-  dependencies:
-    "@farcaster/hub-nodejs": "npm:^0.10.19"
-    "@types/node": "npm:^20.10.5"
     fastify: "npm:^4.25.2"
     typescript: "npm:^5.3.3"
   languageName: unknown
@@ -511,7 +499,6 @@ __metadata:
   dependencies:
     "@farcaster/hub-nodejs": "npm:^0.10.19"
     "@flink/farcaster": "npm:*"
-    "@flink/identity": "npm:*"
     "@types/node": "npm:^20.10.5"
     fastify: "npm:^4.25.2"
     typescript: "npm:^5.3.3"

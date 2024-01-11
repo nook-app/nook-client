@@ -1,4 +1,4 @@
-import { Db, MongoClient as Client, Collection } from "mongodb";
+import { Db, MongoClient as Client, Collection, ObjectId } from "mongodb";
 import {
   Content,
   ContentData,
@@ -7,6 +7,7 @@ import {
   EventActionData,
   UserEvent,
 } from "../types";
+import { Identity } from "../types/identity";
 
 const DB_NAME = "flink";
 
@@ -14,6 +15,7 @@ export enum MongoCollection {
   Events = "events",
   Actions = "actions",
   Content = "content",
+  Identity = "identity",
 }
 
 export class MongoClient {
@@ -48,6 +50,46 @@ export class MongoClient {
     return await collection.findOne({
       contentId,
     });
+  };
+
+  findOrInsertIdentities = async (fids: string[]) => {
+    const collection = this.getCollection<Identity>(MongoCollection.Identity);
+    const existingIdentities = await collection
+      .find({
+        farcaster: {
+          $in: fids,
+        },
+      })
+      .toArray();
+
+    const identities = existingIdentities.reduce(
+      (acc, identity) => {
+        for (const id of identity.farcaster) {
+          acc[id] = identity;
+        }
+        return acc;
+      },
+      {} as Record<string, Identity>,
+    );
+
+    const existingFids = new Set(
+      existingIdentities.flatMap((identity) => identity.farcaster),
+    );
+    const missingFids = fids.filter((fid) => !existingFids.has(fid));
+
+    if (missingFids.length > 0) {
+      const newIdentities = missingFids.map((fid) => ({
+        _id: new ObjectId(),
+        farcaster: [fid],
+        createdAt: new Date(),
+      }));
+      await collection.insertMany(newIdentities);
+      for (const identity of newIdentities) {
+        identities[identity.farcaster[0]] = identity;
+      }
+    }
+
+    return identities;
   };
 
   upsertContent = async (content: Content<ContentData>) => {

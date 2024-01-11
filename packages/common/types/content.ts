@@ -1,3 +1,4 @@
+import { ObjectId } from "mongodb";
 import { PostData } from "./contentTypes/post";
 
 export type ContentData = PostData;
@@ -38,7 +39,7 @@ export type ContentRequest = {
   contentId: string;
 
   /** Identity of user who first submitted the content */
-  submitterId: string;
+  submitterId: ObjectId;
 };
 
 export type ContentBase = {
@@ -46,10 +47,10 @@ export type ContentBase = {
   contentId: string;
 
   /** Identity of user who first submitted the content */
-  submitterId: string;
+  submitterId: ObjectId;
 
   /** Identity of user who created the content */
-  creatorId?: string;
+  creatorId?: ObjectId;
 
   /** Timestamp content was created at */
   timestamp: Date;
@@ -61,7 +62,7 @@ export type ContentBase = {
   engagement?: ContentEngagement;
 
   /** Set of userIds involved in this content */
-  userIds: string[];
+  userIds: ObjectId[];
 
   /** Date record was created at */
   createdAt: Date;

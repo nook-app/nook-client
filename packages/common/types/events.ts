@@ -66,7 +66,7 @@ export type RawEvent<T> = {
  */
 export type UserEvent<T> = RawEvent<T> & {
   /** Identity of user who triggered the event */
-  userId: string;
+  userId: ObjectId;
 
   /** List of references to event actions parsed from this event */
   actions: ObjectId[];

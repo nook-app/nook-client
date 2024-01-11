@@ -12,10 +12,11 @@ import {
   Protocol,
 } from "@flink/common/types";
 import { toFarcasterURI } from "@flink/farcaster/utils";
-import { Identity } from "@flink/identity/types";
 import { sdk } from "@flink/sdk";
 import { MongoClient, MongoCollection } from "@flink/common/mongo";
 import { publishContentRequests } from "@flink/common/queues";
+import { Identity } from "@flink/common/types/identity";
+import { ObjectId } from "mongodb";
 
 export const getOrCreateContent = async (
   client: MongoClient,
@@ -77,7 +78,7 @@ const getFarcasterPostOrReply = async (
   cast: FarcasterCastData,
 ): Promise<Content<PostData>> => {
   if (!cast.parentHash) {
-    const identities = await sdk.identity.getFidIdentityMap(
+    const identities = await client.findOrInsertIdentities(
       extractFidsFromCasts([cast]),
     );
     return formatPostToContent(
@@ -93,7 +94,7 @@ const getFarcasterPostOrReply = async (
   if (newParent) casts.push(newParent);
   if (newRoot) casts.push(newRoot);
 
-  const identities = await sdk.identity.getFidIdentityMap(
+  const identities = await client.findOrInsertIdentities(
     extractFidsFromCasts(casts),
   );
 
@@ -183,9 +184,9 @@ const transformCast = (
     application: Application.TBD,
     text: cast.text,
     timestamp: cast.timestamp,
-    userId: fidToIdentity[cast.fid].id,
+    userId: fidToIdentity[cast.fid]._id,
     mentions: cast.mentions.map(({ mention, mentionPosition }) => ({
-      userId: fidToIdentity[mention].id,
+      userId: fidToIdentity[mention]._id,
       position: parseInt(mentionPosition),
     })),
     embeds: cast.embeds,
@@ -194,7 +195,7 @@ const transformCast = (
       fid: cast.rootParentFid,
       hash: cast.rootParentHash,
     }),
-    rootParentUserId: fidToIdentity[cast.rootParentFid].id,
+    rootParentUserId: fidToIdentity[cast.rootParentFid]._id,
   };
 };
 
@@ -257,8 +258,8 @@ const getRelations = (post: PostData): ContentRelation[] => {
   return relations;
 };
 
-const getUserIds = (post: PostData): string[] => {
-  const userIds: string[] = [post.userId];
+const getUserIds = (post: PostData): ObjectId[] => {
+  const userIds = [post.userId];
 
   if (post.rootParentUserId && !userIds.includes(post.rootParentUserId)) {
     userIds.push(post.rootParentUserId);

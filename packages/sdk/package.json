@@ -9,7 +9,6 @@
   "dependencies": {
     "@farcaster/hub-nodejs": "^0.10.19",
     "@flink/farcaster": "*",
-    "@flink/identity": "*",
     "fastify": "^4.25.2"
   },
   "devDependencies": {

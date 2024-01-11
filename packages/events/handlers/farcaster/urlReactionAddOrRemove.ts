@@ -8,10 +8,11 @@ import {
   UserEvent,
 } from "@flink/common/types";
 import { ObjectId } from "mongodb";
-import { sdk } from "@flink/sdk";
 import { ContentActionData } from "@flink/common/types/actionTypes";
+import { MongoClient } from "@flink/common/mongo";
 
 export const handleUrlReactionAddOrRemove = async (
+  client: MongoClient,
   rawEvent: RawEvent<FarcasterUrlReactionData>,
 ) => {
   let eventActionType: EventActionType | undefined;
@@ -29,11 +30,11 @@ export const handleUrlReactionAddOrRemove = async (
       : EventActionType.REPOST;
   }
 
-  const fidToIdentity = await sdk.identity.getFidIdentityMap([
+  const fidToIdentity = await client.findOrInsertIdentities([
     rawEvent.data.fid,
   ]);
 
-  const userId = fidToIdentity[rawEvent.data.fid].id;
+  const userId = fidToIdentity[rawEvent.data.fid]._id;
   const contentId = rawEvent.data.url;
   const actions: EventAction<ContentActionData>[] = [
     {

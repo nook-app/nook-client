@@ -51,12 +51,14 @@ export const getEventsHandler = async () => {
           case EventType.URL_REACTION_ADD:
           case EventType.URL_REACTION_REMOVE:
             response = await handleUrlReactionAddOrRemove(
+              client,
               rawEvent as RawEvent<FarcasterUrlReactionData>,
             );
             break;
           case EventType.LINK_ADD:
           case EventType.LINK_REMOVE:
             response = await handleLinkAddOrRemove(
+              client,
               rawEvent as RawEvent<FarcasterLinkData>,
             );
             break;
@@ -69,6 +71,8 @@ export const getEventsHandler = async () => {
       default:
         throw new Error(`[${rawEvent.source.service}] no handler found`);
     }
+
+    if (!response.event) return;
 
     await Promise.all([
       client.upsertEvent(response.event),
