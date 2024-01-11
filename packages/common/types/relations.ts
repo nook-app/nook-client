@@ -8,3 +8,7 @@ export enum ContentRelationType {
   CHANNEL_OF = "CHANNEL_OF",
   EMBED_OF = "EMBED_OF",
 }
+
+export enum UserRelationType {
+  FOLLOWER_OF = "FOLLOWER_OF",
+}

@@ -16,8 +16,8 @@ model ContentRelation {
     targetContentId String
     source          String
 
-    @@id([contentId, type, targetContentId])
-    @@index([targetContentId, type])
+    @@id([contentId, type, source, targetContentId])
+    @@index([targetContentId, type, source])
 }
 
 model UserRelation {
@@ -26,6 +26,6 @@ model UserRelation {
     targetUserId String
     source       String
 
-    @@id([userId, type, targetUserId])
-    @@index([targetUserId, type])
+    @@id([userId, type, source, targetUserId])
+    @@index([targetUserId, type, source])
 }

@@ -7,7 +7,7 @@ import {
   EventActionData,
   UserEvent,
 } from "../types";
-import { Identity } from "../types/identity";
+import { Identity, IdentitySocialPlatform } from "../types/identity";
 
 const DB_NAME = "flink";
 
@@ -56,36 +56,49 @@ export class MongoClient {
     const collection = this.getCollection<Identity>(MongoCollection.Identity);
     const existingIdentities = await collection
       .find({
-        farcaster: {
-          $in: fids,
+        socialAccounts: {
+          $elemMatch: {
+            platform: "FARCASTER",
+            id: {
+              $in: fids,
+            },
+          },
         },
       })
       .toArray();
 
     const identities = existingIdentities.reduce(
       (acc, identity) => {
-        for (const id of identity.farcaster) {
-          acc[id] = identity;
+        for (const account of identity.socialAccounts) {
+          if (account.platform !== "FARCASTER") {
+            continue;
+          }
+          acc[account.id] = identity;
         }
         return acc;
       },
       {} as Record<string, Identity>,
     );
 
-    const existingFids = new Set(
-      existingIdentities.flatMap((identity) => identity.farcaster),
-    );
+    const existingFids = new Set(Object.keys(identities));
     const missingFids = fids.filter((fid) => !existingFids.has(fid));
 
     if (missingFids.length > 0) {
       const newIdentities = missingFids.map((fid) => ({
         _id: new ObjectId(),
-        farcaster: [fid],
+        socialAccounts: [
+          {
+            platform: IdentitySocialPlatform.FARCASTER,
+            id: fid,
+            following: 0,
+            followers: 0,
+          },
+        ],
         createdAt: new Date(),
       }));
       await collection.insertMany(newIdentities);
       for (const identity of newIdentities) {
-        identities[identity.farcaster[0]] = identity;
+        identities[identity.socialAccounts[0].id] = identity;
       }
     }
 
