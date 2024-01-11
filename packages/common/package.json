@@ -13,6 +13,7 @@
     "./queues": "./dist/queues/index.js",
     "./types": "./dist/types/index.js",
     "./prisma/farcaster": "./dist/prisma/farcaster.js",
+    "./prisma/relations": "./dist/prisma/relations.js",
     "./mongo": "./dist/mongo/index.js",
     "./relations": "./dist/relations/index.js",
     "./utils": "./dist/utils/index.js"
