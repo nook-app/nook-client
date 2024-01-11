@@ -37,14 +37,14 @@ export const publishRawEvents = async <T>(
 };
 
 export const publishContentRequest = async (request: ContentRequest) => {
-  const queue = getQueue(QueueName.ContentIngress);
+  const queue = getQueue(QueueName.Content);
   await queue.add(request.contentId, request, {
     jobId: request.contentId,
   });
 };
 
 export const publishContentRequests = async (requests: ContentRequest[]) => {
-  const queue = getQueue(QueueName.ContentIngress);
+  const queue = getQueue(QueueName.Content);
   await queue.addBulk(
     requests.map((request) => ({
       name: request.contentId,

@@ -1,4 +1,4 @@
-import { MongoClient, MongoCollection } from "@flink/common/mongo";
+import { MongoClient } from "@flink/common/mongo";
 import {
   EventAction,
   EventActionType,
@@ -9,7 +9,6 @@ import {
 } from "@flink/common/types";
 import { ObjectId } from "mongodb";
 import { sdk } from "@flink/sdk";
-import { Identity } from "@flink/identity/types";
 import { UserActionData } from "@flink/common/types/actionTypes";
 
 export const handleLinkAddOrRemove = async (
@@ -52,23 +51,5 @@ export const handleLinkAddOrRemove = async (
     createdAt: actions[0].createdAt,
   };
 
-  const promises = [client.upsertEvent(event), client.upsertActions(actions)];
-
-  if (isRemove) {
-    promises.push(
-      void client.getCollection(MongoCollection.Actions).updateOne(
-        {
-          "source.id": rawEvent.source.id,
-          type: EventActionType.FOLLOW,
-        },
-        {
-          $set: {
-            deletedAt: new Date(),
-          },
-        },
-      ),
-    );
-  }
-
-  await Promise.all(promises);
+  await Promise.all([client.upsertEvent(event), client.upsertActions(actions)]);
 };

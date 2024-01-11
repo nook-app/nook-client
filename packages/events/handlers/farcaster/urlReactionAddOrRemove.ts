@@ -1,4 +1,4 @@
-import { MongoClient, MongoCollection } from "@flink/common/mongo";
+import { MongoClient } from "@flink/common/mongo";
 import {
   EventAction,
   EventActionType,
@@ -10,7 +10,6 @@ import {
 } from "@flink/common/types";
 import { ObjectId } from "mongodb";
 import { sdk } from "@flink/sdk";
-import { publishContentRequest } from "@flink/common/queues";
 import { ContentActionData } from "@flink/common/types/actionTypes";
 
 export const handleUrlReactionAddOrRemove = async (
@@ -64,65 +63,5 @@ export const handleUrlReactionAddOrRemove = async (
     createdAt: actions[0].createdAt,
   };
 
-  const promises = [
-    client.upsertEvent(event),
-    client.upsertActions(actions),
-    publishContentRequest({
-      submitterId: userId,
-      contentId,
-    }),
-    updateEngagement(client, contentId, eventActionType),
-  ];
-
-  if (isRemove) {
-    promises.push(
-      void client.getCollection(MongoCollection.Actions).updateOne(
-        {
-          "source.id": rawEvent.source.id,
-          type:
-            eventActionType === EventActionType.UNLIKE
-              ? EventActionType.LIKE
-              : EventActionType.REPOST,
-        },
-        {
-          $set: {
-            deletedAt: new Date(),
-          },
-        },
-      ),
-    );
-  }
-
-  await Promise.all(promises);
-};
-
-const updateEngagement = async (
-  client: MongoClient,
-  contentId: string,
-  type: EventActionType,
-) => {
-  let $inc: Record<string, number> = {};
-  if (type === EventActionType.LIKE) {
-    $inc = {
-      "data.engagement.likes": 1,
-    };
-  } else if (type === EventActionType.UNLIKE) {
-    $inc = {
-      "data.engagement.likes": -1,
-    };
-  } else if (type === EventActionType.REPOST) {
-    $inc = {
-      "data.engagement.reposts": 1,
-    };
-  } else if (type === EventActionType.UNREPOST) {
-    $inc = {
-      "data.engagement.reposts": -1,
-    };
-  }
-
-  if (!$inc) return;
-
-  await client
-    .getCollection(MongoCollection.Content)
-    .updateOne({ contentId }, { $inc });
+  await Promise.all([client.upsertEvent(event), client.upsertActions(actions)]);
 };

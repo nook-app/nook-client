@@ -3,7 +3,7 @@ import { getContentHandler } from "./handlers";
 
 const run = async () => {
   const handler = await getContentHandler();
-  const worker = getWorker(QueueName.ContentIngress, handler);
+  const worker = getWorker(QueueName.Content, handler);
 
   worker.on("failed", (job, err) => {
     if (job) {

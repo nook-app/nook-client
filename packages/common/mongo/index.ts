@@ -2,6 +2,7 @@ import { Db, MongoClient as Client, Collection } from "mongodb";
 import {
   Content,
   ContentData,
+  ContentEngagementType,
   EventAction,
   EventActionData,
   UserEvent,
@@ -67,6 +68,13 @@ export class MongoClient {
     return updateResult.upsertedCount > 0;
   };
 
+  insertContent = async (content: Content<ContentData>) => {
+    const collection = this.getCollection<Content<ContentData>>(
+      MongoCollection.Content,
+    );
+    await collection.insertOne(content);
+  };
+
   upsertEvent = async <T>(event: UserEvent<T>) => {
     const collection = this.getCollection<UserEvent<T>>(MongoCollection.Events);
     const updateResult = await collection.updateOne(
@@ -95,5 +103,49 @@ export class MongoClient {
     });
     const insertResult = await collection.insertMany(actions);
     return insertResult.insertedCount > deleteResult.deletedCount;
+  };
+
+  markActionsDeleted = async (id: string) => {
+    this.getCollection(MongoCollection.Actions).updateOne(
+      {
+        "source.id": id,
+      },
+      {
+        $set: {
+          deletedAt: new Date(),
+        },
+      },
+    );
+  };
+
+  markContentDeleted = async (contentId: string) => {
+    this.getCollection(MongoCollection.Content).updateOne(
+      {
+        contentId,
+      },
+      {
+        $set: {
+          deletedAt: new Date(),
+        },
+      },
+    );
+  };
+
+  incrementEngagement = async (
+    contentId: string,
+    engagementType: ContentEngagementType,
+    decrement = false,
+  ) => {
+    const collection = this.getCollection(MongoCollection.Content);
+    await collection.updateOne(
+      {
+        contentId,
+      },
+      {
+        $inc: {
+          [`engagement.${engagementType}`]: decrement ? -1 : 1,
+        },
+      },
+    );
   };
 }

@@ -2,7 +2,7 @@ import { QueueName, getQueue } from "@flink/common/queues";
 import { getFarcasterHandler } from "./handlers";
 
 const run = async () => {
-  const queue = getQueue(QueueName.FarcasterIngress);
+  const queue = getQueue(QueueName.Farcaster);
   console.log(`Running for event ${process.argv[2]}`);
   const job = await queue.getJob(process.argv[2]);
   if (job) {

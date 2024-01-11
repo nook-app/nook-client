@@ -1,8 +1,8 @@
 import { QueueName, getWorker } from "@flink/common/queues";
-import { getFarcasterHandler } from "./handlers";
+import { getActionsHandler } from "./handlers";
 
 const run = async () => {
-  const worker = getWorker(QueueName.Farcaster, getFarcasterHandler());
+  const worker = getWorker(QueueName.Actions, await getActionsHandler());
 
   worker.on("failed", (job, err) => {
     if (job) {

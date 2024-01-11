@@ -1,7 +1,7 @@
 import { ContentRequest } from "@flink/common/types";
 import { MongoClient } from "@flink/common/mongo";
 import { Job } from "bullmq";
-import { getOrCreateFarcasterPostOrReplyByContentId } from "./farcaster";
+import { handleFarcasterContent } from "./farcaster";
 
 export const getContentHandler = async () => {
   const client = new MongoClient();
@@ -9,10 +9,7 @@ export const getContentHandler = async () => {
 
   return async (job: Job<ContentRequest>) => {
     if (job.data.contentId.startsWith("farcaster://cast/")) {
-      await getOrCreateFarcasterPostOrReplyByContentId(
-        client,
-        job.data.contentId,
-      );
+      await handleFarcasterContent(client, job.data.contentId);
       console.log(`[${job.data.contentId}] processed`);
       return;
     }

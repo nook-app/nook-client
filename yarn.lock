@@ -83,36 +83,36 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@bull-board/api@npm:5.10.3, @bull-board/api@npm:^5.10.2":
-  version: 5.10.3
-  resolution: "@bull-board/api@npm:5.10.3"
+"@bull-board/api@npm:5.11.0, @bull-board/api@npm:^5.10.2":
+  version: 5.11.0
+  resolution: "@bull-board/api@npm:5.11.0"
   dependencies:
     redis-info: "npm:^3.0.8"
   peerDependencies:
-    "@bull-board/ui": 5.10.3
-  checksum: 1461312aea846777b08edfedcf0de75b1c818d505bd4b61923e96fd607646f8fe4034dddd760e7e2daea5d5eb112af986a237561a95eb1307b71975fc6c74d1e
+    "@bull-board/ui": 5.11.0
+  checksum: 9f7145997b6e3117a2e0941b26e0b2b58a2b73c86995f99c08f1078e52f28d00a31edb03a0f9b1ad4ab0e7d1155a9ab144b511860c5b11caafde7670bb86c8e7
   languageName: node
   linkType: hard
 
 "@bull-board/fastify@npm:^5.10.2":
-  version: 5.10.3
-  resolution: "@bull-board/fastify@npm:5.10.3"
+  version: 5.11.0
+  resolution: "@bull-board/fastify@npm:5.11.0"
   dependencies:
-    "@bull-board/api": "npm:5.10.3"
-    "@bull-board/ui": "npm:5.10.3"
+    "@bull-board/api": "npm:5.11.0"
+    "@bull-board/ui": "npm:5.11.0"
     "@fastify/static": "npm:^6.11.2"
     "@fastify/view": "npm:^8.1.0"
     ejs: "npm:^3.1.9"
-  checksum: 98b9a6085ff0bcdb69b399fca75beafb93337831745e5c748a11380242182f0b6385e9f0475da80b2d8cfa4ddfac3f792f61f8fbe21e993c411a24e50119d0af
+  checksum: ef7979bb278e8945f3e877c4ac6ea9df6f7a15a7abc39021ff077621725aae4734a9f1e1f084b4ee9395bc648857c06d2c05c5b6b07f6e79859ed6b0cb701320
   languageName: node
   linkType: hard
 
-"@bull-board/ui@npm:5.10.3, @bull-board/ui@npm:^5.10.2":
-  version: 5.10.3
-  resolution: "@bull-board/ui@npm:5.10.3"
+"@bull-board/ui@npm:5.11.0, @bull-board/ui@npm:^5.10.2":
+  version: 5.11.0
+  resolution: "@bull-board/ui@npm:5.11.0"
   dependencies:
-    "@bull-board/api": "npm:5.10.3"
-  checksum: 48e09a2af7a0ee8362124d642174c13bba14ee7eb64d833f7059ba54e404584848dd47f31987cebbf2bb2263a1cd69149bc6a8279144bf805b33f318b2912705
+    "@bull-board/api": "npm:5.11.0"
+  checksum: 958b4fa0abbebc4f17498c64d2e8712b365ca8dfa8cfbdec32a691207d4337328b62eab4529b69a6409c7a541512472eba04a86e68cc79b55074880331373153
   languageName: node
   linkType: hard
 
@@ -408,6 +408,19 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@flink/actions@workspace:packages/actions":
+  version: 0.0.0-use.local
+  resolution: "@flink/actions@workspace:packages/actions"
+  dependencies:
+    "@flink/common": "npm:*"
+    "@flink/content": "npm:*"
+    "@types/node": "npm:^20.10.5"
+    bullmq: "npm:^5.1.0"
+    mongodb: "npm:^6.3.0"
+    typescript: "npm:^5.3.3"
+  languageName: unknown
+  linkType: soft
+
 "@flink/common@npm:*, @flink/common@workspace:packages/common":
   version: 0.0.0-use.local
   resolution: "@flink/common@workspace:packages/common"
@@ -558,11 +571,11 @@ __metadata:
   linkType: hard
 
 "@mongodb-js/saslprep@npm:^1.1.0":
-  version: 1.1.1
-  resolution: "@mongodb-js/saslprep@npm:1.1.1"
+  version: 1.1.3
+  resolution: "@mongodb-js/saslprep@npm:1.1.3"
   dependencies:
     sparse-bitfield: "npm:^3.0.3"
-  checksum: b59fb1ed62b1a31ad26bbca8a5d81a4f4c0b880c95616a3650f6eb57f27b6ae83e5597fd6a63ddf899d4ace6979a79eb0024f50d33d871ef7f93f73f1106e816
+  checksum: 8bd0db7eb9c8e9fa124f5a27e6255fb276434997d4c1fef18bd833ca53b2993de18d596b9ac767197daf167601e917fa261c6d670cd6e514c88eb820ddab71e6
   languageName: node
   linkType: hard
 
@@ -836,11 +849,11 @@ __metadata:
   linkType: hard
 
 "@types/node@npm:>=12.12.47, @types/node@npm:>=13.7.0, @types/node@npm:^20.10.5":
-  version: 20.10.6
-  resolution: "@types/node@npm:20.10.6"
+  version: 20.10.8
+  resolution: "@types/node@npm:20.10.8"
   dependencies:
     undici-types: "npm:~5.26.4"
-  checksum: 6692ccfa8552ef60c4069fda3c8de726c23e8d403cdf788e3c7efa769987e80fbda5f02723dd857f9de7df24a5fa40b3ed4580ec3c5cbac04eba44cf7b2ab1dc
+  checksum: 93268c33c3bf0194427d696658160c77ab8661aa57107df5b248ff952898a372bf92cf0ba7fc07788fa35e59c69b6619cce63d45e4e67fca806e37da7ea42512
   languageName: node
   linkType: hard
 
@@ -852,11 +865,11 @@ __metadata:
   linkType: hard
 
 "@types/whatwg-url@npm:^11.0.2":
-  version: 11.0.3
-  resolution: "@types/whatwg-url@npm:11.0.3"
+  version: 11.0.4
+  resolution: "@types/whatwg-url@npm:11.0.4"
   dependencies:
     "@types/webidl-conversions": "npm:*"
-  checksum: 99dd4e2f0f6270c91cadb206c9241964391b7cbd47a669af73a161334ce251227be9bdac04fcfb57a51fc3d6cdb139767da5b3e1cd6e345c063616bd1b63d241
+  checksum: a5c0ac8610af619202de4a0d7fd1139b763168164ad5fc4d190eb0d7131b014ebfb71aee9e272dcd77a08dfbb54c6c517e59e1668f016d38313763b85810ffaa
   languageName: node
   linkType: hard
 
@@ -2246,13 +2259,13 @@ __metadata:
   linkType: hard
 
 "node-gyp-build@npm:^4.2.1":
-  version: 4.7.1
-  resolution: "node-gyp-build@npm:4.7.1"
+  version: 4.8.0
+  resolution: "node-gyp-build@npm:4.8.0"
   bin:
     node-gyp-build: bin.js
     node-gyp-build-optional: optional.js
     node-gyp-build-test: build-test.js
-  checksum: b8e4a3f889237cd08edde3775e2b4e1e39a0571580584e33e29979f0c532a254ce3c5ec9435bd526254ad0b3f0b4a7e7fe14e53bd400f6ea9445f3bfd88a6b1e
+  checksum: 85324be16f81f0235cbbc42e3eceaeb1b5ab94c8d8f5236755e1435b4908338c65a4e75f66ee343cbcb44ddf9b52a428755bec16dcd983295be4458d95c8e1ad
   languageName: node
   linkType: hard
 
@@ -2693,11 +2706,11 @@ __metadata:
   linkType: hard
 
 "sonic-boom@npm:^3.7.0":
-  version: 3.7.0
-  resolution: "sonic-boom@npm:3.7.0"
+  version: 3.8.0
+  resolution: "sonic-boom@npm:3.8.0"
   dependencies:
     atomic-sleep: "npm:^1.0.0"
-  checksum: 57a3d560efb77f4576db111168ee2649c99e7869fda6ce0ec2a4e5458832d290ba58d74b073ddb5827d9a30f96d23cff79157993d919e1a6d5f28d8b6391c7f0
+  checksum: f3f61cb3fd5d4aad862dd957f22318ef85bf47d4f12ba27b915112908449f752dbdfc95a4739d2b4a9b2770e1e08d349adae9d1030fdab2a3d86128c6773a7f4
   languageName: node
   linkType: hard
 
@@ -2822,9 +2835,9 @@ __metadata:
   linkType: hard
 
 "toad-cache@npm:^3.3.0":
-  version: 3.4.1
-  resolution: "toad-cache@npm:3.4.1"
-  checksum: 5324d2d4e5a30218d99c6d72797a5dac6b6df24ee98f07845b72e99f817bcc2600bbd1e740c16401ed16eaeb35c34cef62f7c77b15e239894c1afd574a121039
+  version: 3.7.0
+  resolution: "toad-cache@npm:3.7.0"
+  checksum: 7dae2782ee20b22c9798bb8b71dec7ec6a0091021d2ea9dd6e8afccab6b65b358fdba49a02209fac574499702e2c000660721516c87c2538d1b2c0ba03e8c0c3
   languageName: node
   linkType: hard
 

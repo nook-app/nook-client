@@ -65,6 +65,9 @@ export type ContentBase = {
 
   /** Date record was created at */
   createdAt: Date;
+
+  /** Date record was deleted at */
+  deletedAt?: Date;
 };
 
 export type Content<T> = ContentBase & {

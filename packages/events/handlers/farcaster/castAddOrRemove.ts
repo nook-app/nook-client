@@ -6,14 +6,13 @@ import {
   RawEvent,
   EventType,
   PostActionData,
-  ContentEngagementType,
   ContentType,
   Content,
   PostData,
 } from "@flink/common/types";
-import { MongoClient, MongoCollection } from "@flink/common/mongo";
+import { MongoClient } from "@flink/common/mongo";
 import { ObjectId } from "mongodb";
-import { getOrCreateFarcasterPostOrReplyByData } from "@flink/content/handlers/farcaster";
+import { getFarcasterPostOrReplyByData } from "@flink/content/utils";
 
 export const handleCastAddOrRemove = async (
   client: MongoClient,
@@ -34,7 +33,7 @@ export const handleCastAddPost = async (
   client: MongoClient,
   rawEvent: RawEvent<FarcasterCastData>,
 ) => {
-  const { content } = await getOrCreateFarcasterPostOrReplyByData(
+  const { content } = await getFarcasterPostOrReplyByData(
     client,
     rawEvent.data,
   );
@@ -58,7 +57,7 @@ export const handleCastAddReply = async (
   client: MongoClient,
   rawEvent: RawEvent<FarcasterCastData>,
 ) => {
-  const { content, created } = await getOrCreateFarcasterPostOrReplyByData(
+  const { content } = await getFarcasterPostOrReplyByData(
     client,
     rawEvent.data,
   );
@@ -76,30 +75,13 @@ export const handleCastAddReply = async (
     client.upsertEvent(event),
     client.upsertActions([action]),
   ]);
-
-  if (!created) {
-    await Promise.all([
-      updateEngagement(
-        client,
-        content.data.parentId,
-        ContentEngagementType.REPLIES,
-        1,
-      ),
-      updateEngagement(
-        client,
-        content.data.rootParentId,
-        ContentEngagementType.ROOT_REPLIES,
-        1,
-      ),
-    ]);
-  }
 };
 
 export const handleCastRemove = async (
   client: MongoClient,
   rawEvent: RawEvent<FarcasterCastData>,
 ) => {
-  const { content, created } = await getOrCreateFarcasterPostOrReplyByData(
+  const { content } = await getFarcasterPostOrReplyByData(
     client,
     rawEvent.data,
   );
@@ -121,34 +103,7 @@ export const handleCastRemove = async (
   await Promise.all([
     client.upsertEvent(event),
     client.upsertActions([action]),
-    void client.getCollection(MongoCollection.Actions).updateOne(
-      {
-        "source.id": rawEvent.source.id,
-      },
-      {
-        $set: {
-          deletedAt: new Date(),
-        },
-      },
-    ),
   ]);
-
-  if (!created && type === EventActionType.UNREPLY) {
-    await Promise.all([
-      void updateEngagement(
-        client,
-        content.data.parentId,
-        ContentEngagementType.REPLIES,
-        -1,
-      ),
-      void updateEngagement(
-        client,
-        content.data.rootParentId,
-        ContentEngagementType.ROOT_REPLIES,
-        -1,
-      ),
-    ]);
-  }
 };
 
 const formatPostAction = (
@@ -178,20 +133,4 @@ const formatPostAction = (
       ? new Date()
       : undefined,
   };
-};
-
-const updateEngagement = async (
-  client: MongoClient,
-  contentId: string,
-  engagementType: ContentEngagementType,
-  increment: number,
-) => {
-  await client.getCollection(MongoCollection.Content).updateOne(
-    { contentId },
-    {
-      $inc: {
-        [`data.engagement.${engagementType}`]: increment,
-      },
-    },
-  );
 };

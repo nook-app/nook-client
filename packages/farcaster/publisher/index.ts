@@ -32,7 +32,7 @@ const run = async () => {
     throw new Error("Failed to subscribe");
   }
 
-  const queue = getQueue(QueueName.FarcasterIngress);
+  const queue = getQueue(QueueName.Farcaster);
 
   let processedEvents = 0;
   for await (const event of subscription.value) {

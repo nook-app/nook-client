@@ -1,4 +1,4 @@
-import { MongoClient, MongoCollection } from "@flink/common/mongo";
+import { MongoClient } from "@flink/common/mongo";
 import {
   Content,
   EventAction,
@@ -14,7 +14,7 @@ import {
 import { ObjectId } from "mongodb";
 import { sdk } from "@flink/sdk";
 import { toFarcasterURI } from "@flink/farcaster/utils";
-import { getOrCreateFarcasterPostOrReplyByContentId } from "@flink/content/handlers/farcaster";
+import { getFarcasterPostOrReplyByContentId } from "@flink/content/utils";
 
 export const handleCastReactionAddOrRemove = async (
   client: MongoClient,
@@ -36,7 +36,7 @@ export const handleCastReactionAdd = async (
     hash: rawEvent.data.targetHash,
   });
 
-  const { content, created } = await getOrCreateFarcasterPostOrReplyByContentId(
+  const { content } = await getFarcasterPostOrReplyByContentId(
     client,
     contentId,
   );
@@ -63,10 +63,6 @@ export const handleCastReactionAdd = async (
     client.upsertActions([action]),
     client.upsertEvent(event),
   ]);
-
-  if (!created) {
-    await updateEngagement(client, contentId, type);
-  }
 };
 
 export const handleCastReactionRemove = async (
@@ -78,7 +74,7 @@ export const handleCastReactionRemove = async (
     hash: rawEvent.data.targetHash,
   });
 
-  const { content, created } = await getOrCreateFarcasterPostOrReplyByContentId(
+  const { content } = await getFarcasterPostOrReplyByContentId(
     client,
     contentId,
   );
@@ -104,21 +100,7 @@ export const handleCastReactionRemove = async (
   await Promise.all([
     client.upsertActions([action]),
     client.upsertEvent(event),
-    void client.getCollection(MongoCollection.Actions).updateOne(
-      {
-        "source.id": rawEvent.source.id,
-      },
-      {
-        $set: {
-          deletedAt: new Date(),
-        },
-      },
-    ),
   ]);
-
-  if (!created) {
-    await updateEngagement(client, contentId, type);
-  }
 };
 
 const formatReactionAction = (
@@ -149,35 +131,4 @@ const formatReactionAction = (
       ? new Date()
       : undefined,
   };
-};
-
-const updateEngagement = async (
-  client: MongoClient,
-  contentId: string,
-  type: EventActionType,
-) => {
-  let $inc: Record<string, number> = {};
-  if (type === EventActionType.LIKE) {
-    $inc = {
-      "engagement.likes": 1,
-    };
-  } else if (type === EventActionType.UNLIKE) {
-    $inc = {
-      "engagement.likes": -1,
-    };
-  } else if (type === EventActionType.REPOST) {
-    $inc = {
-      "engagement.reposts": 1,
-    };
-  } else if (type === EventActionType.UNREPOST) {
-    $inc = {
-      "engagement.reposts": -1,
-    };
-  }
-
-  if (!$inc) return;
-
-  await client
-    .getCollection(MongoCollection.Content)
-    .updateOne({ contentId }, { $inc });
 };

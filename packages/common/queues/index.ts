@@ -1,24 +1,26 @@
 export * from "./enqueue";
 
 import { ConnectionOptions, Job, Queue, QueueOptions, Worker } from "bullmq";
-import { ContentRequest, RawEvent } from "../types";
+import { ContentRequest, EventAction, RawEvent } from "../types";
 import { Message } from "@farcaster/hub-nodejs";
 import { FarcasterBackfillRequest } from "../types/backfill";
 
 export enum QueueName {
-  FarcasterIngress = "farcaster-ingress",
+  Farcaster = "farcaster",
   FarcasterBackfill = "farcaster-backfill",
   Events = "events",
   EventsBackfill = "events-backfill",
-  ContentIngress = "content-ingress",
+  Actions = "actions",
+  Content = "content",
 }
 
 type QueueType<T> = {
-  [QueueName.FarcasterIngress]: Message;
+  [QueueName.Farcaster]: Message;
   [QueueName.FarcasterBackfill]: FarcasterBackfillRequest;
   [QueueName.Events]: RawEvent<T>;
   [QueueName.EventsBackfill]: RawEvent<T>;
-  [QueueName.ContentIngress]: ContentRequest;
+  [QueueName.Actions]: EventAction<T>;
+  [QueueName.Content]: ContentRequest;
 };
 
 const connection: ConnectionOptions = {
