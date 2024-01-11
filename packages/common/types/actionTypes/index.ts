@@ -1,5 +1,6 @@
 import { ObjectId } from "mongodb";
 import { PostData } from "../contentTypes";
+import { FarcasterVerificationType, UserDataType } from "../sources";
 
 export type ContentActionData = {
   /** Entity acting */
@@ -26,4 +27,22 @@ export type EntityActionData = {
 export type PostActionData = ContentActionData & {
   /** Post */
   content: PostData;
+};
+
+export type UserDataActionData = {
+  /** Identity of user acting */
+  userId: string;
+  /** The type of data added or updated by the user */
+  userDataType: UserDataType;
+  /** User data */
+  userData: string;
+};
+
+export type VerificationActionData = {
+  /** Identity of user acting */
+  userId: string;
+  /** Address verified */
+  address: string;
+  /** The type of verification if an Add action */
+  type?: FarcasterVerificationType;
 };

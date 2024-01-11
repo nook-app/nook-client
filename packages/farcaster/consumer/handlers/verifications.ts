@@ -2,7 +2,12 @@ import {
   PrismaClient,
   FarcasterEthVerification,
 } from "@flink/common/prisma/farcaster";
-import { bufferToHex, timestampToDate, MessageHandlerArgs } from "../../utils";
+import {
+  bufferToHex,
+  timestampToDate,
+  MessageHandlerArgs,
+  bufferToHexAddress,
+} from "../../utils";
 import { Message } from "@farcaster/hub-nodejs";
 
 const prisma = new PrismaClient();
@@ -35,7 +40,9 @@ export const handleVerificationRemove = async ({
   if (!message.data?.verificationRemoveBody?.address) return;
 
   const fid = BigInt(message.data.fid);
-  const address = bufferToHex(message.data.verificationRemoveBody.address);
+  const address = bufferToHexAddress(
+    message.data.verificationRemoveBody.address,
+  );
 
   await prisma.farcasterEthVerification.updateMany({
     where: {
@@ -56,7 +63,7 @@ const messageToVerification = (
   if (!message.data?.verificationAddEthAddressBody) return;
 
   const fid = BigInt(message.data.fid);
-  const address = bufferToHex(
+  const address = bufferToHexAddress(
     message.data.verificationAddEthAddressBody.address,
   );
 
@@ -75,7 +82,7 @@ const messageToVerification = (
     deletedAt: null,
     hash: bufferToHex(message.hash),
     hashScheme: message.hashScheme,
-    signer: bufferToHex(message.signer),
+    signer: bufferToHexAddress(message.signer),
     signatureScheme: message.signatureScheme,
     signature: bufferToHex(message.signature),
   };

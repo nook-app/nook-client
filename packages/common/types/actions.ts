@@ -4,12 +4,16 @@ import {
   ContentActionData,
   PostActionData,
   EntityActionData,
+  UserDataActionData,
+  VerificationActionData,
 } from "./actionTypes";
 
 export type EventActionData =
   | PostActionData
   | ContentActionData
-  | EntityActionData;
+  | EntityActionData
+  | UserDataActionData
+  | VerificationActionData;
 
 /**
  * Supported actions for events
@@ -25,6 +29,9 @@ export enum EventActionType {
   UNREPOST = "UNREPOST",
   FOLLOW = "FOLLOW",
   UNFOLLOW = "UNFOLLOW",
+  USER_DATA_ADD = "USER_DATA_ADD",
+  VERIFICATION_ADD_ETH_ADDRESS = "VERIFICATION_ADD_ETH_ADDRESS",
+  VERIFICATION_REMOVE = "VERIFICATION_REMOVE",
 }
 
 export type EventActionRequest = {
