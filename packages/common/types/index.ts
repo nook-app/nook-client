@@ -4,3 +4,4 @@ export * from "./actions";
 export * from "./actionTypes";
 export * from "./contentTypes";
 export * from "./sources";
+export * from "./relations";

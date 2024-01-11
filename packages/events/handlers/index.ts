@@ -72,7 +72,7 @@ export const getEventsHandler = async () => {
         throw new Error(`[${rawEvent.source.service}] no handler found`);
     }
 
-    if (!response.event) return;
+    if (!response) return;
 
     await Promise.all([
       client.upsertEvent(response.event),

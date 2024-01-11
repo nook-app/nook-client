@@ -1,0 +1,31 @@
+// schema.prisma
+
+generator client {
+    provider = "prisma-client-js"
+    output   = "../generated/relations"
+}
+
+datasource db {
+    provider = "postgresql"
+    url      = env("RELATIONS_DATABASE_URL")
+}
+
+model ContentRelation {
+    contentId       String
+    type            String
+    targetContentId String
+    source          String
+
+    @@id([contentId, type, targetContentId])
+    @@index([targetContentId, type])
+}
+
+model UserRelation {
+    userId       String
+    type         String
+    targetUserId String
+    source       String
+
+    @@id([userId, type, targetUserId])
+    @@index([targetUserId, type])
+}

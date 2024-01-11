@@ -44,8 +44,11 @@ export const handleCastAddOrRemove = async (
       userIds: content.userIds,
       contentIds: [
         content.contentId,
-        ...content.relations.map((relation) => relation.contentId),
-      ],
+        content.data.rootParentId,
+        content.data.parentId,
+        ...content.data.embeds,
+        content.data.channelId,
+      ].filter(Boolean),
       createdAt: new Date(),
       type,
       data: {

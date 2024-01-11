@@ -3,6 +3,14 @@ export type FidHash = {
   hash: string;
 };
 
+export type Signature = {
+  hash: string;
+  hashScheme: number;
+  signature: string;
+  signatureScheme: number;
+  signer: string;
+};
+
 export type FarcasterCastData = {
   timestamp: Date;
   fid: string;
@@ -19,6 +27,7 @@ export type FarcasterCastData = {
     mentionPosition: string;
   }[];
   embeds: string[];
+  signature: Signature;
 };
 
 export enum FarcasterReactionType {
@@ -33,6 +42,7 @@ export type FarcasterCastReactionData = {
   reactionType: FarcasterReactionType;
   targetFid: string;
   targetHash: string;
+  signature: Signature;
 };
 
 export type FarcasterUrlReactionData = {
@@ -40,6 +50,7 @@ export type FarcasterUrlReactionData = {
   fid: string;
   reactionType: FarcasterReactionType;
   url: string;
+  signature: Signature;
 };
 
 export type FarcasterLinkData = {
@@ -47,4 +58,5 @@ export type FarcasterLinkData = {
   fid: string;
   linkType: string;
   targetFid: string;
+  signature: Signature;
 };

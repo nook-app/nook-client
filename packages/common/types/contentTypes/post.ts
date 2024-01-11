@@ -1,20 +1,6 @@
 import { ObjectId } from "mongodb";
 
-export enum Protocol {
-  FARCASTER = "FARCASTER",
-}
-
-export enum Application {
-  TBD = "TBD",
-}
-
 export type PostData = {
-  /** Protocol event was a part of */
-  protocol: Protocol;
-
-  /** Application event was for */
-  application: Application;
-
   /** Identity of user who posted */
   userId: ObjectId;
 

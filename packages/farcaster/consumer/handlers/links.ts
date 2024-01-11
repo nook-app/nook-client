@@ -115,6 +115,13 @@ const transformToLinkEvent = (
       linkType: link.linkType,
       targetFid: link.targetFid.toString(),
       timestamp: link.timestamp,
+      signature: {
+        hash: link.hash,
+        hashScheme: link.hashScheme,
+        signature: link.signature,
+        signatureScheme: link.signatureScheme,
+        signer: link.signer,
+      },
     },
   };
 };

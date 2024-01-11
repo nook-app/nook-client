@@ -265,6 +265,13 @@ export const transformToCastReactionEvent = (
       reactionType,
       targetFid: reaction.targetFid.toString(),
       targetHash: reaction.targetHash,
+      signature: {
+        hash: reaction.hash,
+        hashScheme: reaction.hashScheme,
+        signature: reaction.signature,
+        signatureScheme: reaction.signatureScheme,
+        signer: reaction.signer,
+      },
     },
   };
 };
@@ -296,6 +303,13 @@ const transformToUrlReactionEvent = (
       fid: reaction.fid.toString(),
       reactionType,
       url: reaction.targetUrl,
+      signature: {
+        hash: reaction.hash,
+        hashScheme: reaction.hashScheme,
+        signature: reaction.signature,
+        signatureScheme: reaction.signatureScheme,
+        signer: reaction.signer,
+      },
     },
   };
 };

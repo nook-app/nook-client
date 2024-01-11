@@ -9,18 +9,6 @@ export enum ContentType {
   URL = "URL",
 }
 
-export enum ContentRelationType {
-  PARENT = "PARENT",
-  ROOT_PARENT = "ROOT_PARENT",
-  EMBED = "EMBED",
-  CHANNEL = "CHANNEL",
-}
-
-export type ContentRelation = {
-  type: ContentRelationType;
-  contentId: string;
-};
-
 export enum ContentEngagementType {
   POSTS = "posts",
   REPLIES = "replies",
@@ -37,9 +25,6 @@ export type ContentEngagement = {
 export type ContentRequest = {
   /** ID for the content in URI format */
   contentId: string;
-
-  /** Identity of user who first submitted the content */
-  submitterId: ObjectId;
 };
 
 export type ContentBase = {
@@ -54,9 +39,6 @@ export type ContentBase = {
 
   /** Timestamp content was created at */
   timestamp: Date;
-
-  /** Related content */
-  relations: ContentRelation[];
 
   /** Engagement metrics */
   engagement?: ContentEngagement;

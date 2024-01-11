@@ -5,14 +5,16 @@
   "main": "./dist/index.js",
   "scripts": {
     "build": "yarn db:generate && tsc && cp -r prisma/generated dist/prisma/generated",
-    "db:generate": "npx prisma generate --schema ./prisma/schemas/farcaster.prisma",
-    "db:push": "npx prisma db push --schema ./prisma/schemas/farcaster.prisma"
+    "db:generate": "npx prisma generate --schema ./prisma/schemas/farcaster.prisma && npx prisma generate --schema ./prisma/schemas/relations.prisma",
+    "db:push:farcaster": "npx prisma db push --schema ./prisma/schemas/farcaster.prisma",
+    "db:push:relations": "npx prisma db push --schema ./prisma/schemas/relations.prisma"
   },
   "exports": {
     "./queues": "./dist/queues/index.js",
     "./types": "./dist/types/index.js",
     "./prisma/farcaster": "./dist/prisma/farcaster.js",
-    "./mongo": "./dist/mongo/index.js"
+    "./mongo": "./dist/mongo/index.js",
+    "./relations": "./dist/relations/index.js"
   },
   "dependencies": {
     "@farcaster/hub-nodejs": "^0.10.19",

@@ -1,22 +1,17 @@
 import {
-  Application,
   Content,
   ContentEngagement,
-  ContentRelation,
-  ContentRelationType,
-  ContentRequest,
   ContentType,
   EventActionType,
   FarcasterCastData,
   PostData,
-  Protocol,
 } from "@flink/common/types";
 import { toFarcasterURI } from "@flink/farcaster/utils";
 import { sdk } from "@flink/sdk";
 import { MongoClient, MongoCollection } from "@flink/common/mongo";
-import { publishContentRequests } from "@flink/common/queues";
 import { Identity } from "@flink/common/types/identity";
 import { ObjectId } from "mongodb";
+import { handlePostRelations } from "@flink/common/relations";
 
 export const getOrCreateContent = async (
   client: MongoClient,
@@ -32,7 +27,7 @@ export const getOrCreateContent = async (
       ...content,
       engagement: await getEngagement(client, content.contentId),
     }),
-    getAndPublishContentRequests(content.data),
+    handlePostRelations(content),
   ]);
 
   return true;
@@ -180,8 +175,6 @@ const transformCast = (
   fidToIdentity: Record<string, Identity>,
 ): PostData => {
   return {
-    protocol: Protocol.FARCASTER,
-    application: Application.TBD,
     text: cast.text,
     timestamp: cast.timestamp,
     userId: fidToIdentity[cast.fid]._id,
@@ -225,37 +218,8 @@ export const formatPostToContent = (
     timestamp: new Date(post.timestamp),
     type: post.parentId ? ContentType.REPLY : ContentType.POST,
     data: post,
-    relations: getRelations(post),
     userIds: getUserIds(post),
   };
-};
-
-const getRelations = (post: PostData): ContentRelation[] => {
-  const relations: ContentRelation[] = post.embeds.map((contentId) => ({
-    type: ContentRelationType.EMBED,
-    contentId,
-  }));
-
-  relations.push({
-    type: ContentRelationType.ROOT_PARENT,
-    contentId: post.rootParentId,
-  });
-
-  if (post.parentId) {
-    relations.push({
-      type: ContentRelationType.PARENT,
-      contentId: post.parentId,
-    });
-  }
-
-  if (post.channelId) {
-    relations.push({
-      type: ContentRelationType.CHANNEL,
-      contentId: post.channelId,
-    });
-  }
-
-  return relations;
 };
 
 const getUserIds = (post: PostData): ObjectId[] => {
@@ -278,7 +242,7 @@ const getUserIds = (post: PostData): ObjectId[] => {
   return userIds;
 };
 
-export const getEngagement = async (
+const getEngagement = async (
   client: MongoClient,
   contentId: string,
 ): Promise<ContentEngagement> => {
@@ -324,27 +288,4 @@ export const getEngagement = async (
     likes,
     reposts,
   };
-};
-
-const getAndPublishContentRequests = async (data: PostData) => {
-  const contentRequests: ContentRequest[] = data.embeds.map((contentId) => ({
-    contentId,
-    submitterId: data.userId,
-  }));
-
-  if (data.parent && data.parent.parentId !== data.rootParentId) {
-    contentRequests.push({
-      contentId: data.parentId,
-      submitterId: data.parentUserId,
-    });
-  }
-
-  if (data.rootParent) {
-    contentRequests.push({
-      contentId: data.rootParentId,
-      submitterId: data.rootParentUserId,
-    });
-  }
-
-  await publishContentRequests(contentRequests);
 };

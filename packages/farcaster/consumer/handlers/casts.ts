@@ -456,5 +456,12 @@ export const transformToCastData = (cast: FarcasterCast): FarcasterCastData => {
     rootParentUrl: cast.rootParentUrl,
     mentions,
     embeds,
+    signature: {
+      hash: cast.hash,
+      hashScheme: cast.hashScheme,
+      signature: cast.signature,
+      signatureScheme: cast.signatureScheme,
+      signer: cast.signer,
+    },
   };
 };
