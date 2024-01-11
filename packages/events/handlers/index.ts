@@ -72,8 +72,7 @@ export const getEventsHandler = async () => {
 
     await Promise.all([
       client.upsertEvent(response.event),
-      client.upsertActions(response.actions),
-      publishActionRequests(response.actions),
+      await publishActionRequests(response.actions),
     ]);
 
     console.log(

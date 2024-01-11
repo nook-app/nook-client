@@ -1,19 +1,21 @@
 import {
   ContentEngagementType,
   EventAction,
+  EventActionData,
   EventActionType,
   PostActionData,
 } from "@flink/common/types";
 import { MongoClient } from "@flink/common/mongo";
 import { Job } from "bullmq";
 import { getOrCreateContent, formatPostToContent } from "@flink/content/utils";
-import { publishContentRequests } from "@flink/common/queues";
 
 export const getActionsHandler = async () => {
   const client = new MongoClient();
   await client.connect();
 
-  return async <T>(job: Job<EventAction<T>>) => {
+  return async (job: Job<EventAction<EventActionData>>) => {
+    const actionCreated = await client.upsertAction(job.data);
+
     switch (job.data.type) {
       case EventActionType.POST: {
         const action = job.data as EventAction<PostActionData>;
@@ -37,7 +39,7 @@ export const getActionsHandler = async () => {
           client,
           formatPostToContent(action.data.contentId, action.data.content),
         );
-        if (!created) {
+        if (actionCreated && !created) {
           await Promise.all([
             client.incrementEngagement(
               action.data.content.parentId,
@@ -75,7 +77,7 @@ export const getActionsHandler = async () => {
           client,
           formatPostToContent(action.data.contentId, action.data.content),
         );
-        if (!created) {
+        if (actionCreated && !created) {
           await client.incrementEngagement(
             action.data.contentId,
             ContentEngagementType.LIKES,
@@ -101,7 +103,7 @@ export const getActionsHandler = async () => {
           client,
           formatPostToContent(action.data.contentId, action.data.content),
         );
-        if (!created) {
+        if (actionCreated && !created) {
           await client.incrementEngagement(
             action.data.contentId,
             ContentEngagementType.REPOSTS,

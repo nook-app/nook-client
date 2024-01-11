@@ -91,18 +91,23 @@ export class MongoClient {
     return updateResult.upsertedCount > 0;
   };
 
-  upsertActions = async (actions: EventAction<EventActionData>[]) => {
-    if (actions.length === 0) return;
+  upsertAction = async (action: EventAction<EventActionData>) => {
     const collection = this.getCollection<EventAction<EventActionData>>(
       MongoCollection.Actions,
     );
-    const deleteResult = await collection.deleteMany({
-      eventId: {
-        $in: actions.map((action) => action.eventId),
+    const updateResult = await collection.updateOne(
+      {
+        eventId: action.eventId,
+        type: action.type,
       },
-    });
-    const insertResult = await collection.insertMany(actions);
-    return insertResult.insertedCount > deleteResult.deletedCount;
+      {
+        $set: action,
+      },
+      {
+        upsert: true,
+      },
+    );
+    return updateResult.upsertedCount > 0;
   };
 
   markActionsDeleted = async (id: string) => {
