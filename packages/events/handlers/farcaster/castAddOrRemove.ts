@@ -6,55 +6,62 @@ import {
   RawEvent,
   EventType,
   PostActionData,
-  ContentType,
 } from "@flink/common/types";
 import { MongoClient } from "@flink/common/mongo";
 import { ObjectId } from "mongodb";
-import { getFarcasterPostOrReplyByData } from "@flink/content/utils";
+import { getFarcasterPostByData } from "@flink/common/utils";
+import { toFarcasterURI } from "@flink/farcaster/utils";
 
 export const handleCastAddOrRemove = async (
   client: MongoClient,
   rawEvent: RawEvent<FarcasterCastData>,
 ) => {
-  const { content } = await getFarcasterPostOrReplyByData(
-    client,
-    rawEvent.data,
-  );
+  const data = await getFarcasterPostByData(client, rawEvent.data);
 
   let type: EventActionType;
-  if (content.type === ContentType.POST) {
-    type =
-      rawEvent.source.type === EventType.CAST_ADD
-        ? EventActionType.POST
-        : EventActionType.UNPOST;
-  } else {
+  if (data.parentId) {
     type =
       rawEvent.source.type === EventType.CAST_ADD
         ? EventActionType.REPLY
         : EventActionType.UNREPLY;
+  } else {
+    type =
+      rawEvent.source.type === EventType.CAST_ADD
+        ? EventActionType.POST
+        : EventActionType.UNPOST;
   }
 
+  const contentId = toFarcasterURI(rawEvent.data);
   const actions: EventAction<PostActionData>[] = [
     {
       _id: new ObjectId(),
       eventId: rawEvent.eventId,
       source: rawEvent.source,
       timestamp: rawEvent.timestamp,
-      userId: content.data.userId,
-      userIds: content.userIds,
-      contentIds: [
-        content.contentId,
-        content.data.rootParentId,
-        content.data.parentId,
-        ...content.data.embeds,
-        content.data.channelId,
-      ].filter(Boolean),
+      userId: data.userId,
+      userIds: Array.from(
+        new Set([
+          data.userId,
+          data.parentUserId,
+          data.rootParentUserId,
+          ...data.mentions.map(({ userId }) => userId),
+        ]),
+      ).filter(Boolean),
+      contentIds: Array.from(
+        new Set([
+          contentId,
+          data.rootParentId,
+          data.parentId,
+          ...data.embeds,
+          data.channelId,
+        ]),
+      ).filter(Boolean),
       createdAt: new Date(),
       type,
       data: {
-        userId: content.data.userId,
-        contentId: content.contentId,
-        content: content.data,
+        userId: data.userId,
+        contentId,
+        content: data,
       },
       deletedAt: [EventActionType.UNPOST, EventActionType.UNREPLY].includes(
         type,
@@ -66,9 +73,9 @@ export const handleCastAddOrRemove = async (
 
   const event: UserEvent<FarcasterCastData> = {
     ...rawEvent,
-    userId: content.data.userId,
+    userId: data.userId,
     actions: actions.map(({ _id }) => _id),
-    createdAt: content.createdAt,
+    createdAt: new Date(),
   };
 
   return { event, actions };

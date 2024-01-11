@@ -1,21 +1,20 @@
 import { MongoClient } from "@flink/common/mongo";
-import {
-  getOrCreateContent,
-  getFarcasterPostOrReplyByContentId,
-} from "../../utils";
+import { generateFarcasterPostByContentId } from "@flink/common/utils";
+import { createFarcasterContent } from "../../utils";
 
 export const handleFarcasterContent = async (
   client: MongoClient,
   contentId: string,
 ) => {
-  const { content, created } = await getFarcasterPostOrReplyByContentId(
-    client,
-    contentId,
-  );
-
-  if (created) {
-    await getOrCreateContent(client, content);
+  const existingContent = await client.findContent(contentId);
+  if (existingContent) {
+    return existingContent;
   }
 
-  return content;
+  const data = await generateFarcasterPostByContentId(client, contentId);
+  if (!data) {
+    return;
+  }
+
+  return await createFarcasterContent(client, contentId, data);
 };

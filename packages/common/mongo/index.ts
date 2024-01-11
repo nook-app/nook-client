@@ -58,7 +58,7 @@ export class MongoClient {
       .find({
         socialAccounts: {
           $elemMatch: {
-            platform: "FARCASTER",
+            platform: IdentitySocialPlatform.FARCASTER,
             id: {
               $in: fids,
             },
@@ -70,7 +70,7 @@ export class MongoClient {
     const identities = existingIdentities.reduce(
       (acc, identity) => {
         for (const account of identity.socialAccounts) {
-          if (account.platform !== "FARCASTER") {
+          if (account.platform !== IdentitySocialPlatform.FARCASTER) {
             continue;
           }
           acc[account.id] = identity;

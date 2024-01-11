@@ -6,22 +6,23 @@ import {
   PostActionData,
 } from "@flink/common/types";
 import { MongoClient } from "@flink/common/mongo";
+import { createFarcasterContent } from "@flink/content/utils";
 import { Job } from "bullmq";
-import { getOrCreateContent, formatPostToContent } from "@flink/content/utils";
 
 export const getActionsHandler = async () => {
   const client = new MongoClient();
   await client.connect();
 
   return async (job: Job<EventAction<EventActionData>>) => {
-    const actionCreated = await client.upsertAction(job.data);
+    const created = await client.upsertAction(job.data);
 
     switch (job.data.type) {
       case EventActionType.POST: {
         const action = job.data as EventAction<PostActionData>;
-        await getOrCreateContent(
+        await createFarcasterContent(
           client,
-          formatPostToContent(action.data.contentId, action.data.content),
+          action.data.contentId,
+          action.data.content,
         );
         break;
       }
@@ -35,21 +36,24 @@ export const getActionsHandler = async () => {
       }
       case EventActionType.REPLY: {
         const action = job.data as EventAction<PostActionData>;
-        const created = await getOrCreateContent(
-          client,
-          formatPostToContent(action.data.contentId, action.data.content),
-        );
-        if (actionCreated && !created) {
-          await Promise.all([
-            client.incrementEngagement(
-              action.data.content.parentId,
-              ContentEngagementType.REPLIES,
-            ),
-            client.incrementEngagement(
-              action.data.content.rootParentId,
-              ContentEngagementType.ROOT_REPLIES,
-            ),
-          ]);
+        if (!(await client.findContent(action.data.contentId))) {
+          await createFarcasterContent(
+            client,
+            action.data.contentId,
+            action.data.content,
+          );
+          if (created) {
+            await Promise.all([
+              client.incrementEngagement(
+                action.data.content.parentId,
+                ContentEngagementType.REPLIES,
+              ),
+              client.incrementEngagement(
+                action.data.content.rootParentId,
+                ContentEngagementType.ROOT_REPLIES,
+              ),
+            ]);
+          }
         }
         break;
       }
@@ -73,15 +77,18 @@ export const getActionsHandler = async () => {
       }
       case EventActionType.LIKE: {
         const action = job.data as EventAction<PostActionData>;
-        const created = await getOrCreateContent(
-          client,
-          formatPostToContent(action.data.contentId, action.data.content),
-        );
-        if (actionCreated && !created) {
-          await client.incrementEngagement(
+        if (!(await client.findContent(action.data.contentId))) {
+          await createFarcasterContent(
+            client,
             action.data.contentId,
-            ContentEngagementType.LIKES,
+            action.data.content,
           );
+          if (created) {
+            await client.incrementEngagement(
+              action.data.contentId,
+              ContentEngagementType.LIKES,
+            );
+          }
         }
         break;
       }
@@ -99,15 +106,18 @@ export const getActionsHandler = async () => {
       }
       case EventActionType.REPOST: {
         const action = job.data as EventAction<PostActionData>;
-        const created = await getOrCreateContent(
-          client,
-          formatPostToContent(action.data.contentId, action.data.content),
-        );
-        if (actionCreated && !created) {
-          await client.incrementEngagement(
+        if (!(await client.findContent(action.data.contentId))) {
+          await createFarcasterContent(
+            client,
             action.data.contentId,
-            ContentEngagementType.REPOSTS,
+            action.data.content,
           );
+          if (created) {
+            await client.incrementEngagement(
+              action.data.contentId,
+              ContentEngagementType.REPOSTS,
+            );
+          }
         }
         break;
       }

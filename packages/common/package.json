@@ -14,7 +14,8 @@
     "./types": "./dist/types/index.js",
     "./prisma/farcaster": "./dist/prisma/farcaster.js",
     "./mongo": "./dist/mongo/index.js",
-    "./relations": "./dist/relations/index.js"
+    "./relations": "./dist/relations/index.js",
+    "./utils": "./dist/utils/index.js"
   },
   "dependencies": {
     "@farcaster/hub-nodejs": "^0.10.19",
