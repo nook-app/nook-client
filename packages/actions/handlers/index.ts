@@ -8,8 +8,10 @@ import {
   EntityActionData,
 } from "@flink/common/types";
 import { MongoClient, MongoCollection } from "@flink/common/mongo";
+import { handleFollowRelation } from "@flink/common/relations";
 import { createPostContent } from "@flink/content/utils";
 import { Job } from "bullmq";
+import { ObjectId } from "mongodb";
 
 export const getActionsHandler = async () => {
   const client = new MongoClient();
@@ -135,30 +137,39 @@ export const getActionsHandler = async () => {
         ]);
         break;
       }
-      case EventActionType.FOLLOW:
+      case EventActionType.FOLLOW: {
         if (created) {
           const action = job.data as EventAction<EntityActionData>;
           const collection = client.getCollection<Entity>(
             MongoCollection.Entity,
           );
+
+          const entityId = new ObjectId(action.data.entityId);
+          const targetEntityId = new ObjectId(action.data.targetEntityId);
+
           await Promise.all([
             await collection.updateOne(
               {
-                _id: action.data.entityId,
+                _id: entityId,
                 "farcasterAccounts.id": action.data.sourceEntityId,
               },
               { $inc: { "farcasterAccounts.$.following": 1 } },
             ),
             await collection.updateOne(
               {
-                _id: action.data.targetEntityId,
+                _id: targetEntityId,
                 "farcasterAccounts.id": action.data.sourceTargetEntityId,
               },
               { $inc: { "farcasterAccounts.$.followers": 1 } },
             ),
+            handleFollowRelation(
+              entityId.toString(),
+              targetEntityId.toString(),
+            ),
           ]);
         }
         break;
+      }
       case EventActionType.UNFOLLOW: {
         const promises = [client.markActionsDeleted(job.data.source.id)];
         if (created) {
@@ -166,10 +177,14 @@ export const getActionsHandler = async () => {
           const collection = client.getCollection<Entity>(
             MongoCollection.Entity,
           );
+
+          const entityId = new ObjectId(action.data.entityId);
+          const targetEntityId = new ObjectId(action.data.targetEntityId);
+
           promises.push(
             void collection.updateOne(
               {
-                _id: action.data.entityId,
+                _id: new ObjectId(action.data.entityId),
                 "farcasterAccounts.id": action.data.sourceEntityId,
               },
               { $inc: { "farcasterAccounts.$.following": 1 } },
@@ -178,10 +193,15 @@ export const getActionsHandler = async () => {
           promises.push(
             void collection.updateOne(
               {
-                _id: action.data.targetEntityId,
+                _id: new ObjectId(action.data.targetEntityId),
                 "farcasterAccounts.id": action.data.sourceTargetEntityId,
               },
               { $inc: { "farcasterAccounts.$.followers": 1 } },
+            ),
+            handleFollowRelation(
+              entityId.toString(),
+              targetEntityId.toString(),
+              true,
             ),
           );
         }

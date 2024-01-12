@@ -16,18 +16,18 @@ export type EntityEventData =
  * Supported event services
  */
 export enum EventService {
-  FARCASTER = "farcaster",
+  FARCASTER = "FARCASTER",
 }
 
 export enum EventType {
-  CAST_ADD = "castAdd",
-  CAST_REMOVE = "castRemove",
-  CAST_REACTION_ADD = "castReactionAdd",
-  CAST_REACTION_REMOVE = "castReactionRemove",
-  URL_REACTION_ADD = "urlReactionAdd",
-  URL_REACTION_REMOVE = "urlReactionRemove",
-  LINK_ADD = "linkAdd",
-  LINK_REMOVE = "linkRemove",
+  CAST_ADD = "CAST_ADD",
+  CAST_REMOVE = "CAST_REMOVE",
+  CAST_REACTION_ADD = "CAST_REACTION_ADD",
+  CAST_REACTION_REMOVE = "CAST_REACTION_REMOVE",
+  URL_REACTION_ADD = "URL_REACTION_ADD",
+  URL_REACTION_REMOVE = "URL_REACTION_REMOVE",
+  LINK_ADD = "LINK_ADD",
+  LINK_REMOVE = "LINK_REMOVE",
 }
 
 export type EventSource = {

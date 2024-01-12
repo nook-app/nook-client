@@ -1,7 +1,12 @@
 export * from "./enqueue";
 
 import { ConnectionOptions, Job, Queue, QueueOptions, Worker } from "bullmq";
-import { ContentRequest, EventAction, RawEvent } from "../types";
+import {
+  ContentRequest,
+  EventAction,
+  EventActionData,
+  RawEvent,
+} from "../types";
 import { Message } from "@farcaster/hub-nodejs";
 import { FarcasterBackfillRequest } from "../types/backfill";
 
@@ -19,7 +24,7 @@ type QueueType<T> = {
   [QueueName.FarcasterBackfill]: FarcasterBackfillRequest;
   [QueueName.Events]: RawEvent<T>;
   [QueueName.EventsBackfill]: RawEvent<T>;
-  [QueueName.Actions]: EventAction<T>;
+  [QueueName.Actions]: EventAction<EventActionData>;
   [QueueName.Content]: ContentRequest;
 };
 

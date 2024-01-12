@@ -1,6 +1,13 @@
+import { ObjectId } from "mongodb";
 import { ContentRelation, PrismaClient } from "../prisma/relations";
 import { publishContentRequests } from "../queues";
-import { Content, ContentRelationType, EventService, PostData } from "../types";
+import {
+  Content,
+  ContentRelationType,
+  EntityRelationType,
+  EventService,
+  PostData,
+} from "../types";
 
 const prisma = new PrismaClient();
 
@@ -47,4 +54,32 @@ export const handlePostRelations = async ({
     }),
     publishContentRequests(relations.map((r) => ({ contentId: r.contentId }))),
   ]);
+};
+
+export const handleFollowRelation = async (
+  entityId: string,
+  targetEntityId: string,
+  isUnfollow = false,
+) => {
+  const data = {
+    entityId,
+    targetEntityId,
+    source: EventService.FARCASTER,
+    type: EntityRelationType.FOLLOWER_OF,
+  };
+  if (isUnfollow) {
+    await prisma.entityRelation.delete({
+      where: {
+        entityId_type_source_targetEntityId: data,
+      },
+    });
+  } else {
+    await prisma.entityRelation.upsert({
+      where: {
+        entityId_type_source_targetEntityId: data,
+      },
+      create: data,
+      update: data,
+    });
+  }
 };

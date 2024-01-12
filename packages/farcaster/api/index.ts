@@ -159,7 +159,7 @@ const run = async () => {
 
       if (missingFids.length > 0) {
         userDatas.push(...(await getAndBackfillUserDatas(client, missingFids)));
-        await getAndBackfillLinks(client, missingFids);
+        // await getAndBackfillLinks(client, missingFids);
       }
 
       const groupedUserDatas = userDatas.reduce(
