@@ -12,6 +12,7 @@
   "exports": {
     "./queues": "./dist/queues/index.js",
     "./types": "./dist/types/index.js",
+    "./entity": "./dist/entity/index.js",
     "./prisma/farcaster": "./dist/prisma/farcaster.js",
     "./prisma/relations": "./dist/prisma/relations.js",
     "./mongo": "./dist/mongo/index.js",

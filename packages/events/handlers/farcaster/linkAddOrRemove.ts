@@ -17,13 +17,13 @@ export const handleLinkAddOrRemove = async (
 ) => {
   const isRemove = rawEvent.source.type === EventType.LINK_REMOVE;
 
-  const fidToIdentity = await getOrCreateEntitiesForFids(client, [
+  const fidToEntity = await getOrCreateEntitiesForFids(client, [
     rawEvent.data.fid,
     rawEvent.data.targetFid,
   ]);
 
-  const entityId = fidToIdentity[rawEvent.data.fid]._id;
-  const targetEntityId = fidToIdentity[rawEvent.data.targetFid]._id;
+  const entityId = fidToEntity[rawEvent.data.fid]._id;
+  const targetEntityId = fidToEntity[rawEvent.data.targetFid]._id;
 
   const actions: EventAction<EntityActionData>[] = [
     {

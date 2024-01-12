@@ -5,4 +5,4 @@ export * from "./actionTypes";
 export * from "./contentTypes";
 export * from "./sources";
 export * from "./relations";
-export * from "./identity";
+export * from "./entity";

@@ -31,11 +31,11 @@ export const handleUrlReactionAddOrRemove = async (
       : EventActionType.REPOST;
   }
 
-  const fidToIdentity = await getOrCreateEntitiesForFids(client, [
+  const fidToEntity = await getOrCreateEntitiesForFids(client, [
     rawEvent.data.fid,
   ]);
 
-  const entityId = fidToIdentity[rawEvent.data.fid]._id;
+  const entityId = fidToEntity[rawEvent.data.fid]._id;
   const contentId = rawEvent.data.url;
   const actions: EventAction<ContentActionData>[] = [
     {

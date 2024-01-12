@@ -1,6 +1,6 @@
 import { ObjectId } from "mongodb";
 import { MongoClient, MongoCollection } from "../mongo";
-import { Entity } from "../types/identity";
+import { Entity } from "../types/entity";
 import { sdk } from "@flink/sdk";
 
 export const getOrCreateEntitiesForFids = async (
@@ -8,7 +8,7 @@ export const getOrCreateEntitiesForFids = async (
   fids: string[],
 ) => {
   const collection = client.getCollection<Entity>(MongoCollection.Entity);
-  const existingIdentities = await collection
+  const existingEntities = await collection
     .find({
       farcasterAccounts: {
         $elemMatch: {
@@ -20,22 +20,22 @@ export const getOrCreateEntitiesForFids = async (
     })
     .toArray();
 
-  const identities = existingIdentities.reduce(
-    (acc, identity) => {
-      for (const account of identity.farcasterAccounts) {
-        acc[account.id] = identity;
+  const entities = existingEntities.reduce(
+    (acc, entity) => {
+      for (const account of entity.farcasterAccounts) {
+        acc[account.id] = entity;
       }
       return acc;
     },
     {} as Record<string, Entity>,
   );
 
-  const existingFids = new Set(Object.keys(identities));
+  const existingFids = new Set(Object.keys(entities));
   const missingFids = fids.filter((fid) => !existingFids.has(fid));
 
   if (missingFids.length > 0) {
     const users = await sdk.farcaster.getUsers(missingFids);
-    const newIdentities = missingFids.map((fid, i) => ({
+    const newEntities = missingFids.map((fid, i) => ({
       _id: new ObjectId(),
       farcasterAccounts: [
         {
@@ -47,11 +47,11 @@ export const getOrCreateEntitiesForFids = async (
       ],
       createdAt: new Date(),
     }));
-    await collection.insertMany(newIdentities);
-    for (const identity of newIdentities) {
-      identities[identity.farcasterAccounts[0].id] = identity;
+    await collection.insertMany(newEntities);
+    for (const entity of newEntities) {
+      entities[entity.farcasterAccounts[0].id] = entity;
     }
   }
 
-  return identities;
+  return entities;
 };

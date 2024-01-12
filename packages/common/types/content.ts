@@ -31,10 +31,10 @@ export type ContentBase = {
   /** ID for the content in URI format */
   contentId: string;
 
-  /** Identity of entity who first submitted the content */
+  /** Entity who first submitted the content */
   submitterId: ObjectId;
 
-  /** Identity of entity who created the content */
+  /** Entity who created the content */
   creatorId?: ObjectId;
 
   /** Timestamp content was created at */

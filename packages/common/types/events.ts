@@ -65,7 +65,7 @@ export type RawEvent<T> = {
  * Event object after being processed by the event service
  */
 export type EntityEvent<T> = RawEvent<T> & {
-  /** Identity of entity who triggered the event */
+  /** Entity who triggered the event */
   entityId: ObjectId;
 
   /** List of references to event actions parsed from this event */

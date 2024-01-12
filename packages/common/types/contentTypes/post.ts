@@ -1,7 +1,7 @@
 import { ObjectId } from "mongodb";
 
 export type PostData = {
-  /** Identity of entity who posted */
+  /** Entity who posted */
   entityId: ObjectId;
 
   /** Timestamp for when the post was made */

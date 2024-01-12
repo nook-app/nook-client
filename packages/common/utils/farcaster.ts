@@ -2,7 +2,7 @@ import { Content, FarcasterCastData, PostData } from "@flink/common/types";
 import { toFarcasterURI } from "@flink/farcaster/utils";
 import { sdk } from "@flink/sdk";
 import { MongoClient, MongoCollection } from "@flink/common/mongo";
-import { Entity } from "@flink/common/types/identity";
+import { Entity } from "@flink/common/types/entity";
 import { getOrCreateEntitiesForFids } from "../entity";
 
 export const getFarcasterPostByContentId = async (
@@ -149,14 +149,14 @@ const getParentAndRootCasts = async (
 
 const transformCast = (
   cast: FarcasterCastData,
-  fidToIdentity: Record<string, Entity>,
+  fidToEntity: Record<string, Entity>,
 ): PostData => {
   return {
     text: cast.text,
     timestamp: cast.timestamp,
-    entityId: fidToIdentity[cast.fid]._id,
+    entityId: fidToEntity[cast.fid]._id,
     mentions: cast.mentions.map(({ mention, mentionPosition }) => ({
-      entityId: fidToIdentity[mention]._id,
+      entityId: fidToEntity[mention]._id,
       position: parseInt(mentionPosition),
     })),
     embeds: cast.embeds,
@@ -165,7 +165,7 @@ const transformCast = (
       fid: cast.rootParentFid,
       hash: cast.rootParentHash,
     }),
-    rootParentEntityId: fidToIdentity[cast.rootParentFid]._id,
+    rootParentEntityId: fidToEntity[cast.rootParentFid]._id,
   };
 };
 

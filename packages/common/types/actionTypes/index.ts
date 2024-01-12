@@ -2,7 +2,7 @@ import { ObjectId } from "mongodb";
 import { PostData } from "../contentTypes";
 
 export type ContentActionData = {
-  /** Identity of entity acting */
+  /** Entity acting */
   entityId: ObjectId;
 
   /** Content being acted on */
@@ -10,16 +10,16 @@ export type ContentActionData = {
 };
 
 export type EntityActionData = {
-  /** Identity of entity acting */
+  /** Entityacting */
   entityId: ObjectId;
 
-  /** Identity of entity who was acted on */
+  /** Entity who was acted on */
   targetEntityId: ObjectId;
 
-  /** Source identity of entity acting */
+  /** Source entity acting */
   sourceEntityId: string;
 
-  /** Source identity of entity who was acted on */
+  /** Source entity who was acted on */
   sourceTargetEntityId: string;
 };
 

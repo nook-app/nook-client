@@ -43,7 +43,7 @@ export type EventAction<T> = {
   /** Timestamp for when the event occurred */
   timestamp: Date;
 
-  /** Identity of entity who triggered the event */
+  /** Entity who triggered the event */
   entityId: ObjectId;
 
   /** Set of contentIds involved in this action */
