@@ -10,7 +10,7 @@ export type ContentActionData = {
 };
 
 export type EntityActionData = {
-  /** Entityacting */
+  /** Entity acting */
   entityId: ObjectId;
 
   /** Entity who was acted on */

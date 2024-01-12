@@ -39,7 +39,6 @@ export const handleUrlReactionAddOrRemove = async (
   const contentId = rawEvent.data.url;
   const actions: EventAction<ContentActionData>[] = [
     {
-      _id: new ObjectId(),
       eventId: rawEvent.eventId,
       source: rawEvent.source,
       timestamp: rawEvent.timestamp,
@@ -59,7 +58,6 @@ export const handleUrlReactionAddOrRemove = async (
   const event: EntityEvent<FarcasterUrlReactionData> = {
     ...rawEvent,
     entityId,
-    actions: actions.map(({ _id }) => _id),
     createdAt: actions[0].createdAt,
   };
 

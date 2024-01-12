@@ -75,7 +75,10 @@ export class MongoClient {
         upsert: true,
       },
     );
-    return updateResult.upsertedCount > 0;
+    return {
+      _id: updateResult.upsertedId,
+      created: updateResult.upsertedCount > 0,
+    };
   };
 
   insertContent = async (content: Content<ContentData>) => {
@@ -100,14 +103,17 @@ export class MongoClient {
         upsert: true,
       },
     );
-    return updateResult.upsertedCount > 0;
+    return {
+      _id: updateResult.upsertedId,
+      created: updateResult.upsertedCount > 0,
+    };
   };
 
   upsertAction = async (action: EventAction<EventActionData>) => {
     const collection = this.getCollection<EventAction<EventActionData>>(
       MongoCollection.Actions,
     );
-    const updateResult = await collection.updateOne(
+    const updateResult = await collection.findOneAndUpdate(
       {
         eventId: action.eventId,
         type: action.type,
@@ -117,9 +123,13 @@ export class MongoClient {
       },
       {
         upsert: true,
+        includeResultMetadata: true,
       },
     );
-    return updateResult.upsertedCount > 0;
+    return {
+      _id: updateResult.value._id,
+      created: updateResult.lastErrorObject?.updatedExisting || false,
+    };
   };
 
   markActionsDeleted = async (id: string) => {

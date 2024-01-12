@@ -74,17 +74,21 @@ export const getEventsHandler = async () => {
 
     if (!response) return;
 
-    const [, ...actionResults] = await Promise.all([
-      client.upsertEvent(response.event),
-      ...response.actions.map((action) => client.upsertAction(action)),
-    ]);
-
-    await publishActionRequests(
-      response.actions.map((action, i) => ({
-        actionId: action._id.toString(),
-        created: actionResults[i],
-      })),
+    const actions = await Promise.all(
+      response.actions.map((action) => client.upsertAction(action)),
     );
+
+    response.event.actions = actions.map(({ _id }) => _id);
+
+    await Promise.all([
+      client.upsertEvent(response.event),
+      publishActionRequests(
+        actions.map(({ _id, created }) => ({
+          actionId: _id.toString(),
+          created,
+        })),
+      ),
+    ]);
 
     console.log(
       `[${rawEvent.source.service}] [${rawEvent.source.type}] processed ${rawEvent.source.id} by ${rawEvent.source.entityId}`,

@@ -68,10 +68,8 @@ export const handleFollowRelation = async (
     type: EntityRelationType.FOLLOWER_OF,
   };
   if (isUnfollow) {
-    await prisma.entityRelation.delete({
-      where: {
-        entityId_type_source_targetEntityId: data,
-      },
+    await prisma.entityRelation.deleteMany({
+      where: data,
     });
   } else {
     await prisma.entityRelation.upsert({

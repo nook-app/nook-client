@@ -27,7 +27,6 @@ export const handleLinkAddOrRemove = async (
 
   const actions: EventAction<EntityActionData>[] = [
     {
-      _id: new ObjectId(),
       eventId: rawEvent.eventId,
       source: rawEvent.source,
       timestamp: rawEvent.timestamp,
@@ -49,7 +48,6 @@ export const handleLinkAddOrRemove = async (
   const event: EntityEvent<FarcasterLinkData> = {
     ...rawEvent,
     entityId,
-    actions: actions.map(({ _id }) => _id),
     createdAt: actions[0].createdAt,
   };
 

@@ -34,7 +34,6 @@ export const handleCastAddOrRemove = async (
   const contentId = toFarcasterURI(rawEvent.data);
   const actions: EventAction<PostActionData>[] = [
     {
-      _id: new ObjectId(),
       eventId: rawEvent.eventId,
       source: rawEvent.source,
       timestamp: rawEvent.timestamp,
@@ -74,7 +73,6 @@ export const handleCastAddOrRemove = async (
   const event: EntityEvent<FarcasterCastData> = {
     ...rawEvent,
     entityId: data.entityId,
-    actions: actions.map(({ _id }) => _id),
     createdAt: new Date(),
   };
 

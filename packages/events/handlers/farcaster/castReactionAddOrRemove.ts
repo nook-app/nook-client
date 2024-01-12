@@ -46,7 +46,6 @@ export const handleCastReactionAddOrRemove = async (
 
   const actions: EventAction<PostActionData>[] = [
     {
-      _id: new ObjectId(),
       eventId: rawEvent.eventId,
       source: rawEvent.source,
       timestamp: rawEvent.timestamp,
@@ -87,7 +86,6 @@ export const handleCastReactionAddOrRemove = async (
   const event: EntityEvent<FarcasterCastReactionData> = {
     ...rawEvent,
     entityId,
-    actions: actions.map(({ _id }) => _id),
     createdAt: new Date(),
   };
 

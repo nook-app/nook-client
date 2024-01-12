@@ -69,7 +69,7 @@ export type EntityEvent<T> = RawEvent<T> & {
   entityId: ObjectId;
 
   /** List of references to event actions parsed from this event */
-  actions: ObjectId[];
+  actions?: ObjectId[];
 
   /** Timestamp for when the event was created */
   createdAt: Date;

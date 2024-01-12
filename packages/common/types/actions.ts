@@ -39,9 +39,6 @@ export type EventActionRequest = {
  * Event action parsed from the event data
  */
 export type EventAction<T> = {
-  /** ID */
-  _id: ObjectId;
-
   /** Event ID */
   eventId: string;
 
