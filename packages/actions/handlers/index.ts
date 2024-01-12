@@ -6,6 +6,7 @@ import {
   Entity,
   PostActionData,
   EntityActionData,
+  EventActionRequest,
 } from "@flink/common/types";
 import { MongoClient, MongoCollection } from "@flink/common/mongo";
 import { handleFollowRelation } from "@flink/common/relations";
@@ -17,12 +18,12 @@ export const getActionsHandler = async () => {
   const client = new MongoClient();
   await client.connect();
 
-  return async (job: Job<EventAction<EventActionData>>) => {
-    const created = await client.upsertAction(job.data);
+  return async (job: Job<EventActionRequest>) => {
+    const data = await client.findAction(job.data.actionId);
 
-    switch (job.data.type) {
+    switch (data.type) {
       case EventActionType.POST: {
-        const action = job.data as EventAction<PostActionData>;
+        const action = data as EventAction<PostActionData>;
         await createPostContent(
           client,
           action.data.contentId,
@@ -31,7 +32,7 @@ export const getActionsHandler = async () => {
         break;
       }
       case EventActionType.UNPOST: {
-        const action = job.data as EventAction<PostActionData>;
+        const action = data as EventAction<PostActionData>;
         await Promise.all([
           client.markActionsDeleted(action.source.id),
           client.markContentDeleted(action.data.contentId),
@@ -39,14 +40,14 @@ export const getActionsHandler = async () => {
         break;
       }
       case EventActionType.REPLY: {
-        const action = job.data as EventAction<PostActionData>;
+        const action = data as EventAction<PostActionData>;
         if (!(await client.findContent(action.data.contentId))) {
           await createPostContent(
             client,
             action.data.contentId,
             action.data.content,
           );
-          if (created) {
+          if (job.data.created) {
             await Promise.all([
               client.incrementEngagement(
                 action.data.content.parentId,
@@ -62,7 +63,7 @@ export const getActionsHandler = async () => {
         break;
       }
       case EventActionType.UNREPLY: {
-        const action = job.data as EventAction<PostActionData>;
+        const action = data as EventAction<PostActionData>;
         await Promise.all([
           client.markActionsDeleted(action.source.id),
           client.markContentDeleted(action.data.contentId),
@@ -80,14 +81,14 @@ export const getActionsHandler = async () => {
         break;
       }
       case EventActionType.LIKE: {
-        const action = job.data as EventAction<PostActionData>;
+        const action = data as EventAction<PostActionData>;
         if (!(await client.findContent(action.data.contentId))) {
           await createPostContent(
             client,
             action.data.contentId,
             action.data.content,
           );
-          if (created) {
+          if (job.data.created) {
             await client.incrementEngagement(
               action.data.contentId,
               ContentEngagementType.LIKES,
@@ -97,7 +98,7 @@ export const getActionsHandler = async () => {
         break;
       }
       case EventActionType.UNLIKE: {
-        const action = job.data as EventAction<PostActionData>;
+        const action = data as EventAction<PostActionData>;
         await Promise.all([
           client.markActionsDeleted(action.source.id),
           client.incrementEngagement(
@@ -109,14 +110,14 @@ export const getActionsHandler = async () => {
         break;
       }
       case EventActionType.REPOST: {
-        const action = job.data as EventAction<PostActionData>;
+        const action = data as EventAction<PostActionData>;
         if (!(await client.findContent(action.data.contentId))) {
           await createPostContent(
             client,
             action.data.contentId,
             action.data.content,
           );
-          if (created) {
+          if (job.data.created) {
             await client.incrementEngagement(
               action.data.contentId,
               ContentEngagementType.REPOSTS,
@@ -126,7 +127,7 @@ export const getActionsHandler = async () => {
         break;
       }
       case EventActionType.UNREPOST: {
-        const action = job.data as EventAction<PostActionData>;
+        const action = data as EventAction<PostActionData>;
         await Promise.all([
           client.markActionsDeleted(action.source.id),
           client.incrementEngagement(
@@ -138,8 +139,8 @@ export const getActionsHandler = async () => {
         break;
       }
       case EventActionType.FOLLOW: {
-        if (created) {
-          const action = job.data as EventAction<EntityActionData>;
+        if (job.data.created) {
+          const action = data as EventAction<EntityActionData>;
           const collection = client.getCollection<Entity>(
             MongoCollection.Entity,
           );
@@ -171,9 +172,9 @@ export const getActionsHandler = async () => {
         break;
       }
       case EventActionType.UNFOLLOW: {
-        const promises = [client.markActionsDeleted(job.data.source.id)];
-        if (created) {
-          const action = job.data as EventAction<EntityActionData>;
+        const promises = [client.markActionsDeleted(data.source.id)];
+        if (job.data.created) {
+          const action = data as EventAction<EntityActionData>;
           const collection = client.getCollection<Entity>(
             MongoCollection.Entity,
           );
@@ -209,11 +210,11 @@ export const getActionsHandler = async () => {
         break;
       }
       default:
-        throw new Error(`[${job.data.type}] no handler found`);
+        throw new Error(`[${data.type}] no handler found`);
     }
 
     console.log(
-      `[${job.data.type}] processed ${job.data.source.id} by ${job.data.entityId}`,
+      `[${data.type}] processed ${data.source.id} by ${data.entityId}`,
     );
   };
 };

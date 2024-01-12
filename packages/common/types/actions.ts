@@ -27,6 +27,14 @@ export enum EventActionType {
   UNFOLLOW = "UNFOLLOW",
 }
 
+export type EventActionRequest = {
+  /** ID for the content in URI format */
+  actionId: string;
+
+  /** If this is a new action, or a replay */
+  created: boolean;
+};
+
 /**
  * Event action parsed from the event data
  */

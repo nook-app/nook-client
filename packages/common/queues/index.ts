@@ -5,6 +5,7 @@ import {
   ContentRequest,
   EventAction,
   EventActionData,
+  EventActionRequest,
   RawEvent,
 } from "../types";
 import { Message } from "@farcaster/hub-nodejs";
@@ -24,7 +25,7 @@ type QueueType<T> = {
   [QueueName.FarcasterBackfill]: FarcasterBackfillRequest;
   [QueueName.Events]: RawEvent<T>;
   [QueueName.EventsBackfill]: RawEvent<T>;
-  [QueueName.Actions]: EventAction<EventActionData>;
+  [QueueName.Actions]: EventActionRequest;
   [QueueName.Content]: ContentRequest;
 };
 

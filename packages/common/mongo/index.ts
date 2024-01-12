@@ -1,4 +1,4 @@
-import { Db, MongoClient as Client, Collection } from "mongodb";
+import { Db, MongoClient as Client, Collection, ObjectId } from "mongodb";
 import {
   Content,
   ContentData,
@@ -48,6 +48,15 @@ export class MongoClient {
     );
     return await collection.findOne({
       contentId,
+    });
+  };
+
+  findAction = async (actionId: string) => {
+    const collection = this.getCollection<EventAction<EventActionData>>(
+      MongoCollection.Actions,
+    );
+    return await collection.findOne({
+      _id: new ObjectId(actionId),
     });
   };
 

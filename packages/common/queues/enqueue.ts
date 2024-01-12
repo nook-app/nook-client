@@ -3,6 +3,7 @@ import {
   ContentRequest,
   EventAction,
   EventActionData,
+  EventActionRequest,
   EventSource,
   RawEvent,
 } from "../types";
@@ -60,15 +61,13 @@ export const publishContentRequests = async (requests: ContentRequest[]) => {
   );
 };
 
-export const publishActionRequests = async (
-  actions: EventAction<EventActionData>[],
-) => {
+export const publishActionRequests = async (requests: EventActionRequest[]) => {
   const queue = getQueue(QueueName.Actions);
   await queue.addBulk(
-    actions.map((action) => ({
-      name: `${action.eventId}-${action.type}`,
+    requests.map((action) => ({
+      name: action.actionId,
       data: action,
-      opts: { jobId: `${action.eventId}-${action.type}` },
+      opts: { jobId: action.actionId },
     })),
   );
 };
