@@ -4,17 +4,9 @@ import {
   ContentType,
   EventActionType,
 } from "@flink/common/types";
-import { ContentRelation, PrismaClient } from "@flink/common/prisma/relations";
-import { publishContentRequests } from "@flink/common/queues";
-import {
-  Content,
-  ContentRelationType,
-  PostData,
-  EventService,
-} from "@flink/common/types";
+import { handlePostRelations } from "@flink/common/relations";
+import { Content, PostData } from "@flink/common/types";
 import { ObjectId } from "mongodb";
-
-const prisma = new PrismaClient();
 
 export const insertPostContent = async (
   client: MongoClient,
@@ -26,14 +18,9 @@ export const insertPostContent = async (
     return existingContent;
   }
 
-  const relations = getContentRelations(contentId, data);
   const [content] = await Promise.all([
     insertPostContentWithEngagement(client, contentId, data),
-    prisma.contentRelation.createMany({
-      data: relations,
-      skipDuplicates: true,
-    }),
-    publishContentRequests(relations.map((r) => ({ contentId: r.contentId }))),
+    handlePostRelations(contentId, data),
   ]);
 
   return content;
@@ -101,42 +88,6 @@ const insertPostContentWithEngagement = async (
   await client.upsertContent(content);
 
   return content;
-};
-
-const getContentRelations = (contentId: string, data: PostData) => {
-  const relations: ContentRelation[] = data.embeds.map((embed) => ({
-    contentId: embed,
-    type: ContentRelationType.EMBED_OF,
-    targetContentId: contentId,
-    source: EventService.FARCASTER,
-  }));
-
-  relations.push({
-    contentId: data.rootParentId,
-    type: ContentRelationType.ROOT_PARENT_OF,
-    targetContentId: contentId,
-    source: EventService.FARCASTER,
-  });
-
-  if (data.parentId) {
-    relations.push({
-      contentId: data.parentId,
-      type: ContentRelationType.PARENT_OF,
-      targetContentId: contentId,
-      source: EventService.FARCASTER,
-    });
-  }
-
-  if (data.channelId) {
-    relations.push({
-      contentId: data.channelId,
-      type: ContentRelationType.CHANNEL_OF,
-      targetContentId: contentId,
-      source: EventService.FARCASTER,
-    });
-  }
-
-  return relations;
 };
 
 const getEntityIds = (post: PostData): ObjectId[] => {

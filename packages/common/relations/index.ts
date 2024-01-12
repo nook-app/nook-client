@@ -1,9 +1,8 @@
-import { ObjectId } from "mongodb";
 import { ContentRelation, PrismaClient } from "../prisma/relations";
 import { publishContentRequests } from "../queues";
 import {
-  Content,
   ContentRelationType,
+  ContentRequest,
   EntityRelationType,
   EventService,
   PostData,
@@ -11,23 +10,40 @@ import {
 
 const prisma = new PrismaClient();
 
-export const handlePostRelations = async ({
-  contentId,
-  data,
-}: Content<PostData>) => {
-  const relations: ContentRelation[] = data.embeds.map((embed) => ({
-    contentId: embed,
-    type: ContentRelationType.EMBED_OF,
-    targetContentId: contentId,
-    source: EventService.FARCASTER,
-  }));
+export const handlePostRelations = async (
+  contentId: string,
+  data: PostData,
+) => {
+  const relations: ContentRelation[] = [
+    {
+      contentId: data.rootParentId,
+      type: ContentRelationType.ROOT_PARENT_OF,
+      targetContentId: contentId,
+      source: EventService.FARCASTER,
+    },
+  ];
 
-  relations.push({
-    contentId: data.rootParentId,
-    type: ContentRelationType.ROOT_PARENT_OF,
-    targetContentId: contentId,
-    source: EventService.FARCASTER,
-  });
+  const requests: ContentRequest[] = [
+    {
+      contentId: data.rootParentId,
+      submitterId: data.rootParentEntityId.toString(),
+      timestamp: data.timestamp.toString(),
+    },
+  ];
+
+  for (const embed of data.embeds) {
+    relations.push({
+      contentId: embed,
+      type: ContentRelationType.EMBED_OF,
+      targetContentId: contentId,
+      source: EventService.FARCASTER,
+    });
+    requests.push({
+      submitterId: data.entityId.toString(),
+      contentId: embed,
+      timestamp: data.timestamp.toString(),
+    });
+  }
 
   if (data.parentId) {
     relations.push({
@@ -35,6 +51,11 @@ export const handlePostRelations = async ({
       type: ContentRelationType.PARENT_OF,
       targetContentId: contentId,
       source: EventService.FARCASTER,
+    });
+    requests.push({
+      submitterId: data.parentEntityId.toString(),
+      contentId: data.parentId,
+      timestamp: data.timestamp.toString(),
     });
   }
 
@@ -45,6 +66,11 @@ export const handlePostRelations = async ({
       targetContentId: contentId,
       source: EventService.FARCASTER,
     });
+    requests.push({
+      submitterId: data.entityId.toString(),
+      contentId: data.channelId,
+      timestamp: data.timestamp.toString(),
+    });
   }
 
   await Promise.all([
@@ -52,7 +78,7 @@ export const handlePostRelations = async ({
       data: relations,
       skipDuplicates: true,
     }),
-    publishContentRequests(relations.map((r) => ({ contentId: r.contentId }))),
+    publishContentRequests(requests),
   ]);
 };
 

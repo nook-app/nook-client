@@ -1,7 +1,7 @@
 import { ObjectId } from "mongodb";
 import { PostData } from "./contentTypes/post";
 
-export type ContentData = PostData;
+export type ContentData = PostData | undefined;
 
 export enum ContentType {
   POST = "POST",
@@ -25,6 +25,12 @@ export type ContentEngagement = {
 export type ContentRequest = {
   /** ID for the content in URI format */
   contentId: string;
+
+  /** Entity who first submitted the content */
+  submitterId: string;
+
+  /** Timestamp content was created at */
+  timestamp: string;
 };
 
 export type ContentBase = {

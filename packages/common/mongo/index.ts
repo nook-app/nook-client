@@ -127,8 +127,8 @@ export class MongoClient {
       },
     );
     return {
-      _id: updateResult.value._id,
-      created: updateResult.lastErrorObject?.updatedExisting || false,
+      _id: updateResult.value?._id || updateResult.lastErrorObject?.upserted,
+      created: updateResult.lastErrorObject?.updatedExisting,
     };
   };
 
