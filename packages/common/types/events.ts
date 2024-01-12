@@ -6,7 +6,7 @@ import {
   FarcasterUrlReactionData,
 } from "./sources/farcaster";
 
-export type UserEventData =
+export type EntityEventData =
   | FarcasterCastData
   | FarcasterCastReactionData
   | FarcasterLinkData
@@ -40,8 +40,8 @@ export type EventSource = {
   /** ID in the source system */
   id: string;
 
-  /** User ID in the source system */
-  userId: string;
+  /** ID of entity in the source system */
+  entityId: string;
 };
 
 /**
@@ -64,9 +64,9 @@ export type RawEvent<T> = {
 /**
  * Event object after being processed by the event service
  */
-export type UserEvent<T> = RawEvent<T> & {
-  /** Identity of user who triggered the event */
-  userId: ObjectId;
+export type EntityEvent<T> = RawEvent<T> & {
+  /** Identity of entity who triggered the event */
+  entityId: ObjectId;
 
   /** List of references to event actions parsed from this event */
   actions: ObjectId[];

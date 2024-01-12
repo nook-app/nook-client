@@ -151,9 +151,9 @@ const transformCast = (
   return {
     text: cast.text,
     timestamp: cast.timestamp,
-    userId: fidToIdentity[cast.fid]._id,
+    entityId: fidToIdentity[cast.fid]._id,
     mentions: cast.mentions.map(({ mention, mentionPosition }) => ({
-      userId: fidToIdentity[mention]._id,
+      entityId: fidToIdentity[mention]._id,
       position: parseInt(mentionPosition),
     })),
     embeds: cast.embeds,
@@ -162,7 +162,7 @@ const transformCast = (
       fid: cast.rootParentFid,
       hash: cast.rootParentHash,
     }),
-    rootParentUserId: fidToIdentity[cast.rootParentFid]._id,
+    rootParentEntityId: fidToIdentity[cast.rootParentFid]._id,
   };
 };
 

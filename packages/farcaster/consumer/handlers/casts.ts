@@ -404,7 +404,7 @@ export const transformToCastEvent = (
     service: EventService.FARCASTER,
     type,
     id: cast.hash,
-    userId: cast.fid.toString(),
+    entityId: cast.fid.toString(),
   };
   return {
     eventId: toJobId(source),

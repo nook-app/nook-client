@@ -5,7 +5,7 @@ import {
   ContentEngagementType,
   EventAction,
   EventActionData,
-  UserEvent,
+  EntityEvent,
 } from "../types";
 import { Identity, IdentitySocialPlatform } from "../types/identity";
 
@@ -130,8 +130,10 @@ export class MongoClient {
     await collection.insertOne(content);
   };
 
-  upsertEvent = async <T>(event: UserEvent<T>) => {
-    const collection = this.getCollection<UserEvent<T>>(MongoCollection.Events);
+  upsertEvent = async <T>(event: EntityEvent<T>) => {
+    const collection = this.getCollection<EntityEvent<T>>(
+      MongoCollection.Events,
+    );
     const updateResult = await collection.updateOne(
       {
         eventId: event.eventId,

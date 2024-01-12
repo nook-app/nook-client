@@ -2,8 +2,7 @@ import { QueueName, getWorker } from "@flink/common/queues";
 import { getContentHandler } from "./handlers";
 
 const run = async () => {
-  const handler = await getContentHandler();
-  const worker = getWorker(QueueName.Content, handler);
+  const worker = getWorker(QueueName.Content, await getContentHandler());
 
   worker.on("failed", (job, err) => {
     if (job) {

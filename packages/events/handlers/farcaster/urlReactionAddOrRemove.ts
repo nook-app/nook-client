@@ -5,7 +5,7 @@ import {
   FarcasterReactionType,
   FarcasterUrlReactionData,
   RawEvent,
-  UserEvent,
+  EntityEvent,
 } from "@flink/common/types";
 import { ObjectId } from "mongodb";
 import { ContentActionData } from "@flink/common/types/actionTypes";
@@ -34,7 +34,7 @@ export const handleUrlReactionAddOrRemove = async (
     rawEvent.data.fid,
   ]);
 
-  const userId = fidToIdentity[rawEvent.data.fid]._id;
+  const entityId = fidToIdentity[rawEvent.data.fid]._id;
   const contentId = rawEvent.data.url;
   const actions: EventAction<ContentActionData>[] = [
     {
@@ -42,22 +42,22 @@ export const handleUrlReactionAddOrRemove = async (
       eventId: rawEvent.eventId,
       source: rawEvent.source,
       timestamp: rawEvent.timestamp,
-      userId,
-      userIds: [userId],
+      entityId,
+      entityIds: [entityId],
       contentIds: [contentId],
       createdAt: new Date(),
       type: eventActionType,
       data: {
-        userId,
+        entityId,
         contentId,
       },
       deletedAt: isRemove ? new Date() : undefined,
     },
   ];
 
-  const event: UserEvent<FarcasterUrlReactionData> = {
+  const event: EntityEvent<FarcasterUrlReactionData> = {
     ...rawEvent,
-    userId,
+    entityId,
     actions: actions.map(({ _id }) => _id),
     createdAt: actions[0].createdAt,
   };

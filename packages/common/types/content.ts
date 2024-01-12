@@ -31,10 +31,10 @@ export type ContentBase = {
   /** ID for the content in URI format */
   contentId: string;
 
-  /** Identity of user who first submitted the content */
+  /** Identity of entity who first submitted the content */
   submitterId: ObjectId;
 
-  /** Identity of user who created the content */
+  /** Identity of entity who created the content */
   creatorId?: ObjectId;
 
   /** Timestamp content was created at */
@@ -43,8 +43,8 @@ export type ContentBase = {
   /** Engagement metrics */
   engagement?: ContentEngagement;
 
-  /** Set of userIds involved in this content */
-  userIds: ObjectId[];
+  /** Set of entityIds involved in this content */
+  entityIds: ObjectId[];
 
   /** Date record was created at */
   createdAt: Date;

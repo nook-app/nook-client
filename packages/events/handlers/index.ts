@@ -8,8 +8,8 @@ import {
   FarcasterLinkData,
   FarcasterUrlReactionData,
   RawEvent,
-  UserEvent,
-  UserEventData,
+  EntityEvent,
+  EntityEventData,
 } from "@flink/common/types";
 import { MongoClient } from "@flink/common/mongo";
 import { Job } from "bullmq";
@@ -27,7 +27,7 @@ export const getEventsHandler = async () => {
     const rawEvent = job.data;
 
     let response: {
-      event: UserEvent<UserEventData>;
+      event: EntityEvent<EntityEventData>;
       actions: EventAction<EventActionData>[];
     };
 
@@ -80,7 +80,7 @@ export const getEventsHandler = async () => {
     ]);
 
     console.log(
-      `[${rawEvent.source.service}] [${rawEvent.source.type}] processed ${rawEvent.source.id} by ${rawEvent.source.userId}`,
+      `[${rawEvent.source.service}] [${rawEvent.source.type}] processed ${rawEvent.source.id} by ${rawEvent.source.entityId}`,
     );
   };
 };

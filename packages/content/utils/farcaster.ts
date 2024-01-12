@@ -84,12 +84,12 @@ const insertContentWithEngagement = async (
 
   const content: Content<PostData> = {
     contentId,
-    submitterId: data.userId,
+    submitterId: data.entityId,
     createdAt: new Date(),
     timestamp: new Date(data.timestamp),
     type: data.parentId ? ContentType.REPLY : ContentType.POST,
     data,
-    userIds: getUserIds(data),
+    entityIds: getEntityIds(data),
     engagement,
   };
 
@@ -134,22 +134,22 @@ const getContentRelations = (contentId: string, data: PostData) => {
   return relations;
 };
 
-const getUserIds = (post: PostData): ObjectId[] => {
-  const userIds = [post.userId];
+const getEntityIds = (post: PostData): ObjectId[] => {
+  const entityIds = [post.entityId];
 
-  if (post.rootParentUserId && !userIds.includes(post.rootParentUserId)) {
-    userIds.push(post.rootParentUserId);
+  if (post.rootParentEntityId && !entityIds.includes(post.rootParentEntityId)) {
+    entityIds.push(post.rootParentEntityId);
   }
 
-  if (post.parentUserId && !userIds.includes(post.parentUserId)) {
-    userIds.push(post.parentUserId);
+  if (post.parentEntityId && !entityIds.includes(post.parentEntityId)) {
+    entityIds.push(post.parentEntityId);
   }
 
-  for (const { userId } of post.mentions) {
-    if (!userIds.includes(userId)) {
-      userIds.push(userId);
+  for (const { entityId } of post.mentions) {
+    if (!entityIds.includes(entityId)) {
+      entityIds.push(entityId);
     }
   }
 
-  return userIds;
+  return entityIds;
 };

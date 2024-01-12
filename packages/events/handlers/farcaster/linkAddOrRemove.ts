@@ -4,10 +4,10 @@ import {
   EventType,
   FarcasterLinkData,
   RawEvent,
-  UserEvent,
+  EntityEvent,
 } from "@flink/common/types";
 import { ObjectId } from "mongodb";
-import { UserActionData } from "@flink/common/types/actionTypes";
+import { EntityActionData } from "@flink/common/types/actionTypes";
 import { MongoClient } from "@flink/common/mongo";
 
 export const handleLinkAddOrRemove = async (
@@ -21,31 +21,31 @@ export const handleLinkAddOrRemove = async (
     rawEvent.data.targetFid,
   ]);
 
-  const userId = fidToIdentity[rawEvent.data.fid]._id;
-  const targetUserId = fidToIdentity[rawEvent.data.targetFid]._id;
+  const entityId = fidToIdentity[rawEvent.data.fid]._id;
+  const targetEntityId = fidToIdentity[rawEvent.data.targetFid]._id;
 
-  const actions: EventAction<UserActionData>[] = [
+  const actions: EventAction<EntityActionData>[] = [
     {
       _id: new ObjectId(),
       eventId: rawEvent.eventId,
       source: rawEvent.source,
       timestamp: rawEvent.timestamp,
-      userId,
-      userIds: [userId, targetUserId],
+      entityId,
+      entityIds: [entityId, targetEntityId],
       contentIds: [],
       createdAt: new Date(),
       type: isRemove ? EventActionType.UNFOLLOW : EventActionType.FOLLOW,
       data: {
-        userId,
-        targetUserId,
+        entityId,
+        targetEntityId,
       },
       deletedAt: isRemove ? new Date() : undefined,
     },
   ];
 
-  const event: UserEvent<FarcasterLinkData> = {
+  const event: EntityEvent<FarcasterLinkData> = {
     ...rawEvent,
-    userId,
+    entityId,
     actions: actions.map(({ _id }) => _id),
     createdAt: actions[0].createdAt,
   };

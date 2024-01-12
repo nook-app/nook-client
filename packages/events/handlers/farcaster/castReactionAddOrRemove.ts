@@ -7,7 +7,7 @@ import {
   FarcasterReactionType,
   PostActionData,
   RawEvent,
-  UserEvent,
+  EntityEvent,
 } from "@flink/common/types";
 import { ObjectId } from "mongodb";
 import { toFarcasterURI } from "@flink/farcaster/utils";
@@ -39,7 +39,7 @@ export const handleCastReactionAddOrRemove = async (
   }
 
   const identities = await client.findOrInsertIdentities([rawEvent.data.fid]);
-  const userId = identities[rawEvent.data.fid]._id;
+  const entityId = identities[rawEvent.data.fid]._id;
 
   const actions: EventAction<PostActionData>[] = [
     {
@@ -47,14 +47,14 @@ export const handleCastReactionAddOrRemove = async (
       eventId: rawEvent.eventId,
       source: rawEvent.source,
       timestamp: rawEvent.timestamp,
-      userId,
-      userIds: Array.from(
+      entityId,
+      entityIds: Array.from(
         new Set([
-          userId,
-          data.userId,
-          data.parentUserId,
-          data.rootParentUserId,
-          ...data.mentions.map(({ userId }) => userId),
+          entityId,
+          data.entityId,
+          data.parentEntityId,
+          data.rootParentEntityId,
+          ...data.mentions.map(({ entityId }) => entityId),
         ]),
       ).filter(Boolean),
       contentIds: Array.from(
@@ -69,7 +69,7 @@ export const handleCastReactionAddOrRemove = async (
       createdAt: new Date(),
       type,
       data: {
-        userId: data.userId,
+        entityId: data.entityId,
         contentId,
         content: data,
       },
@@ -81,9 +81,9 @@ export const handleCastReactionAddOrRemove = async (
     },
   ];
 
-  const event: UserEvent<FarcasterCastReactionData> = {
+  const event: EntityEvent<FarcasterCastReactionData> = {
     ...rawEvent,
-    userId,
+    entityId,
     actions: actions.map(({ _id }) => _id),
     createdAt: new Date(),
   };

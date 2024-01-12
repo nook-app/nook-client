@@ -20,12 +20,12 @@ model ContentRelation {
     @@index([targetContentId, type, source])
 }
 
-model UserRelation {
-    userId       String
-    type         String
-    targetUserId String
-    source       String
+model EntityRelation {
+    entityId       String
+    type           String
+    targetEntityId String
+    source         String
 
-    @@id([userId, type, source, targetUserId])
-    @@index([targetUserId, type, source])
+    @@id([entityId, type, source, targetEntityId])
+    @@index([targetEntityId, type, source])
 }

@@ -252,7 +252,7 @@ export const transformToCastReactionEvent = (
     service: EventService.FARCASTER,
     type,
     id: reaction.hash,
-    userId: reaction.fid.toString(),
+    entityId: reaction.fid.toString(),
   };
 
   return {
@@ -291,7 +291,7 @@ const transformToUrlReactionEvent = (
     service: EventService.FARCASTER,
     type,
     id: reaction.hash,
-    userId: reaction.fid.toString(),
+    entityId: reaction.fid.toString(),
   };
 
   return {

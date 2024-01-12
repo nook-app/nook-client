@@ -144,7 +144,7 @@ export const getActionsHandler = async () => {
     }
 
     console.log(
-      `[${job.data.type}] processed ${job.data.source.id} by ${job.data.userId}`,
+      `[${job.data.type}] processed ${job.data.source.id} by ${job.data.entityId}`,
     );
   };
 };

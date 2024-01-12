@@ -1,5 +1,5 @@
 import {
-  UserEvent,
+  EntityEvent,
   EventAction,
   EventActionType,
   FarcasterCastData,
@@ -38,13 +38,13 @@ export const handleCastAddOrRemove = async (
       eventId: rawEvent.eventId,
       source: rawEvent.source,
       timestamp: rawEvent.timestamp,
-      userId: data.userId,
-      userIds: Array.from(
+      entityId: data.entityId,
+      entityIds: Array.from(
         new Set([
-          data.userId,
-          data.parentUserId,
-          data.rootParentUserId,
-          ...data.mentions.map(({ userId }) => userId),
+          data.entityId,
+          data.parentEntityId,
+          data.rootParentEntityId,
+          ...data.mentions.map(({ entityId }) => entityId),
         ]),
       ).filter(Boolean),
       contentIds: Array.from(
@@ -59,7 +59,7 @@ export const handleCastAddOrRemove = async (
       createdAt: new Date(),
       type,
       data: {
-        userId: data.userId,
+        entityId: data.entityId,
         contentId,
         content: data,
       },
@@ -71,9 +71,9 @@ export const handleCastAddOrRemove = async (
     },
   ];
 
-  const event: UserEvent<FarcasterCastData> = {
+  const event: EntityEvent<FarcasterCastData> = {
     ...rawEvent,
-    userId: data.userId,
+    entityId: data.entityId,
     actions: actions.map(({ _id }) => _id),
     createdAt: new Date(),
   };

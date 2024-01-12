@@ -3,13 +3,13 @@ import { EventSource } from "./events";
 import {
   ContentActionData,
   PostActionData,
-  UserActionData,
+  EntityActionData,
 } from "./actionTypes";
 
 export type EventActionData =
   | PostActionData
   | ContentActionData
-  | UserActionData;
+  | EntityActionData;
 
 /**
  * Supported actions for events
@@ -43,14 +43,14 @@ export type EventAction<T> = {
   /** Timestamp for when the event occurred */
   timestamp: Date;
 
-  /** Identity of user who triggered the event */
-  userId: ObjectId;
+  /** Identity of entity who triggered the event */
+  entityId: ObjectId;
 
   /** Set of contentIds involved in this action */
   contentIds: string[];
 
-  /** Set of userIds involved in this action */
-  userIds: ObjectId[];
+  /** Set of entityIds involved in this action */
+  entityIds: ObjectId[];
 
   /** Optional parent of the action */
   parent?: ObjectId;

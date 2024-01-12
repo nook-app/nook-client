@@ -104,7 +104,7 @@ const transformToLinkEvent = (
     service: EventService.FARCASTER,
     type,
     id: link.hash,
-    userId: link.fid.toString(),
+    entityId: link.fid.toString(),
   };
   return {
     eventId: toJobId(source),
