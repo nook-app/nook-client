@@ -22,11 +22,23 @@ export const getActionsHandler = async () => {
     switch (data.type) {
       case EventActionType.POST: {
         const action = data as EventAction<PostActionData>;
-        await insertPostContent(
-          client,
-          action.data.contentId,
-          action.data.content,
-        );
+        if (action.data.content) {
+          await insertPostContent(
+            client,
+            action.data.contentId,
+            action.data.content,
+          );
+        }
+        if (job.data.created) {
+          await Promise.all(
+            action.data.content.embeds.map((contentId) =>
+              client.incrementEngagement(
+                contentId,
+                ContentEngagementType.EMBEDS,
+              ),
+            ),
+          );
+        }
         break;
       }
       case EventActionType.UNPOST: {
@@ -34,16 +46,25 @@ export const getActionsHandler = async () => {
         await Promise.all([
           client.markActionsDeleted(action.source.id),
           client.markContentDeleted(action.data.contentId),
+          ...action.data.content.embeds.map((contentId) =>
+            client.incrementEngagement(
+              contentId,
+              ContentEngagementType.EMBEDS,
+              true,
+            ),
+          ),
         ]);
         break;
       }
       case EventActionType.REPLY: {
         const action = data as EventAction<PostActionData>;
-        await insertPostContent(
-          client,
-          action.data.contentId,
-          action.data.content,
-        );
+        if (action.data.content) {
+          await insertPostContent(
+            client,
+            action.data.contentId,
+            action.data.content,
+          );
+        }
         if (job.data.created) {
           await Promise.all([
             void client.incrementEngagement(
@@ -53,6 +74,12 @@ export const getActionsHandler = async () => {
             void client.incrementEngagement(
               action.data.content.rootParentId,
               ContentEngagementType.ROOT_REPLIES,
+            ),
+            ...action.data.content.embeds.map((contentId) =>
+              client.incrementEngagement(
+                contentId,
+                ContentEngagementType.EMBEDS,
+              ),
             ),
           ]);
         }
@@ -76,6 +103,13 @@ export const getActionsHandler = async () => {
               ContentEngagementType.ROOT_REPLIES,
               true,
             ),
+            ...action.data.content.embeds.map((contentId) =>
+              client.incrementEngagement(
+                contentId,
+                ContentEngagementType.EMBEDS,
+                true,
+              ),
+            ),
           );
         }
         await Promise.all(promises);
@@ -83,11 +117,13 @@ export const getActionsHandler = async () => {
       }
       case EventActionType.LIKE: {
         const action = data as EventAction<PostActionData>;
-        await insertPostContent(
-          client,
-          action.data.contentId,
-          action.data.content,
-        );
+        if (action.data.content) {
+          await insertPostContent(
+            client,
+            action.data.contentId,
+            action.data.content,
+          );
+        }
         if (job.data.created) {
           await client.incrementEngagement(
             action.data.contentId,
@@ -113,11 +149,13 @@ export const getActionsHandler = async () => {
       }
       case EventActionType.REPOST: {
         const action = data as EventAction<PostActionData>;
-        await insertPostContent(
-          client,
-          action.data.contentId,
-          action.data.content,
-        );
+        if (action.data.content) {
+          await insertPostContent(
+            client,
+            action.data.contentId,
+            action.data.content,
+          );
+        }
         if (job.data.created) {
           await client.incrementEngagement(
             action.data.contentId,

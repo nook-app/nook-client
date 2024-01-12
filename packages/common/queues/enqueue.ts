@@ -1,8 +1,6 @@
 import { QueueName, getQueue } from ".";
 import {
   ContentRequest,
-  EventAction,
-  EventActionData,
   EventActionRequest,
   EventSource,
   RawEvent,
