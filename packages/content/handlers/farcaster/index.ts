@@ -1,6 +1,6 @@
 import { MongoClient } from "@flink/common/mongo";
 import { generateFarcasterPostByContentId } from "@flink/common/utils";
-import { createPostContent } from "../../utils";
+import { insertPostContent } from "../../utils";
 
 export const handleFarcasterContent = async (
   client: MongoClient,
@@ -16,5 +16,5 @@ export const handleFarcasterContent = async (
     return;
   }
 
-  return await createPostContent(client, contentId, data);
+  return await insertPostContent(client, contentId, data);
 };

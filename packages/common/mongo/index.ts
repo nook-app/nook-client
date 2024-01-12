@@ -135,6 +135,19 @@ export class MongoClient {
     );
   };
 
+  markActionsUndeleted = async (id: string) => {
+    this.getCollection(MongoCollection.Actions).updateOne(
+      {
+        "source.id": id,
+      },
+      {
+        $set: {
+          deletedAt: null,
+        },
+      },
+    );
+  };
+
   markContentDeleted = async (contentId: string) => {
     this.getCollection(MongoCollection.Content).updateOne(
       {
@@ -143,6 +156,19 @@ export class MongoClient {
       {
         $set: {
           deletedAt: new Date(),
+        },
+      },
+    );
+  };
+
+  markContentUndeleted = async (contentId: string) => {
+    this.getCollection(MongoCollection.Content).updateOne(
+      {
+        contentId,
+      },
+      {
+        $set: {
+          deletedAt: null,
         },
       },
     );

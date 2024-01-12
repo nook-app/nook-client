@@ -16,14 +16,19 @@ import { ObjectId } from "mongodb";
 
 const prisma = new PrismaClient();
 
-export const createPostContent = async (
+export const insertPostContent = async (
   client: MongoClient,
   contentId: string,
   data: PostData,
 ) => {
+  const existingContent = await client.findContent(contentId);
+  if (existingContent) {
+    return existingContent;
+  }
+
   const relations = getContentRelations(contentId, data);
   const [content] = await Promise.all([
-    insertContentWithEngagement(client, contentId, data),
+    insertPostContentWithEngagement(client, contentId, data),
     prisma.contentRelation.createMany({
       data: relations,
       skipDuplicates: true,
@@ -34,7 +39,7 @@ export const createPostContent = async (
   return content;
 };
 
-const insertContentWithEngagement = async (
+const insertPostContentWithEngagement = async (
   client: MongoClient,
   contentId: string,
   data: PostData,
@@ -93,7 +98,7 @@ const insertContentWithEngagement = async (
     engagement,
   };
 
-  await client.insertContent(content);
+  await client.upsertContent(content);
 
   return content;
 };
