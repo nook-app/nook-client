@@ -1,4 +1,4 @@
-import { Message } from "@farcaster/hub-nodejs";
+import { HubRpcClient, Message } from "@farcaster/hub-nodejs";
 import { PrismaClient, FarcasterLink } from "@flink/common/prisma/farcaster";
 import {
   timestampToDate,
@@ -81,6 +81,40 @@ const messageToLink = (message: Message): FarcasterLink | undefined => {
     signatureScheme: message.signatureScheme,
     signature: bufferToHex(message.signature),
   };
+};
+
+export const getAndBackfillLinks = async (
+  client: HubRpcClient,
+  fids: string[],
+) => {
+  const messages = (
+    await Promise.all([
+      ...fids.map(async (fid) => {
+        const message = await client.getLinksByFid({
+          fid: parseInt(fid),
+        });
+
+        if (message.isErr()) {
+          return undefined;
+        }
+
+        return message.value.messages;
+      }),
+      ...fids.map(async (fid) => {
+        const message = await client.getLinksByTarget({
+          targetFid: parseInt(fid),
+        });
+
+        if (message.isErr()) {
+          return undefined;
+        }
+
+        return message.value.messages;
+      }),
+    ])
+  ).filter(Boolean);
+
+  return await backfillLinks(messages.flat());
 };
 
 export const backfillLinks = async (messages: Message[]) => {

@@ -3,7 +3,7 @@ import {
   FarcasterUserData,
 } from "@flink/common/prisma/farcaster";
 import { MessageHandlerArgs, bufferToHex } from "../../utils";
-import { Message } from "@farcaster/hub-nodejs";
+import { HubRpcClient, Message } from "@farcaster/hub-nodejs";
 
 const prisma = new PrismaClient();
 
@@ -27,7 +27,9 @@ export const handleUserDataAdd = async ({ message }: MessageHandlerArgs) => {
   );
 };
 
-const messageToUserData = (message: Message): FarcasterUserData | undefined => {
+export const messageToUserData = (
+  message: Message,
+): FarcasterUserData | undefined => {
   if (!message.data?.userDataBody) return;
 
   const fid = BigInt(message.data.fid);
@@ -44,6 +46,29 @@ const messageToUserData = (message: Message): FarcasterUserData | undefined => {
   };
 };
 
+export const getAndBackfillUserDatas = async (
+  client: HubRpcClient,
+  fids: string[],
+) => {
+  const messages = (
+    await Promise.all(
+      fids.map(async (fid) => {
+        const message = await client.getAllUserDataMessagesByFid({
+          fid: parseInt(fid),
+        });
+
+        if (message.isErr()) {
+          return undefined;
+        }
+
+        return message.value.messages;
+      }),
+    )
+  ).filter(Boolean);
+
+  return await backfillUserDatas(messages.flat());
+};
+
 export const backfillUserDatas = async (messages: Message[]) => {
   const userDatas = messages.map(messageToUserData).filter(Boolean);
   await prisma.farcasterUserData.deleteMany({
@@ -58,4 +83,5 @@ export const backfillUserDatas = async (messages: Message[]) => {
     data: userDatas,
     skipDuplicates: true,
   });
+  return userDatas;
 };

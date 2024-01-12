@@ -10,13 +10,13 @@ import {
   Content,
   ContentRelationType,
   PostData,
-  RelationSource,
+  EventService,
 } from "@flink/common/types";
 import { ObjectId } from "mongodb";
 
 const prisma = new PrismaClient();
 
-export const createFarcasterContent = async (
+export const createPostContent = async (
   client: MongoClient,
   contentId: string,
   data: PostData,
@@ -103,14 +103,14 @@ const getContentRelations = (contentId: string, data: PostData) => {
     contentId: embed,
     type: ContentRelationType.EMBED_OF,
     targetContentId: contentId,
-    source: RelationSource.FARCASTER,
+    source: EventService.FARCASTER,
   }));
 
   relations.push({
     contentId: data.rootParentId,
     type: ContentRelationType.ROOT_PARENT_OF,
     targetContentId: contentId,
-    source: RelationSource.FARCASTER,
+    source: EventService.FARCASTER,
   });
 
   if (data.parentId) {
@@ -118,7 +118,7 @@ const getContentRelations = (contentId: string, data: PostData) => {
       contentId: data.parentId,
       type: ContentRelationType.PARENT_OF,
       targetContentId: contentId,
-      source: RelationSource.FARCASTER,
+      source: EventService.FARCASTER,
     });
   }
 
@@ -127,7 +127,7 @@ const getContentRelations = (contentId: string, data: PostData) => {
       contentId: data.channelId,
       type: ContentRelationType.CHANNEL_OF,
       targetContentId: contentId,
-      source: RelationSource.FARCASTER,
+      source: EventService.FARCASTER,
     });
   }
 

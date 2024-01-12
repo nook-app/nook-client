@@ -10,6 +10,7 @@ import {
 import { ObjectId } from "mongodb";
 import { ContentActionData } from "@flink/common/types/actionTypes";
 import { MongoClient } from "@flink/common/mongo";
+import { getOrCreateEntitiesForFids } from "@flink/common/entity";
 
 export const handleUrlReactionAddOrRemove = async (
   client: MongoClient,
@@ -30,7 +31,7 @@ export const handleUrlReactionAddOrRemove = async (
       : EventActionType.REPOST;
   }
 
-  const fidToIdentity = await client.findOrInsertIdentities([
+  const fidToIdentity = await getOrCreateEntitiesForFids(client, [
     rawEvent.data.fid,
   ]);
 

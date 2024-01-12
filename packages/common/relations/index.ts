@@ -1,11 +1,6 @@
 import { ContentRelation, PrismaClient } from "../prisma/relations";
 import { publishContentRequests } from "../queues";
-import {
-  Content,
-  ContentRelationType,
-  PostData,
-  RelationSource,
-} from "../types";
+import { Content, ContentRelationType, EventService, PostData } from "../types";
 
 const prisma = new PrismaClient();
 
@@ -17,14 +12,14 @@ export const handlePostRelations = async ({
     contentId: embed,
     type: ContentRelationType.EMBED_OF,
     targetContentId: contentId,
-    source: RelationSource.FARCASTER,
+    source: EventService.FARCASTER,
   }));
 
   relations.push({
     contentId: data.rootParentId,
     type: ContentRelationType.ROOT_PARENT_OF,
     targetContentId: contentId,
-    source: RelationSource.FARCASTER,
+    source: EventService.FARCASTER,
   });
 
   if (data.parentId) {
@@ -32,7 +27,7 @@ export const handlePostRelations = async ({
       contentId: data.parentId,
       type: ContentRelationType.PARENT_OF,
       targetContentId: contentId,
-      source: RelationSource.FARCASTER,
+      source: EventService.FARCASTER,
     });
   }
 
@@ -41,7 +36,7 @@ export const handlePostRelations = async ({
       contentId: data.channelId,
       type: ContentRelationType.CHANNEL_OF,
       targetContentId: contentId,
-      source: RelationSource.FARCASTER,
+      source: EventService.FARCASTER,
     });
   }
 

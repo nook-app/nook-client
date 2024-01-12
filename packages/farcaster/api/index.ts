@@ -1,11 +1,17 @@
 import fastify, { FastifyRequest } from "fastify";
-import { PrismaClient } from "@flink/common/prisma/farcaster";
-import { getSSLHubRpcClient } from "@farcaster/hub-nodejs";
+import {
+  FarcasterUserData,
+  PrismaClient,
+} from "@flink/common/prisma/farcaster";
+import { UserDataType, getSSLHubRpcClient } from "@farcaster/hub-nodejs";
 import {
   getAndBackfillCasts,
   transformToCastData,
 } from "../consumer/handlers/casts";
 import { getAndBackfillReactions } from "../consumer/handlers/reactions";
+import { SocialAccountMetadata } from "@flink/common/types";
+import { getAndBackfillUserDatas } from "../consumer/handlers/users";
+import { getAndBackfillLinks } from "../consumer/handlers/links";
 
 const prisma = new PrismaClient();
 
@@ -109,6 +115,78 @@ const run = async () => {
 
       reply.send({
         casts: ids.map(({ fid, hash }) => hashToCast[`${fid}-${hash}`]),
+      });
+    },
+  );
+
+  server.post(
+    "/users",
+    {
+      schema: {
+        body: {
+          type: "object",
+          properties: {
+            fids: {
+              type: "array",
+              items: {
+                type: "string",
+              },
+            },
+          },
+        },
+      },
+    },
+    async (
+      request: FastifyRequest<{
+        Body: { fids: string[] };
+      }>,
+      reply,
+    ) => {
+      const userDatas = await prisma.farcasterUserData.findMany({
+        where: {
+          fid: {
+            in: request.body.fids.map((fid) => Number(fid)),
+          },
+        },
+      });
+
+      const existingFids = Array.from(
+        new Set(userDatas.map(({ fid }) => fid.toString())),
+      );
+      const missingFids = request.body.fids.filter(
+        (fid) => !existingFids.includes(fid),
+      );
+
+      if (missingFids.length > 0) {
+        userDatas.push(...(await getAndBackfillUserDatas(client, missingFids)));
+        await getAndBackfillLinks(client, missingFids);
+      }
+
+      const groupedUserDatas = userDatas.reduce(
+        (acc, userData) => {
+          const fid = userData.fid.toString();
+          if (!acc[fid]) {
+            acc[fid] = [];
+          }
+          acc[fid].push(userData);
+          return acc;
+        },
+        {} as Record<string, FarcasterUserData[]>,
+      );
+
+      reply.send({
+        users: request.body.fids.map((fid) => {
+          const data = groupedUserDatas[fid];
+          if (!data) return;
+          return {
+            username: data.find((d) => d.type === UserDataType.USERNAME)?.value,
+            pfp: data.find((d) => d.type === UserDataType.PFP)?.value,
+            displayName: data.find((d) => d.type === UserDataType.DISPLAY)
+              ?.value,
+            bio: data.find((d) => d.type === UserDataType.BIO)?.value,
+            url: data.find((d) => d.type === UserDataType.URL)?.value,
+          } as SocialAccountMetadata;
+        }),
       });
     },
   );

@@ -38,16 +38,34 @@ export const getCasts = async ({
   });
 
   if (!response.ok) {
-    if (response.status !== 404) {
-      console.log(await response.text());
-      throw new Error(
-        `Failed getting cast with ${response.status} for ${fidHashes} and ${uris}`,
-      );
-    }
-    return undefined;
+    throw new Error(
+      `Failed getting cast with ${response.status} for ${fidHashes} and ${uris}`,
+    );
   }
 
   const { casts } = await response.json();
 
   return casts;
+};
+
+export const getUsers = async (fids: string[]) => {
+  if (!fids?.length) return [];
+
+  const response = await fetch(`${process.env.FARCASTER_SERVICE_URL}/users`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      fids,
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed getting cast with ${response.status} for ${fids}`);
+  }
+
+  const { users } = await response.json();
+
+  return users;
 };

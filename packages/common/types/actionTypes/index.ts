@@ -15,6 +15,12 @@ export type EntityActionData = {
 
   /** Identity of entity who was acted on */
   targetEntityId: ObjectId;
+
+  /** Source identity of entity acting */
+  sourceEntityId: string;
+
+  /** Source identity of entity who was acted on */
+  sourceTargetEntityId: string;
 };
 
 export type PostActionData = ContentActionData & {

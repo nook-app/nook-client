@@ -3,10 +3,12 @@ import {
   EventAction,
   EventActionData,
   EventActionType,
+  Entity,
   PostActionData,
+  EntityActionData,
 } from "@flink/common/types";
-import { MongoClient } from "@flink/common/mongo";
-import { createFarcasterContent } from "@flink/content/utils";
+import { MongoClient, MongoCollection } from "@flink/common/mongo";
+import { createPostContent } from "@flink/content/utils";
 import { Job } from "bullmq";
 
 export const getActionsHandler = async () => {
@@ -19,7 +21,7 @@ export const getActionsHandler = async () => {
     switch (job.data.type) {
       case EventActionType.POST: {
         const action = job.data as EventAction<PostActionData>;
-        await createFarcasterContent(
+        await createPostContent(
           client,
           action.data.contentId,
           action.data.content,
@@ -37,7 +39,7 @@ export const getActionsHandler = async () => {
       case EventActionType.REPLY: {
         const action = job.data as EventAction<PostActionData>;
         if (!(await client.findContent(action.data.contentId))) {
-          await createFarcasterContent(
+          await createPostContent(
             client,
             action.data.contentId,
             action.data.content,
@@ -78,7 +80,7 @@ export const getActionsHandler = async () => {
       case EventActionType.LIKE: {
         const action = job.data as EventAction<PostActionData>;
         if (!(await client.findContent(action.data.contentId))) {
-          await createFarcasterContent(
+          await createPostContent(
             client,
             action.data.contentId,
             action.data.content,
@@ -107,7 +109,7 @@ export const getActionsHandler = async () => {
       case EventActionType.REPOST: {
         const action = job.data as EventAction<PostActionData>;
         if (!(await client.findContent(action.data.contentId))) {
-          await createFarcasterContent(
+          await createPostContent(
             client,
             action.data.contentId,
             action.data.content,
@@ -134,9 +136,56 @@ export const getActionsHandler = async () => {
         break;
       }
       case EventActionType.FOLLOW:
+        if (created) {
+          const action = job.data as EventAction<EntityActionData>;
+          const collection = client.getCollection<Entity>(
+            MongoCollection.Entity,
+          );
+          await Promise.all([
+            await collection.updateOne(
+              {
+                _id: action.data.entityId,
+                "farcasterAccounts.id": action.data.sourceEntityId,
+              },
+              { $inc: { "farcasterAccounts.$.following": 1 } },
+            ),
+            await collection.updateOne(
+              {
+                _id: action.data.targetEntityId,
+                "farcasterAccounts.id": action.data.sourceTargetEntityId,
+              },
+              { $inc: { "farcasterAccounts.$.followers": 1 } },
+            ),
+          ]);
+        }
         break;
       case EventActionType.UNFOLLOW: {
-        await client.markActionsDeleted(job.data.source.id);
+        const promises = [client.markActionsDeleted(job.data.source.id)];
+        if (created) {
+          const action = job.data as EventAction<EntityActionData>;
+          const collection = client.getCollection<Entity>(
+            MongoCollection.Entity,
+          );
+          promises.push(
+            void collection.updateOne(
+              {
+                _id: action.data.entityId,
+                "farcasterAccounts.id": action.data.sourceEntityId,
+              },
+              { $inc: { "farcasterAccounts.$.following": 1 } },
+            ),
+          );
+          promises.push(
+            void collection.updateOne(
+              {
+                _id: action.data.targetEntityId,
+                "farcasterAccounts.id": action.data.sourceTargetEntityId,
+              },
+              { $inc: { "farcasterAccounts.$.followers": 1 } },
+            ),
+          );
+        }
+        await Promise.all(promises);
         break;
       }
       default:

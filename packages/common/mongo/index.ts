@@ -1,4 +1,4 @@
-import { Db, MongoClient as Client, Collection, ObjectId } from "mongodb";
+import { Db, MongoClient as Client, Collection } from "mongodb";
 import {
   Content,
   ContentData,
@@ -7,7 +7,6 @@ import {
   EventActionData,
   EntityEvent,
 } from "../types";
-import { Identity, IdentitySocialPlatform } from "../types/identity";
 
 const DB_NAME = "flink";
 
@@ -15,7 +14,7 @@ export enum MongoCollection {
   Events = "events",
   Actions = "actions",
   Content = "content",
-  Identity = "identity",
+  Entity = "entity",
 }
 
 export class MongoClient {
@@ -50,59 +49,6 @@ export class MongoClient {
     return await collection.findOne({
       contentId,
     });
-  };
-
-  findOrInsertIdentities = async (fids: string[]) => {
-    const collection = this.getCollection<Identity>(MongoCollection.Identity);
-    const existingIdentities = await collection
-      .find({
-        socialAccounts: {
-          $elemMatch: {
-            platform: IdentitySocialPlatform.FARCASTER,
-            id: {
-              $in: fids,
-            },
-          },
-        },
-      })
-      .toArray();
-
-    const identities = existingIdentities.reduce(
-      (acc, identity) => {
-        for (const account of identity.socialAccounts) {
-          if (account.platform !== IdentitySocialPlatform.FARCASTER) {
-            continue;
-          }
-          acc[account.id] = identity;
-        }
-        return acc;
-      },
-      {} as Record<string, Identity>,
-    );
-
-    const existingFids = new Set(Object.keys(identities));
-    const missingFids = fids.filter((fid) => !existingFids.has(fid));
-
-    if (missingFids.length > 0) {
-      const newIdentities = missingFids.map((fid) => ({
-        _id: new ObjectId(),
-        socialAccounts: [
-          {
-            platform: IdentitySocialPlatform.FARCASTER,
-            id: fid,
-            following: 0,
-            followers: 0,
-          },
-        ],
-        createdAt: new Date(),
-      }));
-      await collection.insertMany(newIdentities);
-      for (const identity of newIdentities) {
-        identities[identity.socialAccounts[0].id] = identity;
-      }
-    }
-
-    return identities;
   };
 
   upsertContent = async (content: Content<ContentData>) => {

@@ -9,6 +9,7 @@ import {
 import { ObjectId } from "mongodb";
 import { EntityActionData } from "@flink/common/types/actionTypes";
 import { MongoClient } from "@flink/common/mongo";
+import { getOrCreateEntitiesForFids } from "@flink/common/entity";
 
 export const handleLinkAddOrRemove = async (
   client: MongoClient,
@@ -16,7 +17,7 @@ export const handleLinkAddOrRemove = async (
 ) => {
   const isRemove = rawEvent.source.type === EventType.LINK_REMOVE;
 
-  const fidToIdentity = await client.findOrInsertIdentities([
+  const fidToIdentity = await getOrCreateEntitiesForFids(client, [
     rawEvent.data.fid,
     rawEvent.data.targetFid,
   ]);
@@ -38,6 +39,8 @@ export const handleLinkAddOrRemove = async (
       data: {
         entityId,
         targetEntityId,
+        sourceEntityId: rawEvent.data.fid,
+        sourceTargetEntityId: rawEvent.data.targetFid,
       },
       deletedAt: isRemove ? new Date() : undefined,
     },

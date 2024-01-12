@@ -12,6 +12,7 @@ import {
 import { ObjectId } from "mongodb";
 import { toFarcasterURI } from "@flink/farcaster/utils";
 import { getFarcasterPostByContentId } from "@flink/common/utils";
+import { getOrCreateEntitiesForFids } from "@flink/common/entity";
 
 export const handleCastReactionAddOrRemove = async (
   client: MongoClient,
@@ -38,7 +39,9 @@ export const handleCastReactionAddOrRemove = async (
         : EventActionType.UNREPOST;
   }
 
-  const identities = await client.findOrInsertIdentities([rawEvent.data.fid]);
+  const identities = await getOrCreateEntitiesForFids(client, [
+    rawEvent.data.fid,
+  ]);
   const entityId = identities[rawEvent.data.fid]._id;
 
   const actions: EventAction<PostActionData>[] = [

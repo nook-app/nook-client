@@ -1,22 +1,26 @@
 import { ObjectId } from "mongodb";
 
-export enum IdentitySocialPlatform {
-  FARCASTER = "FARCASTER",
-}
+export type SocialAccountMetadata = {
+  username?: string;
+  pfp?: string;
+  displayName?: string;
+  bio?: string;
+  url?: string;
+};
 
-export type IdentitySocialAccount = {
-  platform: IdentitySocialPlatform;
+export type SocialAccount = {
   id: string;
+  metadata?: SocialAccountMetadata;
   following: number;
   followers: number;
 };
 
-export type Identity = {
+export type Entity = {
   /** DB id */
   _id: ObjectId;
 
   /** Farcaster ids */
-  socialAccounts: IdentitySocialAccount[];
+  farcasterAccounts: SocialAccount[];
 
   /** Date record was created */
   createdAt: Date;

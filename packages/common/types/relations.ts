@@ -1,7 +1,3 @@
-export enum RelationSource {
-  FARCASTER = "FARCASTER",
-}
-
 export enum ContentRelationType {
   PARENT_OF = "PARENT_OF",
   ROOT_PARENT_OF = "ROOT_PARENT_OF",
@@ -9,6 +5,6 @@ export enum ContentRelationType {
   EMBED_OF = "EMBED_OF",
 }
 
-export enum UserRelationType {
+export enum EntityRelationType {
   FOLLOWER_OF = "FOLLOWER_OF",
 }
