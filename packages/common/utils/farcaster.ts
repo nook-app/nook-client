@@ -81,6 +81,7 @@ const generateFarcasterPost = async (
     fid: cast.parentFid,
     hash: cast.parentHash,
   });
+  data.parentEntityId = identities[cast.parentFid]._id;
 
   return data;
 };
@@ -140,7 +141,9 @@ const getParentAndRootCasts = async (
   }
 
   return {
-    existingParent,
+    existingParent: existingParent
+      ? { ...existingParent, parent: undefined }
+      : undefined,
     existingRoot,
     newParent,
     newRoot,
