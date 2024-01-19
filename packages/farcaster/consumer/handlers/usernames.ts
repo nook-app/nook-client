@@ -18,7 +18,6 @@ const messageToUsernameProof = (
   return {
     fid: BigInt(message.fid),
     username: Buffer.from(message.name).toString(),
-    // todo: is this an eth address?
     owner: bufferToHexAddress(message.owner),
     signature: bufferToHex(message.signature),
     type: message.type,

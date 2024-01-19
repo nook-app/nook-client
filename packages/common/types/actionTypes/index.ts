@@ -1,6 +1,5 @@
 import { ObjectId } from "mongodb";
 import { PostData } from "../contentTypes";
-import { FarcasterVerificationType, UserDataType } from "../sources";
 
 export type ContentActionData = {
   /** Entity acting */
@@ -29,20 +28,41 @@ export type PostActionData = ContentActionData & {
   content: PostData;
 };
 
-export type UserDataActionData = {
+export enum Chain {
+  BTC = "btc",
+  ETH = "eth",
+  SOLANA = "sol",
+}
+
+export enum UserInfoType {
+  /** PFP - Profile Picture for the user */
+  PFP = "pfp",
+  /** DISPLAY - Display Name for the user */
+  DISPLAY = "display",
+  /** BIO - Bio for the user */
+  BIO = "bio",
+  /** URL - URL of the user */
+  URL = "url",
+  /** USERNAME - Preferred Name for the user */
+  USERNAME = "username",
+}
+
+export type UpdateUserInfoActionData = {
   /** Identity of user acting */
   userId: string;
   /** The type of data added or updated by the user */
-  userDataType: UserDataType;
+  userDataType: UserInfoType;
   /** User data */
   userData: string;
 };
 
-export type VerificationActionData = {
+export type LinkBlockchainAddressActionData = {
   /** Identity of user acting */
   userId: string;
   /** Address verified */
   address: string;
   /** The type of verification if an Add action */
-  type?: FarcasterVerificationType;
+  isContract: boolean;
+  /** The chain being linked */
+  chain: Chain;
 };
