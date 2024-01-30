@@ -1,7 +1,7 @@
 import { ObjectId } from "mongodb";
 import { MongoClient, MongoCollection } from "../mongo";
 import { Entity } from "../types/entity";
-import { sdk } from "@flink/sdk";
+import { getFarcasterUsers } from "../utils";
 
 export const getOrCreateEntitiesForFids = async (
   client: MongoClient,
@@ -28,7 +28,7 @@ export const getOrCreateEntitiesForFids = async (
   const missingFids = fids.filter((fid) => !existingFids.has(fid));
 
   if (missingFids.length > 0) {
-    const { users } = await sdk.farcaster.getUsers(missingFids);
+    const { users } = await getFarcasterUsers(missingFids);
     const newEntities = missingFids.map((fid, i) => ({
       ...users[i],
       _id: new ObjectId(),
