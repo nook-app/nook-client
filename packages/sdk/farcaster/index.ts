@@ -65,7 +65,5 @@ export const getUsers = async (fids: string[]) => {
     throw new Error(`Failed getting cast with ${response.status} for ${fids}`);
   }
 
-  const { users } = await response.json();
-
-  return users;
+  return await response.json();
 };

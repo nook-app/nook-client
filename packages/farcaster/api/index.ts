@@ -197,7 +197,7 @@ const run = async () => {
       );
 
       reply.send({
-        users,
+        users: users,
       });
     },
   );
