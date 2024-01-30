@@ -41,8 +41,6 @@ export const getOrCreateEntitiesForFids = async (
         {
           id: fid,
           metadata: users[i],
-          following: 0,
-          followers: 0,
         },
       ],
       createdAt: new Date(),

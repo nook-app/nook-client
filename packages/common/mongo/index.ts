@@ -2,7 +2,6 @@ import { Db, MongoClient as Client, Collection, ObjectId } from "mongodb";
 import {
   Content,
   ContentData,
-  ContentEngagementType,
   EventAction,
   EventActionData,
   EntityEvent,
@@ -179,24 +178,6 @@ export class MongoClient {
       {
         $set: {
           deletedAt: null,
-        },
-      },
-    );
-  };
-
-  incrementEngagement = async (
-    contentId: string,
-    engagementType: ContentEngagementType,
-    decrement = false,
-  ) => {
-    const collection = this.getCollection(MongoCollection.Content);
-    await collection.updateOne(
-      {
-        contentId,
-      },
-      {
-        $inc: {
-          [`engagement.${engagementType}`]: decrement ? -1 : 1,
         },
       },
     );

@@ -11,8 +11,6 @@ export type SocialAccountMetadata = {
 export type SocialAccount = {
   id: string;
   metadata?: SocialAccountMetadata;
-  following: number;
-  followers: number;
 };
 
 export type Entity = {

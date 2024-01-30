@@ -1,5 +1,4 @@
 import {
-  ContentEngagementType,
   EventAction,
   EventActionType,
   Entity,
@@ -29,16 +28,6 @@ export const getActionsHandler = async () => {
             action.data.content,
           );
         }
-        if (job.data.created) {
-          await Promise.all(
-            action.data.content.embeds.map((contentId) =>
-              client.incrementEngagement(
-                contentId,
-                ContentEngagementType.EMBEDS,
-              ),
-            ),
-          );
-        }
         break;
       }
       case EventActionType.UNPOST: {
@@ -46,13 +35,6 @@ export const getActionsHandler = async () => {
         await Promise.all([
           client.markActionsDeleted(action.source.id),
           client.markContentDeleted(action.data.contentId),
-          ...action.data.content.embeds.map((contentId) =>
-            client.incrementEngagement(
-              contentId,
-              ContentEngagementType.EMBEDS,
-              true,
-            ),
-          ),
         ]);
         break;
       }
@@ -65,24 +47,6 @@ export const getActionsHandler = async () => {
             action.data.content,
           );
         }
-        if (job.data.created) {
-          await Promise.all([
-            void client.incrementEngagement(
-              action.data.content.parentId,
-              ContentEngagementType.REPLIES,
-            ),
-            void client.incrementEngagement(
-              action.data.content.rootParentId,
-              ContentEngagementType.ROOT_REPLIES,
-            ),
-            ...action.data.content.embeds.map((contentId) =>
-              client.incrementEngagement(
-                contentId,
-                ContentEngagementType.EMBEDS,
-              ),
-            ),
-          ]);
-        }
         break;
       }
       case EventActionType.UNREPLY: {
@@ -91,27 +55,6 @@ export const getActionsHandler = async () => {
           client.markActionsDeleted(action.source.id),
           client.markContentDeleted(action.data.contentId),
         ];
-        if (job.data.created) {
-          promises.push(
-            client.incrementEngagement(
-              action.data.content.parentId,
-              ContentEngagementType.REPLIES,
-              true,
-            ),
-            client.incrementEngagement(
-              action.data.content.rootParentId,
-              ContentEngagementType.ROOT_REPLIES,
-              true,
-            ),
-            ...action.data.content.embeds.map((contentId) =>
-              client.incrementEngagement(
-                contentId,
-                ContentEngagementType.EMBEDS,
-                true,
-              ),
-            ),
-          );
-        }
         await Promise.all(promises);
         break;
       }
@@ -124,26 +67,11 @@ export const getActionsHandler = async () => {
             action.data.content,
           );
         }
-        if (job.data.created) {
-          await client.incrementEngagement(
-            action.data.contentId,
-            ContentEngagementType.LIKES,
-          );
-        }
         break;
       }
       case EventActionType.UNLIKE: {
         const action = data as EventAction<PostActionData>;
         const promises = [client.markActionsDeleted(action.source.id)];
-        if (job.data.created) {
-          promises.push(
-            client.incrementEngagement(
-              action.data.contentId,
-              ContentEngagementType.LIKES,
-              true,
-            ),
-          );
-        }
         await Promise.all(promises);
         break;
       }
@@ -156,26 +84,11 @@ export const getActionsHandler = async () => {
             action.data.content,
           );
         }
-        if (job.data.created) {
-          await client.incrementEngagement(
-            action.data.contentId,
-            ContentEngagementType.REPOSTS,
-          );
-        }
         break;
       }
       case EventActionType.UNREPOST: {
         const action = data as EventAction<PostActionData>;
         const promises = [client.markActionsDeleted(action.source.id)];
-        if (job.data.created) {
-          promises.push(
-            void client.incrementEngagement(
-              action.data.contentId,
-              ContentEngagementType.REPOSTS,
-              true,
-            ),
-          );
-        }
         await Promise.all(promises);
         break;
       }
@@ -187,27 +100,6 @@ export const getActionsHandler = async () => {
             action.data.targetEntityId.toString(),
           ),
         ];
-        if (job.data.created) {
-          const collection = client.getCollection<Entity>(
-            MongoCollection.Entity,
-          );
-          promises.push(
-            void collection.updateOne(
-              {
-                _id: action.data.entityId,
-                "farcasterAccounts.id": action.data.sourceEntityId,
-              },
-              { $inc: { "farcasterAccounts.$.following": 1 } },
-            ),
-            void collection.updateOne(
-              {
-                _id: action.data.targetEntityId,
-                "farcasterAccounts.id": action.data.sourceTargetEntityId,
-              },
-              { $inc: { "farcasterAccounts.$.followers": 1 } },
-            ),
-          );
-        }
         await Promise.all(promises);
         break;
       }
@@ -221,27 +113,6 @@ export const getActionsHandler = async () => {
             true,
           ),
         ];
-        if (job.data.created) {
-          const collection = client.getCollection<Entity>(
-            MongoCollection.Entity,
-          );
-          promises.push(
-            void collection.updateOne(
-              {
-                _id: action.data.entityId,
-                "farcasterAccounts.id": action.data.sourceEntityId,
-              },
-              { $inc: { "farcasterAccounts.$.following": 1 } },
-            ),
-            void collection.updateOne(
-              {
-                _id: action.data.targetEntityId,
-                "farcasterAccounts.id": action.data.sourceTargetEntityId,
-              },
-              { $inc: { "farcasterAccounts.$.followers": 1 } },
-            ),
-          );
-        }
         await Promise.all(promises);
         break;
       }

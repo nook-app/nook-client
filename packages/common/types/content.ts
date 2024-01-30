@@ -9,19 +9,6 @@ export enum ContentType {
   URL = "URL",
 }
 
-export enum ContentEngagementType {
-  POSTS = "posts",
-  REPLIES = "replies",
-  ROOT_REPLIES = "rootReplies",
-  LIKES = "likes",
-  REPOSTS = "reposts",
-  EMBEDS = "embeds",
-}
-
-export type ContentEngagement = {
-  [key in ContentEngagementType]?: number;
-};
-
 export type ContentRequest = {
   /** ID for the content in URI format */
   contentId: string;
@@ -45,9 +32,6 @@ export type ContentBase = {
 
   /** Timestamp content was created at */
   timestamp: Date;
-
-  /** Engagement metrics */
-  engagement?: ContentEngagement;
 
   /** Set of entityIds involved in this content */
   entityIds: ObjectId[];

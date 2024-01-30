@@ -11,7 +11,6 @@ import {
 import { getAndBackfillReactions } from "../consumer/handlers/reactions";
 import { SocialAccountMetadata } from "@flink/common/types";
 import { getAndBackfillUserDatas } from "../consumer/handlers/users";
-import { getAndBackfillLinks } from "../consumer/handlers/links";
 
 const prisma = new PrismaClient();
 
