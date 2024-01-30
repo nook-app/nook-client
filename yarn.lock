@@ -2764,7 +2764,6 @@ __metadata:
   dependencies:
     "@flink/common": "npm:*"
     "@flink/farcaster": "npm:*"
-    "@flink/sdk": "npm:*"
     "@types/node": "npm:^20.10.5"
     bullmq: "npm:^5.1.0"
     mongodb: "npm:^6.3.0"
@@ -2816,7 +2815,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@flink/sdk@npm:*, @flink/sdk@workspace:packages/sdk":
+"@flink/sdk@workspace:packages/sdk":
   version: 0.0.0-use.local
   resolution: "@flink/sdk@workspace:packages/sdk"
   dependencies:
