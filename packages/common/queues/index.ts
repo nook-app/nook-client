@@ -1,13 +1,7 @@
 export * from "./enqueue";
-
-import { ConnectionOptions, Job, Queue, QueueOptions, Worker } from "bullmq";
-import {
-  ContentRequest,
-  EventAction,
-  EventActionData,
-  EventActionRequest,
-  RawEvent,
-} from "../types";
+import Redis from "ioredis";
+import { Job, Queue, QueueOptions, Worker } from "bullmq";
+import { ContentRequest, EventActionRequest, RawEvent } from "../types";
 import { Message } from "@farcaster/hub-nodejs";
 import { FarcasterBackfillRequest } from "../types/backfill";
 
@@ -29,12 +23,13 @@ type QueueType<T> = {
   [QueueName.Content]: ContentRequest;
 };
 
-const connection: ConnectionOptions = {
+const connection = new Redis({
   host: process.env.DRAGONFLY_HOST,
-  port: process.env.DRAGONFLY_PORT as unknown as number,
+  port: Number(process.env.DRAGONFLY_PORT),
   username: process.env.DRAGONFLY_USER,
   password: process.env.DRAGONFLY_PASSWORD,
-};
+  maxRetriesPerRequest: null,
+});
 
 const queueOptions: QueueOptions = {
   connection,
