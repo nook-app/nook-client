@@ -9,6 +9,7 @@ import {
   timestampToDate,
   MessageHandlerArgs,
   hexToBuffer,
+  bufferToHexAddress,
 } from "../../utils";
 import {
   EventService,
@@ -157,7 +158,7 @@ const messageToCastReaction = (
     deletedAt: null,
     hash: bufferToHex(message.hash),
     hashScheme: message.hashScheme,
-    signer: bufferToHex(message.signer),
+    signer: bufferToHexAddress(message.signer),
     signatureScheme: message.signatureScheme,
     signature: bufferToHex(message.signature),
   };
@@ -176,7 +177,7 @@ const messageToUrlReaction = (
     deletedAt: null,
     hash: bufferToHex(message.hash),
     hashScheme: message.hashScheme,
-    signer: bufferToHex(message.signer),
+    signer: bufferToHexAddress(message.signer),
     signatureScheme: message.signatureScheme,
     signature: bufferToHex(message.signature),
   };

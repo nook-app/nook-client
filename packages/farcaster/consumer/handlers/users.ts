@@ -2,7 +2,11 @@ import {
   PrismaClient,
   FarcasterUserData,
 } from "@flink/common/prisma/farcaster";
-import { MessageHandlerArgs, bufferToHex } from "../../utils";
+import {
+  MessageHandlerArgs,
+  bufferToHex,
+  bufferToHexAddress,
+} from "../../utils";
 import { HubRpcClient, Message } from "@farcaster/hub-nodejs";
 
 const prisma = new PrismaClient();
@@ -40,7 +44,7 @@ export const messageToUserData = (
     value: message.data.userDataBody.value,
     hash: bufferToHex(message.hash),
     hashScheme: message.hashScheme,
-    signer: bufferToHex(message.signer),
+    signer: bufferToHexAddress(message.signer),
     signatureScheme: message.signatureScheme,
     signature: bufferToHex(message.signature),
   };

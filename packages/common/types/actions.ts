@@ -4,12 +4,16 @@ import {
   ContentActionData,
   PostActionData,
   EntityActionData,
+  UpdateUserInfoActionData,
+  LinkBlockchainAddressActionData,
 } from "./actionTypes";
 
 export type EventActionData =
   | PostActionData
   | ContentActionData
-  | EntityActionData;
+  | EntityActionData
+  | UpdateUserInfoActionData
+  | LinkBlockchainAddressActionData;
 
 /**
  * Supported actions for events
@@ -25,6 +29,9 @@ export enum EventActionType {
   UNREPOST = "UNREPOST",
   FOLLOW = "FOLLOW",
   UNFOLLOW = "UNFOLLOW",
+  UPDATE_USER_INFO = "UPDATE_USER_INFO",
+  LINK_BLOCKCHAIN_ADDRESS = "LINK_BLOCKCHAIN_ADDRESS",
+  UNLINK_BLOCKCHAIN_ADDRESS = "UNLINK_BLOCKCHAIN_ADDRESS",
 }
 
 export type EventActionRequest = {

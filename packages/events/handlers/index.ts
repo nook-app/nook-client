@@ -7,6 +7,8 @@ import {
   FarcasterCastReactionData,
   FarcasterLinkData,
   FarcasterUrlReactionData,
+  FarcasterUserDataAddData,
+  FarcasterVerificationData,
   RawEvent,
   EntityEvent,
   EntityEventData,
@@ -18,6 +20,8 @@ import { handleCastReactionAddOrRemove } from "./farcaster/castReactionAddOrRemo
 import { handleUrlReactionAddOrRemove } from "./farcaster/urlReactionAddOrRemove";
 import { handleLinkAddOrRemove } from "./farcaster/linkAddOrRemove";
 import { publishActionRequests } from "@flink/common/queues";
+import { handleUserDataAdd } from "./farcaster/userDataAdd";
+import { handleVerificationAddOrRemove } from "./farcaster/verificationAddOrRemove";
 
 export const getEventsHandler = async () => {
   const client = new MongoClient();
@@ -60,6 +64,19 @@ export const getEventsHandler = async () => {
             response = await handleLinkAddOrRemove(
               client,
               rawEvent as RawEvent<FarcasterLinkData>,
+            );
+            break;
+          case EventType.USER_DATA_ADD:
+            await handleUserDataAdd(
+              client,
+              rawEvent as RawEvent<FarcasterUserDataAddData>,
+            );
+            break;
+          case EventType.VERIFICATION_ADD_ETH_ADDRESS:
+          case EventType.VERIFICATION_REMOVE:
+            await handleVerificationAddOrRemove(
+              client,
+              rawEvent as RawEvent<FarcasterVerificationData>,
             );
             break;
           default:

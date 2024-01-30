@@ -3,7 +3,12 @@ import {
   PrismaClient,
   FarcasterUsernameProof,
 } from "@flink/common/prisma/farcaster";
-import { MessageHandlerArgs, bufferToHex, timestampToDate } from "../../utils";
+import {
+  MessageHandlerArgs,
+  bufferToHex,
+  bufferToHexAddress,
+  timestampToDate,
+} from "../../utils";
 
 const prisma = new PrismaClient();
 
@@ -13,7 +18,7 @@ const messageToUsernameProof = (
   return {
     fid: BigInt(message.fid),
     username: Buffer.from(message.name).toString(),
-    owner: bufferToHex(message.owner),
+    owner: bufferToHexAddress(message.owner),
     signature: bufferToHex(message.signature),
     type: message.type,
     timestamp: timestampToDate(message.timestamp),

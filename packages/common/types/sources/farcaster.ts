@@ -1,3 +1,5 @@
+import { UserDataType as FarcasterUserDataType } from "@farcaster/hub-nodejs";
+
 export type FidHash = {
   fid: string;
   hash: string;
@@ -59,4 +61,58 @@ export type FarcasterLinkData = {
   linkType: string;
   targetFid: string;
   signature: Signature;
+};
+
+/** Type of UserData */
+export enum UserDataType {
+  NONE = "none",
+  /** PFP - Profile Picture for the user */
+  PFP = "pfp",
+  /** DISPLAY - Display Name for the user */
+  DISPLAY = "display",
+  /** BIO - Bio for the user */
+  BIO = "bio",
+  /** URL - URL of the user */
+  URL = "url",
+  /** USERNAME - Preferred Name for the user */
+  USERNAME = "username",
+}
+
+const UserDataTypeValues = Object.values(UserDataType);
+
+export function toUserDataType(
+  farcasterUserDataType: FarcasterUserDataType,
+): UserDataType {
+  // todo: warn/error on invalid value
+  return UserDataTypeValues[farcasterUserDataType.valueOf()];
+}
+
+export type FarcasterUserDataAddData = {
+  type: FarcasterUserDataType;
+  value: string;
+  fid: string;
+};
+
+export enum FarcasterVerificationType {
+  EOA = "eoa",
+  CONTRACT = "contract",
+}
+
+const FarcasterVerificationTypeValues = Object.values(
+  FarcasterVerificationType,
+);
+
+export function toFarcasterVerificationType(
+  farcasterVerificationType: number,
+): FarcasterVerificationType {
+  return FarcasterVerificationTypeValues[farcasterVerificationType];
+}
+
+export type FarcasterVerificationData = {
+  fid: string;
+  address: Uint8Array;
+  ethSignature?: Uint8Array;
+  blockHash?: Uint8Array;
+  verificationType?: number;
+  chainId?: number;
 };

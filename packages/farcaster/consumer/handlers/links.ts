@@ -2,9 +2,9 @@ import { HubRpcClient, Message } from "@farcaster/hub-nodejs";
 import { PrismaClient, FarcasterLink } from "@flink/common/prisma/farcaster";
 import {
   timestampToDate,
-  FidHandlerArgs,
   MessageHandlerArgs,
   bufferToHex,
+  bufferToHexAddress,
 } from "../../utils";
 import {
   EventService,
@@ -77,7 +77,7 @@ const messageToLink = (message: Message): FarcasterLink | undefined => {
     deletedAt: null,
     hash: bufferToHex(message.hash),
     hashScheme: message.hashScheme,
-    signer: bufferToHex(message.signer),
+    signer: bufferToHexAddress(message.signer),
     signatureScheme: message.signatureScheme,
     signature: bufferToHex(message.signature),
   };

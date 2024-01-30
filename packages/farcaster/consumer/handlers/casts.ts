@@ -5,6 +5,7 @@ import {
   timestampToDate,
   MessageHandlerArgs,
   toFarcasterURI,
+  bufferToHexAddress,
 } from "../../utils";
 import {
   FarcasterCast,
@@ -194,7 +195,7 @@ const messageToCast = (message: Message): FarcasterCast | undefined => {
     rawCastEmbeds: rawCastEmbeds || Prisma.DbNull,
     rawUrlEmbeds: rawUrlEmbeds || Prisma.DbNull,
     hashScheme: message.hashScheme,
-    signer: bufferToHex(message.signer),
+    signer: bufferToHexAddress(message.signer),
     signatureScheme: message.signatureScheme,
     signature: bufferToHex(message.signature),
   };
