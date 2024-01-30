@@ -4,15 +4,15 @@ import {
   ContentActionData,
   PostActionData,
   EntityActionData,
-  UpdateUserInfoActionData,
   LinkBlockchainAddressActionData,
+  UpdateEntityInfoActionData,
 } from "./actionTypes";
 
 export type EventActionData =
   | PostActionData
   | ContentActionData
   | EntityActionData
-  | UpdateUserInfoActionData
+  | UpdateEntityInfoActionData
   | LinkBlockchainAddressActionData;
 
 /**

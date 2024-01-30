@@ -1,19 +1,16 @@
 import {
+  Chain,
+  EntityEvent,
   EventAction,
   EventActionType,
   EventType,
-  FarcasterLinkData,
   FarcasterVerificationData,
-  FarcasterVerificationType,
+  LinkBlockchainAddressActionData,
   RawEvent,
-  UserEvent,
-  VerificationActionData,
-  toFarcasterVerificationType,
 } from "@flink/common/types";
 import { MongoClient } from "@flink/common/mongo";
-import { sdk } from "@flink/sdk";
-import { ObjectId } from "mongodb";
 import { bufferToHexAddress } from "@flink/farcaster/utils";
+import { getOrCreateEntitiesForFids } from "@flink/common/entity";
 
 export async function handleVerificationAddOrRemove(
   client: MongoClient,
@@ -30,77 +27,73 @@ export const handleVerificationAdd = async (
   client: MongoClient,
   rawEvent: RawEvent<FarcasterVerificationData>,
 ) => {
-  const fidToIdentity = await sdk.identity.getFidIdentityMap([
+  const fidToIdentity = await getOrCreateEntitiesForFids(client, [
     rawEvent.data.fid,
   ]);
-  const userId = fidToIdentity[rawEvent.data.fid].id;
-  const type: FarcasterVerificationType = toFarcasterVerificationType(
-    rawEvent.data.verificationType,
-  );
-
-  const action: EventAction<VerificationActionData> = {
-    _id: new ObjectId(),
+  const entityId = fidToIdentity[rawEvent.data.fid]._id;
+  const action: EventAction<LinkBlockchainAddressActionData> = {
     eventId: rawEvent.eventId,
     source: rawEvent.source,
     timestamp: rawEvent.timestamp,
-    userId,
-    userIds: [userId],
+    entityId,
+    entityIds: [entityId],
     contentIds: [],
     createdAt: new Date(),
-    type: EventActionType.VERIFICATION_ADD_ETH_ADDRESS,
+    type: EventActionType.LINK_BLOCKCHAIN_ADDRESS,
     data: {
-      userId,
+      entityId,
       address: bufferToHexAddress(rawEvent.data.address),
-      type,
+      isContract: rawEvent.data.verificationType === 1,
+      chain: Chain.ETHEREUM,
     },
   };
 
-  const event: UserEvent<FarcasterVerificationData> = {
+  const event: EntityEvent<FarcasterVerificationData> = {
     ...rawEvent,
-    userId,
-    actions: [action._id],
+    entityId,
     createdAt: action.createdAt,
   };
 
-  await Promise.all([
-    client.upsertEvent(event),
-    client.upsertActions([action]),
-  ]);
+  return {
+    event,
+    actions: [action],
+  };
 };
+
 export const handleVerificationRemove = async (
   client: MongoClient,
   rawEvent: RawEvent<FarcasterVerificationData>,
 ) => {
-  const fidToIdentity = await sdk.identity.getFidIdentityMap([
+  const fidToIdentity = await getOrCreateEntitiesForFids(client, [
     rawEvent.data.fid,
   ]);
-  const userId = fidToIdentity[rawEvent.data.fid].id;
+  const entityId = fidToIdentity[rawEvent.data.fid]._id;
 
-  const action: EventAction<VerificationActionData> = {
-    _id: new ObjectId(),
+  const action: EventAction<LinkBlockchainAddressActionData> = {
     eventId: rawEvent.eventId,
     source: rawEvent.source,
     timestamp: rawEvent.timestamp,
-    userId,
-    userIds: [userId],
+    entityId,
+    entityIds: [entityId],
     contentIds: [],
     createdAt: new Date(),
-    type: EventActionType.VERIFICATION_REMOVE,
+    type: EventActionType.UNLINK_BLOCKCHAIN_ADDRESS,
     data: {
-      userId,
+      entityId,
       address: bufferToHexAddress(rawEvent.data.address),
+      isContract: rawEvent.data.verificationType === 1,
+      chain: Chain.ETHEREUM,
     },
   };
 
-  const event: UserEvent<FarcasterVerificationData> = {
+  const event: EntityEvent<FarcasterVerificationData> = {
     ...rawEvent,
-    userId,
-    actions: [action._id],
+    entityId,
     createdAt: action.createdAt,
   };
 
-  await Promise.all([
-    client.upsertEvent(event),
-    client.upsertActions([action]),
-  ]);
+  return {
+    event,
+    actions: [action],
+  };
 };

@@ -29,12 +29,12 @@ export type PostActionData = ContentActionData & {
 };
 
 export enum Chain {
-  BTC = "btc",
-  ETH = "eth",
-  SOLANA = "sol",
+  BITCOIN = "bitcoin",
+  ETHEREUM = "ethereum",
+  SOLANA = "solana",
 }
 
-export enum UserInfoType {
+export enum EntityInfoType {
   /** PFP - Profile Picture for the user */
   PFP = "pfp",
   /** DISPLAY - Display Name for the user */
@@ -47,22 +47,27 @@ export enum UserInfoType {
   USERNAME = "username",
 }
 
-export type UpdateUserInfoActionData = {
+export type UpdateEntityInfoActionData = {
   /** Identity of user acting */
-  userId: string;
+  entityId: ObjectId;
+
   /** The type of data added or updated by the user */
-  userDataType: UserInfoType;
+  entityDataType: EntityInfoType;
+
   /** User data */
-  userData: string;
+  entityData: string;
 };
 
 export type LinkBlockchainAddressActionData = {
   /** Identity of user acting */
-  userId: string;
+  entityId: ObjectId;
+
   /** Address verified */
   address: string;
+
   /** The type of verification if an Add action */
   isContract: boolean;
+
   /** The chain being linked */
   chain: Chain;
 };

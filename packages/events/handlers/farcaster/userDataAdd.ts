@@ -1,60 +1,51 @@
-import { MongoClient, MongoCollection } from "@flink/common/mongo";
+import { MongoClient } from "@flink/common/mongo";
 import {
+  EntityEvent,
   EventAction,
   EventActionType,
-  EventType,
-  FarcasterLinkData,
   FarcasterUserDataAddData,
   RawEvent,
-  UserDataType,
-  UserEvent,
+  UpdateEntityInfoActionData,
+  EntityInfoType,
   toUserDataType,
 } from "@flink/common/types";
-import { UserDataType as FarcasterUserDataType } from "@farcaster/hub-nodejs";
-import { ObjectId } from "mongodb";
-import { sdk } from "@flink/sdk";
-import { Identity } from "@flink/identity/types";
-import {
-  UserActionData,
-  UserDataActionData,
-} from "@flink/common/types/actionTypes";
+import { getOrCreateEntitiesForFids } from "@flink/common/entity";
 
 export const handleUserDataAdd = async (
   client: MongoClient,
   rawEvent: RawEvent<FarcasterUserDataAddData>,
 ) => {
-  const fidToIdentity = await sdk.identity.getFidIdentityMap([
+  const fidToIdentity = await getOrCreateEntitiesForFids(client, [
     rawEvent.data.fid,
   ]);
-  const userId = fidToIdentity[rawEvent.data.fid].id;
-  const type: UserDataType = toUserDataType(rawEvent.data.type);
+  const entityId = fidToIdentity[rawEvent.data.fid]._id;
 
-  const action: EventAction<UserDataActionData> = {
-    _id: new ObjectId(),
+  const action: EventAction<UpdateEntityInfoActionData> = {
     eventId: rawEvent.eventId,
     source: rawEvent.source,
     timestamp: rawEvent.timestamp,
-    userId,
-    userIds: [userId],
+    entityId,
+    entityIds: [entityId],
     contentIds: [],
     createdAt: new Date(),
-    type: EventActionType.USER_DATA_ADD,
+    type: EventActionType.UPDATE_USER_INFO,
     data: {
-      userId,
-      userDataType: type,
-      userData: rawEvent.data.value,
+      entityId,
+      entityDataType: Object.values(EntityInfoType).find(
+        (t) => t.toString() === rawEvent.data.type.toString(),
+      ),
+      entityData: rawEvent.data.value,
     },
   };
 
-  const event: UserEvent<FarcasterUserDataAddData> = {
+  const event: EntityEvent<FarcasterUserDataAddData> = {
     ...rawEvent,
-    userId,
-    actions: [action._id],
+    entityId,
     createdAt: action.createdAt,
   };
 
-  await Promise.all([
-    client.upsertEvent(event),
-    client.upsertActions([action]),
-  ]);
+  return {
+    event,
+    actions: [action],
+  };
 };
