@@ -1,6 +1,8 @@
 import { ObjectId } from "mongodb";
 
-export type SocialAccountMetadata = {
+export type FarcasterAccount = {
+  fid: string;
+  custodyAddress: string;
   username?: string;
   pfp?: string;
   displayName?: string;
@@ -8,17 +10,21 @@ export type SocialAccountMetadata = {
   url?: string;
 };
 
-export type SocialAccount = {
-  id: string;
-  metadata?: SocialAccountMetadata;
+export type EthereumAccount = {
+  address: string;
+  isContract: boolean;
+  ensName?: string;
 };
 
 export type Entity = {
   /** DB id */
   _id: ObjectId;
 
-  /** Farcaster ids */
-  farcasterAccounts: SocialAccount[];
+  /** Farcaster account */
+  farcaster: FarcasterAccount;
+
+  /** Ethereum accounts */
+  ethereum: EthereumAccount[];
 
   /** Date record was created */
   createdAt: Date;

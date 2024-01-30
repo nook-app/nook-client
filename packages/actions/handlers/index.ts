@@ -5,6 +5,8 @@ import {
   PostActionData,
   EntityActionData,
   EventActionRequest,
+  UpdateEntityInfoActionData,
+  LinkBlockchainAddressActionData,
 } from "@flink/common/types";
 import { MongoClient, MongoCollection } from "@flink/common/mongo";
 import { handleFollowRelation } from "@flink/common/relations";
@@ -114,6 +116,55 @@ export const getActionsHandler = async () => {
           ),
         ];
         await Promise.all(promises);
+        break;
+      }
+      case EventActionType.UPDATE_USER_INFO: {
+        const action = data as EventAction<UpdateEntityInfoActionData>;
+        const collection = client.getCollection<Entity>(MongoCollection.Entity);
+        await collection.updateOne(
+          {
+            _id: action.data.entityId,
+            "farcaster.fid": action.data.sourceEntityId,
+          },
+          {
+            $set: {
+              [`farcaster.${action.data.entityDataType}`]:
+                action.data.entityData,
+            },
+          },
+        );
+        break;
+      }
+      case EventActionType.LINK_BLOCKCHAIN_ADDRESS: {
+        const action = data as EventAction<LinkBlockchainAddressActionData>;
+        const collection = client.getCollection<Entity>(MongoCollection.Entity);
+        await collection.updateOne(
+          {
+            _id: action.data.entityId,
+            "ethereum.$.address": action.data.address,
+          },
+          {
+            $set: {
+              "ethereum.$": {
+                address: action.data.address,
+                isContract: action.data.isContract,
+                // TOOD: get ens name
+              },
+            },
+          },
+          {
+            upsert: true,
+          },
+        );
+        break;
+      }
+      case EventActionType.UNLINK_BLOCKCHAIN_ADDRESS: {
+        const action = data as EventAction<LinkBlockchainAddressActionData>;
+        const collection = client.getCollection<Entity>(MongoCollection.Entity);
+        await collection.updateOne(
+          { _id: action.data.entityId },
+          { $pull: { ethereum: { address: action.data.address } } },
+        );
         break;
       }
       default:

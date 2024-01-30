@@ -51,6 +51,9 @@ export type UpdateEntityInfoActionData = {
   /** Identity of user acting */
   entityId: ObjectId;
 
+  /** Source entity acting */
+  sourceEntityId: string;
+
   /** The type of data added or updated by the user */
   entityDataType: EntityInfoType;
 
@@ -61,6 +64,9 @@ export type UpdateEntityInfoActionData = {
 export type LinkBlockchainAddressActionData = {
   /** Identity of user acting */
   entityId: ObjectId;
+
+  /** Source entity acting */
+  sourceEntityId: string;
 
   /** Address verified */
   address: string;

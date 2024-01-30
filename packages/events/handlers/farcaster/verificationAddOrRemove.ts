@@ -41,6 +41,7 @@ export const handleVerificationAdd = async (
     createdAt: new Date(),
     type: EventActionType.LINK_BLOCKCHAIN_ADDRESS,
     data: {
+      sourceEntityId: rawEvent.data.fid,
       entityId,
       address: bufferToHexAddress(rawEvent.data.address),
       isContract: rawEvent.data.verificationType === 1,
@@ -79,6 +80,7 @@ export const handleVerificationRemove = async (
     createdAt: new Date(),
     type: EventActionType.UNLINK_BLOCKCHAIN_ADDRESS,
     data: {
+      sourceEntityId: rawEvent.data.fid,
       entityId,
       address: bufferToHexAddress(rawEvent.data.address),
       isContract: rawEvent.data.verificationType === 1,

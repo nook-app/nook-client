@@ -8,9 +8,9 @@ import {
   getAndBackfillCasts,
   transformToCastData,
 } from "../consumer/handlers/casts";
-import { getAndBackfillReactions } from "../consumer/handlers/reactions";
-import { SocialAccountMetadata } from "@flink/common/types";
 import { getAndBackfillUserDatas } from "../consumer/handlers/users";
+import { EthereumAccount, FarcasterAccount } from "@flink/common/types";
+import { getAndBackfillVerfications } from "../consumer/handlers/verifications";
 
 const prisma = new PrismaClient();
 
@@ -104,7 +104,6 @@ const run = async () => {
 
       if (missingCasts.length > 0) {
         casts.push(...(await getAndBackfillCasts(client, missingCasts)));
-        await getAndBackfillReactions(client, missingCasts);
       }
 
       const hashToCast = casts.filter(Boolean).reduce((acc, cast) => {
@@ -141,51 +140,64 @@ const run = async () => {
       }>,
       reply,
     ) => {
-      const userDatas = await prisma.farcasterUserData.findMany({
-        where: {
-          fid: {
-            in: request.body.fids.map((fid) => Number(fid)),
+      const getUserData = async (fid: string) => {
+        let userData = await prisma.farcasterUserData.findMany({
+          where: {
+            fid: Number(fid),
           },
-        },
-      });
+        });
 
-      const existingFids = Array.from(
-        new Set(userDatas.map(({ fid }) => fid.toString())),
-      );
-      const missingFids = request.body.fids.filter(
-        (fid) => !existingFids.includes(fid),
-      );
+        if (userData.length === 0) {
+          userData = await getAndBackfillUserDatas(client, [fid]);
+        }
 
-      if (missingFids.length > 0) {
-        userDatas.push(...(await getAndBackfillUserDatas(client, missingFids)));
-        // await getAndBackfillLinks(client, missingFids);
-      }
+        const username = userData.find(
+          (d) => d.type === UserDataType.USERNAME,
+        )?.value;
+        const pfp = userData.find((d) => d.type === UserDataType.PFP)?.value;
+        const displayName = userData.find(
+          (d) => d.type === UserDataType.DISPLAY,
+        )?.value;
+        const bio = userData.find((d) => d.type === UserDataType.BIO)?.value;
+        const url = userData.find((d) => d.type === UserDataType.URL)?.value;
 
-      const groupedUserDatas = userDatas.reduce(
-        (acc, userData) => {
-          const fid = userData.fid.toString();
-          if (!acc[fid]) {
-            acc[fid] = [];
-          }
-          acc[fid].push(userData);
-          return acc;
-        },
-        {} as Record<string, FarcasterUserData[]>,
+        // TODO: get custody address
+
+        const farcaster: FarcasterAccount = {
+          fid,
+          custodyAddress: "",
+          username,
+          pfp,
+          displayName,
+          bio,
+          url,
+        };
+
+        let verifications = await prisma.farcasterEthVerification.findMany({
+          where: {
+            fid: Number(fid),
+          },
+        });
+
+        if (verifications.length === 0) {
+          verifications = await getAndBackfillVerfications(client, [fid]);
+        }
+
+        const ethereum: EthereumAccount[] = verifications.map((v) => ({
+          address: v.address,
+          isContract: v.type === 1,
+          // TODO: get ENS name
+        }));
+
+        return { farcaster, ethereum };
+      };
+
+      const users = await Promise.all(
+        request.body.fids.map((fid) => getUserData(fid)),
       );
 
       reply.send({
-        users: request.body.fids.map((fid) => {
-          const data = groupedUserDatas[fid];
-          if (!data) return;
-          return {
-            username: data.find((d) => d.type === UserDataType.USERNAME)?.value,
-            pfp: data.find((d) => d.type === UserDataType.PFP)?.value,
-            displayName: data.find((d) => d.type === UserDataType.DISPLAY)
-              ?.value,
-            bio: data.find((d) => d.type === UserDataType.BIO)?.value,
-            url: data.find((d) => d.type === UserDataType.URL)?.value,
-          } as SocialAccountMetadata;
-        }),
+        users,
       });
     },
   );

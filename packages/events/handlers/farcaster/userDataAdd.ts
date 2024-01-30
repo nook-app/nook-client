@@ -30,6 +30,7 @@ export const handleUserDataAdd = async (
     createdAt: new Date(),
     type: EventActionType.UPDATE_USER_INFO,
     data: {
+      sourceEntityId: rawEvent.data.fid,
       entityId,
       entityDataType: Object.values(EntityInfoType).find(
         (t) => t.toString() === rawEvent.data.type.toString(),

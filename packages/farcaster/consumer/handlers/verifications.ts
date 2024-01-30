@@ -8,7 +8,7 @@ import {
   MessageHandlerArgs,
   bufferToHexAddress,
 } from "../../utils";
-import { Message } from "@farcaster/hub-nodejs";
+import { HubRpcClient, Message } from "@farcaster/hub-nodejs";
 
 const prisma = new PrismaClient();
 
@@ -88,10 +88,42 @@ const messageToVerification = (
   };
 };
 
+export const getAndBackfillVerfications = async (
+  client: HubRpcClient,
+  fids: string[],
+) => {
+  const messages = (
+    await Promise.all(
+      fids.map(async (fid) => {
+        const message = await client.getAllVerificationMessagesByFid({
+          fid: parseInt(fid),
+        });
+
+        if (message.isErr()) {
+          return undefined;
+        }
+
+        return message.value.messages;
+      }),
+    )
+  ).flat();
+
+  return await backfillVerifications(messages);
+};
+
 export const backfillVerifications = async (messages: Message[]) => {
   const verifications = messages.map(messageToVerification).filter(Boolean);
+  await prisma.farcasterEthVerification.deleteMany({
+    where: {
+      OR: verifications.map((verification) => ({
+        fid: verification.fid,
+        address: verification.address,
+      })),
+    },
+  });
   await prisma.farcasterEthVerification.createMany({
     data: verifications,
     skipDuplicates: true,
   });
+  return verifications;
 };

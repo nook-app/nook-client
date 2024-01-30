@@ -10,21 +10,15 @@ export const getOrCreateEntitiesForFids = async (
   const collection = client.getCollection<Entity>(MongoCollection.Entity);
   const existingEntities = await collection
     .find({
-      farcasterAccounts: {
-        $elemMatch: {
-          id: {
-            $in: fids,
-          },
-        },
+      "farcaster.fid": {
+        $in: fids,
       },
     })
     .toArray();
 
   const entities = existingEntities.reduce(
     (acc, entity) => {
-      for (const account of entity.farcasterAccounts) {
-        acc[account.id] = entity;
-      }
+      acc[entity.farcaster.fid] = entity;
       return acc;
     },
     {} as Record<string, Entity>,
@@ -34,20 +28,15 @@ export const getOrCreateEntitiesForFids = async (
   const missingFids = fids.filter((fid) => !existingFids.has(fid));
 
   if (missingFids.length > 0) {
-    const users = await sdk.farcaster.getUsers(missingFids);
+    const { users } = await sdk.farcaster.getUsers(missingFids);
     const newEntities = missingFids.map((fid, i) => ({
+      ...users[i],
       _id: new ObjectId(),
-      farcasterAccounts: [
-        {
-          id: fid,
-          metadata: users[i],
-        },
-      ],
       createdAt: new Date(),
     }));
     await collection.insertMany(newEntities);
     for (const entity of newEntities) {
-      entities[entity.farcasterAccounts[0].id] = entity;
+      entities[entity.farcaster.fid] = entity;
     }
   }
 
