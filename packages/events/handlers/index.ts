@@ -30,10 +30,12 @@ export const getEventsHandler = async () => {
   return async <T>(job: Job<RawEvent<T>>) => {
     const rawEvent = job.data;
 
-    let response: {
-      event: EntityEvent<EntityEventData>;
-      actions: EventAction<EventActionData>[];
-    };
+    let response:
+      | {
+          event: EntityEvent<EntityEventData>;
+          actions: EventAction<EventActionData>[];
+        }
+      | undefined;
 
     switch (rawEvent.source.service) {
       case EventService.FARCASTER:

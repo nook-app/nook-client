@@ -82,10 +82,10 @@ const generateFarcasterPost = async (
     existingParent?.data ||
     (newParent ? transformCast(newParent, identities) : undefined);
   data.parentId = toFarcasterURI({
-    fid: cast.parentFid,
+    fid: cast.parentFid as string,
     hash: cast.parentHash,
   });
-  data.parentEntityId = identities[cast.parentFid]._id;
+  data.parentEntityId = identities[cast.parentFid as string]._id;
 
   return data;
 };
@@ -94,9 +94,10 @@ const getParentAndRootCasts = async (
   client: MongoClient,
   cast: FarcasterCastData,
 ) => {
+  // only called when cast.parentHash is defined, ie, not a root cast
   const parentUri = toFarcasterURI({
-    fid: cast.parentFid,
-    hash: cast.parentHash,
+    fid: cast.parentFid as string,
+    hash: cast.parentHash as string,
   });
   const rootUri = toFarcasterURI({
     fid: cast.rootParentFid,
@@ -122,9 +123,9 @@ const getParentAndRootCasts = async (
     (content) => content.contentId === rootUri,
   );
 
-  let newParent: FarcasterCastData;
+  let newParent: FarcasterCastData | undefined;
 
-  let newRoot: FarcasterCastData;
+  let newRoot: FarcasterCastData | undefined;
 
   if (!existingParent || !existingRoot) {
     const missingUris = uris.filter(
@@ -135,13 +136,15 @@ const getParentAndRootCasts = async (
       Boolean,
     );
 
-    newParent = casts.find(
-      (c) => c.fid === cast.parentFid && c.hash === cast.parentHash,
-    );
+    if (casts) {
+      newParent = casts.find(
+        (c) => c.fid === cast.parentFid && c.hash === cast.parentHash,
+      );
 
-    newRoot = casts.find(
-      (c) => c.fid === cast.rootParentFid && c.hash === cast.rootParentHash,
-    );
+      newRoot = casts.find(
+        (c) => c.fid === cast.rootParentFid && c.hash === cast.rootParentHash,
+      );
+    }
   }
 
   return {
@@ -179,13 +182,14 @@ const transformCast = (
 const extractFidsFromCasts = (casts: FarcasterCastData[]): string[] => {
   return Array.from(
     new Set(
-      casts.flatMap((cast) =>
-        [
-          cast.fid,
-          cast.parentFid,
-          cast.rootParentFid,
-          ...cast.mentions.map((mention) => mention.mention),
-        ].filter(Boolean),
+      casts.flatMap(
+        (cast) =>
+          [
+            cast.fid,
+            cast.parentFid,
+            cast.rootParentFid,
+            ...cast.mentions.map((mention) => mention.mention),
+          ].filter(Boolean) as string[],
       ),
     ),
   );

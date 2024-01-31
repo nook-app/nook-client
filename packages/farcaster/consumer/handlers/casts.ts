@@ -49,8 +49,8 @@ export const handleCastAdd = async ({
     where: {
       hash: cast.hash,
     },
-    create: cast,
-    update: cast,
+    create: cast as Prisma.FarcasterCastCreateInput,
+    update: cast as Prisma.FarcasterCastCreateInput,
   });
 
   const embedCasts = messageToCastEmbedCast(message);
@@ -335,7 +335,7 @@ export const getAndBackfillCasts = async (
         return message.value;
       }),
     )
-  ).filter(Boolean);
+  ).filter(Boolean) as Message[];
 
   return await backfillCasts(client, messages);
 };
@@ -344,7 +344,7 @@ export const backfillCasts = async (
   client: HubRpcClient,
   messages: Message[],
 ) => {
-  const casts = messages.map(messageToCast).filter(Boolean);
+  const casts = messages.map(messageToCast).filter(Boolean) as FarcasterCast[];
 
   const rootParents = await Promise.all(
     casts.map((cast) => findRootParent(client, cast)),
@@ -357,7 +357,7 @@ export const backfillCasts = async (
   }
 
   await prisma.farcasterCast.createMany({
-    data: casts,
+    data: casts as Prisma.FarcasterCastCreateInput[],
     skipDuplicates: true,
   });
 
@@ -389,7 +389,10 @@ export const backfillCasts = async (
   });
 
   const events = messages.map((message) => {
-    return transformToCastEvent(EventType.CAST_ADD, messageToCast(message));
+    return transformToCastEvent(
+      EventType.CAST_ADD,
+      messageToCast(message) as FarcasterCast,
+    );
   });
 
   await publishRawEvents(events, true);
@@ -417,8 +420,8 @@ export const transformToCastEvent = (
 
 export const transformToCastData = (cast: FarcasterCast): FarcasterCastData => {
   const mentions = [];
-  if (cast.rawMentions && (cast.rawMentions as unknown) !== Prisma.DbNull) {
-    for (const mention of cast.rawMentions as unknown as FarcasterCastMention[]) {
+  if (cast.rawMentions && cast.rawMentions !== Prisma.DbNull) {
+    for (const mention of cast.rawMentions as FarcasterCastMention[]) {
       mentions.push({
         mention: mention.mention.toString(),
         mentionPosition: mention.mentionPosition.toString(),
@@ -426,9 +429,9 @@ export const transformToCastData = (cast: FarcasterCast): FarcasterCastData => {
     }
   }
 
-  const embeds = [];
-  if (cast.rawUrlEmbeds && (cast.rawUrlEmbeds as unknown) !== Prisma.DbNull) {
-    for (const url of cast.rawUrlEmbeds as unknown as FarcasterCastEmbedUrl[]) {
+  const embeds: string[] = [];
+  if (cast.rawUrlEmbeds && cast.rawUrlEmbeds !== Prisma.DbNull) {
+    for (const url of cast.rawUrlEmbeds as string[]) {
       embeds.push(url);
     }
   }
@@ -450,11 +453,11 @@ export const transformToCastData = (cast: FarcasterCast): FarcasterCastData => {
     hash: cast.hash,
     text: cast.text,
     parentFid: cast.parentFid?.toString(),
-    parentHash: cast.parentHash,
-    parentUrl: cast.parentUrl,
+    parentHash: cast.parentHash || undefined,
+    parentUrl: cast.parentUrl || undefined,
     rootParentFid: cast.rootParentFid.toString(),
     rootParentHash: cast.rootParentHash,
-    rootParentUrl: cast.rootParentUrl,
+    rootParentUrl: cast.rootParentUrl || undefined,
     mentions,
     embeds,
     signature: {

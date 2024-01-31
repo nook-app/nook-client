@@ -204,38 +204,43 @@ export const getAndBackfillReactions = async (
         return message.value.messages;
       }),
     )
-  ).filter(Boolean);
+  ).filter(Boolean) as Message[][];
 
   return await backfillReactions(messages.flat());
 };
 
 export const backfillReactions = async (messages: Message[]) => {
-  const castReactions = messages.map(messageToCastReaction).filter(Boolean);
-  const urlReactions = messages.map(messageToUrlReaction).filter(Boolean);
+  const castReactions = messages
+    .map(messageToCastReaction)
+    .filter(Boolean) as FarcasterCastReaction[];
+  const urlReactions = messages
+    .map(messageToUrlReaction)
+    .filter(Boolean) as FarcasterUrlReaction[];
+  if (castReactions.length) {
+    await prisma.farcasterCastReaction.createMany({
+      data: castReactions,
+      skipDuplicates: true,
+    });
+    await publishRawEvents(
+      castReactions.map((reaction) =>
+        transformToCastReactionEvent(EventType.CAST_REACTION_ADD, reaction),
+      ),
+      true,
+    );
+  }
 
-  await prisma.farcasterCastReaction.createMany({
-    data: castReactions,
-    skipDuplicates: true,
-  });
-
-  await prisma.farcasterUrlReaction.createMany({
-    data: urlReactions,
-    skipDuplicates: true,
-  });
-
-  await publishRawEvents(
-    castReactions.map((reaction) =>
-      transformToCastReactionEvent(EventType.CAST_REACTION_ADD, reaction),
-    ),
-    true,
-  );
-
-  await publishRawEvents(
-    urlReactions.map((reaction) =>
-      transformToUrlReactionEvent(EventType.URL_REACTION_ADD, reaction),
-    ),
-    true,
-  );
+  if (urlReactions.length) {
+    await prisma.farcasterUrlReaction.createMany({
+      data: urlReactions,
+      skipDuplicates: true,
+    });
+    await publishRawEvents(
+      urlReactions.map((reaction) =>
+        transformToUrlReactionEvent(EventType.URL_REACTION_ADD, reaction),
+      ),
+      true,
+    );
+  }
 };
 
 export const transformToCastReactionEvent = (

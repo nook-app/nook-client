@@ -20,6 +20,10 @@ export const getActionsHandler = async () => {
   return async (job: Job<EventActionRequest>) => {
     const data = await client.findAction(job.data.actionId);
 
+    if (data == null) {
+      throw new Error(`[${job.data.actionId}] not found`);
+    }
+
     switch (data.type) {
       case EventActionType.POST: {
         const action = data as EventAction<PostActionData>;
@@ -96,7 +100,8 @@ export const getActionsHandler = async () => {
       }
       case EventActionType.FOLLOW: {
         const action = data as EventAction<EntityActionData>;
-        const promises = [
+        /* biome-ignore lint/suspicious/noExplicitAny: promises don't matter but void keyword returns undefined*/
+        const promises: Promise<any>[] = [
           handleFollowRelation(
             action.data.entityId.toString(),
             action.data.targetEntityId.toString(),
@@ -107,7 +112,8 @@ export const getActionsHandler = async () => {
       }
       case EventActionType.UNFOLLOW: {
         const action = data as EventAction<EntityActionData>;
-        const promises = [
+        /* biome-ignore lint/suspicious/noExplicitAny: promises don't matter but void keyword returns undefined*/
+        const promises: Promise<any>[] = [
           client.markActionsDeleted(data.source.id),
           handleFollowRelation(
             action.data.entityId.toString(),

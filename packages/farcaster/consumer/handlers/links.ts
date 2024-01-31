@@ -112,7 +112,7 @@ export const getAndBackfillLinks = async (
         return message.value.messages;
       }),
     ])
-  ).filter(Boolean);
+  ).filter(Boolean) as Message[][];
 
   return await backfillLinks(messages.flat());
 };

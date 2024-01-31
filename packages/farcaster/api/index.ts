@@ -106,7 +106,7 @@ const run = async () => {
       const hashToCast = casts.filter(Boolean).reduce((acc, cast) => {
         acc[`${cast.fid}-${cast.hash}`] = cast;
         return acc;
-      }, {});
+      }, {} as { [key: string]: FarcasterCastData });
 
       reply.send({
         casts: ids.map(({ fid, hash }) => hashToCast[`${fid}-${hash}`]),

@@ -24,7 +24,7 @@ export const getFarcasterHandler = () => {
     console.log(`[${job.id}] processing event`);
 
     const args = { message, client };
-    switch (message.data.type) {
+    switch (message.data?.type) {
       case MessageType.CAST_ADD:
         await handleCastAdd(args);
         break;

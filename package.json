@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "build": "yarn workspaces foreach --all --topological-dev run build",
+    "test": "yarn workspaces foreach --all run jest",
     "start:dashboard": "yarn workspace @flink/dashboard start",
     "start:farcaster:api": "yarn workspace @flink/farcaster start:api",
     "start:farcaster:consumer": "yarn workspace @flink/farcaster start:consumer",
@@ -18,7 +19,13 @@
     "packages/*"
   ],
   "devDependencies": {
-    "@biomejs/biome": "1.4.1"
+    "@biomejs/biome": "1.4.1",
+    "@types/jest": "^29.5.11",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.1.2",
+    "ts-node": "^10.9.2",
+    "tsconfig-paths": "^4.2.0",
+    "typescript": "^5.3.3"
   },
   "packageManager": "yarn@4.0.2"
 }
