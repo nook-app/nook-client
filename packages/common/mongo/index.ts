@@ -11,6 +11,7 @@ import {
   EventAction,
   EventActionData,
   EntityEvent,
+  UrlContentData,
 } from "../types";
 
 const DB_NAME = "flink";
@@ -90,6 +91,13 @@ export class MongoClient {
 
   insertContent = async (content: Content<ContentData>) => {
     const collection = this.getCollection<Content<ContentData>>(
+      MongoCollection.Content,
+    );
+    await collection.insertOne(content);
+  };
+
+  insertUrlContent = async (content: Content<UrlContentData>) => {
+    const collection = this.getCollection<Content<UrlContentData>>(
       MongoCollection.Content,
     );
     await collection.insertOne(content);
