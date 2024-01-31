@@ -7,7 +7,6 @@ import {
   RawEvent,
   EntityEvent,
 } from "@flink/common/types";
-import { ObjectId } from "mongodb";
 import { ContentActionData } from "@flink/common/types/actionTypes";
 import { MongoClient } from "@flink/common/mongo";
 import { getOrCreateEntitiesForFids } from "@flink/common/entity";

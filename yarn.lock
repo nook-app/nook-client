@@ -2717,6 +2717,7 @@ __metadata:
     "@flink/common": "npm:*"
     "@types/node": "npm:^20.10.5"
     fastify: "npm:^4.25.2"
+    mongo: "npm:^0.1.0"
     typescript: "npm:^5.3.3"
   languageName: unknown
   linkType: soft
@@ -10800,6 +10801,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"mongo@npm:^0.1.0":
+  version: 0.1.0
+  resolution: "mongo@npm:0.1.0"
+  dependencies:
+    mongodb: "npm:*"
+  checksum: 2eb6c5a1111a7d12592b6f18152fb999b6ce9d69eceae0a1f3cc12a14c02b48127936adc88ef618f783ff7ef392a0290b0204ed7c28443f304ad46d8ce34150d
+  languageName: node
+  linkType: hard
+
 "mongodb-connection-string-url@npm:^3.0.0":
   version: 3.0.0
   resolution: "mongodb-connection-string-url@npm:3.0.0"
@@ -10810,7 +10820,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mongodb@npm:^6.3.0":
+"mongodb@npm:*, mongodb@npm:^6.3.0":
   version: 6.3.0
   resolution: "mongodb@npm:6.3.0"
   dependencies:
