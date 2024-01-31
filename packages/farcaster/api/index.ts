@@ -1,8 +1,5 @@
 import fastify, { FastifyRequest } from "fastify";
-import {
-  FarcasterUserData,
-  PrismaClient,
-} from "@flink/common/prisma/farcaster";
+import { PrismaClient } from "@flink/common/prisma/farcaster";
 import { UserDataType, getSSLHubRpcClient } from "@farcaster/hub-nodejs";
 import {
   getAndBackfillCasts,

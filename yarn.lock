@@ -2710,6 +2710,17 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@flink/api@workspace:packages/api":
+  version: 0.0.0-use.local
+  resolution: "@flink/api@workspace:packages/api"
+  dependencies:
+    "@flink/common": "npm:*"
+    "@types/node": "npm:^20.10.5"
+    fastify: "npm:^4.25.2"
+    typescript: "npm:^5.3.3"
+  languageName: unknown
+  linkType: soft
+
 "@flink/app@workspace:packages/app":
   version: 0.0.0-use.local
   resolution: "@flink/app@workspace:packages/app"
