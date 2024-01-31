@@ -28,6 +28,8 @@ export const handleUrlReactionAddOrRemove = async (
     eventActionType = isRemove
       ? EventActionType.UNREPOST
       : EventActionType.REPOST;
+  } else {
+    throw Error(`Unsupported reaction type: ${rawEvent.data.reactionType}`);
   }
 
   const fidToEntity = await getOrCreateEntitiesForFids(client, [

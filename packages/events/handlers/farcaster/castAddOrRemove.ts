@@ -45,7 +45,7 @@ export const handleCastAddOrRemove = async (
           data.rootParentEntityId,
           ...data.mentions.map(({ entityId }) => entityId),
         ]),
-      ).filter(Boolean),
+      ).filter(Boolean) as ObjectId[],
       contentIds: Array.from(
         new Set([
           contentId,
@@ -54,7 +54,7 @@ export const handleCastAddOrRemove = async (
           ...data.embeds,
           data.channelId,
         ]),
-      ).filter(Boolean),
+      ).filter(Boolean) as string[],
       createdAt: new Date(),
       type,
       data: {

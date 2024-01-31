@@ -68,24 +68,28 @@ export const getAndBackfillUserDatas = async (
         return message.value.messages;
       }),
     )
-  ).filter(Boolean);
+  ).filter(Boolean) as Message[][];
 
   return await backfillUserDatas(messages.flat());
 };
 
 export const backfillUserDatas = async (messages: Message[]) => {
-  const userDatas = messages.map(messageToUserData).filter(Boolean);
-  await prisma.farcasterUserData.deleteMany({
-    where: {
-      OR: userDatas.map((userData) => ({
-        fid: userData.fid,
-        type: userData.type,
-      })),
-    },
-  });
-  await prisma.farcasterUserData.createMany({
-    data: userDatas,
-    skipDuplicates: true,
-  });
+  const userDatas = messages
+    .map(messageToUserData)
+    .filter(Boolean) as FarcasterUserData[];
+  if (userDatas.length !== 0) {
+    await prisma.farcasterUserData.deleteMany({
+      where: {
+        OR: userDatas.map((userData) => ({
+          fid: userData.fid,
+          type: userData.type,
+        })),
+      },
+    });
+    await prisma.farcasterUserData.createMany({
+      data: userDatas,
+      skipDuplicates: true,
+    });
+  }
   return userDatas;
 };

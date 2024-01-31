@@ -1,4 +1,10 @@
-import { Db, MongoClient as Client, Collection, ObjectId } from "mongodb";
+import {
+  Db,
+  MongoClient as Client,
+  Collection,
+  ObjectId,
+  Document,
+} from "mongodb";
 import {
   Content,
   ContentData,
@@ -21,7 +27,7 @@ export class MongoClient {
   private db: Db;
 
   constructor() {
-    this.client = new Client(process.env.EVENT_DATABASE_URL);
+    this.client = new Client(process.env.EVENT_DATABASE_URL || "");
     this.db = this.client.db(DB_NAME);
   }
 
@@ -37,7 +43,9 @@ export class MongoClient {
     return this.db;
   }
 
-  getCollection<T>(collection: MongoCollection): Collection<T> {
+  getCollection<T extends Document>(
+    collection: MongoCollection,
+  ): Collection<T> {
     return this.getDb().collection<T>(collection);
   }
 

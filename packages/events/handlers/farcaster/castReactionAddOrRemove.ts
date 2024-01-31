@@ -37,6 +37,8 @@ export const handleCastReactionAddOrRemove = async (
       rawEvent.source.type === EventType.CAST_REACTION_ADD
         ? EventActionType.REPOST
         : EventActionType.UNREPOST;
+  } else {
+    throw Error(`Unsupported reaction type: ${rawEvent.data.reactionType}`);
   }
 
   const identities = await getOrCreateEntitiesForFids(client, [
@@ -58,7 +60,7 @@ export const handleCastReactionAddOrRemove = async (
           data.rootParentEntityId,
           ...data.mentions.map(({ entityId }) => entityId),
         ]),
-      ).filter(Boolean),
+      ).filter(Boolean) as ObjectId[],
       contentIds: Array.from(
         new Set([
           contentId,
@@ -67,7 +69,7 @@ export const handleCastReactionAddOrRemove = async (
           ...data.embeds,
           data.channelId,
         ]),
-      ).filter(Boolean),
+      ).filter(Boolean) as string[],
       createdAt: new Date(),
       type,
       data: {

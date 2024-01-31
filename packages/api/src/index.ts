@@ -60,7 +60,11 @@ const run = async () => {
         MongoCollection.Actions,
       );
       const actions = await collection
-        .find(FEED_FILTERS[Number(request.params.feedId)] || FEED_FILTERS[1])
+        .find(
+          FEED_FILTERS[
+            Number(request.params.feedId) as keyof typeof FEED_FILTERS
+          ] || FEED_FILTERS[1],
+        )
         .limit(25)
         .toArray();
 
@@ -100,17 +104,20 @@ const run = async () => {
           entityMap: a.entityIds
             .map((id) => entityMap[id.toString()])
             .filter(Boolean)
-            .reduce((acc, e) => {
-              acc[e._id.toString()] = e;
-              return acc;
-            }, {}),
+            .reduce(
+              (acc, e) => {
+                acc[e._id.toString()] = e;
+                return acc;
+              },
+              {} as Record<string, Entity>,
+            ),
           contentMap: a.contentIds
             .map((id) => contentMap[id])
             .filter(Boolean)
             .reduce((acc, c) => {
               acc[c.contentId] = c;
               return acc;
-            }, {}),
+            }, {} as { [contentId: string]: Content<ContentData> }),
         })),
       };
     },

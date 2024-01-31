@@ -6,7 +6,11 @@ import {
   transformToCastData,
 } from "../consumer/handlers/casts";
 import { getAndBackfillUserDatas } from "../consumer/handlers/users";
-import { EthereumAccount, FarcasterAccount } from "@flink/common/types";
+import {
+  EthereumAccount,
+  FarcasterAccount,
+  FarcasterCastData,
+} from "@flink/common/types";
 import { getAndBackfillVerfications } from "../consumer/handlers/verifications";
 
 const prisma = new PrismaClient();
@@ -106,7 +110,7 @@ const run = async () => {
       const hashToCast = casts.filter(Boolean).reduce((acc, cast) => {
         acc[`${cast.fid}-${cast.hash}`] = cast;
         return acc;
-      }, {});
+      }, {} as { [key: string]: FarcasterCastData });
 
       reply.send({
         casts: ids.map(({ fid, hash }) => hashToCast[`${fid}-${hash}`]),

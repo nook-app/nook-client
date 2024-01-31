@@ -106,13 +106,15 @@ export const getAndBackfillVerfications = async (
         return message.value.messages;
       }),
     )
-  ).flat();
+  ).flat() as Message[];
 
   return await backfillVerifications(messages);
 };
 
 export const backfillVerifications = async (messages: Message[]) => {
-  const verifications = messages.map(messageToVerification).filter(Boolean);
+  const verifications = messages
+    .map(messageToVerification)
+    .filter(Boolean) as FarcasterEthVerification[];
   await prisma.farcasterEthVerification.deleteMany({
     where: {
       OR: verifications.map((verification) => ({

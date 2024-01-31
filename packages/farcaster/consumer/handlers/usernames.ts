@@ -14,7 +14,7 @@ const prisma = new PrismaClient();
 
 const messageToUsernameProof = (
   message: UserNameProof,
-): FarcasterUsernameProof | undefined => {
+): FarcasterUsernameProof => {
   return {
     fid: BigInt(message.fid),
     username: Buffer.from(message.name).toString(),
@@ -44,9 +44,13 @@ export const handleUsernameProofAdd = async ({
 };
 
 export const backfillUsernameProofs = async (messages: UserNameProof[]) => {
-  const proofs = messages.map(messageToUsernameProof).filter(Boolean);
-  await prisma.farcasterUsernameProof.createMany({
-    data: proofs,
-    skipDuplicates: true,
-  });
+  const proofs = messages
+    .map(messageToUsernameProof)
+    .filter(Boolean) as FarcasterUsernameProof[];
+  if (proofs.length) {
+    await prisma.farcasterUsernameProof.createMany({
+      data: proofs,
+      skipDuplicates: true,
+    });
+  }
 };

@@ -52,11 +52,15 @@ export const handlePostRelations = async (
       targetContentId: contentId,
       source: EventService.FARCASTER,
     });
-    requests.push({
-      submitterId: data.parentEntityId.toString(),
-      contentId: data.parentId,
-      timestamp: data.timestamp.toString(),
-    });
+    if (data.parentEntityId) {
+      requests.push({
+        submitterId: data.parentEntityId?.toString(),
+        contentId: data.parentId,
+        timestamp: data.timestamp.toString(),
+      });
+    } else {
+      throw Error(`Missing parentEntityId for ${contentId}`);
+    }
   }
 
   if (data.channelId) {

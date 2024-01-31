@@ -3,12 +3,11 @@
     "require": ["tsconfig-paths/register"]
   },
   "compilerOptions": {
-    "target": "es5",
-    "lib": ["dom", "dom.iterable", "esnext", "es2015"],
+    "target": "ES2017",
+    "lib": ["dom", "dom.iterable", "esnext", "es2017"],
     "allowJs": true,
     "skipLibCheck": true,
     "strict": true,
-    "noEmit": true,
     "esModuleInterop": true,
     "module": "CommonJS",
     "moduleResolution": "node",
@@ -16,6 +15,32 @@
     "isolatedModules": true,
     "jsx": "preserve",
     "incremental": true,
-    "sourceMap": true
-  }
+    "sourceMap": true,
+    "noImplicitAny": true,
+    "outDir": "dist"
+  },
+  "exclude": ["**/dist", "node_modules", "**/*.spec.ts", "**/*.test.ts"],
+  "references": [
+    {
+      "path": "./packages/actions"
+    },
+    {
+      "path": "./packages/common"
+    },
+    {
+      "path": "./packages/content"
+    },
+    {
+      "path": "./packages/dashboard"
+    },
+    {
+      "path": "./packages/events"
+    },
+    {
+      "path": "./packages/farcaster"
+    },
+    {
+      "path": "./packages/sdk"
+    }
+  ]
 }
