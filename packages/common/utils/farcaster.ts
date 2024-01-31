@@ -215,7 +215,7 @@ export const getFarcasterCasts = async ({
   uris,
   fidHashes,
 }: { uris?: string[]; fidHashes?: FidHash[] }): Promise<
-  FarcasterCastData[] | undefined
+  FarcasterCastData[]
 > => {
   if (!uris?.length && !fidHashes?.length) {
     return [];
@@ -239,8 +239,10 @@ export const getFarcasterCasts = async ({
   }
 
   const { casts } = await response.json();
-
-  return casts;
+  if (Array.isArray(casts)) {
+    return casts;
+  }
+  throw new Error(`Invalid response from farcaster: ${JSON.stringify(casts)}`);
 };
 
 export const getFarcasterUsers = async (fids: string[]) => {

@@ -20,6 +20,14 @@ export const handleUserDataAdd = async (
   ]);
   const entityId = fidToIdentity[rawEvent.data.fid]._id;
 
+  // TODO: this is pretty fragile; should change or explicitly use the same enum
+  const entityDataType = Object.values(EntityInfoType).find(
+    (t) => t.toString().toUpperCase() === rawEvent.data.type.toString(),
+  );
+  if (!entityDataType) {
+    throw new Error(`Unknown entity data type: ${rawEvent.data.type}`);
+  }
+
   const action: EventAction<UpdateEntityInfoActionData> = {
     eventId: rawEvent.eventId,
     source: rawEvent.source,
@@ -32,9 +40,7 @@ export const handleUserDataAdd = async (
     data: {
       sourceEntityId: rawEvent.data.fid,
       entityId,
-      entityDataType: Object.values(EntityInfoType).find(
-        (t) => t.toString() === rawEvent.data.type.toString(),
-      ),
+      entityDataType: entityDataType,
       entityData: rawEvent.data.value,
     },
   };

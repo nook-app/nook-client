@@ -191,9 +191,10 @@ const messageToCast = (message: Message): FarcasterCast | undefined => {
     rootParentUrl: message.data.castAddBody.parentUrl || null,
     timestamp: timestampToDate(message.data.timestamp),
     deletedAt: null,
-    rawMentions: rawMentions || Prisma.DbNull,
-    rawCastEmbeds: rawCastEmbeds || Prisma.DbNull,
-    rawUrlEmbeds: rawUrlEmbeds || Prisma.DbNull,
+    rawMentions: (rawMentions || Prisma.DbNull) as Prisma.JsonValue,
+    rawCastEmbeds: (rawCastEmbeds ||
+      Prisma.DbNull) as unknown as Prisma.JsonValue,
+    rawUrlEmbeds: (rawUrlEmbeds || Prisma.DbNull) as Prisma.JsonValue,
     hashScheme: message.hashScheme,
     signer: bufferToHexAddress(message.signer),
     signatureScheme: message.signatureScheme,
@@ -420,8 +421,9 @@ export const transformToCastEvent = (
 
 export const transformToCastData = (cast: FarcasterCast): FarcasterCastData => {
   const mentions = [];
+  // @ts-ignore
   if (cast.rawMentions && cast.rawMentions !== Prisma.DbNull) {
-    for (const mention of cast.rawMentions as FarcasterCastMention[]) {
+    for (const mention of cast.rawMentions as unknown as FarcasterCastMention[]) {
       mentions.push({
         mention: mention.mention.toString(),
         mentionPosition: mention.mentionPosition.toString(),
@@ -430,6 +432,7 @@ export const transformToCastData = (cast: FarcasterCast): FarcasterCastData => {
   }
 
   const embeds: string[] = [];
+  // @ts-ignore
   if (cast.rawUrlEmbeds && cast.rawUrlEmbeds !== Prisma.DbNull) {
     for (const url of cast.rawUrlEmbeds as string[]) {
       embeds.push(url);

@@ -19,7 +19,7 @@
     "noImplicitAny": true,
     "outDir": "dist"
   },
-  "exclude": ["dist", "node_modules", "**/*.spec.ts", "**/*.test.ts"],
+  "exclude": ["**/dist", "node_modules", "**/*.spec.ts", "**/*.test.ts"],
   "references": [
     {
       "path": "./packages/actions"
