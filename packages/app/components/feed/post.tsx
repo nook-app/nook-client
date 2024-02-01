@@ -1,10 +1,45 @@
-import { GetFeedResponseItem } from "@flink/api/src/types";
+import { GetFeedResponseItem } from "@flink/api/types";
 import { PostActionData } from "@flink/common/types";
 import { Image, Text, View } from "tamagui";
 
 export const FeedPost = ({
-  item: { data, entity },
+  item: { data, entity, entityMap },
 }: { item: GetFeedResponseItem<PostActionData> }) => {
+  const formattedText = [];
+
+  if (data.content.mentions.length === 0) {
+    formattedText.push(
+      <Text key={Math.random().toString(16)}>{data.content.text}</Text>,
+    );
+  } else {
+    let index = data.content.text.length;
+    const sortedMentions = [...data.content.mentions].sort(
+      (a, b) => b.position - a.position,
+    );
+    for (const mention of sortedMentions) {
+      const mentionedEntity = entityMap[mention.entityId.toString()];
+      const label = `@${
+        mentionedEntity.farcaster.username || mentionedEntity.farcaster.fid
+      }`;
+
+      formattedText.push(
+        <Text key={Math.random().toString(16)}>
+          {data.content.text.substring(mention.position, index)}
+        </Text>,
+        <Text key={Math.random().toString(16)} color="$pink11">
+          {label}
+        </Text>,
+      );
+      index = mention.position;
+    }
+    formattedText.push(
+      <Text key={Math.random().toString(16)}>
+        {data.content.text.substring(0, index)}
+      </Text>,
+    );
+    formattedText.reverse();
+  }
+
   return (
     <View
       paddingVertical="$3"
@@ -30,7 +65,7 @@ export const FeedPost = ({
           )}
         </View>
         <View>
-          <Text>{data.content.text}</Text>
+          <Text>{formattedText}</Text>
         </View>
       </View>
     </View>

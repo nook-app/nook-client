@@ -7,11 +7,7 @@ import {
   EventAction,
   EventActionData,
 } from "@flink/common/types";
-import {
-  GetFeedRequest,
-  GetFeedResponse,
-  GetFeedResponseItem,
-} from "../../types";
+import { GetFeedRequest, GetFeedResponseItem } from "../../types";
 import { ObjectId } from "mongodb";
 
 export class FeedService {
@@ -71,6 +67,8 @@ export class FeedService {
         contentMap: getRelevantContentMap(a.contentIds),
       };
     });
+
+    console.log(data.length);
 
     return data;
   }

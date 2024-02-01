@@ -1,6 +1,5 @@
 import fastify from "fastify";
 import { feedRoutes } from "./routes";
-import { bigIntToJson } from "./utils";
 import { mongoPlugin } from "./plugins";
 
 const buildApp = () => {
@@ -13,7 +12,11 @@ const buildApp = () => {
     },
   });
 
-  bigIntToJson(); // Apply BigInt toJSON patch
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore: Automatically convert BigInts to strings when serializing to JSON
+  BigInt.prototype.toJSON = function () {
+    return this.toString();
+  };
 
   app.register(mongoPlugin);
 

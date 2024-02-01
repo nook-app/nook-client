@@ -8,6 +8,7 @@ export default function Home() {
           type: "SOURCE_ENTITY",
           value: "65ba475d191eb695a5defebc",
         },
+        type: "POST",
       }}
     />
   );
