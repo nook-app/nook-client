@@ -1,6 +1,6 @@
 import { Text, View } from "tamagui";
 import { api } from "../../store/api";
-import { GetFeedResponseItem } from "@flink/api/types";
+import { GetFeedResponseItem } from "@flink/api/src/types";
 import { EventActionType, PostActionData } from "@flink/common/types";
 import { FeedPost } from "./post";
 import { FlatList } from "react-native";

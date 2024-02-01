@@ -1,38 +1,11 @@
 import fastify from "fastify";
-import { MongoClient, MongoCollection } from "@flink/common/mongo";
-import {
-  Content,
-  ContentData,
-  Entity,
-  EventAction,
-  EventActionData,
-} from "@flink/common/types";
-import { ObjectId } from "mongodb";
-import { GetFeedRequest, GetFeedResponseItem } from "../types";
+import { feedRoutes } from "./routes";
+import { bigIntToJson } from "./utils";
+import { mongoPlugin } from "./plugins";
 
-// biome-ignore lint/suspicious/noExplicitAny: <explanation>
-function convertStringsToObjectId(obj: any) {
-  for (const key in obj) {
-    if (typeof obj[key] === "string" && ObjectId.isValid(obj[key])) {
-      obj[key] = new ObjectId(obj[key]);
-    } else if (typeof obj[key] === "object") {
-      convertStringsToObjectId(obj[key]);
-    }
-  }
-  return obj;
-}
-
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore: Unreachable code error
-BigInt.prototype.toJSON = function () {
-  return this.toString();
-};
-
-const run = async () => {
-  const client = new MongoClient();
-  await client.connect();
-
-  const server = fastify({
+const buildApp = () => {
+  const app = fastify({
+    logger: true,
     ajv: {
       customOptions: {
         allowUnionTypes: true,
@@ -40,99 +13,28 @@ const run = async () => {
     },
   });
 
-  server.post<{ Body: GetFeedRequest }>(
-    "/feeds",
-    {
-      schema: {
-        body: {
-          type: "object",
-          properties: {
-            filter: {
-              type: "object",
-              additionalProperties: true,
-            },
-          },
-          required: ["filter"],
-        },
-      },
-    },
-    async (request, reply) => {
-      const collection = client.getCollection<EventAction<EventActionData>>(
-        MongoCollection.Actions,
-      );
-      const actions = await collection
-        .find(convertStringsToObjectId(request.body.filter))
-        .sort({ timestamp: -1 })
-        .limit(25)
-        .toArray();
+  bigIntToJson(); // Apply BigInt toJSON patch
 
-      const entityIds = actions.flatMap((a) => a.entityIds);
-      const entities = await client
-        .getCollection<Entity>(MongoCollection.Entity)
-        .find({ _id: { $in: entityIds } })
-        .toArray();
-      const entityMap = entities.reduce(
-        (acc, e) => {
-          acc[e._id.toString()] = e;
-          return acc;
-        },
-        {} as Record<string, Entity>,
-      );
+  app.register(mongoPlugin);
 
-      const contentIds = actions.flatMap((a) => a.contentIds);
-      const contents = await client
-        .getCollection<Content<ContentData>>(MongoCollection.Content)
-        .find({ contentId: { $in: contentIds } })
-        .toArray();
-      const contentMap = contents.reduce(
-        (acc, c) => {
-          acc[c.contentId] = c;
-          return acc;
-        },
-        {} as Record<string, Content<ContentData>>,
-      );
+  app.register(feedRoutes);
 
-      return {
-        data: actions.map(
-          (a) =>
-            ({
-              _id: a._id.toString(),
-              type: a.type,
-              timestamp: a.timestamp.toString(),
-              data: a.data,
-              entity: entityMap[a.entityId.toString()],
-              entityMap: a.entityIds
-                .map((id) => entityMap[id.toString()])
-                .filter(Boolean)
-                .reduce(
-                  (acc, e) => {
-                    acc[e._id.toString()] = e;
-                    return acc;
-                  },
-                  {} as Record<string, Entity>,
-                ),
-              contentMap: a.contentIds
-                .map((id) => contentMap[id])
-                .filter(Boolean)
-                .reduce(
-                  (acc, c) => {
-                    acc[c.contentId] = c;
-                    return acc;
-                  },
-                  {} as Record<string, Content<ContentData>>,
-                ),
-            }) as GetFeedResponseItem,
-        ),
-      };
-    },
-  );
-
-  const port = Number(process.env.PORT || "3000");
-  await server.listen({ port, host: "0.0.0.0" });
-  console.log(`Listening on :${port}`);
+  return app;
 };
 
-run().catch((e) => {
+const start = async () => {
+  const app = buildApp();
+  try {
+    const port = Number(process.env.PORT || "3000");
+    await app.listen({ port, host: "0.0.0.0" });
+    console.log(`Listening on :${port}`);
+  } catch (err) {
+    app.log.error(err);
+    process.exit(1);
+  }
+};
+
+start().catch((e) => {
   console.error(e);
   process.exit(1);
 });

@@ -1,5 +1,5 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import { GetFeedRequest, GetFeedResponse } from "@flink/api/types";
+import { GetFeedRequest, GetFeedResponse } from "@flink/api/src/types";
 
 export const api = createApi({
   reducerPath: "api",

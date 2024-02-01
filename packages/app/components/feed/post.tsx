@@ -1,4 +1,4 @@
-import { GetFeedResponseItem } from "@flink/api/types";
+import { GetFeedResponseItem } from "@flink/api/src/types";
 import { PostActionData } from "@flink/common/types";
 import { Image, Text, View } from "tamagui";
 
