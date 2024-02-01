@@ -1,5 +1,4 @@
 import { MongoClient } from "@flink/common/mongo";
-import { handlePostRelations } from "@flink/common/relations";
 import { Content, ContentType, PostData } from "@flink/common/types";
 import { ObjectId } from "mongodb";
 
@@ -24,8 +23,6 @@ export const insertPostContent = async (
   };
 
   await client.upsertContent(content);
-
-  return await handlePostRelations(contentId, data);
 };
 
 const getEntityIds = (post: PostData): ObjectId[] => {

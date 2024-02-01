@@ -9,7 +9,6 @@ import {
   LinkBlockchainAddressActionData,
 } from "@flink/common/types";
 import { MongoClient, MongoCollection } from "@flink/common/mongo";
-import { handleFollowRelation } from "@flink/common/relations";
 import { insertPostContent } from "@flink/content/utils";
 import { Job } from "bullmq";
 
@@ -99,27 +98,12 @@ export const getActionsHandler = async () => {
         break;
       }
       case EventActionType.FOLLOW: {
-        const action = data as EventAction<EntityActionData>;
-        /* biome-ignore lint/suspicious/noExplicitAny: promises don't matter but void keyword returns undefined*/
-        const promises: Promise<any>[] = [
-          handleFollowRelation(
-            action.data.entityId.toString(),
-            action.data.targetEntityId.toString(),
-          ),
-        ];
-        await Promise.all(promises);
         break;
       }
       case EventActionType.UNFOLLOW: {
-        const action = data as EventAction<EntityActionData>;
         /* biome-ignore lint/suspicious/noExplicitAny: promises don't matter but void keyword returns undefined*/
         const promises: Promise<any>[] = [
           client.markActionsDeleted(data.source.id),
-          handleFollowRelation(
-            action.data.entityId.toString(),
-            action.data.targetEntityId.toString(),
-            true,
-          ),
         ];
         await Promise.all(promises);
         break;
