@@ -2,20 +2,25 @@ import {
   Content,
   ContentData,
   Entity,
+  EventAction,
   EventActionData,
   EventActionType,
 } from "@flink/common/types";
 
-export interface FeedResponseItem {
+export type GetFeedRequest = {
+  filter: object;
+};
+
+export type GetFeedResponseItem<T = EventActionData> = {
   _id: string;
   type: EventActionType;
   timestamp: string;
-  data: EventActionData;
+  data: T;
   entity: Entity;
   entityMap: Record<string, Entity>;
   contentMap: Record<string, Content<ContentData>>;
-}
+};
 
-export interface FeedResponse {
-  data: FeedResponseItem[];
-}
+export type GetFeedResponse = {
+  data: GetFeedResponseItem[];
+};

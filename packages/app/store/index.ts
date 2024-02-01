@@ -1,12 +1,12 @@
 import { configureStore } from "@reduxjs/toolkit";
-import { feeds } from "./feeds";
+import { api } from "./api";
 
 export const store = configureStore({
   reducer: {
-    [feeds.reducerPath]: feeds.reducer,
+    [api.reducerPath]: api.reducer,
   },
   middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware().concat(feeds.middleware),
+    getDefaultMiddleware().concat(api.middleware),
 });
 
 export type AppDispatch = typeof store.dispatch;

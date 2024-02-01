@@ -8,7 +8,7 @@ import {
   EventActionData,
 } from "@flink/common/types";
 import { ObjectId } from "mongodb";
-import { FeedResponseItem } from "../types";
+import { GetFeedRequest, GetFeedResponseItem } from "../types";
 
 // biome-ignore lint/suspicious/noExplicitAny: <explanation>
 function convertStringsToObjectId(obj: any) {
@@ -40,7 +40,7 @@ const run = async () => {
     },
   });
 
-  server.post<{ Body: { filter: object } }>(
+  server.post<{ Body: GetFeedRequest }>(
     "/feeds",
     {
       schema: {
@@ -121,7 +121,7 @@ const run = async () => {
                   },
                   {} as Record<string, Content<ContentData>>,
                 ),
-            }) as FeedResponseItem,
+            }) as GetFeedResponseItem,
         ),
       };
     },
