@@ -1,13 +1,13 @@
 import { Text, View } from "tamagui";
 import { api } from "../../store/api";
-import { GetFeedResponseItem } from "@flink/api/types";
+import { FeedItem } from "@flink/api/types";
 import { EventActionType, PostActionData } from "@flink/common/types";
 import { FeedPost } from "./post";
 import { FlatList } from "react-native";
 
-const renderFeedItem = ({ item }: { item: GetFeedResponseItem }) => {
+const renderFeedItem = ({ item }: { item: FeedItem }) => {
   if (item.type === EventActionType.POST) {
-    return <FeedPost item={item as GetFeedResponseItem<PostActionData>} />;
+    return <FeedPost key={item._id} item={item as FeedItem<PostActionData>} />;
   }
   return <></>;
 };
