@@ -4,7 +4,10 @@
   "private": true,
   "scripts": {
     "build": "tsc",
-    "start": "node dist/index.js"
+    "start": "node dist/src/index.js"
+  },
+  "exports": {
+    "types": "./dist/types/index.js"
   },
   "dependencies": {
     "@flink/common": "*",

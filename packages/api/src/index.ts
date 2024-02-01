@@ -1,4 +1,4 @@
-import fastify, { FastifyRequest } from "fastify";
+import fastify from "fastify";
 import { MongoClient, MongoCollection } from "@flink/common/mongo";
 import {
   Content,
@@ -6,23 +6,21 @@ import {
   Entity,
   EventAction,
   EventActionData,
-  EventActionType,
 } from "@flink/common/types";
 import { ObjectId } from "mongodb";
+import { FeedResponseItem } from "../types";
 
-const FEED_FILTERS = {
-  1: { type: EventActionType.POST },
-  2: { type: { $in: [EventActionType.LIKE, EventActionType.REPOST] } },
-  3: { entityId: new ObjectId("65ba475d191eb695a5defebc") },
-  4: {
-    entityId: { $ne: new ObjectId("65ba475d191eb695a5defebc") },
-    entityIds: new ObjectId("65ba475d191eb695a5defebc"),
-  },
-  5: {
-    type: { $in: [EventActionType.POST, EventActionType.REPLY] },
-    contentIds: { $regex: "i.imgur.com" },
-  },
-};
+// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+function convertStringsToObjectId(obj: any) {
+  for (const key in obj) {
+    if (typeof obj[key] === "string" && ObjectId.isValid(obj[key])) {
+      obj[key] = new ObjectId(obj[key]);
+    } else if (typeof obj[key] === "object") {
+      convertStringsToObjectId(obj[key]);
+    }
+  }
+  return obj;
+}
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore: Unreachable code error
@@ -42,16 +40,19 @@ const run = async () => {
     },
   });
 
-  server.get<{ Params: { feedId: string } }>(
-    "/feed/:feedId",
+  server.post<{ Body: { filter: object } }>(
+    "/feeds",
     {
       schema: {
-        params: {
+        body: {
           type: "object",
           properties: {
-            feedId: { type: "string" },
+            filter: {
+              type: "object",
+              additionalProperties: true,
+            },
           },
-          required: ["feedId"],
+          required: ["filter"],
         },
       },
     },
@@ -60,11 +61,8 @@ const run = async () => {
         MongoCollection.Actions,
       );
       const actions = await collection
-        .find(
-          FEED_FILTERS[
-            Number(request.params.feedId) as keyof typeof FEED_FILTERS
-          ] || FEED_FILTERS[1],
-        )
+        .find(convertStringsToObjectId(request.body.filter))
+        .sort({ timestamp: -1 })
         .limit(25)
         .toArray();
 
@@ -95,30 +93,36 @@ const run = async () => {
       );
 
       return {
-        status: "ok",
-        actions: actions.map((a) => ({
-          type: a.type,
-          timestamp: a.timestamp,
-          data: a.data,
-          entity: entityMap[a.entityId.toString()],
-          entityMap: a.entityIds
-            .map((id) => entityMap[id.toString()])
-            .filter(Boolean)
-            .reduce(
-              (acc, e) => {
-                acc[e._id.toString()] = e;
-                return acc;
-              },
-              {} as Record<string, Entity>,
-            ),
-          contentMap: a.contentIds
-            .map((id) => contentMap[id])
-            .filter(Boolean)
-            .reduce((acc, c) => {
-              acc[c.contentId] = c;
-              return acc;
-            }, {} as { [contentId: string]: Content<ContentData> }),
-        })),
+        data: actions.map(
+          (a) =>
+            ({
+              _id: a._id.toString(),
+              type: a.type,
+              timestamp: a.timestamp.toString(),
+              data: a.data,
+              entity: entityMap[a.entityId.toString()],
+              entityMap: a.entityIds
+                .map((id) => entityMap[id.toString()])
+                .filter(Boolean)
+                .reduce(
+                  (acc, e) => {
+                    acc[e._id.toString()] = e;
+                    return acc;
+                  },
+                  {} as Record<string, Entity>,
+                ),
+              contentMap: a.contentIds
+                .map((id) => contentMap[id])
+                .filter(Boolean)
+                .reduce(
+                  (acc, c) => {
+                    acc[c.contentId] = c;
+                    return acc;
+                  },
+                  {} as Record<string, Content<ContentData>>,
+                ),
+            }) as FeedResponseItem,
+        ),
       };
     },
   );
