@@ -6,6 +6,7 @@ import {
   FarcasterUrlReactionData,
   RawEvent,
   EntityEvent,
+  TopicType,
 } from "@flink/common/types";
 import { ContentActionData } from "@flink/common/types/actionTypes";
 import { MongoClient } from "@flink/common/mongo";
@@ -53,6 +54,16 @@ export const handleUrlReactionAddOrRemove = async (
         contentId,
       },
       deletedAt: isRemove ? new Date() : undefined,
+      topics: [
+        {
+          type: TopicType.SOURCE_ENTITY,
+          value: entityId.toString(),
+        },
+        {
+          type: TopicType.TARGET_CONTENT,
+          value: contentId,
+        },
+      ],
     },
   ];
 

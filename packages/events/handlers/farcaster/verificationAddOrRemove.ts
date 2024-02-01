@@ -7,6 +7,7 @@ import {
   FarcasterVerificationData,
   LinkBlockchainAddressActionData,
   RawEvent,
+  TopicType,
 } from "@flink/common/types";
 import { MongoClient } from "@flink/common/mongo";
 import { bufferToHexAddress } from "@flink/farcaster/utils";
@@ -47,6 +48,12 @@ export const handleVerificationAdd = async (
       isContract: rawEvent.data.verificationType === 1,
       chain: Chain.ETHEREUM,
     },
+    topics: [
+      {
+        type: TopicType.SOURCE_ENTITY,
+        value: entityId.toString(),
+      },
+    ],
   };
 
   const event: EntityEvent<FarcasterVerificationData> = {
@@ -86,6 +93,12 @@ export const handleVerificationRemove = async (
       isContract: rawEvent.data.verificationType === 1,
       chain: Chain.ETHEREUM,
     },
+    topics: [
+      {
+        type: TopicType.SOURCE_ENTITY,
+        value: entityId.toString(),
+      },
+    ],
   };
 
   const event: EntityEvent<FarcasterVerificationData> = {

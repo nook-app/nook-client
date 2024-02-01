@@ -27,7 +27,6 @@ describe("getActionsHandler", () => {
         },
         source: { id: "mockSourceId" },
       });
-      MongoClient.prototype.incrementEngagement = jest.fn();
       // Mock job data
       const mockJob = {
         data: {

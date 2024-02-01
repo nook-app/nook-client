@@ -1,6 +1,9 @@
 import { ObjectId } from "mongodb";
 
 export type PostData = {
+  /** ID of the post */
+  contentId: string;
+
   /** Entity who posted */
   entityId: ObjectId;
 

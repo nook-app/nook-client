@@ -162,6 +162,7 @@ const transformCast = (
   fidToEntity: Record<string, Entity>,
 ): PostData => {
   return {
+    contentId: toFarcasterURI(cast),
     text: cast.text,
     timestamp: cast.timestamp,
     entityId: fidToEntity[cast.fid]._id,

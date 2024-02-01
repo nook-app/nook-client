@@ -6,6 +6,9 @@ import {
   RawEvent,
   EventType,
   PostActionData,
+  Topic,
+  PostData,
+  TopicType,
 } from "@flink/common/types";
 import { MongoClient } from "@flink/common/mongo";
 import { ObjectId } from "mongodb";
@@ -67,6 +70,7 @@ export const handleCastAddOrRemove = async (
       )
         ? new Date()
         : undefined,
+      topics: generateTopics(data),
     },
   ];
 
@@ -77,4 +81,91 @@ export const handleCastAddOrRemove = async (
   };
 
   return { event, actions };
+};
+
+const generateTopics = (data: PostData) => {
+  const topics: Topic[] = [
+    {
+      type: TopicType.SOURCE_ENTITY,
+      value: data.entityId.toString(),
+    },
+    {
+      type: TopicType.SOURCE_CONTENT,
+      value: data.contentId,
+    },
+    {
+      type: TopicType.ROOT_TARGET_ENTITY,
+      value: data.rootParentEntityId.toString(),
+    },
+    {
+      type: TopicType.ROOT_TARGET_CONTENT,
+      value: data.rootParentId,
+    },
+  ];
+
+  for (const mention of data.mentions) {
+    topics.push({
+      type: TopicType.SOURCE_TAG,
+      value: mention.entityId.toString(),
+    });
+  }
+
+  for (const embed of data.embeds) {
+    topics.push({
+      type: TopicType.SOURCE_EMBED,
+      value: embed,
+    });
+  }
+
+  if (data.parentId && data.parentEntityId) {
+    topics.push({
+      type: TopicType.TARGET_ENTITY,
+      value: data.parentEntityId.toString(),
+    });
+    topics.push({
+      type: TopicType.TARGET_CONTENT,
+      value: data.parentId,
+    });
+
+    if (data.parent) {
+      for (const mention of data.parent.mentions) {
+        topics.push({
+          type: TopicType.TARGET_TAG,
+          value: mention.entityId.toString(),
+        });
+      }
+
+      for (const embed of data.parent.embeds) {
+        topics.push({
+          type: TopicType.TARGET_EMBED,
+          value: embed,
+        });
+      }
+    }
+  }
+
+  if (data.rootParent) {
+    for (const mention of data.rootParent.mentions) {
+      topics.push({
+        type: TopicType.ROOT_TARGET_TAG,
+        value: mention.entityId.toString(),
+      });
+    }
+
+    for (const embed of data.rootParent.embeds) {
+      topics.push({
+        type: TopicType.ROOT_TARGET_EMBED,
+        value: embed,
+      });
+    }
+  }
+
+  if (data.channelId) {
+    topics.push({
+      type: TopicType.CHANNEL,
+      value: data.channelId,
+    });
+  }
+
+  return topics;
 };

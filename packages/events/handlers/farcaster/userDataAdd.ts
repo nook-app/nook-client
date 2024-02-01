@@ -8,6 +8,7 @@ import {
   UpdateEntityInfoActionData,
   EntityInfoType,
   toUserDataType,
+  TopicType,
 } from "@flink/common/types";
 import { getOrCreateEntitiesForFids } from "@flink/common/entity";
 
@@ -43,6 +44,12 @@ export const handleUserDataAdd = async (
       entityDataType: entityDataType,
       entityData: rawEvent.data.value,
     },
+    topics: [
+      {
+        type: TopicType.SOURCE_ENTITY,
+        value: entityId.toString(),
+      },
+    ],
   };
 
   const event: EntityEvent<FarcasterUserDataAddData> = {

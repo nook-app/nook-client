@@ -5,6 +5,7 @@ import {
   FarcasterLinkData,
   RawEvent,
   EntityEvent,
+  TopicType,
 } from "@flink/common/types";
 import { ObjectId } from "mongodb";
 import { EntityActionData } from "@flink/common/types/actionTypes";
@@ -42,6 +43,16 @@ export const handleLinkAddOrRemove = async (
         sourceTargetEntityId: rawEvent.data.targetFid,
       },
       deletedAt: isRemove ? new Date() : undefined,
+      topics: [
+        {
+          type: TopicType.SOURCE_ENTITY,
+          value: entityId.toString(),
+        },
+        {
+          type: TopicType.TARGET_ENTITY,
+          value: targetEntityId.toString(),
+        },
+      ],
     },
   ];
 
