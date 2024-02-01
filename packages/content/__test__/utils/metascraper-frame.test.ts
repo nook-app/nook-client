@@ -1,6 +1,10 @@
 import { metascraperFrame } from "@flink/content/utils/metascraper-frame";
 import * as cheerio from "cheerio";
-import { RulesOptions, Rules } from "metascraper";
+import { RulesOptions, Rules, RulesTestOptions } from "metascraper";
+
+type Testable = {
+  test: (args: RulesTestOptions) => boolean;
+};
 
 describe("metascraperFrame", () => {
   test("test function works", () => {
@@ -13,7 +17,7 @@ describe("metascraperFrame", () => {
     <head>
     <meta property="og:title" content="test" />
     </head>`;
-    const frame = metascraperFrame();
+    const frame: Testable = metascraperFrame() as Testable;
     const isFrame = frame.test({
       htmlDom: cheerio.load(frameHtml),
       url: "http://example.com",
@@ -25,6 +29,7 @@ describe("metascraperFrame", () => {
     });
     expect(isNotFrame).toBe(false);
   });
+
   test("test all properties", () => {
     const fullFrameHtml = `
     <head>

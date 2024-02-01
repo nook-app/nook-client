@@ -61,14 +61,15 @@ export type FrameMetascraperData = {
   frameImage?: string;
   framePostUrl?: string;
   frameRefreshPeriod?: string;
+  frameIdemponcyKey?: string;
 } & UnstructuredFrameMetascraperButtonKeys;
 
 export type FrameButtonAction = "post" | "post_redirect";
 
 export type FrameButton = {
   label: string;
-  action: FrameButtonAction;
   index: number;
+  action?: FrameButtonAction;
 };
 
 export type FrameData = {
@@ -77,6 +78,7 @@ export type FrameData = {
   postUrl?: string;
   buttons?: FrameButton[];
   refreshPeriod?: number;
+  idemponcyKey?: string;
 };
 
 type FrameMetaKey = {

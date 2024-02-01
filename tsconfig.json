@@ -18,7 +18,13 @@
     "sourceMap": true,
     "noImplicitAny": true
   },
-  "exclude": ["**/dist", "node_modules", "**/*.spec.ts", "**/*.test.ts"],
+  "exclude": [
+    "dist",
+    "**/dist/",
+    "node_modules",
+    "**/*.spec.ts",
+    "**/*.test.ts"
+  ],
   "references": [
     {
       "path": "./packages/actions"

@@ -29,10 +29,13 @@ import {
 } from "@flink/common/types";
 import { parse } from "path";
 
+// Require that a key in T maps to a key of FrameData
 type FrameDataTypesafeMapping<T> = {
   [K in keyof T]: keyof FrameData;
 };
 
+// Helper to enumerate over all unstructured Metascraper frame keys and map them to structured FrameData keys
+// This wacky type should make it robust to any upstream changes in both the Metascraper frame keys and the FrameData keys
 const ENUMERATED_FRAME_KEYS: FrameDataTypesafeMapping<
   Required<
     Omit<FrameMetascraperData, keyof UnstructuredFrameMetascraperButtonKeys>
@@ -51,6 +54,7 @@ const ENUMERATED_FRAME_KEYS: FrameDataTypesafeMapping<
   frameButton4: "frameButton4",
   frameButton4Action: "frameButton4Action",
   frameRefreshPeriod: "refreshPeriod",
+  frameIdemponcyKey: "idemponcyKey",
 };
 
 const USER_AGENT_OVERRIDES: { [key: string]: string } = {
@@ -60,6 +64,12 @@ const USER_AGENT_OVERRIDES: { [key: string]: string } = {
     "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36",
 };
 
+/**
+ * Scrape metadata from a URL and insert it into the database
+ * @param client
+ * @param request
+ * @returns
+ */
 export const handleUrlContent = async (
   client: MongoClient,
   request: ContentRequest,
@@ -125,14 +135,23 @@ export const fetchUrlMetadata = async (url: string) => {
   if (contentType?.startsWith("text/html")) {
     const scrapedMetadata = await scrapeMetadata({ html, url });
     urlMetadata.metadata = scrapedMetadata;
-    parseFrameMetadata(urlMetadata, scrapedMetadata);
+    parseFrameMetadata(urlMetadata);
   }
 
   return urlMetadata;
 };
 
-function parseFrameMetadata(urlMetadata: UrlMetadata, metadata: Metadata) {
+/**
+ * Metascraper only allows key:value scraping, so this helper takes the unstructured frame metadata and structures it into a FrameData object.
+ * Then it removes the unstructured frame keys from the metadata object.
+ * @param urlMetadata UrlMetadata object including metadata scraped from the URL
+ */
+function parseFrameMetadata(urlMetadata: UrlMetadata) {
   const frameData: FrameData = {} as FrameData;
+  // better way to shut up the type checker? inline ignore only works for first access
+  if (!urlMetadata.metadata) {
+    urlMetadata.metadata = {};
+  }
   urlMetadata.metadata.frame = frameData;
 
   // construct structured button data
@@ -157,11 +176,11 @@ function parseFrameMetadata(urlMetadata: UrlMetadata, metadata: Metadata) {
       action: urlMetadata.metadata.frameButton4Action as FrameButtonAction,
       index: 4,
     },
-  ].filter((button) => button.label != null);
+  ].filter((button) => button.label != null) as FrameButton[];
   frameData.buttons = buttons.length > 0 ? buttons : undefined;
 
+  // metascraper returns unstructured metadata; all frame keys are prefixed with "frame", which we will structure into a FrameData object under the "frame" key
   // clean up unstructured frame keys
-
   for (const [key, value] of Object.entries(ENUMERATED_FRAME_KEYS)) {
     const readValue = urlMetadata.metadata[key as keyof FrameMetascraperData];
     delete urlMetadata.metadata[key as keyof FrameMetascraperData];
@@ -174,7 +193,7 @@ function parseFrameMetadata(urlMetadata: UrlMetadata, metadata: Metadata) {
       // convert to number
       frameData.refreshPeriod =
         (parseInt(
-          urlMetadata.metadata[key as keyof FrameMetascraperData],
+          urlMetadata.metadata[key as keyof FrameMetascraperData] as string,
         ) as number) || undefined;
       continue;
     }
