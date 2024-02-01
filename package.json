@@ -3,6 +3,7 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
+    "clean": "find . -type d \\( -name \"dist\" -o -name \"node_modules\" \\) -exec rm -rf {} +",
     "build": "yarn workspaces foreach --all --topological-dev run build",
     "test": "yarn workspaces foreach --all run jest",
     "start:dashboard": "yarn workspace @flink/dashboard start",

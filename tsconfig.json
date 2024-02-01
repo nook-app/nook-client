@@ -16,8 +16,7 @@
     "jsx": "preserve",
     "incremental": true,
     "sourceMap": true,
-    "noImplicitAny": true,
-    "outDir": "dist"
+    "noImplicitAny": true
   },
   "exclude": ["**/dist", "node_modules", "**/*.spec.ts", "**/*.test.ts"],
   "references": [
