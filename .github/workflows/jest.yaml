@@ -21,9 +21,7 @@ jobs:
         node-version: '16'
         cache: 'yarn'
         cache-dependency-path: ./yarn.lock
-    
-    - name: Install node-gyp
-      run: yarn global add node-gyp
+  
 
     - name: Install dependencies
       run: yarn install --immutable
