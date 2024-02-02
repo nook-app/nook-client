@@ -54,7 +54,7 @@ const ENUMERATED_FRAME_KEYS: FrameDataTypesafeMapping<
   frameButton4: "frameButton4",
   frameButton4Action: "frameButton4Action",
   frameRefreshPeriod: "refreshPeriod",
-  frameIdemponcyKey: "idemponcyKey",
+  frameIdemKey: "idempotencyKey",
 };
 
 const USER_AGENT_OVERRIDES: { [key: string]: string } = {

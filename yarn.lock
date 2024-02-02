@@ -4560,6 +4560,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@szmarczak/http-timer@npm:^4.0.5":
+  version: 4.0.6
+  resolution: "@szmarczak/http-timer@npm:4.0.6"
+  dependencies:
+    defer-to-connect: "npm:^2.0.0"
+  checksum: 73946918c025339db68b09abd91fa3001e87fc749c619d2e9c2003a663039d4c3cb89836c98a96598b3d47dec2481284ba85355392644911f5ecd2336536697f
+  languageName: node
+  linkType: hard
+
 "@tamagui/accordion@npm:1.88.18":
   version: 1.88.18
   resolution: "@tamagui/accordion@npm:1.88.18"
@@ -8726,6 +8735,16 @@ __metadata:
     tslib: "npm:2.4.0"
     ws: "npm:8.5.0"
   checksum: 8816249426609a10aadef1a45cab5e2c34db533317557f29fa69ce02cb04be5018079e6d8685f8967d654d375917bae00288f74a13873f93058e5ef39b8a6106
+  languageName: node
+  linkType: hard
+
+"event-emitter@npm:^0.3.5":
+  version: 0.3.5
+  resolution: "event-emitter@npm:0.3.5"
+  dependencies:
+    d: "npm:1"
+    es5-ext: "npm:~0.10.14"
+  checksum: 75082fa8ffb3929766d0f0a063bfd6046bd2a80bea2666ebaa0cfd6f4a9116be6647c15667bea77222afc12f5b4071b68d393cf39fdaa0e8e81eda006160aff0
   languageName: node
   linkType: hard
 
@@ -14782,10 +14801,24 @@ __metadata:
   languageName: node
   linkType: hard
 
+"requires-port@npm:^1.0.0":
+  version: 1.0.0
+  resolution: "requires-port@npm:1.0.0"
+  checksum: b2bfdd09db16c082c4326e573a82c0771daaf7b53b9ce8ad60ea46aa6e30aaf475fe9b164800b89f93b748d2c234d8abff945d2551ba47bf5698e04cd7713267
+  languageName: node
+  linkType: hard
+
 "reselect@npm:^5.0.1":
   version: 5.1.0
   resolution: "reselect@npm:5.1.0"
   checksum: b0ed789f4f6f10dfbd23741823726793384932969aa7ce8f584c882ad87620a02b09b5d1146cd2ea6eaa0953b3fd9f7df22f113893af73f35f28432a8a4294de
+  languageName: node
+  linkType: hard
+
+"resolve-alpn@npm:^1.0.0":
+  version: 1.2.1
+  resolution: "resolve-alpn@npm:1.2.1"
+  checksum: b70b29c1843bc39781ef946c8cd4482e6d425976599c0f9c138cec8209e4e0736161bf39319b01676a847000085dfdaf63583c6fb4427bf751a10635bd2aa0c4
   languageName: node
   linkType: hard
 

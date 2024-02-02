@@ -51,6 +51,9 @@ const rules: Rules & {
   frameRefreshPeriod: ({ htmlDom: $, url }) => {
     return $('meta[property="fc:frame:refresh_period"]').attr("content");
   },
+  frameIdemKey: ({ htmlDom: $, url }) => {
+    return $('meta[property="fc:frame:idem_key"]').attr("content");
+  },
 };
 
 // TODO: cache with TTL?

@@ -45,6 +45,7 @@ describe("metascraperFrame", () => {
     <meta property="fc:frame:button:4" content="button4" />
     <meta property="fc:frame:button:4:action" content="button4_action" />
     <meta property="fc:frame:refresh_period" content="refresh_period" />
+    <meta property="fc:frame:idem_key" content="idem_key" />
     <meta property="fc:frame:fake_idk" content="fake" />
     </head>
     `;
@@ -63,6 +64,7 @@ describe("metascraperFrame", () => {
     checkRule(frame, dom, "frameButton4", "button4");
     checkRule(frame, dom, "frameButton4Action", "button4_action");
     checkRule(frame, dom, "frameRefreshPeriod", "refresh_period");
+    checkRule(frame, dom, "frameIdemKey", "idem_key");
   });
 });
 
