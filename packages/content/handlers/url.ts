@@ -76,11 +76,11 @@ export const handleUrlContent = async (
   request: ContentRequest,
 ) => {
   const existingContent = await client.findContent(request.contentId);
-  if (existingContent) {
+  if (existingContent?.data) {
     return existingContent;
   }
 
-  await client.insertUrlContent({
+  await client.upsertContent({
     contentId: request.contentId,
     submitterId: new ObjectId(request.submitterId),
     timestamp: new Date(request.timestamp),
@@ -135,7 +135,6 @@ export const fetchUrlMetadata = async (url: string) => {
 
   if (contentType?.startsWith("text/html")) {
     const scrapedMetadata = await scrapeMetadata({ html, url });
-    console.log("Scraped metadata", scrapedMetadata);
     urlMetadata.metadata = scrapedMetadata;
     parseFrameMetadata(urlMetadata);
   }

@@ -2,8 +2,7 @@ import { ObjectId } from "mongodb";
 import { PostData } from "./contentTypes/post";
 import { Metadata } from "metascraper";
 
-export type ContentData = PostData | undefined;
-export type UrlContentData = UrlMetadata | undefined;
+export type ContentData = PostData | UrlMetadata;
 
 export enum ContentType {
   POST = "POST",
