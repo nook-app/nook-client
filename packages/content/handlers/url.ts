@@ -55,6 +55,7 @@ const ENUMERATED_FRAME_KEYS: FrameDataTypesafeMapping<
   frameButton4Action: "frameButton4Action",
   frameRefreshPeriod: "refreshPeriod",
   frameIdemKey: "idempotencyKey",
+  frameTextInput: "textInput",
 };
 
 const USER_AGENT_OVERRIDES: { [key: string]: string } = {
@@ -134,6 +135,7 @@ export const fetchUrlMetadata = async (url: string) => {
 
   if (contentType?.startsWith("text/html")) {
     const scrapedMetadata = await scrapeMetadata({ html, url });
+    console.log("Scraped metadata", scrapedMetadata);
     urlMetadata.metadata = scrapedMetadata;
     parseFrameMetadata(urlMetadata);
   }
@@ -155,6 +157,7 @@ function parseFrameMetadata(urlMetadata: UrlMetadata) {
   urlMetadata.metadata.frame = frameData;
 
   // construct structured button data
+  // TODO: validate button actions etc?
   const buttons = [
     {
       label: urlMetadata.metadata.frameButton1,
