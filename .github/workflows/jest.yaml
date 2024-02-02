@@ -19,8 +19,10 @@ jobs:
         cache: 'yarn'
         cache-dependency-path: ./yarn.lock
     
-    - name: Install dependencies
+    - name: Install node-gyp
       run: yarn global add node-gyp
+
+    - name: Install dependencies
       run: yarn install --immutable
 
 
