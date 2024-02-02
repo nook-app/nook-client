@@ -1,4 +1,4 @@
-name: Build affected
+name: '@flink/content jest'
 
 on:
   pull_request:
@@ -15,10 +15,11 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       
-      - uses: neoxia/is-workspace-affected@v2.1.0
+      - name: Check if workspace is affected
+        uses: neoxia/is-workspace-affected@v2.1.0
         id: affected
         with:
-          workspace: '@flink/content'
+          workspace: 'packages/content'
           base: main
       
       - name: Set up Node.js
