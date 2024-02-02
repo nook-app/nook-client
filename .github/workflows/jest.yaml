@@ -17,6 +17,7 @@ jobs:
       uses: actions/setup-node@v3
       with:
         cache: 'yarn'
+        cache-dependency-path: ./yarn.lock
     
     - name: Install dependencies
       run: yarn global add node-gyp && yarn install --immutable
