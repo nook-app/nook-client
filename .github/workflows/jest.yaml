@@ -20,7 +20,8 @@ jobs:
         cache-dependency-path: ./yarn.lock
     
     - name: Install dependencies
-      run: yarn global add node-gyp && yarn install --immutable
+      run: yarn global add node-gyp
+      run: yarn install --immutable
 
 
     - name: Run Jest
