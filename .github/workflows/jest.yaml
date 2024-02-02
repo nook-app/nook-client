@@ -20,6 +20,8 @@ jobs:
 
     - name: Install dependencies
       run: yarn
+      env:
+        YARN_IGNORE_NODE: '1'
 
     - name: Run Jest
       run: yarn test
