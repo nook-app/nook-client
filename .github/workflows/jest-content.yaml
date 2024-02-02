@@ -19,7 +19,7 @@ jobs:
         uses: neoxia/is-workspace-affected@v2.1.0
         id: affected
         with:
-          workspace: 'packages/content'
+          workspace: 'content'
           base: main
       
       - name: Set up Node.js
