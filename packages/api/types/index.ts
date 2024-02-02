@@ -13,7 +13,7 @@ export type FeedItemEngagement = {
 };
 
 export type FeedItemContentWithEngagement = {
-  content: Content<ContentData>;
+  content?: Content<ContentData>;
   engagement: FeedItemEngagement;
 };
 

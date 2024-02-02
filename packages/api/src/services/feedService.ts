@@ -34,12 +34,15 @@ export class FeedService {
       .limit(25)
       .toArray();
 
-    const entityIds = actions.flatMap((a) => a.entityIds);
     const contentIds = actions.flatMap((a) => a.contentIds);
+    const contentMap = await this.getContentMap(contentIds);
 
-    const [entityMap, contentMap, engagementMap] = await Promise.all([
+    const entityIds = actions
+      .flatMap((a) => a.entityIds)
+      .concat(Object.values(contentMap).flatMap((c) => c.entityIds));
+
+    const [entityMap, engagementMap] = await Promise.all([
       this.getEntityMap(entityIds),
-      this.getContentMap(contentIds),
       this.getEngagementMap(contentIds),
     ]);
 
@@ -71,14 +74,22 @@ export class FeedService {
     };
 
     const data = actions.map((a) => {
+      const contentMap = getRelevantContentMap(a.contentIds);
+      const entityMap = getRelevantEntityMap(
+        a.entityIds.concat(
+          Object.values(contentMap)
+            .flatMap((c) => c.content?.entityIds)
+            .filter(Boolean) as ObjectId[],
+        ),
+      );
       return {
         _id: a._id.toString(),
         type: a.type,
         timestamp: a.timestamp.toString(),
         data: a.data,
         entity: entityMap[a.entityId.toString()],
-        entityMap: getRelevantEntityMap(a.entityIds),
-        contentMap: getRelevantContentMap(a.contentIds),
+        entityMap,
+        contentMap,
       };
     });
 

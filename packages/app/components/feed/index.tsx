@@ -1,4 +1,4 @@
-import { Text, View } from "tamagui";
+import { Spinner, Text, View, XStack, YStack } from "tamagui";
 import { api } from "../../store/api";
 import { FeedItem } from "@flink/api/types";
 import { EventActionType, PostActionData } from "@flink/common/types";
@@ -17,23 +17,30 @@ export const Feed = ({ filter }: { filter: object }) => {
     filter,
   });
 
-  if (isLoading) {
-    return <Text>Loading...</Text>;
+  if (error) {
+    return <Text>No data</Text>;
   }
 
-  if (error) {
-    return <Text>Error: Unable to load data</Text>;
+  if (isLoading || !data) {
+    return (
+      <XStack
+        padding="$3"
+        justifyContent="center"
+        alignItems="center"
+        height="100%"
+        theme="blue"
+        backgroundColor="$background"
+      >
+        <Spinner size="large" color="$color11" />
+      </XStack>
+    );
   }
 
   return (
-    <View>
-      {data && (
-        <FlatList
-          data={data.data}
-          renderItem={renderFeedItem}
-          keyExtractor={(item) => item._id}
-        />
-      )}
-    </View>
+    <FlatList
+      data={data.data}
+      renderItem={renderFeedItem}
+      keyExtractor={(item) => item._id}
+    />
   );
 };
