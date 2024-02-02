@@ -9,12 +9,14 @@ export const handlePostRelatedAction = async (
 ) => {
   await Promise.all([
     getOrCreatePostContent(client, action.data.content),
-    ...action.data.content.embeds.map((embed) =>
-      getOrCreateUrlContent(client, {
-        contentId: embed,
-        submitterId: action.data.content.entityId,
-        timestamp: action.data.content.timestamp,
-      }),
-    ),
+    ...action.data.content.embeds
+      .filter((embed) => !embed.startsWith("farcaster://"))
+      .map((embed) =>
+        getOrCreateUrlContent(client, {
+          contentId: embed,
+          submitterId: action.data.content.entityId,
+          timestamp: action.data.content.timestamp,
+        }),
+      ),
   ]);
 };
