@@ -8,17 +8,18 @@ import {
   UrlMetadata,
 } from "@flink/common/types";
 import { Text } from "../ui/text";
+import { EmbedFrame } from "./frame";
 
 export const Embed = ({
+  data,
   embed,
   entityMap,
   contentMap,
-  widthOffset,
 }: {
+  data: PostData;
   embed: string;
   entityMap: Record<string, Entity>;
   contentMap: Record<string, FeedItemContentWithEngagement>;
-  widthOffset: number;
 }) => {
   const content = contentMap[embed]?.content;
   if (!content) {
@@ -39,24 +40,17 @@ export const Embed = ({
       );
     }
     case ContentType.URL: {
-      const data = content.data as UrlMetadata;
+      const metadata = content.data as UrlMetadata;
       if (
         content.contentId.includes("imgur.com") ||
-        data.contentType?.startsWith("image/")
+        metadata.contentType?.startsWith("image/")
       ) {
-        return (
-          <EmbedImage
-            key={embed}
-            embed={content.contentId}
-            widthOffset={widthOffset}
-          />
-        );
+        return <EmbedImage key={embed} embed={content.contentId} />;
       }
 
-      if (data.metadata?.frame) {
-        return <Text key={embed}>"FRAME"</Text>;
+      if (metadata.metadata?.frame) {
+        return <EmbedFrame data={data} metadata={metadata} />;
       }
-      break;
     }
   }
 

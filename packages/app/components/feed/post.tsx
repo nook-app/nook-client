@@ -1,7 +1,6 @@
 import { FeedItem } from "@flink/api/types";
 import { PostActionData } from "@flink/common/types";
 import { Image, View, XStack, YStack } from "tamagui";
-import { getTokenValue } from "@tamagui/core";
 import { Heart, MessageSquare, RefreshCw } from "@tamagui/lucide-icons";
 import { Text } from "../ui/text";
 import { ContentPost } from "../content/post";
@@ -45,13 +44,9 @@ export const FeedPost = ({
           <Embed
             key={embed}
             embed={embed}
+            data={data.content}
             entityMap={entityMap}
             contentMap={contentMap}
-            widthOffset={
-              getTokenValue(paddingContainer, "space") * 2 +
-              getTokenValue(profileWidth, "size") +
-              getTokenValue(gap, "space")
-            }
           />
         ))}
         <XStack justifyContent="space-between" width="$16" marginTop="$2">

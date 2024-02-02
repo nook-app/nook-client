@@ -162,7 +162,6 @@ function parseFrameMetadata(urlMetadata: UrlMetadata) {
   if (!urlMetadata.metadata) {
     urlMetadata.metadata = {};
   }
-  urlMetadata.metadata.frame = frameData;
 
   // construct structured button data
   // TODO: validate button actions etc?
@@ -212,5 +211,8 @@ function parseFrameMetadata(urlMetadata: UrlMetadata) {
       "vNext" &
       FrameButton[] &
       number;
+  }
+  if (frameData.version) {
+    urlMetadata.metadata.frame = frameData;
   }
 }
