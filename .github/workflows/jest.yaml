@@ -16,16 +16,13 @@ jobs:
     - name: Set up Node.js
       uses: actions/setup-node@v3
       with:
-        node-version: '16' # Specify your Node.js version here
         cache: 'yarn'
     
     - name: Install dependencies
-      run: yarn
-      env:
-        YARN_IGNORE_NODE: '1'
+      run: yarn global add node-gyp && yarn install --immutable
+
 
     - name: Run Jest
       run: yarn test
       env:
         CI: true
-        YARN_IGNORE_NODE: '1'
