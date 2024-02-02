@@ -19,6 +19,7 @@
   "dependencies": {
     "@prisma/client": "5.7.1",
     "bullmq": "^5.1.0",
+    "metascraper": "^5.43.4",
     "mongodb": "^6.3.0"
   },
   "devDependencies": {
