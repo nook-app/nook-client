@@ -1,7 +1,7 @@
 export * from "./enqueue";
 import Redis from "ioredis";
 import { Job, Queue, QueueOptions, Worker } from "bullmq";
-import { ContentRequest, EventActionRequest, RawEvent } from "../types";
+import { EventActionRequest, RawEvent } from "../types";
 import { Message } from "@farcaster/hub-nodejs";
 import { FarcasterBackfillRequest } from "../types/backfill";
 
@@ -11,7 +11,6 @@ export enum QueueName {
   Events = "events",
   EventsBackfill = "events-backfill",
   Actions = "actions",
-  Content = "content",
 }
 
 type QueueType<T> = {
@@ -20,7 +19,6 @@ type QueueType<T> = {
   [QueueName.Events]: RawEvent<T>;
   [QueueName.EventsBackfill]: RawEvent<T>;
   [QueueName.Actions]: EventActionRequest;
-  [QueueName.Content]: ContentRequest;
 };
 
 const connection = new Redis({

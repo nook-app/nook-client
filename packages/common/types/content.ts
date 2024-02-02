@@ -10,17 +10,6 @@ export enum ContentType {
   URL = "URL",
 }
 
-export type ContentRequest = {
-  /** ID for the content in URI format */
-  contentId: string;
-
-  /** Entity who first submitted the content */
-  submitterId: string;
-
-  /** Timestamp content was created at */
-  timestamp: string;
-};
-
 export type ContentBase = {
   /** ID for the content in URI format */
   contentId: string;

@@ -1,10 +1,5 @@
 import { QueueName, getQueue } from ".";
-import {
-  ContentRequest,
-  EventActionRequest,
-  EventSource,
-  RawEvent,
-} from "../types";
+import { EventActionRequest, EventSource, RawEvent } from "../types";
 
 export const toJobId = (source: EventSource) => {
   return `${source.service}-${source.type}-${source.id}`;
@@ -38,17 +33,6 @@ export const publishRawEvents = async <T>(
         opts: { jobId },
       };
     }),
-  );
-};
-
-export const publishContentRequests = async (requests: ContentRequest[]) => {
-  const queue = getQueue(QueueName.Content);
-  await queue.addBulk(
-    requests.map((request) => ({
-      name: request.contentId,
-      data: request,
-      opts: { jobId: request.contentId },
-    })),
   );
 };
 

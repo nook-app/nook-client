@@ -1,6 +1,6 @@
 // import { getActionsHandler } from './handlers/index';
 import { MongoClient } from "@flink/common/mongo";
-import { insertPostContent } from "@flink/content/utils";
+import { insertPostContent } from "../../utils";
 import { getActionsHandler } from "@flink/actions/handlers";
 import { EventActionType } from "@flink/common/types";
 // Other imports...

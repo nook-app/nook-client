@@ -28,7 +28,6 @@ export const Feed = ({ filter }: { filter: object }) => {
         justifyContent="center"
         alignItems="center"
         height="100%"
-        theme="blue"
         backgroundColor="$background"
       >
         <Spinner size="large" color="$color11" />

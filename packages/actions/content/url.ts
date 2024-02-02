@@ -1,7 +1,7 @@
 import { MongoClient } from "@flink/common/mongo";
-import { ContentRequest, ContentType } from "@flink/common/types";
+import { ContentType } from "@flink/common/types";
 import { ObjectId } from "mongodb";
-import metascraper, { Metadata, MetascraperOptions } from "metascraper";
+import metascraper, { MetascraperOptions } from "metascraper";
 import metascraperTitle from "metascraper-title";
 import metascraperAudio from "metascraper-audio";
 import metascraperAuthor from "metascraper-author";
@@ -71,9 +71,18 @@ const USER_AGENT_OVERRIDES: { [key: string]: string } = {
  * @param request
  * @returns
  */
-export const handleUrlContent = async (
+export const getOrCreateUrlContent = async (
   client: MongoClient,
-  request: ContentRequest,
+  request: {
+    /** ID for the content in URI format */
+    contentId: string;
+
+    /** Entity who first submitted the content */
+    submitterId: ObjectId;
+
+    /** Timestamp content was created at */
+    timestamp: Date;
+  },
 ) => {
   const existingContent = await client.findContent(request.contentId);
   if (existingContent?.data) {
@@ -82,9 +91,9 @@ export const handleUrlContent = async (
 
   await client.upsertContent({
     contentId: request.contentId,
-    submitterId: new ObjectId(request.submitterId),
-    timestamp: new Date(request.timestamp),
-    entityIds: [new ObjectId(request.submitterId)],
+    submitterId: request.submitterId,
+    timestamp: request.timestamp,
+    entityIds: [],
     createdAt: new Date(),
     type: ContentType.URL,
     data: await fetchUrlMetadata(request.contentId),

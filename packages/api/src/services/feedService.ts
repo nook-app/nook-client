@@ -139,7 +139,7 @@ export class FeedService {
               $in: ["LIKE", "REPOST", "REPLY"],
             },
             "topics.type": "TARGET_CONTENT",
-            "topics.value": { $in: contentIds }, // Assuming contentIds is the list you want to match against
+            "topics.value": { $in: contentIds },
           },
         },
         {

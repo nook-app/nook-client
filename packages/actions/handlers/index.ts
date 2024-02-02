@@ -3,14 +3,13 @@ import {
   EventActionType,
   Entity,
   PostActionData,
-  EntityActionData,
   EventActionRequest,
   UpdateEntityInfoActionData,
   LinkBlockchainAddressActionData,
 } from "@flink/common/types";
 import { MongoClient, MongoCollection } from "@flink/common/mongo";
-import { insertPostContent } from "@flink/content/utils";
 import { Job } from "bullmq";
+import { handlePostRelatedAction } from "./post";
 
 export const getActionsHandler = async () => {
   const client = new MongoClient();
@@ -24,18 +23,18 @@ export const getActionsHandler = async () => {
     }
 
     switch (data.type) {
-      case EventActionType.POST: {
-        const action = data as EventAction<PostActionData>;
-        if (action.data.content) {
-          await insertPostContent(
-            client,
-            action.data.contentId,
-            action.data.content,
-          );
-        }
+      case EventActionType.POST:
+      case EventActionType.REPLY:
+      case EventActionType.LIKE:
+      case EventActionType.REPOST: {
+        await handlePostRelatedAction(
+          client,
+          data as EventAction<PostActionData>,
+        );
         break;
       }
-      case EventActionType.UNPOST: {
+      case EventActionType.UNPOST:
+      case EventActionType.UNREPLY: {
         const action = data as EventAction<PostActionData>;
         await Promise.all([
           client.markActionsDeleted(action.source.id),
@@ -43,58 +42,10 @@ export const getActionsHandler = async () => {
         ]);
         break;
       }
-      case EventActionType.REPLY: {
-        const action = data as EventAction<PostActionData>;
-        if (action.data.content) {
-          await insertPostContent(
-            client,
-            action.data.contentId,
-            action.data.content,
-          );
-        }
-        break;
-      }
-      case EventActionType.UNREPLY: {
-        const action = data as EventAction<PostActionData>;
-        const promises = [
-          client.markActionsDeleted(action.source.id),
-          client.markContentDeleted(action.data.contentId),
-        ];
-        await Promise.all(promises);
-        break;
-      }
-      case EventActionType.LIKE: {
-        const action = data as EventAction<PostActionData>;
-        if (action.data.content) {
-          await insertPostContent(
-            client,
-            action.data.contentId,
-            action.data.content,
-          );
-        }
-        break;
-      }
-      case EventActionType.UNLIKE: {
-        const action = data as EventAction<PostActionData>;
-        const promises = [client.markActionsDeleted(action.source.id)];
-        await Promise.all(promises);
-        break;
-      }
-      case EventActionType.REPOST: {
-        const action = data as EventAction<PostActionData>;
-        if (action.data.content) {
-          await insertPostContent(
-            client,
-            action.data.contentId,
-            action.data.content,
-          );
-        }
-        break;
-      }
+      case EventActionType.UNLIKE:
       case EventActionType.UNREPOST: {
         const action = data as EventAction<PostActionData>;
-        const promises = [client.markActionsDeleted(action.source.id)];
-        await Promise.all(promises);
+        await client.markActionsDeleted(action.source.id);
         break;
       }
       case EventActionType.FOLLOW: {

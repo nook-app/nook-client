@@ -9,7 +9,6 @@
     "test:actions": "yarn workspace @flink/actions run jest",
     "test:api": "yarn workspace @flink/api run jest",
     "test:common": "yarn workspace @flink/common run jest",
-    "test:content": "yarn workspace @flink/content run jest",
     "test:dashboard": "yarn workspace @flink/dashboard run jest",
     "test:events": "yarn workspace @flink/events run jest",
     "test:farcaster": "yarn workspace @flink/farcaster run jest",
@@ -21,12 +20,9 @@
     "start:farcaster:publisher": "yarn workspace @flink/farcaster start:publisher",
     "start:events": "yarn workspace @flink/events start",
     "start:actions": "yarn workspace @flink/actions start",
-    "start:content": "yarn workspace @flink/content start",
     "start:api": "yarn workspace @flink/api start"
   },
-  "workspaces": [
-    "packages/*"
-  ],
+  "workspaces": ["packages/*"],
   "devDependencies": {
     "@biomejs/biome": "1.4.1",
     "@types/jest": "^29.5.11",
