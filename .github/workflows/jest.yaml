@@ -9,8 +9,8 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-    environment:
-      YARN_IGNORE_NODE: 1
+    env:
+      YARN_IGNORE_NODE: '1'
 
     steps:
     - uses: actions/checkout@v3
