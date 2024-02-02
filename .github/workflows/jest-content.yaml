@@ -1,0 +1,46 @@
+name: Build affected
+
+on:
+  pull_request:
+    branches: [main]  
+  push:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      YARN_IGNORE_NODE: '1'
+
+    steps:
+      - uses: actions/checkout@v3
+      
+      - uses: neoxia/is-workspace-affected@v2.1.0
+        id: affected
+        with:
+          workspace: '@flink/content'
+          base: main
+      
+      - name: Set up Node.js
+        if: steps.affected.outputs.affected
+        uses: actions/setup-node@v3
+        with:
+          # later npm ditches a dependency required by ffi-napi dependency of @farcaster/core
+          node-version: '16'
+          cache: 'yarn'
+          cache-dependency-path: '**/yarn.lock' 
+    
+      - name: Install dependencies, build workspace, test
+        if: steps.affected.outputs.affected
+        run: yarn install --immutable
+      
+      - name: Build @flink/content
+        if: steps.affected.outputs.affected
+        run: yarn workspace @flink/content run build
+    
+      - name: Run test:content
+        if: steps.affected.outputs.affected
+        run: yarn test:content
+        env:
+          CI: true
+    
