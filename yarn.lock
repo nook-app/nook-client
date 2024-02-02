@@ -2729,11 +2729,33 @@ __metadata:
   resolution: "@flink/actions@workspace:packages/actions"
   dependencies:
     "@flink/common": "npm:*"
-    "@flink/content": "npm:*"
+    "@types/jest": "npm:^29.5.11"
+    "@types/metascraper": "npm:^5.14.3"
     "@types/node": "npm:^20.10.5"
     bullmq: "npm:^5.1.0"
+    cheerio: "npm:^1.0.0-rc.12"
+    jest: "npm:^29.7.0"
+    memoize-one: "npm:^6.0.0"
+    metascraper: "npm:^5.43.4"
+    metascraper-audio: "npm:^5.43.4"
+    metascraper-author: "npm:^5.43.4"
+    metascraper-date: "npm:^5.43.4"
+    metascraper-description: "npm:^5.43.4"
+    metascraper-feed: "npm:^5.43.4"
+    metascraper-iframe: "npm:^5.43.4"
+    metascraper-image: "npm:^5.43.4"
+    metascraper-lang: "npm:^5.43.4"
+    metascraper-logo: "npm:^5.43.4"
+    metascraper-logo-favicon: "npm:^5.43.4"
+    metascraper-media-provider: "npm:^5.43.4"
+    metascraper-publisher: "npm:^5.43.4"
+    metascraper-readability: "npm:^5.43.4"
+    metascraper-title: "npm:^5.43.4"
+    metascraper-url: "npm:^5.43.4"
+    metascraper-video: "npm:^5.43.4"
     mongodb: "npm:^6.3.0"
     ts-jest: "npm:^29.1.2"
+    ts-node: "npm:^10.9.2"
     typescript: "npm:^5.3.3"
   languageName: unknown
   linkType: soft
@@ -2803,43 +2825,6 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@flink/content@npm:*, @flink/content@workspace:packages/content":
-  version: 0.0.0-use.local
-  resolution: "@flink/content@workspace:packages/content"
-  dependencies:
-    "@flink/common": "npm:*"
-    "@flink/farcaster": "npm:*"
-    "@types/jest": "npm:^29.5.11"
-    "@types/metascraper": "npm:^5.14.3"
-    "@types/node": "npm:^20.10.5"
-    bullmq: "npm:^5.1.0"
-    cheerio: "npm:^1.0.0-rc.12"
-    jest: "npm:^29.7.0"
-    memoize-one: "npm:^6.0.0"
-    metascraper: "npm:^5.43.4"
-    metascraper-audio: "npm:^5.43.4"
-    metascraper-author: "npm:^5.43.4"
-    metascraper-date: "npm:^5.43.4"
-    metascraper-description: "npm:^5.43.4"
-    metascraper-feed: "npm:^5.43.4"
-    metascraper-iframe: "npm:^5.43.4"
-    metascraper-image: "npm:^5.43.4"
-    metascraper-lang: "npm:^5.43.4"
-    metascraper-logo: "npm:^5.43.4"
-    metascraper-logo-favicon: "npm:^5.43.4"
-    metascraper-media-provider: "npm:^5.43.4"
-    metascraper-publisher: "npm:^5.43.4"
-    metascraper-readability: "npm:^5.43.4"
-    metascraper-title: "npm:^5.43.4"
-    metascraper-url: "npm:^5.43.4"
-    metascraper-video: "npm:^5.43.4"
-    mongodb: "npm:^6.3.0"
-    ts-jest: "npm:^29.1.2"
-    ts-node: "npm:^10.9.2"
-    typescript: "npm:^5.3.3"
-  languageName: unknown
-  linkType: soft
-
 "@flink/dashboard@workspace:packages/dashboard":
   version: 0.0.0-use.local
   resolution: "@flink/dashboard@workspace:packages/dashboard"
@@ -2860,7 +2845,6 @@ __metadata:
   resolution: "@flink/events@workspace:packages/events"
   dependencies:
     "@flink/common": "npm:*"
-    "@flink/content": "npm:*"
     "@types/jest": "npm:^29.5.11"
     "@types/node": "npm:^20.10.5"
     bullmq: "npm:^5.1.0"
@@ -2870,7 +2854,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@flink/farcaster@npm:*, @flink/farcaster@workspace:packages/farcaster":
+"@flink/farcaster@workspace:packages/farcaster":
   version: 0.0.0-use.local
   resolution: "@flink/farcaster@workspace:packages/farcaster"
   dependencies:
@@ -16161,7 +16145,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tldts-core@npm:^6.0.23, tldts-core@npm:^6.1.4":
+"tldts-core@npm:^6.0.23":
+  version: 6.1.6
+  resolution: "tldts-core@npm:6.1.6"
+  checksum: 7f5403c6309076501a6096cc43648d937d62f0f2829f0c990fe27088a83cf17f6a582569f076670244d96bd6750f23a0c258e1d2d4a78d9341ad18a261ec593b
+  languageName: node
+  linkType: hard
+
+"tldts-core@npm:^6.1.4":
   version: 6.1.4
   resolution: "tldts-core@npm:6.1.4"
   checksum: f8f7b9bc539b4f51af43c710c21cbaf98aa244e2ccde364d50b7107d618b5594e78d801fedf4c22831e69bba7c60ffc800125b521887a28436465d328acfee26

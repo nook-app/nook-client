@@ -5,7 +5,7 @@ const config: Config = {
   modulePathIgnorePatterns: ["<rootDir>/dist/"],
   verbose: true,
   moduleNameMapper: {
-    "^@flink/content/(.*)$": "<rootDir>/$1",
+    "^@flink/actions/(.*)$": "<rootDir>/$1",
   },
 };
 export default config;

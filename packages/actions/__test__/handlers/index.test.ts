@@ -1,12 +1,12 @@
 // import { getActionsHandler } from './handlers/index';
 import { MongoClient } from "@flink/common/mongo";
-import { insertPostContent } from "../../utils";
+import { getOrCreatePostContent } from "@flink/actions/content/post";
 import { getActionsHandler } from "@flink/actions/handlers";
 import { EventActionType } from "@flink/common/types";
 // Other imports...
 
 jest.mock("@flink/common/mongo");
-jest.mock("@flink/content/utils");
+jest.mock("@flink/actions/content/post");
 // Other mocks...
 
 describe("getActionsHandler", () => {
@@ -23,9 +23,13 @@ describe("getActionsHandler", () => {
         type: EventActionType.POST,
         data: {
           contentId: "mockContentId",
-          content: { embeds: ["mockEmbedId"] },
+          content: { text: "mockText", embeds: [] },
         },
         source: { id: "mockSourceId" },
+      });
+      MongoClient.prototype.findContent = jest.fn().mockResolvedValue({
+        contentId: "mockContentId",
+        content: { text: "mockText", embeds: [] },
       });
       // MongoClient.prototype.incrementEngagement = jest.fn();
       // Mock job data
@@ -35,19 +39,15 @@ describe("getActionsHandler", () => {
           created: true,
         },
       };
-      console.log(mockJob.data.actionId);
       // Call handler
       const handler = await getActionsHandler();
       //@ts-ignore
       await handler(mockJob);
       // Assertions
-      expect(insertPostContent).toHaveBeenCalledWith(
-        expect.anything(),
-        "mockContentId",
-        {
-          embeds: ["mockEmbedId"],
-        },
-      );
+      expect(getOrCreatePostContent).toHaveBeenCalledWith(expect.anything(), {
+        text: "mockText",
+        embeds: [],
+      });
       // Other test cases...
       // Other assertions...
     });

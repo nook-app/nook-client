@@ -9,7 +9,6 @@
   },
   "dependencies": {
     "@flink/common": "*",
-    "@flink/content": "*",
     "bullmq": "^5.1.0",
     "mongodb": "^6.3.0"
   },

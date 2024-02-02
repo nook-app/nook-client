@@ -22,7 +22,9 @@
     "start:actions": "yarn workspace @flink/actions start",
     "start:api": "yarn workspace @flink/api start"
   },
-  "workspaces": ["packages/*"],
+  "workspaces": [
+    "packages/*"
+  ],
   "devDependencies": {
     "@biomejs/biome": "1.4.1",
     "@types/jest": "^29.5.11",
