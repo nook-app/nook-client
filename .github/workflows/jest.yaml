@@ -10,6 +10,7 @@ jobs:
   test:
     runs-on: ubuntu-latest
     env:
+      # yarn (2) complains about using node v16. doesn't seem like you can pick which yarn setup-node uses.
       YARN_IGNORE_NODE: '1'
 
     steps:
@@ -18,6 +19,7 @@ jobs:
     - name: Set up Node.js
       uses: actions/setup-node@v3
       with:
+        # later npm ditches a dependency required by ffi-napi dependency of @farcaster/core
         node-version: '16'
         cache: 'yarn'
         cache-dependency-path: ./yarn.lock
