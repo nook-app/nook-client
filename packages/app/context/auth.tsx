@@ -8,7 +8,7 @@ import {
   useEffect,
   useReducer,
 } from "react";
-import { API_BASE_URL } from "../constants";
+import { SIWF_DOMAIN, SIWF_URI, API_BASE_URL } from "../constants";
 import { Entity } from "@flink/common/types";
 
 const sessionKey = "session";
@@ -151,8 +151,8 @@ export function AuthProvider(props: AuthProviderProps) {
       config={{
         relay: "https://relay.farcaster.xyz",
         rpcUrl: "https://mainnet.optimism.io",
-        siweUri: "http://localhost:3000",
-        domain: "localhost:3000",
+        siweUri: SIWF_URI,
+        domain: SIWF_DOMAIN,
       }}
     >
       <AuthProviderContent {...props} />
