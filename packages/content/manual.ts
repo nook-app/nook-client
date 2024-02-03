@@ -1,12 +1,12 @@
 import { QueueName, getQueue } from "@flink/common/queues";
-import { getActionsHandler } from "./handlers";
+import { getContentHandler } from "./handlers";
 
 const run = async () => {
-  const queue = getQueue(QueueName.Actions);
+  const queue = getQueue(QueueName.Content);
   console.log(`Running for event ${process.argv[2]}`);
   const job = await queue.getJob(process.argv[2]);
   if (job) {
-    const handler = await getActionsHandler();
+    const handler = await getContentHandler();
     await handler(job);
   }
 };

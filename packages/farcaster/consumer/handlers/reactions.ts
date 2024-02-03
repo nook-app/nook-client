@@ -225,7 +225,6 @@ export const backfillReactions = async (messages: Message[]) => {
       castReactions.map((reaction) =>
         transformToCastReactionEvent(EventType.CAST_REACTION_ADD, reaction),
       ),
-      true,
     );
   }
 
@@ -238,7 +237,6 @@ export const backfillReactions = async (messages: Message[]) => {
       urlReactions.map((reaction) =>
         transformToUrlReactionEvent(EventType.URL_REACTION_ADD, reaction),
       ),
-      true,
     );
   }
 };

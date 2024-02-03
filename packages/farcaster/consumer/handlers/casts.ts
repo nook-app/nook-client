@@ -396,7 +396,7 @@ export const backfillCasts = async (
     );
   });
 
-  await publishRawEvents(events, true);
+  await publishRawEvents(events);
 
   return events.map((event) => event.data);
 };

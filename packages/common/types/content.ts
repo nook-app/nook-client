@@ -14,9 +14,6 @@ export type ContentBase = {
   /** ID for the content in URI format */
   contentId: string;
 
-  /** Entity who first submitted the content */
-  submitterId: ObjectId;
-
   /** Entity who created the content */
   creatorId?: ObjectId;
 

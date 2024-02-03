@@ -1,7 +1,6 @@
 import { ObjectId } from "mongodb";
 import { MongoClient, MongoCollection } from "../mongo";
 import { Entity } from "../types/entity";
-import { getFarcasterUsers } from "../utils";
 
 export const getOrCreateEntitiesForFids = async (
   client: MongoClient,
@@ -41,4 +40,24 @@ export const getOrCreateEntitiesForFids = async (
   }
 
   return entities;
+};
+
+const getFarcasterUsers = async (fids: string[]) => {
+  if (!fids?.length) return [];
+
+  const response = await fetch(`${process.env.FARCASTER_SERVICE_URL}/users`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      fids,
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed getting cast with ${response.status} for ${fids}`);
+  }
+
+  return await response.json();
 };

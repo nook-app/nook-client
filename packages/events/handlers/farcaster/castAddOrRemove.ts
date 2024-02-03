@@ -12,17 +12,17 @@ import {
 } from "@flink/common/types";
 import { MongoClient } from "@flink/common/mongo";
 import { ObjectId } from "mongodb";
-import { getFarcasterPostByData } from "@flink/common/utils";
 import { toFarcasterURI } from "@flink/farcaster/utils";
+import { getOrCreatePostContentFromData } from "../../utils/farcaster";
 
 export const handleCastAddOrRemove = async (
   client: MongoClient,
   rawEvent: RawEvent<FarcasterCastData>,
 ) => {
-  const data = await getFarcasterPostByData(client, rawEvent.data);
+  const content = await getOrCreatePostContentFromData(client, rawEvent.data);
 
   let type: EventActionType;
-  if (data.parentId) {
+  if (content.data.parentId) {
     type =
       rawEvent.source.type === EventType.CAST_ADD
         ? EventActionType.REPLY
@@ -40,43 +40,43 @@ export const handleCastAddOrRemove = async (
       eventId: rawEvent.eventId,
       source: rawEvent.source,
       timestamp: rawEvent.timestamp,
-      entityId: data.entityId,
+      entityId: content.data.entityId,
       entityIds: Array.from(
         new Set([
-          data.entityId,
-          data.parentEntityId,
-          data.rootParentEntityId,
-          ...data.mentions.map(({ entityId }) => entityId),
+          content.data.entityId,
+          content.data.parentEntityId,
+          content.data.rootParentEntityId,
+          ...content.data.mentions.map(({ entityId }) => entityId),
         ]),
       ).filter(Boolean) as ObjectId[],
       contentIds: Array.from(
         new Set([
           contentId,
-          data.rootParentId,
-          data.parentId,
-          ...data.embeds,
-          data.channelId,
+          content.data.rootParentId,
+          content.data.parentId,
+          ...content.data.embeds,
+          content.data.channelId,
         ]),
       ).filter(Boolean) as string[],
       createdAt: new Date(),
       type,
       data: {
-        entityId: data.entityId,
+        entityId: content.data.entityId,
         contentId,
-        content: data,
+        content: content.data,
       },
       deletedAt: [EventActionType.UNPOST, EventActionType.UNREPLY].includes(
         type,
       )
         ? new Date()
         : undefined,
-      topics: generateTopics(data),
+      topics: generateTopics(content.data),
     },
   ];
 
   const event: EntityEvent<FarcasterCastData> = {
     ...rawEvent,
-    entityId: data.entityId,
+    entityId: content.data.entityId,
     createdAt: new Date(),
   };
 

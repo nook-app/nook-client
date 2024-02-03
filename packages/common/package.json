@@ -13,8 +13,7 @@
     "./types": "./dist/types/index.js",
     "./entity": "./dist/entity/index.js",
     "./prisma/farcaster": "./dist/prisma/farcaster.js",
-    "./mongo": "./dist/mongo/index.js",
-    "./utils": "./dist/utils/index.js"
+    "./mongo": "./dist/mongo/index.js"
   },
   "dependencies": {
     "@prisma/client": "5.7.1",

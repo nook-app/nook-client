@@ -12,14 +12,19 @@ import {
   RawEvent,
   EntityEvent,
   EntityEventData,
+  EventActionType,
+  PostActionData,
+  Entity,
+  UpdateEntityInfoActionData,
+  LinkBlockchainAddressActionData,
+  EntityActionData,
 } from "@flink/common/types";
-import { MongoClient } from "@flink/common/mongo";
+import { MongoClient, MongoCollection } from "@flink/common/mongo";
 import { Job } from "bullmq";
 import { handleCastAddOrRemove } from "./farcaster/castAddOrRemove";
 import { handleCastReactionAddOrRemove } from "./farcaster/castReactionAddOrRemove";
 import { handleUrlReactionAddOrRemove } from "./farcaster/urlReactionAddOrRemove";
 import { handleLinkAddOrRemove } from "./farcaster/linkAddOrRemove";
-import { publishActionRequests } from "@flink/common/queues";
 import { handleUserDataAdd } from "./farcaster/userDataAdd";
 import { handleVerificationAddOrRemove } from "./farcaster/verificationAddOrRemove";
 
@@ -99,15 +104,88 @@ export const getEventsHandler = async () => {
 
     response.event.actions = actions.map(({ _id }) => _id);
 
-    await Promise.all([
-      client.upsertEvent(response.event),
-      publishActionRequests(
-        actions.map(({ _id, created }) => ({
-          actionId: _id.toString(),
-          created,
-        })),
-      ),
-    ]);
+    await Promise.all([client.upsertEvent(response.event)]);
+
+    for (const action of response.actions) {
+      switch (action.type) {
+        case EventActionType.UNPOST:
+        case EventActionType.UNREPLY: {
+          const typedAction = action as EventAction<PostActionData>;
+          await Promise.all([
+            client.markActionsDeleted(typedAction.source.id),
+            client.markContentDeleted(typedAction.data.contentId),
+          ]);
+          break;
+        }
+        case EventActionType.UNLIKE:
+        case EventActionType.UNREPOST: {
+          const typedAction = action as EventAction<PostActionData>;
+          await client.markActionsDeleted(typedAction.source.id);
+          break;
+        }
+        case EventActionType.UNFOLLOW: {
+          const typedAction = action as EventAction<EntityActionData>;
+          await client.markActionsDeleted(typedAction.source.id);
+          break;
+        }
+        case EventActionType.UPDATE_USER_INFO: {
+          const typedAction = action as EventAction<UpdateEntityInfoActionData>;
+          const collection = client.getCollection<Entity>(
+            MongoCollection.Entity,
+          );
+          await collection.updateOne(
+            {
+              _id: action.data.entityId,
+              "farcaster.fid": typedAction.data.sourceEntityId,
+            },
+            {
+              $set: {
+                [`farcaster.${typedAction.data.entityDataType}`]:
+                  typedAction.data.entityData,
+              },
+            },
+          );
+          break;
+        }
+        case EventActionType.LINK_BLOCKCHAIN_ADDRESS: {
+          const typedAction =
+            action as EventAction<LinkBlockchainAddressActionData>;
+          const collection = client.getCollection<Entity>(
+            MongoCollection.Entity,
+          );
+          await collection.updateOne(
+            {
+              _id: typedAction.data.entityId,
+              "ethereum.$.address": typedAction.data.address,
+            },
+            {
+              $set: {
+                "ethereum.$": {
+                  address: typedAction.data.address,
+                  isContract: typedAction.data.isContract,
+                },
+              },
+            },
+            {
+              upsert: true,
+            },
+          );
+          break;
+        }
+        case EventActionType.UNLINK_BLOCKCHAIN_ADDRESS: {
+          const typedAction =
+            action as EventAction<LinkBlockchainAddressActionData>;
+          const collection = client.getCollection<Entity>(
+            MongoCollection.Entity,
+          );
+          await collection.updateOne(
+            { _id: typedAction.data.entityId },
+            { $pull: { ethereum: { address: typedAction.data.address } } },
+          );
+          break;
+        }
+      }
+    }
 
     console.log(
       `[${rawEvent.source.service}] [${rawEvent.source.type}] processed ${rawEvent.source.id} by ${rawEvent.source.entityId}`,

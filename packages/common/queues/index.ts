@@ -10,7 +10,7 @@ export enum QueueName {
   FarcasterBackfill = "farcaster-backfill",
   Events = "events",
   EventsBackfill = "events-backfill",
-  Actions = "actions",
+  Content = "content",
 }
 
 type QueueType<T> = {
@@ -18,7 +18,7 @@ type QueueType<T> = {
   [QueueName.FarcasterBackfill]: FarcasterBackfillRequest;
   [QueueName.Events]: RawEvent<T>;
   [QueueName.EventsBackfill]: RawEvent<T>;
-  [QueueName.Actions]: EventActionRequest;
+  [QueueName.Content]: { contentId: string };
 };
 
 const connection = new Redis({

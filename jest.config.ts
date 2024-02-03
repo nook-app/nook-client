@@ -17,7 +17,6 @@ const config: Config = {
       preset: "ts-jest",
       testEnvironment: "node",
       displayName: "actions",
-      // testMatch: ["<rootDir>/packages/actions/test/**/*.test.ts"],
     },
   ],
   globals: {

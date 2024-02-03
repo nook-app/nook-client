@@ -1,4 +1,4 @@
-import { fetchUrlMetadata } from "../../content/url";
+import { fetchUrlMetadata } from "../../handlers/url";
 
 jest.mock("@flink/common/mongo");
 jest.mock("metascraper-media-provider", () => () => {

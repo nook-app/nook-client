@@ -3,19 +3,21 @@ import {
   FarcasterCastData,
   PostData,
   FidHash,
+  ContentType,
 } from "@flink/common/types";
 import { toFarcasterURI } from "@flink/farcaster/utils";
 import { MongoClient, MongoCollection } from "@flink/common/mongo";
 import { Entity } from "@flink/common/types/entity";
-import { getOrCreateEntitiesForFids } from "../entity";
+import { getOrCreateEntitiesForFids } from "@flink/common/entity";
+import { publishContent } from "@flink/common/queues";
 
-export const getFarcasterPostByContentId = async (
+export const getOrCreatePostContent = async (
   client: MongoClient,
   contentId: string,
 ) => {
-  const content = await client.findContent(contentId);
-  if (content) {
-    return content.data as PostData;
+  const existingContent = await client.findContent(contentId);
+  if (existingContent) {
+    return existingContent as Content<PostData>;
   }
 
   const cast = await getFarcasterCastByURI(contentId);
@@ -23,45 +25,58 @@ export const getFarcasterPostByContentId = async (
     return;
   }
 
-  return await generateFarcasterPost(client, cast);
+  return await createPostContent(client, cast);
 };
 
-export const getFarcasterPostByData = async (
+export const getOrCreatePostContentFromData = async (
   client: MongoClient,
   cast: FarcasterCastData,
 ) => {
-  const content = await client.findContent(toFarcasterURI(cast));
-  if (content) {
-    return content.data as PostData;
+  const existingContent = await client.findContent(toFarcasterURI(cast));
+  if (existingContent) {
+    return existingContent as Content<PostData>;
   }
 
-  return await generateFarcasterPost(client, cast);
+  return await createPostContent(client, cast);
 };
 
-export const generateFarcasterPostByContentId = async (
-  client: MongoClient,
-  contentId: string,
-) => {
-  const cast = await getFarcasterCastByURI(contentId);
-  if (!cast) {
-    return;
-  }
-
-  return await generateFarcasterPost(client, cast);
-};
-
-const generateFarcasterPost = async (
+const createPostContent = async (
   client: MongoClient,
   cast: FarcasterCastData,
-): Promise<PostData> => {
-  if (!cast.parentHash) {
-    const identities = await getOrCreateEntitiesForFids(
-      client,
-      extractFidsFromCasts([cast]),
-    );
-    return transformCast(cast, identities);
+) => {
+  let content: Content<PostData>;
+  if (cast.parentHash) {
+    content = await generateReplyContent(client, cast);
+  } else {
+    content = await generatePostContent(client, cast);
   }
 
+  await client.insertContent(content);
+
+  for (const embed of content.data.embeds) {
+    if (!(await client.findContent(embed))) {
+      await publishContent(embed);
+    }
+  }
+
+  return content;
+};
+
+const generatePostContent = async (
+  client: MongoClient,
+  cast: FarcasterCastData,
+) => {
+  const identities = await getOrCreateEntitiesForFids(
+    client,
+    extractFidsFromCasts([cast]),
+  );
+  return formatContent(generatePost(cast, identities));
+};
+
+const generateReplyContent = async (
+  client: MongoClient,
+  cast: FarcasterCastData,
+) => {
   const { existingParent, existingRoot, newParent, newRoot } =
     await getParentAndRootCasts(client, cast);
 
@@ -74,16 +89,16 @@ const generateFarcasterPost = async (
     extractFidsFromCasts(casts),
   );
 
-  const data: PostData = transformCast(cast, identities);
+  const data: PostData = generatePost(cast, identities);
   data.rootParent =
     existingRoot?.data ||
-    (newRoot ? transformCast(newRoot, identities) : undefined);
+    (newRoot ? generatePost(newRoot, identities) : undefined);
   data.parent =
     existingParent?.data ||
-    (newParent ? transformCast(newParent, identities) : undefined);
+    (newParent ? generatePost(newParent, identities) : undefined);
   data.parentEntityId = identities[cast.parentFid as string]._id;
 
-  return data;
+  return formatContent(data);
 };
 
 const getParentAndRootCasts = async (
@@ -153,7 +168,34 @@ const getParentAndRootCasts = async (
   };
 };
 
-const transformCast = (
+const formatContent = (data: PostData): Content<PostData> => {
+  const entityIds = [data.entityId];
+
+  if (data.rootParentEntityId && !entityIds.includes(data.rootParentEntityId)) {
+    entityIds.push(data.rootParentEntityId);
+  }
+
+  if (data.parentEntityId && !entityIds.includes(data.parentEntityId)) {
+    entityIds.push(data.parentEntityId);
+  }
+
+  for (const { entityId } of data.mentions) {
+    if (!entityIds.includes(entityId)) {
+      entityIds.push(entityId);
+    }
+  }
+
+  return {
+    contentId: data.contentId,
+    createdAt: new Date(),
+    timestamp: new Date(data.timestamp),
+    type: data.parentId ? ContentType.REPLY : ContentType.POST,
+    data,
+    entityIds,
+  };
+};
+
+const generatePost = (
   cast: FarcasterCastData,
   fidToEntity: Record<string, Entity>,
 ): PostData => {
@@ -207,14 +249,6 @@ export const getFarcasterCastByURI = async (uri: string) => {
   return casts[0];
 };
 
-export const getFarcasterCastByID = async (fidHash: FidHash) => {
-  const casts = await getFarcasterCasts({ fidHashes: [fidHash] });
-  if (!casts) {
-    return;
-  }
-  return casts[0];
-};
-
 export const getFarcasterCasts = async ({
   uris,
   fidHashes,
@@ -247,24 +281,4 @@ export const getFarcasterCasts = async ({
     return casts;
   }
   throw new Error(`Invalid response from farcaster: ${JSON.stringify(casts)}`);
-};
-
-export const getFarcasterUsers = async (fids: string[]) => {
-  if (!fids?.length) return [];
-
-  const response = await fetch(`${process.env.FARCASTER_SERVICE_URL}/users`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      fids,
-    }),
-  });
-
-  if (!response.ok) {
-    throw new Error(`Failed getting cast with ${response.status} for ${fids}`);
-  }
-
-  return await response.json();
 };

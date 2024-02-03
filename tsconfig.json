@@ -27,7 +27,7 @@
   ],
   "references": [
     {
-      "path": "./packages/actions"
+      "path": "./packages/content"
     },
     {
       "path": "./packages/common"

@@ -2759,42 +2759,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@flink/actions@workspace:packages/actions":
-  version: 0.0.0-use.local
-  resolution: "@flink/actions@workspace:packages/actions"
-  dependencies:
-    "@flink/common": "npm:*"
-    "@types/jest": "npm:^29.5.11"
-    "@types/metascraper": "npm:^5.14.3"
-    "@types/node": "npm:^20.10.5"
-    bullmq: "npm:^5.1.0"
-    cheerio: "npm:^1.0.0-rc.12"
-    jest: "npm:^29.7.0"
-    memoize-one: "npm:^6.0.0"
-    metascraper: "npm:^5.43.4"
-    metascraper-audio: "npm:^5.43.4"
-    metascraper-author: "npm:^5.43.4"
-    metascraper-date: "npm:^5.43.4"
-    metascraper-description: "npm:^5.43.4"
-    metascraper-feed: "npm:^5.43.4"
-    metascraper-iframe: "npm:^5.43.4"
-    metascraper-image: "npm:^5.43.4"
-    metascraper-lang: "npm:^5.43.4"
-    metascraper-logo: "npm:^5.43.4"
-    metascraper-logo-favicon: "npm:^5.43.4"
-    metascraper-media-provider: "npm:^5.43.4"
-    metascraper-publisher: "npm:^5.43.4"
-    metascraper-readability: "npm:^5.43.4"
-    metascraper-title: "npm:^5.43.4"
-    metascraper-url: "npm:^5.43.4"
-    metascraper-video: "npm:^5.43.4"
-    mongodb: "npm:^6.3.0"
-    ts-jest: "npm:^29.1.2"
-    ts-node: "npm:^10.9.2"
-    typescript: "npm:^5.3.3"
-  languageName: unknown
-  linkType: soft
-
 "@flink/api@npm:*, @flink/api@workspace:packages/api":
   version: 0.0.0-use.local
   resolution: "@flink/api@workspace:packages/api"
@@ -2859,6 +2823,42 @@ __metadata:
     mongodb: "npm:^6.3.0"
     prisma: "npm:5.7.1"
     prisma-json-types-generator: "npm:^3.0.3"
+    typescript: "npm:^5.3.3"
+  languageName: unknown
+  linkType: soft
+
+"@flink/content@workspace:packages/content":
+  version: 0.0.0-use.local
+  resolution: "@flink/content@workspace:packages/content"
+  dependencies:
+    "@flink/common": "npm:*"
+    "@types/jest": "npm:^29.5.11"
+    "@types/metascraper": "npm:^5.14.3"
+    "@types/node": "npm:^20.10.5"
+    bullmq: "npm:^5.1.0"
+    cheerio: "npm:^1.0.0-rc.12"
+    jest: "npm:^29.7.0"
+    memoize-one: "npm:^6.0.0"
+    metascraper: "npm:^5.43.4"
+    metascraper-audio: "npm:^5.43.4"
+    metascraper-author: "npm:^5.43.4"
+    metascraper-date: "npm:^5.43.4"
+    metascraper-description: "npm:^5.43.4"
+    metascraper-feed: "npm:^5.43.4"
+    metascraper-iframe: "npm:^5.43.4"
+    metascraper-image: "npm:^5.43.4"
+    metascraper-lang: "npm:^5.43.4"
+    metascraper-logo: "npm:^5.43.4"
+    metascraper-logo-favicon: "npm:^5.43.4"
+    metascraper-media-provider: "npm:^5.43.4"
+    metascraper-publisher: "npm:^5.43.4"
+    metascraper-readability: "npm:^5.43.4"
+    metascraper-title: "npm:^5.43.4"
+    metascraper-url: "npm:^5.43.4"
+    metascraper-video: "npm:^5.43.4"
+    mongodb: "npm:^6.3.0"
+    ts-jest: "npm:^29.1.2"
+    ts-node: "npm:^10.9.2"
     typescript: "npm:^5.3.3"
   languageName: unknown
   linkType: soft

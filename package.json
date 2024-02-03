@@ -6,7 +6,7 @@
     "clean": "find . -type d \\( -name \"dist\" -o -name \"node_modules\" \\) -exec rm -rf {} +",
     "build": "yarn workspaces foreach --all --topological-dev run build",
     "test": "yarn workspaces foreach --all run jest",
-    "test:actions": "yarn workspace @flink/actions run jest",
+    "test:content": "yarn workspace @flink/content run jest",
     "test:api": "yarn workspace @flink/api run jest",
     "test:common": "yarn workspace @flink/common run jest",
     "test:dashboard": "yarn workspace @flink/dashboard run jest",
@@ -19,7 +19,7 @@
     "start:farcaster:backfill": "yarn workspace @flink/farcaster start:backfill",
     "start:farcaster:publisher": "yarn workspace @flink/farcaster start:publisher",
     "start:events": "yarn workspace @flink/events start",
-    "start:actions": "yarn workspace @flink/actions start",
+    "start:content": "yarn workspace @flink/content start",
     "start:api": "yarn workspace @flink/api start"
   },
   "workspaces": [

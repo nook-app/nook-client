@@ -126,7 +126,6 @@ export const backfillLinks = async (messages: Message[]) => {
 
   await publishRawEvents(
     links.map((link) => transformToLinkEvent(EventType.LINK_ADD, link)),
-    true,
   );
 };
 

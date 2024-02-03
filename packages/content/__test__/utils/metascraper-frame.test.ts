@@ -1,6 +1,6 @@
-import { metascraperFrame } from "@flink/actions/utils/metascraper-frame";
 import * as cheerio from "cheerio";
 import { RulesOptions, Rules, RulesTestOptions } from "metascraper";
+import { metascraperFrame } from "../../utils/metascraper-frame";
 
 type Testable = {
   test: (args: RulesTestOptions) => boolean;

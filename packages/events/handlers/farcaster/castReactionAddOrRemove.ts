@@ -14,8 +14,8 @@ import {
 } from "@flink/common/types";
 import { ObjectId } from "mongodb";
 import { toFarcasterURI } from "@flink/farcaster/utils";
-import { getFarcasterPostByContentId } from "@flink/common/utils";
 import { getOrCreateEntitiesForFids } from "@flink/common/entity";
+import { getOrCreatePostContent } from "../../utils/farcaster";
 
 export const handleCastReactionAddOrRemove = async (
   client: MongoClient,
@@ -26,8 +26,8 @@ export const handleCastReactionAddOrRemove = async (
     hash: rawEvent.data.targetHash,
   });
 
-  const data = await getFarcasterPostByContentId(client, contentId);
-  if (!data) return;
+  const content = await getOrCreatePostContent(client, contentId);
+  if (!content) return;
 
   let type: EventActionType;
   if (rawEvent.data.reactionType === FarcasterReactionType.LIKE) {
@@ -58,34 +58,34 @@ export const handleCastReactionAddOrRemove = async (
       entityIds: Array.from(
         new Set([
           entityId,
-          data.entityId,
-          data.parentEntityId,
-          data.rootParentEntityId,
-          ...data.mentions.map(({ entityId }) => entityId),
+          content.data.entityId,
+          content.data.parentEntityId,
+          content.data.rootParentEntityId,
+          ...content.data.mentions.map(({ entityId }) => entityId),
         ]),
       ).filter(Boolean) as ObjectId[],
       contentIds: Array.from(
         new Set([
           contentId,
-          data.rootParentId,
-          data.parentId,
-          ...data.embeds,
-          data.channelId,
+          content.data.rootParentId,
+          content.data.parentId,
+          ...content.data.embeds,
+          content.data.channelId,
         ]),
       ).filter(Boolean) as string[],
       createdAt: new Date(),
       type,
       data: {
-        entityId: data.entityId,
+        entityId: content.data.entityId,
         contentId,
-        content: data,
+        content: content.data,
       },
       deletedAt: [EventActionType.UNPOST, EventActionType.UNREPLY].includes(
         type,
       )
         ? new Date()
         : undefined,
-      topics: generateTopics(entityId, data),
+      topics: generateTopics(entityId, content.data),
     },
   ];
 

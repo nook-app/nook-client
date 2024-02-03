@@ -1,5 +1,5 @@
 import { MongoClient } from "@flink/common/mongo";
-import { ContentType } from "@flink/common/types";
+import { Content, ContentType } from "@flink/common/types";
 import { ObjectId } from "mongodb";
 import metascraper, { MetascraperOptions } from "metascraper";
 import metascraperTitle from "metascraper-title";
@@ -27,7 +27,6 @@ import {
   FrameButtonAction,
   UnstructuredFrameMetascraperButtonKeys,
 } from "@flink/common/types";
-import { parse } from "path";
 
 // Require that a key in T maps to a key of FrameData
 type FrameDataTypesafeMapping<T> = {
@@ -71,33 +70,20 @@ const USER_AGENT_OVERRIDES: { [key: string]: string } = {
  * @param request
  * @returns
  */
-export const getOrCreateUrlContent = async (
+export const createUrlContent = async (
   client: MongoClient,
-  request: {
-    /** ID for the content in URI format */
-    contentId: string;
-
-    /** Entity who first submitted the content */
-    submitterId: ObjectId;
-
-    /** Timestamp content was created at */
-    timestamp: Date;
-  },
-) => {
-  const existingContent = await client.findContent(request.contentId);
-  if (existingContent?.data) {
-    return existingContent;
-  }
-
-  await client.upsertContent({
-    contentId: request.contentId,
-    submitterId: request.submitterId,
-    timestamp: request.timestamp,
+  contentId: string,
+): Promise<Content<UrlMetadata>> => {
+  const content = {
+    contentId: contentId,
+    timestamp: new Date(),
     entityIds: [],
     createdAt: new Date(),
     type: ContentType.URL,
-    data: await fetchUrlMetadata(request.contentId),
-  });
+    data: await fetchUrlMetadata(contentId),
+  };
+  await client.upsertContent(content);
+  return content;
 };
 
 const scrapeMetadata = async (options: MetascraperOptions) => {
