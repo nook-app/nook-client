@@ -81,10 +81,6 @@ const generateFarcasterPost = async (
   data.parent =
     existingParent?.data ||
     (newParent ? transformCast(newParent, identities) : undefined);
-  data.parentId = toFarcasterURI({
-    fid: cast.parentFid as string,
-    hash: cast.parentHash,
-  });
   data.parentEntityId = identities[cast.parentFid as string]._id;
 
   return data;
@@ -172,6 +168,13 @@ const transformCast = (
     })),
     embeds: cast.embeds,
     channelId: cast.rootParentUrl,
+    parentId:
+      cast.parentFid && cast.parentHash
+        ? toFarcasterURI({
+            fid: cast.parentFid,
+            hash: cast.parentHash,
+          })
+        : undefined,
     rootParentId: toFarcasterURI({
       fid: cast.rootParentFid,
       hash: cast.rootParentHash,
