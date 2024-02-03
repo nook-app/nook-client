@@ -1,5 +1,5 @@
 import { QueueName, getQueue } from ".";
-import { EventActionRequest, EventSource, RawEvent } from "../types";
+import { EventSource, RawEvent } from "../types";
 
 export const toJobId = (source: EventSource) => {
   return `${source.service}-${source.type}-${source.id}`;

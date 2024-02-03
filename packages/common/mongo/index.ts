@@ -71,72 +71,74 @@ export class MongoClient {
     const collection = this.getCollection<Content<ContentData>>(
       MongoCollection.Content,
     );
-    const updateResult = await collection.updateOne(
-      {
-        contentId: content.contentId,
-      },
-      {
-        $set: content,
-      },
-      {
-        upsert: true,
-      },
-    );
-    return {
-      _id: updateResult.upsertedId,
-      created: updateResult.upsertedCount > 0,
-    };
-  };
+    const existingContent = await collection.findOne({
+      contentId: content.contentId,
+    });
+    if (existingContent) {
+      return await collection.updateOne(
+        {
+          contentId: content.contentId,
+        },
+        {
+          $set: content,
+        },
+      );
+    }
 
-  insertContent = async (content: Content<ContentData>) => {
-    const collection = this.getCollection<Content<ContentData>>(
-      MongoCollection.Content,
-    );
-    await collection.insertOne(content);
+    return await collection.insertOne({
+      ...content,
+      _id: ObjectId.createFromTime(content.timestamp.getTime() / 1000),
+    });
   };
 
   upsertEvent = async <T>(event: EntityEvent<T>) => {
     const collection = this.getCollection<EntityEvent<T>>(
       MongoCollection.Events,
     );
-    const updateResult = await collection.updateOne(
-      {
-        eventId: event.eventId,
-      },
-      {
-        $set: event,
-      },
-      {
-        upsert: true,
-      },
-    );
-    return {
-      _id: updateResult.upsertedId,
-      created: updateResult.upsertedCount > 0,
-    };
+    const existingEvent = await collection.findOne({
+      eventId: event.eventId,
+    });
+    if (existingEvent) {
+      return await collection.updateOne(
+        {
+          eventId: event.eventId,
+        },
+        {
+          $set: event,
+        },
+      );
+    }
+
+    return await collection.insertOne({
+      ...event,
+      _id: ObjectId.createFromTime(event.timestamp.getTime() / 1000),
+    });
   };
 
   upsertAction = async (action: EventAction<EventActionData>) => {
     const collection = this.getCollection<EventAction<EventActionData>>(
       MongoCollection.Actions,
     );
-    const updateResult = await collection.findOneAndUpdate(
-      {
-        eventId: action.eventId,
-        type: action.type,
-      },
-      {
-        $set: action,
-      },
-      {
-        upsert: true,
-        includeResultMetadata: true,
-      },
-    );
-    return {
-      _id: updateResult.value?._id || updateResult.lastErrorObject?.upserted,
-      created: updateResult.lastErrorObject?.updatedExisting,
-    };
+    const existingAction = await collection.findOne({
+      eventId: action.eventId,
+      type: action.type,
+    });
+    if (existingAction) {
+      return await collection.updateOne(
+        {
+          eventId: action.eventId,
+          type: action.type,
+        },
+        {
+          $set: action,
+        },
+      );
+    }
+
+    return await collection.insertOne({
+      ...action,
+      _id: ObjectId.createFromTime(action.timestamp.getTime() / 1000),
+    });
   };
 
   markActionsDeleted = async (id: string) => {

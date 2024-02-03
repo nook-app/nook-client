@@ -51,7 +51,7 @@ const createPostContent = async (
     content = await generatePostContent(client, cast);
   }
 
-  await client.insertContent(content);
+  await client.upsertContent(content);
 
   for (const embed of content.data.embeds) {
     if (!(await client.findContent(embed))) {

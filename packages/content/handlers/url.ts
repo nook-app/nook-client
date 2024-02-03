@@ -74,11 +74,13 @@ export const createUrlContent = async (
   client: MongoClient,
   contentId: string,
 ): Promise<Content<UrlMetadata>> => {
+  const timestamp = new Date();
   const content = {
+    _id: ObjectId.createFromTime(timestamp.getTime() / 1000),
     contentId: contentId,
-    timestamp: new Date(),
+    timestamp,
     entityIds: [],
-    createdAt: new Date(),
+    createdAt: timestamp,
     type: ContentType.URL,
     data: await fetchUrlMetadata(contentId),
   };

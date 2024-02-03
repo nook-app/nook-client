@@ -98,34 +98,31 @@ export const getEventsHandler = async () => {
 
     if (!response) return;
 
-    const actions = await Promise.all(
-      response.actions.map((action) => client.upsertAction(action)),
-    );
-
-    response.event.actions = actions.map(({ _id }) => _id);
-
-    await Promise.all([client.upsertEvent(response.event)]);
+    const promises = [
+      void client.upsertEvent(response.event),
+      ...response.actions.map((action) => void client.upsertAction(action)),
+    ];
 
     for (const action of response.actions) {
       switch (action.type) {
         case EventActionType.UNPOST:
         case EventActionType.UNREPLY: {
           const typedAction = action as EventAction<PostActionData>;
-          await Promise.all([
-            client.markActionsDeleted(typedAction.source.id),
-            client.markContentDeleted(typedAction.data.contentId),
-          ]);
+          promises.push(
+            void client.markActionsDeleted(typedAction.source.id),
+            void client.markContentDeleted(typedAction.data.contentId),
+          );
           break;
         }
         case EventActionType.UNLIKE:
         case EventActionType.UNREPOST: {
           const typedAction = action as EventAction<PostActionData>;
-          await client.markActionsDeleted(typedAction.source.id);
+          promises.push(void client.markActionsDeleted(typedAction.source.id));
           break;
         }
         case EventActionType.UNFOLLOW: {
           const typedAction = action as EventAction<EntityActionData>;
-          await client.markActionsDeleted(typedAction.source.id);
+          promises.push(void client.markActionsDeleted(typedAction.source.id));
           break;
         }
         case EventActionType.UPDATE_USER_INFO: {
@@ -133,17 +130,19 @@ export const getEventsHandler = async () => {
           const collection = client.getCollection<Entity>(
             MongoCollection.Entity,
           );
-          await collection.updateOne(
-            {
-              _id: action.data.entityId,
-              "farcaster.fid": typedAction.data.sourceEntityId,
-            },
-            {
-              $set: {
-                [`farcaster.${typedAction.data.entityDataType}`]:
-                  typedAction.data.entityData,
+          promises.push(
+            void collection.updateOne(
+              {
+                _id: action.data.entityId,
+                "farcaster.fid": typedAction.data.sourceEntityId,
               },
-            },
+              {
+                $set: {
+                  [`farcaster.${typedAction.data.entityDataType}`]:
+                    typedAction.data.entityData,
+                },
+              },
+            ),
           );
           break;
         }
@@ -153,22 +152,24 @@ export const getEventsHandler = async () => {
           const collection = client.getCollection<Entity>(
             MongoCollection.Entity,
           );
-          await collection.updateOne(
-            {
-              _id: typedAction.data.entityId,
-              "ethereum.$.address": typedAction.data.address,
-            },
-            {
-              $set: {
-                "ethereum.$": {
-                  address: typedAction.data.address,
-                  isContract: typedAction.data.isContract,
+          promises.push(
+            void collection.updateOne(
+              {
+                _id: typedAction.data.entityId,
+                "ethereum.$.address": typedAction.data.address,
+              },
+              {
+                $set: {
+                  "ethereum.$": {
+                    address: typedAction.data.address,
+                    isContract: typedAction.data.isContract,
+                  },
                 },
               },
-            },
-            {
-              upsert: true,
-            },
+              {
+                upsert: true,
+              },
+            ),
           );
           break;
         }
@@ -178,14 +179,17 @@ export const getEventsHandler = async () => {
           const collection = client.getCollection<Entity>(
             MongoCollection.Entity,
           );
-          await collection.updateOne(
-            { _id: typedAction.data.entityId },
-            { $pull: { ethereum: { address: typedAction.data.address } } },
+          promises.push(
+            void collection.updateOne(
+              { _id: typedAction.data.entityId },
+              { $pull: { ethereum: { address: typedAction.data.address } } },
+            ),
           );
-          break;
         }
       }
     }
+
+    await Promise.all(promises);
 
     console.log(
       `[${rawEvent.source.service}] [${rawEvent.source.type}] processed ${rawEvent.source.id} by ${rawEvent.source.entityId}`,
