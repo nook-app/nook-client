@@ -1,5 +1,5 @@
 import fastify from "fastify";
-import { feedRoutes } from "./routes";
+import { authRoutes, feedRoutes } from "./routes";
 import { mongoPlugin } from "./plugins";
 
 const buildApp = () => {
@@ -21,6 +21,7 @@ const buildApp = () => {
   app.register(mongoPlugin);
 
   app.register(feedRoutes);
+  app.register(authRoutes);
 
   return app;
 };

@@ -34,3 +34,19 @@ export type GetFeedRequest = {
 export type GetFeedResponse = {
   data: FeedItem[];
 };
+
+export type AuthFarcasterRequest = {
+  message: string;
+  signature: `0x${string}`;
+  nonce: string;
+};
+
+export type AuthResponse = {
+  entity: Entity;
+  token: string;
+};
+
+export type ErrorResponse = {
+  status: number;
+  message: string;
+};

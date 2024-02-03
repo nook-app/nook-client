@@ -5,7 +5,7 @@ import {
   DefaultTheme,
   ThemeProvider,
 } from "@react-navigation/native";
-import { SplashScreen, Stack } from "expo-router";
+import { Slot, SplashScreen } from "expo-router";
 import { useColorScheme } from "react-native";
 import { TamaguiProvider } from "tamagui";
 
@@ -14,6 +14,7 @@ import { useFonts } from "expo-font";
 import { useEffect } from "react";
 import { Provider } from "react-redux";
 import { store } from "../store";
+import { AuthProvider } from "../context/auth";
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -52,16 +53,16 @@ function RootLayoutNav() {
   const colorScheme = useColorScheme();
 
   return (
-    <Provider store={store}>
-      <TamaguiProvider config={config} defaultTheme={colorScheme as string}>
-        <ThemeProvider
-          value={colorScheme === "dark" ? DarkTheme : DefaultTheme}
-        >
-          <Stack>
-            <Stack.Screen name="index" />
-          </Stack>
-        </ThemeProvider>
-      </TamaguiProvider>
-    </Provider>
+    <AuthProvider>
+      <Provider store={store}>
+        <TamaguiProvider config={config} defaultTheme={colorScheme as string}>
+          <ThemeProvider
+            value={colorScheme === "dark" ? DarkTheme : DefaultTheme}
+          >
+            <Slot />
+          </ThemeProvider>
+        </TamaguiProvider>
+      </Provider>
+    </AuthProvider>
   );
 }

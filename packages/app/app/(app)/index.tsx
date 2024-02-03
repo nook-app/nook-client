@@ -1,9 +1,20 @@
-import { View } from "tamagui";
-import { Feed } from "../components/feed";
+import { Button, View } from "tamagui";
+import { Feed } from "../../components/feed";
+import { useAuth } from "../../context/auth";
 
-export default function Home() {
+export default function FeedScreen() {
+  const { signOut } = useAuth();
   return (
-    <View height="100%" backgroundColor="$background" theme="orange">
+    <View backgroundColor="$background" theme="orange">
+      <View>
+        <Button
+          onPress={() => {
+            signOut();
+          }}
+        >
+          Sign Out
+        </Button>
+      </View>
       <Feed
         filter={{
           topics: {
