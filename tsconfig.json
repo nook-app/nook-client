@@ -23,7 +23,8 @@
     "**/dist/",
     "node_modules",
     "**/*.spec.ts",
-    "**/*.test.ts"
+    "**/*.test.ts",
+    "**/coverage/"
   ],
   "references": [
     {
