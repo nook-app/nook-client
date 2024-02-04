@@ -23,14 +23,21 @@ export class FeedService {
     this.client = fastify.mongo.client;
   }
 
-  async getFeeds({ filter }: GetFeedRequest): Promise<FeedItem[]> {
+  async getFeeds({ filter, cursor }: GetFeedRequest): Promise<FeedItem[]> {
     const collection = this.client.getCollection<EventAction<EventActionData>>(
       MongoCollection.Actions,
     );
 
+    const queryFilter = cursor
+      ? {
+          ...filter,
+          _id: { $lt: new ObjectId(cursor) },
+        }
+      : filter;
+
     const actions = await collection
-      .find(filter)
-      .sort({ timestamp: -1 })
+      .find(queryFilter)
+      .sort({ _id: -1 })
       .limit(25)
       .toArray();
 

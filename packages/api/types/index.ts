@@ -29,6 +29,7 @@ export type FeedItem<T = EventActionData> = {
 
 export type GetFeedRequest = {
   filter: object;
+  cursor?: string;
 };
 
 export type GetFeedResponse = {
