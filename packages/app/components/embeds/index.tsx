@@ -7,8 +7,9 @@ import {
   PostData,
   UrlMetadata,
 } from "@flink/common/types";
-import { Text } from "../ui/text";
+import { Text } from "tamagui";
 import { EmbedFrame } from "./frame";
+import { Linking } from "react-native";
 
 export const Embed = ({
   data,
@@ -54,5 +55,9 @@ export const Embed = ({
     }
   }
 
-  return <Text key={embed}>{embed}</Text>;
+  return (
+    <Text key={embed} onPress={() => Linking.openURL(embed)}>
+      {embed}
+    </Text>
+  );
 };

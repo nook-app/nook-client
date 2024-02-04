@@ -1,9 +1,10 @@
-import { Spinner, Text, View, XStack, YStack } from "tamagui";
+import { Spinner, Text, XStack } from "tamagui";
 import { api } from "../../store/api";
 import { FeedItem } from "@flink/api/types";
 import { EventActionType, PostActionData } from "@flink/common/types";
 import { FeedPost } from "./post";
-import { FlatList } from "react-native";
+import { FlatList, ViewToken } from "react-native";
+import { useCallback, useState } from "react";
 
 const renderFeedItem = ({ item }: { item: FeedItem }) => {
   if (item.type === EventActionType.POST) {
@@ -13,9 +14,30 @@ const renderFeedItem = ({ item }: { item: FeedItem }) => {
 };
 
 export const Feed = ({ filter }: { filter: object }) => {
+  const [cursor, setCursor] = useState<string>();
   const { data, error, isLoading } = api.useGetFeedForFilterQuery({
     filter,
+    cursor,
   });
+
+  const viewabilityConfig = {
+    itemVisiblePercentThreshold: 50, // Adjust as needed
+  };
+
+  const onViewableItemsChanged = useCallback(
+    ({ viewableItems }: { viewableItems: ViewToken[] }) => {
+      if (data && data.length > 5 && viewableItems.length > 0) {
+        const lastVisibleItemIndex =
+          viewableItems[viewableItems.length - 1].index;
+        if (lastVisibleItemIndex && lastVisibleItemIndex >= data.length - 6) {
+          // When the last visible item is among the last 5 items
+          const newCursor = data[data.length - 1]._id;
+          if (newCursor !== cursor) setCursor(newCursor);
+        }
+      }
+    },
+    [data, cursor],
+  );
 
   if (error) {
     return <Text>No data</Text>;
@@ -37,9 +59,11 @@ export const Feed = ({ filter }: { filter: object }) => {
 
   return (
     <FlatList
-      data={data.data}
+      data={data}
       renderItem={renderFeedItem}
       keyExtractor={(item) => item._id}
+      onViewableItemsChanged={onViewableItemsChanged}
+      viewabilityConfig={viewabilityConfig}
     />
   );
 };

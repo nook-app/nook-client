@@ -1,6 +1,5 @@
 import { Entity, PostData } from "@flink/common/types";
-import { Image, View, XStack, YStack } from "tamagui";
-import { Text } from "../ui/text";
+import { Image, Text, View, XStack, YStack } from "tamagui";
 import { ReactNode } from "react";
 import { ContentPost } from "../content/post";
 import { FeedItemContentWithEngagement } from "@flink/api/types";
@@ -55,12 +54,12 @@ export const EmbedQuote = ({
           </View>
         )}
         {entity?.farcaster.displayName && (
-          <Text bold>{entity.farcaster.displayName}</Text>
+          <Text fontWeight="700">{entity.farcaster.displayName}</Text>
         )}
         {entity?.farcaster.username && (
           <Text>{`@${entity.farcaster.username}`}</Text>
         )}
-        {!entity && <Text bold>Unknown</Text>}
+        {!entity && <Text fontWeight="700">Unknown</Text>}
       </XStack>
       {children}
     </YStack>

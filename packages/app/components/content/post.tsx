@@ -1,5 +1,6 @@
 import { Entity, PostData } from "@flink/common/types";
-import { Text } from "../ui/text";
+import { Linking } from "react-native";
+import { Text } from "tamagui";
 
 export const ContentPost = ({
   data,
@@ -19,12 +20,16 @@ export const ContentPost = ({
         }
 
         splitParts.push(
-          <Text key={Math.random().toString(16)} highlight>
+          <Text
+            key={`${data.contentId}-${part}`}
+            color="$color10"
+            onPress={() => Linking.openURL(part)}
+          >
             {part}
           </Text>,
         );
       } else {
-        splitParts.push(<Text key={Math.random().toString(16)}>{part}</Text>);
+        splitParts.push(<Text key={`${data.contentId}-${part}`}>{part}</Text>);
       }
     }
     return splitParts;
@@ -46,7 +51,7 @@ export const ContentPost = ({
       ...splitLinkParts(data.text.substring(mention.position, index)),
     );
     textParts.push(
-      <Text key={Math.random().toString(16)} highlight>
+      <Text key={`${data.contentId}-${label}`} color="$color10">
         {label}
       </Text>,
     );

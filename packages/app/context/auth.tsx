@@ -39,6 +39,7 @@ type Action = { type: "onSignIn"; session: Session } | { type: "onSignOut" };
 
 type AuthContextMethods = {
   signIn: (params: SignInParams) => Promise<void>;
+  signInDev: () => Promise<void>;
   signOut: () => Promise<void>;
 };
 
@@ -51,6 +52,7 @@ type AuthenticatedAuthContextValue = AuthContextMethods & {
 const AuthContext = createContext<AuthContextValue>({
   session: undefined,
   signIn: async () => undefined,
+  signInDev: async () => undefined,
   signOut: async () => undefined,
 });
 
@@ -138,6 +140,14 @@ function AuthProviderContent({ children }: AuthProviderProps) {
         session: state.session,
         signIn,
         signOut,
+        signInDev: async () =>
+          signIn({
+            message:
+              "localhost:3000 wants you to sign in with your Ethereum account:\n0x94Bac74eC80C25fd5F19A76F2cd74a46d6618c3A\n\nFarcaster Connect\n\nURI: http://localhost:3000\nVersion: 1\nChain ID: 10\nNonce: yRnR3Cv5FjrRQwAfl\nIssued At: 2024-02-02T23:29:10.600Z\nResources:\n- farcaster://fid/262426",
+            nonce: "yRnR3Cv5FjrRQwAfl",
+            signature:
+              "0x7f539bb1a70bcace1bd652529068b441e38298aa57bb2aca0714a7e7f6c48600613a9c86562890cb948de4a56912a54752c496c69eadc5fb80612d4e615458f41b",
+          }),
       }}
     >
       {children}
