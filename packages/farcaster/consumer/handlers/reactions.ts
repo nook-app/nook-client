@@ -262,7 +262,7 @@ export const transformToCastReactionEvent = (
   return {
     eventId: toJobId(source),
     source,
-    timestamp: reaction.timestamp,
+    timestamp: reaction.timestamp.toString(),
     data: {
       timestamp: reaction.timestamp,
       fid: reaction.fid.toString(),
@@ -301,7 +301,7 @@ const transformToUrlReactionEvent = (
   return {
     eventId: toJobId(source),
     source,
-    timestamp: reaction.timestamp,
+    timestamp: reaction.timestamp.toString(),
     data: {
       timestamp: reaction.timestamp,
       fid: reaction.fid.toString(),

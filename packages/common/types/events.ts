@@ -59,7 +59,7 @@ export type RawEvent<T> = {
   source: EventSource;
 
   /** Timestamp for when the event occurred */
-  timestamp: Date;
+  timestamp: string;
 
   /** Raw data sent from the source */
   data: T;
@@ -68,7 +68,19 @@ export type RawEvent<T> = {
 /**
  * Event object after being processed by the event service
  */
-export type EntityEvent<T> = RawEvent<T> & {
+export type EntityEvent<T> = {
+  /** Event ID */
+  eventId: string;
+
+  /** Source data */
+  source: EventSource;
+
+  /** Timestamp for when the event occurred */
+  timestamp: Date;
+
+  /** Raw data sent from the source */
+  data: T;
+
   /** Entity who triggered the event */
   entityId: ObjectId;
 

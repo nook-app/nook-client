@@ -43,7 +43,7 @@ export const handleUrlReactionAddOrRemove = async (
     {
       eventId: rawEvent.eventId,
       source: rawEvent.source,
-      timestamp: rawEvent.timestamp,
+      timestamp: new Date(rawEvent.timestamp),
       entityId,
       entityIds: [entityId],
       contentIds: [contentId],
@@ -70,6 +70,7 @@ export const handleUrlReactionAddOrRemove = async (
   const event: EntityEvent<FarcasterUrlReactionData> = {
     ...rawEvent,
     entityId,
+    timestamp: new Date(rawEvent.timestamp),
     createdAt: actions[0].createdAt,
   };
 

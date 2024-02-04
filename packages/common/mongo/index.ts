@@ -67,6 +67,15 @@ export class MongoClient {
     });
   };
 
+  generateObjectIdFromDate = (date: Date) => {
+    const datePart = ObjectId.createFromTime(
+      date.getTime() / 1000,
+    ).toHexString();
+    const randomPart = new ObjectId().toHexString();
+    const id = datePart.slice(0, 8) + randomPart.slice(8);
+    return new ObjectId(id);
+  };
+
   upsertContent = async (content: Content<ContentData>) => {
     const collection = this.getCollection<Content<ContentData>>(
       MongoCollection.Content,
@@ -87,7 +96,7 @@ export class MongoClient {
 
     return await collection.insertOne({
       ...content,
-      _id: ObjectId.createFromTime(content.timestamp.getTime() / 1000),
+      _id: this.generateObjectIdFromDate(content.timestamp),
     });
   };
 
@@ -111,7 +120,7 @@ export class MongoClient {
 
     return await collection.insertOne({
       ...event,
-      _id: ObjectId.createFromTime(event.timestamp.getTime() / 1000),
+      _id: this.generateObjectIdFromDate(event.timestamp),
     });
   };
 
@@ -137,7 +146,7 @@ export class MongoClient {
 
     return await collection.insertOne({
       ...action,
-      _id: ObjectId.createFromTime(action.timestamp.getTime() / 1000),
+      _id: this.generateObjectIdFromDate(action.timestamp),
     });
   };
 

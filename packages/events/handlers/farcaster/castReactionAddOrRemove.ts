@@ -53,7 +53,7 @@ export const handleCastReactionAddOrRemove = async (
     {
       eventId: rawEvent.eventId,
       source: rawEvent.source,
-      timestamp: rawEvent.timestamp,
+      timestamp: new Date(rawEvent.timestamp),
       entityId,
       entityIds: Array.from(
         new Set([
@@ -92,6 +92,7 @@ export const handleCastReactionAddOrRemove = async (
   const event: EntityEvent<FarcasterCastReactionData> = {
     ...rawEvent,
     entityId,
+    timestamp: new Date(rawEvent.timestamp),
     createdAt: new Date(),
   };
 

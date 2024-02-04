@@ -414,7 +414,7 @@ export const transformToCastEvent = (
   return {
     eventId: toJobId(source),
     source,
-    timestamp: cast.timestamp,
+    timestamp: cast.timestamp.toString(),
     data: transformToCastData(cast),
   };
 };

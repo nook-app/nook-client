@@ -32,7 +32,7 @@ export const handleUserDataAdd = async (
   const action: EventAction<UpdateEntityInfoActionData> = {
     eventId: rawEvent.eventId,
     source: rawEvent.source,
-    timestamp: rawEvent.timestamp,
+    timestamp: new Date(rawEvent.timestamp),
     entityId,
     entityIds: [entityId],
     contentIds: [],
@@ -55,6 +55,7 @@ export const handleUserDataAdd = async (
   const event: EntityEvent<FarcasterUserDataAddData> = {
     ...rawEvent,
     entityId,
+    timestamp: new Date(rawEvent.timestamp),
     createdAt: action.createdAt,
   };
 

@@ -35,7 +35,7 @@ export const handleVerificationAdd = async (
   const action: EventAction<LinkBlockchainAddressActionData> = {
     eventId: rawEvent.eventId,
     source: rawEvent.source,
-    timestamp: rawEvent.timestamp,
+    timestamp: new Date(rawEvent.timestamp),
     entityId,
     entityIds: [entityId],
     contentIds: [],
@@ -59,6 +59,7 @@ export const handleVerificationAdd = async (
   const event: EntityEvent<FarcasterVerificationData> = {
     ...rawEvent,
     entityId,
+    timestamp: new Date(rawEvent.timestamp),
     createdAt: action.createdAt,
   };
 
@@ -80,7 +81,7 @@ export const handleVerificationRemove = async (
   const action: EventAction<LinkBlockchainAddressActionData> = {
     eventId: rawEvent.eventId,
     source: rawEvent.source,
-    timestamp: rawEvent.timestamp,
+    timestamp: new Date(rawEvent.timestamp),
     entityId,
     entityIds: [entityId],
     contentIds: [],
@@ -104,6 +105,7 @@ export const handleVerificationRemove = async (
   const event: EntityEvent<FarcasterVerificationData> = {
     ...rawEvent,
     entityId,
+    timestamp: new Date(rawEvent.timestamp),
     createdAt: action.createdAt,
   };
 

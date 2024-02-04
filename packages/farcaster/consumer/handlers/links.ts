@@ -142,7 +142,7 @@ const transformToLinkEvent = (
   return {
     eventId: toJobId(source),
     source,
-    timestamp: link.timestamp,
+    timestamp: link.timestamp.toString(),
     data: {
       fid: link.fid.toString(),
       linkType: link.linkType,
