@@ -89,7 +89,10 @@ export class MongoClient {
           contentId: content.contentId,
         },
         {
-          $set: content,
+          $set: {
+            ...content,
+            _id: existingContent._id,
+          },
         },
       );
     }
@@ -113,7 +116,10 @@ export class MongoClient {
           eventId: event.eventId,
         },
         {
-          $set: event,
+          $set: {
+            ...event,
+            _id: existingEvent._id,
+          },
         },
       );
     }
@@ -139,7 +145,10 @@ export class MongoClient {
           type: action.type,
         },
         {
-          $set: action,
+          $set: {
+            ...action,
+            _id: existingAction._id,
+          },
         },
       );
     }
