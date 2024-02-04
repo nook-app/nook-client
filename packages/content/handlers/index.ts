@@ -1,5 +1,6 @@
 import { MongoClient } from "@flink/common/mongo";
 import { Job } from "bullmq";
+import { getOrCreateUrlContent } from "./url";
 
 export const getContentHandler = async () => {
   const client = new MongoClient();
@@ -10,6 +11,7 @@ export const getContentHandler = async () => {
     if (!content) {
       if (job.data.contentId.startsWith("farcaster://")) {
       } else {
+        await getOrCreateUrlContent(client, job.data.contentId);
       }
     }
 

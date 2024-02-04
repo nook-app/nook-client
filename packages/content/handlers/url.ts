@@ -70,10 +70,15 @@ const USER_AGENT_OVERRIDES: { [key: string]: string } = {
  * @param request
  * @returns
  */
-export const createUrlContent = async (
+export const getOrCreateUrlContent = async (
   client: MongoClient,
   contentId: string,
 ): Promise<Content<UrlMetadata>> => {
+  const existingContent = await client.findContent(contentId);
+  if (existingContent) {
+    return existingContent as Content<UrlMetadata>;
+  }
+
   const timestamp = new Date();
   const content = {
     _id: ObjectId.createFromTime(timestamp.getTime() / 1000),

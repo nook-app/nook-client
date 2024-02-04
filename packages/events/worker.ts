@@ -2,12 +2,7 @@ import { QueueName, getWorker } from "@flink/common/queues";
 import { getEventsHandler } from "./handlers";
 
 const run = async () => {
-  const queueName =
-    process.argv[2] === "--backfill"
-      ? QueueName.EventsBackfill
-      : QueueName.Events;
-
-  const worker = getWorker(queueName, await getEventsHandler());
+  const worker = getWorker(QueueName.Events, await getEventsHandler());
 
   worker.on("failed", (job, err) => {
     if (job) {
