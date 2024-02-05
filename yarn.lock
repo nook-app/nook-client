@@ -4305,7 +4305,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@react-navigation/bottom-tabs@npm:~6.5.7":
+"@react-navigation/bottom-tabs@npm:^6.5.11, @react-navigation/bottom-tabs@npm:~6.5.7":
   version: 6.5.11
   resolution: "@react-navigation/bottom-tabs@npm:6.5.11"
   dependencies:
@@ -9557,6 +9557,7 @@ __metadata:
   dependencies:
     "@biomejs/biome": "npm:1.4.1"
     "@farcaster/auth-client": "npm:^0.1.0"
+    "@react-navigation/bottom-tabs": "npm:^6.5.11"
     "@types/jest": "npm:^29.5.11"
     "@types/node": "npm:^20.11.14"
     jest: "npm:^29.7.0"

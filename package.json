@@ -38,6 +38,7 @@
   "packageManager": "yarn@4.0.2",
   "dependencies": {
     "@farcaster/auth-client": "^0.1.0",
+    "@react-navigation/bottom-tabs": "^6.5.11",
     "viem": "^2.7.1"
   }
 }
