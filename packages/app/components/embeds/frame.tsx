@@ -67,10 +67,7 @@ export const EmbedFrame = ({
     <View borderRadius="$2">
       {metadata.image && (
         <View flex={1} height="$14" borderRadius="$2" overflow="hidden">
-          <Image
-            source={{ uri: metadata.image }}
-            style={{ width: "100%", height: "100%" }}
-          />
+          <Image source={{ uri: metadata.image }} width="100%" height="100%" />
         </View>
       )}
       {buttons && (

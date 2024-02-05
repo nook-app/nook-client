@@ -14,6 +14,7 @@ export const ContentPost = ({
   const splitLinkParts = (text: string) => {
     const splitParts = [];
     for (const part of text.split(/(https?:\/\/[^\s]+)/g)) {
+      if (!part) continue;
       if (/https?:\/\/[^\s]+/.test(part)) {
         if (data.embeds.includes(part)) {
           continue;
