@@ -6,7 +6,7 @@ jest.mock("metascraper-media-provider", () => () => {
 });
 
 describe("@flink/content/handlers/url", () => {
-  test("idk", async () => {
+  test("resolves full frame metadata", async () => {
     global.fetch = jest.fn().mockResolvedValue({
       text: () => `
         <head>
@@ -24,7 +24,7 @@ describe("@flink/content/handlers/url", () => {
         <meta property="fc:frame:refresh_period" content="refresh_period" />
         <meta property="fc:frame:idem_key" content="idem_key" />
         <meta property="fc:frame:fake_idk" content="fake" />
-        <meta property="fc:frame:input:text:text_input"/>
+        <meta property="fc:frame:input:text" content="text_input" />
         </head>
         `,
       headers: {
