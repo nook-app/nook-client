@@ -8,7 +8,12 @@ export const toJobId = (source: EventSource) => {
 export const publishRawEvent = async <T>(event: RawEvent<T>) => {
   const jobId = toJobId(event.source);
   const queue = getQueue(QueueName.Events);
-  await queue.add(jobId, event, { jobId });
+  await queue.add(jobId, event, {
+    jobId,
+    removeOnComplete: {
+      count: 10000,
+    },
+  });
 };
 
 export const publishRawEvents = async <T>(events: RawEvent<T>[]) => {
@@ -28,5 +33,14 @@ export const publishRawEvents = async <T>(events: RawEvent<T>[]) => {
 
 export const publishContent = async <T>(contentId: string) => {
   const queue = getQueue(QueueName.Content);
-  await queue.add(contentId, { contentId });
+  await queue.add(
+    contentId,
+    { contentId },
+    {
+      jobId: contentId,
+      removeOnComplete: {
+        count: 10000,
+      },
+    },
+  );
 };

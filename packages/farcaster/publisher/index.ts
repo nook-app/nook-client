@@ -46,6 +46,9 @@ const run = async () => {
 
     await queue.add(typedEvent.id.toString(), message, {
       jobId: `fc-${typedEvent.id.toString()}`,
+      removeOnComplete: {
+        count: 10000,
+      },
     });
 
     processedEvents++;
