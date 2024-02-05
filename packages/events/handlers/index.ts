@@ -105,19 +105,89 @@ export const getEventsHandler = async () => {
 
     for (const action of response.actions) {
       switch (action.type) {
+        case EventActionType.POST:
+        case EventActionType.REPLY: {
+          const typedAction = action as EventAction<PostActionData>;
+          promises.push(
+            ...typedAction.data.content.embeds.map(
+              (contentId) =>
+                void client.incrementEngagement(contentId, "embeds"),
+            ),
+          );
+          if (typedAction.data.content.parentId) {
+            promises.push(
+              void client.incrementEngagement(
+                typedAction.data.content.parentId,
+                "replies",
+              ),
+            );
+          }
+          break;
+        }
         case EventActionType.UNPOST:
         case EventActionType.UNREPLY: {
           const typedAction = action as EventAction<PostActionData>;
           promises.push(
             void client.markActionsDeleted(typedAction.source.id),
             void client.markContentDeleted(typedAction.data.contentId),
+            ...typedAction.data.content.embeds.map(
+              (contentId) =>
+                void client.incrementEngagement(contentId, "embeds", true),
+            ),
+          );
+          if (typedAction.data.content.parentId) {
+            promises.push(
+              void client.incrementEngagement(
+                typedAction.data.content.parentId,
+                "replies",
+                true,
+              ),
+            );
+          }
+          break;
+        }
+        case EventActionType.LIKE: {
+          const typedAction = action as EventAction<PostActionData>;
+          promises.push(
+            void client.incrementEngagement(
+              typedAction.data.contentId,
+              "likes",
+            ),
           );
           break;
         }
-        case EventActionType.UNLIKE:
+        case EventActionType.REPOST: {
+          const typedAction = action as EventAction<PostActionData>;
+          promises.push(
+            void client.incrementEngagement(
+              typedAction.data.contentId,
+              "reposts",
+            ),
+          );
+          break;
+        }
+        case EventActionType.UNLIKE: {
+          const typedAction = action as EventAction<PostActionData>;
+          promises.push(
+            void client.markActionsDeleted(typedAction.source.id),
+            void client.incrementEngagement(
+              typedAction.data.contentId,
+              "likes",
+              true,
+            ),
+          );
+          break;
+        }
         case EventActionType.UNREPOST: {
           const typedAction = action as EventAction<PostActionData>;
-          promises.push(void client.markActionsDeleted(typedAction.source.id));
+          promises.push(
+            void client.markActionsDeleted(typedAction.source.id),
+            void client.incrementEngagement(
+              typedAction.data.contentId,
+              "reposts",
+              true,
+            ),
+          );
           break;
         }
         case EventActionType.UNFOLLOW: {

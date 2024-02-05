@@ -28,6 +28,14 @@ export type ContentBase = {
 
   /** Date record was deleted at */
   deletedAt?: Date;
+
+  /** Engagement for the content */
+  engagement: {
+    likes: number;
+    reposts: number;
+    replies: number;
+    embeds: number;
+  };
 };
 
 export type UnstructuredFrameMetascraperButtonKeys = {

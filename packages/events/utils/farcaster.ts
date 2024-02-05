@@ -192,6 +192,12 @@ const formatContent = (data: PostData): Content<PostData> => {
     type: data.parentId ? ContentType.REPLY : ContentType.POST,
     data,
     entityIds,
+    engagement: {
+      likes: 0,
+      reposts: 0,
+      replies: 0,
+      embeds: 0,
+    },
   };
 };
 

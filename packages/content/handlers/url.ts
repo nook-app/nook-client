@@ -88,6 +88,12 @@ export const getOrCreateUrlContent = async (
     createdAt: timestamp,
     type: ContentType.URL,
     data: await fetchUrlMetadata(contentId),
+    engagement: {
+      likes: 0,
+      reposts: 0,
+      replies: 0,
+      embeds: 0,
+    },
   };
   await client.upsertContent(content);
   return content;

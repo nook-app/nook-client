@@ -210,4 +210,21 @@ export class MongoClient {
       },
     );
   };
+
+  incrementEngagement = async (
+    contentId: string,
+    type: string,
+    decrement = false,
+  ) => {
+    this.getCollection(MongoCollection.Content).updateOne(
+      {
+        contentId,
+      },
+      {
+        $inc: {
+          [`engagement.${type}`]: decrement ? -1 : 1,
+        },
+      },
+    );
+  };
 }
