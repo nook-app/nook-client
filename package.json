@@ -24,7 +24,7 @@
     "start:content": "yarn workspace @flink/content start",
     "start:api": "yarn workspace @flink/api start"
   },
-  "workspaces": ["packages/*"],
+  "workspaces": ["packages/actions", "packages/api", "packages/common", "packages/content", "packages/dashboard", "packages/events", "packages/farcaster", "packages/sdk"],
   "devDependencies": {
     "@biomejs/biome": "1.4.1",
     "@types/jest": "^29.5.11",
