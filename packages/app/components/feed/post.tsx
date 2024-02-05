@@ -5,10 +5,6 @@ import { Heart, MessageSquare, RefreshCw } from "@tamagui/lucide-icons";
 import { ContentPost } from "../content/post";
 import { Embed } from "../embeds";
 
-const paddingContainer = "$2";
-const profileWidth = "$3.5";
-const gap = "$2";
-
 function formatTimeAgo(date: string) {
   const seconds = Math.floor(
     (new Date().getTime() - new Date(date).getTime()) / 1000,
@@ -45,12 +41,12 @@ export const FeedPost = ({
 
   return (
     <XStack
-      padding={paddingContainer}
+      padding="$2"
       borderBottomWidth="$0.25"
       borderBottomColor="$borderColor"
-      gap={gap}
+      gap="$2"
     >
-      <View width={profileWidth}>
+      <View width="$3.5">
         {entity.farcaster.pfp && (
           <Image
             source={{ width: 40, height: 40, uri: entity.farcaster.pfp }}

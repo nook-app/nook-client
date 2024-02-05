@@ -3,12 +3,26 @@ import { api } from "../../store/api";
 import { FeedItem } from "@flink/api/types";
 import { EventActionType, PostActionData } from "@flink/common/types";
 import { FeedPost } from "./post";
-import { FlatList, ViewToken } from "react-native";
+import { FlatList, Pressable, ViewToken } from "react-native";
 import { useCallback, useState } from "react";
+import { Link } from "expo-router";
 
 const renderFeedItem = ({ item }: { item: FeedItem }) => {
   if (item.type === EventActionType.POST) {
-    return <FeedPost key={item._id} item={item as FeedItem<PostActionData>} />;
+    const typedItem = item as FeedItem<PostActionData>;
+    return (
+      <Link
+        href={{
+          pathname: "/(auth)/(nooks)/nooks/actions/[id]",
+          params: { id: typedItem._id },
+        }}
+        asChild
+      >
+        <Pressable>
+          <FeedPost key={typedItem._id} item={typedItem} />
+        </Pressable>
+      </Link>
+    );
   }
   return <></>;
 };

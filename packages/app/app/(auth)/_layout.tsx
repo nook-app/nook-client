@@ -1,8 +1,8 @@
 import { Redirect, Tabs } from "expo-router";
 
 import { useAuth } from "../../context/auth";
-import { Image, View } from "tamagui";
-import { Home } from "@tamagui/lucide-icons";
+import { Image, Text, View } from "tamagui";
+import { Bell, LayoutGrid } from "@tamagui/lucide-icons";
 import { useAppSelector } from "../../hooks/useAppSelector";
 import { BottomTabBar } from "@react-navigation/bottom-tabs";
 import Animated, {
@@ -48,29 +48,68 @@ export default function AuthedLayout() {
             borderTopColor="$borderColor"
           />
         ),
-        tabBarLabel: () => <></>,
-        tabBarIcon: () => {
-          if (route.name === "nooks") {
-            return <Home size={24} />;
+        tabBarLabel: ({ focused }) => (
+          <View>
+            <Text fontSize="$2" color={focused ? undefined : "$gray11"}>
+              {route.name === "(nooks)"
+                ? "Nooks"
+                : route.name === "notifications"
+                  ? "Notifications"
+                  : route.name === "profile"
+                    ? "Profile"
+                    : route.name}
+            </Text>
+          </View>
+        ),
+        tabBarIcon: ({ focused }) => {
+          let component = <></>;
+          if (route.name === "(nooks)") {
+            component = (
+              <LayoutGrid
+                size={20}
+                color={focused ? "white" : "$gray11"}
+                fill={focused ? "white" : undefined}
+              />
+            );
           }
           if (route.name === "profile") {
-            return (
+            component = (
               <Image
                 source={{
-                  width: 32,
-                  height: 32,
+                  width: 24,
+                  height: 24,
                   uri: session?.entity?.farcaster?.pfp,
                 }}
                 borderRadius="$10"
               />
             );
           }
-          return <></>;
+          if (route.name === "notifications") {
+            component = (
+              <Bell
+                size={20}
+                color={focused ? "white" : "$gray11"}
+                fill={focused ? "white" : undefined}
+              />
+            );
+          }
+          return (
+            <View
+              width="$4"
+              height="$4"
+              paddingTop="$1"
+              justifyContent="center"
+              alignItems="center"
+            >
+              {component}
+            </View>
+          );
         },
       })}
     >
       <Tabs.Screen name="index" options={{ href: null }} />
-      <Tabs.Screen name="nooks" />
+      <Tabs.Screen name="(nooks)" />
+      <Tabs.Screen name="notifications" />
       <Tabs.Screen name="profile" />
     </Tabs>
   );

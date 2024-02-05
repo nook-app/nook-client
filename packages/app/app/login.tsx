@@ -68,7 +68,7 @@ export default function SignIn() {
 
   useEffect(() => {
     if (session) {
-      router.replace("/nooks/");
+      router.replace("/(auth)/nooks/");
     }
   }, [session]);
 

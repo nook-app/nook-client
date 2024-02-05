@@ -65,5 +65,9 @@ export const ContentPost = ({
     textParts.reverse();
   }
 
+  if (textParts.length === 0) {
+    return null;
+  }
+
   return <Text>{textParts}</Text>;
 };

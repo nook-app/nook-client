@@ -1,5 +1,5 @@
 import { View } from "tamagui";
-import { Feed } from "../../../components/feed";
+import { Feed } from "../../../../../components/feed";
 
 export default function FeedScreen() {
   return (
@@ -8,6 +8,10 @@ export default function FeedScreen() {
         filter={{
           type: "POST",
           deletedAt: null,
+          topics: {
+            type: "SOURCE_ENTITY",
+            value: "65be632f92e36013ae684d7b",
+          },
         }}
       />
     </View>
