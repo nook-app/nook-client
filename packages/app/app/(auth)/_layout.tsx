@@ -71,7 +71,7 @@ export default function AuthedLayout() {
         )}
       >
         <Drawer.Screen
-          name="index"
+          name="nooks"
           options={{
             headerLeft: () => (
               <DrawerToggleButton src={session?.entity?.farcaster?.pfp} />
