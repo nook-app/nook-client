@@ -48,7 +48,7 @@ describe("metascraperFrame", () => {
     <meta property="fc:frame:refresh_period" content="refresh_period" />
     <meta property="fc:frame:idem_key" content="idem_key" />
     <meta property="fc:frame:fake_idk" content="fake" />
-    <meta property="fc:frame:input:text:text_input"/>
+    <meta property="fc:frame:input:text" content="text_input"/>
     </head>
     `;
     const dom = cheerio.load(fullFrameHtml);

@@ -55,11 +55,7 @@ const rules: Rules & {
     return $('meta[property="fc:frame:idem_key"]').attr("content");
   },
   frameTextInput: ({ htmlDom: $ }) => {
-    const property = $('meta[property^="fc:frame:input:"]')
-      .first()
-      .attr("property");
-    const parts = property ? property.split(":") : undefined;
-    return parts ? parts[parts.length - 1] : undefined;
+    return $('meta[property^="fc:frame:input:text"]').attr('content');
   },
 };
 
