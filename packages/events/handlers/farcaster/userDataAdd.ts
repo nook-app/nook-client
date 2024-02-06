@@ -34,8 +34,8 @@ export const handleUserDataAdd = async (
     source: rawEvent.source,
     timestamp: new Date(rawEvent.timestamp),
     entityId,
-    entityIds: [entityId],
-    contentIds: [],
+    referencedEntityIds: [entityId],
+    referencedContentIds: [],
     createdAt: new Date(),
     type: EventActionType.UPDATE_USER_INFO,
     data: {

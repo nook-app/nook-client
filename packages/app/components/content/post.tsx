@@ -1,4 +1,4 @@
-import { FeedItem } from "@flink/api/types";
+import { ContentFeedItem } from "@flink/api/types";
 import { Entity, PostActionData, PostData } from "@flink/common/types";
 import { Image, ScrollView, Text, View, XStack, YStack } from "tamagui";
 import { Embed } from "../embeds";
@@ -79,7 +79,7 @@ export const PostContent = ({
 
 export const ContentPost = ({
   item: { data, entity, entityMap, contentMap },
-}: { item: FeedItem<PostActionData> }) => {
+}: { item: ContentFeedItem<PostActionData> }) => {
   const engagement = contentMap[data.contentId].engagement;
 
   return (

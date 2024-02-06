@@ -45,8 +45,8 @@ export const handleUrlReactionAddOrRemove = async (
       source: rawEvent.source,
       timestamp: new Date(rawEvent.timestamp),
       entityId,
-      entityIds: [entityId],
-      contentIds: [contentId],
+      referencedEntityIds: [entityId],
+      referencedContentIds: [contentId],
       createdAt: new Date(),
       type: eventActionType,
       data: {

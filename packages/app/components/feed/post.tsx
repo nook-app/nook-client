@@ -1,4 +1,4 @@
-import { FeedItem } from "@flink/api/types";
+import { ContentFeedItem } from "@flink/api/types";
 import { PostActionData } from "@flink/common/types";
 import { Image, Text, View, XStack, YStack } from "tamagui";
 import { Heart, MessageSquare, RefreshCw } from "@tamagui/lucide-icons";
@@ -34,7 +34,7 @@ function formatTimeAgo(date: string) {
 
 export const FeedPost = ({
   item: { data, entity, entityMap, contentMap },
-}: { item: FeedItem<PostActionData> }) => {
+}: { item: ContentFeedItem<PostActionData> }) => {
   const engagement = contentMap[data.contentId].engagement;
 
   return (

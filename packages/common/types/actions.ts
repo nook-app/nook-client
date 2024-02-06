@@ -52,10 +52,10 @@ export type EventAction<T> = {
   entityId: ObjectId;
 
   /** Set of contentIds involved in this action */
-  contentIds: string[];
+  referencedContentIds: string[];
 
   /** Set of entityIds involved in this action */
-  entityIds: ObjectId[];
+  referencedEntityIds: ObjectId[];
 
   /** Optional parent of the action */
   parent?: ObjectId;

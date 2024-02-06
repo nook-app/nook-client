@@ -32,8 +32,8 @@ export const handleLinkAddOrRemove = async (
       source: rawEvent.source,
       timestamp: new Date(rawEvent.timestamp),
       entityId,
-      entityIds: [entityId, targetEntityId],
-      contentIds: [],
+      referencedEntityIds: [entityId, targetEntityId],
+      referencedContentIds: [],
       createdAt: new Date(),
       type: isRemove ? EventActionType.UNFOLLOW : EventActionType.FOLLOW,
       data: {

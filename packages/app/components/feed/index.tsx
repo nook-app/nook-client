@@ -1,18 +1,18 @@
 import { Spinner, Text, View, XStack } from "tamagui";
 import { api } from "../../store/api";
-import { FeedItem } from "@flink/api/types";
+import { ContentFeedItem } from "@flink/api/types";
 import { EventActionType, PostActionData } from "@flink/common/types";
 import { FeedPost } from "./post";
 import { FlatList, Pressable, ViewToken } from "react-native";
 import { useCallback, useState } from "react";
 import { Link } from "expo-router";
 
-const renderFeedItem = ({ item }: { item: FeedItem }) => {
+const renderFeedItem = ({ item }: { item: ContentFeedItem }) => {
   if (
     item.type === EventActionType.POST ||
     item.type === EventActionType.REPLY
   ) {
-    const typedItem = item as FeedItem<PostActionData>;
+    const typedItem = item as ContentFeedItem<PostActionData>;
     return (
       <Link
         push

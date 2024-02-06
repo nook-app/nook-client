@@ -21,9 +21,6 @@ export type ContentBase = {
   /** Timestamp content was created at */
   timestamp: Date;
 
-  /** Set of entityIds involved in this content */
-  entityIds: ObjectId[];
-
   /** Date record was created at */
   createdAt: Date;
 
@@ -40,6 +37,12 @@ export type ContentBase = {
 
   /** Topics for the content */
   topics: Topic[];
+
+  /** References content IDs */
+  referencedContentIds: string[];
+
+  /** References entity IDs */
+  referencedEntityIds: ObjectId[];
 };
 
 export type UnstructuredFrameMetascraperButtonKeys = {

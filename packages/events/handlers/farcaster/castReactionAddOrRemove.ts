@@ -55,24 +55,10 @@ export const handleCastReactionAddOrRemove = async (
       source: rawEvent.source,
       timestamp: new Date(rawEvent.timestamp),
       entityId,
-      entityIds: Array.from(
-        new Set([
-          entityId,
-          content.data.entityId,
-          content.data.parentEntityId,
-          content.data.rootParentEntityId,
-          ...content.data.mentions.map(({ entityId }) => entityId),
-        ]),
+      referencedEntityIds: Array.from(
+        new Set([entityId, ...content.referencedEntityIds]),
       ).filter(Boolean) as ObjectId[],
-      contentIds: Array.from(
-        new Set([
-          contentId,
-          content.data.rootParentId,
-          content.data.parentId,
-          ...content.data.embeds,
-          content.data.channelId,
-        ]),
-      ).filter(Boolean) as string[],
+      referencedContentIds: content.referencedContentIds,
       createdAt: new Date(),
       type,
       data: {

@@ -1,13 +1,7 @@
 import { FastifyInstance } from "fastify";
 import { MongoClient, MongoCollection } from "@flink/common/mongo";
-import {
-  Content,
-  ContentData,
-  Entity,
-  EventAction,
-  EventActionData,
-} from "@flink/common/types";
-import { GetFeedRequest, FeedItem } from "../../types";
+import { Content, ContentData, Entity } from "@flink/common/types";
+import { GetContentFeedRequest, ContentFeedItem } from "../../types";
 import { ObjectId } from "mongodb";
 
 export class FeedService {
@@ -17,9 +11,12 @@ export class FeedService {
     this.client = fastify.mongo.client;
   }
 
-  async getFeeds({ filter, cursor }: GetFeedRequest): Promise<FeedItem[]> {
-    const collection = this.client.getCollection<EventAction<EventActionData>>(
-      MongoCollection.Actions,
+  async getFeeds({
+    filter,
+    cursor,
+  }: GetContentFeedRequest): Promise<ContentFeedItem[]> {
+    const collection = this.client.getCollection<Content<ContentData>>(
+      MongoCollection.Content,
     );
 
     const queryFilter = cursor
@@ -37,14 +34,14 @@ export class FeedService {
       .toArray();
     console.timeEnd("query1");
 
-    const contentIds = actions.flatMap((a) => a.contentIds);
+    const contentIds = actions.flatMap((a) => a.referencedContentIds);
     console.time("query2");
     const contentMap = await this.getContentMap(contentIds);
     console.timeEnd("query2");
 
     const entityIds = actions
-      .flatMap((a) => a.entityIds)
-      .concat(Object.values(contentMap).flatMap((c) => c.entityIds));
+      .flatMap((a) => a.referencedEntityIds)
+      .concat(Object.values(contentMap).flatMap((c) => c.referencedEntityIds));
 
     console.time("query3");
     const entityMap = await this.getEntityMap(entityIds);
@@ -71,20 +68,17 @@ export class FeedService {
     };
 
     const data = actions.map((a) => {
-      const contentMap = getRelevantContentMap(a.contentIds);
+      const contentMap = getRelevantContentMap(a.referencedContentIds);
       const entityMap = getRelevantEntityMap(
-        a.entityIds.concat(
+        a.referencedEntityIds.concat(
           Object.values(contentMap)
-            .flatMap((c) => c?.entityIds)
+            .flatMap((c) => c?.referencedEntityIds)
             .filter(Boolean) as ObjectId[],
         ),
       );
       return {
-        _id: a._id.toString(),
-        type: a.type,
-        timestamp: a.timestamp.toString(),
-        data: a.data,
-        entity: entityMap[a.entityId.toString()],
+        ...a,
+        entity: a.creatorId ? entityMap[a.creatorId.toString()] : undefined,
         entityMap,
         contentMap,
       };

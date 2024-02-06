@@ -1,7 +1,7 @@
 import { useLocalSearchParams } from "expo-router";
 import { View } from "tamagui";
 import { useAppSelector } from "../../../../../hooks/useAppSelector";
-import { FeedItem } from "@flink/api/types";
+import { ContentFeedItem } from "@flink/api/types";
 import { PostActionData } from "@flink/common/types";
 import { ContentPost } from "../../../../../components/content/post";
 import { selectContentById } from "../../../../../store/content";

@@ -1,12 +1,15 @@
 import { FastifyInstance } from "fastify";
 import { FeedService } from "../services/feedService";
-import { GetFeedRequest } from "../../types";
+import { GetContentFeedRequest } from "../../types";
 
 export const getFeeds = async (fastify: FastifyInstance) => {
   const feedService = new FeedService(fastify);
 
-  fastify.post<{ Body: GetFeedRequest }>("/feeds", async (request, reply) => {
-    const data = await feedService.getFeeds(request.body);
-    return reply.send({ data });
-  });
+  fastify.post<{ Body: GetContentFeedRequest }>(
+    "/feeds",
+    async (request, reply) => {
+      const data = await feedService.getFeeds(request.body);
+      return reply.send({ data });
+    },
+  );
 };

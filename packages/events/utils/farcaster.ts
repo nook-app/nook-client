@@ -12,6 +12,7 @@ import { MongoClient, MongoCollection } from "@flink/common/mongo";
 import { Entity } from "@flink/common/types/entity";
 import { getOrCreateEntitiesForFids } from "@flink/common/entity";
 import { publishContent } from "@flink/common/queues";
+import { ObjectId } from "mongodb";
 
 export const getOrCreatePostContent = async (
   client: MongoClient,
@@ -171,29 +172,12 @@ const getParentAndRootCasts = async (
 };
 
 const formatContent = (data: PostData): Content<PostData> => {
-  const entityIds = [data.entityId];
-
-  if (data.rootParentEntityId && !entityIds.includes(data.rootParentEntityId)) {
-    entityIds.push(data.rootParentEntityId);
-  }
-
-  if (data.parentEntityId && !entityIds.includes(data.parentEntityId)) {
-    entityIds.push(data.parentEntityId);
-  }
-
-  for (const { entityId } of data.mentions) {
-    if (!entityIds.includes(entityId)) {
-      entityIds.push(entityId);
-    }
-  }
-
   return {
     contentId: data.contentId,
     createdAt: new Date(),
     timestamp: new Date(data.timestamp),
     type: data.parentId ? ContentType.REPLY : ContentType.POST,
     data,
-    entityIds,
     engagement: {
       likes: 0,
       reposts: 0,
@@ -201,6 +185,23 @@ const formatContent = (data: PostData): Content<PostData> => {
       embeds: 0,
     },
     topics: generateTopics(data),
+    referencedEntityIds: Array.from(
+      new Set([
+        data.entityId,
+        data.parentEntityId,
+        data.rootParentEntityId,
+        ...data.mentions.map(({ entityId }) => entityId),
+      ]),
+    ).filter(Boolean) as ObjectId[],
+    referencedContentIds: Array.from(
+      new Set([
+        data.contentId,
+        data.rootParentId,
+        data.parentId,
+        ...data.embeds,
+        data.channelId,
+      ]),
+    ).filter(Boolean) as string[],
   };
 };
 

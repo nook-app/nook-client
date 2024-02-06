@@ -1,34 +1,18 @@
-import {
-  Content,
-  ContentData,
-  Entity,
-  EventActionData,
-  EventActionType,
-} from "@flink/common/types";
+import { Content, ContentData, Entity } from "@flink/common/types";
 
-export type FeedItemEngagement = {
-  likes: number;
-  reposts: number;
-  replies: number;
-};
-
-export type FeedItem<T = EventActionData> = {
-  _id: string;
-  type: EventActionType;
-  timestamp: string;
-  data: T;
-  entity: Entity;
+export type ContentFeedItem<T = ContentData> = Content<T> & {
+  entity?: Entity;
   entityMap: Record<string, Entity>;
   contentMap: Record<string, Content<ContentData>>;
 };
 
-export type GetFeedRequest = {
+export type GetContentFeedRequest = {
   filter: object;
   cursor?: string;
 };
 
-export type GetFeedResponse = {
-  data: FeedItem[];
+export type GetContentFeedResponse = {
+  data: ContentFeedItem[];
 };
 
 export type AuthFarcasterRequest = {
