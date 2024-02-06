@@ -2945,6 +2945,18 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@flink/scripts@workspace:packages/scripts":
+  version: 0.0.0-use.local
+  resolution: "@flink/scripts@workspace:packages/scripts"
+  dependencies:
+    "@flink/common": "npm:*"
+    "@types/jest": "npm:^29.5.11"
+    "@types/node": "npm:^20.10.5"
+    jest: "npm:^29.7.0"
+    typescript: "npm:^5.3.3"
+  languageName: unknown
+  linkType: soft
+
 "@floating-ui/core@npm:^1.6.0":
   version: 1.6.0
   resolution: "@floating-ui/core@npm:1.6.0"
