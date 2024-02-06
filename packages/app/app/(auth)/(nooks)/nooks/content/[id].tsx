@@ -1,20 +1,22 @@
 import { useLocalSearchParams } from "expo-router";
 import { View } from "tamagui";
 import { useAppSelector } from "../../../../../hooks/useAppSelector";
-import { selectFeedItemById } from "../../../../../store/feed";
 import { FeedItem } from "@flink/api/types";
 import { PostActionData } from "@flink/common/types";
-import { ActionPost } from "../../../../../components/actions/post";
+import { ContentPost } from "../../../../../components/content/post";
+import { selectContentById } from "../../../../../store/content";
 
 export default function ContentScreen() {
   const { id } = useLocalSearchParams();
   const item = useAppSelector((state) =>
-    selectFeedItemById(state, id as string),
+    selectContentById(state, id as string),
   );
+
+  console.log(id, item);
 
   return (
     <View backgroundColor="$background" theme="pink" height="100%">
-      <ActionPost item={item as FeedItem<PostActionData>} />
+      {/* <ContentPost item={item as FeedItem<PostActionData>} /> */}
     </View>
   );
 }

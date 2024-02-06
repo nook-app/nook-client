@@ -12,11 +12,6 @@ export type FeedItemEngagement = {
   replies: number;
 };
 
-export type FeedItemContentWithEngagement = {
-  content?: Content<ContentData>;
-  engagement: FeedItemEngagement;
-};
-
 export type FeedItem<T = EventActionData> = {
   _id: string;
   type: EventActionType;
@@ -24,7 +19,7 @@ export type FeedItem<T = EventActionData> = {
   data: T;
   entity: Entity;
   entityMap: Record<string, Entity>;
-  contentMap: Record<string, FeedItemContentWithEngagement>;
+  contentMap: Record<string, Content<ContentData>>;
 };
 
 export type GetFeedRequest = {

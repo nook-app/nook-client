@@ -3,14 +3,14 @@ import { Feed } from "../../../../../components/feed";
 
 export default function FeedScreen() {
   return (
-    <View backgroundColor="$background" theme="pink">
+    <View backgroundColor="$background" theme="pink" height="100%">
       <Feed
         filter={{
           type: "POST",
           deletedAt: null,
           topics: {
             type: "SOURCE_ENTITY",
-            value: "65be632f92e36013ae684d7b",
+            value: "65c17714f334866268e882eb",
           },
         }}
       />

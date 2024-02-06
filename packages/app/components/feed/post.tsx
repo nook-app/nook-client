@@ -2,36 +2,34 @@ import { FeedItem } from "@flink/api/types";
 import { PostActionData } from "@flink/common/types";
 import { Image, Text, View, XStack, YStack } from "tamagui";
 import { Heart, MessageSquare, RefreshCw } from "@tamagui/lucide-icons";
-import { ContentPost } from "../content/post";
 import { Embed } from "../embeds";
+import { PostContent } from "../content/post";
 
 function formatTimeAgo(date: string) {
   const seconds = Math.floor(
     (new Date().getTime() - new Date(date).getTime()) / 1000,
   );
-  let interval = seconds / 31536000;
+  let interval = seconds / 86400; // Days
 
-  if (interval > 1) {
-    return `${Math.floor(interval)}y`;
+  if (interval > 30) {
+    const dateObj = new Date(date);
+    return `${dateObj.toLocaleString("default", {
+      month: "short",
+    })} ${dateObj.getDate()}`;
   }
-  interval = seconds / 2592000;
-  if (interval > 1) {
-    return `${Math.floor(interval)}m`;
-  }
-  interval = seconds / 86400;
   if (interval > 1) {
     return `${Math.floor(interval)}d`;
   }
-  interval = seconds / 3600;
+  interval = seconds / 3600; // Hours
   if (interval > 1) {
     return `${Math.floor(interval)}h`;
   }
-  interval = seconds / 60;
+  interval = seconds / 60; // Minutes
   if (interval > 1) {
     return `${Math.floor(interval)}m`;
   }
 
-  return `${Math.floor(interval)}s`;
+  return `${Math.floor(seconds)}s`; // Seconds
 }
 
 export const FeedPost = ({
@@ -68,7 +66,7 @@ export const FeedPost = ({
             {formatTimeAgo(data.content.timestamp as unknown as string)}
           </Text>
         </XStack>
-        <ContentPost data={data.content} entityMap={entityMap} />
+        <PostContent data={data.content} entityMap={entityMap} />
         {data.content.embeds.map((embed, i) => (
           <Embed
             key={embed}

@@ -1,13 +1,13 @@
 import { configureStore } from "@reduxjs/toolkit";
 import { api } from "./api";
 import drawerReducer from "./drawer";
-import feedReducer from "./feed";
+import contentReducer from "./content";
 
 export const store = configureStore({
   reducer: {
     [api.reducerPath]: api.reducer,
     drawer: drawerReducer,
-    feed: feedReducer,
+    content: contentReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware().concat(api.middleware),

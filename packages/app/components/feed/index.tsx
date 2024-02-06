@@ -1,4 +1,4 @@
-import { Spinner, Text, XStack } from "tamagui";
+import { Spinner, Text, View, XStack } from "tamagui";
 import { api } from "../../store/api";
 import { FeedItem } from "@flink/api/types";
 import { EventActionType, PostActionData } from "@flink/common/types";
@@ -8,12 +8,16 @@ import { useCallback, useState } from "react";
 import { Link } from "expo-router";
 
 const renderFeedItem = ({ item }: { item: FeedItem }) => {
-  if (item.type === EventActionType.POST) {
+  if (
+    item.type === EventActionType.POST ||
+    item.type === EventActionType.REPLY
+  ) {
     const typedItem = item as FeedItem<PostActionData>;
     return (
       <Link
+        push
         href={{
-          pathname: "/(auth)/(nooks)/nooks/actions/[id]",
+          pathname: "/(auth)/(nooks)/nooks/content/[id]",
           params: { id: typedItem._id },
         }}
         asChild
@@ -27,7 +31,10 @@ const renderFeedItem = ({ item }: { item: FeedItem }) => {
   return <></>;
 };
 
-export const Feed = ({ filter }: { filter: object }) => {
+export const Feed = ({
+  filter,
+  asList,
+}: { filter: object; asList?: boolean }) => {
   const [cursor, setCursor] = useState<string>();
   const { data, error, isLoading } = api.useGetFeedForFilterQuery({
     filter,
@@ -59,15 +66,25 @@ export const Feed = ({ filter }: { filter: object }) => {
 
   if (isLoading || !data) {
     return (
-      <XStack
+      <View
         padding="$3"
-        justifyContent="center"
         alignItems="center"
-        height="100%"
         backgroundColor="$background"
+        alignSelf="center"
+        justifyContent="center"
       >
         <Spinner size="large" color="$color11" />
-      </XStack>
+      </View>
+    );
+  }
+
+  if (asList) {
+    return (
+      <View>
+        {data.map((item) => (
+          <View key={item._id}>{renderFeedItem({ item })}</View>
+        ))}
+      </View>
     );
   }
 

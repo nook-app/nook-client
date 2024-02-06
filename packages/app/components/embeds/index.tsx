@@ -1,7 +1,8 @@
-import { FeedItemContentWithEngagement } from "@flink/api/types";
 import { EmbedImage } from "./image";
 import { EmbedQuotePost } from "./quote";
 import {
+  Content,
+  ContentData,
   ContentType,
   Entity,
   PostData,
@@ -11,6 +12,8 @@ import { Text } from "tamagui";
 import { EmbedFrame } from "./frame";
 import { Linking } from "react-native";
 import { EmbedUrl } from "./url";
+import { EmbedTwitter } from "./twitter";
+import { EmbedVideo } from "./video";
 
 export const Embed = ({
   data,
@@ -21,9 +24,9 @@ export const Embed = ({
   data: PostData;
   embed: string;
   entityMap: Record<string, Entity>;
-  contentMap: Record<string, FeedItemContentWithEngagement>;
+  contentMap: Record<string, Content<ContentData>>;
 }) => {
-  const content = contentMap[embed]?.content;
+  const content = contentMap[embed];
   if (content) {
     switch (content.type) {
       case ContentType.POST:
@@ -47,8 +50,19 @@ export const Embed = ({
           return <EmbedImage key={embed} embed={content.contentId} />;
         }
 
+        if (
+          metadata.contentType?.startsWith("video/") ||
+          metadata.contentType === "application/x-mpegURL"
+        ) {
+          return <EmbedVideo key={embed} embed={content.contentId} />;
+        }
+
         if (metadata.metadata?.frame) {
           return <EmbedFrame data={data} metadata={metadata} />;
+        }
+
+        if (embed.includes("twitter.com") || embed.includes("x.com")) {
+          return <EmbedTwitter key={embed} metadata={metadata} />;
         }
 
         return <EmbedUrl key={embed} metadata={metadata} />;

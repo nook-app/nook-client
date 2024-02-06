@@ -6,14 +6,8 @@ import {
   Entity,
   EventAction,
   EventActionData,
-  EventActionType,
 } from "@flink/common/types";
-import {
-  GetFeedRequest,
-  FeedItem,
-  FeedItemEngagement,
-  FeedItemContentWithEngagement,
-} from "../../types";
+import { GetFeedRequest, FeedItem } from "../../types";
 import { ObjectId } from "mongodb";
 
 export class FeedService {
@@ -35,23 +29,26 @@ export class FeedService {
         }
       : filter;
 
+    console.time("query1");
     const actions = await collection
       .find(queryFilter)
       .sort({ _id: -1 })
       .limit(25)
       .toArray();
+    console.timeEnd("query1");
 
     const contentIds = actions.flatMap((a) => a.contentIds);
+    console.time("query2");
     const contentMap = await this.getContentMap(contentIds);
+    console.timeEnd("query2");
 
     const entityIds = actions
       .flatMap((a) => a.entityIds)
       .concat(Object.values(contentMap).flatMap((c) => c.entityIds));
 
-    const [entityMap, engagementMap] = await Promise.all([
-      this.getEntityMap(entityIds),
-      this.getEngagementMap(contentIds),
-    ]);
+    console.time("query3");
+    const entityMap = await this.getEntityMap(entityIds);
+    console.timeEnd("query3");
 
     const getRelevantEntityMap = (ids: ObjectId[]) => {
       return ids.reduce(
@@ -66,17 +63,10 @@ export class FeedService {
     const getRelevantContentMap = (ids: string[]) => {
       return ids.reduce(
         (acc, id) => {
-          acc[id] = {
-            content: contentMap[id],
-            engagement: engagementMap[id] || {
-              likes: 0,
-              reposts: 0,
-              replies: 0,
-            },
-          };
+          acc[id] = contentMap[id];
           return acc;
         },
-        {} as Record<string, FeedItemContentWithEngagement>,
+        {} as Record<string, Content<ContentData>>,
       );
     };
 
@@ -85,7 +75,7 @@ export class FeedService {
       const entityMap = getRelevantEntityMap(
         a.entityIds.concat(
           Object.values(contentMap)
-            .flatMap((c) => c.content?.entityIds)
+            .flatMap((c) => c?.entityIds)
             .filter(Boolean) as ObjectId[],
         ),
       );
@@ -130,69 +120,6 @@ export class FeedService {
         return acc;
       },
       {} as Record<string, Content<ContentData>>,
-    );
-  }
-
-  async getEngagementMap(contentIds: string[]) {
-    const collection = this.client.getCollection<EventAction<EventActionData>>(
-      MongoCollection.Actions,
-    );
-
-    const engagement = await collection
-      .aggregate([
-        {
-          $match: {
-            type: {
-              $in: ["LIKE", "REPOST", "REPLY"],
-            },
-            "topics.type": "TARGET_CONTENT",
-            "topics.value": { $in: contentIds },
-          },
-        },
-        {
-          $unwind: "$topics",
-        },
-        {
-          $match: {
-            "topics.type": "TARGET_CONTENT",
-            "topics.value": { $in: contentIds },
-          },
-        },
-        {
-          $group: {
-            _id: {
-              contentId: "$topics.value",
-              type: "$type",
-            },
-            count: { $sum: 1 },
-          },
-        },
-      ])
-      .toArray();
-
-    return engagement.reduce(
-      (acc, e) => {
-        if (!acc[e._id.contentId]) {
-          acc[e._id.contentId] = {
-            likes: 0,
-            reposts: 0,
-            replies: 0,
-          };
-        }
-        switch (e._id.type) {
-          case EventActionType.LIKE:
-            acc[e._id.contentId].likes = e.count;
-            break;
-          case EventActionType.REPOST:
-            acc[e._id.contentId].reposts = e.count;
-            break;
-          case EventActionType.REPLY:
-            acc[e._id.contentId].replies = e.count;
-            break;
-        }
-        return acc;
-      },
-      {} as Record<string, FeedItemEngagement>,
     );
   }
 }

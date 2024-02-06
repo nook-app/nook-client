@@ -1,9 +1,10 @@
-import { Entity, PostData } from "@flink/common/types";
+import { Content, ContentData, Entity, PostData } from "@flink/common/types";
 import { Image, Text, View, XStack, YStack } from "tamagui";
 import { ReactNode } from "react";
-import { ContentPost } from "../content/post";
-import { FeedItemContentWithEngagement } from "@flink/api/types";
 import { EmbedImage } from "./image";
+import { PostContent } from "../content/post";
+import { Link } from "expo-router";
+import { Pressable } from "react-native";
 
 export const EmbedQuotePost = ({
   data,
@@ -12,19 +13,32 @@ export const EmbedQuotePost = ({
 }: {
   data: PostData;
   entityMap: Record<string, Entity>;
-  contentMap: Record<string, FeedItemContentWithEngagement>;
+  contentMap: Record<string, Content<ContentData>>;
 }) => {
   const entity = entityMap[data.entityId.toString()];
   return (
-    <EmbedQuote entity={entity}>
-      <ContentPost data={data} entityMap={entityMap} />
-      {data.embeds.map((embed) => {
-        if (embed.includes("imgur.com")) {
-          return <EmbedImage key={embed} embed={embed} />;
-        }
-        return <Text key={embed}>{embed}</Text>;
-      })}
-    </EmbedQuote>
+    <Link
+      push
+      href={{
+        pathname: "/(auth)/(nooks)/nooks/content/[id]",
+        params: {
+          id: data.contentId,
+        },
+      }}
+      asChild
+    >
+      <Pressable>
+        <EmbedQuote entity={entity}>
+          <PostContent data={data} entityMap={entityMap} />
+          {data.embeds.map((embed) => {
+            if (embed.includes("imgur.com")) {
+              return <EmbedImage key={embed} embed={embed} />;
+            }
+            return <Text key={embed}>{embed}</Text>;
+          })}
+        </EmbedQuote>
+      </Pressable>
+    </Link>
   );
 };
 

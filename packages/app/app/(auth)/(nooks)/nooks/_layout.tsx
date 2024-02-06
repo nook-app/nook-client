@@ -30,7 +30,7 @@ export default function NooksLayout() {
         }}
       />
       <Stack.Screen
-        name="actions/[id]"
+        name="content/[id]"
         options={{
           headerBackTitleVisible: false,
           headerTintColor: "white",
