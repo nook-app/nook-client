@@ -7,6 +7,7 @@ import {
   LinkBlockchainAddressActionData,
   UpdateEntityInfoActionData,
 } from "./actionTypes";
+import { Topic } from "./topics";
 
 export type EventActionData =
   | PostActionData
@@ -77,24 +78,3 @@ export type EventAction<T> = {
   /** Topics for the action */
   topics: Topic[];
 };
-
-export type Topic = {
-  type: TopicType;
-  value: string;
-};
-
-export enum TopicType {
-  SOURCE_ENTITY = "SOURCE_ENTITY",
-  SOURCE_CONTENT = "SOURCE_CONTENT",
-  SOURCE_EMBED = "SOURCE_EMBED",
-  SOURCE_TAG = "SOURCE_TAG",
-  TARGET_ENTITY = "TARGET_ENTITY",
-  TARGET_CONTENT = "TARGET_CONTENT",
-  TARGET_EMBED = "TARGET_EMBED",
-  TARGET_TAG = "TARGET_TAG",
-  ROOT_TARGET_ENTITY = "ROOT_TARGET_ENTITY",
-  ROOT_TARGET_CONTENT = "ROOT_TARGET_CONTENT",
-  ROOT_TARGET_EMBED = "ROOT_TARGET_EMBED",
-  ROOT_TARGET_TAG = "ROOT_TARGET_TAG",
-  CHANNEL = "CHANNEL",
-}

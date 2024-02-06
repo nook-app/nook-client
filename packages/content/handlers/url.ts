@@ -94,6 +94,7 @@ export const getOrCreateUrlContent = async (
       replies: 0,
       embeds: 0,
     },
+    topics: [],
   };
   await client.upsertContent(content);
   return content;

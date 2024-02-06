@@ -1,6 +1,7 @@
 import { ObjectId } from "mongodb";
 import { PostData } from "./contentTypes/post";
 import { Metadata } from "metascraper";
+import { Topic } from "./topics";
 
 export type ContentData = PostData | UrlMetadata;
 
@@ -36,6 +37,9 @@ export type ContentBase = {
     replies: number;
     embeds: number;
   };
+
+  /** Topics for the content */
+  topics: Topic[];
 };
 
 export type UnstructuredFrameMetascraperButtonKeys = {

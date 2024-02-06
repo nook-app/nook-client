@@ -4,6 +4,8 @@ import {
   PostData,
   FidHash,
   ContentType,
+  Topic,
+  TopicType,
 } from "@flink/common/types";
 import { toFarcasterURI } from "@flink/farcaster/utils";
 import { MongoClient, MongoCollection } from "@flink/common/mongo";
@@ -198,6 +200,7 @@ const formatContent = (data: PostData): Content<PostData> => {
       replies: 0,
       embeds: 0,
     },
+    topics: generateTopics(data),
   };
 };
 
@@ -287,4 +290,91 @@ export const getFarcasterCasts = async ({
     return casts;
   }
   throw new Error(`Invalid response from farcaster: ${JSON.stringify(casts)}`);
+};
+
+const generateTopics = (data: PostData) => {
+  const topics: Topic[] = [
+    {
+      type: TopicType.SOURCE_ENTITY,
+      value: data.entityId.toString(),
+    },
+    {
+      type: TopicType.SOURCE_CONTENT,
+      value: data.contentId,
+    },
+    {
+      type: TopicType.ROOT_TARGET_ENTITY,
+      value: data.rootParentEntityId.toString(),
+    },
+    {
+      type: TopicType.ROOT_TARGET_CONTENT,
+      value: data.rootParentId,
+    },
+  ];
+
+  for (const mention of data.mentions) {
+    topics.push({
+      type: TopicType.SOURCE_TAG,
+      value: mention.entityId.toString(),
+    });
+  }
+
+  for (const embed of data.embeds) {
+    topics.push({
+      type: TopicType.SOURCE_EMBED,
+      value: embed,
+    });
+  }
+
+  if (data.parentId && data.parentEntityId) {
+    topics.push({
+      type: TopicType.TARGET_ENTITY,
+      value: data.parentEntityId.toString(),
+    });
+    topics.push({
+      type: TopicType.TARGET_CONTENT,
+      value: data.parentId,
+    });
+
+    if (data.parent) {
+      for (const mention of data.parent.mentions) {
+        topics.push({
+          type: TopicType.TARGET_TAG,
+          value: mention.entityId.toString(),
+        });
+      }
+
+      for (const embed of data.parent.embeds) {
+        topics.push({
+          type: TopicType.TARGET_EMBED,
+          value: embed,
+        });
+      }
+    }
+  }
+
+  if (data.rootParent) {
+    for (const mention of data.rootParent.mentions) {
+      topics.push({
+        type: TopicType.ROOT_TARGET_TAG,
+        value: mention.entityId.toString(),
+      });
+    }
+
+    for (const embed of data.rootParent.embeds) {
+      topics.push({
+        type: TopicType.ROOT_TARGET_EMBED,
+        value: embed,
+      });
+    }
+  }
+
+  if (data.channelId) {
+    topics.push({
+      type: TopicType.CHANNEL,
+      value: data.channelId,
+    });
+  }
+
+  return topics;
 };
