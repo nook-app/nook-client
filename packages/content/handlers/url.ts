@@ -95,6 +95,8 @@ export const getOrCreateUrlContent = async (
       embeds: 0,
     },
     topics: [],
+    referencedEntityIds: [],
+    referencedContentIds: [],
   };
   await client.upsertContent(content);
   return content;
