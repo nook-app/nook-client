@@ -74,10 +74,12 @@ export const getOrCreateUrlContent = async (
   client: MongoClient,
   contentId: string,
 ): Promise<Content<UrlMetadata>> => {
-  const existingContent = await client.findContent(contentId);
-  if (existingContent) {
-    return existingContent as Content<UrlMetadata>;
-  }
+  // const existingContent = await client.findContent(contentId);
+  // if (existingContent) {
+  //   return existingContent as Content<UrlMetadata>;
+  // }
+
+  console.log("hello?");
 
   const timestamp = new Date();
   const content = {

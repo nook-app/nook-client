@@ -1,9 +1,10 @@
 import { ContentFeedItem } from "@flink/api/types";
-import { Entity, PostActionData, PostData } from "@flink/common/types";
+import { Entity, PostData } from "@flink/common/types";
 import { Image, ScrollView, Text, View, XStack, YStack } from "tamagui";
 import { Embed } from "../embeds";
 import { Feed } from "../feed";
 import { Linking } from "react-native";
+import { Avatar } from "../avatar";
 
 export const PostContent = ({
   data,
@@ -78,18 +79,16 @@ export const PostContent = ({
 };
 
 export const ContentPost = ({
-  item: { data, entity, entityMap, contentMap },
-}: { item: ContentFeedItem<PostActionData> }) => {
+  item: { data, entityMap, contentMap },
+}: { item: ContentFeedItem<PostData> }) => {
   const engagement = contentMap[data.contentId].engagement;
+  const entity = entityMap[data.entityId.toString()];
 
   return (
     <ScrollView>
       <YStack padding="$2" gap="$3">
         <XStack gap="$2">
-          <Image
-            source={{ width: 40, height: 40, uri: entity.farcaster.pfp }}
-            borderRadius="$10"
-          />
+          <Avatar entity={entity} />
           <YStack gap="$1">
             {entity.farcaster.displayName && (
               <Text fontWeight="700">{entity.farcaster.displayName}</Text>
@@ -100,23 +99,23 @@ export const ContentPost = ({
             {!entity.farcaster && <Text color="$gray11">Unknown</Text>}
           </YStack>
         </XStack>
-        <PostContent data={data.content} entityMap={entityMap} />
-        {data.content.embeds.map((embed, i) => (
+        <PostContent data={data} entityMap={entityMap} />
+        {data.embeds.map((embed, i) => (
           <Embed
             key={embed}
             embed={embed}
-            data={data.content}
+            data={data}
             entityMap={entityMap}
             contentMap={contentMap}
           />
         ))}
         <Text color="$gray11">
-          {new Date(data.content.timestamp).toLocaleTimeString([], {
+          {new Date(data.timestamp).toLocaleTimeString([], {
             hour: "2-digit",
             minute: "2-digit",
           })}
           {" · "}
-          {new Date(data.content.timestamp).toLocaleDateString()}
+          {new Date(data.timestamp).toLocaleDateString()}
         </Text>
         <XStack gap="$2">
           <View flexDirection="row" alignItems="center" gap="$1">

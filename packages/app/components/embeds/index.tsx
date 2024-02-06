@@ -65,7 +65,7 @@ export const Embed = ({
           return <EmbedTwitter key={embed} metadata={metadata} />;
         }
 
-        return <EmbedUrl key={embed} metadata={metadata} />;
+        return <EmbedUrl key={embed} embed={embed} metadata={metadata} />;
       }
     }
   }

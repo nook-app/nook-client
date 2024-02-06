@@ -1,24 +1,21 @@
-import { Spinner, Text, View, XStack } from "tamagui";
+import { Spinner, Text, View } from "tamagui";
 import { api } from "../../store/api";
 import { ContentFeedItem } from "@flink/api/types";
-import { EventActionType, PostActionData } from "@flink/common/types";
+import { ContentType, PostData } from "@flink/common/types";
 import { FeedPost } from "./post";
 import { FlatList, Pressable, ViewToken } from "react-native";
 import { useCallback, useState } from "react";
 import { Link } from "expo-router";
 
 const renderFeedItem = ({ item }: { item: ContentFeedItem }) => {
-  if (
-    item.type === EventActionType.POST ||
-    item.type === EventActionType.REPLY
-  ) {
-    const typedItem = item as ContentFeedItem<PostActionData>;
+  if (item.type === ContentType.POST || item.type === ContentType.REPLY) {
+    const typedItem = item as ContentFeedItem<PostData>;
     return (
       <Link
         push
         href={{
           pathname: "/(auth)/(nooks)/nooks/content/[id]",
-          params: { id: typedItem._id },
+          params: { id: typedItem.contentId },
         }}
         asChild
       >
@@ -36,7 +33,7 @@ export const Feed = ({
   asList,
 }: { filter: object; asList?: boolean }) => {
   const [cursor, setCursor] = useState<string>();
-  const { data, error, isLoading } = api.useGetFeedForFilterQuery({
+  const { data, error, isLoading } = api.useGetContentFeedQuery({
     filter,
     cursor,
   });

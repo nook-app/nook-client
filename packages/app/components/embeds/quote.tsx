@@ -5,6 +5,7 @@ import { EmbedImage } from "./image";
 import { PostContent } from "../content/post";
 import { Link } from "expo-router";
 import { Pressable } from "react-native";
+import { Avatar } from "../avatar";
 
 export const EmbedQuotePost = ({
   data,
@@ -59,14 +60,7 @@ export const EmbedQuote = ({
       gap="$2"
     >
       <XStack gap="$1" alignItems="center">
-        {entity?.farcaster.pfp && (
-          <View marginRight="$1">
-            <Image
-              source={{ width: 20, height: 20, uri: entity.farcaster.pfp }}
-              borderRadius="$10"
-            />
-          </View>
-        )}
+        <Avatar entity={entity} size="$1" />
         {entity?.farcaster.displayName && (
           <Text fontWeight="700">{entity.farcaster.displayName}</Text>
         )}

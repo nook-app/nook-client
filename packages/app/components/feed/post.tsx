@@ -1,9 +1,10 @@
 import { ContentFeedItem } from "@flink/api/types";
-import { PostActionData } from "@flink/common/types";
-import { Image, Text, View, XStack, YStack } from "tamagui";
+import { PostData } from "@flink/common/types";
+import { Text, View, XStack, YStack } from "tamagui";
 import { Heart, MessageSquare, RefreshCw } from "@tamagui/lucide-icons";
 import { Embed } from "../embeds";
 import { PostContent } from "../content/post";
+import { Avatar } from "../avatar";
 
 function formatTimeAgo(date: string) {
   const seconds = Math.floor(
@@ -33,9 +34,10 @@ function formatTimeAgo(date: string) {
 }
 
 export const FeedPost = ({
-  item: { data, entity, entityMap, contentMap },
-}: { item: ContentFeedItem<PostActionData> }) => {
+  item: { data, timestamp, entityMap, contentMap },
+}: { item: ContentFeedItem<PostData> }) => {
   const engagement = contentMap[data.contentId].engagement;
+  const entity = entityMap[data.entityId.toString()];
 
   return (
     <XStack
@@ -45,12 +47,7 @@ export const FeedPost = ({
       gap="$2"
     >
       <View width="$3.5">
-        {entity.farcaster.pfp && (
-          <Image
-            source={{ width: 40, height: 40, uri: entity.farcaster.pfp }}
-            borderRadius="$10"
-          />
-        )}
+        <Avatar entity={entity} />
       </View>
       <YStack flex={1} gap="$1">
         <XStack gap="$1">
@@ -63,15 +60,15 @@ export const FeedPost = ({
           {!entity && <Text fontWeight="700">{data.entityId.toString()}</Text>}
           <Text color="$gray11">{" · "}</Text>
           <Text color="$gray11">
-            {formatTimeAgo(data.content.timestamp as unknown as string)}
+            {formatTimeAgo(timestamp as unknown as string)}
           </Text>
         </XStack>
-        <PostContent data={data.content} entityMap={entityMap} />
-        {data.content.embeds.map((embed, i) => (
+        <PostContent data={data} entityMap={entityMap} />
+        {data.embeds.map((embed, i) => (
           <Embed
             key={embed}
             embed={embed}
-            data={data.content}
+            data={data}
             entityMap={entityMap}
             contentMap={contentMap}
           />

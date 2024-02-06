@@ -1,16 +1,11 @@
 import { createEntityAdapter, createSlice } from "@reduxjs/toolkit";
 import { api } from "./api";
 import { RootState } from ".";
-import { Content, ContentData, Entity } from "@flink/common/types";
-
-export type ContentItem = Content<ContentData> & {
-  entity: Entity;
-  entityMap: Record<string, Entity>;
-  contentMap: Record<string, Content<ContentData>>;
-};
+import { ContentData } from "@flink/common/types";
+import { ContentFeedItem } from "@flink/api/types";
 
 const contentAdapter = createEntityAdapter({
-  selectId: (content: Content<ContentData>) => content.contentId,
+  selectId: (content: ContentFeedItem<ContentData>) => content.contentId,
 });
 
 const contentSlice = createSlice({
@@ -19,21 +14,18 @@ const contentSlice = createSlice({
   reducers: {},
   extraReducers: (builder) => {
     builder.addMatcher(
-      api.endpoints.getFeedForFilter.matchFulfilled,
+      api.endpoints.getContentFeed.matchFulfilled,
       (state, action) => {
-        const contents = action.payload.flatMap((feedItem) =>
-          Object.values(feedItem.contentMap).map((content) => ({
-            ...content,
-            entity:
-              "entityId" in content.data
-                ? feedItem.entityMap[content.data.entityId.toString()]
-                : undefined,
-            entityMap: feedItem.entityMap,
-            contentMap: feedItem.contentMap,
-          })),
-        );
-        contentAdapter.upsertMany(state, contents);
-        contentAdapter.updateMany;
+        const content = action.payload.flatMap((item) => {
+          return Object.values(item.contentMap).map((content) => {
+            return {
+              ...content,
+              entityMap: item.entityMap,
+              contentMap: item.contentMap,
+            } as ContentFeedItem<ContentData>;
+          }) as ContentFeedItem<ContentData>[];
+        });
+        contentAdapter.upsertMany(state, content);
       },
     );
   },

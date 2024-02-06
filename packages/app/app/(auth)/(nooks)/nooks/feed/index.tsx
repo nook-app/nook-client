@@ -8,10 +8,6 @@ export default function FeedScreen() {
         filter={{
           type: "POST",
           deletedAt: null,
-          topics: {
-            type: "SOURCE_ENTITY",
-            value: "65c17714f334866268e882eb",
-          },
         }}
       />
     </View>

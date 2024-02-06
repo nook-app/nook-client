@@ -78,7 +78,7 @@ export class FeedService {
       );
       return {
         ...a,
-        entity: a.creatorId ? entityMap[a.creatorId.toString()] : undefined,
+        _id: a._id.toString(),
         entityMap,
         contentMap,
       };

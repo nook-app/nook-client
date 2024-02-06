@@ -1,7 +1,7 @@
 import { Content, ContentData, Entity } from "@flink/common/types";
 
 export type ContentFeedItem<T = ContentData> = Content<T> & {
-  entity?: Entity;
+  _id: string;
   entityMap: Record<string, Entity>;
   contentMap: Record<string, Content<ContentData>>;
 };

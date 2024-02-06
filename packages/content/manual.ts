@@ -5,9 +5,12 @@ const run = async () => {
   const queue = getQueue(QueueName.Content);
   console.log(`Running for event ${process.argv[2]}`);
   const job = await queue.getJob(process.argv[2]);
+  const handler = await getContentHandler();
   if (job) {
-    const handler = await getContentHandler();
     await handler(job);
+  } else {
+    // @ts-ignore
+    await handler({ data: { contentId: process.argv[2] } });
   }
 };
 

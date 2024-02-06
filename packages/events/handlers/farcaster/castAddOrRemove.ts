@@ -8,7 +8,6 @@ import {
   PostActionData,
 } from "@flink/common/types";
 import { MongoClient } from "@flink/common/mongo";
-import { ObjectId } from "mongodb";
 import { toFarcasterURI } from "@flink/farcaster/utils";
 import { getOrCreatePostContentFromData } from "../../utils/farcaster";
 
