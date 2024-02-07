@@ -1,9 +1,9 @@
 import { Redirect, Tabs } from "expo-router";
 
-import { useAuth } from "../../context/auth";
+import { useAuth } from "@context/auth";
 import { Image, Text, View } from "tamagui";
 import { Bell, LayoutGrid } from "@tamagui/lucide-icons";
-import { useAppSelector } from "../../hooks/useAppSelector";
+import { useAppSelector } from "@hooks/useAppSelector";
 import { BottomTabBar } from "@react-navigation/bottom-tabs";
 import Animated, {
   useAnimatedStyle,
@@ -51,7 +51,7 @@ export default function AuthedLayout() {
         tabBarLabel: ({ focused }) => (
           <View>
             <Text fontSize="$2" color={focused ? undefined : "$gray11"}>
-              {route.name === "(nooks)"
+              {route.name === "nooks"
                 ? "Nooks"
                 : route.name === "notifications"
                   ? "Notifications"
@@ -63,7 +63,7 @@ export default function AuthedLayout() {
         ),
         tabBarIcon: ({ focused }) => {
           let component = <></>;
-          if (route.name === "(nooks)") {
+          if (route.name === "nooks") {
             component = (
               <LayoutGrid
                 size={20}
@@ -108,7 +108,7 @@ export default function AuthedLayout() {
       })}
     >
       <Tabs.Screen name="index" options={{ href: null }} />
-      <Tabs.Screen name="(nooks)" />
+      <Tabs.Screen name="nooks" />
       <Tabs.Screen name="notifications" />
       <Tabs.Screen name="profile" />
     </Tabs>

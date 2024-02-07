@@ -1,5 +1,5 @@
 import { Button, Text, View, XStack, YStack } from "tamagui";
-import { useAuth } from "../../../context/auth";
+import { useAuth } from "@context/auth";
 import { Image } from "tamagui";
 
 export default function ProfilePage() {

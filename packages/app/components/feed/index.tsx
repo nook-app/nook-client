@@ -1,27 +1,33 @@
 import { Spinner, Text, View } from "tamagui";
-import { api } from "../../store/api";
+import { api } from "@store/api";
 import { ContentFeedItem } from "@flink/api/types";
 import { ContentType, PostData } from "@flink/common/types";
 import { FeedPost } from "./post";
-import { FlatList, Pressable, ViewToken } from "react-native";
+import { FlatList, ViewToken } from "react-native";
 import { useCallback, useState } from "react";
 import { Link } from "expo-router";
+import { TouchableWithoutFeedback } from "react-native-gesture-handler";
+import { useAppSelector } from "@hooks/useAppSelector";
+import { Nook } from "@constants/nooks";
 
-const renderFeedItem = ({ item }: { item: ContentFeedItem }) => {
+const renderFeedItem = ({
+  item,
+  activeNook,
+}: { item: ContentFeedItem; activeNook: Nook }) => {
   if (item.type === ContentType.POST || item.type === ContentType.REPLY) {
     const typedItem = item as ContentFeedItem<PostData>;
     return (
       <Link
         push
         href={{
-          pathname: "/(auth)/(nooks)/nooks/content/[contentId]",
-          params: { contentId: typedItem.contentId },
+          pathname: "/(auth)/nooks/[nookId]/content/[contentId]",
+          params: { contentId: typedItem.contentId, nookId: activeNook.id },
         }}
         asChild
       >
-        <Pressable>
+        <TouchableWithoutFeedback>
           <FeedPost key={typedItem._id} item={typedItem} />
-        </Pressable>
+        </TouchableWithoutFeedback>
       </Link>
     );
   }
@@ -33,6 +39,7 @@ export const Feed = ({
   asList,
 }: { filter: object; asList?: boolean }) => {
   const [cursor, setCursor] = useState<string>();
+  const activeNook = useAppSelector((state) => state.user.activeNook);
   const { data, error, isLoading } = api.useGetContentFeedQuery({
     filter,
     cursor,
@@ -79,7 +86,7 @@ export const Feed = ({
     return (
       <View>
         {data.map((item) => (
-          <View key={item._id}>{renderFeedItem({ item })}</View>
+          <View key={item._id}>{renderFeedItem({ item, activeNook })}</View>
         ))}
       </View>
     );
@@ -88,7 +95,12 @@ export const Feed = ({
   return (
     <FlatList
       data={data}
-      renderItem={renderFeedItem}
+      renderItem={(props) =>
+        renderFeedItem({
+          ...props,
+          activeNook,
+        })
+      }
       keyExtractor={(item) => item._id}
       onViewableItemsChanged={onViewableItemsChanged}
       viewabilityConfig={viewabilityConfig}

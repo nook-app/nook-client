@@ -1,7 +1,5 @@
-import { Stack } from "expo-router";
 import { useNavigation } from "expo-router";
 
-import { View } from "tamagui";
 import { PlatformPressable } from "@react-navigation/elements";
 import { DrawerActions, ParamListBase } from "@react-navigation/native";
 import { Platform } from "react-native";
@@ -10,39 +8,11 @@ import {
   useDrawerStatus,
 } from "@react-navigation/drawer";
 import { useEffect } from "react";
-import { useAppDispatch } from "../../../../hooks/useAppDispatch";
-import { setDrawerOpen } from "../../../../store/drawer";
 import { ArrowLeft } from "@tamagui/lucide-icons";
+import { useAppDispatch } from "@hooks/useAppDispatch";
+import { setDrawerOpen } from "@store/drawer";
 
-export default function NooksLayout() {
-  return (
-    <Stack>
-      <Stack.Screen
-        name="[nookId]/feeds/[feedId]"
-        options={{
-          headerLeft: () => <DrawerToggleButton />,
-          headerBackground: () => (
-            <View backgroundColor="$background" theme="pink" height="100%" />
-          ),
-          headerTitle: "Home",
-        }}
-      />
-      <Stack.Screen
-        name="content/[contentId]"
-        options={{
-          headerBackTitleVisible: false,
-          headerTintColor: "white",
-          headerBackground: () => (
-            <View backgroundColor="$background" theme="pink" height="100%" />
-          ),
-          headerTitle: "Post",
-        }}
-      />
-    </Stack>
-  );
-}
-
-const DrawerToggleButton = () => {
+export const DrawerToggleButton = () => {
   const navigation = useNavigation<DrawerNavigationProp<ParamListBase>>();
   const drawerStatus = useDrawerStatus();
   const dispatch = useAppDispatch();

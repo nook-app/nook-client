@@ -1,10 +1,10 @@
 import { ContentFeedItem } from "@flink/api/types";
 import { Entity, PostData } from "@flink/common/types";
 import { ScrollView, Text, View, XStack, YStack } from "tamagui";
-import { Embed } from "../embeds";
-import { Feed } from "../feed";
+import { Embed } from "@components/embeds";
+import { Feed } from "@components/feed";
 import { Linking } from "react-native";
-import { Avatar } from "../avatar";
+import { Avatar } from "@components/avatar";
 
 export const PostContent = ({
   data,

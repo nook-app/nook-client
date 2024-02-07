@@ -13,8 +13,8 @@ import { config } from "../tamagui.config";
 import { useFonts } from "expo-font";
 import { useEffect } from "react";
 import { Provider } from "react-redux";
-import { store } from "../store";
-import { AuthProvider } from "../context/auth";
+import { store } from "@store/index";
+import { AuthProvider } from "@context/auth";
 
 export {
   // Catch any errors thrown by the Layout component.

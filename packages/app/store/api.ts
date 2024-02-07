@@ -4,7 +4,7 @@ import {
   GetContentFeedRequest,
   GetContentFeedResponse,
 } from "@flink/api/types";
-import { API_BASE_URL } from "../constants";
+import { API_BASE_URL } from "@constants/index";
 import { ContentData } from "@flink/common/types";
 
 export const api = createApi({
@@ -30,7 +30,7 @@ export const api = createApi({
         currentCache.push(...newItems);
       },
       forceRefetch({ currentArg, previousArg }) {
-        return currentArg !== previousArg;
+        return JSON.stringify(currentArg) !== JSON.stringify(previousArg);
       },
     }),
   }),

@@ -8,7 +8,7 @@ import {
   useEffect,
   useReducer,
 } from "react";
-import { SIWF_DOMAIN, SIWF_URI, API_BASE_URL } from "../constants";
+import { SIWF_DOMAIN, SIWF_URI, API_BASE_URL } from "@constants/index";
 import { Entity } from "@flink/common/types";
 
 const sessionKey = "session";

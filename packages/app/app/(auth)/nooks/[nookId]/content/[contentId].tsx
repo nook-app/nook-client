@@ -1,10 +1,10 @@
 import { useLocalSearchParams } from "expo-router";
 import { View } from "tamagui";
-import { useAppSelector } from "../../../../../hooks/useAppSelector";
+import { useAppSelector } from "@hooks/useAppSelector";
 import { ContentFeedItem } from "@flink/api/types";
 import { PostData } from "@flink/common/types";
-import { ContentPost } from "../../../../../components/content/post";
-import { selectContentById } from "../../../../../store/content";
+import { ContentPost } from "@components/content/post";
+import { selectContentById } from "@store/content";
 
 export default function ContentScreen() {
   const { contentId } = useLocalSearchParams();

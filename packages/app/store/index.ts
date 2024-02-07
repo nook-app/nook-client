@@ -2,12 +2,14 @@ import { configureStore } from "@reduxjs/toolkit";
 import { api } from "./api";
 import drawerReducer from "./drawer";
 import contentReducer from "./content";
+import userReducer from "./user";
 
 export const store = configureStore({
   reducer: {
     [api.reducerPath]: api.reducer,
     drawer: drawerReducer,
     content: contentReducer,
+    user: userReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware().concat(api.middleware),

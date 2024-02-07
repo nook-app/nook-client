@@ -1,11 +1,12 @@
 import { Content, ContentData, Entity, PostData } from "@flink/common/types";
-import { Image, Text, View, XStack, YStack } from "tamagui";
+import { Text, XStack, YStack } from "tamagui";
 import { ReactNode } from "react";
 import { EmbedImage } from "./image";
-import { PostContent } from "../content/post";
+import { PostContent } from "@components/content/post";
 import { Link } from "expo-router";
-import { Pressable } from "react-native";
-import { Avatar } from "../avatar";
+import { Avatar } from "@components/avatar";
+import { TouchableOpacity } from "react-native-gesture-handler";
+import { useAppSelector } from "@hooks/useAppSelector";
 
 export const EmbedQuotePost = ({
   data,
@@ -16,19 +17,21 @@ export const EmbedQuotePost = ({
   entityMap: Record<string, Entity>;
   contentMap: Record<string, Content<ContentData>>;
 }) => {
+  const activeNook = useAppSelector((state) => state.user.activeNook);
   const entity = entityMap[data.entityId.toString()];
   return (
     <Link
       push
       href={{
-        pathname: "/(auth)/(nooks)/nooks/content/[contentId]",
+        pathname: "/(auth)/nooks/[nookId]/content/[contentId]",
         params: {
+          nookId: activeNook.id,
           contentId: data.contentId,
         },
       }}
       asChild
     >
-      <Pressable>
+      <TouchableOpacity>
         <EmbedQuote entity={entity}>
           <PostContent data={data} entityMap={entityMap} />
           {data.embeds.map((embed) => {
@@ -38,7 +41,7 @@ export const EmbedQuotePost = ({
             return <Text key={embed}>{embed}</Text>;
           })}
         </EmbedQuote>
-      </Pressable>
+      </TouchableOpacity>
     </Link>
   );
 };

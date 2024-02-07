@@ -1,5 +1,5 @@
 import { Button, Text, View } from "tamagui";
-import { useAuth } from "../context/auth";
+import { useAuth } from "@context/auth";
 import {
   AuthClientError,
   StatusAPIResponse,
@@ -7,11 +7,13 @@ import {
 } from "@farcaster/auth-kit";
 import { useCallback, useEffect, useRef } from "react";
 import { Linking } from "react-native";
-import { DEV } from "../constants";
+import { DEV } from "@constants/index";
 import { router } from "expo-router";
+import { useAppSelector } from "@hooks/useAppSelector";
 
 export default function SignIn() {
   const { signIn, signInDev, session } = useAuth();
+  const activeNook = useAppSelector((state) => state.user.activeNook);
 
   const hasInitiatedConnectRef = useRef(false);
   const hasStartedPollingRef = useRef(false);
@@ -66,13 +68,13 @@ export default function SignIn() {
     }
   }, [startPolling, url]);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
   useEffect(() => {
     if (session) {
       router.replace({
-        pathname: "/(auth)/(nooks)/nooks/[nookId]/feeds/[feedId]",
+        pathname: "/(auth)/nooks/[nookId]/",
         params: {
-          nookId: "home",
-          feedId: "new",
+          nookId: activeNook.id,
         },
       });
     }

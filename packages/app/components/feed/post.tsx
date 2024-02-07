@@ -2,9 +2,9 @@ import { ContentFeedItem } from "@flink/api/types";
 import { PostData } from "@flink/common/types";
 import { Text, View, XStack, YStack } from "tamagui";
 import { Heart, MessageSquare, RefreshCw } from "@tamagui/lucide-icons";
-import { Embed } from "../embeds";
-import { PostContent } from "../content/post";
-import { Avatar } from "../avatar";
+import { Embed } from "@components/embeds";
+import { PostContent } from "@components/content/post";
+import { Avatar } from "@components/avatar";
 
 function formatTimeAgo(date: string) {
   const seconds = Math.floor(
