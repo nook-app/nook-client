@@ -21,9 +21,9 @@ export const EmbedQuotePost = ({
     <Link
       push
       href={{
-        pathname: "/(auth)/(nooks)/nooks/content/[id]",
+        pathname: "/(auth)/(nooks)/nooks/content/[contentId]",
         params: {
-          id: data.contentId,
+          contentId: data.contentId,
         },
       }}
       asChild

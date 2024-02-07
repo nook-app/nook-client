@@ -68,7 +68,13 @@ export default function SignIn() {
 
   useEffect(() => {
     if (session) {
-      router.replace("/(auth)/nooks/");
+      router.replace({
+        pathname: "/(auth)/(nooks)/nooks/[nookId]/feeds/[feedId]",
+        params: {
+          nookId: "home",
+          feedId: "new",
+        },
+      });
     }
   }, [session]);
 

@@ -1,6 +1,6 @@
 import { ContentFeedItem } from "@flink/api/types";
 import { Entity, PostData } from "@flink/common/types";
-import { Image, ScrollView, Text, View, XStack, YStack } from "tamagui";
+import { ScrollView, Text, View, XStack, YStack } from "tamagui";
 import { Embed } from "../embeds";
 import { Feed } from "../feed";
 import { Linking } from "react-native";
@@ -17,7 +17,10 @@ export const PostContent = ({
 
   const splitLinkParts = (text: string) => {
     const splitParts = [];
-    for (const part of text.split(/(https?:\/\/[^\s]+)/g)) {
+
+    const parts = text.split(/(https?:\/\/[^\s]+)/g);
+    for (let i = 0; i < parts.length; i++) {
+      const part = parts[i];
       if (!part) continue;
       if (/https?:\/\/[^\s]+/.test(part)) {
         if (data.embeds.includes(part)) {
@@ -26,7 +29,7 @@ export const PostContent = ({
 
         splitParts.push(
           <Text
-            key={`${data.contentId}-${part}`}
+            key={`${data.contentId}-${i}-${part}`}
             color="$color10"
             onPress={() => Linking.openURL(part)}
           >
@@ -34,7 +37,9 @@ export const PostContent = ({
           </Text>,
         );
       } else {
-        splitParts.push(<Text key={`${data.contentId}-${part}`}>{part}</Text>);
+        splitParts.push(
+          <Text key={`${data.contentId}-${i}-${part}`}>{part}</Text>,
+        );
       }
     }
     return splitParts;
@@ -56,7 +61,10 @@ export const PostContent = ({
       ...splitLinkParts(data.text.substring(mention.position, index)),
     );
     textParts.push(
-      <Text key={`${data.contentId}-${label}`} color="$color10">
+      <Text
+        key={`${data.contentId}-${mention.position}-${label}`}
+        color="$color10"
+      >
         {label}
       </Text>,
     );

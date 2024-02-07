@@ -15,12 +15,10 @@ import { setDrawerOpen } from "../../../../store/drawer";
 import { ArrowLeft } from "@tamagui/lucide-icons";
 
 export default function NooksLayout() {
-  const navigation = useNavigation();
-
   return (
     <Stack>
       <Stack.Screen
-        name="feed/index"
+        name="[nookId]/feeds/[feedId]"
         options={{
           headerLeft: () => <DrawerToggleButton />,
           headerBackground: () => (
@@ -30,7 +28,7 @@ export default function NooksLayout() {
         }}
       />
       <Stack.Screen
-        name="content/[id]"
+        name="content/[contentId]"
         options={{
           headerBackTitleVisible: false,
           headerTintColor: "white",

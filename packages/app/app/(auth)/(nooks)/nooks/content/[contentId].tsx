@@ -7,9 +7,9 @@ import { ContentPost } from "../../../../../components/content/post";
 import { selectContentById } from "../../../../../store/content";
 
 export default function ContentScreen() {
-  const { id } = useLocalSearchParams();
+  const { contentId } = useLocalSearchParams();
   const item = useAppSelector((state) =>
-    selectContentById(state, id as string),
+    selectContentById(state, contentId as string),
   );
 
   return (

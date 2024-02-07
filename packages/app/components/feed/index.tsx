@@ -14,8 +14,8 @@ const renderFeedItem = ({ item }: { item: ContentFeedItem }) => {
       <Link
         push
         href={{
-          pathname: "/(auth)/(nooks)/nooks/content/[id]",
-          params: { id: typedItem.contentId },
+          pathname: "/(auth)/(nooks)/nooks/content/[contentId]",
+          params: { contentId: typedItem.contentId },
         }}
         asChild
       >
