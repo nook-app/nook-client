@@ -1,5 +1,6 @@
+import { Image } from "expo-image";
 import { useState } from "react";
-import { Image, View } from "tamagui";
+import { Image as TImage, View } from "tamagui";
 
 export const EmbedImage = ({ embed }: { embed: string }) => {
   const [height, setHeight] = useState(0);
@@ -11,13 +12,13 @@ export const EmbedImage = ({ embed }: { embed: string }) => {
       marginTop="$2"
       onLayout={({ nativeEvent }) => {
         if (embed) {
-          Image.getSize(embed, (w, h) => {
+          TImage.getSize(embed, (w, h) => {
             setHeight((h / w) * nativeEvent.layout.width);
           });
         }
       }}
     >
-      <Image source={{ uri: embed }} height={height} width="100%" />
+      <Image source={{ uri: embed }} style={{ width: "100%", height }} />
     </View>
   );
 };

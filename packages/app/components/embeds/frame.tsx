@@ -1,7 +1,7 @@
 import { FrameButton, PostData, UrlMetadata } from "@flink/common/types";
 import { ExternalLink } from "@tamagui/lucide-icons";
-import { Linking } from "react-native";
-import { Button, Image, View, XStack, YStack } from "tamagui";
+import { Image } from "expo-image";
+import { Button, View, XStack } from "tamagui";
 
 const EmbedFrameButton = ({
   url,
@@ -67,7 +67,10 @@ export const EmbedFrame = ({
     <View borderRadius="$2">
       {metadata.image && (
         <View flex={1} height="$14" borderRadius="$2" overflow="hidden">
-          <Image source={{ uri: metadata.image }} width="100%" height="100%" />
+          <Image
+            source={{ uri: metadata.image }}
+            style={{ width: "100%", height: "100%" }}
+          />
         </View>
       )}
       {buttons && (

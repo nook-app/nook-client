@@ -64,11 +64,7 @@ export const Feed = ({
     [data, cursor],
   );
 
-  if (error) {
-    return <Text>No data</Text>;
-  }
-
-  if (isLoading || !data) {
+  if (isLoading || error || !data) {
     return (
       <View
         padding="$3"
@@ -76,8 +72,13 @@ export const Feed = ({
         backgroundColor="$background"
         alignSelf="center"
         justifyContent="center"
+        height="100%"
       >
-        <Spinner size="large" color="$color11" />
+        {isLoading ? (
+          <Spinner size="large" color="$color11" />
+        ) : (
+          <Text>No data found.</Text>
+        )}
       </View>
     );
   }

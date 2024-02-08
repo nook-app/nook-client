@@ -8,12 +8,13 @@ import { selectContentById } from "@store/content";
 
 export default function ContentScreen() {
   const { contentId } = useLocalSearchParams();
+  const activeNook = useAppSelector((state) => state.user.activeNook);
   const item = useAppSelector((state) =>
     selectContentById(state, contentId as string),
   );
 
   return (
-    <View backgroundColor="$background" theme="pink" height="100%">
+    <View backgroundColor="$background" theme={activeNook.theme} height="100%">
       <ContentPost item={item as ContentFeedItem<PostData>} />
     </View>
   );

@@ -2,11 +2,11 @@ import { Content, ContentData, Entity, PostData } from "@flink/common/types";
 import { Text, XStack, YStack } from "tamagui";
 import { ReactNode } from "react";
 import { EmbedImage } from "./image";
-import { PostContent } from "@components/content/post";
 import { Link } from "expo-router";
 import { Avatar } from "@components/avatar";
-import { TouchableOpacity } from "react-native-gesture-handler";
+import { TouchableWithoutFeedback } from "react-native-gesture-handler";
 import { useAppSelector } from "@hooks/useAppSelector";
+import { PostContent } from "@components/utils";
 
 export const EmbedQuotePost = ({
   data,
@@ -31,7 +31,7 @@ export const EmbedQuotePost = ({
       }}
       asChild
     >
-      <TouchableOpacity>
+      <TouchableWithoutFeedback>
         <EmbedQuote entity={entity}>
           <PostContent data={data} entityMap={entityMap} />
           {data.embeds.map((embed) => {
@@ -41,7 +41,7 @@ export const EmbedQuotePost = ({
             return <Text key={embed}>{embed}</Text>;
           })}
         </EmbedQuote>
-      </TouchableOpacity>
+      </TouchableWithoutFeedback>
     </Link>
   );
 };

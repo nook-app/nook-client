@@ -42,7 +42,7 @@ export default function AuthedLayout() {
         tabBarBackground: () => (
           <View
             backgroundColor="$background"
-            theme="pink"
+            theme="gray"
             height="100%"
             borderTopWidth="$0.5"
             borderTopColor="$borderColor"
