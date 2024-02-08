@@ -91,6 +91,7 @@ export type FarcasterUserDataAddData = {
   type: FarcasterUserDataType;
   value: string;
   fid: string;
+  signature: Signature;
 };
 
 export enum FarcasterVerificationType {
@@ -110,9 +111,11 @@ export function toFarcasterVerificationType(
 
 export type FarcasterVerificationData = {
   fid: string;
-  address: Uint8Array;
-  ethSignature?: Uint8Array;
-  blockHash?: Uint8Array;
-  verificationType?: number;
-  chainId?: number;
+  address: string;
+  claimSignature: string;
+  blockHash: string;
+  verificationType: number;
+  chainId: number;
+  protocol: number;
+  signature: Signature;
 };

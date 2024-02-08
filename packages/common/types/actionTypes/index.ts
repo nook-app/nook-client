@@ -28,8 +28,7 @@ export type PostActionData = ContentActionData & {
   content: PostData;
 };
 
-export enum Chain {
-  BITCOIN = "bitcoin",
+export enum Protocol {
   ETHEREUM = "ethereum",
   SOLANA = "solana",
 }
@@ -71,9 +70,18 @@ export type LinkBlockchainAddressActionData = {
   /** Address verified */
   address: string;
 
-  /** The type of verification if an Add action */
+  /** If the address is a contract */
   isContract: boolean;
 
+  /** The protocol being linked */
+  protocol: Protocol;
+
+  /** The chainId (if contract) */
+  chainId: number;
+
   /** The chain being linked */
-  chain: Chain;
+  claimSignature: string;
+
+  /** Block hash of claimSignature */
+  blockHash: string;
 };

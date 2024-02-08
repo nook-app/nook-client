@@ -26,6 +26,8 @@ model FarcasterUserData {
     type  Int
     value String
 
+    timestamp DateTime
+
     @@id([fid, type])
 }
 
@@ -40,7 +42,7 @@ model FarcasterUsernameProof {
     deletedAt DateTime?
 }
 
-model FarcasterEthVerification {
+model FarcasterVerification {
     hash            String
     hashScheme      Int
     signature       String
@@ -49,11 +51,12 @@ model FarcasterEthVerification {
 
     fid BigInt
 
-    address      String
-    type         Int
-    chainId      Int
-    ethSignature String
-    blockHash    String
+    address          String
+    claimSignature   String
+    blockHash        String
+    verificationType Int
+    protocol         Int
+    chainId          Int
 
     timestamp DateTime
     deletedAt DateTime?

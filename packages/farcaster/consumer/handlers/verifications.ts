@@ -1,6 +1,6 @@
 import {
   PrismaClient,
-  FarcasterEthVerification,
+  FarcasterVerification,
 } from "@flink/common/prisma/farcaster";
 import {
   bufferToHex,
@@ -9,6 +9,13 @@ import {
   bufferToHexAddress,
 } from "../../utils";
 import { HubRpcClient, Message } from "@farcaster/hub-nodejs";
+import {
+  EventService,
+  EventType,
+  FarcasterVerificationData,
+  RawEvent,
+} from "@flink/common/types";
+import { publishRawEvent, toJobId } from "@flink/common/queues";
 
 const prisma = new PrismaClient();
 
@@ -18,7 +25,7 @@ export const handleVerificationAdd = async ({
   const verification = messageToVerification(message);
   if (!verification) return;
 
-  await prisma.farcasterEthVerification.upsert({
+  await prisma.farcasterVerification.upsert({
     where: {
       fid_address: {
         fid: verification.fid,
@@ -32,6 +39,13 @@ export const handleVerificationAdd = async ({
   console.log(
     `[verification-add] [${verification.fid}] added ${verification.address}`,
   );
+
+  const event = transformToVerificationEvent(
+    EventType.VERIFICATION_ADD_ETH_ADDRESS,
+    verification,
+  );
+
+  return event;
 };
 
 export const handleVerificationRemove = async ({
@@ -43,8 +57,9 @@ export const handleVerificationRemove = async ({
   const address = bufferToHexAddress(
     message.data.verificationRemoveBody.address,
   );
+  const protocol = message.data.verificationRemoveBody.protocol;
 
-  await prisma.farcasterEthVerification.updateMany({
+  await prisma.farcasterVerification.updateMany({
     where: {
       fid,
       address,
@@ -55,29 +70,39 @@ export const handleVerificationRemove = async ({
   });
 
   console.log(`[verification-remove] [${fid}] removed ${address}`);
+
+  const verification = await prisma.farcasterVerification.findFirst({
+    where: { address, protocol },
+  });
+  if (verification) {
+    const event = transformToVerificationEvent(
+      EventType.VERIFICATION_REMOVE,
+      verification,
+    );
+    await publishRawEvent(event);
+  }
 };
 
 const messageToVerification = (
   message: Message,
-): FarcasterEthVerification | undefined => {
-  if (!message.data?.verificationAddEthAddressBody) return;
+): FarcasterVerification | undefined => {
+  if (!message.data?.verificationAddAddressBody) return;
 
   const fid = BigInt(message.data.fid);
   const address = bufferToHexAddress(
-    message.data.verificationAddEthAddressBody.address,
+    message.data.verificationAddAddressBody.address,
   );
 
   return {
     fid,
     address,
-    type: message.data.verificationAddEthAddressBody.verificationType,
-    chainId: message.data.verificationAddEthAddressBody.chainId,
-    ethSignature: bufferToHex(
-      message.data.verificationAddEthAddressBody.ethSignature,
+    protocol: message.data.verificationAddAddressBody.protocol,
+    verificationType: message.data.verificationAddAddressBody.verificationType,
+    chainId: message.data.verificationAddAddressBody.chainId,
+    claimSignature: bufferToHex(
+      message.data.verificationAddAddressBody.claimSignature,
     ),
-    blockHash: bufferToHex(
-      message.data.verificationAddEthAddressBody.blockHash,
-    ),
+    blockHash: bufferToHex(message.data.verificationAddAddressBody.blockHash),
     timestamp: timestampToDate(message.data.timestamp),
     deletedAt: null,
     hash: bufferToHex(message.hash),
@@ -114,8 +139,8 @@ export const getAndBackfillVerfications = async (
 export const backfillVerifications = async (messages: Message[]) => {
   const verifications = messages
     .map(messageToVerification)
-    .filter(Boolean) as FarcasterEthVerification[];
-  await prisma.farcasterEthVerification.deleteMany({
+    .filter(Boolean) as FarcasterVerification[];
+  await prisma.farcasterVerification.deleteMany({
     where: {
       OR: verifications.map((verification) => ({
         fid: verification.fid,
@@ -123,9 +148,43 @@ export const backfillVerifications = async (messages: Message[]) => {
       })),
     },
   });
-  await prisma.farcasterEthVerification.createMany({
+  await prisma.farcasterVerification.createMany({
     data: verifications,
     skipDuplicates: true,
   });
   return verifications;
+};
+
+const transformToVerificationEvent = (
+  type: EventType,
+  data: FarcasterVerification,
+): RawEvent<FarcasterVerificationData> => {
+  const source = {
+    service: EventService.FARCASTER,
+    type,
+    id: data.hash,
+    entityId: data.fid.toString(),
+  };
+
+  return {
+    eventId: toJobId(source),
+    source,
+    timestamp: data.timestamp.toString(),
+    data: {
+      fid: data.fid.toString(),
+      address: data.address,
+      protocol: data.protocol,
+      verificationType: data.verificationType,
+      blockHash: data.blockHash,
+      chainId: data.chainId,
+      claimSignature: data.claimSignature,
+      signature: {
+        hash: data.hash,
+        hashScheme: data.hashScheme,
+        signature: data.signature,
+        signatureScheme: data.signatureScheme,
+        signer: data.signer,
+      },
+    },
+  };
 };

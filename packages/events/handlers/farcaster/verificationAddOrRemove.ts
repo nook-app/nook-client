@@ -1,5 +1,5 @@
 import {
-  Chain,
+  Protocol,
   EntityEvent,
   EventAction,
   EventActionType,
@@ -44,9 +44,13 @@ export const handleVerificationAdd = async (
     data: {
       sourceEntityId: rawEvent.data.fid,
       entityId,
-      address: bufferToHexAddress(rawEvent.data.address),
+      address: rawEvent.data.address,
       isContract: rawEvent.data.verificationType === 1,
-      chain: Chain.ETHEREUM,
+      protocol:
+        rawEvent.data.protocol === 0 ? Protocol.ETHEREUM : Protocol.SOLANA,
+      chainId: rawEvent.data.chainId,
+      claimSignature: rawEvent.data.claimSignature,
+      blockHash: rawEvent.data.blockHash,
     },
     topics: [
       {
@@ -90,9 +94,13 @@ export const handleVerificationRemove = async (
     data: {
       sourceEntityId: rawEvent.data.fid,
       entityId,
-      address: bufferToHexAddress(rawEvent.data.address),
+      address: rawEvent.data.address,
       isContract: rawEvent.data.verificationType === 1,
-      chain: Chain.ETHEREUM,
+      protocol:
+        rawEvent.data.protocol === 0 ? Protocol.ETHEREUM : Protocol.SOLANA,
+      chainId: rawEvent.data.chainId,
+      claimSignature: rawEvent.data.claimSignature,
+      blockHash: rawEvent.data.blockHash,
     },
     topics: [
       {

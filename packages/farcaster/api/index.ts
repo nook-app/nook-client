@@ -7,9 +7,10 @@ import {
 } from "../consumer/handlers/casts";
 import { getAndBackfillUserDatas } from "../consumer/handlers/users";
 import {
-  EthereumAccount,
+  BlockchainAccount,
   FarcasterAccount,
   FarcasterCastData,
+  Protocol,
 } from "@flink/common/types";
 import { getAndBackfillVerfications } from "../consumer/handlers/verifications";
 
@@ -174,7 +175,7 @@ const run = async () => {
           url,
         };
 
-        let verifications = await prisma.farcasterEthVerification.findMany({
+        let verifications = await prisma.farcasterVerification.findMany({
           where: {
             fid: Number(fid),
           },
@@ -184,13 +185,13 @@ const run = async () => {
           verifications = await getAndBackfillVerfications(client, [fid]);
         }
 
-        const ethereum: EthereumAccount[] = verifications.map((v) => ({
+        const blockchain: BlockchainAccount[] = verifications.map((v) => ({
+          protocol: v.protocol === 0 ? Protocol.ETHEREUM : Protocol.SOLANA,
           address: v.address,
-          isContract: v.type === 1,
-          // TODO: get ENS name
+          isContract: v.verificationType === 1,
         }));
 
-        return { farcaster, ethereum };
+        return { farcaster, blockchain };
       };
 
       const users = await Promise.all(

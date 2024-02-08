@@ -8,6 +8,13 @@ import {
   bufferToHexAddress,
 } from "../../utils";
 import { HubRpcClient, Message } from "@farcaster/hub-nodejs";
+import {
+  EventService,
+  EventType,
+  FarcasterUserDataAddData,
+  RawEvent,
+} from "@flink/common/types";
+import { publishRawEvent, toJobId } from "@flink/common/queues";
 
 const prisma = new PrismaClient();
 
@@ -29,6 +36,9 @@ export const handleUserDataAdd = async ({ message }: MessageHandlerArgs) => {
   console.log(
     `[user-data-add] [${userData.fid}] added ${userData.type} with value ${userData.value}`,
   );
+
+  const event = transformToUserDataEvent(userData);
+  await publishRawEvent(event);
 };
 
 export const messageToUserData = (
@@ -42,6 +52,7 @@ export const messageToUserData = (
     fid,
     type: message.data.userDataBody.type,
     value: message.data.userDataBody.value,
+    timestamp: new Date(message.data.timestamp),
     hash: bufferToHex(message.hash),
     hashScheme: message.hashScheme,
     signer: bufferToHexAddress(message.signer),
@@ -92,4 +103,32 @@ export const backfillUserDatas = async (messages: Message[]) => {
     });
   }
   return userDatas;
+};
+
+const transformToUserDataEvent = (
+  data: FarcasterUserData,
+): RawEvent<FarcasterUserDataAddData> => {
+  const source = {
+    service: EventService.FARCASTER,
+    type: EventType.USER_DATA_ADD,
+    id: data.hash,
+    entityId: data.fid.toString(),
+  };
+  return {
+    eventId: toJobId(source),
+    source,
+    timestamp: data.timestamp.toString(),
+    data: {
+      fid: data.fid.toString(),
+      type: data.type,
+      value: data.value,
+      signature: {
+        hash: data.hash,
+        hashScheme: data.hashScheme,
+        signature: data.signature,
+        signatureScheme: data.signatureScheme,
+        signer: data.signer,
+      },
+    },
+  };
 };
