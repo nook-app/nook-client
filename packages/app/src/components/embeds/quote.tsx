@@ -2,10 +2,8 @@ import { Content, ContentData, Entity, PostData } from "@flink/common/types";
 import { Text, XStack, YStack } from "tamagui";
 import { ReactNode } from "react";
 import { EmbedImage } from "./image";
-import { Link } from "expo-router";
 import { Avatar } from "@/components/avatar";
 import { TouchableWithoutFeedback } from "react-native-gesture-handler";
-import { useAppSelector } from "@/hooks/useAppSelector";
 import { PostContent } from "@/components/utils";
 
 export const EmbedQuotePost = ({
@@ -17,32 +15,19 @@ export const EmbedQuotePost = ({
   entityMap: Record<string, Entity>;
   contentMap: Record<string, Content<ContentData>>;
 }) => {
-  const activeNook = useAppSelector((state) => state.user.activeNook);
   const entity = entityMap[data.entityId.toString()];
   return (
-    <Link
-      push
-      href={{
-        pathname: "/(auth)/nooks/[nookId]/content/[contentId]",
-        params: {
-          nookId: activeNook.id,
-          contentId: data.contentId,
-        },
-      }}
-      asChild
-    >
-      <TouchableWithoutFeedback>
-        <EmbedQuote entity={entity}>
-          <PostContent data={data} entityMap={entityMap} />
-          {data.embeds.map((embed) => {
-            if (embed.includes("imgur.com")) {
-              return <EmbedImage key={embed} embed={embed} />;
-            }
-            return <Text key={embed}>{embed}</Text>;
-          })}
-        </EmbedQuote>
-      </TouchableWithoutFeedback>
-    </Link>
+    <TouchableWithoutFeedback>
+      <EmbedQuote entity={entity}>
+        <PostContent data={data} entityMap={entityMap} />
+        {data.embeds.map((embed) => {
+          if (embed.includes("imgur.com")) {
+            return <EmbedImage key={embed} embed={embed} />;
+          }
+          return <Text key={embed}>{embed}</Text>;
+        })}
+      </EmbedQuote>
+    </TouchableWithoutFeedback>
   );
 };
 

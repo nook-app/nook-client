@@ -5,30 +5,16 @@ import { ContentType, PostData } from "@flink/common/types";
 import { FeedPost } from "./post";
 import { FlatList, ViewToken } from "react-native";
 import { useCallback, useState } from "react";
-import { Link } from "expo-router";
 import { TouchableWithoutFeedback } from "react-native-gesture-handler";
 import { useAppSelector } from "@/hooks/useAppSelector";
-import { Nook } from "@/constants/nooks";
 
-const renderFeedItem = ({
-  item,
-  activeNook,
-}: { item: ContentFeedItem; activeNook: Nook }) => {
+const renderFeedItem = ({ item }: { item: ContentFeedItem }) => {
   if (item.type === ContentType.POST || item.type === ContentType.REPLY) {
     const typedItem = item as ContentFeedItem<PostData>;
     return (
-      <Link
-        push
-        href={{
-          pathname: "/(auth)/nooks/[nookId]/content/[contentId]",
-          params: { contentId: typedItem.contentId, nookId: activeNook.id },
-        }}
-        asChild
-      >
-        <TouchableWithoutFeedback>
-          <FeedPost key={typedItem._id} item={typedItem} />
-        </TouchableWithoutFeedback>
-      </Link>
+      <TouchableWithoutFeedback>
+        <FeedPost key={typedItem._id} item={typedItem} />
+      </TouchableWithoutFeedback>
     );
   }
   return <></>;
@@ -87,7 +73,7 @@ export const Feed = ({
     return (
       <View>
         {data.map((item) => (
-          <View key={item._id}>{renderFeedItem({ item, activeNook })}</View>
+          <View key={item._id}>{renderFeedItem({ item })}</View>
         ))}
       </View>
     );
@@ -96,12 +82,7 @@ export const Feed = ({
   return (
     <FlatList
       data={data}
-      renderItem={(props) =>
-        renderFeedItem({
-          ...props,
-          activeNook,
-        })
-      }
+      renderItem={renderFeedItem}
       keyExtractor={(item) => item._id}
       onViewableItemsChanged={onViewableItemsChanged}
       viewabilityConfig={viewabilityConfig}

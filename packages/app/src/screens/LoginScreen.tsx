@@ -8,7 +8,6 @@ import {
 import { useCallback, useEffect, useRef } from "react";
 import { Linking } from "react-native";
 import { DEV } from "@/constants/index";
-import { router } from "expo-router";
 import { useAppSelector } from "@/hooks/useAppSelector";
 
 export default function LoginScreen() {
@@ -68,25 +67,13 @@ export default function LoginScreen() {
     }
   }, [startPolling, url]);
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
-  useEffect(() => {
-    if (session) {
-      router.replace({
-        pathname: "/(auth)/nooks/[nookId]/",
-        params: {
-          nookId: activeNook.id,
-        },
-      });
-    }
-  }, [session]);
-
   return (
     <View
       flex={1}
       justifyContent="center"
       alignItems="center"
       backgroundColor="$background"
-      theme="pink"
+      theme="gray"
     >
       <Button onPress={initiateConnect}>Sign In</Button>
       <View padding="$4">

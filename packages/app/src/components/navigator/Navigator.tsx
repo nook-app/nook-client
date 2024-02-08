@@ -9,14 +9,10 @@ export function Navigator() {
   const { session } = useAuth();
 
   return (
-    <Stack.Navigator>
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
       {session ? (
         <>
-          <Stack.Screen
-            name="AuthNavigator"
-            component={AuthNavigator}
-            options={{ headerShown: false }}
-          />
+          <Stack.Screen name="AuthNavigator" component={AuthNavigator} />
         </>
       ) : (
         <>
