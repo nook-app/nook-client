@@ -34,6 +34,12 @@ const rules: Rules & {
     ).attr("content");
   },
 
+  frameButton1Target: ({ htmlDom: $ }) => {
+    return $(
+      'meta[property="fc:frame:button:1:target"], meta[name="fc:frame:button:1:target"]',
+    ).attr("content");
+  },
+
   frameButton2: ({ htmlDom: $ }) => {
     return $(
       'meta[property="fc:frame:button:2"], meta[name="fc:frame:button:2"]',
@@ -43,6 +49,12 @@ const rules: Rules & {
   frameButton2Action: ({ htmlDom: $ }) => {
     return $(
       'meta[property="fc:frame:button:2:action"], meta[name="fc:frame:button:2:action"]',
+    ).attr("content");
+  },
+
+  frameButton2Target: ({ htmlDom: $ }) => {
+    return $(
+      'meta[property="fc:frame:button:2:target"], meta[name="fc:frame:button:2:target"]',
     ).attr("content");
   },
 
@@ -58,6 +70,12 @@ const rules: Rules & {
     ).attr("content");
   },
 
+  frameButton3Target: ({ htmlDom: $ }) => {
+    return $(
+      'meta[property="fc:frame:button:3:target"], meta[name="fc:frame:button:3:target"]',
+    ).attr("content");
+  },
+
   frameButton4: ({ htmlDom: $ }) => {
     return $(
       'meta[property="fc:frame:button:4"], meta[name="fc:frame:button:4"]',
@@ -67,6 +85,12 @@ const rules: Rules & {
   frameButton4Action: ({ htmlDom: $ }) => {
     return $(
       'meta[property="fc:frame:button:4:action"], meta[name="fc:frame:button:4:action"]',
+    ).attr("content");
+  },
+
+  frameButton4Target: ({ htmlDom: $ }) => {
+    return $(
+      'meta[property="fc:frame:button:4:target"], meta[name="fc:frame:button:4:target"]',
     ).attr("content");
   },
 
@@ -83,6 +107,12 @@ const rules: Rules & {
   frameTextInput: ({ htmlDom: $ }) => {
     return $(
       'meta[property^="fc:frame:input:text"], meta[name="fc:frame:input:text"]',
+    ).attr("content");
+  },
+
+  frameImageAspectRatio: ({ htmlDom: $ }) => {
+    return $(
+      'meta[property="fc:frame:image:aspect_ratio"], meta[name="fc:frame:image:aspect_ratio"]',
     ).attr("content");
   },
 };

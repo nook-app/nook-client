@@ -46,15 +46,20 @@ const ENUMERATED_FRAME_KEYS: FrameDataTypesafeMapping<
   framePostUrl: "postUrl",
   frameButton1: "frameButton1",
   frameButton1Action: "frameButton1Action",
+  frameButton1Target: "frameButton1Target",
   frameButton2: "frameButton2",
   frameButton2Action: "frameButton2Action",
+  frameButton2Target: "frameButton2Target",
   frameButton3: "frameButton3",
   frameButton3Action: "frameButton3Action",
+  frameButton3Target: "frameButton3Target",
   frameButton4: "frameButton4",
   frameButton4Action: "frameButton4Action",
+  frameButton4Target: "frameButton4Target",
   frameRefreshPeriod: "refreshPeriod",
   frameIdemKey: "idempotencyKey",
   frameTextInput: "textInput",
+  frameImageAspectRatio: "aspectRatio",
 };
 
 const USER_AGENT_OVERRIDES: { [key: string]: string } = {
@@ -171,21 +176,25 @@ function parseFrameMetadata(urlMetadata: UrlMetadata) {
     {
       label: urlMetadata.metadata.frameButton1,
       action: urlMetadata.metadata.frameButton1Action as FrameButtonAction,
+      target: urlMetadata.metadata.frameButton1Target,
       index: 1,
     },
     {
       label: urlMetadata.metadata.frameButton2,
       action: urlMetadata.metadata.frameButton2Action as FrameButtonAction,
+      target: urlMetadata.metadata.frameButton2Target,
       index: 2,
     },
     {
       label: urlMetadata.metadata.frameButton3,
       action: urlMetadata.metadata.frameButton3Action as FrameButtonAction,
+      target: urlMetadata.metadata.frameButton3Target,
       index: 3,
     },
     {
       label: urlMetadata.metadata.frameButton4,
       action: urlMetadata.metadata.frameButton4Action as FrameButtonAction,
+      target: urlMetadata.metadata.frameButton4Target,
       index: 4,
     },
   ].filter((button) => button.label != null) as FrameButton[];
