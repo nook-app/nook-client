@@ -3,24 +3,30 @@ import { Nook, TEMPLATE_NOOKS } from "@/constants/nooks";
 
 interface UserState {
   nooks: Nook[];
-  activeNook?: Nook;
+  activeShelves: Record<string, string>;
 }
 
 const initialState: UserState = {
   nooks: TEMPLATE_NOOKS,
-  activeNook: TEMPLATE_NOOKS[0],
+  activeShelves: {},
 };
 
 export const userSlice = createSlice({
   name: "user",
   initialState,
   reducers: {
-    setActiveNook: (state, action: PayloadAction<string>) => {
-      state.activeNook = TEMPLATE_NOOKS.find(({ id }) => id === action.payload);
+    setNooks: (state, action: PayloadAction<Nook[]>) => {
+      state.nooks = action.payload;
+    },
+    setActiveShelf: (
+      state,
+      action: PayloadAction<{ nookId: string; shelfId: string }>,
+    ) => {
+      state.activeShelves[action.payload.nookId] = action.payload.shelfId;
     },
   },
 });
 
-export const { setActiveNook } = userSlice.actions;
+export const { setNooks, setActiveShelf } = userSlice.actions;
 
 export default userSlice.reducer;

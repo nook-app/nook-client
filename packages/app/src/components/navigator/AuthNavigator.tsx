@@ -13,12 +13,14 @@ import Animated, {
 import { Image, Text, View, useTheme } from "tamagui";
 import { NooksNavigator } from "./NooksNavigator";
 import { useAppSelector } from "@/hooks/useAppSelector";
+import { RootStackParamList } from "@/types";
 
-const Tabs = createBottomTabNavigator();
+const Tabs = createBottomTabNavigator<RootStackParamList>();
 
 export function AuthNavigator() {
   const { session } = useAuth();
   const theme = useTheme();
+  const nooks = useAppSelector((state) => state.user.nooks);
   const isDrawerOpen = useAppSelector((state) => state.drawer.isOpen);
 
   const animatedStyle = useAnimatedStyle(() => {
@@ -56,7 +58,9 @@ export function AuthNavigator() {
       <Tabs.Screen
         name="Nooks"
         component={NooksNavigator}
+        initialParams={{ nookId: nooks[0].id }}
         options={{
+          title: "Nooks",
           tabBarIcon: ({ focused }) => (
             <LayoutGrid
               size={20}

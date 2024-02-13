@@ -11,7 +11,7 @@ export const PostContent = ({
 }) => {
   const textParts = [];
 
-  const splitLinkParts = (text: string) => {
+  const splitLinkParts = (text: string, index: number) => {
     const splitParts: React.JSX.Element[] = [];
 
     if (text.length === 0) return splitParts;
@@ -27,7 +27,7 @@ export const PostContent = ({
 
         splitParts.push(
           <Text
-            key={`${data.contentId}-${i}-${part}`}
+            key={`${data.contentId}-${index}-${i}-${part}`}
             color="$color10"
             onPress={() => Linking.openURL(part)}
           >
@@ -36,7 +36,7 @@ export const PostContent = ({
         );
       } else {
         splitParts.push(
-          <Text key={`${data.contentId}-${i}-${part}`}>{part}</Text>,
+          <Text key={`${data.contentId}-${index}-${i}-${part}`}>{part}</Text>,
         );
       }
     }
@@ -56,7 +56,7 @@ export const PostContent = ({
     }`;
 
     textParts.push(
-      ...splitLinkParts(data.text.substring(mention.position, index)),
+      ...splitLinkParts(data.text.substring(mention.position, index), index),
     );
     textParts.push(
       <Text
@@ -70,7 +70,7 @@ export const PostContent = ({
   }
 
   if (index > 0) {
-    textParts.push(...splitLinkParts(data.text.substring(0, index)));
+    textParts.push(...splitLinkParts(data.text.substring(0, index), index));
   }
 
   if (data.mentions.length > 0) {

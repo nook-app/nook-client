@@ -25,7 +25,6 @@ export const Feed = ({
   asList,
 }: { filter: object; asList?: boolean }) => {
   const [cursor, setCursor] = useState<string>();
-  const activeNook = useAppSelector((state) => state.user.activeNook);
   const { data, error, isLoading } = api.useGetContentFeedQuery({
     filter,
     cursor,

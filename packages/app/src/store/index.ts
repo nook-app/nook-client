@@ -12,7 +12,12 @@ export const store = configureStore({
     user: userReducer,
   },
   middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware().concat(api.middleware),
+    getDefaultMiddleware({
+      thunk: {
+        extraArgument: api,
+      },
+      serializableCheck: false,
+    }).concat(api.middleware),
 });
 
 export type AppDispatch = typeof store.dispatch;

@@ -9,17 +9,23 @@ import Animated, {
   interpolateColor,
 } from "react-native-reanimated";
 import { Feed } from "@/components/feed";
+import { useAppSelector } from "@/hooks/useAppSelector";
 import { RouteProp, useRoute } from "@react-navigation/native";
-import { TEMPLATE_NOOKS } from "@/constants/nooks";
+import { RootStackParamList } from "@/types";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
-export default function SlotsScreen() {
-  const { params } = useRoute<RouteProp<{ params: { nookId: string } }>>();
+export default function ShelfScreen() {
   const scrollViewRef = useRef<Animated.ScrollView>(null);
   const scrollX = useSharedValue(0);
   const [tabLayouts, setTabLayouts] = useState<{ width: number; x: number }[]>(
     [],
+  );
+  const route = useRoute<RouteProp<RootStackParamList, "Shelf">>();
+  const nooks = useAppSelector((state) => state.user.nooks);
+  const activeNook = nooks.find((nook) => nook.id === route.params.nookId);
+  const activeShelf = activeNook?.shelves.find(
+    (shelf) => shelf.id === route.params.shelfId,
   );
 
   const theme = useTheme();
@@ -68,10 +74,10 @@ export default function SlotsScreen() {
   const activeColor = theme.$color12.val;
   const inactiveColor = theme.$gray11.val;
 
-  const activeNook = TEMPLATE_NOOKS.find((nook) => nook.id === params?.nookId);
-  if (!activeNook) return null;
+  if (!activeNook || !activeShelf) return <></>;
 
-  const animatedTextStyles = activeNook.panels.map((_, index) =>
+  // TODO: Figure out how to make this dynamic based on number of panels
+  const animatedTextStyles = new Array(5).fill(0).map((_, index) =>
     useAnimatedStyle(() => {
       const inputRange = [
         (index - 1) * SCREEN_WIDTH, // Previous tab
@@ -98,7 +104,7 @@ export default function SlotsScreen() {
           gap="$2"
           alignItems="flex-end"
         >
-          {activeNook.panels.map((panel, i) => (
+          {activeShelf.panels.map((panel, i) => (
             <View
               key={panel.id}
               onLayout={(event) => {
@@ -133,7 +139,7 @@ export default function SlotsScreen() {
         alwaysBounceHorizontal={false}
         bounces={false}
       >
-        {activeNook.panels.map((panel) => (
+        {activeShelf.panels.map((panel) => (
           <View
             key={panel.id}
             style={{
