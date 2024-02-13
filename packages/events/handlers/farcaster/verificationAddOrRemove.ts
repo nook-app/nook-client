@@ -10,7 +10,6 @@ import {
   TopicType,
 } from "@flink/common/types";
 import { MongoClient } from "@flink/common/mongo";
-import { bufferToHexAddress } from "@flink/farcaster/utils";
 import { getOrCreateEntitiesForFids } from "@flink/common/entity";
 
 export async function handleVerificationAddOrRemove(
@@ -18,10 +17,9 @@ export async function handleVerificationAddOrRemove(
   rawEvent: RawEvent<FarcasterVerificationData>,
 ) {
   if (rawEvent.source.type === EventType.VERIFICATION_ADD_ETH_ADDRESS) {
-    await handleVerificationAdd(client, rawEvent);
-  } else {
-    await handleVerificationRemove(client, rawEvent);
+    return await handleVerificationAdd(client, rawEvent);
   }
+  return await handleVerificationRemove(client, rawEvent);
 }
 
 export const handleVerificationAdd = async (

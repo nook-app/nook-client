@@ -4,13 +4,17 @@ import {
   FarcasterCastReactionData,
   FarcasterLinkData,
   FarcasterUrlReactionData,
+  FarcasterUserDataAddData,
+  FarcasterVerificationData,
 } from "./sources/farcaster";
 
 export type EntityEventData =
   | FarcasterCastData
   | FarcasterCastReactionData
   | FarcasterLinkData
-  | FarcasterUrlReactionData;
+  | FarcasterUrlReactionData
+  | FarcasterUserDataAddData
+  | FarcasterVerificationData;
 
 /**
  * Supported event services

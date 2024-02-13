@@ -7,7 +7,6 @@ import {
   RawEvent,
   UpdateEntityInfoActionData,
   EntityInfoType,
-  toUserDataType,
   TopicType,
 } from "@flink/common/types";
 import { getOrCreateEntitiesForFids } from "@flink/common/entity";
@@ -22,11 +21,25 @@ export const handleUserDataAdd = async (
   const entityId = fidToIdentity[rawEvent.data.fid]._id;
 
   // TODO: this is pretty fragile; should change or explicitly use the same enum
-  const entityDataType = Object.values(EntityInfoType).find(
-    (t) => t.toString().toUpperCase() === rawEvent.data.type.toString(),
-  );
-  if (!entityDataType) {
-    throw new Error(`Unknown entity data type: ${rawEvent.data.type}`);
+  let entityDataType: EntityInfoType | undefined;
+  switch (rawEvent.data.type) {
+    case 1:
+      entityDataType = EntityInfoType.PFP;
+      break;
+    case 2:
+      entityDataType = EntityInfoType.DISPLAY;
+      break;
+    case 3:
+      entityDataType = EntityInfoType.BIO;
+      break;
+    case 5:
+      entityDataType = EntityInfoType.URL;
+      break;
+    case 6:
+      entityDataType = EntityInfoType.USERNAME;
+      break;
+    default:
+      throw new Error(`Unknown entity data type: ${rawEvent.data.type}`);
   }
 
   const action: EventAction<UpdateEntityInfoActionData> = {

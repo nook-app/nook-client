@@ -74,14 +74,14 @@ export const getEventsHandler = async () => {
             );
             break;
           case EventType.USER_DATA_ADD:
-            await handleUserDataAdd(
+            response = await handleUserDataAdd(
               client,
               rawEvent as RawEvent<FarcasterUserDataAddData>,
             );
             break;
           case EventType.VERIFICATION_ADD_ETH_ADDRESS:
           case EventType.VERIFICATION_REMOVE:
-            await handleVerificationAddOrRemove(
+            response = await handleVerificationAddOrRemove(
               client,
               rawEvent as RawEvent<FarcasterVerificationData>,
             );
@@ -98,9 +98,10 @@ export const getEventsHandler = async () => {
 
     if (!response) return;
 
-    const promises = [
-      void client.upsertEvent(response.event),
-      ...response.actions.map((action) => void client.upsertAction(action)),
+    // biome-ignore lint/suspicious/noExplicitAny: many different promises
+    const promises: Promise<any>[] = [
+      client.upsertEvent(response.event),
+      ...response.actions.map((action) => client.upsertAction(action)),
     ];
 
     for (const action of response.actions) {
@@ -109,14 +110,13 @@ export const getEventsHandler = async () => {
         case EventActionType.REPLY: {
           const typedAction = action as EventAction<PostActionData>;
           promises.push(
-            ...typedAction.data.content.embeds.map(
-              (contentId) =>
-                void client.incrementEngagement(contentId, "embeds"),
+            ...typedAction.data.content.embeds.map((contentId) =>
+              client.incrementEngagement(contentId, "embeds"),
             ),
           );
           if (typedAction.data.content.parentId) {
             promises.push(
-              void client.incrementEngagement(
+              client.incrementEngagement(
                 typedAction.data.content.parentId,
                 "replies",
               ),
@@ -128,16 +128,15 @@ export const getEventsHandler = async () => {
         case EventActionType.UNREPLY: {
           const typedAction = action as EventAction<PostActionData>;
           promises.push(
-            void client.markActionsDeleted(typedAction.source.id),
-            void client.markContentDeleted(typedAction.data.contentId),
-            ...typedAction.data.content.embeds.map(
-              (contentId) =>
-                void client.incrementEngagement(contentId, "embeds", true),
+            client.markActionsDeleted(typedAction.source.id),
+            client.markContentDeleted(typedAction.data.contentId),
+            ...typedAction.data.content.embeds.map((contentId) =>
+              client.incrementEngagement(contentId, "embeds", true),
             ),
           );
           if (typedAction.data.content.parentId) {
             promises.push(
-              void client.incrementEngagement(
+              client.incrementEngagement(
                 typedAction.data.content.parentId,
                 "replies",
                 true,
@@ -149,28 +148,22 @@ export const getEventsHandler = async () => {
         case EventActionType.LIKE: {
           const typedAction = action as EventAction<PostActionData>;
           promises.push(
-            void client.incrementEngagement(
-              typedAction.data.contentId,
-              "likes",
-            ),
+            client.incrementEngagement(typedAction.data.contentId, "likes"),
           );
           break;
         }
         case EventActionType.REPOST: {
           const typedAction = action as EventAction<PostActionData>;
           promises.push(
-            void client.incrementEngagement(
-              typedAction.data.contentId,
-              "reposts",
-            ),
+            client.incrementEngagement(typedAction.data.contentId, "reposts"),
           );
           break;
         }
         case EventActionType.UNLIKE: {
           const typedAction = action as EventAction<PostActionData>;
           promises.push(
-            void client.markActionsDeleted(typedAction.source.id),
-            void client.incrementEngagement(
+            client.markActionsDeleted(typedAction.source.id),
+            client.incrementEngagement(
               typedAction.data.contentId,
               "likes",
               true,
@@ -181,8 +174,8 @@ export const getEventsHandler = async () => {
         case EventActionType.UNREPOST: {
           const typedAction = action as EventAction<PostActionData>;
           promises.push(
-            void client.markActionsDeleted(typedAction.source.id),
-            void client.incrementEngagement(
+            client.markActionsDeleted(typedAction.source.id),
+            client.incrementEngagement(
               typedAction.data.contentId,
               "reposts",
               true,
@@ -192,7 +185,7 @@ export const getEventsHandler = async () => {
         }
         case EventActionType.UNFOLLOW: {
           const typedAction = action as EventAction<EntityActionData>;
-          promises.push(void client.markActionsDeleted(typedAction.source.id));
+          promises.push(client.markActionsDeleted(typedAction.source.id));
           break;
         }
         case EventActionType.UPDATE_USER_INFO: {
@@ -201,7 +194,7 @@ export const getEventsHandler = async () => {
             MongoCollection.Entity,
           );
           promises.push(
-            void collection.updateOne(
+            collection.updateOne(
               {
                 _id: action.data.entityId,
                 "farcaster.fid": typedAction.data.sourceEntityId,
@@ -223,7 +216,7 @@ export const getEventsHandler = async () => {
             MongoCollection.Entity,
           );
           promises.push(
-            void collection.updateOne(
+            collection.updateOne(
               {
                 _id: typedAction.data.entityId,
                 "ethereum.$.address": typedAction.data.address,
@@ -250,7 +243,7 @@ export const getEventsHandler = async () => {
             MongoCollection.Entity,
           );
           promises.push(
-            void collection.updateOne(
+            collection.updateOne(
               { _id: typedAction.data.entityId },
               { $pull: { ethereum: { address: typedAction.data.address } } },
             ),

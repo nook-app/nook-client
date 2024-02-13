@@ -29,21 +29,21 @@ export type PostActionData = ContentActionData & {
 };
 
 export enum Protocol {
-  ETHEREUM = "ethereum",
-  SOLANA = "solana",
+  ETHEREUM = "ETHEREUM",
+  SOLANA = "SOLANA",
 }
 
 export enum EntityInfoType {
   /** PFP - Profile Picture for the user */
-  PFP = "pfp",
+  PFP = "PFP",
   /** DISPLAY - Display Name for the user */
-  DISPLAY = "display",
+  DISPLAY = "DISPLAY",
   /** BIO - Bio for the user */
-  BIO = "bio",
+  BIO = "BIO",
   /** URL - URL of the user */
-  URL = "url",
+  URL = "URL",
   /** USERNAME - Preferred Name for the user */
-  USERNAME = "username",
+  USERNAME = "USERNAME",
 }
 
 export type UpdateEntityInfoActionData = {
