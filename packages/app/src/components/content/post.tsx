@@ -3,8 +3,9 @@ import { PostData } from "@flink/common/types";
 import { ScrollView, Text, View, XStack, YStack } from "tamagui";
 import { Embed } from "@/components/embeds";
 import { Feed } from "@/components/feed";
-import { Avatar } from "@/components/avatar";
+import { EntityAvatar } from "@/components/entity/avatar";
 import { PostContent } from "@/components/utils";
+import { EntityDisplay } from "../entity/display";
 
 export const ContentPost = ({
   item: { data, entityMap, contentMap },
@@ -14,18 +15,15 @@ export const ContentPost = ({
 
   return (
     <ScrollView>
-      <YStack padding="$2" gap="$3">
+      <YStack
+        padding="$2"
+        gap="$3"
+        borderBottomColor="$borderColor"
+        borderBottomWidth="$0.5"
+      >
         <XStack gap="$2">
-          <Avatar entity={entity} />
-          <YStack gap="$1">
-            {entity.farcaster.displayName && (
-              <Text fontWeight="700">{entity.farcaster.displayName}</Text>
-            )}
-            {entity.farcaster.username && (
-              <Text color="$gray11">{`@${entity.farcaster.username}`}</Text>
-            )}
-            {!entity.farcaster && <Text color="$gray11">Unknown</Text>}
-          </YStack>
+          <EntityAvatar entity={entity} />
+          <EntityDisplay entity={entity} orientation="vertical" />
         </XStack>
         <PostContent data={data} entityMap={entityMap} />
         {data.embeds.map((embed, i) => (
@@ -59,18 +57,18 @@ export const ContentPost = ({
             <Text color="$gray11">Likes</Text>
           </View>
         </XStack>
-        <Feed
-          filter={{
-            type: "REPLY",
-            deletedAt: null,
-            topics: {
-              type: "TARGET_CONTENT",
-              value: data.contentId,
-            },
-          }}
-          asList
-        />
       </YStack>
+      <Feed
+        filter={{
+          type: "REPLY",
+          deletedAt: null,
+          topics: {
+            type: "TARGET_CONTENT",
+            value: data.contentId,
+          },
+        }}
+        asList
+      />
     </ScrollView>
   );
 };

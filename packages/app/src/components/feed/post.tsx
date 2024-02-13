@@ -3,8 +3,9 @@ import { PostData } from "@flink/common/types";
 import { Text, View, XStack, YStack } from "tamagui";
 import { Heart, MessageSquare, RefreshCw } from "@tamagui/lucide-icons";
 import { Embed } from "@/components/embeds";
-import { Avatar } from "@/components/avatar";
+import { EntityAvatar } from "@/components/entity/avatar";
 import { PostContent } from "@/components/utils";
+import { EntityDisplay } from "../entity/display";
 
 function formatTimeAgo(date: string) {
   const seconds = Math.floor(
@@ -47,17 +48,11 @@ export const FeedPost = ({
       gap="$2"
     >
       <View width="$3.5">
-        <Avatar entity={entity} />
+        <EntityAvatar entity={entity} />
       </View>
       <YStack flex={1} gap="$1">
         <XStack gap="$1">
-          {entity.farcaster.displayName && (
-            <Text fontWeight="700">{entity.farcaster.displayName}</Text>
-          )}
-          {entity.farcaster.username && (
-            <Text color="$gray11">{`@${entity.farcaster.username}`}</Text>
-          )}
-          {!entity && <Text fontWeight="700">{data.entityId.toString()}</Text>}
+          <EntityDisplay entity={entity} />
           <Text color="$gray11">{" · "}</Text>
           <Text color="$gray11">
             {formatTimeAgo(timestamp as unknown as string)}

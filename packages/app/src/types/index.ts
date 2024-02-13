@@ -10,6 +10,9 @@ export type RootStackParamList = {
     nookId: string;
     shelfId: string;
   };
+  Content: {
+    contentId: string;
+  };
   Notifications: undefined;
   Profile: undefined;
 };

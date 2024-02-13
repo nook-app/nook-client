@@ -2,9 +2,11 @@ import { Content, ContentData, Entity, PostData } from "@flink/common/types";
 import { Text, XStack, YStack } from "tamagui";
 import { ReactNode } from "react";
 import { EmbedImage } from "./image";
-import { Avatar } from "@/components/avatar";
+import { EntityAvatar } from "@/components/entity/avatar";
 import { TouchableWithoutFeedback } from "react-native-gesture-handler";
 import { PostContent } from "@/components/utils";
+import { NavigationProp, useNavigation } from "@react-navigation/native";
+import { RootStackParamList } from "@/types";
 
 export const EmbedQuotePost = ({
   data,
@@ -15,9 +17,16 @@ export const EmbedQuotePost = ({
   entityMap: Record<string, Entity>;
   contentMap: Record<string, Content<ContentData>>;
 }) => {
+  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const entity = entityMap[data.entityId.toString()];
   return (
-    <TouchableWithoutFeedback>
+    <TouchableWithoutFeedback
+      onPress={() =>
+        navigation.navigate("Content", {
+          contentId: data.contentId,
+        })
+      }
+    >
       <EmbedQuote entity={entity}>
         <PostContent data={data} entityMap={entityMap} />
         {data.embeds.map((embed) => {
@@ -48,7 +57,7 @@ export const EmbedQuote = ({
       gap="$2"
     >
       <XStack gap="$1" alignItems="center">
-        <Avatar entity={entity} size="$1" />
+        <EntityAvatar entity={entity} size="$1" />
         {entity?.farcaster.displayName && (
           <Text fontWeight="700">{entity.farcaster.displayName}</Text>
         )}

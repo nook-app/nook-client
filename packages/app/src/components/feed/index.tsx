@@ -6,13 +6,23 @@ import { FeedPost } from "./post";
 import { FlatList, ViewToken } from "react-native";
 import { useCallback, useState } from "react";
 import { TouchableWithoutFeedback } from "react-native-gesture-handler";
-import { useAppSelector } from "@/hooks/useAppSelector";
+import { NavigationProp, useNavigation } from "@react-navigation/native";
+import { RootStackParamList } from "@/types";
 
-const renderFeedItem = ({ item }: { item: ContentFeedItem }) => {
+const renderFeedItem = (
+  navigation: NavigationProp<RootStackParamList>,
+  item: ContentFeedItem,
+) => {
   if (item.type === ContentType.POST || item.type === ContentType.REPLY) {
     const typedItem = item as ContentFeedItem<PostData>;
     return (
-      <TouchableWithoutFeedback>
+      <TouchableWithoutFeedback
+        onPress={() =>
+          navigation.navigate("Content", {
+            contentId: typedItem.contentId,
+          })
+        }
+      >
         <FeedPost key={typedItem._id} item={typedItem} />
       </TouchableWithoutFeedback>
     );
@@ -24,6 +34,7 @@ export const Feed = ({
   filter,
   asList,
 }: { filter: object; asList?: boolean }) => {
+  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const [cursor, setCursor] = useState<string>();
   const { data, error, isLoading } = api.useGetContentFeedQuery({
     filter,
@@ -72,7 +83,7 @@ export const Feed = ({
     return (
       <View>
         {data.map((item) => (
-          <View key={item._id}>{renderFeedItem({ item })}</View>
+          <View key={item._id}>{renderFeedItem(navigation, item)}</View>
         ))}
       </View>
     );
@@ -81,7 +92,7 @@ export const Feed = ({
   return (
     <FlatList
       data={data}
-      renderItem={renderFeedItem}
+      renderItem={({ item }) => renderFeedItem(navigation, item)}
       keyExtractor={(item) => item._id}
       onViewableItemsChanged={onViewableItemsChanged}
       viewabilityConfig={viewabilityConfig}

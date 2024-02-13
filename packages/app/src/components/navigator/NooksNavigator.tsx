@@ -5,15 +5,13 @@ import {
 import {
   useNavigation,
   NavigationProp,
-  useRoute,
-  RouteProp,
   CommonActions,
 } from "@react-navigation/native";
 import { useAppDispatch } from "@/hooks/useAppDispatch";
 import { Text, View, XStack, YStack } from "tamagui";
 import { Image } from "expo-image";
 import { RootStackParamList } from "@/types";
-import { setActiveShelf } from "@/store/user";
+import { setActiveNook, setActiveShelf } from "@/store/user";
 import { useAppSelector } from "@/hooks/useAppSelector";
 import { NookNavigator } from "./NookNavigator";
 
@@ -21,19 +19,11 @@ const Drawer = createDrawerNavigator();
 
 export function NooksNavigator() {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
-  const route = useRoute<RouteProp<RootStackParamList, "Nooks">>();
   const dispatch = useAppDispatch();
-
   const nooks = useAppSelector((state) => state.user.nooks);
+  const activeNook = useAppSelector((state) => state.user.activeNook);
   const activeShelves = useAppSelector((state) => state.user.activeShelves);
-
-  const activeNook =
-    nooks.find((nook) => nook.id === route.params.nookId) || nooks[0];
-
-  const activeShelf =
-    activeNook.shelves.find(
-      (shelf) => shelf.id === activeShelves[activeNook.id],
-    ) || activeNook.shelves[0];
+  const activeShelf = activeShelves[activeNook.id] || activeNook.shelves[0];
 
   return (
     <Drawer.Navigator
@@ -55,7 +45,7 @@ export function NooksNavigator() {
                         : undefined
                     }
                     onPress={() => {
-                      navigation.setParams({ nookId: nook.id });
+                      dispatch(setActiveNook(nook.id));
                       navigation.dispatch(
                         CommonActions.reset({
                           index: 0,
@@ -126,12 +116,7 @@ export function NooksNavigator() {
                     }
                     borderRadius="$4"
                     onPress={() => {
-                      dispatch(
-                        setActiveShelf({
-                          nookId: activeNook.id,
-                          shelfId: shelf.id,
-                        }),
-                      );
+                      dispatch(setActiveShelf(shelf.id));
                       navigation.navigate("Shelf", {
                         nookId: activeNook.id,
                         shelfId: shelf.id,

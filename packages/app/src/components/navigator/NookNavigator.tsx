@@ -1,10 +1,5 @@
 import { PlatformPressable } from "@react-navigation/elements";
-import {
-  DrawerActions,
-  useNavigation,
-  useRoute,
-  RouteProp,
-} from "@react-navigation/native";
+import { DrawerActions, useNavigation } from "@react-navigation/native";
 import { Platform } from "react-native";
 import { useDrawerStatus } from "@react-navigation/drawer";
 import { useEffect } from "react";
@@ -13,11 +8,12 @@ import { useAppDispatch } from "@/hooks/useAppDispatch";
 import { setDrawerOpen } from "@/store/drawer";
 import { View } from "tamagui";
 import ShelfScreen from "@/screens/ShelfScreen";
-import { RootStackParamList } from "@/types";
 import { useAppSelector } from "@/hooks/useAppSelector";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import ContentScreen from "@/screens/ContentScreen";
+import { RootStackParamList } from "@/types";
 
-const Stack = createNativeStackNavigator();
+const Stack = createNativeStackNavigator<RootStackParamList>();
 
 const DrawerToggleButton = () => {
   const navigation = useNavigation();
@@ -48,18 +44,9 @@ const DrawerToggleButton = () => {
 };
 
 export function NookNavigator() {
-  const route = useRoute<RouteProp<RootStackParamList, "Nook">>();
-
-  const nooks = useAppSelector((state) => state.user.nooks);
+  const activeNook = useAppSelector((state) => state.user.activeNook);
   const activeShelves = useAppSelector((state) => state.user.activeShelves);
-
-  const activeNook =
-    nooks.find((nook) => nook.id === route.params.nookId) || nooks[0];
-
-  const activeShelf =
-    activeNook.shelves.find(
-      (shelf) => shelf.id === activeShelves[activeNook.id],
-    ) || activeNook.shelves[0];
+  const activeShelf = activeShelves[activeNook.id] || activeNook.shelves[0];
 
   return (
     <Stack.Navigator>
@@ -81,6 +68,22 @@ export function NookNavigator() {
             />
           ),
         }}
+      />
+      <Stack.Screen
+        name="Content"
+        component={ContentScreen}
+        options={{
+          headerBackTitleVisible: false,
+          headerTintColor: "white",
+          headerBackground: () => (
+            <View
+              backgroundColor="$background"
+              theme={activeNook.theme}
+              height="100%"
+            />
+          ),
+        }}
+        getId={({ params }) => params.contentId}
       />
     </Stack.Navigator>
   );
