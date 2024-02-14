@@ -43,7 +43,7 @@ export const handleVerificationAdd = async (
     data: {
       sourceEntityId: rawEvent.data.fid,
       entityId,
-      address: rawEvent.data.address,
+      address: rawEvent.data.address.toLowerCase(),
       isContract: rawEvent.data.verificationType === 1,
       protocol:
         rawEvent.data.protocol === 0 ? Protocol.ETHEREUM : Protocol.SOLANA,
@@ -95,7 +95,7 @@ export const handleVerificationRemove = async (
     data: {
       sourceEntityId: rawEvent.data.fid,
       entityId,
-      address: rawEvent.data.address,
+      address: rawEvent.data.address.toLowerCase(),
       isContract: rawEvent.data.verificationType === 1,
       protocol:
         rawEvent.data.protocol === 0 ? Protocol.ETHEREUM : Protocol.SOLANA,

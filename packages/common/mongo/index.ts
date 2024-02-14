@@ -67,6 +67,15 @@ export class MongoClient {
     });
   };
 
+  findEvent = async (eventId: string) => {
+    const collection = this.getCollection<EntityEvent<unknown>>(
+      MongoCollection.Events,
+    );
+    return await collection.findOne({
+      eventId,
+    });
+  };
+
   generateObjectIdFromDate = (date: Date) => {
     const datePart = ObjectId.createFromTime(
       date.getTime() / 1000,

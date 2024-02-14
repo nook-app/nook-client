@@ -189,7 +189,7 @@ const getTips = ({
   return matches.map((match) => ({
     entityId,
     targetEntityId: parentEntityId,
-    contentId: DEGEN_ASSET_ID,
+    contentId: DEGEN_ASSET_ID.toLowerCase(),
     amount: parseInt(match[1], 10),
     targetContentId: parentId,
   }));
