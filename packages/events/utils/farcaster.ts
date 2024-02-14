@@ -7,6 +7,7 @@ import {
   Topic,
   TopicType,
   TipData,
+  Protocol,
 } from "@flink/common/types";
 import { toFarcasterURI } from "@flink/farcaster/utils";
 import { MongoClient, MongoCollection } from "@flink/common/mongo";
@@ -103,7 +104,7 @@ const generateReplyContent = async (
     (newParent ? generatePost(newParent, identities) : undefined);
   data.parentEntityId = identities[cast.parentFid as string]._id;
 
-  data.tips = getTips(data);
+  data.tips = await getTips(data, identities[cast.fid]);
 
   return formatContent(data);
 };
@@ -175,17 +176,39 @@ const getParentAndRootCasts = async (
   };
 };
 
-const getTips = ({
-  entityId,
-  contentId,
-  parentId,
-  parentEntityId,
-  text,
-}: PostData): TipData[] | undefined => {
+const getTips = async (
+  { entityId, contentId, parentId, parentEntityId, text }: PostData,
+  entity: Entity,
+): Promise<TipData[] | undefined> => {
   if (!parentId || !parentEntityId) return;
   const degenTipPattern = /(\d+)\s+\$DEGEN/gi;
   const matches = [...text.matchAll(degenTipPattern)];
   if (matches.length === 0) return;
+
+  const responses = await Promise.all(
+    entity.blockchain
+      .filter((b) => b.protocol === Protocol.ETHEREUM)
+      .map(async (b) => {
+        const { remaining_allowance } = await fetch(
+          `https://www.degen.tips/api/airdrop2/tip-allowance?address=${b.address}`,
+        )
+          .then((res) => res.json())
+          .then((res) => res[0]);
+        return remaining_allowance;
+      }),
+  );
+
+  const totalAllowance = responses.reduce((acc, curr) => acc + curr, 0);
+  const totalTips = matches.reduce(
+    (acc, match) => acc + parseInt(match[1], 10),
+    0,
+  );
+
+  if (totalTips > totalAllowance) {
+    throw new Error(
+      `Not enough allowance for tips. Total tips: ${totalTips}, total allowance: ${totalAllowance}`,
+    );
+  }
 
   return matches.map((match) => ({
     entityId,
