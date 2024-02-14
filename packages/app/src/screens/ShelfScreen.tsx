@@ -8,10 +8,10 @@ import Animated, {
   interpolate,
   interpolateColor,
 } from "react-native-reanimated";
-import { Feed } from "@/components/feed";
 import { useAppSelector } from "@/hooks/useAppSelector";
 import { RouteProp, useRoute } from "@react-navigation/native";
 import { RootStackParamList } from "@/types";
+import { FeedPanel } from "@/components/panels";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
@@ -149,7 +149,12 @@ export default function ShelfScreen() {
             }}
           >
             <View width="100%">
-              <Feed filter={panel.filter} />
+              <FeedPanel
+                key={`${activeNook.id}-${activeShelf.id}-${panel.id}`}
+                nookId={activeNook.id}
+                shelfId={activeShelf.id}
+                panelId={panel.id}
+              />
             </View>
           </View>
         ))}

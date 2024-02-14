@@ -10,6 +10,43 @@ const isWarpcastUrl = (url: string) => {
   );
 };
 
+export function formatTimeAgo(date: string) {
+  const seconds = Math.floor(
+    (new Date().getTime() - new Date(date).getTime()) / 1000,
+  );
+  let interval = seconds / 86400; // Days
+
+  if (interval > 30) {
+    const dateObj = new Date(date);
+    return `${dateObj.toLocaleString("default", {
+      month: "short",
+    })} ${dateObj.getDate()}`;
+  }
+  if (interval > 1) {
+    return `${Math.floor(interval)}d`;
+  }
+  interval = seconds / 3600; // Hours
+  if (interval > 1) {
+    return `${Math.floor(interval)}h`;
+  }
+  interval = seconds / 60; // Minutes
+  if (interval > 1) {
+    return `${Math.floor(interval)}m`;
+  }
+
+  return `${Math.floor(seconds)}s`; // Seconds
+}
+
+export function formatTipsAmount(amount: number): string {
+  if (amount >= 1000000) {
+    return `${(amount / 1000000).toFixed(1)}M`;
+  }
+  if (amount >= 1000) {
+    return `${(amount / 1000).toFixed(1)}K`;
+  }
+  return amount.toString();
+}
+
 export const PostContent = ({
   data,
   entityMap,

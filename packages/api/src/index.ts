@@ -1,6 +1,7 @@
 import fastify from "fastify";
-import { authRoutes, feedRoutes } from "./routes";
 import { mongoPlugin } from "./plugins";
+import { nookRoutes } from "./routes/nook";
+import { entityRoutes } from "./routes/entity";
 
 const buildApp = () => {
   const app = fastify({
@@ -20,8 +21,8 @@ const buildApp = () => {
 
   app.register(mongoPlugin);
 
-  app.register(feedRoutes);
-  app.register(authRoutes);
+  app.register(nookRoutes);
+  app.register(entityRoutes);
 
   return app;
 };

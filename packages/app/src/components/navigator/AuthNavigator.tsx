@@ -58,7 +58,7 @@ export function AuthNavigator() {
       <Tabs.Screen
         name="Nooks"
         component={NooksNavigator}
-        initialParams={{ nookId: nooks[0].id }}
+        initialParams={{ nookId: nooks[0]?.id }}
         options={{
           title: "Nooks",
           tabBarIcon: ({ focused }) => (

@@ -4,43 +4,21 @@ import { Text, View, XStack, YStack } from "tamagui";
 import { Heart, MessageSquare, RefreshCw, Tv } from "@tamagui/lucide-icons";
 import { Embed } from "@/components/embeds";
 import { EntityAvatar } from "@/components/entity/avatar";
-import { PostContent } from "@/components/utils";
+import {
+  PostContent,
+  formatTimeAgo,
+  formatTipsAmount,
+} from "@/components/utils";
 import { EntityDisplay } from "../entity/display";
 import { CHANNELS } from "@/constants";
-
-function formatTimeAgo(date: string) {
-  const seconds = Math.floor(
-    (new Date().getTime() - new Date(date).getTime()) / 1000,
-  );
-  let interval = seconds / 86400; // Days
-
-  if (interval > 30) {
-    const dateObj = new Date(date);
-    return `${dateObj.toLocaleString("default", {
-      month: "short",
-    })} ${dateObj.getDate()}`;
-  }
-  if (interval > 1) {
-    return `${Math.floor(interval)}d`;
-  }
-  interval = seconds / 3600; // Hours
-  if (interval > 1) {
-    return `${Math.floor(interval)}h`;
-  }
-  interval = seconds / 60; // Minutes
-  if (interval > 1) {
-    return `${Math.floor(interval)}m`;
-  }
-
-  return `${Math.floor(seconds)}s`; // Seconds
-}
+import { Image } from "expo-image";
 
 export const FeedPost = ({
   item: { data, timestamp, entityMap, contentMap },
 }: { item: ContentFeedItem<PostData> }) => {
   const engagement = contentMap[data.contentId].engagement;
+  const tips = contentMap[data.contentId].tips;
   const entity = entityMap[data.entityId.toString()];
-
   return (
     <XStack
       padding="$2"
@@ -70,17 +48,32 @@ export const FeedPost = ({
           />
         ))}
         <XStack justifyContent="space-between" marginTop="$2" paddingRight="$2">
-          <View flexDirection="row" alignItems="center" gap="$2" width="$8">
+          <View flexDirection="row" alignItems="center" gap="$2" width="$6">
             <MessageSquare size={16} color="$gray11" />
             <Text color="$gray11">{engagement.replies}</Text>
           </View>
-          <View flexDirection="row" alignItems="center" gap="$2" width="$8">
+          <View flexDirection="row" alignItems="center" gap="$2" width="$6">
             <RefreshCw size={16} color="$gray11" />
             <Text color="$gray11">{engagement.reposts}</Text>
           </View>
-          <View flexDirection="row" alignItems="center" gap="$2" width="$8">
+          <View flexDirection="row" alignItems="center" gap="$2" width="$6">
             <Heart size={16} color="$gray11" />
             <Text color="$gray11">{engagement.likes}</Text>
+          </View>
+          <View flexDirection="row" alignItems="center" gap="$2" width="$6">
+            <Image
+              source={{ uri: "https://www.degen.tips/logo_light.svg" }}
+              style={{ width: 12, height: 12 }}
+            />
+            <Text color="$gray11">
+              {formatTipsAmount(
+                tips
+                  ? tips[
+                      "chain://eip155:8453/erc20:0xc9034c3e7f58003e6ae0c8438e7c8f4598d5acaa"
+                    ]?.amount || 0
+                  : 0,
+              )}
+            </Text>
           </View>
           <View
             flexDirection="row"
@@ -89,7 +82,7 @@ export const FeedPost = ({
             gap="$1.5"
             flex={1}
           >
-            {data.channelId && (
+            {data.channelId && CHANNELS[data.channelId] && (
               <>
                 <Text color="$gray11">in</Text>
                 <Text numberOfLines={1} ellipsizeMode="tail" fontWeight="700">

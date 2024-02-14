@@ -8,8 +8,9 @@ import {
 import { AuthFarcasterRequest, AuthResponse, ErrorResponse } from "../../types";
 import { randomUUID } from "crypto";
 import { Entity } from "@flink/common/types";
+import { TEMPLATE_NOOKS } from "../../data";
 
-export class AuthService {
+export class EntityService {
   private client: MongoClient;
   private farcasterAuthClient: FarcasterAuthClient;
 
@@ -55,6 +56,7 @@ export class AuthService {
     return {
       token,
       entity,
+      nooks: TEMPLATE_NOOKS,
     };
   }
 }

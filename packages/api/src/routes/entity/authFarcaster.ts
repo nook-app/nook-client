@@ -1,9 +1,9 @@
 import { FastifyInstance } from "fastify";
-import { AuthFarcasterRequest } from "../../types";
-import { AuthService } from "../services/authService";
+import { AuthFarcasterRequest } from "../../../types";
+import { EntityService } from "../../services/entityService";
 
 export const authFarcaster = async (fastify: FastifyInstance) => {
-  const authService = new AuthService(fastify);
+  const authService = new EntityService(fastify);
 
   fastify.post<{ Body: AuthFarcasterRequest }>(
     "/auth/farcaster",

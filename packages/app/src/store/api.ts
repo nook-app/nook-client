@@ -1,40 +1,29 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import {
-  ContentFeedItem,
-  GetContentFeedRequest,
-  GetContentFeedResponse,
+  ContentFeed,
+  GetContentRepliesBody,
+  GetPanelParams,
+  GetPanelQuery,
 } from "@flink/api/types";
 import { API_BASE_URL } from "@/constants/index";
-import { ContentData } from "@flink/common/types";
 
 export const api = createApi({
   reducerPath: "api",
   baseQuery: fetchBaseQuery({ baseUrl: API_BASE_URL }),
   endpoints: (builder) => ({
-    getContentFeed: builder.query<
-      ContentFeedItem<ContentData>[],
-      GetContentFeedRequest
-    >({
-      query: (request) => {
-        return {
-          url: "/feeds",
-          method: "POST",
-          body: request,
-        };
-      },
-      transformResponse: (response: GetContentFeedResponse) => response.data,
-      serializeQueryArgs: ({ endpointName, queryArgs }) => {
-        return { endpointName, filter: queryArgs.filter };
-      },
-      merge: (currentCache, newItems, { arg }) => {
-        if (!arg.cursor) {
-          return newItems;
-        }
-        currentCache.push(...newItems);
-      },
-      forceRefetch({ currentArg, previousArg }) {
-        return JSON.stringify(currentArg) !== JSON.stringify(previousArg);
-      },
+    getPanel: builder.query<ContentFeed, GetPanelParams & GetPanelQuery>({
+      query: (request) => ({
+        url: `/nooks/${request.nookId}/shelves/${request.shelfId}/panels/${request.panelId}`,
+        method: "GET",
+        params: { cursor: request.cursor },
+      }),
+    }),
+    getContentReplies: builder.query<ContentFeed, GetContentRepliesBody>({
+      query: (request) => ({
+        url: "/content/replies",
+        method: "POST",
+        body: request,
+      }),
     }),
   }),
 });

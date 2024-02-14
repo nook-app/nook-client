@@ -2,9 +2,9 @@ import { ContentFeedItem } from "@flink/api/types";
 import { PostData } from "@flink/common/types";
 import { ScrollView, Text, View, XStack, YStack } from "tamagui";
 import { Embed } from "@/components/embeds";
-import { Feed } from "@/components/feed";
+import { ContentReplies } from "@/components/feed";
 import { EntityAvatar } from "@/components/entity/avatar";
-import { PostContent } from "@/components/utils";
+import { PostContent, formatTipsAmount } from "@/components/utils";
 import { EntityDisplay } from "../entity/display";
 import { CHANNELS } from "@/constants";
 
@@ -12,6 +12,7 @@ export const ContentPost = ({
   item: { data, entityMap, contentMap },
 }: { item: ContentFeedItem<PostData> }) => {
   const engagement = contentMap[data.contentId].engagement;
+  const tips = contentMap[data.contentId].tips;
   const entity = entityMap[data.entityId.toString()];
 
   return (
@@ -57,6 +58,18 @@ export const ContentPost = ({
             <Text fontWeight="700">{engagement.likes}</Text>
             <Text color="$gray11">Likes</Text>
           </View>
+          <View flexDirection="row" alignItems="center" gap="$1">
+            <Text fontWeight="700">
+              {formatTipsAmount(
+                tips
+                  ? tips[
+                      "chain://eip155:8453/erc20:0xc9034c3e7f58003e6ae0c8438e7c8f4598d5acaa"
+                    ]?.amount || 0
+                  : 0,
+              )}
+            </Text>
+            <Text color="$gray11">$DEGEN</Text>
+          </View>
           <View
             flexDirection="row"
             alignItems="center"
@@ -75,17 +88,7 @@ export const ContentPost = ({
           </View>
         </XStack>
       </YStack>
-      <Feed
-        filter={{
-          type: "REPLY",
-          deletedAt: null,
-          topics: {
-            type: "TARGET_CONTENT",
-            value: data.contentId,
-          },
-        }}
-        asList
-      />
+      <ContentReplies contentId={data.contentId} />
     </ScrollView>
   );
 };

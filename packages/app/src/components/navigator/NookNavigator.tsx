@@ -46,24 +46,23 @@ const DrawerToggleButton = () => {
 export function NookNavigator() {
   const activeNook = useAppSelector((state) => state.user.activeNook);
   const activeShelves = useAppSelector((state) => state.user.activeShelves);
-  const activeShelf = activeShelves[activeNook.id] || activeNook.shelves[0];
+  const activeShelf = activeNook
+    ? activeShelves[activeNook.id] || activeNook.shelves[0]
+    : undefined;
 
   return (
     <Stack.Navigator>
       <Stack.Screen
         name="Shelf"
         component={ShelfScreen}
-        initialParams={{
-          nookId: activeNook.id,
-          shelfId: activeShelf.id,
-        }}
+        initialParams={{ nookId: activeNook?.id, shelfId: activeShelf?.id }}
         options={{
-          title: activeShelf.name,
+          title: activeShelf?.name,
           headerLeft: () => <DrawerToggleButton />,
           headerBackground: () => (
             <View
               backgroundColor="$background"
-              theme={activeNook.theme}
+              theme={activeNook?.theme}
               height="100%"
             />
           ),
@@ -78,7 +77,7 @@ export function NookNavigator() {
           headerBackground: () => (
             <View
               backgroundColor="$background"
-              theme={activeNook.theme}
+              theme={activeNook?.theme}
               height="100%"
             />
           ),

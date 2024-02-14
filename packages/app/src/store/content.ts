@@ -14,9 +14,24 @@ const contentSlice = createSlice({
   reducers: {},
   extraReducers: (builder) => {
     builder.addMatcher(
-      api.endpoints.getContentFeed.matchFulfilled,
+      api.endpoints.getPanel.matchFulfilled,
       (state, action) => {
-        const content = action.payload.flatMap((item) => {
+        const content = action.payload.data.flatMap((item) => {
+          return Object.values(item.contentMap).map((content) => {
+            return {
+              ...content,
+              entityMap: item.entityMap,
+              contentMap: item.contentMap,
+            } as ContentFeedItem<ContentData>;
+          }) as ContentFeedItem<ContentData>[];
+        });
+        contentAdapter.upsertMany(state, content);
+      },
+    );
+    builder.addMatcher(
+      api.endpoints.getContentReplies.matchFulfilled,
+      (state, action) => {
+        const content = action.payload.data.flatMap((item) => {
           return Object.values(item.contentMap).map((content) => {
             return {
               ...content,

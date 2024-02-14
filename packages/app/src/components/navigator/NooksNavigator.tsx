@@ -23,7 +23,9 @@ export function NooksNavigator() {
   const nooks = useAppSelector((state) => state.user.nooks);
   const activeNook = useAppSelector((state) => state.user.activeNook);
   const activeShelves = useAppSelector((state) => state.user.activeShelves);
-  const activeShelf = activeShelves[activeNook.id] || activeNook.shelves[0];
+  const activeShelf = activeNook
+    ? activeShelves[activeNook.id] || activeNook.shelves[0]
+    : undefined;
 
   return (
     <Drawer.Navigator
@@ -54,7 +56,9 @@ export function NooksNavigator() {
                               name: "Nook",
                               params: {
                                 nookId: nook.id,
-                                shelfId: nook.shelves[0].id,
+                                shelfId:
+                                  activeShelves[nook.id]?.id ||
+                                  nook.shelves[0].id,
                               },
                             },
                           ],
@@ -112,7 +116,7 @@ export function NooksNavigator() {
                     key={shelf.id}
                     padding="$2"
                     backgroundColor={
-                      activeShelf.id === shelf.id ? "$color5" : "$gray4"
+                      activeShelf?.id === shelf.id ? "$color5" : "$gray4"
                     }
                     borderRadius="$4"
                     onPress={() => {
@@ -124,7 +128,7 @@ export function NooksNavigator() {
                     }}
                   >
                     <Text
-                      fontWeight={activeShelf.id === shelf.id ? "700" : "500"}
+                      fontWeight={activeShelf?.id === shelf.id ? "700" : "500"}
                     >
                       {shelf.name}
                     </Text>
@@ -141,7 +145,8 @@ export function NooksNavigator() {
         name="Nook"
         component={NookNavigator}
         initialParams={{
-          nookId: activeNook.id,
+          nookId: activeNook?.id,
+          shelfId: activeShelf?.id,
         }}
         options={{ headerShown: false }}
       />

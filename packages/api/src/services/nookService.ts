@@ -1,51 +1,72 @@
 import { FastifyInstance } from "fastify";
 import { MongoClient, MongoCollection } from "@flink/common/mongo";
 import { Content, ContentData, Entity } from "@flink/common/types";
-import { GetContentFeedRequest, ContentFeedItem } from "../../types";
+import { ContentFeed } from "../../types";
 import { ObjectId } from "mongodb";
+import { ContentFeedArgs } from "../../data";
 
-export class FeedService {
+const PAGE_SIZE = 25;
+
+export class NookService {
   private client: MongoClient;
 
   constructor(fastify: FastifyInstance) {
     this.client = fastify.mongo.client;
   }
 
-  async getFeeds({
-    filter,
-    cursor,
-  }: GetContentFeedRequest): Promise<ContentFeedItem[]> {
+  async getContentFeed(
+    { filter, sort, sortDirection = -1 }: ContentFeedArgs,
+    cursor?: string,
+  ): Promise<ContentFeed> {
     const collection = this.client.getCollection<Content<ContentData>>(
       MongoCollection.Content,
     );
 
-    const queryFilter = cursor
-      ? {
-          ...filter,
-          _id: { $lt: new ObjectId(cursor) },
-        }
-      : filter;
+    let queryFilter = { ...filter };
+    type SortDirection = 1 | -1;
+    const sortField = sort || "_id";
 
-    console.time("query1");
+    if (cursor) {
+      const cursorObj = JSON.parse(Buffer.from(cursor, "base64").toString());
+      queryFilter = {
+        ...queryFilter,
+        $or: [
+          {
+            [sortField]: {
+              [sortDirection === 1 ? "$gt" : "$lt"]: cursorObj.value,
+            },
+          },
+          {
+            [sortField]: cursorObj.value,
+            _id: {
+              [sortDirection === 1 ? "$gt" : "$lt"]: new ObjectId(
+                cursorObj._id,
+              ),
+            },
+          },
+        ],
+      };
+    }
+
+    let sortOptions: Record<string, SortDirection> = { _id: -1 };
+    if (sort) {
+      sortOptions = { [sort]: sortDirection as SortDirection, ...sortOptions };
+    }
+
     const actions = await collection
       .find(queryFilter)
-      .sort({ _id: -1 })
-      .limit(25)
+      .sort(sortOptions)
+      .limit(PAGE_SIZE)
       .toArray();
-    console.timeEnd("query1");
 
     const contentIds = actions.flatMap((a) => a.referencedContentIds);
-    console.time("query2");
     const contentMap = await this.getContentMap(contentIds);
-    console.timeEnd("query2");
 
     const entityIds = actions
       .flatMap((a) => a.referencedEntityIds)
       .concat(Object.values(contentMap).flatMap((c) => c.referencedEntityIds));
 
-    console.time("query3");
     const entityMap = await this.getEntityMap(entityIds);
-    console.timeEnd("query3");
 
     const getRelevantEntityMap = (ids: ObjectId[]) => {
       return ids.reduce(
@@ -84,7 +105,23 @@ export class FeedService {
       };
     });
 
-    return data;
+    function getNestedValue<T>(obj: T, path: string) {
+      // biome-ignore lint/suspicious/noExplicitAny: <explanation>
+      return path.split(".").reduce((acc: any, part) => acc?.[part], obj);
+    }
+
+    return {
+      data,
+      nextCursor:
+        actions.length === PAGE_SIZE
+          ? Buffer.from(
+              JSON.stringify({
+                _id: actions[actions.length - 1]._id,
+                value: getNestedValue(actions[actions.length - 1], sortField),
+              }),
+            ).toString("base64")
+          : undefined,
+    };
   }
 
   async getEntityMap(entityIds: ObjectId[]): Promise<Record<string, Entity>> {

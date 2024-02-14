@@ -10,6 +10,9 @@ import {
 } from "react";
 import { SIWF_DOMAIN, SIWF_URI, API_BASE_URL } from "@/constants/index";
 import { Entity } from "@flink/common/types";
+import { Nook } from "@flink/api/data";
+import { setNooks } from "@/store/user";
+import { useAppDispatch } from "@/hooks/useAppDispatch";
 
 const sessionKey = "session";
 
@@ -22,6 +25,7 @@ type SignInParams = {
 type Session = {
   entity: Entity;
   token: string;
+  nooks: Nook[];
 };
 
 type State =
@@ -82,32 +86,37 @@ type AuthProviderProps = {
 
 function AuthProviderContent({ children }: AuthProviderProps) {
   const [state, dispatch] = useReducer(reducer, initialState);
+  const appDispatch = useAppDispatch();
 
-  const signIn = useCallback(async (body: SignInParams) => {
-    const reject = (message: string) => {
-      throw new Error(`Sign in failed: ${message}`);
-    };
+  const signIn = useCallback(
+    async (body: SignInParams) => {
+      const reject = (message: string) => {
+        throw new Error(`Sign in failed: ${message}`);
+      };
 
-    try {
-      const signInResponse = await fetch(`${API_BASE_URL}/auth/farcaster`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(body),
-      });
+      try {
+        const signInResponse = await fetch(`${API_BASE_URL}/auth/farcaster`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(body),
+        });
 
-      if (!signInResponse.ok) {
-        reject(await signInResponse.text());
+        if (!signInResponse.ok) {
+          reject(await signInResponse.text());
+        }
+
+        const session: Session = await signInResponse.json();
+        await SecureStore.setItemAsync(sessionKey, JSON.stringify(session));
+        dispatch({ type: "onSignIn", session });
+        appDispatch(setNooks(session.nooks));
+      } catch (error) {
+        reject((error as Error).message);
       }
-
-      const session: Session = await signInResponse.json();
-      await SecureStore.setItemAsync(sessionKey, JSON.stringify(session));
-      dispatch({ type: "onSignIn", session });
-    } catch (error) {
-      reject((error as Error).message);
-    }
-  }, []);
+    },
+    [appDispatch],
+  );
 
   const signOut = useCallback(async () => {
     SecureStore.deleteItemAsync(sessionKey);
@@ -121,6 +130,7 @@ function AuthProviderContent({ children }: AuthProviderProps) {
       try {
         const session: Session = JSON.parse(persistedSessionJson);
         dispatch({ type: "onSignIn", session });
+        appDispatch(setNooks(session.nooks));
       } catch (error) {
         console.error(error);
         dispatch({ type: "onSignOut" });
@@ -128,7 +138,7 @@ function AuthProviderContent({ children }: AuthProviderProps) {
     } else {
       dispatch({ type: "onSignOut" });
     }
-  }, []);
+  }, [appDispatch]);
 
   useEffect(() => {
     init();

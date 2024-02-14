@@ -1,15 +1,15 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { Nook, NookShelf, TEMPLATE_NOOKS } from "@/constants/nooks";
+import { Nook, NookShelf, TEMPLATE_NOOKS } from "@flink/api/data";
 
 interface UserState {
   nooks: Nook[];
-  activeNook: Nook;
+  activeNook?: Nook;
   activeShelves: Record<string, NookShelf>;
 }
 
 const initialState: UserState = {
-  nooks: TEMPLATE_NOOKS,
-  activeNook: TEMPLATE_NOOKS[0],
+  nooks: [],
+  activeNook: undefined,
   activeShelves: {},
 };
 
@@ -19,6 +19,9 @@ export const userSlice = createSlice({
   reducers: {
     setNooks: (state, action: PayloadAction<Nook[]>) => {
       state.nooks = action.payload;
+      if (action.payload.length > 0) {
+        state.activeNook = action.payload[0];
+      }
     },
     setActiveNook: (state, action: PayloadAction<string>) => {
       state.activeNook =
@@ -26,6 +29,7 @@ export const userSlice = createSlice({
         TEMPLATE_NOOKS[0];
     },
     setActiveShelf: (state, action: PayloadAction<string>) => {
+      if (!state.activeNook) return;
       state.activeShelves[state.activeNook.id] =
         state.activeNook.shelves.find((shelf) => shelf.id === action.payload) ||
         state.activeNook.shelves[0];
