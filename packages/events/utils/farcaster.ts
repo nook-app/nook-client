@@ -405,5 +405,22 @@ const generateTopics = (data: PostData) => {
     });
   }
 
+  if (data.tips) {
+    for (const tip of data.tips) {
+      topics.push({
+        type: TopicType.TIP_SOURCE,
+        value: tip.entityId.toString(),
+      });
+      topics.push({
+        type: TopicType.TIP_TARGET,
+        value: tip.targetEntityId.toString(),
+      });
+      topics.push({
+        type: TopicType.TIP_ASSET,
+        value: tip.assetId,
+      });
+    }
+  }
+
   return topics;
 };
