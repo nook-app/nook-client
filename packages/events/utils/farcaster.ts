@@ -408,15 +408,23 @@ const generateTopics = (data: PostData) => {
   if (data.tips) {
     for (const tip of data.tips) {
       topics.push({
-        type: TopicType.TIP_SOURCE,
+        type: TopicType.TIP_SOURCE_ENTITY,
         value: tip.entityId.toString(),
       });
       topics.push({
-        type: TopicType.TIP_TARGET,
+        type: TopicType.TIP_TARGET_ENTITY,
         value: tip.targetEntityId.toString(),
       });
       topics.push({
         type: TopicType.TIP_ASSET,
+        value: tip.targetContentId,
+      });
+      topics.push({
+        type: TopicType.TIP_SOURCE,
+        value: tip.sourceContentId,
+      });
+      topics.push({
+        type: TopicType.TIP_TARGET,
         value: tip.targetContentId,
       });
     }
