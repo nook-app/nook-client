@@ -86,10 +86,6 @@ export type LinkBlockchainAddressActionData = {
   blockHash: string;
 };
 
-export enum Spec {
-  ERC20 = "ERC20",
-}
-
 export type TipActionData = {
   /** Identity of user tipping */
   entityId: ObjectId;

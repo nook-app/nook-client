@@ -9,8 +9,6 @@ import {
   Content,
   PostData,
   TipActionData,
-  Protocol,
-  Spec,
 } from "@flink/common/types";
 import { MongoClient } from "@flink/common/mongo";
 import { toFarcasterURI } from "@flink/farcaster/utils";
@@ -18,7 +16,6 @@ import {
   getOrCreatePostContent,
   getOrCreatePostContentFromData,
 } from "../../utils/farcaster";
-import { DEGEN_ASSET_ID } from "../../utils/constants";
 
 export const handleCastAddOrRemove = async (
   client: MongoClient,
