@@ -85,3 +85,27 @@ export type LinkBlockchainAddressActionData = {
   /** Block hash of claimSignature */
   blockHash: string;
 };
+
+export enum Spec {
+  ERC20 = "ERC20",
+}
+
+export type TipActionData = {
+  /** Identity of user tipping */
+  entityId: ObjectId;
+
+  /** Identity of user receiving the tip */
+  targetEntityId: ObjectId;
+
+  /** CAIP-19 identifier of the asset */
+  assetId: string;
+
+  /** Amount being tipped */
+  amount: number;
+
+  /** Content ID being tipped for */
+  contentId: string;
+
+  /** Content being tipped for */
+  content: PostData;
+};

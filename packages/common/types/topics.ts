@@ -17,4 +17,5 @@ export enum TopicType {
   ROOT_TARGET_EMBED = "ROOT_TARGET_EMBED",
   ROOT_TARGET_TAG = "ROOT_TARGET_TAG",
   CHANNEL = "CHANNEL",
+  TIP = "TIP",
 }

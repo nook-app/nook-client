@@ -6,6 +6,7 @@ import {
   ContentType,
   Topic,
   TopicType,
+  TipData,
 } from "@flink/common/types";
 import { toFarcasterURI } from "@flink/farcaster/utils";
 import { MongoClient, MongoCollection } from "@flink/common/mongo";
@@ -13,6 +14,7 @@ import { Entity } from "@flink/common/types/entity";
 import { getOrCreateEntitiesForFids } from "@flink/common/entity";
 import { publishContent } from "@flink/common/queues";
 import { ObjectId } from "mongodb";
+import { DEGEN_ASSET_ID } from "./constants";
 
 export const getOrCreatePostContent = async (
   client: MongoClient,
@@ -101,6 +103,8 @@ const generateReplyContent = async (
     (newParent ? generatePost(newParent, identities) : undefined);
   data.parentEntityId = identities[cast.parentFid as string]._id;
 
+  data.tips = getTips(data);
+
   return formatContent(data);
 };
 
@@ -171,6 +175,26 @@ const getParentAndRootCasts = async (
   };
 };
 
+const getTips = ({
+  entityId,
+  parentId,
+  parentEntityId,
+  text,
+}: PostData): TipData[] | undefined => {
+  if (!parentId || !parentEntityId) return;
+  const degenTipPattern = /(\d+)\s+\$DEGEN/gi;
+  const matches = [...text.matchAll(degenTipPattern)];
+  if (matches.length === 0) return;
+
+  return matches.map((match) => ({
+    entityId,
+    targetEntityId: parentEntityId,
+    assetId: DEGEN_ASSET_ID,
+    amount: parseInt(match[1], 10),
+    contentId: parentId,
+  }));
+};
+
 const formatContent = (data: PostData): Content<PostData> => {
   return {
     contentId: data.contentId,
@@ -184,7 +208,9 @@ const formatContent = (data: PostData): Content<PostData> => {
       reposts: 0,
       replies: 0,
       embeds: 0,
-      degenTips: 0,
+    },
+    tips: {
+      degen: 0,
     },
     topics: generateTopics(data),
     referencedEntityIds: Array.from(

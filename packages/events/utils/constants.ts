@@ -1,0 +1,2 @@
+export const DEGEN_ASSET_ID =
+  "chain://eip155:8453/erc20:0xc9034c3E7F58003E6ae0C8438e7c8f4598d5ACAA";
