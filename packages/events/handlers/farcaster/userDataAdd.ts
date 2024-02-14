@@ -77,5 +77,6 @@ export const handleUserDataAdd = async (
   return {
     event,
     actions: [action],
+    content: [],
   };
 };

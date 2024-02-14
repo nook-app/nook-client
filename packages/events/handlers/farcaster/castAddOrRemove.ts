@@ -5,11 +5,10 @@ import {
   FarcasterCastData,
   RawEvent,
   EventType,
-  PostActionData,
   Content,
   PostData,
-  TipActionData,
   EventActionData,
+  TipData,
 } from "@flink/common/types";
 import { MongoClient } from "@flink/common/mongo";
 import { toFarcasterURI } from "@flink/farcaster/utils";
@@ -52,7 +51,6 @@ export const handleCastAddOrRemove = async (
       data: {
         entityId: content.data.entityId,
         contentId,
-        content: content.data,
       },
       deletedAt: [EventActionType.UNPOST, EventActionType.UNREPLY].includes(
         type,
@@ -83,7 +81,7 @@ export const handleCastAddOrRemove = async (
     updatedAt: new Date(),
   };
 
-  return { event, actions };
+  return { event, actions, content: [content] };
 };
 
 const handleTipEvents = async (
@@ -113,14 +111,11 @@ const handleTipEvents = async (
         createdAt: new Date(),
         updatedAt: new Date(),
         type,
-        data: {
-          ...tip,
-          targetContent: targetContent.data,
-        },
+        data: tip,
         topics: content.topics,
       };
     }),
   );
 
-  return tipActions.filter(Boolean) as EventAction<TipActionData>[];
+  return tipActions.filter(Boolean) as EventAction<TipData>[];
 };

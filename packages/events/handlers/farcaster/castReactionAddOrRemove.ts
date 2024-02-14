@@ -5,12 +5,12 @@ import {
   EventType,
   FarcasterCastReactionData,
   FarcasterReactionType,
-  PostActionData,
   RawEvent,
   EntityEvent,
   PostData,
   Topic,
   TopicType,
+  ContentActionData,
 } from "@flink/common/types";
 import { ObjectId } from "mongodb";
 import { toFarcasterURI } from "@flink/farcaster/utils";
@@ -49,7 +49,7 @@ export const handleCastReactionAddOrRemove = async (
   ]);
   const entityId = identities[rawEvent.data.fid]._id;
 
-  const actions: EventAction<PostActionData>[] = [
+  const actions: EventAction<ContentActionData>[] = [
     {
       eventId: rawEvent.eventId,
       source: rawEvent.source,
@@ -65,7 +65,6 @@ export const handleCastReactionAddOrRemove = async (
       data: {
         entityId: content.data.entityId,
         contentId,
-        content: content.data,
       },
       deletedAt: [EventActionType.UNPOST, EventActionType.UNREPLY].includes(
         type,
@@ -84,7 +83,7 @@ export const handleCastReactionAddOrRemove = async (
     updatedAt: new Date(),
   };
 
-  return { event, actions };
+  return { event, actions, content: [content] };
 };
 
 const generateTopics = (entityId: ObjectId, data: PostData) => {

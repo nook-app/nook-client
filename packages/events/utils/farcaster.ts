@@ -177,6 +177,7 @@ const getParentAndRootCasts = async (
 
 const getTips = ({
   entityId,
+  contentId,
   parentId,
   parentEntityId,
   text,
@@ -191,6 +192,7 @@ const getTips = ({
     targetEntityId: parentEntityId,
     contentId: DEGEN_ASSET_ID.toLowerCase(),
     amount: parseInt(match[1], 10),
+    sourceContentId: contentId,
     targetContentId: parentId,
   }));
 };

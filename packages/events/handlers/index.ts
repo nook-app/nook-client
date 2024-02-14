@@ -13,13 +13,16 @@ import {
   EntityEvent,
   EntityEventData,
   EventActionType,
-  PostActionData,
   Entity,
   UpdateEntityInfoActionData,
   LinkBlockchainAddressActionData,
   EntityActionData,
   EntityInfoType,
-  TipActionData,
+  TipData,
+  Content,
+  ContentData,
+  ContentActionData,
+  PostData,
 } from "@flink/common/types";
 import { MongoClient, MongoCollection } from "@flink/common/mongo";
 import { Job } from "bullmq";
@@ -41,6 +44,7 @@ export const getEventsHandler = async () => {
       | {
           event: EntityEvent<EntityEventData>;
           actions: EventAction<EventActionData>[];
+          content: Content<ContentData>[];
         }
       | undefined;
 
@@ -110,36 +114,56 @@ export const getEventsHandler = async () => {
       switch (action.type) {
         case EventActionType.POST:
         case EventActionType.REPLY: {
-          const typedAction = action as EventAction<PostActionData>;
+          const typedAction = action as EventAction<ContentActionData>;
+          const content = response.content.find(
+            (c) => c.contentId === typedAction.data.contentId,
+          );
+          if (!content) {
+            throw new Error(
+              `Content not found for [${typedAction.data.contentId}]`,
+            );
+          }
+          const typedContent = content as Content<PostData>;
           promises.push(
-            ...typedAction.data.content.embeds.map((contentId) =>
+            ...typedContent.data.embeds.map((contentId) =>
               client.incrementEngagement(contentId, "embeds"),
             ),
           );
-          if (typedAction.data.content.parentId) {
+          if (typedContent.data.parentId) {
             promises.push(
-              client.incrementEngagement(
-                typedAction.data.content.parentId,
-                "replies",
-              ),
+              client.incrementEngagement(typedContent.data.parentId, "replies"),
             );
           }
           break;
         }
         case EventActionType.UNPOST:
         case EventActionType.UNREPLY: {
-          const typedAction = action as EventAction<PostActionData>;
+          const typedAction = action as EventAction<ContentActionData>;
+          const content = response.content.find(
+            (c) => c.contentId === typedAction.data.contentId,
+          );
+          if (!content) {
+            throw new Error(
+              `Content not found for [${typedAction.data.contentId}]`,
+            );
+          }
+          const typedContent = content as Content<PostData>;
           promises.push(
-            client.markActionsDeleted(typedAction.source.id),
+            client.markActionsDeleted(
+              typedAction.source.id,
+              typedAction.type === EventActionType.UNPOST
+                ? EventActionType.POST
+                : EventActionType.REPLY,
+            ),
             client.markContentDeleted(typedAction.data.contentId),
-            ...typedAction.data.content.embeds.map((contentId) =>
+            ...typedContent.data.embeds.map((contentId) =>
               client.incrementEngagement(contentId, "embeds", true),
             ),
           );
-          if (typedAction.data.content.parentId) {
+          if (typedContent.data.parentId) {
             promises.push(
               client.incrementEngagement(
-                typedAction.data.content.parentId,
+                typedContent.data.parentId,
                 "replies",
                 true,
               ),
@@ -148,23 +172,26 @@ export const getEventsHandler = async () => {
           break;
         }
         case EventActionType.LIKE: {
-          const typedAction = action as EventAction<PostActionData>;
+          const typedAction = action as EventAction<ContentActionData>;
           promises.push(
             client.incrementEngagement(typedAction.data.contentId, "likes"),
           );
           break;
         }
         case EventActionType.REPOST: {
-          const typedAction = action as EventAction<PostActionData>;
+          const typedAction = action as EventAction<ContentActionData>;
           promises.push(
             client.incrementEngagement(typedAction.data.contentId, "reposts"),
           );
           break;
         }
         case EventActionType.UNLIKE: {
-          const typedAction = action as EventAction<PostActionData>;
+          const typedAction = action as EventAction<ContentActionData>;
           promises.push(
-            client.markActionsDeleted(typedAction.source.id),
+            client.markActionsDeleted(
+              typedAction.source.id,
+              EventActionType.LIKE,
+            ),
             client.incrementEngagement(
               typedAction.data.contentId,
               "likes",
@@ -174,9 +201,12 @@ export const getEventsHandler = async () => {
           break;
         }
         case EventActionType.UNREPOST: {
-          const typedAction = action as EventAction<PostActionData>;
+          const typedAction = action as EventAction<ContentActionData>;
           promises.push(
-            client.markActionsDeleted(typedAction.source.id),
+            client.markActionsDeleted(
+              typedAction.source.id,
+              EventActionType.REPOST,
+            ),
             client.incrementEngagement(
               typedAction.data.contentId,
               "reposts",
@@ -187,7 +217,12 @@ export const getEventsHandler = async () => {
         }
         case EventActionType.UNFOLLOW: {
           const typedAction = action as EventAction<EntityActionData>;
-          promises.push(client.markActionsDeleted(typedAction.source.id));
+          promises.push(
+            client.markActionsDeleted(
+              typedAction.source.id,
+              EventActionType.FOLLOW,
+            ),
+          );
           break;
         }
         case EventActionType.UPDATE_USER_INFO: {
@@ -270,6 +305,10 @@ export const getEventsHandler = async () => {
             MongoCollection.Entity,
           );
           promises.push(
+            client.markActionsDeleted(
+              typedAction.source.id,
+              EventActionType.LINK_BLOCKCHAIN_ADDRESS,
+            ),
             collection.updateOne(
               { _id: typedAction.data.entityId },
               {
@@ -283,7 +322,7 @@ export const getEventsHandler = async () => {
           break;
         }
         case EventActionType.TIP: {
-          const typedAction = action as EventAction<TipActionData>;
+          const typedAction = action as EventAction<TipData>;
           promises.push(
             client.incrementTip(
               typedAction.data.contentId,
@@ -294,8 +333,12 @@ export const getEventsHandler = async () => {
           break;
         }
         case EventActionType.UNTIP: {
-          const typedAction = action as EventAction<TipActionData>;
+          const typedAction = action as EventAction<TipData>;
           promises.push(
+            client.markActionsDeleted(
+              typedAction.source.id,
+              EventActionType.TIP,
+            ),
             client.incrementTip(
               typedAction.data.contentId,
               typedAction.data.targetContentId,

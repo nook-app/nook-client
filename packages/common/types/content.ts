@@ -39,7 +39,12 @@ export type ContentBase = {
   };
 
   /** Tips for the content */
-  tips: { [key: string]: number };
+  tips: {
+    [key: string]: {
+      amount: number;
+      count: number;
+    };
+  };
 
   /** Topics for the content */
   topics: Topic[];

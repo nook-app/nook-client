@@ -7,7 +7,6 @@ import {
   EntityEvent,
   TopicType,
 } from "@flink/common/types";
-import { ObjectId } from "mongodb";
 import { EntityActionData } from "@flink/common/types/actionTypes";
 import { MongoClient } from "@flink/common/mongo";
 import { getOrCreateEntitiesForFids } from "@flink/common/entity";
@@ -65,5 +64,5 @@ export const handleLinkAddOrRemove = async (
     updatedAt: actions[0].updatedAt,
   };
 
-  return { event, actions };
+  return { event, actions, content: [] };
 };

@@ -1,5 +1,4 @@
 import { ObjectId } from "mongodb";
-import { PostData } from "../contentTypes";
 
 export type ContentActionData = {
   /** Entity acting */
@@ -21,11 +20,6 @@ export type EntityActionData = {
 
   /** Source entity who was acted on */
   sourceTargetEntityId: string;
-};
-
-export type PostActionData = ContentActionData & {
-  /** Post */
-  content: PostData;
 };
 
 export enum Protocol {
@@ -84,24 +78,4 @@ export type LinkBlockchainAddressActionData = {
 
   /** Block hash of claimSignature */
   blockHash: string;
-};
-
-export type TipActionData = {
-  /** Identity of user tipping */
-  entityId: ObjectId;
-
-  /** Identity of user receiving the tip */
-  targetEntityId: ObjectId;
-
-  /** CAIP-19 identifier of the asset being tipped */
-  contentId: string;
-
-  /** Amount being tipped */
-  amount: number;
-
-  /** Content ID being tipped for */
-  targetContentId: string;
-
-  /** Content being tipped for */
-  targetContent: PostData;
 };

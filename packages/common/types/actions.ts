@@ -2,21 +2,19 @@ import { ObjectId } from "mongodb";
 import { EventSource } from "./events";
 import {
   ContentActionData,
-  PostActionData,
   EntityActionData,
   LinkBlockchainAddressActionData,
   UpdateEntityInfoActionData,
-  TipActionData,
 } from "./actionTypes";
 import { Topic } from "./topics";
+import { TipData } from "./contentTypes";
 
 export type EventActionData =
-  | PostActionData
   | ContentActionData
   | EntityActionData
   | UpdateEntityInfoActionData
   | LinkBlockchainAddressActionData
-  | TipActionData;
+  | TipData;
 
 /**
  * Supported actions for events

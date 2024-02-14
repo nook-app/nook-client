@@ -70,6 +70,7 @@ export const handleVerificationAdd = async (
   return {
     event,
     actions: [action],
+    content: [],
   };
 };
 
@@ -122,5 +123,6 @@ export const handleVerificationRemove = async (
   return {
     event,
     actions: [action],
+    content: [],
   };
 };

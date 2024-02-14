@@ -7,11 +7,14 @@ export type TipData = {
   /** Identity of user receiving the tip */
   targetEntityId: ObjectId;
 
-  /** CAIP-19 identifier of the asset */
+  /** CAIP-19 identifier of the asset being tipped */
   contentId: string;
 
   /** Amount being tipped */
   amount: number;
+
+  /** Content ID being tipped from */
+  sourceContentId: string;
 
   /** Content ID being tipped for */
   targetContentId: string;

@@ -11,6 +11,7 @@ import {
   EventAction,
   EventActionData,
   EntityEvent,
+  EventActionType,
 } from "../types";
 
 const DB_NAME = "flink";
@@ -171,10 +172,11 @@ export class MongoClient {
     });
   };
 
-  markActionsDeleted = async (id: string) => {
+  markActionsDeleted = async (id: string, type: EventActionType) => {
     this.getCollection(MongoCollection.Actions).updateOne(
       {
         "source.id": id,
+        type: type,
       },
       {
         $set: {
@@ -259,7 +261,8 @@ export class MongoClient {
       },
       {
         $inc: {
-          [`tips.${contentId}`]: decrement ? -amount : amount,
+          [`tips.${contentId}.amount`]: decrement ? -amount : amount,
+          [`tips.${contentId}.count`]: decrement ? -1 : 1,
         },
       },
     );

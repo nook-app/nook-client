@@ -76,5 +76,5 @@ export const handleUrlReactionAddOrRemove = async (
     updatedAt: actions[0].updatedAt,
   };
 
-  return { event, actions };
+  return { event, actions, content: [] };
 };
