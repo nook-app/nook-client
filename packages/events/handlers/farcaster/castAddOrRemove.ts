@@ -9,6 +9,7 @@ import {
   Content,
   PostData,
   TipActionData,
+  EventActionData,
 } from "@flink/common/types";
 import { MongoClient } from "@flink/common/mongo";
 import { toFarcasterURI } from "@flink/farcaster/utils";
@@ -37,7 +38,7 @@ export const handleCastAddOrRemove = async (
   }
 
   const contentId = toFarcasterURI(rawEvent.data);
-  const actions: EventAction<PostActionData>[] = [
+  const actions: EventAction<EventActionData>[] = [
     {
       eventId: rawEvent.eventId,
       source: rawEvent.source,
@@ -95,7 +96,10 @@ const handleTipEvents = async (
 
   const tipActions = await Promise.all(
     content.data.tips.map(async (tip) => {
-      const targetContent = await getOrCreatePostContent(client, tip.contentId);
+      const targetContent = await getOrCreatePostContent(
+        client,
+        tip.targetContentId,
+      );
 
       if (!targetContent) return;
 
@@ -110,8 +114,8 @@ const handleTipEvents = async (
         updatedAt: new Date(),
         type,
         data: {
-          ...content.data.tips,
-          content: targetContent.data,
+          ...tip,
+          targetContent: targetContent.data,
         },
         topics: content.topics,
       };

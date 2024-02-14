@@ -100,9 +100,7 @@ export const getOrCreateUrlContent = async (
       replies: 0,
       embeds: 0,
     },
-    tips: {
-      degen: 0,
-    },
+    tips: {},
     topics: [],
     referencedEntityIds: [],
     referencedContentIds: [],

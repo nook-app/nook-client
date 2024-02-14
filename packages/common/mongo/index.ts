@@ -237,4 +237,22 @@ export class MongoClient {
       },
     );
   };
+
+  incrementTip = async (
+    contentId: string,
+    targetContentId: string,
+    amount: number,
+    decrement = false,
+  ) => {
+    this.getCollection(MongoCollection.Content).updateOne(
+      {
+        contentId: targetContentId,
+      },
+      {
+        $inc: {
+          [`tips.${contentId}`]: decrement ? -amount : amount,
+        },
+      },
+    );
+  };
 }

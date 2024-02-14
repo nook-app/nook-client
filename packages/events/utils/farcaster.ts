@@ -189,9 +189,9 @@ const getTips = ({
   return matches.map((match) => ({
     entityId,
     targetEntityId: parentEntityId,
-    assetId: DEGEN_ASSET_ID,
+    contentId: DEGEN_ASSET_ID,
     amount: parseInt(match[1], 10),
-    contentId: parentId,
+    targetContentId: parentId,
   }));
 };
 
@@ -209,9 +209,7 @@ const formatContent = (data: PostData): Content<PostData> => {
       replies: 0,
       embeds: 0,
     },
-    tips: {
-      degen: 0,
-    },
+    tips: {},
     topics: generateTopics(data),
     referencedEntityIds: Array.from(
       new Set([
@@ -417,7 +415,7 @@ const generateTopics = (data: PostData) => {
       });
       topics.push({
         type: TopicType.TIP_ASSET,
-        value: tip.assetId,
+        value: tip.targetContentId,
       });
     }
   }

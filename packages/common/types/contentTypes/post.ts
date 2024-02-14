@@ -8,13 +8,13 @@ export type TipData = {
   targetEntityId: ObjectId;
 
   /** CAIP-19 identifier of the asset */
-  assetId: string;
+  contentId: string;
 
   /** Amount being tipped */
   amount: number;
 
   /** Content ID being tipped for */
-  contentId: string;
+  targetContentId: string;
 };
 
 export type PostData = {
