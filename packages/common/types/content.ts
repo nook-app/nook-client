@@ -36,8 +36,10 @@ export type ContentBase = {
     reposts: number;
     replies: number;
     embeds: number;
-    degenTips: number;
   };
+
+  /** Tips for the content */
+  tips: { [key: string]: number };
 
   /** Topics for the content */
   topics: Topic[];

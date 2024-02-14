@@ -19,6 +19,7 @@ import {
   LinkBlockchainAddressActionData,
   EntityActionData,
   EntityInfoType,
+  TipActionData,
 } from "@flink/common/types";
 import { MongoClient, MongoCollection } from "@flink/common/mongo";
 import { Job } from "bullmq";
@@ -279,6 +280,30 @@ export const getEventsHandler = async () => {
               },
             ),
           );
+          break;
+        }
+        case EventActionType.TIP: {
+          const typedAction = action as EventAction<TipActionData>;
+          promises.push(
+            client.incrementTip(
+              typedAction.data.contentId,
+              typedAction.data.targetContentId,
+              typedAction.data.amount,
+            ),
+          );
+          break;
+        }
+        case EventActionType.UNTIP: {
+          const typedAction = action as EventAction<TipActionData>;
+          promises.push(
+            client.incrementTip(
+              typedAction.data.contentId,
+              typedAction.data.targetContentId,
+              typedAction.data.amount,
+              true,
+            ),
+          );
+          break;
         }
       }
     }

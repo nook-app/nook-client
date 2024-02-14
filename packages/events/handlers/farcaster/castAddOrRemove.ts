@@ -6,10 +6,17 @@ import {
   RawEvent,
   EventType,
   PostActionData,
+  Content,
+  PostData,
+  TipActionData,
+  EventActionData,
 } from "@flink/common/types";
 import { MongoClient } from "@flink/common/mongo";
 import { toFarcasterURI } from "@flink/farcaster/utils";
-import { getOrCreatePostContentFromData } from "../../utils/farcaster";
+import {
+  getOrCreatePostContent,
+  getOrCreatePostContentFromData,
+} from "../../utils/farcaster";
 
 export const handleCastAddOrRemove = async (
   client: MongoClient,
@@ -31,7 +38,7 @@ export const handleCastAddOrRemove = async (
   }
 
   const contentId = toFarcasterURI(rawEvent.data);
-  const actions: EventAction<PostActionData>[] = [
+  const actions: EventAction<EventActionData>[] = [
     {
       eventId: rawEvent.eventId,
       source: rawEvent.source,
@@ -56,6 +63,18 @@ export const handleCastAddOrRemove = async (
     },
   ];
 
+  if (content.data.tips) {
+    const tipActions = await handleTipEvents(
+      client,
+      rawEvent,
+      content,
+      type === EventActionType.REPLY
+        ? EventActionType.TIP
+        : EventActionType.UNTIP,
+    );
+    if (tipActions) actions.push(...tipActions);
+  }
+
   const event: EntityEvent<FarcasterCastData> = {
     ...rawEvent,
     entityId: content.data.entityId,
@@ -65,4 +84,43 @@ export const handleCastAddOrRemove = async (
   };
 
   return { event, actions };
+};
+
+const handleTipEvents = async (
+  client: MongoClient,
+  rawEvent: RawEvent<FarcasterCastData>,
+  content: Content<PostData>,
+  type: EventActionType.TIP | EventActionType.UNTIP,
+) => {
+  if (!content.data.tips) return;
+
+  const tipActions = await Promise.all(
+    content.data.tips.map(async (tip) => {
+      const targetContent = await getOrCreatePostContent(
+        client,
+        tip.targetContentId,
+      );
+
+      if (!targetContent) return;
+
+      return {
+        eventId: rawEvent.eventId,
+        source: rawEvent.source,
+        timestamp: content.timestamp,
+        entityId: content.data.entityId,
+        referencedEntityIds: content.referencedEntityIds,
+        referencedContentIds: content.referencedContentIds,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        type,
+        data: {
+          ...tip,
+          targetContent: targetContent.data,
+        },
+        topics: content.topics,
+      };
+    }),
+  );
+
+  return tipActions.filter(Boolean) as EventAction<TipActionData>[];
 };

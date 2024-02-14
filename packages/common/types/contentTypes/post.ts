@@ -1,5 +1,22 @@
 import { ObjectId } from "mongodb";
 
+export type TipData = {
+  /** Identity of user tipping */
+  entityId: ObjectId;
+
+  /** Identity of user receiving the tip */
+  targetEntityId: ObjectId;
+
+  /** CAIP-19 identifier of the asset */
+  contentId: string;
+
+  /** Amount being tipped */
+  amount: number;
+
+  /** Content ID being tipped for */
+  targetContentId: string;
+};
+
 export type PostData = {
   /** ID of the post */
   contentId: string;
@@ -42,4 +59,7 @@ export type PostData = {
 
   /** Parent post - Optional because of Farcaster data retention */
   parent?: PostData;
+
+  /** Tips included in this post */
+  tips?: TipData[];
 };
