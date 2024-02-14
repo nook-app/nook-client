@@ -18,6 +18,7 @@ import {
   UpdateEntityInfoActionData,
   LinkBlockchainAddressActionData,
   EntityActionData,
+  EntityInfoType,
 } from "@flink/common/types";
 import { MongoClient, MongoCollection } from "@flink/common/mongo";
 import { Job } from "bullmq";
@@ -193,6 +194,29 @@ export const getEventsHandler = async () => {
           const collection = client.getCollection<Entity>(
             MongoCollection.Entity,
           );
+          let field;
+          switch (typedAction.data.entityDataType) {
+            case EntityInfoType.USERNAME:
+              field = "farcaster.username";
+              break;
+            case EntityInfoType.PFP:
+              field = "farcaster.pfp";
+              break;
+            case EntityInfoType.DISPLAY:
+              field = "farcaster.displayName";
+              break;
+            case EntityInfoType.BIO:
+              field = "farcaster.bio";
+              break;
+            case EntityInfoType.URL:
+              field = "farcaster.url";
+              break;
+            default:
+              throw new Error(
+                `[${typedAction.data.entityDataType}] not a valid entity data type`,
+              );
+          }
+
           promises.push(
             collection.updateOne(
               {
@@ -201,8 +225,9 @@ export const getEventsHandler = async () => {
               },
               {
                 $set: {
-                  [`farcaster.${typedAction.data.entityDataType}`]:
-                    typedAction.data.entityData,
+                  [field]: typedAction.data.entityData,
+
+                  updatedAt: new Date(),
                 },
               },
             ),
@@ -227,6 +252,7 @@ export const getEventsHandler = async () => {
                     address: typedAction.data.address,
                     isContract: typedAction.data.isContract,
                   },
+                  updatedAt: new Date(),
                 },
               },
               {
@@ -245,7 +271,12 @@ export const getEventsHandler = async () => {
           promises.push(
             collection.updateOne(
               { _id: typedAction.data.entityId },
-              { $pull: { ethereum: { address: typedAction.data.address } } },
+              {
+                $pull: {
+                  ethereum: { address: typedAction.data.address },
+                },
+                $set: { updatedAt: new Date() },
+              },
             ),
           );
         }

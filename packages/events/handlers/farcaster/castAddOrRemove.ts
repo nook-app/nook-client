@@ -40,6 +40,7 @@ export const handleCastAddOrRemove = async (
       referencedEntityIds: content.referencedEntityIds,
       referencedContentIds: content.referencedContentIds,
       createdAt: new Date(),
+      updatedAt: new Date(),
       type,
       data: {
         entityId: content.data.entityId,
@@ -60,6 +61,7 @@ export const handleCastAddOrRemove = async (
     entityId: content.data.entityId,
     timestamp: new Date(rawEvent.timestamp),
     createdAt: new Date(),
+    updatedAt: new Date(),
   };
 
   return { event, actions };

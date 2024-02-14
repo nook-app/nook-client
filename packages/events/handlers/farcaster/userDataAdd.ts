@@ -50,6 +50,7 @@ export const handleUserDataAdd = async (
     referencedEntityIds: [entityId],
     referencedContentIds: [],
     createdAt: new Date(),
+    updatedAt: new Date(),
     type: EventActionType.UPDATE_USER_INFO,
     data: {
       sourceEntityId: rawEvent.data.fid,
@@ -70,6 +71,7 @@ export const handleUserDataAdd = async (
     entityId,
     timestamp: new Date(rawEvent.timestamp),
     createdAt: action.createdAt,
+    updatedAt: action.updatedAt,
   };
 
   return {

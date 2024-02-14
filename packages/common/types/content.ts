@@ -24,6 +24,9 @@ export type ContentBase = {
   /** Date record was created at */
   createdAt: Date;
 
+  /** Date record was updated at */
+  updatedAt: Date;
+
   /** Date record was deleted at */
   deletedAt?: Date;
 
@@ -33,6 +36,7 @@ export type ContentBase = {
     reposts: number;
     replies: number;
     embeds: number;
+    degenTips: number;
   };
 
   /** Topics for the content */

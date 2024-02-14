@@ -92,6 +92,7 @@ export class MongoClient {
           $set: {
             ...content,
             _id: existingContent._id,
+            updatedAt: new Date(),
           },
         },
       );
@@ -119,6 +120,7 @@ export class MongoClient {
           $set: {
             ...event,
             _id: existingEvent._id,
+            updatedAt: new Date(),
           },
         },
       );
@@ -148,6 +150,7 @@ export class MongoClient {
           $set: {
             ...action,
             _id: existingAction._id,
+            updatedAt: new Date(),
           },
         },
       );
@@ -167,6 +170,7 @@ export class MongoClient {
       {
         $set: {
           deletedAt: new Date(),
+          updatedAt: new Date(),
         },
       },
     );
@@ -180,6 +184,7 @@ export class MongoClient {
       {
         $set: {
           deletedAt: null,
+          updatedAt: new Date(),
         },
       },
     );
@@ -193,6 +198,7 @@ export class MongoClient {
       {
         $set: {
           deletedAt: new Date(),
+          updatedAt: new Date(),
         },
       },
     );
@@ -206,6 +212,7 @@ export class MongoClient {
       {
         $set: {
           deletedAt: null,
+          updatedAt: new Date(),
         },
       },
     );
@@ -223,6 +230,9 @@ export class MongoClient {
       {
         $inc: {
           [`engagement.${type}`]: decrement ? -1 : 1,
+        },
+        $set: {
+          updatedAt: new Date(),
         },
       },
     );

@@ -32,6 +32,7 @@ export const getOrCreateEntitiesForFids = async (
       ...users[i],
       _id: new ObjectId(),
       createdAt: new Date(),
+      updatedAt: new Date(),
     }));
     await collection.insertMany(newEntities);
     for (const entity of newEntities) {

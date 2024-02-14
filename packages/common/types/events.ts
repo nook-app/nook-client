@@ -90,4 +90,7 @@ export type EntityEvent<T> = {
 
   /** Timestamp for when the event was created */
   createdAt: Date;
+
+  /** Timestamp for when the event was updated */
+  updatedAt: Date;
 };

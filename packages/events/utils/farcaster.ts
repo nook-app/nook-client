@@ -175,6 +175,7 @@ const formatContent = (data: PostData): Content<PostData> => {
   return {
     contentId: data.contentId,
     createdAt: new Date(),
+    updatedAt: new Date(),
     timestamp: new Date(data.timestamp),
     type: data.parentId ? ContentType.REPLY : ContentType.POST,
     data,
@@ -183,6 +184,7 @@ const formatContent = (data: PostData): Content<PostData> => {
       reposts: 0,
       replies: 0,
       embeds: 0,
+      degenTips: 0,
     },
     topics: generateTopics(data),
     referencedEntityIds: Array.from(

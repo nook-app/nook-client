@@ -38,6 +38,7 @@ export const handleVerificationAdd = async (
     referencedEntityIds: [entityId],
     referencedContentIds: [],
     createdAt: new Date(),
+    updatedAt: new Date(),
     type: EventActionType.LINK_BLOCKCHAIN_ADDRESS,
     data: {
       sourceEntityId: rawEvent.data.fid,
@@ -63,6 +64,7 @@ export const handleVerificationAdd = async (
     entityId,
     timestamp: new Date(rawEvent.timestamp),
     createdAt: action.createdAt,
+    updatedAt: action.updatedAt,
   };
 
   return {
@@ -88,6 +90,7 @@ export const handleVerificationRemove = async (
     referencedEntityIds: [entityId],
     referencedContentIds: [],
     createdAt: new Date(),
+    updatedAt: new Date(),
     type: EventActionType.UNLINK_BLOCKCHAIN_ADDRESS,
     data: {
       sourceEntityId: rawEvent.data.fid,
@@ -113,6 +116,7 @@ export const handleVerificationRemove = async (
     entityId,
     timestamp: new Date(rawEvent.timestamp),
     createdAt: action.createdAt,
+    updatedAt: action.updatedAt,
   };
 
   return {

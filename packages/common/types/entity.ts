@@ -29,4 +29,7 @@ export type Entity = {
 
   /** Date record was created */
   createdAt: Date;
+
+  /** Date record was updated at */
+  updatedAt: Date;
 };
