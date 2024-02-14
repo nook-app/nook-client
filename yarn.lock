@@ -2750,9 +2750,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@flink/actions@workspace:packages/content":
+"@flink/actions@workspace:packages/actions":
   version: 0.0.0-use.local
-  resolution: "@flink/actions@workspace:packages/content"
+  resolution: "@flink/actions@workspace:packages/actions"
   dependencies:
     "@flink/common": "npm:*"
     "@types/jest": "npm:^29.5.11"
@@ -2842,9 +2842,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@flink/content@workspace:packages/actions":
+"@flink/content@workspace:packages/content":
   version: 0.0.0-use.local
-  resolution: "@flink/content@workspace:packages/actions"
+  resolution: "@flink/content@workspace:packages/content"
   dependencies:
     "@flink/common": "npm:*"
     "@types/jest": "npm:^29.5.11"
