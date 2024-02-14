@@ -151,7 +151,7 @@ export class MongoClient {
       type: action.type,
     });
     if (existingAction) {
-      return await collection.updateOne(
+      await collection.updateOne(
         {
           eventId: action.eventId,
           type: action.type,
@@ -164,12 +164,12 @@ export class MongoClient {
           },
         },
       );
+      return existingAction._id;
     }
 
-    return await collection.insertOne({
-      ...action,
-      _id: this.generateObjectIdFromDate(action.timestamp),
-    });
+    const _id = this.generateObjectIdFromDate(action.timestamp);
+    await collection.insertOne({ ...action, _id });
+    return _id;
   };
 
   markActionsDeleted = async (id: string, type: EventActionType) => {

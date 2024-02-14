@@ -44,3 +44,17 @@ export const publishContent = async <T>(contentId: string) => {
     },
   );
 };
+
+export const publishAction = async (actionId: string) => {
+  const queue = getQueue(QueueName.Actions);
+  await queue.add(
+    actionId,
+    { actionId },
+    {
+      jobId: actionId,
+      removeOnComplete: {
+        count: 10000,
+      },
+    },
+  );
+};

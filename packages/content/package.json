@@ -1,5 +1,5 @@
 {
-  "name": "@flink/content",
+  "name": "@flink/actions",
   "version": "0.0.1",
   "private": true,
   "scripts": {
@@ -9,33 +9,12 @@
     "test": "jest"
   },
   "dependencies": {
-    "@flink/common": "*",
-    "bullmq": "^5.1.0",
-    "memoize-one": "^6.0.0",
-    "metascraper": "^5.43.4",
-    "metascraper-audio": "^5.43.4",
-    "metascraper-author": "^5.43.4",
-    "metascraper-date": "^5.43.4",
-    "metascraper-description": "^5.43.4",
-    "metascraper-feed": "^5.43.4",
-    "metascraper-iframe": "^5.43.4",
-    "metascraper-image": "^5.43.4",
-    "metascraper-lang": "^5.43.4",
-    "metascraper-logo": "^5.43.4",
-    "metascraper-logo-favicon": "^5.43.4",
-    "metascraper-media-provider": "^5.43.4",
-    "metascraper-publisher": "^5.43.4",
-    "metascraper-readability": "^5.43.4",
-    "metascraper-title": "^5.43.4",
-    "metascraper-url": "^5.43.4",
-    "metascraper-video": "^5.43.4",
-    "mongodb": "^6.3.0"
+    "@flink/common": "*"
   },
   "devDependencies": {
     "@types/jest": "^29.5.11",
     "@types/metascraper": "^5.14.3",
     "@types/node": "^20.10.5",
-    "cheerio": "^1.0.0-rc.12",
     "jest": "^29.7.0",
     "ts-jest": "^29.1.2",
     "ts-node": "^10.9.2",
