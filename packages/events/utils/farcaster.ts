@@ -183,7 +183,7 @@ const getTips = async (
   if (!parentId || !parentEntityId) return;
   const degenTipPattern = /(\d+)\s+\$DEGEN/gi;
   const matches = [...text.matchAll(degenTipPattern)];
-  if (matches.length === 0) return;
+  if (matches.length === 0 || !entity.blockchain) return;
 
   const responses = await Promise.all(
     entity.blockchain
