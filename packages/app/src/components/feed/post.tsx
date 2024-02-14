@@ -1,11 +1,12 @@
 import { ContentFeedItem } from "@flink/api/types";
 import { PostData } from "@flink/common/types";
 import { Text, View, XStack, YStack } from "tamagui";
-import { Heart, MessageSquare, RefreshCw } from "@tamagui/lucide-icons";
+import { Heart, MessageSquare, RefreshCw, Tv } from "@tamagui/lucide-icons";
 import { Embed } from "@/components/embeds";
 import { EntityAvatar } from "@/components/entity/avatar";
 import { PostContent } from "@/components/utils";
 import { EntityDisplay } from "../entity/display";
+import { CHANNELS } from "@/constants";
 
 function formatTimeAgo(date: string) {
   const seconds = Math.floor(
@@ -68,18 +69,34 @@ export const FeedPost = ({
             contentMap={contentMap}
           />
         ))}
-        <XStack justifyContent="space-between" width="$16" marginTop="$2">
-          <View flexDirection="row" alignItems="center" gap="$2">
+        <XStack justifyContent="space-between" marginTop="$2" paddingRight="$2">
+          <View flexDirection="row" alignItems="center" gap="$2" width="$8">
             <MessageSquare size={16} color="$gray11" />
             <Text color="$gray11">{engagement.replies}</Text>
           </View>
-          <View flexDirection="row" alignItems="center" gap="$2">
+          <View flexDirection="row" alignItems="center" gap="$2" width="$8">
             <RefreshCw size={16} color="$gray11" />
             <Text color="$gray11">{engagement.reposts}</Text>
           </View>
-          <View flexDirection="row" alignItems="center" gap="$2">
+          <View flexDirection="row" alignItems="center" gap="$2" width="$8">
             <Heart size={16} color="$gray11" />
             <Text color="$gray11">{engagement.likes}</Text>
+          </View>
+          <View
+            flexDirection="row"
+            alignItems="center"
+            justifyContent="flex-end"
+            gap="$1.5"
+            flex={1}
+          >
+            {data.channelId && (
+              <>
+                <Text color="$gray11">in</Text>
+                <Text numberOfLines={1} ellipsizeMode="tail" fontWeight="700">
+                  {CHANNELS[data.channelId].name}
+                </Text>
+              </>
+            )}
           </View>
         </XStack>
       </YStack>

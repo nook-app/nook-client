@@ -6,6 +6,7 @@ import { Feed } from "@/components/feed";
 import { EntityAvatar } from "@/components/entity/avatar";
 import { PostContent } from "@/components/utils";
 import { EntityDisplay } from "../entity/display";
+import { CHANNELS } from "@/constants";
 
 export const ContentPost = ({
   item: { data, entityMap, contentMap },
@@ -55,6 +56,22 @@ export const ContentPost = ({
           <View flexDirection="row" alignItems="center" gap="$1">
             <Text fontWeight="700">{engagement.likes}</Text>
             <Text color="$gray11">Likes</Text>
+          </View>
+          <View
+            flexDirection="row"
+            alignItems="center"
+            justifyContent="flex-end"
+            gap="$1.5"
+            flex={1}
+          >
+            {data.channelId && (
+              <>
+                <Text color="$gray11">in</Text>
+                <Text numberOfLines={1} ellipsizeMode="tail" fontWeight="700">
+                  {CHANNELS[data.channelId].name}
+                </Text>
+              </>
+            )}
           </View>
         </XStack>
       </YStack>

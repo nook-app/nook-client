@@ -36,10 +36,12 @@ export const Feed = ({
 }: { filter: object; asList?: boolean }) => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const [cursor, setCursor] = useState<string>();
-  const { data, error, isLoading } = api.useGetContentFeedQuery({
-    filter,
-    cursor,
-  });
+  const [refreshing, setRefreshing] = useState(false);
+  const { data, error, isLoading, isFetching, refetch } =
+    api.useGetContentFeedQuery({
+      filter,
+      cursor,
+    });
 
   const viewabilityConfig = {
     itemVisiblePercentThreshold: 50, // Adjust as needed
@@ -47,10 +49,10 @@ export const Feed = ({
 
   const onViewableItemsChanged = useCallback(
     ({ viewableItems }: { viewableItems: ViewToken[] }) => {
-      if (data && data.length > 5 && viewableItems.length > 0) {
+      if (data && data.length > 3 && viewableItems.length > 0) {
         const lastVisibleItemIndex =
           viewableItems[viewableItems.length - 1].index;
-        if (lastVisibleItemIndex && lastVisibleItemIndex >= data.length - 6) {
+        if (lastVisibleItemIndex && lastVisibleItemIndex >= data.length - 4) {
           // When the last visible item is among the last 5 items
           const newCursor = data[data.length - 1]._id;
           if (newCursor !== cursor) setCursor(newCursor);
@@ -59,6 +61,12 @@ export const Feed = ({
     },
     [data, cursor],
   );
+
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    setCursor(undefined); //
+    refetch().finally(() => setRefreshing(false));
+  }, [refetch]);
 
   if (isLoading || error || !data) {
     return (
@@ -96,6 +104,15 @@ export const Feed = ({
       keyExtractor={(item) => item._id}
       onViewableItemsChanged={onViewableItemsChanged}
       viewabilityConfig={viewabilityConfig}
+      ListFooterComponent={() =>
+        cursor && isFetching ? (
+          <View padding="$2">
+            <Spinner color="$color11" />
+          </View>
+        ) : null
+      }
+      onRefresh={onRefresh}
+      refreshing={refreshing}
     />
   );
 };

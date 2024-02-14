@@ -26,7 +26,10 @@ export const api = createApi({
       serializeQueryArgs: ({ endpointName, queryArgs }) => {
         return { endpointName, filter: queryArgs.filter };
       },
-      merge: (currentCache, newItems) => {
+      merge: (currentCache, newItems, { arg }) => {
+        if (!arg.cursor) {
+          return newItems;
+        }
         currentCache.push(...newItems);
       },
       forceRefetch({ currentArg, previousArg }) {

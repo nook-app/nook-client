@@ -27,7 +27,7 @@ export const EmbedUrl = ({
       )}
       <YStack gap="$1" padding="$2" backgroundColor="$color4">
         <Text fontWeight="700">{metadata.title}</Text>
-        <Text>{metadata.description}</Text>
+        <Text numberOfLines={3}>{metadata.description}</Text>
       </YStack>
     </YStack>
   );

@@ -96,7 +96,7 @@ export default function ShelfScreen() {
   );
 
   return (
-    <View backgroundColor="$background" theme={activeNook.theme}>
+    <View backgroundColor="$background" theme={activeNook.theme} height="100%">
       <YStack borderBottomWidth="$1" borderColor="$borderColor">
         <XStack
           paddingHorizontal="$5"

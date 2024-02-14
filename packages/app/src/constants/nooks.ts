@@ -170,4 +170,68 @@ export const TEMPLATE_NOOKS: Nook[] = [
       },
     ],
   },
+  {
+    id: "degen",
+    name: "$DEGEN",
+    description:
+      "Degen, an ERC-20 token on Base, launched in January 2024 with an airdrop to the Degen channel community on Farcaster. ",
+    image: "https://www.degen.tips/logo_light.svg",
+    theme: "purple",
+    shelves: [
+      {
+        id: "posts",
+        name: "Posts",
+        description: "Posts about $DEGEN",
+        panels: [
+          {
+            id: "channel",
+            type: "feed",
+            name: "/degen",
+            filter: {
+              type: "POST",
+              deletedAt: null,
+              topics: {
+                type: "CHANNEL",
+                value:
+                  "chain://eip155:7777777/erc721:0x5d6a07d07354f8793d1ca06280c4adf04767ad7e",
+              },
+            },
+          },
+          {
+            id: "mentions",
+            type: "feed",
+            name: "Mentions",
+            filter: {
+              type: "POST",
+              deletedAt: null,
+              "data.text": {
+                $regex: "\\$DEGEN",
+                $options: "i",
+              },
+            },
+          },
+        ],
+      },
+      {
+        id: "tips",
+        name: "Tips",
+        description: "Tips from the $DEGEN community",
+        panels: [
+          {
+            id: "tips",
+            type: "feed",
+            name: "Tips",
+            filter: {
+              type: "REPLY",
+              deletedAt: null,
+              "data.text": {
+                $regex: "[0-9]+\\s*\\$DEGEN",
+                $options: "i",
+              },
+            },
+          },
+        ],
+      },
+    ],
+  },
 ];
