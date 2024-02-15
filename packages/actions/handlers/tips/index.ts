@@ -26,19 +26,23 @@ export const handleTips = async (
     throw new Error(`Entity not found for ${content.data.entityId}`);
   }
 
-  const addresses =
+  const ethAccounts =
     entity.blockchain?.filter((b) => b.protocol === Protocol.ETHEREUM) || [];
-  if (addresses.length === 0) {
+  if (ethAccounts.length === 0) {
     throw new Error(`No Ethereum addresses found for entity ${entity._id}`);
   }
 
-  if (
-    !(await validateAllowance(
-      addresses.map((a) => a.address),
-      rawTips,
-    ))
-  ) {
-    throw new Error("Insufficient tip allowance");
+  const addresses = ethAccounts.map((a) => a.address);
+
+  const { tipAllowance, tipUsage } = await getTipAllowanceAndUsage(
+    addresses,
+    rawTips,
+  );
+
+  if (tipAllowance < tipUsage) {
+    throw new Error(
+      `Insufficient tip allowance: ${tipAllowance} < ${tipUsage} for ${addresses} `,
+    );
   }
 
   return rawTips.map((tip) => {
@@ -109,10 +113,10 @@ const extractTips = ({
   }));
 };
 
-const validateAllowance = async (
+const getTipAllowanceAndUsage = async (
   addresses: string[],
   tips: TipActionData[],
-): Promise<boolean> => {
+) => {
   const responses = await Promise.all(
     addresses.map(async (address) => {
       const data = await fetch(
@@ -125,7 +129,11 @@ const validateAllowance = async (
     }),
   );
 
-  const totalAllowance = responses.reduce((acc, curr) => acc + curr, 0);
-  const totalTips = tips.reduce((acc, tip) => acc + tip.amount, 0);
-  return totalTips <= totalAllowance;
+  const tipAllowance = responses.reduce((acc, curr) => acc + curr, 0);
+  const tipUsage = tips.reduce((acc, tip) => acc + tip.amount, 0);
+
+  return {
+    tipAllowance,
+    tipUsage,
+  };
 };
