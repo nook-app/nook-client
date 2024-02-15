@@ -25,7 +25,11 @@ export const EntityDisplay = ({
   }
 
   return (
-    <Stack gap="$1">
+    <Stack
+      gap="$1"
+      alignItems={orientation === "horizontal" ? "center" : "flex-start"}
+      justifyContent={orientation === "horizontal" ? "flex-start" : "center"}
+    >
       <Text fontWeight="700">{displayName}</Text>
       <Text color="$gray11">{username}</Text>
     </Stack>

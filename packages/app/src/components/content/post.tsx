@@ -7,6 +7,7 @@ import { EntityAvatar } from "@/components/entity/avatar";
 import { PostContent, formatTipsAmount } from "@/components/utils";
 import { EntityDisplay } from "../entity/display";
 import { CHANNELS } from "@/constants";
+import { Image } from "expo-image";
 
 export const ContentPost = ({
   item: { data, entityMap, contentMap },
@@ -37,14 +38,32 @@ export const ContentPost = ({
             contentMap={contentMap}
           />
         ))}
-        <Text color="$gray11">
-          {new Date(data.timestamp).toLocaleTimeString([], {
-            hour: "2-digit",
-            minute: "2-digit",
-          })}
-          {" · "}
-          {new Date(data.timestamp).toLocaleDateString()}
-        </Text>
+        <XStack gap="$1.5" alignItems="center">
+          <Text color="$gray11">
+            {new Date(data.timestamp).toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
+            })}
+          </Text>
+          <Text color="$gray11">{"·"}</Text>
+          <Text color="$gray11">
+            {new Date(data.timestamp).toLocaleDateString()}
+          </Text>
+          {data.channelId && CHANNELS[data.channelId] && (
+            <>
+              <Text color="$gray11">{"·"}</Text>
+              <View borderRadius="$10" overflow="hidden">
+                <Image
+                  source={{ uri: CHANNELS[data.channelId]?.imageUrl }}
+                  style={{ width: 16, height: 16 }}
+                />
+              </View>
+              <Text numberOfLines={1} ellipsizeMode="tail">
+                {CHANNELS[data.channelId].name}
+              </Text>
+            </>
+          )}
+        </XStack>
         <XStack gap="$2">
           <View flexDirection="row" alignItems="center" gap="$1">
             <Text fontWeight="700">{engagement.replies}</Text>
@@ -69,22 +88,6 @@ export const ContentPost = ({
               )}
             </Text>
             <Text color="$gray11">$DEGEN</Text>
-          </View>
-          <View
-            flexDirection="row"
-            alignItems="center"
-            justifyContent="flex-end"
-            gap="$1.5"
-            flex={1}
-          >
-            {data.channelId && (
-              <>
-                <Text color="$gray11">in</Text>
-                <Text numberOfLines={1} ellipsizeMode="tail" fontWeight="700">
-                  {CHANNELS[data.channelId].name}
-                </Text>
-              </>
-            )}
           </View>
         </XStack>
       </YStack>

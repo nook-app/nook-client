@@ -25,7 +25,7 @@ const contentSlice = createSlice({
             } as ContentFeedItem<ContentData>;
           }) as ContentFeedItem<ContentData>[];
         });
-        contentAdapter.upsertMany(state, content);
+        contentAdapter.addMany(state, content);
       },
     );
     builder.addMatcher(
@@ -40,7 +40,7 @@ const contentSlice = createSlice({
             } as ContentFeedItem<ContentData>;
           }) as ContentFeedItem<ContentData>[];
         });
-        contentAdapter.upsertMany(state, content);
+        contentAdapter.addMany(state, content);
       },
     );
   },

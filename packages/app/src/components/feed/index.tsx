@@ -99,22 +99,20 @@ export const ContentReplies = ({ contentId }: { contentId: string }) => {
   }
 
   return (
-    <ScrollView horizontal={true} scrollEnabled={false}>
-      <FlatList
-        scrollEnabled={false}
-        data={accumulatedData}
-        renderItem={({ item }) => renderFeedItem(navigation, item)}
-        keyExtractor={(item) => item._id}
-        onViewableItemsChanged={onViewableItemsChanged}
-        viewabilityConfig={viewabilityConfig}
-        ListFooterComponent={() =>
-          cursor && isFetching ? (
-            <View padding="$2">
-              <Spinner color="$color11" />
-            </View>
-          ) : null
-        }
-      />
-    </ScrollView>
+    <FlatList
+      scrollEnabled={false}
+      data={accumulatedData}
+      renderItem={({ item }) => renderFeedItem(navigation, item)}
+      keyExtractor={(item) => item._id}
+      onViewableItemsChanged={onViewableItemsChanged}
+      viewabilityConfig={viewabilityConfig}
+      ListFooterComponent={() =>
+        cursor && isFetching ? (
+          <View padding="$2">
+            <Spinner color="$color11" />
+          </View>
+        ) : null
+      }
+    />
   );
 };

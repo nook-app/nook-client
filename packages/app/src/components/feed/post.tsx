@@ -29,13 +29,26 @@ export const FeedPost = ({
       <View width="$3.5">
         <EntityAvatar entity={entity} />
       </View>
-      <YStack flex={1} gap="$1">
-        <XStack gap="$1">
-          <EntityDisplay entity={entity} />
-          <Text color="$gray11">{" · "}</Text>
+      <YStack flex={1} gap="$0.5">
+        <EntityDisplay entity={entity} />
+        <XStack alignItems="center" gap="$1.5" paddingBottom="$2">
           <Text color="$gray11">
-            {formatTimeAgo(timestamp as unknown as string)}
+            {`${formatTimeAgo(timestamp as unknown as string)} ago`}
           </Text>
+          {data.channelId && CHANNELS[data.channelId] && (
+            <>
+              <Text color="$gray11">in</Text>
+              <View borderRadius="$10" overflow="hidden">
+                <Image
+                  source={{ uri: CHANNELS[data.channelId]?.imageUrl }}
+                  style={{ width: 16, height: 16 }}
+                />
+              </View>
+              <Text numberOfLines={1} ellipsizeMode="tail" fontWeight="500">
+                {CHANNELS[data.channelId].name}
+              </Text>
+            </>
+          )}
         </XStack>
         <PostContent data={data} entityMap={entityMap} />
         {data.embeds.map((embed, i) => (
@@ -47,20 +60,20 @@ export const FeedPost = ({
             contentMap={contentMap}
           />
         ))}
-        <XStack justifyContent="space-between" marginTop="$2" paddingRight="$2">
-          <View flexDirection="row" alignItems="center" gap="$2" width="$6">
+        <XStack justifyContent="space-between" marginTop="$2" width="$20">
+          <View flexDirection="row" alignItems="center" gap="$2" width="$5">
             <MessageSquare size={16} color="$gray11" />
             <Text color="$gray11">{engagement.replies}</Text>
           </View>
-          <View flexDirection="row" alignItems="center" gap="$2" width="$6">
+          <View flexDirection="row" alignItems="center" gap="$2" width="$5">
             <RefreshCw size={16} color="$gray11" />
             <Text color="$gray11">{engagement.reposts}</Text>
           </View>
-          <View flexDirection="row" alignItems="center" gap="$2" width="$6">
+          <View flexDirection="row" alignItems="center" gap="$2" width="$5">
             <Heart size={16} color="$gray11" />
             <Text color="$gray11">{engagement.likes}</Text>
           </View>
-          <View flexDirection="row" alignItems="center" gap="$2" width="$6">
+          <View flexDirection="row" alignItems="center" gap="$2" width="$5">
             <Image
               source={{ uri: "https://www.degen.tips/logo_light.svg" }}
               style={{ width: 12, height: 12 }}
@@ -74,22 +87,6 @@ export const FeedPost = ({
                   : 0,
               )}
             </Text>
-          </View>
-          <View
-            flexDirection="row"
-            alignItems="center"
-            justifyContent="flex-end"
-            gap="$1.5"
-            flex={1}
-          >
-            {data.channelId && CHANNELS[data.channelId] && (
-              <>
-                <Text color="$gray11">in</Text>
-                <Text numberOfLines={1} ellipsizeMode="tail" fontWeight="700">
-                  {CHANNELS[data.channelId].name}
-                </Text>
-              </>
-            )}
           </View>
         </XStack>
       </YStack>

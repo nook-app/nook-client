@@ -13,8 +13,9 @@ export default function ContentScreen() {
   const content = useAppSelector((state) =>
     selectContentById(state, route.params.contentId),
   );
+
   return (
-    <View backgroundColor="$background" theme={activeNook.theme} height="100%">
+    <View backgroundColor="$background" theme={activeNook?.theme} height="100%">
       <ContentPost item={content as ContentFeedItem<PostData>} />
     </View>
   );
