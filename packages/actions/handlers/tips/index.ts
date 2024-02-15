@@ -117,8 +117,10 @@ const validateAllowance = async (
     addresses.map(async (address) => {
       const { tip_allowance } = await fetch(
         `https://www.degen.tips/api/airdrop2/tip-allowance?address=${address}`,
-      ).then((res) => res.json());
-      return tip_allowance;
+      )
+        .then((res) => res.json())
+        .then((res) => res[0]);
+      return parseInt(tip_allowance, 10);
     }),
   );
 

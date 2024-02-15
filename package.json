@@ -19,12 +19,11 @@
     "start:farcaster:backfill": "yarn workspace @flink/farcaster start:backfill",
     "start:farcaster:publisher": "yarn workspace @flink/farcaster start:publisher",
     "start:events": "yarn workspace @flink/events start",
+    "start:actions": "yarn workspace @flink/actions start",
     "start:content": "yarn workspace @flink/content start",
     "start:api": "yarn workspace @flink/api start"
   },
-  "workspaces": [
-    "packages/*"
-  ],
+  "workspaces": ["packages/*"],
   "devDependencies": {
     "@biomejs/biome": "1.4.1",
     "@types/jest": "^29.5.11",
