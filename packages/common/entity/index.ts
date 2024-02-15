@@ -27,7 +27,11 @@ export const getOrCreateEntitiesForFids = async (
   const missingFids = fids.filter((fid) => !existingFids.has(fid));
   const missingDataFids = Object.values(entities)
     .filter(
-      (entity) => !entity.farcaster.username || !entity.farcaster.displayName,
+      (entity) =>
+        !entity.farcaster.username ||
+        !entity.farcaster.displayName ||
+        !entity.farcaster.pfp ||
+        !entity.farcaster.bio,
     )
     .map((entity) => entity.farcaster.fid);
 
@@ -59,6 +63,8 @@ export const getOrCreateEntitiesForFids = async (
           $set: {
             "farcaster.username": user.username,
             "farcaster.displayName": user.displayName,
+            "farcaster.pfp": user.pfp,
+            "farcaster.bio": user.bio,
           },
         },
       );

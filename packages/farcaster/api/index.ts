@@ -159,7 +159,7 @@ const run = async () => {
         const bio = userData.find((d) => d.type === UserDataType.BIO)?.value;
         const url = userData.find((d) => d.type === UserDataType.URL)?.value;
 
-        if (!username || !displayName) {
+        if (!username || !displayName || !pfp || !bio) {
           userData = await getAndBackfillUserDatas(client, [fid]);
         }
 
