@@ -26,22 +26,19 @@ export const handleTips = async (
     throw new Error(`Entity not found for ${content.data.entityId}`);
   }
 
-  const ethAccounts =
-    entity.blockchain?.filter((b) => b.protocol === Protocol.ETHEREUM) || [];
-  if (ethAccounts.length === 0) {
-    throw new Error(`No Ethereum addresses found for entity ${entity._id}`);
+  const fid = entity.farcaster.fid;
+  if (!fid) {
+    throw new Error(`FID not found for ${content.data.entityId}`);
   }
 
-  const addresses = ethAccounts.map((a) => a.address);
-
   const { tipAllowance, tipUsage } = await getTipAllowanceAndUsage(
-    addresses,
+    fid,
     rawTips,
   );
 
   if (tipAllowance < tipUsage) {
     throw new Error(
-      `Insufficient tip allowance: ${tipAllowance} < ${tipUsage} for ${addresses} `,
+      `Insufficient tip allowance: ${tipAllowance} < ${tipUsage} for ${fid} `,
     );
   }
 
@@ -113,23 +110,16 @@ const extractTips = ({
   }));
 };
 
-const getTipAllowanceAndUsage = async (
-  addresses: string[],
-  tips: TipActionData[],
-) => {
-  const responses = await Promise.all(
-    addresses.map(async (address) => {
-      const data = await fetch(
-        `https://www.degen.tips/api/airdrop2/tip-allowance?address=${address}`,
-      )
-        .then((res) => res.json())
-        .then((res) => res[0]);
-      if (!data) return 0;
-      return parseInt(data.tip_allowance, 10);
-    }),
+const getTipAllowanceAndUsage = async (fid: string, tips: TipActionData[]) => {
+  const results = await fetch(
+    `https://www.degen.tips/api/airdrop2/tip-allowance?fid=${fid}`,
+  ).then((res) => res.json());
+
+  const allowances: number[] = results.map((data: { tip_allowance: string }) =>
+    parseInt(data.tip_allowance, 10),
   );
 
-  const tipAllowance = responses.reduce((acc, curr) => acc + curr, 0);
+  const tipAllowance = allowances.reduce((acc, curr) => acc + curr, 0);
   const tipUsage = tips.reduce((acc, tip) => acc + tip.amount, 0);
 
   return {
