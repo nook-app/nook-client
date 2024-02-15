@@ -37,9 +37,10 @@ export const handleTips = async (
   );
 
   if (tipAllowance < tipUsage) {
-    throw new Error(
+    console.log(
       `Insufficient tip allowance: ${tipAllowance} < ${tipUsage} for ${fid} `,
     );
+    return [];
   }
 
   return rawTips.map((tip) => {
