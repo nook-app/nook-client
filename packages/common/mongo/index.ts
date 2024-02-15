@@ -12,6 +12,7 @@ import {
   EventActionData,
   EntityEvent,
   EventActionType,
+  Entity,
 } from "../types";
 
 const DB_NAME = "flink";
@@ -49,6 +50,13 @@ export class MongoClient {
   ): Collection<T> {
     return this.getDb().collection<T>(collection);
   }
+
+  findEntity = async (entityId: ObjectId) => {
+    const collection = this.getCollection<Entity>(MongoCollection.Entity);
+    return await collection.findOne({
+      _id: entityId,
+    });
+  };
 
   findContent = async (contentId: string) => {
     const collection = this.getCollection<Content<ContentData>>(

@@ -12,19 +12,10 @@ import {
   RawEvent,
   EntityEvent,
   EntityEventData,
-  EventActionType,
-  Entity,
-  UpdateEntityInfoActionData,
-  LinkBlockchainAddressActionData,
-  EntityActionData,
-  EntityInfoType,
-  TipData,
   Content,
   ContentData,
-  ContentActionData,
-  PostData,
 } from "@flink/common/types";
-import { MongoClient, MongoCollection } from "@flink/common/mongo";
+import { MongoClient } from "@flink/common/mongo";
 import { Job } from "bullmq";
 import { handleCastAddOrRemove } from "./farcaster/castAddOrRemove";
 import { handleCastReactionAddOrRemove } from "./farcaster/castReactionAddOrRemove";

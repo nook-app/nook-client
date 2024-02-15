@@ -4,17 +4,17 @@ import {
   ContentActionData,
   EntityActionData,
   LinkBlockchainAddressActionData,
+  TipActionData,
   UpdateEntityInfoActionData,
 } from "./actionTypes";
 import { Topic } from "./topics";
-import { TipData } from "./contentTypes";
 
 export type EventActionData =
   | ContentActionData
   | EntityActionData
   | UpdateEntityInfoActionData
   | LinkBlockchainAddressActionData
-  | TipData;
+  | TipActionData;
 
 /**
  * Supported actions for events

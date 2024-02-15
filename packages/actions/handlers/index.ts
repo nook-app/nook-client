@@ -6,13 +6,14 @@ import {
   LinkBlockchainAddressActionData,
   EntityActionData,
   EntityInfoType,
-  TipData,
   Content,
   ContentActionData,
   PostData,
+  TipActionData,
 } from "@flink/common/types";
 import { MongoClient, MongoCollection } from "@flink/common/mongo";
 import { Job } from "bullmq";
+import { handleTips } from "./tips";
 
 export const getActionsHandler = async () => {
   const client = new MongoClient();
@@ -46,6 +47,12 @@ export const getActionsHandler = async () => {
           promises.push(
             client.incrementEngagement(typedContent.data.parentId, "replies"),
           );
+          const tipActions = await handleTips(
+            client,
+            typedAction,
+            typedContent,
+          );
+          promises.push(...tipActions.map((a) => client.upsertAction(a)));
         }
         break;
       }
@@ -79,6 +86,13 @@ export const getActionsHandler = async () => {
               true,
             ),
           );
+          const tipActions = await handleTips(
+            client,
+            typedAction,
+            typedContent,
+            true,
+          );
+          promises.push(...tipActions.map((a) => client.upsertAction(a)));
         }
         break;
       }
@@ -223,7 +237,7 @@ export const getActionsHandler = async () => {
         break;
       }
       case EventActionType.TIP: {
-        const typedAction = action as EventAction<TipData>;
+        const typedAction = action as EventAction<TipActionData>;
         promises.push(
           client.incrementTip(
             typedAction.data.contentId,
@@ -234,15 +248,15 @@ export const getActionsHandler = async () => {
         break;
       }
       case EventActionType.UNTIP: {
-        const typedAction = action as EventAction<TipData>;
+        const typedAction = action as EventAction<TipActionData>;
         promises.push(
-          client.markActionsDeleted(typedAction.source.id, EventActionType.TIP),
           client.incrementTip(
             typedAction.data.contentId,
             typedAction.data.targetContentId,
             typedAction.data.amount,
             true,
           ),
+          client.markActionsDeleted(typedAction.source.id, EventActionType.TIP),
         );
         break;
       }

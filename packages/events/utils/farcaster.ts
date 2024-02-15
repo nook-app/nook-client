@@ -6,8 +6,6 @@ import {
   ContentType,
   Topic,
   TopicType,
-  TipData,
-  Protocol,
 } from "@flink/common/types";
 import { toFarcasterURI } from "@flink/farcaster/utils";
 import { MongoClient, MongoCollection } from "@flink/common/mongo";
@@ -15,7 +13,6 @@ import { Entity } from "@flink/common/types/entity";
 import { getOrCreateEntitiesForFids } from "@flink/common/entity";
 import { publishContent } from "@flink/common/queues";
 import { ObjectId } from "mongodb";
-import { DEGEN_ASSET_ID } from "./constants";
 
 export const getOrCreatePostContent = async (
   client: MongoClient,
@@ -104,8 +101,6 @@ const generateReplyContent = async (
     (newParent ? generatePost(newParent, identities) : undefined);
   data.parentEntityId = identities[cast.parentFid as string]._id;
 
-  data.tips = await getTips(data, identities[cast.fid]);
-
   return formatContent(data);
 };
 
@@ -174,50 +169,6 @@ const getParentAndRootCasts = async (
     newParent,
     newRoot,
   };
-};
-
-const getTips = async (
-  { entityId, contentId, parentId, parentEntityId, text }: PostData,
-  entity: Entity,
-): Promise<TipData[] | undefined> => {
-  if (!parentId || !parentEntityId) return;
-  const degenTipPattern = /(\d+)\s+\$DEGEN/gi;
-  const matches = [...text.matchAll(degenTipPattern)];
-  if (matches.length === 0 || !entity.blockchain) return;
-
-  const responses = await Promise.all(
-    entity.blockchain
-      .filter((b) => b.protocol === Protocol.ETHEREUM)
-      .map(async (b) => {
-        const { remaining_allowance } = await fetch(
-          `https://www.degen.tips/api/airdrop2/tip-allowance?address=${b.address}`,
-        )
-          .then((res) => res.json())
-          .then((res) => res[0]);
-        return remaining_allowance;
-      }),
-  );
-
-  const totalAllowance = responses.reduce((acc, curr) => acc + curr, 0);
-  const totalTips = matches.reduce(
-    (acc, match) => acc + parseInt(match[1], 10),
-    0,
-  );
-
-  if (totalTips > totalAllowance) {
-    throw new Error(
-      `Not enough allowance for tips. Total tips: ${totalTips}, total allowance: ${totalAllowance}`,
-    );
-  }
-
-  return matches.map((match) => ({
-    entityId,
-    targetEntityId: parentEntityId,
-    contentId: DEGEN_ASSET_ID.toLowerCase(),
-    amount: parseInt(match[1], 10),
-    sourceContentId: contentId,
-    targetContentId: parentId,
-  }));
 };
 
 const formatContent = (data: PostData): Content<PostData> => {
@@ -426,31 +377,6 @@ const generateTopics = (data: PostData) => {
       type: TopicType.CHANNEL,
       value: data.channelId,
     });
-  }
-
-  if (data.tips) {
-    for (const tip of data.tips) {
-      topics.push({
-        type: TopicType.TIP_SOURCE_ENTITY,
-        value: tip.entityId.toString(),
-      });
-      topics.push({
-        type: TopicType.TIP_TARGET_ENTITY,
-        value: tip.targetEntityId.toString(),
-      });
-      topics.push({
-        type: TopicType.TIP_ASSET,
-        value: tip.targetContentId,
-      });
-      topics.push({
-        type: TopicType.TIP_SOURCE,
-        value: tip.sourceContentId,
-      });
-      topics.push({
-        type: TopicType.TIP_TARGET,
-        value: tip.targetContentId,
-      });
-    }
   }
 
   return topics;
