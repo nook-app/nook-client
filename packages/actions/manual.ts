@@ -6,12 +6,8 @@ const run = async () => {
   console.log(`Running for event ${process.argv[2]}`);
   const job = await queue.getJob(process.argv[2]);
   const handler = await getActionsHandler();
-  if (job) {
-    await handler(job);
-  } else {
-    // @ts-ignore
-    await handler({ data: { actionId: process.argv[2] } });
-  }
+  // @ts-ignore
+  await handler({ data: { actionId: process.argv[2], created: true } });
 };
 
 run()

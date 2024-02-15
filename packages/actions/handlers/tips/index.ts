@@ -115,12 +115,13 @@ const validateAllowance = async (
 ): Promise<boolean> => {
   const responses = await Promise.all(
     addresses.map(async (address) => {
-      const { tip_allowance } = await fetch(
+      const data = await fetch(
         `https://www.degen.tips/api/airdrop2/tip-allowance?address=${address}`,
       )
         .then((res) => res.json())
         .then((res) => res[0]);
-      return parseInt(tip_allowance, 10);
+      if (!data) return 0;
+      return parseInt(data.tip_allowance, 10);
     }),
   );
 

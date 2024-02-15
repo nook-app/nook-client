@@ -19,7 +19,10 @@ export const getActionsHandler = async () => {
   const client = new MongoClient();
   await client.connect();
 
-  return async <T>(job: Job<{ actionId: string }>) => {
+  return async <T>(job: Job<{ actionId: string; created: boolean }>) => {
+    // If the action was not created, we don't need to process it again
+    if (!job.data.created) return;
+
     const action = await client.findAction(job.data.actionId);
     if (!action) {
       throw new Error(`Action not found for ${job.data.actionId}`);

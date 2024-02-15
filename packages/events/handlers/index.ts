@@ -98,10 +98,7 @@ export const getEventsHandler = async () => {
 
     await Promise.all([
       client.upsertEvent(response.event),
-      ...response.actions.map(async (action) => {
-        const _id = await client.upsertAction(action);
-        await publishAction(_id.toString());
-      }),
+      ...response.actions.map((action) => client.upsertAction(action)),
     ]);
 
     console.log(

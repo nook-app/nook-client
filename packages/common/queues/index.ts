@@ -18,7 +18,7 @@ type QueueType<T> = {
   [QueueName.FarcasterBackfill]: FarcasterBackfillRequest;
   [QueueName.Events]: RawEvent<T>;
   [QueueName.Content]: { contentId: string };
-  [QueueName.Actions]: { actionId: string };
+  [QueueName.Actions]: { actionId: string; created: boolean };
 };
 
 const connection = new Redis({

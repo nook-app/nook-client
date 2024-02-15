@@ -14,6 +14,7 @@ import {
   EventActionType,
   Entity,
 } from "../types";
+import { publishAction } from "../queues";
 
 const DB_NAME = "flink";
 
@@ -172,11 +173,13 @@ export class MongoClient {
           },
         },
       );
+      await publishAction(existingAction._id.toHexString(), false);
       return existingAction._id;
     }
 
     const _id = this.generateObjectIdFromDate(action.timestamp);
     await collection.insertOne({ ...action, _id });
+    await publishAction(_id.toHexString(), true);
     return _id;
   };
 
