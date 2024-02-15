@@ -53,18 +53,16 @@ export const getOrCreateEntitiesForFids = async (
     const { users } = await getFarcasterUsers(missingDataFids);
     for (const user of users) {
       const entity = entities[user.farcaster.fid];
-      entity.farcaster.username = user.farcaster.username;
-      entity.farcaster.displayName = user.farcaster.displayName;
+      entity.farcaster = user.farcaster;
+      entity.blockchain = user.blockchain;
       await collection.updateOne(
         {
           _id: entity._id,
         },
         {
           $set: {
-            "farcaster.username": user.username,
-            "farcaster.displayName": user.displayName,
-            "farcaster.pfp": user.pfp,
-            "farcaster.bio": user.bio,
+            farcaster: user.farcaster,
+            blockchain: user.blockchain,
           },
         },
       );
