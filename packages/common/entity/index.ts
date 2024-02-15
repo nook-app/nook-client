@@ -25,6 +25,11 @@ export const getOrCreateEntitiesForFids = async (
 
   const existingFids = new Set(Object.keys(entities));
   const missingFids = fids.filter((fid) => !existingFids.has(fid));
+  const missingDataFids = Object.values(entities)
+    .filter(
+      (entity) => !entity.farcaster.username || !entity.farcaster.displayName,
+    )
+    .map((entity) => entity.farcaster.fid);
 
   if (missingFids.length > 0) {
     const { users } = await getFarcasterUsers(missingFids);
@@ -37,6 +42,26 @@ export const getOrCreateEntitiesForFids = async (
     await collection.insertMany(newEntities);
     for (const entity of newEntities) {
       entities[entity.farcaster.fid] = entity;
+    }
+  }
+
+  if (missingDataFids.length > 0) {
+    const { users } = await getFarcasterUsers(missingDataFids);
+    for (const user of users) {
+      const entity = entities[user.fid];
+      entity.farcaster.username = user.username;
+      entity.farcaster.displayName = user.displayName;
+      await collection.updateOne(
+        {
+          _id: entity._id,
+        },
+        {
+          $set: {
+            "farcaster.username": user.username,
+            "farcaster.displayName": user.displayName,
+          },
+        },
+      );
     }
   }
 
