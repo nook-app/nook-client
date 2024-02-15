@@ -149,10 +149,6 @@ const run = async () => {
           },
         });
 
-        if (userData.length === 0) {
-          userData = await getAndBackfillUserDatas(client, [fid]);
-        }
-
         const username = userData.find(
           (d) => d.type === UserDataType.USERNAME,
         )?.value;
@@ -162,6 +158,10 @@ const run = async () => {
         )?.value;
         const bio = userData.find((d) => d.type === UserDataType.BIO)?.value;
         const url = userData.find((d) => d.type === UserDataType.URL)?.value;
+
+        if (!username || !displayName) {
+          userData = await getAndBackfillUserDatas(client, [fid]);
+        }
 
         // TODO: get custody address
 
