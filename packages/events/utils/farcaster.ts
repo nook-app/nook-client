@@ -80,95 +80,35 @@ const generateReplyContent = async (
   client: MongoClient,
   cast: FarcasterCastData,
 ) => {
-  const { existingParent, existingRoot, newParent, newRoot } =
-    await getParentAndRootCasts(client, cast);
-
-  const casts = [cast];
-  if (newParent) casts.push(newParent);
-  if (newRoot) casts.push(newRoot);
-
-  const identities = await getOrCreateEntitiesForFids(
-    client,
-    extractFidsFromCasts(casts),
-  );
-
-  const data: PostData = generatePost(cast, identities);
-  data.rootParent =
-    existingRoot?.data ||
-    (newRoot ? generatePost(newRoot, identities) : undefined);
-  data.parent =
-    existingParent?.data ||
-    (newParent ? generatePost(newParent, identities) : undefined);
-  data.parentEntityId = identities[cast.parentFid as string]._id;
-
-  return formatContent(data);
-};
-
-const getParentAndRootCasts = async (
-  client: MongoClient,
-  cast: FarcasterCastData,
-) => {
-  // only called when cast.parentHash is defined, ie, not a root cast
-  const parentUri = toFarcasterURI({
-    fid: cast.parentFid as string,
-    hash: cast.parentHash as string,
-  });
   const rootUri = toFarcasterURI({
     fid: cast.rootParentFid,
     hash: cast.rootParentHash,
   });
+  const parentUri = toFarcasterURI({
+    fid: cast.parentFid as string,
+    hash: cast.parentHash as string,
+  });
+  const uris = [...new Set([rootUri, parentUri])];
 
-  const uris = [parentUri, rootUri];
+  const contents = (
+    await Promise.all(uris.map((uri) => getOrCreatePostContent(client, uri)))
+  ).filter(Boolean) as Content<PostData>[];
 
-  const existingContent: Content<PostData>[] = await client
-    .getCollection<Content<PostData>>(MongoCollection.Content)
-    .find({
-      contentId: {
-        $in: uris,
-      },
-    })
-    .toArray();
-
-  const existingParent = existingContent.find(
-    (content) => content.contentId === parentUri,
+  const identities = await getOrCreateEntitiesForFids(
+    client,
+    extractFidsFromCasts([cast]),
   );
 
-  const existingRoot = existingContent.find(
+  const data: PostData = generatePost(cast, identities);
+  data.rootParent = contents.find(
     (content) => content.contentId === rootUri,
-  );
+  )?.data;
+  data.parent = contents.find(
+    (content) => content.contentId === parentUri,
+  )?.data;
+  data.parentEntityId = identities[cast.parentFid as string]._id;
 
-  let newParent: FarcasterCastData | undefined;
-
-  let newRoot: FarcasterCastData | undefined;
-
-  if (!existingParent || !existingRoot) {
-    const missingUris = uris.filter(
-      (uri) => !existingContent.find((content) => content.contentId === uri),
-    );
-
-    const casts = (await getFarcasterCasts({ uris: missingUris })).filter(
-      Boolean,
-    );
-
-    if (casts) {
-      newParent = casts.find(
-        (c) => c.fid === cast.parentFid && c.hash === cast.parentHash,
-      );
-
-      newRoot = casts.find(
-        (c) => c.fid === cast.rootParentFid && c.hash === cast.rootParentHash,
-      );
-    }
-  }
-
-  return {
-    existingParent: existingParent
-      ? { ...existingParent, parent: undefined }
-      : undefined,
-    existingRoot,
-    newParent,
-    newRoot,
-  };
+  return formatContent(data);
 };
 
 const formatContent = (data: PostData): Content<PostData> => {
