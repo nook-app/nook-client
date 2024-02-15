@@ -4,7 +4,6 @@ import {
   EventAction,
   EventActionType,
   PostData,
-  Protocol,
   TipActionData,
   Topic,
   TopicType,

@@ -52,9 +52,9 @@ export const getOrCreateEntitiesForFids = async (
   if (missingDataFids.length > 0) {
     const { users } = await getFarcasterUsers(missingDataFids);
     for (const user of users) {
-      const entity = entities[user.fid];
-      entity.farcaster.username = user.username;
-      entity.farcaster.displayName = user.displayName;
+      const entity = entities[user.farcaster.fid];
+      entity.farcaster.username = user.farcaster.username;
+      entity.farcaster.displayName = user.farcaster.displayName;
       await collection.updateOne(
         {
           _id: entity._id,
