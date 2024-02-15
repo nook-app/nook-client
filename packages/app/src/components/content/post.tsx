@@ -15,6 +15,9 @@ export const ContentPost = ({
   const engagement = contentMap[data.contentId].engagement;
   const tips = contentMap[data.contentId].tips;
   const entity = entityMap[data.entityId.toString()];
+  const degenTips =
+    tips["chain://eip155:8453/erc20:0xc9034c3e7f58003e6ae0c8438e7c8f4598d5acaa"]
+      ?.amount || 0;
 
   return (
     <ScrollView>
@@ -77,18 +80,12 @@ export const ContentPost = ({
             <Text fontWeight="700">{engagement.likes}</Text>
             <Text color="$gray11">Likes</Text>
           </View>
-          <View flexDirection="row" alignItems="center" gap="$1">
-            <Text fontWeight="700">
-              {formatTipsAmount(
-                tips
-                  ? tips[
-                      "chain://eip155:8453/erc20:0xc9034c3e7f58003e6ae0c8438e7c8f4598d5acaa"
-                    ]?.amount || 0
-                  : 0,
-              )}
-            </Text>
-            <Text color="$gray11">$DEGEN</Text>
-          </View>
+          {degenTips > 0 && (
+            <View flexDirection="row" alignItems="center" gap="$1">
+              <Text fontWeight="700">{formatTipsAmount(degenTips)}</Text>
+              <Text color="$gray11">$DEGEN</Text>
+            </View>
+          )}
         </XStack>
       </YStack>
       <ContentReplies contentId={data.contentId} />

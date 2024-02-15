@@ -38,11 +38,13 @@ export function formatTimeAgo(date: string) {
 }
 
 export function formatTipsAmount(amount: number): string {
-  if (amount >= 1000000) {
-    return `${(amount / 1000000).toFixed(1)}M`;
+  let div = Math.floor((amount / 1000000) * 100) / 100;
+  if (div >= 1) {
+    return `${div}M`;
   }
-  if (amount >= 1000) {
-    return `${(amount / 1000).toFixed(1)}K`;
+  div = Math.floor((amount / 1000) * 10) / 10;
+  if (div >= 1) {
+    return `${div}K`;
   }
   return amount.toString();
 }

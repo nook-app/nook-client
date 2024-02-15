@@ -19,6 +19,10 @@ export const FeedPost = ({
   const engagement = contentMap[data.contentId].engagement;
   const tips = contentMap[data.contentId].tips;
   const entity = entityMap[data.entityId.toString()];
+  const degenTips =
+    tips["chain://eip155:8453/erc20:0xc9034c3e7f58003e6ae0c8438e7c8f4598d5acaa"]
+      ?.amount || 0;
+
   return (
     <XStack
       padding="$2"
@@ -73,21 +77,15 @@ export const FeedPost = ({
             <Heart size={16} color="$gray11" />
             <Text color="$gray11">{engagement.likes}</Text>
           </View>
-          <View flexDirection="row" alignItems="center" gap="$2" width="$5">
-            <Image
-              source={{ uri: "https://www.degen.tips/logo_light.svg" }}
-              style={{ width: 12, height: 12 }}
-            />
-            <Text color="$gray11">
-              {formatTipsAmount(
-                tips
-                  ? tips[
-                      "chain://eip155:8453/erc20:0xc9034c3e7f58003e6ae0c8438e7c8f4598d5acaa"
-                    ]?.amount || 0
-                  : 0,
-              )}
-            </Text>
-          </View>
+          {degenTips > 0 && (
+            <View flexDirection="row" alignItems="center" gap="$2" width="$5">
+              <Image
+                source={{ uri: "https://www.degen.tips/logo_light.svg" }}
+                style={{ width: 12, height: 12 }}
+              />
+              <Text color="$gray11">{formatTipsAmount(degenTips)}</Text>
+            </View>
+          )}
         </XStack>
       </YStack>
     </XStack>
