@@ -6,6 +6,8 @@ import {
   PostData,
   Protocol,
   TipActionData,
+  Topic,
+  TopicType,
 } from "@flink/common/types";
 import { DEGEN_ASSET_ID } from "@flink/common/constants";
 import { MongoClient } from "@flink/common/mongo";
@@ -39,19 +41,51 @@ export const handleTips = async (
     throw new Error("Insufficient tip allowance");
   }
 
-  return rawTips.map((tip) => ({
-    eventId: action.eventId,
-    source: action.source,
-    timestamp: content.timestamp,
-    entityId: content.data.entityId,
-    referencedEntityIds: content.referencedEntityIds,
-    referencedContentIds: content.referencedContentIds,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-    type: isUntip ? EventActionType.UNTIP : EventActionType.TIP,
-    data: tip,
-    topics: content.topics,
-  }));
+  return rawTips.map((tip) => {
+    const topics: Topic[] = [
+      {
+        type: TopicType.TIP_ASSET,
+        value: DEGEN_ASSET_ID,
+      },
+      {
+        type: TopicType.TIP_SOURCE,
+        value: tip.sourceContentId,
+      },
+      {
+        type: TopicType.TIP_TARGET,
+        value: tip.targetContentId,
+      },
+      {
+        type: TopicType.TIP_SOURCE_ENTITY,
+        value: tip.entityId.toString(),
+      },
+      {
+        type: TopicType.TIP_TARGET_ENTITY,
+        value: tip.targetEntityId.toString(),
+      },
+    ];
+
+    if (content.data.channelId) {
+      topics.push({
+        type: TopicType.CHANNEL,
+        value: content.data.channelId,
+      });
+    }
+
+    return {
+      eventId: action.eventId,
+      source: action.source,
+      timestamp: content.timestamp,
+      entityId: content.data.entityId,
+      referencedEntityIds: content.referencedEntityIds,
+      referencedContentIds: content.referencedContentIds,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      type: isUntip ? EventActionType.UNTIP : EventActionType.TIP,
+      data: tip,
+      topics,
+    };
+  });
 };
 
 const extractTips = ({
