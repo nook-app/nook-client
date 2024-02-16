@@ -2,24 +2,28 @@ import { Button, Text, View, XStack, YStack } from "tamagui";
 import { useAuth } from "@/context/auth";
 import { Image } from "tamagui";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
 
 export default function ProfilePage() {
   const { session, signOut } = useAuth();
   const insets = useSafeAreaInsets();
+  const tabHeight = useBottomTabBarHeight();
 
   return (
-    <View
+    <YStack
+      flex={1}
+      justifyContent="space-between"
+      alignItems="center"
       backgroundColor="$background"
       theme="gray"
-      height="100%"
       style={{
         paddingTop: insets.top,
-        paddingBottom: insets.bottom,
+        paddingBottom: insets.bottom + tabHeight,
         paddingLeft: insets.left,
         paddingRight: insets.right,
       }}
     >
-      <YStack padding="$2" gap="$2">
+      <View flexGrow={1} alignItems="center" justifyContent="center">
         <XStack gap="$2" alignItems="center">
           <Image
             source={{
@@ -38,14 +42,17 @@ export default function ProfilePage() {
             </Text>
           </YStack>
         </XStack>
+      </View>
+      <View padding="$5" paddingVertical="$2" width="100%">
         <Button
           onPress={() => {
             signOut();
           }}
+          theme="purple"
         >
           Sign Out
         </Button>
-      </YStack>
-    </View>
+      </View>
+    </YStack>
   );
 }

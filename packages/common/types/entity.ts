@@ -1,6 +1,13 @@
 import { ObjectId } from "mongodb";
 import { Protocol } from "./actionTypes";
 
+export type User = {
+  firstLoggedInAt: Date;
+  lastLoggedInAt: Date;
+  signerEnabled: boolean;
+  nookIds: string[];
+};
+
 export type FarcasterAccount = {
   fid: string;
   custodyAddress: string;
@@ -32,4 +39,7 @@ export type Entity = {
 
   /** Date record was updated at */
   updatedAt: Date;
+
+  /** User Data */
+  user?: User;
 };

@@ -8,7 +8,7 @@ import {
 import { AuthFarcasterRequest, AuthResponse, ErrorResponse } from "../../types";
 import { randomUUID } from "crypto";
 import { Entity } from "@flink/common/types";
-import { TEMPLATE_NOOKS } from "../../data";
+import { Nook } from "../../data";
 
 export class EntityService {
   private client: MongoClient;
@@ -53,10 +53,45 @@ export class EntityService {
       };
     }
 
+    let nookIds: string[] = [];
+    if (!entity.user) {
+      nookIds = ["degen"];
+      await collection.updateOne(
+        { _id: entity._id },
+        {
+          $set: {
+            user: {
+              firstLoggedInAt: new Date(),
+              lastLoggedInAt: new Date(),
+              signerEnabled: false,
+              nookIds,
+            },
+          },
+        },
+      );
+    } else {
+      await collection.updateOne(
+        { _id: entity._id },
+        {
+          $set: {
+            "user.lastLoggedInAt": new Date(),
+          },
+        },
+      );
+      nookIds = entity.user.nookIds;
+    }
+
+    const nooks = await this.client
+      .getCollection<Nook>(MongoCollection.Nooks)
+      .find({
+        id: { $in: nookIds },
+      })
+      .toArray();
+
     return {
       token,
       entity,
-      nooks: TEMPLATE_NOOKS,
+      nooks,
     };
   }
 }

@@ -23,7 +23,9 @@
     "start:content": "yarn workspace @flink/content start",
     "start:api": "yarn workspace @flink/api start"
   },
-  "workspaces": ["packages/*"],
+  "workspaces": [
+    "packages/*"
+  ],
   "devDependencies": {
     "@biomejs/biome": "1.4.1",
     "@types/jest": "^29.5.11",
@@ -34,7 +36,7 @@
     "tsconfig-paths": "^4.2.0",
     "typescript": "^5.3.3"
   },
-  "packageManager": "yarn@4.0.2",
+  "packageManager": "yarn@4.1.0",
   "dependencies": {
     "@farcaster/auth-client": "^0.1.0",
     "@react-navigation/bottom-tabs": "^6.5.11",

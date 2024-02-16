@@ -1,5 +1,5 @@
 import { Text, View, YStack } from "tamagui";
-const { useSafeAreaInsets } = require("react-native-safe-area-context");
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function NotificationsScreen() {
   const insets = useSafeAreaInsets();

@@ -5,7 +5,7 @@ import {
   GetPanelParams,
   GetPanelQuery,
 } from "../../../types";
-import { NookPanelType, getPanelData } from "../../../data";
+import { NookPanelType, TEMPLATE_NOOKS, getPanelData } from "../../../data";
 import { ContentType, TopicType } from "@flink/common/types";
 
 export const nookRoutes = async (fastify: FastifyInstance) => {

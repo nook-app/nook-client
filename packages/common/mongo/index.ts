@@ -23,6 +23,7 @@ export enum MongoCollection {
   Actions = "actions",
   Content = "content",
   Entity = "entity",
+  Nooks = "nooks",
 }
 
 export class MongoClient {

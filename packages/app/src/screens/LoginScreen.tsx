@@ -1,4 +1,4 @@
-import { Button, Text, View } from "tamagui";
+import { Button, Text, View, YStack } from "tamagui";
 import { useAuth } from "@/context/auth";
 import {
   AuthClientError,
@@ -8,11 +8,11 @@ import {
 import { useCallback, useEffect, useRef } from "react";
 import { Linking } from "react-native";
 import { DEV } from "@/constants/index";
-import { useAppSelector } from "@/hooks/useAppSelector";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function LoginScreen() {
-  const { signIn, signInDev, session } = useAuth();
-  const activeNook = useAppSelector((state) => state.user.activeNook);
+  const { signIn, signInDev } = useAuth();
+  const insets = useSafeAreaInsets();
 
   const hasInitiatedConnectRef = useRef(false);
   const hasStartedPollingRef = useRef(false);
@@ -68,19 +68,34 @@ export default function LoginScreen() {
   }, [startPolling, url]);
 
   return (
-    <View
+    <YStack
       flex={1}
-      justifyContent="center"
+      justifyContent="space-between"
       alignItems="center"
       backgroundColor="$background"
       theme="gray"
+      style={{
+        paddingTop: insets.top,
+        paddingBottom: insets.bottom,
+        paddingLeft: insets.left,
+        paddingRight: insets.right,
+      }}
     >
-      <Button onPress={initiateConnect}>Sign In</Button>
-      <View padding="$4">
-        {session?.entity && (
-          <Text fontWeight="700">{`Welcome @${session.entity.farcaster.username}`}</Text>
-        )}
+      <View
+        padding="$5"
+        flexGrow={1}
+        alignItems="center"
+        justifyContent="center"
+      >
+        <Text fontSize="$10" fontWeight="700">
+          nook
+        </Text>
       </View>
-    </View>
+      <View padding="$5" width="100%">
+        <Button onPress={initiateConnect} theme="purple">
+          Sign In With Farcaster
+        </Button>
+      </View>
+    </YStack>
   );
 }
