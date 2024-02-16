@@ -10,9 +10,11 @@
     "types": "./dist/types/index.js"
   },
   "dependencies": {
+    "@fastify/jwt": "^8.0.0",
     "@flink/common": "*",
     "fastify": "^4.25.2",
-    "mongo": "^0.1.0"
+    "mongo": "^0.1.0",
+    "mongodb": "^6.3.0"
   },
   "devDependencies": {
     "@types/node": "^20.10.5",

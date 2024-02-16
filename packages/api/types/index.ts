@@ -1,5 +1,5 @@
 import { Content, ContentData, Entity } from "@flink/common/types";
-import { Nook } from "../data";
+import { User } from "@flink/common/prisma/nook";
 
 export type ContentFeedItem<T = ContentData> = Content<T> & {
   _id: string;
@@ -33,10 +33,15 @@ export type AuthFarcasterRequest = {
   nonce: string;
 };
 
-export type AuthResponse = {
+export type TokenResponse = {
+  refreshToken: string;
   token: string;
+  expiresAt: number;
+};
+
+export type AuthResponse = TokenResponse & {
+  user: User;
   entity: Entity;
-  nooks: Nook[];
 };
 
 export type ErrorResponse = {

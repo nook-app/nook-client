@@ -1,7 +1,8 @@
 import fastify from "fastify";
-import { mongoPlugin } from "./plugins";
+import { mongoPlugin, nookPlugin } from "./plugins";
 import { nookRoutes } from "./routes/nook";
-import { entityRoutes } from "./routes/entity";
+import { userRoutes } from "./routes/user";
+import fastifyJwt from "@fastify/jwt";
 
 const buildApp = () => {
   const app = fastify({
@@ -19,10 +20,15 @@ const buildApp = () => {
     return this.toString();
   };
 
+  app.register(fastifyJwt, {
+    secret: process.env.JWT_SECRET as string,
+  });
+
   app.register(mongoPlugin);
+  app.register(nookPlugin);
 
   app.register(nookRoutes);
-  app.register(entityRoutes);
+  app.register(userRoutes);
 
   return app;
 };

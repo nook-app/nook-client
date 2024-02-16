@@ -10,11 +10,10 @@ datasource db {
 
 model User {
     id            String   @id
-    fid           String   @unique
-    token         String
     signedUpAt    DateTime
     loggedInAt    DateTime
     signerEnabled Boolean
+    refreshToken  String
 
     nookMemberships NookMembership[]
     signers         Signer[]
