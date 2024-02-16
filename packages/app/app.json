@@ -4,35 +4,30 @@
     "slug": "nook",
     "version": "0.1.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    "icon": "./assets/nook.png",
     "scheme": "nook",
     "userInterfaceStyle": "automatic",
     "splash": {
-      "image": "./assets/images/splash.png",
+      "image": "./assets/splash.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
-    "assetBundlePatterns": [
-      "**/*"
-    ],
+    "assetBundlePatterns": ["**/*"],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "xyz.nook"
+      "bundleIdentifier": "social.nook"
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "foregroundImage": "./assets/nook.png",
         "backgroundColor": "#ffffff"
       }
     },
     "web": {
       "bundler": "metro",
-      "favicon": "./assets/images/favicon.png"
+      "favicon": "./assets/nook.png"
     },
-    "plugins": [
-      "expo-secure-store",
-      "expo-font"
-    ],
+    "plugins": ["expo-secure-store", "expo-font"],
     "extra": {
       "eas": {
         "projectId": "8d68d9d0-c390-497b-9bf9-294d39f27e4f"

@@ -7,7 +7,7 @@ import {
 } from "@farcaster/auth-kit";
 import { useCallback, useEffect, useRef } from "react";
 import { Linking } from "react-native";
-import { DEV } from "@/constants/index";
+import { CONFIG } from "@/constants/index";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function LoginScreen() {
@@ -47,7 +47,7 @@ export default function LoginScreen() {
   });
 
   const initiateConnect = useCallback(async () => {
-    if (DEV) {
+    if (CONFIG.dev) {
       await signInDev();
     } else if (!hasInitiatedConnectRef.current) {
       hasInitiatedConnectRef.current = true;

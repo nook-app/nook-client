@@ -8,7 +8,7 @@ import {
   useEffect,
   useReducer,
 } from "react";
-import { SIWF_DOMAIN, SIWF_URI, API_BASE_URL } from "@/constants/index";
+import { CONFIG } from "@/constants/index";
 import { Entity } from "@flink/common/types";
 import { Nook } from "@flink/api/data";
 import { setNooks } from "@/store/user";
@@ -95,13 +95,16 @@ function AuthProviderContent({ children }: AuthProviderProps) {
       };
 
       try {
-        const signInResponse = await fetch(`${API_BASE_URL}/auth/farcaster`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
+        const signInResponse = await fetch(
+          `${CONFIG.apiBaseUrl}/auth/farcaster`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(body),
           },
-          body: JSON.stringify(body),
-        });
+        );
 
         if (!signInResponse.ok) {
           reject(await signInResponse.text());
@@ -171,8 +174,8 @@ export function AuthProvider(props: AuthProviderProps) {
       config={{
         relay: "https://relay.farcaster.xyz",
         rpcUrl: "https://mainnet.optimism.io",
-        siweUri: SIWF_URI,
-        domain: SIWF_DOMAIN,
+        siweUri: CONFIG.siwfUri,
+        domain: CONFIG.siwfDomain,
       }}
     >
       <AuthProviderContent {...props} />

@@ -5,11 +5,11 @@ import {
   GetPanelParams,
   GetPanelQuery,
 } from "@flink/api/types";
-import { API_BASE_URL } from "@/constants/index";
+import { CONFIG } from "@/constants/index";
 
 export const api = createApi({
   reducerPath: "api",
-  baseQuery: fetchBaseQuery({ baseUrl: API_BASE_URL }),
+  baseQuery: fetchBaseQuery({ baseUrl: CONFIG.apiBaseUrl }),
   endpoints: (builder) => ({
     getPanel: builder.query<ContentFeed, GetPanelParams & GetPanelQuery>({
       query: (request) => ({
