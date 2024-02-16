@@ -8,7 +8,7 @@ import {
   TopicType,
 } from "@flink/common/types";
 import { toFarcasterURI } from "@flink/farcaster/utils";
-import { MongoClient, MongoCollection } from "@flink/common/mongo";
+import { MongoClient } from "@flink/common/mongo";
 import { Entity } from "@flink/common/types/entity";
 import { getOrCreateEntitiesForFids } from "@flink/common/entity";
 import { publishContent } from "@flink/common/queues";
@@ -88,7 +88,10 @@ const generateReplyContent = async (
     fid: cast.parentFid as string,
     hash: cast.parentHash as string,
   });
-  const uris = [...new Set([rootUri, parentUri])];
+  const uris = [parentUri];
+  if (rootUri !== parentUri && rootUri !== toFarcasterURI(cast)) {
+    uris.push(rootUri);
+  }
 
   const contents = (
     await Promise.all(uris.map((uri) => getOrCreatePostContent(client, uri)))
@@ -193,7 +196,7 @@ const extractFidsFromCasts = (casts: FarcasterCastData[]): string[] => {
   );
 };
 
-export const getFarcasterCastByURI = async (uri: string) => {
+const getFarcasterCastByURI = async (uri: string) => {
   const casts = await getFarcasterCasts({ uris: [uri] });
   if (!casts) {
     return;
@@ -201,7 +204,7 @@ export const getFarcasterCastByURI = async (uri: string) => {
   return casts[0];
 };
 
-export const getFarcasterCasts = async ({
+const getFarcasterCasts = async ({
   uris,
   fidHashes,
 }: { uris?: string[]; fidHashes?: FidHash[] }): Promise<

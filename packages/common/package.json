@@ -5,8 +5,9 @@
   "main": "./dist/index.js",
   "scripts": {
     "build": "yarn db:generate && tsc && cp -r prisma/generated dist/prisma",
-    "db:generate": "npx prisma generate --schema ./prisma/schemas/farcaster.prisma",
-    "db:push:farcaster": "npx prisma db push --schema ./prisma/schemas/farcaster.prisma"
+    "db:generate": "npx prisma generate --schema ./prisma/schemas/farcaster.prisma && npx prisma generate --schema ./prisma/schemas/nook.prisma",
+    "db:push:farcaster": "npx prisma db push --schema ./prisma/schemas/farcaster.prisma",
+    "db:push:nook": "npx prisma db push --schema ./prisma/schemas/nook.prisma"
   },
   "exports": {
     "./queues": "./dist/queues/index.js",

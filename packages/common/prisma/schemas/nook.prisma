@@ -1,0 +1,46 @@
+generator client {
+    provider = "prisma-client-js"
+    output   = "../generated/nook"
+}
+
+datasource db {
+    provider = "postgresql"
+    url      = env("NOOK_DATABASE_URL")
+}
+
+model User {
+    id            String   @id
+    fid           String   @unique
+    token         String
+    signedUpAt    DateTime
+    loggedInAt    DateTime
+    signerEnabled Boolean
+
+    nookMemberships NookMembership[]
+    signers         Signer[]
+}
+
+model Signer {
+    userId              String
+    publicKey           String
+    privateKey          String
+    signature           String
+    deadline            DateTime
+    fid                 String
+    warpcastToken       String
+    warpcastDeepLinkUrl String
+    status              String
+
+    user User @relation(fields: [userId], references: [id])
+
+    @@id([userId, publicKey])
+}
+
+model NookMembership {
+    userId String
+    nookId String
+
+    user User @relation(fields: [userId], references: [id])
+
+    @@id([userId, nookId])
+}

@@ -9,13 +9,16 @@ import { AuthFarcasterRequest, AuthResponse, ErrorResponse } from "../../types";
 import { randomUUID } from "crypto";
 import { Entity } from "@flink/common/types";
 import { Nook } from "../../data";
+import { PrismaClient } from "@flink/common/prisma/nook";
 
 export class EntityService {
   private client: MongoClient;
   private farcasterAuthClient: FarcasterAuthClient;
+  private nookClient: PrismaClient;
 
   constructor(fastify: FastifyInstance) {
     this.client = fastify.mongo.client;
+    this.nookClient = fastify.nook.client;
     this.farcasterAuthClient = createAppClient({
       ethereum: viemConnector(),
     });
@@ -41,7 +44,6 @@ export class EntityService {
     const collection = this.client.getCollection<Entity>(
       MongoCollection.Entity,
     );
-
     const entity = await collection.findOne({
       "farcaster.fid": verifyResult.fid.toString(),
     });
@@ -53,38 +55,40 @@ export class EntityService {
       };
     }
 
-    let nookIds: string[] = [];
-    if (!entity.user) {
-      nookIds = ["degen"];
-      await collection.updateOne(
-        { _id: entity._id },
-        {
-          $set: {
-            user: {
-              firstLoggedInAt: new Date(),
-              lastLoggedInAt: new Date(),
-              signerEnabled: false,
-              nookIds,
-            },
+    const user = await this.nookClient.user.upsert({
+      include: {
+        nookMemberships: true,
+      },
+      where: {
+        fid: verifyResult.fid.toString(),
+      },
+      update: {
+        token,
+        loggedInAt: new Date(),
+      },
+      create: {
+        id: entity._id.toString(),
+        fid: verifyResult.fid.toString(),
+        token,
+        signedUpAt: new Date(),
+        loggedInAt: new Date(),
+        signerEnabled: false,
+        nookMemberships: {
+          createMany: {
+            data: [
+              {
+                nookId: "65cec2e40c6be21bbe973650",
+              },
+            ],
           },
         },
-      );
-    } else {
-      await collection.updateOne(
-        { _id: entity._id },
-        {
-          $set: {
-            "user.lastLoggedInAt": new Date(),
-          },
-        },
-      );
-      nookIds = entity.user.nookIds;
-    }
+      },
+    });
 
     const nooks = await this.client
       .getCollection<Nook>(MongoCollection.Nooks)
       .find({
-        id: { $in: nookIds },
+        id: { $in: user.nookMemberships.map((m) => m.nookId) },
       })
       .toArray();
 
