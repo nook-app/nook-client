@@ -103,13 +103,26 @@ const generateReplyContent = async (
   );
 
   const data: PostData = generatePost(cast, identities);
-  data.rootParent = contents.find(
+
+  const rootParent = contents.find(
     (content) => content.contentId === rootUri,
   )?.data;
-  data.parent = contents.find(
+  if (rootParent) {
+    data.rootParent = rootParent;
+    data.rootParentEntityId = rootParent.entityId;
+    data.rootParent.rootParent = undefined;
+    data.rootParent.parent = undefined;
+  }
+
+  const parent = contents.find(
     (content) => content.contentId === parentUri,
   )?.data;
-  data.parentEntityId = identities[cast.parentFid as string]._id;
+  if (parent) {
+    data.parent = parent;
+    data.parentEntityId = parent.entityId;
+    data.parent.rootParent = undefined;
+    data.parent.parent = undefined;
+  }
 
   return formatContent(data);
 };
