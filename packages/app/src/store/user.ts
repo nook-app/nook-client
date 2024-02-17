@@ -17,10 +17,10 @@ export const userSlice = createSlice({
   name: "user",
   initialState,
   reducers: {
-    setNooks: (state, action: PayloadAction<Nook[]>) => {
-      state.nooks = action.payload;
-      if (action.payload.length > 0) {
-        state.activeNook = action.payload[0];
+    setUserData: (state, action: PayloadAction<{ nooks: Nook[] }>) => {
+      state.nooks = action.payload.nooks;
+      if (action.payload.nooks.length > 0) {
+        state.activeNook = action.payload.nooks[0];
       }
     },
     setActiveNook: (state, action: PayloadAction<string>) => {
@@ -37,6 +37,6 @@ export const userSlice = createSlice({
   },
 });
 
-export const { setNooks, setActiveNook, setActiveShelf } = userSlice.actions;
+export const { setUserData, setActiveNook, setActiveShelf } = userSlice.actions;
 
 export default userSlice.reducer;

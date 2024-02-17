@@ -45,16 +45,18 @@ export default function ProfilePage() {
               </YStack>
             </XStack>
           </View>
-          <View padding="$5" paddingVertical="$2" width="100%">
+          <YStack padding="$5" paddingVertical="$2" width="100%" gap="$2">
+            {!session.user.signerEnabled && (
+              <Button theme="purple">Enable Signer</Button>
+            )}
             <Button
               onPress={() => {
                 signOut();
               }}
-              theme="purple"
             >
               Sign Out
             </Button>
-          </View>
+          </YStack>
         </>
       )}
     </YStack>

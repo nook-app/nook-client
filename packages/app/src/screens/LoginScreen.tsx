@@ -1,4 +1,4 @@
-import { Button, Text, View, YStack } from "tamagui";
+import { Button, Spinner, Text, View, YStack } from "tamagui";
 import { useAuth } from "@/context/auth";
 import {
   AuthClientError,
@@ -11,7 +11,7 @@ import { CONFIG } from "@/constants/index";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function LoginScreen() {
-  const { signIn, signInDev, error } = useAuth();
+  const { signIn, signInDev, error, isInitializing } = useAuth();
   const [isLoggingIn, setIsLoggingIn] = useState(false);
   const insets = useSafeAreaInsets();
 
@@ -98,8 +98,19 @@ export default function LoginScreen() {
             {error.message}
           </Text>
         )}
-        <Button onPress={initiateConnect} theme="purple" disabled={isLoggingIn}>
-          Sign In With Farcaster
+        <Button
+          onPress={initiateConnect}
+          theme="purple"
+          disabled={isLoggingIn || isInitializing}
+          backgroundColor={
+            isLoggingIn || isInitializing ? "$backgroundStrong" : "$background"
+          }
+        >
+          {isLoggingIn || isInitializing ? (
+            <Spinner />
+          ) : (
+            "Sign In With Farcaster"
+          )}
         </Button>
       </YStack>
     </YStack>
