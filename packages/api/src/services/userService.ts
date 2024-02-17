@@ -8,7 +8,6 @@ import {
 import {
   SignInWithFarcasterRequest,
   AuthResponse,
-  ErrorResponse,
   TokenResponse,
   SignerPublicData,
   GetUserResponse,
@@ -40,17 +39,14 @@ export class UserService {
 
   async signInWithFarcaster(
     request: SignInWithFarcasterRequest,
-  ): Promise<AuthResponse | ErrorResponse> {
+  ): Promise<AuthResponse | undefined> {
     const verifyResult = await this.farcasterAuthClient.verifySignInMessage({
       domain: process.env.SIWF_DOMAIN || "localhost:3000",
       ...request,
     });
 
     if (verifyResult.isError) {
-      return {
-        status: 401,
-        message: verifyResult.error?.message || "Sign in failed",
-      };
+      throw new Error(verifyResult.error?.message || "Sign in failed");
     }
 
     const collection = this.client.getCollection<Entity>(
@@ -61,10 +57,7 @@ export class UserService {
     });
 
     if (!entity) {
-      return {
-        status: 401,
-        message: "FID not found",
-      };
+      return;
     }
 
     const refreshToken = this.jwt.sign({
@@ -113,7 +106,7 @@ export class UserService {
     };
   }
 
-  async getToken(refreshToken: string): Promise<TokenResponse | ErrorResponse> {
+  async getToken(refreshToken: string): Promise<TokenResponse | undefined> {
     const decoded = this.jwt.verify(refreshToken) as { id: string };
     const user = await this.nookClient.user.findUnique({
       where: {
@@ -122,17 +115,11 @@ export class UserService {
     });
 
     if (!user) {
-      return {
-        status: 404,
-        message: "User not found",
-      };
+      return;
     }
 
     if (user.refreshToken !== refreshToken) {
-      return {
-        status: 401,
-        message: "Invalid refresh token",
-      };
+      throw new Error("Invalid refresh token");
     }
 
     const jwtPayload = {
@@ -150,7 +137,7 @@ export class UserService {
     };
   }
 
-  async getUser(userId: string): Promise<GetUserResponse | ErrorResponse> {
+  async getUser(userId: string): Promise<GetUserResponse | undefined> {
     const user = await this.nookClient.user.findUnique({
       where: {
         id: userId,
@@ -161,10 +148,7 @@ export class UserService {
     });
 
     if (!user) {
-      return {
-        status: 404,
-        message: "User not found",
-      };
+      return;
     }
 
     const nooks = await this.client
@@ -182,9 +166,7 @@ export class UserService {
     };
   }
 
-  async getFarcasterSigner(
-    userId: string,
-  ): Promise<SignerPublicData | ErrorResponse> {
+  async getFarcasterSigner(userId: string): Promise<SignerPublicData> {
     let signer = await this.nookClient.signer.findFirst({
       where: {
         userId,

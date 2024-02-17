@@ -45,11 +45,6 @@ export type AuthResponse = TokenResponse & {
   entity: Entity;
 };
 
-export type ErrorResponse = {
-  status: number;
-  message: string;
-};
-
 export type GetContentRepliesBody = {
   contentId: string;
   cursor?: string;
