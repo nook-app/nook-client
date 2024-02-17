@@ -23,36 +23,40 @@ export default function ProfilePage() {
         paddingRight: insets.right,
       }}
     >
-      <View flexGrow={1} alignItems="center" justifyContent="center">
-        <XStack gap="$2" alignItems="center">
-          <Image
-            source={{
-              width: 40,
-              height: 40,
-              uri: session?.entity?.farcaster?.pfp,
-            }}
-            borderRadius="$10"
-          />
-          <YStack>
-            <Text fontWeight="700" fontSize="$5">
-              {session?.entity?.farcaster?.displayName}
-            </Text>
-            <Text color="$gray11" fontSize="$4">
-              {`@${session?.entity?.farcaster?.username}`}
-            </Text>
-          </YStack>
-        </XStack>
-      </View>
-      <View padding="$5" paddingVertical="$2" width="100%">
-        <Button
-          onPress={() => {
-            signOut();
-          }}
-          theme="purple"
-        >
-          Sign Out
-        </Button>
-      </View>
+      {session && (
+        <>
+          <View flexGrow={1} alignItems="center" justifyContent="center">
+            <XStack gap="$2" alignItems="center">
+              <Image
+                source={{
+                  width: 40,
+                  height: 40,
+                  uri: session.entity.farcaster?.pfp,
+                }}
+                borderRadius="$10"
+              />
+              <YStack>
+                <Text fontWeight="700" fontSize="$5">
+                  {session.entity.farcaster?.displayName}
+                </Text>
+                <Text color="$gray11" fontSize="$4">
+                  {`@${session.entity.farcaster?.username}`}
+                </Text>
+              </YStack>
+            </XStack>
+          </View>
+          <View padding="$5" paddingVertical="$2" width="100%">
+            <Button
+              onPress={() => {
+                signOut();
+              }}
+              theme="purple"
+            >
+              Sign Out
+            </Button>
+          </View>
+        </>
+      )}
     </YStack>
   );
 }

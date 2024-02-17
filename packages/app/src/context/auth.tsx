@@ -7,6 +7,7 @@ import {
   useContext,
   useEffect,
   useReducer,
+  useState,
 } from "react";
 import { CONFIG } from "@/constants/index";
 import { Entity } from "@flink/common/types";
@@ -45,6 +46,7 @@ type State =
 type Action = { type: "onSignIn"; session: Session } | { type: "onSignOut" };
 
 type AuthContextMethods = {
+  error?: Error;
   signIn: (params: SignInParams) => Promise<void>;
   signInDev: () => Promise<void>;
   signOut: () => Promise<void>;
@@ -89,13 +91,10 @@ type AuthProviderProps = {
 
 function AuthProviderContent({ children }: AuthProviderProps) {
   const [state, dispatch] = useReducer(reducer, initialState);
+  const [error, setError] = useState<Error | undefined>(undefined);
   const appDispatch = useAppDispatch();
 
   const signIn = useCallback(async (body: SignInParams) => {
-    const reject = (message: string) => {
-      throw new Error(`Sign in failed: ${message}`);
-    };
-
     try {
       const signInResponse = await fetch(
         `${CONFIG.apiBaseUrl}/auth/farcaster`,
@@ -109,7 +108,7 @@ function AuthProviderContent({ children }: AuthProviderProps) {
       );
 
       if (!signInResponse.ok) {
-        reject(await signInResponse.text());
+        setError(new Error(`Sign in failed: ${await signInResponse.text()}`));
       }
 
       const session: Session = await signInResponse.json();
@@ -117,7 +116,7 @@ function AuthProviderContent({ children }: AuthProviderProps) {
       dispatch({ type: "onSignIn", session });
       await initializeUser(session);
     } catch (error) {
-      reject((error as Error).message);
+      setError(new Error(`Sign in failed: ${(error as Error).message}`));
     }
   }, []);
 
@@ -142,10 +141,6 @@ function AuthProviderContent({ children }: AuthProviderProps) {
   );
 
   const refreshToken = useCallback(async (session: Session) => {
-    const reject = (message: string) => {
-      throw new Error(`Sign in failed: ${message}`);
-    };
-
     const response = await fetch(`${CONFIG.apiBaseUrl}/token`, {
       headers: {
         Authorization: `Bearer ${session.refreshToken}`,
@@ -153,7 +148,7 @@ function AuthProviderContent({ children }: AuthProviderProps) {
     });
 
     if (!response.ok) {
-      reject(await response.text());
+      setError(new Error(`Failed to refresh token: ${await response.text()}`));
     }
 
     await SecureStore.setItemAsync(
@@ -174,7 +169,9 @@ function AuthProviderContent({ children }: AuthProviderProps) {
           await refreshToken(session);
         }
       } catch (error) {
-        console.error(error);
+        setError(
+          new Error(`Failed to parse session: ${(error as Error).message}`),
+        );
         dispatch({ type: "onSignOut" });
       }
     } else {
@@ -190,6 +187,7 @@ function AuthProviderContent({ children }: AuthProviderProps) {
     <AuthContext.Provider
       value={{
         session: state.session,
+        error,
         signIn,
         signOut,
         signInDev: async () =>

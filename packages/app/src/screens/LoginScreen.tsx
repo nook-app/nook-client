@@ -5,13 +5,14 @@ import {
   StatusAPIResponse,
   useSignIn,
 } from "@farcaster/auth-kit";
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Linking } from "react-native";
 import { CONFIG } from "@/constants/index";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function LoginScreen() {
-  const { signIn, signInDev } = useAuth();
+  const { signIn, signInDev, error } = useAuth();
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
   const insets = useSafeAreaInsets();
 
   const hasInitiatedConnectRef = useRef(false);
@@ -29,26 +30,26 @@ export default function LoginScreen() {
         if (!req.message || !req.nonce || !req.signature) {
           return;
         }
-        try {
-          signIn({
-            message: req.message,
-            nonce: req.nonce,
-            signature: req.signature,
-          });
-        } catch (error) {
-          alert((error as Error).message);
-        }
+        await signIn({
+          message: req.message,
+          nonce: req.nonce,
+          signature: req.signature,
+        });
+        setIsLoggingIn(false);
       },
       [signIn],
     ),
     onError: useCallback((error: AuthClientError | undefined) => {
       console.error(error);
+      setIsLoggingIn(false);
     }, []),
   });
 
   const initiateConnect = useCallback(async () => {
+    setIsLoggingIn(true);
     if (CONFIG.dev) {
       await signInDev();
+      setIsLoggingIn(false);
     } else if (!hasInitiatedConnectRef.current) {
       hasInitiatedConnectRef.current = true;
       await connect();
@@ -91,11 +92,16 @@ export default function LoginScreen() {
           nook
         </Text>
       </View>
-      <View padding="$5" width="100%">
-        <Button onPress={initiateConnect} theme="purple">
+      <YStack padding="$5" width="100%" gap="$2">
+        {error && (
+          <Text color="$red11" textAlign="center">
+            {error.message}
+          </Text>
+        )}
+        <Button onPress={initiateConnect} theme="purple" disabled={isLoggingIn}>
           Sign In With Farcaster
         </Button>
-      </View>
+      </YStack>
     </YStack>
   );
 }

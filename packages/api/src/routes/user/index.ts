@@ -10,6 +10,7 @@ export const userRoutes = async (fastify: FastifyInstance) => {
       "/auth/farcaster",
       async (request, reply) => {
         const data = await authService.authFarcaster(request.body);
+        if ("status" in data) return reply.code(data.status).send(data);
         return reply.send(data);
       },
     );
@@ -24,6 +25,7 @@ export const userRoutes = async (fastify: FastifyInstance) => {
       const data = await authService.getToken(
         authHeader.substring(7, authHeader.length),
       );
+      if ("status" in data) return reply.code(data.status).send(data);
       return reply.send(data);
     });
 
