@@ -25,7 +25,7 @@ export default function ProfilePage() {
     >
       {session && (
         <>
-          <View flexGrow={1} alignItems="center" justifyContent="center">
+          <View flexGrow={1} alignItems="center" marginTop="$10">
             <XStack gap="$2" alignItems="center">
               <Image
                 source={{
@@ -46,9 +46,6 @@ export default function ProfilePage() {
             </XStack>
           </View>
           <YStack padding="$5" paddingVertical="$2" width="100%" gap="$2">
-            {!session.user.signerEnabled && (
-              <Button theme="purple">Enable Signer</Button>
-            )}
             <Button
               onPress={() => {
                 signOut();

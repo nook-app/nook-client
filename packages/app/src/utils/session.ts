@@ -21,6 +21,7 @@ export const getSession = async () => {
     if (session.expiresAt - Math.floor(Date.now() / 1000) < ONE_DAY) {
       return await updateSession(session);
     }
+    return session;
   }
 };
 
@@ -41,7 +42,7 @@ export const updateSession = async (existingSession?: Session) => {
   try {
     const newSession = {
       ...session,
-      ...(await refreshToken(session.token)),
+      ...(await refreshToken(session)),
     } as Session;
     await SecureStore.setItemAsync(SESSION_KEY, JSON.stringify(newSession));
     return newSession;

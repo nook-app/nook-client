@@ -6,22 +6,14 @@ import {
   GetPanelQuery,
 } from "@flink/api/types";
 import { CONFIG } from "@/constants/index";
-import * as SecureStore from "expo-secure-store";
-import { Session } from "@/context/auth";
-
-const getSecureStoreToken = async () => {
-  const { token }: Session = JSON.parse(
-    (await SecureStore.getItemAsync("session")) as string,
-  );
-  return token ? `Bearer ${token}` : "";
-};
+import { getSession } from "@/utils/session";
 
 const baseQuery = fetchBaseQuery({
   baseUrl: CONFIG.apiBaseUrl,
   prepareHeaders: async (headers) => {
-    const token = await getSecureStoreToken();
-    if (token) {
-      headers.set("Authorization", token);
+    const session = await getSession();
+    if (session) {
+      headers.set("Authorization", `Bearer ${session.token}`);
     }
     return headers;
   },

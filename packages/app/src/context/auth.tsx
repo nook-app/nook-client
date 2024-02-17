@@ -8,7 +8,7 @@ import {
   useState,
 } from "react";
 import { CONFIG, DEV_SIGN_IN } from "@/constants/index";
-import { setUserData } from "@/store/user";
+import { setEntity, setUserData } from "@/store/user";
 import { useAppDispatch } from "@/hooks/useAppDispatch";
 import {
   fetchSession,
@@ -54,6 +54,7 @@ function AuthProviderContent({ children }: AuthProviderProps) {
       try {
         const session = await fetchSession(body);
         dispatch(setUserData(await getUserData(session)));
+        dispatch(setEntity(session.entity));
         setSession(session);
       } catch (error) {
         setError(new Error(`Sign in failed: ${(error as Error).message}`));
@@ -73,6 +74,7 @@ function AuthProviderContent({ children }: AuthProviderProps) {
       if (session) {
         setSession(session);
         dispatch(setUserData(await getUserData(session)));
+        dispatch(setEntity(session.entity));
       }
     } catch (error) {
       setError(new Error(`Failed to initialize: ${(error as Error).message}`));

@@ -14,7 +14,8 @@
     "@flink/common": "*",
     "fastify": "^4.25.2",
     "mongo": "^0.1.0",
-    "mongodb": "^6.3.0"
+    "mongodb": "^6.3.0",
+    "viem": "^2.7.10"
   },
   "devDependencies": {
     "@types/node": "^20.10.5",

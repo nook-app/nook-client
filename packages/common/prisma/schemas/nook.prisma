@@ -20,15 +20,13 @@ model User {
 }
 
 model Signer {
-    userId              String
-    publicKey           String
-    privateKey          String
-    signature           String
-    deadline            DateTime
-    fid                 String
-    warpcastToken       String
-    warpcastDeepLinkUrl String
-    status              String
+    userId      String
+    publicKey   String
+    privateKey  String
+    token       String  @unique
+    deeplinkUrl String
+    state       String
+    fid         String?
 
     user User @relation(fields: [userId], references: [id])
 

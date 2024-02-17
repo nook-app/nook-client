@@ -12,6 +12,8 @@ import { useAppSelector } from "@/hooks/useAppSelector";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import ContentScreen from "@/screens/ContentScreen";
 import { RootStackParamList } from "@/types";
+import { EnableSignerModal } from "@/modals/EnableSignerModal";
+import { CreatePostModal } from "@/modals/CreatePostModal";
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -83,6 +85,22 @@ export function NookNavigator() {
           ),
         }}
         getId={({ params }) => params.contentId}
+      />
+      <Stack.Screen
+        name="EnableSigner"
+        component={EnableSignerModal}
+        options={{
+          presentation: "transparentModal",
+          headerShown: false,
+        }}
+      />
+      <Stack.Screen
+        name="CreatePost"
+        component={CreatePostModal}
+        options={{
+          presentation: "transparentModal",
+          headerShown: false,
+        }}
       />
     </Stack.Navigator>
   );

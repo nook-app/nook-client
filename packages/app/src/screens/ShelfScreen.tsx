@@ -1,6 +1,6 @@
 import { useRef, useState } from "react";
 import { Dimensions } from "react-native";
-import { View, XStack, YStack, useTheme } from "tamagui";
+import { Button, View, XStack, YStack, useTheme } from "tamagui";
 import Animated, {
   useSharedValue,
   useAnimatedScrollHandler,
@@ -9,13 +9,20 @@ import Animated, {
   interpolateColor,
 } from "react-native-reanimated";
 import { useAppSelector } from "@/hooks/useAppSelector";
-import { RouteProp, useRoute } from "@react-navigation/native";
+import {
+  NavigationProp,
+  RouteProp,
+  useNavigation,
+  useRoute,
+} from "@react-navigation/native";
 import { RootStackParamList } from "@/types";
 import { FeedPanel } from "@/components/panels";
+import { Plus } from "@tamagui/lucide-icons";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
 export default function ShelfScreen() {
+  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const scrollViewRef = useRef<Animated.ScrollView>(null);
   const scrollX = useSharedValue(0);
   const [tabLayouts, setTabLayouts] = useState<{ width: number; x: number }[]>(
@@ -27,13 +34,15 @@ export default function ShelfScreen() {
   const activeShelf = activeNook?.shelves.find(
     (shelf) => shelf.id === route.params.shelfId,
   );
+  const signerEnabled = useAppSelector(
+    (state) => state.user.user?.signerEnabled || false,
+  );
 
   const theme = useTheme();
 
   const scrollHandler = useAnimatedScrollHandler({
     onScroll: (event) => {
       scrollX.value = event.contentOffset.x;
-      const index = Math.round(event.contentOffset.x / SCREEN_WIDTH);
     },
   });
 
@@ -97,6 +106,22 @@ export default function ShelfScreen() {
 
   return (
     <View backgroundColor="$background" theme={activeNook.theme} height="100%">
+      <View
+        onPress={() =>
+          signerEnabled
+            ? navigation.navigate("CreatePost")
+            : navigation.navigate("EnableSigner")
+        }
+        position="absolute"
+        bottom="$5"
+        right="$5"
+        zIndex={1}
+        borderRadius="$20"
+        padding="$3"
+        backgroundColor="$color7"
+      >
+        <Plus size={24} />
+      </View>
       <YStack borderBottomWidth="$1" borderColor="$borderColor">
         <XStack
           paddingHorizontal="$5"

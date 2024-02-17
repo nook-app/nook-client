@@ -15,4 +15,6 @@ export type RootStackParamList = {
   };
   Notifications: undefined;
   Profile: undefined;
+  EnableSigner: undefined;
+  CreatePost: undefined;
 };
