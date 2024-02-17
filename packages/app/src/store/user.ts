@@ -29,6 +29,7 @@ export const userSlice = createSlice({
         state.activeNook = action.payload.nooks[0];
       }
       state.user = action.payload.user;
+      state.user.signerEnabled = false;
     },
     // TODO: Merge with setUserData
     setEntity: (state, action: PayloadAction<Entity>) => {

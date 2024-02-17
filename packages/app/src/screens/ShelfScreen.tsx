@@ -18,6 +18,7 @@ import {
 import { RootStackParamList } from "@/types";
 import { FeedPanel } from "@/components/panels";
 import { Plus } from "@tamagui/lucide-icons";
+import { CreatePostButton } from "@/components/actions/CreatePostButton";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
@@ -33,9 +34,6 @@ export default function ShelfScreen() {
   const activeNook = nooks.find((nook) => nook.id === route.params.nookId);
   const activeShelf = activeNook?.shelves.find(
     (shelf) => shelf.id === route.params.shelfId,
-  );
-  const signerEnabled = useAppSelector(
-    (state) => state.user.user?.signerEnabled || false,
   );
 
   const theme = useTheme();
@@ -106,22 +104,7 @@ export default function ShelfScreen() {
 
   return (
     <View backgroundColor="$background" theme={activeNook.theme} height="100%">
-      <View
-        onPress={() =>
-          signerEnabled
-            ? navigation.navigate("CreatePost")
-            : navigation.navigate("EnableSigner")
-        }
-        position="absolute"
-        bottom="$5"
-        right="$5"
-        zIndex={1}
-        borderRadius="$20"
-        padding="$3"
-        backgroundColor="$color7"
-      >
-        <Plus size={24} />
-      </View>
+      <CreatePostButton />
       <YStack borderBottomWidth="$1" borderColor="$borderColor">
         <XStack
           paddingHorizontal="$5"

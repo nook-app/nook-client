@@ -2,10 +2,19 @@ import { Button, Text, View, YStack } from "tamagui";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { NavigationProp, useNavigation } from "@react-navigation/native";
 import { RootStackParamList } from "@/types";
+import { useAppSelector } from "@/hooks/useAppSelector";
+import { EnableSignerModal } from "./EnableSignerModal";
 
 export const CreatePostModal = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const insets = useSafeAreaInsets();
+  const signerEnabled = useAppSelector(
+    (state) => state.user.user?.signerEnabled || false,
+  );
+
+  if (!signerEnabled) {
+    return <EnableSignerModal />;
+  }
 
   return (
     <YStack

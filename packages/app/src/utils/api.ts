@@ -1,7 +1,5 @@
 import { CONFIG } from "@/constants";
-import * as SecureStore from "expo-secure-store";
 import { Session } from "./session";
-import { Nook } from "@flink/api/data";
 import { GetUserResponse, SignerPublicData } from "@flink/api/types";
 
 export type SignInParams = {
@@ -11,7 +9,7 @@ export type SignInParams = {
 };
 
 export const signInWithFarcaster = async (params: SignInParams) => {
-  const response = await fetch(`${CONFIG.apiBaseUrl}/farcaster/login`, {
+  const response = await fetch(`${CONFIG.apiBaseUrl}/user/login`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -27,7 +25,7 @@ export const signInWithFarcaster = async (params: SignInParams) => {
 };
 
 export const refreshToken = async (session: Session) => {
-  const response = await fetch(`${CONFIG.apiBaseUrl}/token`, {
+  const response = await fetch(`${CONFIG.apiBaseUrl}/user/token`, {
     headers: {
       Authorization: `Bearer ${session.token}`,
     },

@@ -3,6 +3,7 @@ import { mongoPlugin, nookPlugin } from "./plugins";
 import { nookRoutes } from "./routes/nook";
 import { userRoutes } from "./routes/user";
 import fastifyJwt from "@fastify/jwt";
+import { farcasterRoutes } from "./routes/farcaster";
 
 const buildApp = () => {
   const app = fastify({
@@ -29,6 +30,7 @@ const buildApp = () => {
 
   app.register(nookRoutes);
   app.register(userRoutes);
+  app.register(farcasterRoutes);
 
   return app;
 };

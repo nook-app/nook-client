@@ -4,7 +4,11 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useState } from "react";
 import { getFarcasterSigner, validateFarcasterSigner } from "@/utils/api";
 import { Linking } from "react-native";
-import { NavigationProp, useNavigation } from "@react-navigation/native";
+import {
+  NavigationProp,
+  StackActions,
+  useNavigation,
+} from "@react-navigation/native";
 import { RootStackParamList } from "@/types";
 import { useAppSelector } from "@/hooks/useAppSelector";
 import { useAppDispatch } from "@/hooks/useAppDispatch";
@@ -26,7 +30,12 @@ export const EnableSignerModal = () => {
     setIsEnablingSigner(true);
     try {
       const signer = await getFarcasterSigner(session);
-      if (!signer || signer.state !== "pending") return;
+      if (signer.state === "completed") {
+        dispatch(setSignerEnabled(true));
+      }
+      if (signer.state !== "pending") {
+        return;
+      }
       Linking.openURL(signer.deeplinkUrl);
 
       let pollCount = 0;
@@ -67,7 +76,11 @@ export const EnableSignerModal = () => {
   };
 
   if (!session || signerEnabled) {
-    return null;
+    return (
+      <View>
+        <Text>Test</Text>
+      </View>
+    );
   }
 
   return (
@@ -110,7 +123,9 @@ export const EnableSignerModal = () => {
         >
           {isEnablingSigner ? <Spinner /> : "Enable Nook"}
         </Button>
-        <Button onPress={() => navigation.goBack()}>Go back</Button>
+        <Button onPress={() => navigation.dispatch(StackActions.pop(2))}>
+          Go back
+        </Button>
       </YStack>
     </YStack>
   );
