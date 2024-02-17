@@ -18,6 +18,7 @@ import { Navigator } from "./components/navigator/Navigator";
 import { AuthProvider } from "./context/auth";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 
 export const unstable_settings = {
   // Ensure that reloading on `/modal` keeps a back button present.
@@ -58,8 +59,10 @@ export function App() {
                 <ThemeProvider
                   value={colorScheme === "dark" ? DarkTheme : DefaultTheme}
                 >
-                  <StatusBar />
-                  <Navigator />
+                  <BottomSheetModalProvider>
+                    <StatusBar />
+                    <Navigator />
+                  </BottomSheetModalProvider>
                 </ThemeProvider>
               </TamaguiProvider>
             </AuthProvider>

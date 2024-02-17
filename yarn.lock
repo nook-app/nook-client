@@ -2817,10 +2817,9 @@ __metadata:
     "@types/react": "npm:~18.2.14"
     babel-preset-expo: "npm:^10.0.1"
     burnt: "npm:^0.12.2"
-    expo: "npm:50.0.6"
+    expo: "npm:50.0.7"
     expo-av: "npm:~13.10.5"
     expo-image: "npm:~1.10.6"
-    expo-linear-gradient: "npm:~12.7.1"
     expo-linking: "npm:~6.2.1"
     expo-secure-store: "npm:^12.8.1"
     expo-splash-screen: "npm:~0.26.4"
@@ -9099,14 +9098,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"expo-font@npm:~11.10.2":
-  version: 11.10.2
-  resolution: "expo-font@npm:11.10.2"
+"expo-font@npm:~11.10.3":
+  version: 11.10.3
+  resolution: "expo-font@npm:11.10.3"
   dependencies:
     fontfaceobserver: "npm:^2.1.0"
   peerDependencies:
     expo: "*"
-  checksum: 10c0/0a54c2037861ca17654759f097e6f5c47e707e86ec69343310cfbe8a703ea2d79caa0fc26d87b3bd7af18e1367ae6287a9de77a5780b1a0551e19f1957edbb69
+  checksum: 10c0/130a5bc34865a1f8340e3fde4d9d8c5d7969331fdcac4e7487abcfbcf15476c771ecde6545b6f23f2278f29f13b5cc9b830c261581f7117e432979e9a2f4a71b
   languageName: node
   linkType: hard
 
@@ -9127,15 +9126,6 @@ __metadata:
   peerDependencies:
     expo: "*"
   checksum: 10c0/d3699129ae1d536787f0e84f0e9e4cf5c1c99a6f8396057db6319de6485f8a832b98902aa13d71973c75fb9067b36290b1e9947a3fae79e6bf46348cf72c2ee5
-  languageName: node
-  linkType: hard
-
-"expo-linear-gradient@npm:~12.7.1":
-  version: 12.7.1
-  resolution: "expo-linear-gradient@npm:12.7.1"
-  peerDependencies:
-    expo: "*"
-  checksum: 10c0/3ddbe6db469ac337f205d47b0134bd75bfc492eed13be1ec8e6f9016c4deba5eca96f884d33bce186d02fe9897d68a726ad5acde82d14765b35f057fed558a0e
   languageName: node
   linkType: hard
 
@@ -9165,12 +9155,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"expo-modules-core@npm:1.11.8":
-  version: 1.11.8
-  resolution: "expo-modules-core@npm:1.11.8"
+"expo-modules-core@npm:1.11.9":
+  version: 1.11.9
+  resolution: "expo-modules-core@npm:1.11.9"
   dependencies:
     invariant: "npm:^2.2.4"
-  checksum: 10c0/9a949727f10eac0a264d07daf84770610ccff8aa1f24c51eef3283129f09c18024aaa356d96c6b1a5e5ed3ddb9f884fb953f3fedc70e70cb5ab217a059fe28ff
+  checksum: 10c0/4a4c4f7e267a5ff86aa0beb31c4f9935b06244947eb5c91a08b914648042071d346ce9281b7a61ca7bdde867c565fa24459ef70781da04aee956edd66dbe7682
   languageName: node
   linkType: hard
 
@@ -9225,9 +9215,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"expo@npm:50.0.6":
-  version: 50.0.6
-  resolution: "expo@npm:50.0.6"
+"expo@npm:50.0.7":
+  version: 50.0.7
+  resolution: "expo@npm:50.0.7"
   dependencies:
     "@babel/runtime": "npm:^7.20.0"
     "@expo/cli": "npm:0.17.5"
@@ -9238,15 +9228,15 @@ __metadata:
     babel-preset-expo: "npm:~10.0.1"
     expo-asset: "npm:~9.0.2"
     expo-file-system: "npm:~16.0.6"
-    expo-font: "npm:~11.10.2"
+    expo-font: "npm:~11.10.3"
     expo-keep-awake: "npm:~12.8.2"
     expo-modules-autolinking: "npm:1.10.3"
-    expo-modules-core: "npm:1.11.8"
+    expo-modules-core: "npm:1.11.9"
     fbemitter: "npm:^3.0.0"
     whatwg-url-without-unicode: "npm:8.0.0-3"
   bin:
     expo: bin/cli
-  checksum: 10c0/fa13bacfee467775312c6833038e49ccb08970db571a99d3ec13be5137a0f448c1b2f4ad53814622540988b923691711c50d6e45a69698fc946bb4d460832f14
+  checksum: 10c0/e84dc7a77e4481f81e6557a9f04430bfc837371aa41bf1e83ac54243b2004ef6560948136387db257bade67bc70f8ceb9367aa43509a749d31ad8610988e9e99
   languageName: node
   linkType: hard
 

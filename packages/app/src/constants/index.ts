@@ -25,6 +25,10 @@ export const CHANNELS = channels.reduce(
   {} as Record<string, (typeof channels)[0]>,
 );
 
+export const CHANNELS_LIST = channels.sort((a, b) =>
+  a.name.localeCompare(b.name),
+);
+
 export const DEV_SIGN_IN: SignInParams = {
   message:
     "localhost:3000 wants you to sign in with your Ethereum account:\n0x94Bac74eC80C25fd5F19A76F2cd74a46d6618c3A\n\nFarcaster Connect\n\nURI: http://localhost:3000\nVersion: 1\nChain ID: 10\nNonce: yRnR3Cv5FjrRQwAfl\nIssued At: 2024-02-02T23:29:10.600Z\nResources:\n- farcaster://fid/262426",

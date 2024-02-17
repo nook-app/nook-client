@@ -24,6 +24,7 @@ export const EnableSignerModal = () => {
     (state) => state.user.user?.signerEnabled || false,
   );
   const dispatch = useAppDispatch();
+  const activeNook = useAppSelector((state) => state.user.activeNook);
 
   const handleEnableSigner = async () => {
     if (!session) return;
@@ -86,10 +87,8 @@ export const EnableSignerModal = () => {
   return (
     <YStack
       flex={1}
-      justifyContent="flex-end"
-      alignItems="center"
       backgroundColor="$background"
-      theme="gray"
+      theme={activeNook?.theme}
       style={{
         paddingTop: insets.top,
         paddingBottom: insets.bottom,
@@ -97,6 +96,16 @@ export const EnableSignerModal = () => {
         paddingRight: insets.right,
       }}
     >
+      <View
+        flexDirection="row"
+        alignItems="center"
+        paddingHorizontal="$3"
+        height="$4"
+      >
+        <Text fontSize="$6" onPress={() => navigation.goBack()}>
+          Cancel
+        </Text>
+      </View>
       <View flexGrow={1} padding="$5" justifyContent="center" gap="$2">
         <Text fontSize="$8" fontWeight="700">
           Enable Nook
@@ -115,16 +124,12 @@ export const EnableSignerModal = () => {
         )}
         <Button
           onPress={handleEnableSigner}
-          theme="purple"
           disabled={isEnablingSigner}
           backgroundColor={
-            isEnablingSigner ? "$backgroundStrong" : "$background"
+            isEnablingSigner ? "$backgroundStrong" : "$backgroundFocus"
           }
         >
           {isEnablingSigner ? <Spinner /> : "Enable Nook"}
-        </Button>
-        <Button onPress={() => navigation.dispatch(StackActions.pop(2))}>
-          Go back
         </Button>
       </YStack>
     </YStack>

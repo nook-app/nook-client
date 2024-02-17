@@ -11,8 +11,9 @@ import { CONFIG } from "@/constants/index";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function LoginScreen() {
-  const { signIn, signInDev, error, isInitializing } = useAuth();
+  const { signIn, signInDev, error: authError, isInitializing } = useAuth();
   const [isLoggingIn, setIsLoggingIn] = useState(false);
+  const [error, setError] = useState<AuthClientError>();
   const insets = useSafeAreaInsets();
 
   const hasInitiatedConnectRef = useRef(false);
@@ -42,6 +43,7 @@ export default function LoginScreen() {
       [signIn],
     ),
     onError: useCallback((error: AuthClientError | undefined) => {
+      setError(error);
       setIsLoggingIn(false);
       hasInitiatedConnectRef.current = false;
     }, []),
@@ -95,9 +97,9 @@ export default function LoginScreen() {
         </Text>
       </View>
       <YStack padding="$5" width="100%" gap="$2">
-        {error && (
+        {(error || authError) && (
           <Text color="$red11" textAlign="center">
-            {error.message}
+            {error?.message || `${JSON.stringify(authError)}`}
           </Text>
         )}
         <Button

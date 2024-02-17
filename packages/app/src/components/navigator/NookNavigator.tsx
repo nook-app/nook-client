@@ -90,15 +90,7 @@ export function NookNavigator() {
         name="CreatePost"
         component={CreatePostModal}
         options={{
-          presentation: "transparentModal",
-          headerShown: false,
-        }}
-      />
-      <Stack.Screen
-        name="EnableSigner"
-        component={EnableSignerModal}
-        options={{
-          presentation: "transparentModal",
+          presentation: "fullScreenModal",
           headerShown: false,
         }}
       />
