@@ -41,7 +41,7 @@ export const refreshToken = async (session: Session) => {
 };
 
 export const getUserData = async (session: Session) => {
-  const response = await fetch(`${CONFIG.apiBaseUrl}/nooks`, {
+  const response = await fetch(`${CONFIG.apiBaseUrl}/user`, {
     headers: {
       Authorization: `Bearer ${session.token}`,
     },
