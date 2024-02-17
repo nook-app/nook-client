@@ -13,6 +13,9 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 export default function LoginScreen() {
   const { signIn, signInDev, error, isInitializing } = useAuth();
   const [isLoggingIn, setIsLoggingIn] = useState(false);
+  const [connectError, setConnectError] = useState<Error | undefined>(
+    undefined,
+  );
   const insets = useSafeAreaInsets();
 
   const hasInitiatedConnectRef = useRef(false);
@@ -40,8 +43,9 @@ export default function LoginScreen() {
       [signIn],
     ),
     onError: useCallback((error: AuthClientError | undefined) => {
-      console.error(error);
+      setConnectError(error);
       setIsLoggingIn(false);
+      hasInitiatedConnectRef.current = false;
     }, []),
   });
 

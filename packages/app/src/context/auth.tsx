@@ -77,7 +77,7 @@ function AuthProviderContent({ children }: AuthProviderProps) {
         dispatch(setEntity(session.entity));
       }
     } catch (error) {
-      setError(new Error(`Failed to initialize: ${(error as Error).message}`));
+      await removeSession();
     }
     setIsInitializing(false);
   }, [dispatch]);
