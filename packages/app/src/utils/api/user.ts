@@ -1,6 +1,5 @@
 import { CONFIG } from "@/constants";
 import { Session } from "../session";
-import { GetUserResponse } from "@flink/api/types";
 
 export type SignInParams = {
   message: string;
@@ -22,18 +21,4 @@ export const signInWithFarcaster = async (params: SignInParams) => {
   }
 
   return (await response.json()) as Session;
-};
-
-export const getUserData = async (session: Session) => {
-  const response = await fetch(`${CONFIG.apiBaseUrl}/user`, {
-    headers: {
-      Authorization: `Bearer ${session.token}`,
-    },
-  });
-
-  if (!response.ok) {
-    throw new Error(await response.text());
-  }
-
-  return (await response.json()) as GetUserResponse;
 };

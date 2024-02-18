@@ -40,11 +40,6 @@ export type TokenResponse = {
   expiresAt: number;
 };
 
-export type AuthResponse = TokenResponse & {
-  user: User;
-  entity: Entity;
-};
-
 export type GetContentRepliesBody = {
   contentId: string;
   cursor?: string;
@@ -59,6 +54,7 @@ export type SignerPublicData = {
 
 export type GetUserResponse = {
   user: User;
+  entity: Entity;
   nooks: Nook[];
 };
 

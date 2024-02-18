@@ -38,6 +38,12 @@ const entitySlice = createSlice({
         entityAdapter.addMany(state, action.payload.data);
       },
     );
+    builder.addMatcher(
+      api.endpoints.getUser.matchFulfilled,
+      (state, action) => {
+        entityAdapter.addOne(state, action.payload.entity);
+      },
+    );
   },
 });
 

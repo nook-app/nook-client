@@ -8,15 +8,14 @@ import {
   useState,
 } from "react";
 import { CONFIG, DEV_SIGN_IN } from "@/constants/index";
-import { setEntity, setUserData } from "@/store/user";
-import { useAppDispatch } from "@/hooks/useAppDispatch";
 import {
   updateSession,
   getSession,
   removeSession,
   Session,
 } from "@/utils/session";
-import { getUserData, SignInParams, signInWithFarcaster } from "@/utils/api";
+import { SignInParams, signInWithFarcaster } from "@/utils/api";
+import { api } from "@/store/api";
 
 type AuthContextValue = {
   session?: Session;
@@ -47,21 +46,20 @@ function AuthProviderContent({ children }: AuthProviderProps) {
   const [session, setSession] = useState<Session | undefined>(undefined);
   const [error, setError] = useState<Error | undefined>(undefined);
   const [isInitializing, setIsInitializing] = useState(true);
-  const dispatch = useAppDispatch();
+  const [getUser] = api.useLazyGetUserQuery();
 
   const signIn = useCallback(
     async (body: SignInParams) => {
       try {
         const session = await signInWithFarcaster(body);
         await updateSession(session);
-        dispatch(setUserData(await getUserData(session)));
-        dispatch(setEntity(session.entity));
         setSession(session);
+        await getUser(null);
       } catch (error) {
         setError(new Error(`Sign in failed: ${(error as Error).message}`));
       }
     },
-    [dispatch],
+    [getUser],
   );
 
   const signOut = useCallback(async () => {
@@ -74,14 +72,13 @@ function AuthProviderContent({ children }: AuthProviderProps) {
       const session = await getSession();
       if (session) {
         setSession(session);
-        dispatch(setUserData(await getUserData(session)));
-        dispatch(setEntity(session.entity));
+        await getUser(null);
       }
     } catch (error) {
       await removeSession();
     }
     setIsInitializing(false);
-  }, [dispatch]);
+  }, [getUser]);
 
   useEffect(() => {
     init();

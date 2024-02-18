@@ -1,8 +1,8 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { Nook, NookShelf, TEMPLATE_NOOKS } from "@flink/api/data";
-import { GetUserResponse } from "@flink/api/types";
 import { User } from "@flink/common/prisma/nook";
 import { Entity } from "@flink/common/types";
+import { api } from "./api";
 
 interface UserState {
   user?: User;
@@ -23,17 +23,6 @@ export const userSlice = createSlice({
   name: "user",
   initialState,
   reducers: {
-    setUserData: (state, action: PayloadAction<GetUserResponse>) => {
-      state.nooks = action.payload.nooks;
-      if (action.payload.nooks.length > 0) {
-        state.activeNook = action.payload.nooks[0];
-      }
-      state.user = action.payload.user;
-    },
-    // TODO: Merge with setUserData
-    setEntity: (state, action: PayloadAction<Entity>) => {
-      state.entity = action.payload;
-    },
     setActiveNook: (state, action: PayloadAction<string>) => {
       state.activeNook =
         TEMPLATE_NOOKS.find((nook) => nook.id === action.payload) ||
@@ -50,14 +39,24 @@ export const userSlice = createSlice({
       state.user.signerEnabled = action.payload;
     },
   },
+  extraReducers: (builder) => {
+    builder.addMatcher(
+      api.endpoints.getUser.matchFulfilled,
+      (state, action) => {
+        state.user = action.payload.user;
+        state.entity = action.payload.entity;
+        state.nooks = action.payload.nooks;
+        state.activeNook = action.payload.nooks[0];
+        if (state.activeNook) {
+          state.activeShelves[state.activeNook.id] =
+            state.activeNook.shelves[0];
+        }
+      },
+    );
+  },
 });
 
-export const {
-  setUserData,
-  setEntity,
-  setActiveNook,
-  setActiveShelf,
-  setSignerEnabled,
-} = userSlice.actions;
+export const { setActiveNook, setActiveShelf, setSignerEnabled } =
+  userSlice.actions;
 
 export default userSlice.reducer;

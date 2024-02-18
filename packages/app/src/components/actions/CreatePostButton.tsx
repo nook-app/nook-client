@@ -5,6 +5,7 @@ import { View } from "tamagui";
 
 export const CreatePostButton = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+
   return (
     <View
       onPress={() => navigation.navigate("CreatePost")}
@@ -15,6 +16,11 @@ export const CreatePostButton = () => {
       borderRadius="$20"
       padding="$3"
       backgroundColor="$color7"
+      pressStyle={{
+        backgroundColor: "$color8",
+        padding: "$2.5",
+      }}
+      animation="bouncy"
     >
       <Plus size={24} />
     </View>

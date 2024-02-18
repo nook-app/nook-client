@@ -7,6 +7,7 @@ import {
   GetEntitiesResponse,
   GetPanelParams,
   GetPanelQuery,
+  GetUserResponse,
 } from "@flink/api/types";
 import { CONFIG } from "@/constants/index";
 import { getSession } from "@/utils/session";
@@ -26,6 +27,9 @@ export const api = createApi({
   reducerPath: "api",
   baseQuery,
   endpoints: (builder) => ({
+    getUser: builder.query<GetUserResponse, null>({
+      query: () => "/user",
+    }),
     getPanel: builder.query<ContentFeed, GetPanelParams & GetPanelQuery>({
       query: (request) => ({
         url: `/nooks/${request.nookId}/shelves/${request.shelfId}/panels/${request.panelId}`,

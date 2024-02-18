@@ -7,7 +7,6 @@ import {
 } from "@farcaster/auth-client";
 import {
   SignInWithFarcasterRequest,
-  AuthResponse,
   TokenResponse,
   GetUserResponse,
 } from "../../types";
@@ -33,7 +32,7 @@ export class UserService {
 
   async signInWithFarcaster(
     request: SignInWithFarcasterRequest,
-  ): Promise<AuthResponse | undefined> {
+  ): Promise<TokenResponse | undefined> {
     const verifyResult = await this.farcasterAuthClient.verifySignInMessage({
       domain: process.env.SIWF_DOMAIN || "localhost:3000",
       ...request,
@@ -92,8 +91,6 @@ export class UserService {
     const token = this.jwt.sign(jwtPayload, { expiresIn });
 
     return {
-      user,
-      entity,
       token,
       refreshToken: user.refreshToken,
       expiresAt,
@@ -154,8 +151,14 @@ export class UserService {
       })
       .toArray();
 
+    const entity = await this.client.findEntity(new ObjectId(user.id));
+    if (!entity) {
+      return;
+    }
+
     return {
       user,
+      entity,
       nooks,
     };
   }

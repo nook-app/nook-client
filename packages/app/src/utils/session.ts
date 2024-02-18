@@ -1,12 +1,10 @@
 import * as SecureStore from "expo-secure-store";
 import { CONFIG } from "@/constants";
-import { Entity } from "@flink/common/types";
 
 export type Session = {
   token: string;
   refreshToken: string;
   expiresAt: number;
-  entity: Entity;
 };
 
 const SESSION_KEY = "session";
