@@ -1,13 +1,13 @@
-import { ScrollView, Spinner, Text, View } from "tamagui";
+import { Spinner, Text, View } from "tamagui";
 import { ContentFeedItem } from "@flink/api/types";
-import { ContentType, PostData } from "@flink/common/types";
-import { FeedPost } from "./post";
 import { FlatList, ViewToken } from "react-native";
 import { useCallback, useEffect, useState } from "react";
-import { TouchableWithoutFeedback } from "react-native-gesture-handler";
 import { NavigationProp, useNavigation } from "@react-navigation/native";
 import { RootStackParamList } from "@/types";
 import { nookApi } from "@/store/apis/nookApi";
+import { ContentFeedArgs, ContentType, PostData } from "@flink/common/types";
+import { TouchableWithoutFeedback } from "react-native-gesture-handler";
+import { ContentPostCompact } from "../content/postCompact";
 
 export const renderFeedItem = (
   navigation: NavigationProp<RootStackParamList>,
@@ -23,21 +23,22 @@ export const renderFeedItem = (
           })
         }
       >
-        <FeedPost key={typedItem._id} item={typedItem} />
+        <ContentPostCompact key={typedItem._id} item={typedItem} />
       </TouchableWithoutFeedback>
     );
   }
   return <></>;
 };
 
-export const ContentReplies = ({ contentId }: { contentId: string }) => {
+export const ContentFeedPanel = ({ args }: { args: ContentFeedArgs }) => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const [cursor, setCursor] = useState<string | undefined>(undefined);
   const [accumulatedData, setAccumulatedData] = useState<ContentFeedItem[]>([]);
+  const [refreshing, setRefreshing] = useState(false);
 
-  const { data, error, isLoading, isFetching } =
-    nookApi.useGetContentRepliesQuery({
-      contentId,
+  const { data, error, isLoading, isFetching, refetch } =
+    nookApi.useGetContentFeedQuery({
+      ...args,
       cursor,
     });
 
@@ -51,6 +52,12 @@ export const ContentReplies = ({ contentId }: { contentId: string }) => {
       }
     }
   }, [data, isLoading]);
+
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    setCursor(undefined);
+    refetch().finally(() => setRefreshing(false));
+  }, [refetch]);
 
   const viewabilityConfig = {
     itemVisiblePercentThreshold: 50, // Adjust as needed
@@ -86,7 +93,6 @@ export const ContentReplies = ({ contentId }: { contentId: string }) => {
         padding="$3"
         alignItems="center"
         backgroundColor="$background"
-        alignSelf="center"
         justifyContent="center"
         height="100%"
       >
@@ -101,7 +107,6 @@ export const ContentReplies = ({ contentId }: { contentId: string }) => {
 
   return (
     <FlatList
-      scrollEnabled={false}
       data={accumulatedData}
       renderItem={({ item }) => renderFeedItem(navigation, item)}
       keyExtractor={(item) => item._id}
@@ -114,6 +119,8 @@ export const ContentReplies = ({ contentId }: { contentId: string }) => {
           </View>
         ) : null
       }
+      onRefresh={onRefresh}
+      refreshing={refreshing}
     />
   );
 };

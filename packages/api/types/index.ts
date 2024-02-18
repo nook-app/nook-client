@@ -1,6 +1,5 @@
-import { Content, ContentData, Entity } from "@flink/common/types";
+import { Content, ContentData, Entity, Nook } from "@flink/common/types";
 import { User } from "@flink/common/prisma/nook";
-import { Nook } from "../data";
 
 export type ContentFeedItem<T = ContentData> = Content<T> & {
   _id: string;
@@ -13,21 +12,6 @@ export type ContentFeed = {
   nextCursor?: string;
 };
 
-export type GetPanelParams = {
-  nookId: string;
-  shelfId: string;
-  panelId: string;
-};
-
-export type GetPanelQuery = {
-  cursor?: string;
-};
-
-export type GetPanelResponse = {
-  type: string;
-  data: ContentFeed;
-};
-
 export type SignInWithFarcasterRequest = {
   message: string;
   signature: `0x${string}`;
@@ -38,11 +22,6 @@ export type TokenResponse = {
   refreshToken: string;
   token: string;
   expiresAt: number;
-};
-
-export type GetContentRepliesBody = {
-  contentId: string;
-  cursor?: string;
 };
 
 export type SignerPublicData = {

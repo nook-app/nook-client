@@ -1,7 +1,6 @@
 import { ContentFeedItem } from "@flink/api/types";
 import { PostData } from "@flink/common/types";
 import { Text, View, XStack, YStack } from "tamagui";
-import { Heart, MessageSquare, RefreshCw, Tv } from "@tamagui/lucide-icons";
 import { Embed } from "@/components/embeds";
 import { EntityAvatar } from "@/components/entity/avatar";
 import {
@@ -12,8 +11,9 @@ import {
 import { EntityDisplay } from "../entity/display";
 import { CHANNELS } from "@/constants";
 import { Image } from "expo-image";
+import { Heart, MessageSquare, RefreshCw } from "@tamagui/lucide-icons";
 
-export const FeedPost = ({
+export const ContentPostCompact = ({
   item: { data, timestamp, engagement, tips },
 }: { item: ContentFeedItem<PostData> }) => {
   const degenTips =

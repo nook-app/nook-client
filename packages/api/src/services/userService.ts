@@ -10,10 +10,9 @@ import {
   TokenResponse,
   GetUserResponse,
 } from "../../types";
-import { Entity } from "@flink/common/types";
+import { Entity, Nook } from "@flink/common/types";
 import { PrismaClient } from "@flink/common/prisma/nook";
 import { ObjectId } from "mongodb";
-import { Nook } from "../../data";
 
 export class UserService {
   private client: MongoClient;

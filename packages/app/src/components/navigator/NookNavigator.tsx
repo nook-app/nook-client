@@ -12,7 +12,6 @@ import { useAppSelector } from "@/store/hooks/useAppSelector";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import ContentScreen from "@/screens/ContentScreen";
 import { RootStackParamList } from "@/types";
-import { EnableSignerModal } from "@/modals/EnableSignerModal";
 import { CreatePostModal } from "@/modals/CreatePostModal";
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -49,7 +48,7 @@ export function NookNavigator() {
   const activeNook = useAppSelector((state) => state.user.activeNook);
   const activeShelves = useAppSelector((state) => state.user.activeShelves);
   const activeShelf = activeNook
-    ? activeShelves[activeNook.id] || activeNook.shelves[0]
+    ? activeShelves[activeNook.slug] || activeNook.shelves[0]
     : undefined;
 
   return (
@@ -57,7 +56,7 @@ export function NookNavigator() {
       <Stack.Screen
         name="Shelf"
         component={ShelfScreen}
-        initialParams={{ nookId: activeNook?.id, shelfId: activeShelf?.id }}
+        initialParams={{ nookId: activeNook?.slug, shelfId: activeShelf?.slug }}
         options={{
           title: activeShelf?.name,
           headerLeft: () => <DrawerToggleButton />,

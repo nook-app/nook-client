@@ -1,13 +1,13 @@
 import { ContentFeedItem } from "@flink/api/types";
-import { PostData } from "@flink/common/types";
+import { ContentType, PostData, TopicType } from "@flink/common/types";
 import { ScrollView, Text, View, XStack, YStack } from "tamagui";
 import { Embed } from "@/components/embeds";
-import { ContentReplies } from "@/components/feed";
 import { EntityAvatar } from "@/components/entity/avatar";
 import { PostContent, formatTipsAmount } from "@/components/utils";
 import { EntityDisplay } from "../entity/display";
 import { CHANNELS } from "@/constants";
 import { Image } from "expo-image";
+import { ContentFeedPanel } from "../panels/contentFeed";
 
 export const ContentPost = ({
   item: { data, engagement, tips },
@@ -82,7 +82,27 @@ export const ContentPost = ({
           )}
         </XStack>
       </YStack>
-      <ContentReplies contentId={data.contentId} />
+      <ScrollView
+        horizontal
+        contentContainerStyle={{
+          justifyContent: "center",
+          width: "100%",
+        }}
+      >
+        <ContentFeedPanel
+          args={{
+            filter: {
+              type: ContentType.REPLY,
+              deletedAt: null,
+              topics: {
+                type: TopicType.TARGET_CONTENT,
+                value: data.contentId,
+              },
+            },
+            sort: "engagement.likes",
+          }}
+        />
+      </ScrollView>
     </ScrollView>
   );
 };

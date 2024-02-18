@@ -1,9 +1,13 @@
 import { FastifyInstance } from "fastify";
 import { MongoClient, MongoCollection } from "@flink/common/mongo";
-import { Content, ContentData, Entity } from "@flink/common/types";
+import {
+  Content,
+  ContentData,
+  ContentFeedArgs,
+  Entity,
+} from "@flink/common/types";
 import { ContentFeed, ContentFeedItem } from "../../types";
 import { ObjectId } from "mongodb";
-import { ContentFeedArgs } from "../../data";
 
 const PAGE_SIZE = 25;
 

@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "build": "tsc",
-    "reset:mongo": "tsc && node ./dist/reset-mongo.js"
+    "reset:mongo": "tsc && node ./dist/reset-mongo.js",
+    "setup:nooks": "tsc && node ./dist/setup-nooks.js"
   },
   "dependencies": {
     "@flink/common": "*"

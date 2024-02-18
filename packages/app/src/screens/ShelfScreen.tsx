@@ -1,6 +1,6 @@
 import { useRef, useState } from "react";
 import { Dimensions } from "react-native";
-import { Button, View, XStack, YStack, useTheme } from "tamagui";
+import { View, XStack, YStack, useTheme } from "tamagui";
 import Animated, {
   useSharedValue,
   useAnimatedScrollHandler,
@@ -16,8 +16,7 @@ import {
   useRoute,
 } from "@react-navigation/native";
 import { RootStackParamList } from "@/types";
-import { FeedPanel } from "@/components/panels";
-import { Plus } from "@tamagui/lucide-icons";
+import { Panel } from "@/components/panels";
 import { CreatePostButton } from "@/components/actions/CreatePostButton";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
@@ -31,9 +30,9 @@ export default function ShelfScreen() {
   );
   const route = useRoute<RouteProp<RootStackParamList, "Shelf">>();
   const nooks = useAppSelector((state) => state.user.nooks);
-  const activeNook = nooks.find((nook) => nook.id === route.params.nookId);
+  const activeNook = nooks.find((nook) => nook.slug === route.params.nookId);
   const activeShelf = activeNook?.shelves.find(
-    (shelf) => shelf.id === route.params.shelfId,
+    (shelf) => shelf.slug === route.params.shelfId,
   );
 
   const theme = useTheme();
@@ -114,7 +113,7 @@ export default function ShelfScreen() {
         >
           {activeShelf.panels.map((panel, i) => (
             <View
-              key={panel.id}
+              key={panel.slug}
               onLayout={(event) => {
                 const { width, x } = event.nativeEvent.layout;
                 const newLayouts = [...tabLayouts];
@@ -149,7 +148,7 @@ export default function ShelfScreen() {
       >
         {activeShelf.panels.map((panel) => (
           <View
-            key={panel.id}
+            key={panel.slug}
             style={{
               width: SCREEN_WIDTH,
               justifyContent: "center",
@@ -157,12 +156,7 @@ export default function ShelfScreen() {
             }}
           >
             <View width="100%">
-              <FeedPanel
-                key={`${activeNook.id}-${activeShelf.id}-${panel.id}`}
-                nookId={activeNook.id}
-                shelfId={activeShelf.id}
-                panelId={panel.id}
-              />
+              <Panel panel={panel} />
             </View>
           </View>
         ))}

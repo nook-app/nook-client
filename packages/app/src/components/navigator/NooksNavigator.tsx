@@ -25,7 +25,7 @@ export function NooksNavigator() {
   const activeNook = useAppSelector((state) => state.user.activeNook);
   const activeShelves = useAppSelector((state) => state.user.activeShelves);
   const activeShelf = activeNook
-    ? activeShelves[activeNook.id] || activeNook.shelves[0]
+    ? activeShelves[activeNook.slug] || activeNook.shelves[0]
     : undefined;
 
   return (
@@ -43,18 +43,18 @@ export function NooksNavigator() {
               <YStack gap="$2" padding="$2">
                 {nooks.map((nook) => (
                   <View
-                    key={nook.id}
+                    key={nook.slug}
                     padding="$2"
                     justifyContent="center"
                     alignItems="center"
                     borderRadius="$4"
                     backgroundColor={
-                      nook.id === activeNook?.id
+                      nook.slug === activeNook?.slug
                         ? "$backgroundFocus"
                         : undefined
                     }
                     onPress={() => {
-                      dispatch(setActiveNook(nook.id));
+                      dispatch(setActiveNook(nook.slug));
                       navigation.dispatch(
                         CommonActions.reset({
                           index: 0,
@@ -62,10 +62,10 @@ export function NooksNavigator() {
                             {
                               name: "Nook",
                               params: {
-                                nookId: nook.id,
+                                nookId: nook.slug,
                                 shelfId:
-                                  activeShelves[nook.id]?.id ||
-                                  nook.shelves[0].id,
+                                  activeShelves[nook.slug]?.slug ||
+                                  nook.shelves[0].slug,
                               },
                             },
                           ],
@@ -120,22 +120,24 @@ export function NooksNavigator() {
                 </YStack>
                 {activeNook?.shelves.map((shelf) => (
                   <View
-                    key={shelf.id}
+                    key={shelf.slug}
                     padding="$2"
                     backgroundColor={
-                      activeShelf?.id === shelf.id ? "$color5" : "$gray4"
+                      activeShelf?.slug === shelf.slug ? "$color5" : "$gray4"
                     }
                     borderRadius="$4"
                     onPress={() => {
-                      dispatch(setActiveShelf(shelf.id));
+                      dispatch(setActiveShelf(shelf.slug));
                       navigation.navigate("Shelf", {
-                        nookId: activeNook.id,
-                        shelfId: shelf.id,
+                        nookId: activeNook.slug,
+                        shelfId: shelf.slug,
                       });
                     }}
                   >
                     <Text
-                      fontWeight={activeShelf?.id === shelf.id ? "700" : "500"}
+                      fontWeight={
+                        activeShelf?.slug === shelf.slug ? "700" : "500"
+                      }
                     >
                       {shelf.name}
                     </Text>
@@ -152,8 +154,8 @@ export function NooksNavigator() {
         name="Nook"
         component={NookNavigator}
         initialParams={{
-          nookId: activeNook?.id,
-          shelfId: activeShelf?.id,
+          nookId: activeNook?.slug,
+          shelfId: activeShelf?.slug,
         }}
         options={{ headerShown: false }}
       />

@@ -2,24 +2,24 @@ import { createApi } from "@reduxjs/toolkit/query/react";
 import {
   ContentFeed,
   ContentFeedItem,
-  GetContentRepliesBody,
   GetEntitiesRequest,
   GetEntitiesResponse,
-  GetPanelParams,
-  GetPanelQuery,
 } from "@flink/api/types";
 import { baseQuery } from "@/store/utils";
+import { ContentFeedArgs } from "@flink/common/types";
 
 export const nookApi = createApi({
   reducerPath: "nookApi",
   baseQuery,
   endpoints: (builder) => ({
-    getPanel: builder.query<ContentFeed, GetPanelParams & GetPanelQuery>({
+    getContentFeed: builder.query<
+      ContentFeed,
+      ContentFeedArgs & { cursor?: string }
+    >({
       query: (request) => ({
-        url: `/nooks/${request.nookId}/shelves/${request.shelfId}/panels/${request.panelId}`,
-        method: "GET",
-        params: { cursor: request.cursor },
-        headers: {},
+        url: "/content/feed",
+        method: "POST",
+        body: request,
       }),
     }),
     getContent: builder.query<ContentFeedItem, string>({
@@ -27,13 +27,6 @@ export const nookApi = createApi({
         url: "/content",
         method: "POST",
         body: { contentId },
-      }),
-    }),
-    getContentReplies: builder.query<ContentFeed, GetContentRepliesBody>({
-      query: (request) => ({
-        url: "/content/replies",
-        method: "POST",
-        body: request,
       }),
     }),
     getEntities: builder.query<GetEntitiesResponse, GetEntitiesRequest>({
