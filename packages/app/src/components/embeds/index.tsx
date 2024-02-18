@@ -1,45 +1,29 @@
 import { EmbedImage } from "./image";
 import { EmbedQuotePost } from "./quote";
-import {
-  Content,
-  ContentData,
-  ContentType,
-  Entity,
-  PostData,
-  UrlMetadata,
-} from "@flink/common/types";
+import { ContentType, PostData, UrlMetadata } from "@flink/common/types";
 import { Text } from "tamagui";
 import { EmbedFrame } from "./frame";
 import { Linking } from "react-native";
 import { EmbedUrl } from "./url";
 import { EmbedTwitter } from "./twitter";
 import { EmbedVideo } from "./video";
+import { selectContentById } from "@/store/content";
+import { store } from "@/store";
 
 export const Embed = ({
   data,
   embed,
-  entityMap,
-  contentMap,
 }: {
   data: PostData;
   embed: string;
-  entityMap: Record<string, Entity>;
-  contentMap: Record<string, Content<ContentData>>;
 }) => {
-  const content = contentMap[embed];
+  const content = selectContentById(store.getState(), embed);
   if (content) {
     switch (content.type) {
       case ContentType.POST:
       case ContentType.REPLY: {
         const data = content.data as PostData;
-        return (
-          <EmbedQuotePost
-            key={embed}
-            data={data}
-            entityMap={entityMap}
-            contentMap={contentMap}
-          />
-        );
+        return <EmbedQuotePost key={embed} data={data} />;
       }
       case ContentType.URL: {
         const metadata = content.data as UrlMetadata;

@@ -10,11 +10,8 @@ import { CHANNELS } from "@/constants";
 import { Image } from "expo-image";
 
 export const ContentPost = ({
-  item: { data, entityMap, contentMap },
+  item: { data, engagement, tips },
 }: { item: ContentFeedItem<PostData> }) => {
-  const engagement = contentMap[data.contentId].engagement;
-  const tips = contentMap[data.contentId].tips;
-  const entity = entityMap[data.entityId.toString()];
   const degenTips =
     tips["chain://eip155:8453/erc20:0xc9034c3e7f58003e6ae0c8438e7c8f4598d5acaa"]
       ?.amount || 0;
@@ -28,18 +25,15 @@ export const ContentPost = ({
         borderBottomWidth="$0.5"
       >
         <XStack gap="$2">
-          <EntityAvatar entity={entity} />
-          <EntityDisplay entity={entity} orientation="vertical" />
-        </XStack>
-        <PostContent data={data} entityMap={entityMap} />
-        {data.embeds.map((embed, i) => (
-          <Embed
-            key={embed}
-            embed={embed}
-            data={data}
-            entityMap={entityMap}
-            contentMap={contentMap}
+          <EntityAvatar entityId={data.entityId.toString()} />
+          <EntityDisplay
+            entityId={data.entityId.toString()}
+            orientation="vertical"
           />
+        </XStack>
+        <PostContent data={data} />
+        {data.embeds.map((embed, i) => (
+          <Embed key={embed} embed={embed} data={data} />
         ))}
         <XStack gap="$1.5" alignItems="center">
           <Text color="$gray11">

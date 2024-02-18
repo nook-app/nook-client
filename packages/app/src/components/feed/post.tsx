@@ -14,11 +14,8 @@ import { CHANNELS } from "@/constants";
 import { Image } from "expo-image";
 
 export const FeedPost = ({
-  item: { data, timestamp, entityMap, contentMap },
+  item: { data, timestamp, engagement, tips },
 }: { item: ContentFeedItem<PostData> }) => {
-  const engagement = contentMap[data.contentId].engagement;
-  const tips = contentMap[data.contentId].tips;
-  const entity = entityMap[data.entityId.toString()];
   const degenTips =
     tips["chain://eip155:8453/erc20:0xc9034c3e7f58003e6ae0c8438e7c8f4598d5acaa"]
       ?.amount || 0;
@@ -31,10 +28,10 @@ export const FeedPost = ({
       gap="$2"
     >
       <View width="$3.5">
-        <EntityAvatar entity={entity} />
+        <EntityAvatar entityId={data.entityId?.toString()} />
       </View>
       <YStack flex={1} gap="$0.5">
-        <EntityDisplay entity={entity} />
+        <EntityDisplay entityId={data.entityId?.toString()} />
         <XStack alignItems="center" gap="$1.5" paddingBottom="$2">
           <Text color="$gray11">
             {`${formatTimeAgo(timestamp as unknown as string)} ago`}
@@ -54,15 +51,9 @@ export const FeedPost = ({
             </>
           )}
         </XStack>
-        <PostContent data={data} entityMap={entityMap} />
+        <PostContent data={data} />
         {data.embeds.map((embed, i) => (
-          <Embed
-            key={embed}
-            embed={embed}
-            data={data}
-            entityMap={entityMap}
-            contentMap={contentMap}
-          />
+          <Embed key={embed} embed={embed} data={data} />
         ))}
         <XStack justifyContent="space-between" marginTop="$2" width="$20">
           <View flexDirection="row" alignItems="center" gap="$2" width="$5">

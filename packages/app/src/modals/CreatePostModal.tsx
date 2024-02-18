@@ -61,12 +61,12 @@ export const CreatePostModal = () => {
 
   const handleCreatePost = async () => {
     setIsPosting(true);
-    const { contentId } = await createFarcasterPost(message, channel?.id);
+    const { contentId } = await createFarcasterPost(message, channel?.url);
 
     let attempts = 0;
 
     const executePoll = async () => {
-      if (attempts < 1) {
+      if (attempts < 30) {
         try {
           const { data } = await fetchContent(contentId);
           if (data) {
@@ -139,7 +139,7 @@ export const CreatePostModal = () => {
                 justifyContent="center"
                 alignItems="center"
               >
-                <EntityAvatar entity={entity} size="$4" />
+                <EntityAvatar entityId={entity?._id.toString()} size="$4" />
               </View>
               <YStack>
                 <Button

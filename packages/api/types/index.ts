@@ -4,8 +4,8 @@ import { Nook } from "../data";
 
 export type ContentFeedItem<T = ContentData> = Content<T> & {
   _id: string;
-  entityMap: Record<string, Entity>;
-  contentMap: Record<string, Content<ContentData>>;
+  entities: Entity[];
+  contents: Content<ContentData>[];
 };
 
 export type ContentFeed = {
@@ -50,11 +50,6 @@ export type GetContentRepliesBody = {
   cursor?: string;
 };
 
-export type GetContentRepliesResponse = {
-  data: ContentFeedItem[];
-  nextCursor?: string;
-};
-
 export type SignerPublicData = {
   publicKey: string;
   token: string;
@@ -65,4 +60,12 @@ export type SignerPublicData = {
 export type GetUserResponse = {
   user: User;
   nooks: Nook[];
+};
+
+export type GetEntitiesRequest = {
+  entityIds: string[];
+};
+
+export type GetEntitiesResponse = {
+  data: Entity[];
 };

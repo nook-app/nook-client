@@ -1,10 +1,14 @@
-import { Entity } from "@flink/common/types";
+import { store } from "@/store";
+import { selectEntityById } from "@/store/entity";
 import { Avatar } from "tamagui";
 
 export const EntityAvatar = ({
-  entity,
+  entityId,
   size = "$3.5",
-}: { entity?: Entity; size?: string }) => {
+}: { entityId?: string; size?: string }) => {
+  const entity = entityId
+    ? selectEntityById(store.getState(), entityId.toString())
+    : undefined;
   return (
     <Avatar circular size={size}>
       <Avatar.Image src={entity?.farcaster.pfp} />

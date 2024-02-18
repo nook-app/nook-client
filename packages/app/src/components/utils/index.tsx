@@ -2,6 +2,8 @@ import { Entity, PostData } from "@flink/common/types";
 import { Linking } from "react-native";
 import { Text } from "tamagui";
 import { Buffer } from "buffer";
+import { selectEntityById } from "@/store/entity";
+import { store } from "@/store";
 
 const isWarpcastUrl = (url: string) => {
   return (
@@ -51,11 +53,10 @@ export function formatTipsAmount(amount: number): string {
 
 export const PostContent = ({
   data,
-  entityMap,
 }: {
   data: PostData;
-  entityMap: Record<string, Entity>;
 }) => {
+  const state = store.getState();
   const textParts = [];
 
   const textBuffer = Buffer.from(data.text.replaceAll(/\uFFFC/g, ""), "utf-8");
@@ -106,7 +107,10 @@ export const PostContent = ({
     (a, b) => b.position - a.position,
   );
   for (const mention of sortedMentions) {
-    const mentionedEntity = entityMap[mention.entityId.toString()];
+    const mentionedEntity = selectEntityById(
+      state,
+      mention.entityId.toString(),
+    );
     const label = `@${
       mentionedEntity?.farcaster?.username ||
       mentionedEntity?.farcaster?.fid ||

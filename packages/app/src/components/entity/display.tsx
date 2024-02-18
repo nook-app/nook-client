@@ -1,11 +1,16 @@
-import { Entity } from "@flink/common/types";
+import { store } from "@/store";
+import { selectEntityById } from "@/store/entity";
 import { Text } from "tamagui";
 import { XStack, YStack } from "tamagui";
 
 export const EntityDisplay = ({
-  entity,
+  entityId,
   orientation = "horizontal",
-}: { entity: Entity; orientation?: "horizontal" | "vertical" }) => {
+}: { entityId: string; orientation?: "horizontal" | "vertical" }) => {
+  const entity = entityId
+    ? selectEntityById(store.getState(), entityId.toString())
+    : undefined;
+
   const Stack = orientation === "horizontal" ? XStack : YStack;
 
   let displayName = entity?.farcaster?.displayName;

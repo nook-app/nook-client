@@ -1,4 +1,4 @@
-import { Content, ContentData, Entity, PostData } from "@flink/common/types";
+import { Entity, PostData } from "@flink/common/types";
 import { Text, XStack, YStack } from "tamagui";
 import { ReactNode } from "react";
 import { EmbedImage } from "./image";
@@ -7,18 +7,14 @@ import { TouchableWithoutFeedback } from "react-native-gesture-handler";
 import { PostContent } from "@/components/utils";
 import { NavigationProp, useNavigation } from "@react-navigation/native";
 import { RootStackParamList } from "@/types";
+import { EntityDisplay } from "../entity/display";
 
 export const EmbedQuotePost = ({
   data,
-  entityMap,
-  contentMap,
 }: {
   data: PostData;
-  entityMap: Record<string, Entity>;
-  contentMap: Record<string, Content<ContentData>>;
 }) => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
-  const entity = entityMap[data.entityId.toString()];
   return (
     <TouchableWithoutFeedback
       onPress={() =>
@@ -27,8 +23,8 @@ export const EmbedQuotePost = ({
         })
       }
     >
-      <EmbedQuote entity={entity}>
-        <PostContent data={data} entityMap={entityMap} />
+      <EmbedQuote entityId={data.entityId.toString()}>
+        <PostContent data={data} />
         {data.embeds.map((embed) => {
           if (embed.includes("imgur.com")) {
             return <EmbedImage key={embed} embed={embed} />;
@@ -41,10 +37,10 @@ export const EmbedQuotePost = ({
 };
 
 export const EmbedQuote = ({
-  entity,
+  entityId,
   children,
 }: {
-  entity: Entity;
+  entityId: string;
   children: ReactNode;
 }) => {
   return (
@@ -57,14 +53,8 @@ export const EmbedQuote = ({
       gap="$2"
     >
       <XStack gap="$1" alignItems="center">
-        <EntityAvatar entity={entity} size="$1" />
-        {entity?.farcaster.displayName && (
-          <Text fontWeight="700">{entity.farcaster.displayName}</Text>
-        )}
-        {entity?.farcaster.username && (
-          <Text>{`@${entity.farcaster.username}`}</Text>
-        )}
-        {!entity && <Text fontWeight="700">Unknown</Text>}
+        <EntityAvatar entityId={entityId} size="$1" />
+        <EntityDisplay entityId={entityId} orientation="horizontal" />
       </XStack>
       {children}
     </YStack>

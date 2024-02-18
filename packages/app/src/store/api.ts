@@ -3,6 +3,8 @@ import {
   ContentFeed,
   ContentFeedItem,
   GetContentRepliesBody,
+  GetEntitiesRequest,
+  GetEntitiesResponse,
   GetPanelParams,
   GetPanelQuery,
 } from "@flink/api/types";
@@ -42,6 +44,13 @@ export const api = createApi({
     getContentReplies: builder.query<ContentFeed, GetContentRepliesBody>({
       query: (request) => ({
         url: "/content/replies",
+        method: "POST",
+        body: request,
+      }),
+    }),
+    getEntities: builder.query<GetEntitiesResponse, GetEntitiesRequest>({
+      query: (request) => ({
+        url: "/entities",
         method: "POST",
         body: request,
       }),

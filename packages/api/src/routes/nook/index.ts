@@ -2,6 +2,7 @@ import { FastifyInstance } from "fastify";
 import { NookService } from "../../services/nookService";
 import {
   GetContentRepliesBody,
+  GetEntitiesRequest,
   GetPanelParams,
   GetPanelQuery,
 } from "../../../types";
@@ -63,6 +64,14 @@ export const nookRoutes = async (fastify: FastifyInstance) => {
           { filter, sort: "engagement.likes" },
           request.body.cursor,
         );
+      },
+    );
+
+    fastify.post<{ Body: GetEntitiesRequest }>(
+      "/entities",
+      async (request, reply) => {
+        const entities = await nookService.getEntities(request.body.entityIds);
+        return reply.send({ data: entities });
       },
     );
   });

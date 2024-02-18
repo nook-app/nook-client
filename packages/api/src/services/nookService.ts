@@ -59,43 +59,37 @@ export class NookService {
       .limit(PAGE_SIZE)
       .toArray();
 
-    const { contentMap, entityMap } =
-      await this.getContentAndEntityMap(content);
-
-    const getRelevantEntityMap = (ids: ObjectId[]) => {
-      return ids.reduce(
-        (acc, id) => {
-          acc[id.toString()] = entityMap[id.toString()];
-          return acc;
-        },
-        {} as Record<string, Entity>,
-      );
-    };
-
-    const getRelevantContentMap = (ids: string[]) => {
-      return ids.reduce(
-        (acc, id) => {
-          acc[id] = contentMap[id];
-          return acc;
-        },
-        {} as Record<string, Content<ContentData>>,
-      );
-    };
+    const { contents, entities } =
+      await this.getReferencedContentsAndEntities(content);
 
     const data = content.map((a) => {
-      const contentMap = getRelevantContentMap(a.referencedContentIds);
-      const entityMap = getRelevantEntityMap(
-        a.referencedEntityIds.concat(
-          Object.values(contentMap)
-            .flatMap((c) => c?.referencedEntityIds)
-            .filter(Boolean) as ObjectId[],
-        ),
+      const relevantContents = contents.filter((c) =>
+        a.referencedContentIds.includes(c.contentId),
       );
+
+      const relevantEntities = [];
+
+      for (const entityId of a.referencedEntityIds) {
+        const entity = entities.find((e) => e._id.equals(entityId));
+        if (entity) {
+          relevantEntities.push(entity);
+        }
+      }
+
+      for (const entityId of relevantContents.flatMap(
+        (c) => c?.referencedEntityIds,
+      )) {
+        if (!entityId) continue;
+        const entity = entities.find((e) => e._id.equals(entityId));
+        if (entity) {
+          relevantEntities.push(entity);
+        }
+      }
       return {
         ...a,
         _id: a._id.toString(),
-        entityMap,
-        contentMap,
+        entities: relevantEntities,
+        contents: relevantContents,
       };
     });
 
@@ -118,38 +112,24 @@ export class NookService {
     };
   }
 
-  async getContentAndEntityMap(content: Content<ContentData>[]) {
+  async getReferencedContentsAndEntities(content: Content<ContentData>[]) {
     const referencedContentIds = content.flatMap((a) => a.referencedContentIds);
     const contents = await this.client
       .getCollection<Content<ContentData>>(MongoCollection.Content)
       .find({ contentId: { $in: referencedContentIds } })
       .toArray();
-    const contentMap = contents.reduce(
-      (acc, c) => {
-        acc[c.contentId.toString()] = c;
-        return acc;
-      },
-      {} as Record<string, Content<ContentData>>,
-    );
 
     const referencedEntityIds = content
       .flatMap((a) => a.referencedEntityIds)
-      .concat(Object.values(contentMap).flatMap((c) => c.referencedEntityIds));
+      .concat(contents.flatMap((c) => c.referencedEntityIds));
     const entities = await this.client
       .getCollection<Entity>(MongoCollection.Entity)
       .find({ _id: { $in: referencedEntityIds } })
       .toArray();
-    const entityMap = entities.reduce(
-      (acc, e) => {
-        acc[e._id.toString()] = e;
-        return acc;
-      },
-      {} as Record<string, Entity>,
-    );
 
     return {
-      contentMap,
-      entityMap,
+      contents,
+      entities,
     };
   }
 
@@ -157,15 +137,23 @@ export class NookService {
     const content = await this.client.findContent(contentId);
     if (!content) return;
 
-    const { contentMap, entityMap } = await this.getContentAndEntityMap([
+    const { contents, entities } = await this.getReferencedContentsAndEntities([
       content,
     ]);
 
     return {
       ...content,
       _id: content._id.toString(),
-      entityMap,
-      contentMap,
+      entities,
+      contents,
     };
+  }
+
+  async getEntities(entityIds: string[]): Promise<Entity[]> {
+    const entities = await this.client
+      .getCollection<Entity>(MongoCollection.Entity)
+      .find({ _id: { $in: entityIds.map((id) => new ObjectId(id)) } })
+      .toArray();
+    return entities;
   }
 }

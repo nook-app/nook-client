@@ -1,11 +1,10 @@
 import { createEntityAdapter, createSlice } from "@reduxjs/toolkit";
 import { api } from "./api";
 import { RootState } from ".";
-import { ContentData } from "@flink/common/types";
-import { ContentFeedItem } from "@flink/api/types";
+import { Content, ContentData } from "@flink/common/types";
 
 const contentAdapter = createEntityAdapter({
-  selectId: (content: ContentFeedItem<ContentData>) => content.contentId,
+  selectId: (content: Content<ContentData>) => content.contentId,
 });
 
 const contentSlice = createSlice({
@@ -16,37 +15,21 @@ const contentSlice = createSlice({
     builder.addMatcher(
       api.endpoints.getPanel.matchFulfilled,
       (state, action) => {
-        const content = action.payload.data.flatMap((item) => {
-          return Object.values(item.contentMap).map((content) => {
-            return {
-              ...content,
-              entityMap: item.entityMap,
-              contentMap: item.contentMap,
-            } as ContentFeedItem<ContentData>;
-          }) as ContentFeedItem<ContentData>[];
-        });
+        const content = action.payload.data.flatMap((item) => item.contents);
         contentAdapter.addMany(state, content);
       },
     );
     builder.addMatcher(
       api.endpoints.getContentReplies.matchFulfilled,
       (state, action) => {
-        const content = action.payload.data.flatMap((item) => {
-          return Object.values(item.contentMap).map((content) => {
-            return {
-              ...content,
-              entityMap: item.entityMap,
-              contentMap: item.contentMap,
-            } as ContentFeedItem<ContentData>;
-          }) as ContentFeedItem<ContentData>[];
-        });
+        const content = action.payload.data.flatMap((item) => item.contents);
         contentAdapter.addMany(state, content);
       },
     );
     builder.addMatcher(
       api.endpoints.getContent.matchFulfilled,
       (state, action) => {
-        contentAdapter.addOne(state, action.payload);
+        contentAdapter.addMany(state, action.payload.contents);
       },
     );
   },
