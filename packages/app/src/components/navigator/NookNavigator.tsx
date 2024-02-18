@@ -83,6 +83,8 @@ export function NookNavigator() {
               height="100%"
             />
           ),
+          gestureEnabled: true,
+          fullScreenGestureEnabled: true,
         }}
         getId={({ params }) => params.contentId}
       />

@@ -6,6 +6,7 @@ import {
   useNavigation,
   NavigationProp,
   CommonActions,
+  getFocusedRouteNameFromRoute,
 } from "@react-navigation/native";
 import { useAppDispatch } from "@/hooks/useAppDispatch";
 import { Text, View, XStack, YStack } from "tamagui";
@@ -29,6 +30,12 @@ export function NooksNavigator() {
 
   return (
     <Drawer.Navigator
+      screenOptions={({ route }) => {
+        return {
+          swipeEnabled: getFocusedRouteNameFromRoute(route) !== "Content",
+          swipeEdgeWidth: 100,
+        };
+      }}
       drawerContent={(props) => (
         <XStack theme="gray" height="100%">
           <YStack>
