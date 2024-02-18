@@ -8,12 +8,12 @@ import {
   CommonActions,
   getFocusedRouteNameFromRoute,
 } from "@react-navigation/native";
-import { useAppDispatch } from "@/hooks/useAppDispatch";
+import { useAppDispatch } from "@/store/hooks/useAppDispatch";
 import { Text, View, XStack, YStack } from "tamagui";
 import { Image } from "expo-image";
 import { RootStackParamList } from "@/types";
-import { setActiveNook, setActiveShelf } from "@/store/user";
-import { useAppSelector } from "@/hooks/useAppSelector";
+import { setActiveNook, setActiveShelf } from "@/store/slices/user";
+import { useAppSelector } from "@/store/hooks/useAppSelector";
 import { NookNavigator } from "./NookNavigator";
 
 const Drawer = createDrawerNavigator();

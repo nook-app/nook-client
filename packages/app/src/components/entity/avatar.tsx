@@ -1,5 +1,5 @@
 import { store } from "@/store";
-import { selectEntityById } from "@/store/entity";
+import { selectEntityById } from "@/store/slices/entity";
 import { Avatar } from "tamagui";
 
 export const EntityAvatar = ({

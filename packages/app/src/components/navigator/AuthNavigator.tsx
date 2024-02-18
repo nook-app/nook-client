@@ -12,13 +12,13 @@ import Animated, {
 } from "react-native-reanimated";
 import { Image, Text, View, useTheme } from "tamagui";
 import { NooksNavigator } from "./NooksNavigator";
-import { useAppSelector } from "@/hooks/useAppSelector";
+import { useAppSelector } from "@/store/hooks/useAppSelector";
 import { RootStackParamList } from "@/types";
 
 const Tabs = createBottomTabNavigator<RootStackParamList>();
 
 export function AuthNavigator() {
-  const { session } = useAuth();
+  const entity = useAppSelector((state) => state.user.entity);
   const theme = useTheme();
   const nooks = useAppSelector((state) => state.user.nooks);
   const isDrawerOpen = useAppSelector((state) => state.drawer.isOpen);
@@ -97,12 +97,12 @@ export function AuthNavigator() {
         name="Profile"
         component={ProfileScreen}
         options={{
-          tabBarIcon: ({ focused }) => (
+          tabBarIcon: () => (
             <Image
               source={{
                 width: 24,
                 height: 24,
-                uri: session?.entity?.farcaster?.pfp,
+                uri: entity?.farcaster?.pfp,
               }}
               borderRadius="$10"
             />

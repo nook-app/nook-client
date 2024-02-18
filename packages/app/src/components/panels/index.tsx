@@ -1,11 +1,11 @@
 import { Spinner, Text, View } from "tamagui";
-import { api } from "@/store/api";
 import { ContentFeedItem } from "@flink/api/types";
 import { FlatList, ViewToken } from "react-native";
 import { useCallback, useEffect, useState } from "react";
 import { NavigationProp, useNavigation } from "@react-navigation/native";
 import { RootStackParamList } from "@/types";
 import { renderFeedItem } from "../feed";
+import { nookApi } from "@/store/apis/nookApi";
 
 export const FeedPanel = ({
   nookId,
@@ -17,12 +17,13 @@ export const FeedPanel = ({
   const [accumulatedData, setAccumulatedData] = useState<ContentFeedItem[]>([]);
   const [refreshing, setRefreshing] = useState(false);
 
-  const { data, error, isLoading, isFetching, refetch } = api.useGetPanelQuery({
-    nookId,
-    shelfId,
-    panelId,
-    cursor,
-  });
+  const { data, error, isLoading, isFetching, refetch } =
+    nookApi.useGetPanelQuery({
+      nookId,
+      shelfId,
+      panelId,
+      cursor,
+    });
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: don't need to depend on cursor
   useEffect(() => {

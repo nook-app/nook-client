@@ -1,6 +1,6 @@
 import Constants from "expo-constants";
 import channels from "./channels.json";
-import { SignInParams } from "@/utils/api";
+import { SignInParams } from "@/store/apis/userApi";
 
 export const CONFIG =
   Constants.appOwnership === "expo"

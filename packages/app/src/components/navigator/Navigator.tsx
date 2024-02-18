@@ -2,7 +2,7 @@ import { useAuth } from "@/context/auth";
 import LoginScreen from "@/screens/LoginScreen";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { AuthNavigator } from "./AuthNavigator";
-import { useAppSelector } from "@/hooks/useAppSelector";
+import { useAppSelector } from "@/store/hooks/useAppSelector";
 
 const Stack = createNativeStackNavigator();
 

@@ -12,7 +12,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { NavigationProp, useNavigation } from "@react-navigation/native";
 import { RootStackParamList } from "@/types";
-import { useAppSelector } from "@/hooks/useAppSelector";
+import { useAppSelector } from "@/store/hooks/useAppSelector";
 import { EnableSignerModal } from "./EnableSignerModal";
 import { EntityAvatar } from "@/components/entity/avatar";
 import { useEffect, useRef, useState } from "react";
@@ -25,8 +25,8 @@ import {
   TextInput,
 } from "react-native";
 import { CHANNELS_LIST } from "@/constants";
-import { api } from "@/store/api";
-import { createFarcasterPost } from "@/utils/api";
+import { nookApi } from "@/store/apis/nookApi";
+import { farcasterApi } from "@/store/apis/farcasterApi";
 
 export const CreatePostModal = () => {
   const [selectChannelModalOpen, setSelectChannelModalOpen] = useState(false);
@@ -42,7 +42,8 @@ export const CreatePostModal = () => {
   const [message, setMessage] = useState("");
   const [isPosting, setIsPosting] = useState(false);
   const [error, setError] = useState<Error | null>(null);
-  const [fetchContent] = api.useLazyGetContentQuery();
+  const [fetchContent] = nookApi.useLazyGetContentQuery();
+  const [createPost] = farcasterApi.useCreatePostMutation();
 
   useEffect(() => {
     if (selectChannelModalOpen) {
@@ -61,7 +62,27 @@ export const CreatePostModal = () => {
 
   const handleCreatePost = async () => {
     setIsPosting(true);
-    const { contentId } = await createFarcasterPost(message, channel?.url);
+    const response = await createPost({ message, channel: channel?.url });
+    if ("error" in response) {
+      let errorMessage = "An unknown error occurred";
+      if (typeof response.error === "object" && "status" in response.error) {
+        errorMessage = `HTTP Error ${response.error.status}: ${JSON.stringify(
+          response.error.data,
+        )}`;
+      } else if (
+        response.error &&
+        typeof response.error === "object" &&
+        "message" in response.error &&
+        response.error.message
+      ) {
+        errorMessage = response.error.message;
+      }
+      setError(new Error(errorMessage));
+      setIsPosting(false);
+      return;
+    }
+
+    const { contentId } = response.data;
 
     let attempts = 0;
 

@@ -1,13 +1,17 @@
 import { configureStore } from "@reduxjs/toolkit";
-import { api } from "./api";
-import drawerReducer from "./drawer";
-import contentReducer from "./content";
-import userReducer from "./user";
-import entityReducer from "./entity";
+import { userApi } from "./apis/userApi";
+import { nookApi } from "./apis/nookApi";
+import { farcasterApi } from "./apis/farcasterApi";
+import drawerReducer from "./slices/drawer";
+import contentReducer from "./slices/content";
+import userReducer from "./slices/user";
+import entityReducer from "./slices/entity";
 
 export const store = configureStore({
   reducer: {
-    [api.reducerPath]: api.reducer,
+    [userApi.reducerPath]: userApi.reducer,
+    [nookApi.reducerPath]: nookApi.reducer,
+    [farcasterApi.reducerPath]: farcasterApi.reducer,
     drawer: drawerReducer,
     content: contentReducer,
     entities: entityReducer,
@@ -16,10 +20,13 @@ export const store = configureStore({
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
       thunk: {
-        extraArgument: api,
+        extraArgument: { userApi, nookApi, farcasterApi },
       },
       serializableCheck: false,
-    }).concat(api.middleware),
+    })
+      .concat(userApi.middleware)
+      .concat(nookApi.middleware)
+      .concat(farcasterApi.middleware),
 });
 
 export type AppDispatch = typeof store.dispatch;

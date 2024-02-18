@@ -1,4 +1,4 @@
-import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+import { createApi } from "@reduxjs/toolkit/query/react";
 import {
   ContentFeed,
   ContentFeedItem,
@@ -7,29 +7,13 @@ import {
   GetEntitiesResponse,
   GetPanelParams,
   GetPanelQuery,
-  GetUserResponse,
 } from "@flink/api/types";
-import { CONFIG } from "@/constants/index";
-import { getSession } from "@/utils/session";
+import { baseQuery } from "@/store/utils";
 
-const baseQuery = fetchBaseQuery({
-  baseUrl: CONFIG.apiBaseUrl,
-  prepareHeaders: async (headers) => {
-    const session = await getSession();
-    if (session) {
-      headers.set("Authorization", `Bearer ${session.token}`);
-    }
-    return headers;
-  },
-});
-
-export const api = createApi({
-  reducerPath: "api",
+export const nookApi = createApi({
+  reducerPath: "nookApi",
   baseQuery,
   endpoints: (builder) => ({
-    getUser: builder.query<GetUserResponse, null>({
-      query: () => "/user",
-    }),
     getPanel: builder.query<ContentFeed, GetPanelParams & GetPanelQuery>({
       query: (request) => ({
         url: `/nooks/${request.nookId}/shelves/${request.shelfId}/panels/${request.panelId}`,

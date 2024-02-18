@@ -1,5 +1,5 @@
 import { store } from "@/store";
-import { selectEntityById } from "@/store/entity";
+import { selectEntityById } from "@/store/slices/entity";
 import { Text } from "tamagui";
 import { XStack, YStack } from "tamagui";
 

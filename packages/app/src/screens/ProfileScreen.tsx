@@ -3,7 +3,7 @@ import { useAuth } from "@/context/auth";
 import { Image } from "tamagui";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
-import { useAppSelector } from "@/hooks/useAppSelector";
+import { useAppSelector } from "@/store/hooks/useAppSelector";
 
 export default function ProfilePage() {
   const { signOut } = useAuth();

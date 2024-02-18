@@ -8,7 +8,7 @@ import Animated, {
   interpolate,
   interpolateColor,
 } from "react-native-reanimated";
-import { useAppSelector } from "@/hooks/useAppSelector";
+import { useAppSelector } from "@/store/hooks/useAppSelector";
 import {
   NavigationProp,
   RouteProp,

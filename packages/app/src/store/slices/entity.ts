@@ -1,7 +1,8 @@
 import { createEntityAdapter, createSlice } from "@reduxjs/toolkit";
-import { api } from "./api";
-import { RootState } from ".";
+import { nookApi } from "../apis/nookApi";
+import { RootState } from "..";
 import { Entity } from "@flink/common/types";
+import { userApi } from "../apis/userApi";
 
 const entityAdapter = createEntityAdapter({
   selectId: (entity: Entity) => entity._id.toString(),
@@ -13,33 +14,33 @@ const entitySlice = createSlice({
   reducers: {},
   extraReducers: (builder) => {
     builder.addMatcher(
-      api.endpoints.getPanel.matchFulfilled,
+      nookApi.endpoints.getPanel.matchFulfilled,
       (state, action) => {
         const entities = action.payload.data.flatMap((item) => item.entities);
         entityAdapter.addMany(state, entities);
       },
     );
     builder.addMatcher(
-      api.endpoints.getContentReplies.matchFulfilled,
+      nookApi.endpoints.getContentReplies.matchFulfilled,
       (state, action) => {
         const entities = action.payload.data.flatMap((item) => item.entities);
         entityAdapter.addMany(state, entities);
       },
     );
     builder.addMatcher(
-      api.endpoints.getContent.matchFulfilled,
+      nookApi.endpoints.getContent.matchFulfilled,
       (state, action) => {
         entityAdapter.addMany(state, action.payload.entities);
       },
     );
     builder.addMatcher(
-      api.endpoints.getEntities.matchFulfilled,
+      nookApi.endpoints.getEntities.matchFulfilled,
       (state, action) => {
         entityAdapter.addMany(state, action.payload.data);
       },
     );
     builder.addMatcher(
-      api.endpoints.getUser.matchFulfilled,
+      userApi.endpoints.getUser.matchFulfilled,
       (state, action) => {
         entityAdapter.addOne(state, action.payload.entity);
       },

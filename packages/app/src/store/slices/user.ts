@@ -2,7 +2,7 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { Nook, NookShelf, TEMPLATE_NOOKS } from "@flink/api/data";
 import { User } from "@flink/common/prisma/nook";
 import { Entity } from "@flink/common/types";
-import { api } from "./api";
+import { userApi } from "../apis/userApi";
 
 interface UserState {
   user?: User;
@@ -41,7 +41,7 @@ export const userSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder.addMatcher(
-      api.endpoints.getUser.matchFulfilled,
+      userApi.endpoints.getUser.matchFulfilled,
       (state, action) => {
         state.user = action.payload.user;
         state.entity = action.payload.entity;

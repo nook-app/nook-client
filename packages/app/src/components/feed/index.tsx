@@ -1,5 +1,4 @@
 import { ScrollView, Spinner, Text, View } from "tamagui";
-import { api } from "@/store/api";
 import { ContentFeedItem } from "@flink/api/types";
 import { ContentType, PostData } from "@flink/common/types";
 import { FeedPost } from "./post";
@@ -8,6 +7,7 @@ import { useCallback, useEffect, useState } from "react";
 import { TouchableWithoutFeedback } from "react-native-gesture-handler";
 import { NavigationProp, useNavigation } from "@react-navigation/native";
 import { RootStackParamList } from "@/types";
+import { nookApi } from "@/store/apis/nookApi";
 
 export const renderFeedItem = (
   navigation: NavigationProp<RootStackParamList>,
@@ -35,10 +35,11 @@ export const ContentReplies = ({ contentId }: { contentId: string }) => {
   const [cursor, setCursor] = useState<string | undefined>(undefined);
   const [accumulatedData, setAccumulatedData] = useState<ContentFeedItem[]>([]);
 
-  const { data, error, isLoading, isFetching } = api.useGetContentRepliesQuery({
-    contentId,
-    cursor,
-  });
+  const { data, error, isLoading, isFetching } =
+    nookApi.useGetContentRepliesQuery({
+      contentId,
+      cursor,
+    });
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: don't need to depend on cursor
   useEffect(() => {

@@ -2,17 +2,13 @@ import { Button, Spinner, Text, View, YStack } from "tamagui";
 import { useAuth } from "@/context/auth";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useState } from "react";
-import { getFarcasterSigner, validateFarcasterSigner } from "@/utils/api";
 import { Linking } from "react-native";
-import {
-  NavigationProp,
-  StackActions,
-  useNavigation,
-} from "@react-navigation/native";
+import { NavigationProp, useNavigation } from "@react-navigation/native";
 import { RootStackParamList } from "@/types";
-import { useAppSelector } from "@/hooks/useAppSelector";
-import { useAppDispatch } from "@/hooks/useAppDispatch";
-import { setSignerEnabled } from "@/store/user";
+import { useAppSelector } from "@/store/hooks/useAppSelector";
+import { useAppDispatch } from "@/store/hooks/useAppDispatch";
+import { setSignerEnabled } from "@/store/slices/user";
+import { farcasterApi } from "@/store/apis/farcasterApi";
 
 export const EnableSignerModal = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
@@ -25,17 +21,19 @@ export const EnableSignerModal = () => {
   );
   const dispatch = useAppDispatch();
   const activeNook = useAppSelector((state) => state.user.activeNook);
+  const [getSigner] = farcasterApi.useLazyGetSignerQuery();
+  const [validateSigner] = farcasterApi.useValidateSignerMutation();
 
   const handleEnableSigner = async () => {
     if (!session) return;
     setIsEnablingSigner(true);
     try {
-      const signer = await getFarcasterSigner(session);
-      if (signer.state === "completed") {
-        await validateFarcasterSigner(session, signer.token);
+      const { data: signer } = await getSigner(null);
+      if (signer?.state === "completed") {
+        await validateSigner(signer.token);
         dispatch(setSignerEnabled(true));
       }
-      if (signer.state !== "pending") {
+      if (signer?.state !== "pending") {
         return;
       }
       Linking.openURL(signer.deeplinkUrl);
@@ -45,11 +43,9 @@ export const EnableSignerModal = () => {
       const executePoll = async () => {
         if (attempts < 30) {
           try {
-            const { state } = await validateFarcasterSigner(
-              session,
-              signer.token,
-            );
-            if (state === "completed") {
+            const response = await validateSigner(signer.token);
+            if ("error" in response) {
+            } else if (response.data.state === "completed") {
               dispatch(setSignerEnabled(true));
               setIsEnablingSigner(false);
               return;

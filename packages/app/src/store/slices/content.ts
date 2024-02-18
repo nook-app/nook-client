@@ -1,6 +1,6 @@
 import { createEntityAdapter, createSlice } from "@reduxjs/toolkit";
-import { api } from "./api";
-import { RootState } from ".";
+import { nookApi } from "../apis/nookApi";
+import { RootState } from "..";
 import { Content, ContentData } from "@flink/common/types";
 
 const contentAdapter = createEntityAdapter({
@@ -13,21 +13,21 @@ const contentSlice = createSlice({
   reducers: {},
   extraReducers: (builder) => {
     builder.addMatcher(
-      api.endpoints.getPanel.matchFulfilled,
+      nookApi.endpoints.getPanel.matchFulfilled,
       (state, action) => {
         const content = action.payload.data.flatMap((item) => item.contents);
         contentAdapter.addMany(state, content);
       },
     );
     builder.addMatcher(
-      api.endpoints.getContentReplies.matchFulfilled,
+      nookApi.endpoints.getContentReplies.matchFulfilled,
       (state, action) => {
         const content = action.payload.data.flatMap((item) => item.contents);
         contentAdapter.addMany(state, content);
       },
     );
     builder.addMatcher(
-      api.endpoints.getContent.matchFulfilled,
+      nookApi.endpoints.getContent.matchFulfilled,
       (state, action) => {
         contentAdapter.addMany(state, action.payload.contents);
       },

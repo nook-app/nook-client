@@ -14,8 +14,7 @@ import {
   removeSession,
   Session,
 } from "@/utils/session";
-import { SignInParams, signInWithFarcaster } from "@/utils/api";
-import { api } from "@/store/api";
+import { SignInParams, userApi } from "@/store/apis/userApi";
 
 type AuthContextValue = {
   session?: Session;
@@ -46,12 +45,19 @@ function AuthProviderContent({ children }: AuthProviderProps) {
   const [session, setSession] = useState<Session | undefined>(undefined);
   const [error, setError] = useState<Error | undefined>(undefined);
   const [isInitializing, setIsInitializing] = useState(true);
-  const [getUser] = api.useLazyGetUserQuery();
+  const [getUser] = userApi.useLazyGetUserQuery();
+  const [loginUser] = userApi.useLoginUserMutation();
 
   const signIn = useCallback(
     async (body: SignInParams) => {
+      const response = await loginUser(body);
+      if ("error" in response) {
+        setError(new Error(`Sign in failed: ${response.error}`));
+        return;
+      }
+
       try {
-        const session = await signInWithFarcaster(body);
+        const session = response.data;
         await updateSession(session);
         setSession(session);
         await getUser(null);
@@ -59,7 +65,7 @@ function AuthProviderContent({ children }: AuthProviderProps) {
         setError(new Error(`Sign in failed: ${(error as Error).message}`));
       }
     },
-    [getUser],
+    [getUser, loginUser],
   );
 
   const signOut = useCallback(async () => {
