@@ -63,9 +63,24 @@ export class NookService {
       await this.getReferencedContentsAndEntities(content);
 
     const data = content.map((a) => {
-      const relevantContents = contents.filter((c) =>
-        a.referencedContentIds.includes(c.contentId),
-      );
+      const relevantContents = [];
+
+      for (const contentId of a.referencedContentIds) {
+        const content = contents.find((c) => c.contentId === contentId);
+        if (content) {
+          relevantContents.push(content);
+        }
+      }
+
+      for (const contentId of relevantContents.flatMap(
+        (c) => c?.referencedContentIds,
+      )) {
+        if (!contentId) continue;
+        const content = contents.find((c) => c.contentId === contentId);
+        if (content) {
+          relevantContents.push(content);
+        }
+      }
 
       const relevantEntities = [];
 
@@ -119,6 +134,14 @@ export class NookService {
       .find({ contentId: { $in: referencedContentIds } })
       .toArray();
 
+    const secondLevelReferencedContentIds = contents
+      .flatMap((c) => c.referencedContentIds)
+      .filter((id) => !referencedContentIds.includes(id));
+    const secondLevelContents = await this.client
+      .getCollection<Content<ContentData>>(MongoCollection.Content)
+      .find({ contentId: { $in: secondLevelReferencedContentIds } })
+      .toArray();
+
     const referencedEntityIds = content
       .flatMap((a) => a.referencedEntityIds)
       .concat(contents.flatMap((c) => c.referencedEntityIds));
@@ -128,7 +151,7 @@ export class NookService {
       .toArray();
 
     return {
-      contents,
+      contents: [...contents, ...secondLevelContents],
       entities,
     };
   }

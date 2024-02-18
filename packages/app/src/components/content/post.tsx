@@ -32,7 +32,7 @@ export const ContentPost = ({
           />
         </XStack>
         <PostContent data={data} />
-        {data.embeds.map((embed, i) => (
+        {data.embeds.map((embed) => (
           <Embed key={embed} embed={embed} data={data} />
         ))}
         <XStack gap="$1.5" alignItems="center">

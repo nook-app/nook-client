@@ -1,5 +1,5 @@
 import { EmbedImage } from "./image";
-import { EmbedQuotePost } from "./quote";
+import { EmbedQuote } from "./quote";
 import { ContentType, PostData, UrlMetadata } from "@flink/common/types";
 import { Text } from "tamagui";
 import { EmbedFrame } from "./frame";
@@ -9,19 +9,36 @@ import { EmbedTwitter } from "./twitter";
 import { EmbedVideo } from "./video";
 import { selectContentById } from "@/store/content";
 import { store } from "@/store";
+import { api } from "@/store/api";
+
+import { TouchableWithoutFeedback } from "react-native-gesture-handler";
+import { PostContent } from "@/components/utils";
+import { NavigationProp, useNavigation } from "@react-navigation/native";
+import { RootStackParamList } from "@/types";
 
 export const Embed = ({
   data,
   embed,
+  disableNestedQuote,
 }: {
   data: PostData;
   embed: string;
+  disableNestedQuote?: boolean;
 }) => {
-  const content = selectContentById(store.getState(), embed);
+  const storedContent = selectContentById(store.getState(), embed);
+  const { data: fetchedContent } = api.useGetContentQuery(embed, {
+    skip: !!storedContent,
+  });
+
+  const content = storedContent || fetchedContent;
+
   if (content) {
     switch (content.type) {
       case ContentType.POST:
       case ContentType.REPLY: {
+        if (disableNestedQuote) {
+          return null;
+        }
         const data = content.data as PostData;
         return <EmbedQuotePost key={embed} data={data} />;
       }
@@ -58,5 +75,29 @@ export const Embed = ({
     <Text key={embed} onPress={() => Linking.openURL(embed)}>
       {embed}
     </Text>
+  );
+};
+
+export const EmbedQuotePost = ({
+  data,
+}: {
+  data: PostData;
+}) => {
+  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+  return (
+    <TouchableWithoutFeedback
+      onPress={() =>
+        navigation.navigate("Content", {
+          contentId: data.contentId,
+        })
+      }
+    >
+      <EmbedQuote entityId={data.entityId.toString()}>
+        <PostContent data={data} />
+        {data.embeds.map((embed) => (
+          <Embed key={embed} embed={embed} data={data} disableNestedQuote />
+        ))}
+      </EmbedQuote>
+    </TouchableWithoutFeedback>
   );
 };
