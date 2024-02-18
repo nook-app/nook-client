@@ -43,6 +43,12 @@ const contentSlice = createSlice({
         contentAdapter.addMany(state, content);
       },
     );
+    builder.addMatcher(
+      api.endpoints.getContent.matchFulfilled,
+      (state, action) => {
+        contentAdapter.addOne(state, action.payload);
+      },
+    );
   },
 });
 

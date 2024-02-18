@@ -1,6 +1,7 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import {
   ContentFeed,
+  ContentFeedItem,
   GetContentRepliesBody,
   GetPanelParams,
   GetPanelQuery,
@@ -29,6 +30,13 @@ export const api = createApi({
         method: "GET",
         params: { cursor: request.cursor },
         headers: {},
+      }),
+    }),
+    getContent: builder.query<ContentFeedItem, string>({
+      query: (contentId) => ({
+        url: "/content",
+        method: "POST",
+        body: { contentId },
       }),
     }),
     getContentReplies: builder.query<ContentFeed, GetContentRepliesBody>({

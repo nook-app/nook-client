@@ -32,6 +32,7 @@ export const EnableSignerModal = () => {
     try {
       const signer = await getFarcasterSigner(session);
       if (signer.state === "completed") {
+        await validateFarcasterSigner(session, signer.token);
         dispatch(setSignerEnabled(true));
       }
       if (signer.state !== "pending") {
@@ -39,35 +40,30 @@ export const EnableSignerModal = () => {
       }
       Linking.openURL(signer.deeplinkUrl);
 
-      let pollCount = 0;
-      const maxPollCount = 30;
+      let attempts = 0;
 
-      const intervalId = setInterval(async () => {
-        try {
-          pollCount++;
-          const { state } = await validateFarcasterSigner(
-            session,
-            signer.token,
-          );
-          if (state === "completed") {
-            dispatch(setSignerEnabled(true));
-            clearInterval(intervalId);
-            setIsEnablingSigner(false);
-          } else if (pollCount > maxPollCount) {
-            clearInterval(intervalId);
-            setIsEnablingSigner(false);
-            setError(new Error("Signer validation timed out"));
-          }
-        } catch (pollError) {
-          setError(
-            new Error(
-              `Failed to enable signer: ${(pollError as Error).message}`,
-            ),
-          );
-          clearInterval(intervalId);
+      const executePoll = async () => {
+        if (attempts < 30) {
+          try {
+            const { state } = await validateFarcasterSigner(
+              session,
+              signer.token,
+            );
+            if (state === "completed") {
+              dispatch(setSignerEnabled(true));
+              setIsEnablingSigner(false);
+              return;
+            }
+          } catch (e) {}
+          attempts++;
+          setTimeout(executePoll, 2000);
+        } else {
+          setError(new Error("Signer validation timed out"));
           setIsEnablingSigner(false);
         }
-      }, 2000);
+      };
+
+      executePoll();
     } catch (error) {
       setError(
         new Error(`Failed to enable signer: ${(error as Error).message}`),

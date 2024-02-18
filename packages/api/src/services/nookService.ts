@@ -1,7 +1,7 @@
 import { FastifyInstance } from "fastify";
 import { MongoClient, MongoCollection } from "@flink/common/mongo";
 import { Content, ContentData, Entity } from "@flink/common/types";
-import { ContentFeed } from "../../types";
+import { ContentFeed, ContentFeedItem } from "../../types";
 import { ObjectId } from "mongodb";
 import { ContentFeedArgs } from "../../data";
 
@@ -53,20 +53,14 @@ export class NookService {
       sortOptions = { [sort]: sortDirection as SortDirection, ...sortOptions };
     }
 
-    const actions = await collection
+    const content = await collection
       .find(queryFilter)
       .sort(sortOptions)
       .limit(PAGE_SIZE)
       .toArray();
 
-    const contentIds = actions.flatMap((a) => a.referencedContentIds);
-    const contentMap = await this.getContentMap(contentIds);
-
-    const entityIds = actions
-      .flatMap((a) => a.referencedEntityIds)
-      .concat(Object.values(contentMap).flatMap((c) => c.referencedEntityIds));
-
-    const entityMap = await this.getEntityMap(entityIds);
+    const { contentMap, entityMap } =
+      await this.getContentAndEntityMap(content);
 
     const getRelevantEntityMap = (ids: ObjectId[]) => {
       return ids.reduce(
@@ -88,7 +82,7 @@ export class NookService {
       );
     };
 
-    const data = actions.map((a) => {
+    const data = content.map((a) => {
       const contentMap = getRelevantContentMap(a.referencedContentIds);
       const entityMap = getRelevantEntityMap(
         a.referencedEntityIds.concat(
@@ -113,44 +107,65 @@ export class NookService {
     return {
       data,
       nextCursor:
-        actions.length === PAGE_SIZE
+        content.length === PAGE_SIZE
           ? Buffer.from(
               JSON.stringify({
-                _id: actions[actions.length - 1]._id,
-                value: getNestedValue(actions[actions.length - 1], sortField),
+                _id: content[content.length - 1]._id,
+                value: getNestedValue(content[content.length - 1], sortField),
               }),
             ).toString("base64")
           : undefined,
     };
   }
 
-  async getEntityMap(entityIds: ObjectId[]): Promise<Record<string, Entity>> {
-    const entities = await this.client
-      .getCollection<Entity>(MongoCollection.Entity)
-      .find({ _id: { $in: entityIds } })
-      .toArray();
-    return entities.reduce(
-      (acc, e) => {
-        acc[e._id.toString()] = e;
-        return acc;
-      },
-      {} as Record<string, Entity>,
-    );
-  }
-
-  async getContentMap(
-    contentIds: string[],
-  ): Promise<Record<string, Content<ContentData>>> {
+  async getContentAndEntityMap(content: Content<ContentData>[]) {
+    const referencedContentIds = content.flatMap((a) => a.referencedContentIds);
     const contents = await this.client
       .getCollection<Content<ContentData>>(MongoCollection.Content)
-      .find({ contentId: { $in: contentIds } })
+      .find({ contentId: { $in: referencedContentIds } })
       .toArray();
-    return contents.reduce(
+    const contentMap = contents.reduce(
       (acc, c) => {
         acc[c.contentId.toString()] = c;
         return acc;
       },
       {} as Record<string, Content<ContentData>>,
     );
+
+    const referencedEntityIds = content
+      .flatMap((a) => a.referencedEntityIds)
+      .concat(Object.values(contentMap).flatMap((c) => c.referencedEntityIds));
+    const entities = await this.client
+      .getCollection<Entity>(MongoCollection.Entity)
+      .find({ _id: { $in: referencedEntityIds } })
+      .toArray();
+    const entityMap = entities.reduce(
+      (acc, e) => {
+        acc[e._id.toString()] = e;
+        return acc;
+      },
+      {} as Record<string, Entity>,
+    );
+
+    return {
+      contentMap,
+      entityMap,
+    };
+  }
+
+  async getContent(contentId: string): Promise<ContentFeedItem | undefined> {
+    const content = await this.client.findContent(contentId);
+    if (!content) return;
+
+    const { contentMap, entityMap } = await this.getContentAndEntityMap([
+      content,
+    ]);
+
+    return {
+      ...content,
+      _id: content._id.toString(),
+      entityMap,
+      contentMap,
+    };
   }
 }

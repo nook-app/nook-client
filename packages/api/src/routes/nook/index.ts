@@ -34,6 +34,19 @@ export const nookRoutes = async (fastify: FastifyInstance) => {
       },
     );
 
+    fastify.post<{ Body: { contentId: string } }>(
+      "/content",
+      async (request, reply) => {
+        const content = await nookService.getContent(request.body.contentId);
+        if (!content) {
+          return reply
+            .status(404)
+            .send({ status: 404, message: "Content not found" });
+        }
+        return reply.send(content);
+      },
+    );
+
     fastify.post<{ Body: GetContentRepliesBody }>(
       "/content/replies",
       async (request, reply) => {

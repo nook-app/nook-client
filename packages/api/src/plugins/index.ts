@@ -1,6 +1,7 @@
 import fp from "fastify-plugin";
 import { MongoClient } from "@flink/common/mongo";
 import { PrismaClient } from "@flink/common/prisma/nook";
+import { HubRpcClient, getSSLHubRpcClient } from "@farcaster/hub-nodejs";
 
 declare module "fastify" {
   interface FastifyInstance {
@@ -10,10 +11,12 @@ declare module "fastify" {
     nook: {
       client: PrismaClient;
     };
+    farcasterHub: {
+      client: HubRpcClient;
+    };
   }
 }
 
-// Plugin to connect to MongoDB
 export const mongoPlugin = fp(async (fastify, opts) => {
   const client = new MongoClient();
   await client.connect();
@@ -29,5 +32,13 @@ export const nookPlugin = fp(async (fastify, opts) => {
   fastify.decorate("nook", { client });
   fastify.addHook("onClose", async (fastify) => {
     await fastify.nook.client.$disconnect();
+  });
+});
+
+export const farcasterHubPlugin = fp(async (fastify, opts) => {
+  const client = getSSLHubRpcClient(process.env.HUB_RPC_ENDPOINT as string);
+  fastify.decorate("farcasterHub", { client });
+  fastify.addHook("onClose", async (fastify) => {
+    fastify.farcasterHub.client.close();
   });
 });

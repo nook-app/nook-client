@@ -10,6 +10,7 @@ type WarpcastSignerResponse = {
       requestFid: number;
       state: string;
       isSponsored: boolean;
+      userFid: number;
     };
   };
 };
@@ -69,11 +70,12 @@ export const validateWarpcastSigner = async (token: string) => {
   }
 
   const {
-    result: { signedKeyRequest: { state } },
+    result: { signedKeyRequest: { state, userFid } },
   }: WarpcastSignerResponse = await response.json();
 
   return {
     state,
+    userFid,
   };
 };
 

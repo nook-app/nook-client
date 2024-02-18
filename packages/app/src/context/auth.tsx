@@ -11,12 +11,12 @@ import { CONFIG, DEV_SIGN_IN } from "@/constants/index";
 import { setEntity, setUserData } from "@/store/user";
 import { useAppDispatch } from "@/hooks/useAppDispatch";
 import {
-  fetchSession,
+  updateSession,
   getSession,
   removeSession,
   Session,
 } from "@/utils/session";
-import { getUserData, SignInParams } from "@/utils/api";
+import { getUserData, SignInParams, signInWithFarcaster } from "@/utils/api";
 
 type AuthContextValue = {
   session?: Session;
@@ -52,7 +52,8 @@ function AuthProviderContent({ children }: AuthProviderProps) {
   const signIn = useCallback(
     async (body: SignInParams) => {
       try {
-        const session = await fetchSession(body);
+        const session = await signInWithFarcaster(body);
+        await updateSession(session);
         dispatch(setUserData(await getUserData(session)));
         dispatch(setEntity(session.entity));
         setSession(session);
