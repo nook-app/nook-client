@@ -1,6 +1,6 @@
 import { createApi } from "@reduxjs/toolkit/query/react";
 import { baseQuery } from "@/store/utils";
-import { SignerPublicData } from "@flink/api/types";
+import { SignerPublicData } from "@nook/api/types";
 
 export const farcasterApi = createApi({
   reducerPath: "farcasterApi",

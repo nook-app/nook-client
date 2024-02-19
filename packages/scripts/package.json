@@ -1,5 +1,5 @@
 {
-  "name": "@flink/scripts",
+  "name": "@nook/scripts",
   "version": "0.0.1",
   "private": true,
   "scripts": {
@@ -8,7 +8,7 @@
     "setup:nooks": "tsc && node ./dist/setup-nooks.js"
   },
   "dependencies": {
-    "@flink/common": "*"
+    "@nook/common": "*"
   },
   "devDependencies": {
     "@types/jest": "^29.5.11",

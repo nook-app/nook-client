@@ -1,5 +1,5 @@
 import { Rules, RulesOptions } from "metascraper";
-import { FrameMetascraperData } from "@flink/common/types";
+import { FrameMetascraperData } from "@nook/common/types";
 
 const rules: Rules & {
   [key in keyof FrameMetascraperData]: RulesOptions | RulesOptions[];

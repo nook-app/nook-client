@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { User } from "@flink/common/prisma/nook";
-import { Entity, Nook } from "@flink/common/types";
+import { User } from "@nook/common/prisma/nook";
+import { Entity, Nook } from "@nook/common/types";
 import { userApi } from "../apis/userApi";
 
 interface UserState {

@@ -1,5 +1,5 @@
 {
-  "name": "@flink/app",
+  "name": "@nook/app",
   "main": "src/index.ts",
   "version": "0.0.1",
   "scripts": {
@@ -13,7 +13,7 @@
   "dependencies": {
     "@expo/metro-runtime": "3.1.3",
     "@farcaster/auth-kit": "^0.2.0",
-    "@flink/api": "*",
+    "@nook/api": "*",
     "@react-native/babel-plugin-codegen": "^0.73.4",
     "@react-navigation/bottom-tabs": "^6.5.12",
     "@react-navigation/drawer": "^6.6.6",

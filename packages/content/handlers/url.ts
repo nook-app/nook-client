@@ -1,5 +1,5 @@
-import { MongoClient } from "@flink/common/mongo";
-import { Content, ContentType } from "@flink/common/types";
+import { MongoClient } from "@nook/common/mongo";
+import { Content, ContentType } from "@nook/common/types";
 import { ObjectId } from "mongodb";
 import metascraper, { MetascraperOptions } from "metascraper";
 import metascraperTitle from "metascraper-title";
@@ -26,7 +26,7 @@ import {
   FrameButton,
   FrameButtonAction,
   UnstructuredFrameMetascraperButtonKeys,
-} from "@flink/common/types";
+} from "@nook/common/types";
 
 // Require that a key in T maps to a key of FrameData
 type FrameDataTypesafeMapping<T> = {

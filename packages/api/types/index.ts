@@ -4,8 +4,8 @@ import {
   Entity,
   Nook,
   NookSource,
-} from "@flink/common/types";
-import { User } from "@flink/common/prisma/nook";
+} from "@nook/common/types";
+import { User } from "@nook/common/prisma/nook";
 
 export type ContentFeedItem<T = ContentData> = Content<T> & {
   _id: string;

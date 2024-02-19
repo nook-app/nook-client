@@ -1,4 +1,4 @@
-import { UrlMetadata } from "@flink/common/types";
+import { UrlMetadata } from "@nook/common/types";
 import { Image } from "expo-image";
 import { Linking } from "react-native";
 import { Text, View, YStack } from "tamagui";

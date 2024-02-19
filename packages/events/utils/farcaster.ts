@@ -6,12 +6,12 @@ import {
   ContentType,
   Topic,
   TopicType,
-} from "@flink/common/types";
-import { toFarcasterURI } from "@flink/farcaster/utils";
-import { MongoClient } from "@flink/common/mongo";
-import { Entity } from "@flink/common/types/entity";
-import { getOrCreateEntitiesForFids } from "@flink/common/entity";
-import { publishContent } from "@flink/common/queues";
+} from "@nook/common/types";
+import { toFarcasterURI } from "@nook/farcaster/utils";
+import { MongoClient } from "@nook/common/mongo";
+import { Entity } from "@nook/common/types/entity";
+import { getOrCreateEntitiesForFids } from "@nook/common/entity";
+import { publishContent } from "@nook/common/queues";
 import { ObjectId } from "mongodb";
 
 export const getOrCreatePostContent = async (

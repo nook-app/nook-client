@@ -1,5 +1,5 @@
 {
-  "name": "@flink/actions",
+  "name": "@nook/actions",
   "version": "0.0.1",
   "private": true,
   "scripts": {
@@ -9,7 +9,7 @@
     "test": "jest"
   },
   "dependencies": {
-    "@flink/common": "*"
+    "@nook/common": "*"
   },
   "devDependencies": {
     "@types/jest": "^29.5.11",

@@ -1,7 +1,4 @@
-import {
-  PrismaClient,
-  FarcasterUserData,
-} from "@flink/common/prisma/farcaster";
+import { PrismaClient, FarcasterUserData } from "@nook/common/prisma/farcaster";
 import {
   MessageHandlerArgs,
   bufferToHex,
@@ -13,8 +10,8 @@ import {
   EventType,
   FarcasterUserDataAddData,
   RawEvent,
-} from "@flink/common/types";
-import { publishRawEvent, toJobId } from "@flink/common/queues";
+} from "@nook/common/types";
+import { publishRawEvent, toJobId } from "@nook/common/queues";
 
 const prisma = new PrismaClient();
 

@@ -12,9 +12,9 @@ export const CONFIG =
       }
     : {
         dev: false,
-        apiBaseUrl: "https://flink-api.up.railway.app",
-        siwfUri: "https://flink-api.up.railway.app",
-        siwfDomain: "flink-api.up.railway.app",
+        apiBaseUrl: "https://nook-api.up.railway.app",
+        siwfUri: "https://nook-api.up.railway.app",
+        siwfDomain: "nook-api.up.railway.app",
       };
 
 export const CHANNELS = channels.reduce(

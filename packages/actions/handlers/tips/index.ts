@@ -7,9 +7,9 @@ import {
   TipActionData,
   Topic,
   TopicType,
-} from "@flink/common/types";
-import { DEGEN_ASSET_ID } from "@flink/common/constants";
-import { MongoClient } from "@flink/common/mongo";
+} from "@nook/common/types";
+import { DEGEN_ASSET_ID } from "@nook/common/constants";
+import { MongoClient } from "@nook/common/mongo";
 
 export const handleTips = async (
   client: MongoClient,

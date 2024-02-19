@@ -16,7 +16,7 @@ import {
 } from "../types";
 import { publishAction } from "../queues";
 
-const DB_NAME = "flink";
+const DB_NAME = "nook";
 
 export enum MongoCollection {
   Events = "events",

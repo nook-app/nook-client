@@ -1,5 +1,5 @@
 import fastify, { FastifyRequest } from "fastify";
-import { PrismaClient } from "@flink/common/prisma/farcaster";
+import { PrismaClient } from "@nook/common/prisma/farcaster";
 import { UserDataType, getSSLHubRpcClient } from "@farcaster/hub-nodejs";
 import {
   getAndBackfillCasts,
@@ -11,7 +11,7 @@ import {
   FarcasterAccount,
   FarcasterCastData,
   Protocol,
-} from "@flink/common/types";
+} from "@nook/common/types";
 import { getAndBackfillVerfications } from "../consumer/handlers/verifications";
 
 const prisma = new PrismaClient();

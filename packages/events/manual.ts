@@ -1,6 +1,6 @@
-import { QueueName, getQueue } from "@flink/common/queues";
+import { QueueName, getQueue } from "@nook/common/queues";
 import { getEventsHandler } from "./handlers";
-import { MongoClient } from "@flink/common/mongo";
+import { MongoClient } from "@nook/common/mongo";
 
 const run = async () => {
   const queue = getQueue(QueueName.Events);

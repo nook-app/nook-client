@@ -6,9 +6,9 @@ import {
   RawEvent,
   EventType,
   EventActionData,
-} from "@flink/common/types";
-import { MongoClient } from "@flink/common/mongo";
-import { toFarcasterURI } from "@flink/farcaster/utils";
+} from "@nook/common/types";
+import { MongoClient } from "@nook/common/mongo";
+import { toFarcasterURI } from "@nook/farcaster/utils";
 import { getOrCreatePostContentFromData } from "../../utils/farcaster";
 
 export const handleCastAddOrRemove = async (

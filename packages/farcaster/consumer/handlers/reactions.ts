@@ -3,7 +3,7 @@ import {
   PrismaClient,
   FarcasterCastReaction,
   FarcasterUrlReaction,
-} from "@flink/common/prisma/farcaster";
+} from "@nook/common/prisma/farcaster";
 import {
   bufferToHex,
   timestampToDate,
@@ -19,12 +19,12 @@ import {
   FarcasterUrlReactionData,
   FidHash,
   RawEvent,
-} from "@flink/common/types";
+} from "@nook/common/types";
 import {
   publishRawEvent,
   publishRawEvents,
   toJobId,
-} from "@flink/common/queues";
+} from "@nook/common/queues";
 
 const prisma = new PrismaClient();
 

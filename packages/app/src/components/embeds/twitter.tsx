@@ -1,4 +1,4 @@
-import { UrlMetadata } from "@flink/common/types";
+import { UrlMetadata } from "@nook/common/types";
 import { Image, Text, View, XStack, YStack } from "tamagui";
 
 export const EmbedTwitter = ({

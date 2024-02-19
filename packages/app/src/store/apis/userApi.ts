@@ -1,5 +1,5 @@
 import { createApi } from "@reduxjs/toolkit/query/react";
-import { GetUserResponse } from "@flink/api/types";
+import { GetUserResponse } from "@nook/api/types";
 import { baseQuery } from "@/store/utils";
 import { Session } from "@/utils/session";
 

@@ -1,4 +1,4 @@
-import { MongoClient, MongoCollection } from "@flink/common/mongo";
+import { MongoClient, MongoCollection } from "@nook/common/mongo";
 
 const run = async () => {
   const client = new MongoClient();

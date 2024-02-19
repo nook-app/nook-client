@@ -1,11 +1,11 @@
 import { Spinner, Text, View } from "tamagui";
-import { ContentFeedItem } from "@flink/api/types";
+import { ContentFeedItem } from "@nook/api/types";
 import { FlatList, ViewToken } from "react-native";
 import { useCallback, useEffect, useState } from "react";
 import { NavigationProp, useNavigation } from "@react-navigation/native";
 import { RootStackParamList } from "@/types";
 import { nookApi } from "@/store/apis/nookApi";
-import { ContentFeedArgs, ContentType, PostData } from "@flink/common/types";
+import { ContentFeedArgs, ContentType, PostData } from "@nook/common/types";
 import { TouchableWithoutFeedback } from "react-native-gesture-handler";
 import { ContentPostCompact } from "../content/postCompact";
 

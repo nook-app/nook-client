@@ -14,8 +14,8 @@ import {
   EntityEventData,
   Content,
   ContentData,
-} from "@flink/common/types";
-import { MongoClient } from "@flink/common/mongo";
+} from "@nook/common/types";
+import { MongoClient } from "@nook/common/mongo";
 import { Job } from "bullmq";
 import { handleCastAddOrRemove } from "./farcaster/castAddOrRemove";
 import { handleCastReactionAddOrRemove } from "./farcaster/castReactionAddOrRemove";
@@ -23,7 +23,7 @@ import { handleUrlReactionAddOrRemove } from "./farcaster/urlReactionAddOrRemove
 import { handleLinkAddOrRemove } from "./farcaster/linkAddOrRemove";
 import { handleUserDataAdd } from "./farcaster/userDataAdd";
 import { handleVerificationAddOrRemove } from "./farcaster/verificationAddOrRemove";
-import { publishAction } from "@flink/common/queues";
+import { publishAction } from "@nook/common/queues";
 
 export const getEventsHandler = async () => {
   const client = new MongoClient();

@@ -1,4 +1,4 @@
-import { QueueName, getQueue } from "@flink/common/queues";
+import { QueueName, getQueue } from "@nook/common/queues";
 import { getFarcasterHandler } from "./handlers";
 
 const run = async () => {

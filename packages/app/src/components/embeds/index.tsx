@@ -1,6 +1,6 @@
 import { EmbedImage } from "./image";
 import { EmbedQuote } from "./quote";
-import { ContentType, PostData, UrlMetadata } from "@flink/common/types";
+import { ContentType, PostData, UrlMetadata } from "@nook/common/types";
 import { Text } from "tamagui";
 import { EmbedFrame } from "./frame";
 import { Linking } from "react-native";

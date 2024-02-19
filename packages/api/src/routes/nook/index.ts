@@ -1,7 +1,7 @@
 import { FastifyInstance } from "fastify";
 import { NookService } from "../../services/nookService";
 import { GetEntitiesRequest, GetNookRequest } from "../../../types";
-import { ContentFeedArgs } from "@flink/common/types";
+import { ContentFeedArgs } from "@nook/common/types";
 
 export const nookRoutes = async (fastify: FastifyInstance) => {
   fastify.register(async (fastify: FastifyInstance) => {

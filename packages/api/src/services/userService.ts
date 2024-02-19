@@ -1,5 +1,5 @@
 import { FastifyInstance } from "fastify";
-import { MongoClient, MongoCollection } from "@flink/common/mongo";
+import { MongoClient, MongoCollection } from "@nook/common/mongo";
 import {
   AppClient as FarcasterAuthClient,
   createAppClient,
@@ -10,8 +10,8 @@ import {
   TokenResponse,
   GetUserResponse,
 } from "../../types";
-import { Entity, Nook, NookSource } from "@flink/common/types";
-import { PrismaClient } from "@flink/common/prisma/nook";
+import { Entity, Nook, NookSource } from "@nook/common/types";
+import { PrismaClient } from "@nook/common/prisma/nook";
 import { ObjectId } from "mongodb";
 import { getDefaultEntityNook, getOrCreateEntityNook } from "../utils/nooks";
 

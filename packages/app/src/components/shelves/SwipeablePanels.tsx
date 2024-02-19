@@ -1,4 +1,4 @@
-import { NookPanel, NookPanelType } from "@flink/common/types";
+import { NookPanel, NookPanelType } from "@nook/common/types";
 import { ContentFeedPanel } from "../panels/ContentFeedPanel";
 import { useRef, useState } from "react";
 import { Dimensions } from "react-native";

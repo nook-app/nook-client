@@ -1,4 +1,4 @@
-import { MongoClient } from "@flink/common/mongo";
+import { MongoClient } from "@nook/common/mongo";
 import {
   EntityEvent,
   EventAction,
@@ -8,8 +8,8 @@ import {
   UpdateEntityInfoActionData,
   EntityInfoType,
   TopicType,
-} from "@flink/common/types";
-import { getOrCreateEntitiesForFids } from "@flink/common/entity";
+} from "@nook/common/types";
+import { getOrCreateEntitiesForFids } from "@nook/common/entity";
 
 export const handleUserDataAdd = async (
   client: MongoClient,

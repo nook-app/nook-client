@@ -9,7 +9,7 @@ const config: Config = {
   // collectCoverageFrom: ["packages/**/*.{ts,tsx}"],
   // coveragePathIgnorePatterns: ["jest.config.ts", "/node_modules/", "/dist/"],
   moduleNameMapper: {
-    "^@flink/(.*)$": "<rootDir>/packages/$1/",
+    "^@nook/(.*)$": "<rootDir>/packages/$1/",
   },
   testMatch: ["**/__tests__/**/*.ts?(x)", "**/?(*.+(spec|test).ts?(x)"],
   projects: [

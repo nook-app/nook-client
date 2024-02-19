@@ -1,7 +1,7 @@
 import { createEntityAdapter, createSlice } from "@reduxjs/toolkit";
 import { nookApi } from "../apis/nookApi";
 import { RootState } from "..";
-import { Content, ContentData } from "@flink/common/types";
+import { Content, ContentData } from "@nook/common/types";
 
 const contentAdapter = createEntityAdapter({
   selectId: (content: Content<ContentData>) => content.contentId,

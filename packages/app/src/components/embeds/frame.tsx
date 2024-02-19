@@ -1,4 +1,4 @@
-import { FrameButton, PostData, UrlMetadata } from "@flink/common/types";
+import { FrameButton, PostData, UrlMetadata } from "@nook/common/types";
 import { ExternalLink } from "@tamagui/lucide-icons";
 import { Image } from "expo-image";
 import { Button, View, XStack } from "tamagui";

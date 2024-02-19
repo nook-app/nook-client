@@ -1,5 +1,5 @@
 {
-  "name": "@flink/events",
+  "name": "@nook/events",
   "version": "0.0.1",
   "private": true,
   "scripts": {
@@ -8,7 +8,7 @@
     "start:manual": "tsc && node --enable-source-maps dist/manual.js"
   },
   "dependencies": {
-    "@flink/common": "*",
+    "@nook/common": "*",
     "bullmq": "^5.1.0",
     "mongodb": "^6.3.0"
   },

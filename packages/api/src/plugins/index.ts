@@ -1,6 +1,6 @@
 import fp from "fastify-plugin";
-import { MongoClient } from "@flink/common/mongo";
-import { PrismaClient } from "@flink/common/prisma/nook";
+import { MongoClient } from "@nook/common/mongo";
+import { PrismaClient } from "@nook/common/prisma/nook";
 import { HubRpcClient, getSSLHubRpcClient } from "@farcaster/hub-nodejs";
 
 declare module "fastify" {

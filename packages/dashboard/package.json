@@ -1,5 +1,5 @@
 {
-  "name": "@flink/dashboard",
+  "name": "@nook/dashboard",
   "version": "0.0.1",
   "private": true,
   "main": "index.js",
@@ -11,7 +11,7 @@
     "@bull-board/api": "^5.10.2",
     "@bull-board/fastify": "^5.10.2",
     "@bull-board/ui": "^5.10.2",
-    "@flink/common": "*",
+    "@nook/common": "*",
     "bullmq": "^5.1.0",
     "fastify": "^4.25.2"
   },

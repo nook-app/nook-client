@@ -1,5 +1,5 @@
 import { HubRpcClient, Message } from "@farcaster/hub-nodejs";
-import { PrismaClient, FarcasterLink } from "@flink/common/prisma/farcaster";
+import { PrismaClient, FarcasterLink } from "@nook/common/prisma/farcaster";
 import {
   timestampToDate,
   MessageHandlerArgs,
@@ -11,12 +11,12 @@ import {
   EventType,
   FarcasterLinkData,
   RawEvent,
-} from "@flink/common/types";
+} from "@nook/common/types";
 import {
   publishRawEvent,
   publishRawEvents,
   toJobId,
-} from "@flink/common/queues";
+} from "@nook/common/queues";
 
 const prisma = new PrismaClient();
 

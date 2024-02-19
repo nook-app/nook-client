@@ -1,4 +1,4 @@
-import { MongoClient } from "@flink/common/mongo";
+import { MongoClient } from "@nook/common/mongo";
 import {
   EventAction,
   EventActionType,
@@ -11,10 +11,10 @@ import {
   Topic,
   TopicType,
   ContentActionData,
-} from "@flink/common/types";
+} from "@nook/common/types";
 import { ObjectId } from "mongodb";
-import { toFarcasterURI } from "@flink/farcaster/utils";
-import { getOrCreateEntitiesForFids } from "@flink/common/entity";
+import { toFarcasterURI } from "@nook/farcaster/utils";
+import { getOrCreateEntitiesForFids } from "@nook/common/entity";
 import { getOrCreatePostContent } from "../../utils/farcaster";
 
 export const handleCastReactionAddOrRemove = async (

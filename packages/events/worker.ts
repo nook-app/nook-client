@@ -1,4 +1,4 @@
-import { QueueName, getWorker } from "@flink/common/queues";
+import { QueueName, getWorker } from "@nook/common/queues";
 import { getEventsHandler } from "./handlers";
 
 const run = async () => {

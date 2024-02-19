@@ -10,8 +10,8 @@ import {
   ContentActionData,
   PostData,
   TipActionData,
-} from "@flink/common/types";
-import { MongoClient, MongoCollection } from "@flink/common/mongo";
+} from "@nook/common/types";
+import { MongoClient, MongoCollection } from "@nook/common/mongo";
 import { Job } from "bullmq";
 import { handleTips } from "./tips";
 

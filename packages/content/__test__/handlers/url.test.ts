@@ -1,11 +1,11 @@
 import { fetchUrlMetadata } from "../../handlers/url";
 
-jest.mock("@flink/common/mongo");
+jest.mock("@nook/common/mongo");
 jest.mock("metascraper-media-provider", () => () => {
   return {};
 });
 
-describe("@flink/content/handlers/url", () => {
+describe("@nook/content/handlers/url", () => {
   test("resolves full frame metadata", async () => {
     global.fetch = jest.fn().mockResolvedValue({
       text: () => `
@@ -45,7 +45,7 @@ describe("@flink/content/handlers/url", () => {
         },
       },
     });
-    const result = await fetchUrlMetadata("https://flink.help");
+    const result = await fetchUrlMetadata("https://nook.help");
     expect(result.contentLength).toBe(100);
     expect(result.contentType).toBe("text/html");
     // @ts-ignore
@@ -120,7 +120,7 @@ describe("@flink/content/handlers/url", () => {
         },
       },
     });
-    const result = await fetchUrlMetadata("https://flink.help");
+    const result = await fetchUrlMetadata("https://nook.help");
     expect(result.contentLength).toBe(100);
     expect(result.contentType).toBe("text/html");
     // @ts-ignore

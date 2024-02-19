@@ -1,5 +1,5 @@
 {
-  "name": "@flink/farcaster",
+  "name": "@nook/farcaster",
   "version": "0.0.1",
   "private": true,
   "scripts": {
@@ -18,7 +18,7 @@
     "@ethersproject/abstract-signer": "^5.7.0",
     "@farcaster/fishery": "^2.2.3",
     "@farcaster/hub-nodejs": "^0.10.5",
-    "@flink/common": "*",
+    "@nook/common": "*",
     "bullmq": "^5.1.0",
     "ethers": "^6.9.1",
     "fastify": "^4.25.2"

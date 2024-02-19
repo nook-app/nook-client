@@ -13,7 +13,7 @@ import { Image } from "expo-image";
 import { RootStackParamList } from "@/types";
 import { useAppSelector } from "@/store/hooks/useAppSelector";
 import { NookNavigator } from "./NookNavigator";
-import { Nook } from "@flink/common/types";
+import { Nook } from "@nook/common/types";
 import { selectNookById } from "@/store/slices/nook";
 import { useAppDispatch } from "@/store/hooks/useAppDispatch";
 import { setTheme } from "@/store/slices/user";

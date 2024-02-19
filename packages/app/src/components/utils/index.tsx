@@ -1,4 +1,4 @@
-import { Entity, PostData } from "@flink/common/types";
+import { Entity, PostData } from "@nook/common/types";
 import { Linking } from "react-native";
 import { Text } from "tamagui";
 import { Buffer } from "buffer";

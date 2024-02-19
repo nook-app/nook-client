@@ -2,8 +2,8 @@ import { ContentPost } from "@/components/content/post";
 import { useAppSelector } from "@/store/hooks/useAppSelector";
 import { selectContentById } from "@/store/slices/content";
 import { RootStackParamList } from "@/types";
-import { ContentFeedItem } from "@flink/api/types";
-import { PostData } from "@flink/common/types";
+import { ContentFeedItem } from "@nook/api/types";
+import { PostData } from "@nook/common/types";
 import { RouteProp, useRoute } from "@react-navigation/native";
 import { View } from "tamagui";
 

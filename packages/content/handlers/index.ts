@@ -1,4 +1,4 @@
-import { MongoClient } from "@flink/common/mongo";
+import { MongoClient } from "@nook/common/mongo";
 import { Job } from "bullmq";
 import { getOrCreateUrlContent } from "./url";
 

@@ -1,4 +1,4 @@
-import { QueueName, getQueue } from "@flink/common/queues";
+import { QueueName, getQueue } from "@nook/common/queues";
 import { getContentHandler } from "./handlers";
 
 const run = async () => {

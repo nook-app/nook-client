@@ -1,12 +1,12 @@
 import { FastifyInstance } from "fastify";
-import { MongoClient, MongoCollection } from "@flink/common/mongo";
+import { MongoClient, MongoCollection } from "@nook/common/mongo";
 import {
   Content,
   ContentData,
   ContentFeedArgs,
   Entity,
   Nook,
-} from "@flink/common/types";
+} from "@nook/common/types";
 import { ContentFeed, ContentFeedItem } from "../../types";
 import { ObjectId } from "mongodb";
 import { createEntityNook } from "../utils/nooks";

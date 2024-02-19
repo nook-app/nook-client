@@ -2,7 +2,7 @@ import { UserNameProof } from "@farcaster/hub-nodejs";
 import {
   PrismaClient,
   FarcasterUsernameProof,
-} from "@flink/common/prisma/farcaster";
+} from "@nook/common/prisma/farcaster";
 import {
   MessageHandlerArgs,
   bufferToHex,

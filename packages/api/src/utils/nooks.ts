@@ -1,11 +1,11 @@
-import { MongoClient, MongoCollection } from "@flink/common/mongo";
+import { MongoClient, MongoCollection } from "@nook/common/mongo";
 import {
   ContentType,
   Entity,
   Nook,
   NookPanelType,
   TopicType,
-} from "@flink/common/types";
+} from "@nook/common/types";
 import { ObjectId } from "mongodb";
 
 export const getOrCreateEntityNook = async (

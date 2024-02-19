@@ -1,5 +1,5 @@
-import { ContentFeedItem } from "@flink/api/types";
-import { ContentType, PostData, TopicType } from "@flink/common/types";
+import { ContentFeedItem } from "@nook/api/types";
+import { ContentType, PostData, TopicType } from "@nook/common/types";
 import { ScrollView, Text, View, XStack, YStack } from "tamagui";
 import { Embed } from "@/components/embeds";
 import { EntityAvatar } from "@/components/entity/avatar";

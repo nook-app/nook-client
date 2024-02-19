@@ -1,6 +1,6 @@
 import { createEntityAdapter, createSlice } from "@reduxjs/toolkit";
 import { RootState } from "..";
-import { Nook } from "@flink/common/types";
+import { Nook } from "@nook/common/types";
 import { userApi } from "../apis/userApi";
 import { nookApi } from "../apis/nookApi";
 

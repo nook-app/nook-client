@@ -1,5 +1,5 @@
 {
-  "name": "@flink/api",
+  "name": "@nook/api",
   "version": "0.0.1",
   "private": true,
   "scripts": {
@@ -12,7 +12,7 @@
   "dependencies": {
     "@farcaster/hub-nodejs": "^0.11.0",
     "@fastify/jwt": "^8.0.0",
-    "@flink/common": "*",
+    "@nook/common": "*",
     "fastify": "^4.25.2",
     "mongo": "^0.1.0",
     "mongodb": "^6.3.0",

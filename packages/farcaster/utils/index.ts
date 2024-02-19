@@ -1,6 +1,6 @@
 import { FARCASTER_EPOCH } from "@farcaster/hub-nodejs";
 import { HubRpcClient, Message } from "@farcaster/hub-nodejs";
-import { FidHash } from "@flink/common/types";
+import { FidHash } from "@nook/common/types";
 
 export type MessageHandlerArgs = {
   client: HubRpcClient;

@@ -7,10 +7,10 @@ import {
   RawEvent,
   EntityEvent,
   TopicType,
-} from "@flink/common/types";
-import { ContentActionData } from "@flink/common/types/actionTypes";
-import { MongoClient } from "@flink/common/mongo";
-import { getOrCreateEntitiesForFids } from "@flink/common/entity";
+} from "@nook/common/types";
+import { ContentActionData } from "@nook/common/types/actionTypes";
+import { MongoClient } from "@nook/common/mongo";
+import { getOrCreateEntitiesForFids } from "@nook/common/entity";
 
 export const handleUrlReactionAddOrRemove = async (
   client: MongoClient,

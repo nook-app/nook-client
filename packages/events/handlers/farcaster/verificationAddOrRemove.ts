@@ -8,9 +8,9 @@ import {
   LinkBlockchainAddressActionData,
   RawEvent,
   TopicType,
-} from "@flink/common/types";
-import { MongoClient } from "@flink/common/mongo";
-import { getOrCreateEntitiesForFids } from "@flink/common/entity";
+} from "@nook/common/types";
+import { MongoClient } from "@nook/common/mongo";
+import { getOrCreateEntitiesForFids } from "@nook/common/entity";
 
 export async function handleVerificationAddOrRemove(
   client: MongoClient,

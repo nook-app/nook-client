@@ -1,7 +1,7 @@
 import { createBullBoard } from "@bull-board/api";
 import { BullMQAdapter } from "@bull-board/api/bullMQAdapter";
 import { FastifyAdapter } from "@bull-board/fastify";
-import { QueueName, getQueue } from "@flink/common/queues";
+import { QueueName, getQueue } from "@nook/common/queues";
 import fastify from "fastify";
 
 const setupBullBoardServerAdapter = () => {

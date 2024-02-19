@@ -5,9 +5,9 @@ import {
   GetEntitiesRequest,
   GetEntitiesResponse,
   GetNookRequest,
-} from "@flink/api/types";
+} from "@nook/api/types";
 import { baseQuery } from "@/store/utils";
-import { ContentFeedArgs, Nook } from "@flink/common/types";
+import { ContentFeedArgs, Nook } from "@nook/common/types";
 
 export const nookApi = createApi({
   reducerPath: "nookApi",

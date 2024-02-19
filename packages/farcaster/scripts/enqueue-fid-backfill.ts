@@ -1,5 +1,5 @@
-import { QueueName, getQueue } from "@flink/common/queues";
-import { PrismaClient } from "@flink/common/prisma/farcaster";
+import { QueueName, getQueue } from "@nook/common/queues";
+import { PrismaClient } from "@nook/common/prisma/farcaster";
 
 const prisma = new PrismaClient();
 
