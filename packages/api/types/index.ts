@@ -1,4 +1,10 @@
-import { Content, ContentData, Entity, Nook } from "@flink/common/types";
+import {
+  Content,
+  ContentData,
+  Entity,
+  Nook,
+  NookSource,
+} from "@flink/common/types";
 import { User } from "@flink/common/prisma/nook";
 
 export type ContentFeedItem<T = ContentData> = Content<T> & {
@@ -43,4 +49,8 @@ export type GetEntitiesRequest = {
 
 export type GetEntitiesResponse = {
   data: Entity[];
+};
+
+export type GetNookRequest = {
+  nookId: string;
 };

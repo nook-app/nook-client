@@ -46,10 +46,7 @@ export function App() {
         <NavigationContainer>
           <Provider store={store}>
             <AuthProvider>
-              <TamaguiProvider
-                config={config}
-                defaultTheme={colorScheme as string}
-              >
+              <TamaguiProvider config={config} defaultTheme="dark">
                 <ThemeProvider
                   value={colorScheme === "dark" ? DarkTheme : DefaultTheme}
                 >

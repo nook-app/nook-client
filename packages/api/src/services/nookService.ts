@@ -5,9 +5,11 @@ import {
   ContentData,
   ContentFeedArgs,
   Entity,
+  Nook,
 } from "@flink/common/types";
 import { ContentFeed, ContentFeedItem } from "../../types";
 import { ObjectId } from "mongodb";
+import { createEntityNook } from "../utils/nooks";
 
 const PAGE_SIZE = 25;
 
@@ -182,5 +184,24 @@ export class NookService {
       .find({ _id: { $in: entityIds.map((id) => new ObjectId(id)) } })
       .toArray();
     return entities;
+  }
+
+  async getNook(nookId: string) {
+    const nook = await this.client
+      .getCollection<Nook>(MongoCollection.Nooks)
+      .findOne({ nookId });
+
+    if (nook) return nook;
+
+    if (nookId.startsWith("entity:")) {
+      console.log(nookId);
+      const entity = await this.client.findEntity(
+        new ObjectId(nookId.replace("entity:", "")),
+      );
+      if (!entity) {
+        throw new Error("Entity not found");
+      }
+      return createEntityNook(this.client, entity);
+    }
   }
 }

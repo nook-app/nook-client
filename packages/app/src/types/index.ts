@@ -4,11 +4,10 @@ export type RootStackParamList = {
   };
   Nook: {
     nookId: string;
-    shelfId: string;
   };
   Shelf: {
     nookId: string;
-    shelfId: string;
+    shelfId?: string;
   };
   Content: {
     contentId: string;

@@ -1,10 +1,23 @@
+import { ObjectId } from "mongodb";
+
+export enum NookSource {
+  Entity = "ENTITY",
+  Content = "CONTENT",
+  Custom = "CUSTOM",
+}
+
 export type Nook = {
+  _id: ObjectId;
+  nookId: string;
   name: string;
   slug: string;
   description: string;
   image: string;
   theme: string;
   shelves: NookShelf[];
+  creatorId: ObjectId;
+  createdAt: Date;
+  updatedAt: Date;
 };
 
 export type NookShelf = {

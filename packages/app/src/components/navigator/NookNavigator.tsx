@@ -1,5 +1,10 @@
 import { PlatformPressable } from "@react-navigation/elements";
-import { DrawerActions, useNavigation } from "@react-navigation/native";
+import {
+  DrawerActions,
+  RouteProp,
+  useNavigation,
+  useRoute,
+} from "@react-navigation/native";
 import { Platform } from "react-native";
 import { useDrawerStatus } from "@react-navigation/drawer";
 import { useEffect } from "react";
@@ -13,6 +18,8 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import ContentScreen from "@/screens/ContentScreen";
 import { RootStackParamList } from "@/types";
 import { CreatePostModal } from "@/modals/CreatePostModal";
+import { Text } from "tamagui";
+import { store } from "@/store";
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -45,28 +52,20 @@ const DrawerToggleButton = () => {
 };
 
 export function NookNavigator() {
-  const activeNook = useAppSelector((state) => state.user.activeNook);
-  const activeShelves = useAppSelector((state) => state.user.activeShelves);
-  const activeShelf = activeNook
-    ? activeShelves[activeNook.slug] || activeNook.shelves[0]
-    : undefined;
+  const route = useRoute<RouteProp<RootStackParamList, "Nook">>();
+  const nooks = store.getState().user.nooks;
+  const nookId = route?.params?.nookId || nooks[0]?.nookId;
 
   return (
     <Stack.Navigator>
       <Stack.Screen
         name="Shelf"
         component={ShelfScreen}
-        initialParams={{ nookId: activeNook?.slug, shelfId: activeShelf?.slug }}
+        initialParams={{ nookId }}
         options={{
-          title: activeShelf?.name,
           headerLeft: () => <DrawerToggleButton />,
-          headerBackground: () => (
-            <View
-              backgroundColor="$background"
-              theme={activeNook?.theme}
-              height="100%"
-            />
-          ),
+          headerBackground: () => <HeaderBackground />,
+          headerTitle: (props) => <Text {...props} />,
         }}
       />
       <Stack.Screen
@@ -75,13 +74,7 @@ export function NookNavigator() {
         options={{
           headerBackTitleVisible: false,
           headerTintColor: "white",
-          headerBackground: () => (
-            <View
-              backgroundColor="$background"
-              theme={activeNook?.theme}
-              height="100%"
-            />
-          ),
+          headerBackground: () => <HeaderBackground />,
           gestureEnabled: true,
           fullScreenGestureEnabled: true,
         }}
@@ -98,3 +91,8 @@ export function NookNavigator() {
     </Stack.Navigator>
   );
 }
+
+const HeaderBackground = () => {
+  const theme = useAppSelector((state) => state.user.theme);
+  return <View backgroundColor="$background" theme={theme} height="100%" />;
+};

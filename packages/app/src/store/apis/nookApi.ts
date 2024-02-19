@@ -4,9 +4,10 @@ import {
   ContentFeedItem,
   GetEntitiesRequest,
   GetEntitiesResponse,
+  GetNookRequest,
 } from "@flink/api/types";
 import { baseQuery } from "@/store/utils";
-import { ContentFeedArgs } from "@flink/common/types";
+import { ContentFeedArgs, Nook } from "@flink/common/types";
 
 export const nookApi = createApi({
   reducerPath: "nookApi",
@@ -34,6 +35,12 @@ export const nookApi = createApi({
         url: "/entities",
         method: "POST",
         body: request,
+      }),
+    }),
+    getNook: builder.query<Nook, string>({
+      query: (request) => ({
+        url: `/nooks/${request}`,
+        method: "GET",
       }),
     }),
   }),

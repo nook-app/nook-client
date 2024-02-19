@@ -20,7 +20,7 @@ export const EnableSignerModal = () => {
     (state) => state.user.user?.signerEnabled || false,
   );
   const dispatch = useAppDispatch();
-  const activeNook = useAppSelector((state) => state.user.activeNook);
+  const theme = useAppSelector((state) => state.user.theme);
   const [getSigner] = farcasterApi.useLazyGetSignerQuery();
   const [validateSigner] = farcasterApi.useValidateSignerMutation();
 
@@ -80,7 +80,7 @@ export const EnableSignerModal = () => {
     <YStack
       flex={1}
       backgroundColor="$background"
-      theme={activeNook?.theme}
+      theme={theme}
       style={{
         paddingTop: insets.top,
         paddingBottom: insets.bottom,

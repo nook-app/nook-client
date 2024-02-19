@@ -6,6 +6,7 @@ import drawerReducer from "./slices/drawer";
 import contentReducer from "./slices/content";
 import userReducer from "./slices/user";
 import entityReducer from "./slices/entity";
+import nookReducer from "./slices/nook";
 
 export const store = configureStore({
   reducer: {
@@ -16,6 +17,7 @@ export const store = configureStore({
     content: contentReducer,
     entities: entityReducer,
     user: userReducer,
+    nook: nookReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

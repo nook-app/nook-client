@@ -10,9 +10,10 @@ import {
   TokenResponse,
   GetUserResponse,
 } from "../../types";
-import { Entity, Nook } from "@flink/common/types";
+import { Entity, Nook, NookSource } from "@flink/common/types";
 import { PrismaClient } from "@flink/common/prisma/nook";
 import { ObjectId } from "mongodb";
+import { getDefaultEntityNook, getOrCreateEntityNook } from "../utils/nooks";
 
 export class UserService {
   private client: MongoClient;
@@ -56,30 +57,38 @@ export class UserService {
       id: entity._id.toString(),
     });
 
-    const user = await this.nookClient.user.upsert({
+    let user = await this.nookClient.user.findUnique({
       where: {
         id: entity._id.toString(),
       },
-      update: {
-        loggedInAt: new Date(),
-      },
-      create: {
-        id: entity._id.toString(),
-        signedUpAt: new Date(),
-        loggedInAt: new Date(),
-        signerEnabled: false,
-        refreshToken,
-        nookMemberships: {
-          createMany: {
-            data: [
-              {
-                nookId: "65cec2e40c6be21bbe973650",
-              },
-            ],
-          },
-        },
-      },
     });
+
+    if (!user) {
+      user = await this.nookClient.user.create({
+        data: {
+          id: entity._id.toString(),
+          signedUpAt: new Date(),
+          loggedInAt: new Date(),
+          signerEnabled: false,
+          refreshToken,
+        },
+      });
+
+      const defaultNook = await getOrCreateEntityNook(this.client, entity);
+      await this.nookClient.nookMembership.createMany({
+        skipDuplicates: true,
+        data: [
+          {
+            nookId: defaultNook._id.toString(),
+            userId: user.id,
+          },
+          {
+            nookId: "65cec2e40c6be21bbe973650",
+            userId: user.id,
+          },
+        ],
+      });
+    }
 
     const jwtPayload = {
       id: user.id,
@@ -141,7 +150,12 @@ export class UserService {
       return;
     }
 
-    const nooks = await this.client
+    const entity = await this.client.findEntity(new ObjectId(user.id));
+    if (!entity) {
+      return;
+    }
+
+    let nooks = await this.client
       .getCollection<Nook>(MongoCollection.Nooks)
       .find({
         _id: {
@@ -150,9 +164,17 @@ export class UserService {
       })
       .toArray();
 
-    const entity = await this.client.findEntity(new ObjectId(user.id));
-    if (!entity) {
-      return;
+    if (
+      !nooks.some(({ nookId }) => nookId === `entity:${entity._id.toString()}`)
+    ) {
+      const defaultNook = await getOrCreateEntityNook(this.client, entity);
+      await this.nookClient.nookMembership.create({
+        data: {
+          nookId: defaultNook._id.toString(),
+          userId: user.id,
+        },
+      });
+      nooks = [defaultNook, ...nooks];
     }
 
     return {

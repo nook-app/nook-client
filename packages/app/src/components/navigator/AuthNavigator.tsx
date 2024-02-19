@@ -53,12 +53,15 @@ export function AuthNavigator() {
             borderTopColor="$borderColor"
           />
         ),
+        tabBarStyle: {
+          borderTopWidth: 0,
+        },
       }}
     >
       <Tabs.Screen
         name="Nooks"
         component={NooksNavigator}
-        initialParams={{ nookId: nooks[0]?.id }}
+        initialParams={{ nookId: nooks[0]?.nookId }}
         options={{
           title: "Nooks",
           tabBarIcon: ({ focused }) => (

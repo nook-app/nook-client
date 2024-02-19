@@ -7,7 +7,7 @@ import { PostContent, formatTipsAmount } from "@/components/utils";
 import { EntityDisplay } from "../entity/display";
 import { CHANNELS } from "@/constants";
 import { Image } from "expo-image";
-import { ContentFeedPanel } from "../panels/contentFeed";
+import { ContentFeedPanel } from "../panels/ContentFeedPanel";
 
 export const ContentPost = ({
   item: { data, engagement, tips },

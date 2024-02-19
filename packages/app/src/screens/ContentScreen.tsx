@@ -9,13 +9,13 @@ import { View } from "tamagui";
 
 export default function ContentScreen() {
   const route = useRoute<RouteProp<RootStackParamList, "Content">>();
-  const activeNook = useAppSelector((state) => state.user.activeNook);
+  const theme = useAppSelector((state) => state.user.theme);
   const content = useAppSelector((state) =>
     selectContentById(state, route.params.contentId),
   );
 
   return (
-    <View backgroundColor="$background" theme={activeNook?.theme} height="100%">
+    <View backgroundColor="$background" theme={theme} height="100%">
       <ContentPost item={content as ContentFeedItem<PostData>} />
     </View>
   );

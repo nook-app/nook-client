@@ -23,7 +23,7 @@ export const renderFeedItem = (
           })
         }
       >
-        <ContentPostCompact key={typedItem._id} item={typedItem} />
+        <ContentPostCompact key={typedItem._id.toString()} item={typedItem} />
       </TouchableWithoutFeedback>
     );
   }
@@ -109,7 +109,7 @@ export const ContentFeedPanel = ({ args }: { args: ContentFeedArgs }) => {
     <FlatList
       data={accumulatedData}
       renderItem={({ item }) => renderFeedItem(navigation, item)}
-      keyExtractor={(item) => item._id}
+      keyExtractor={(item) => item._id.toString()}
       onViewableItemsChanged={onViewableItemsChanged}
       viewabilityConfig={viewabilityConfig}
       ListFooterComponent={() =>

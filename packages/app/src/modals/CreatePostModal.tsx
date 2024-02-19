@@ -35,7 +35,7 @@ export const CreatePostModal = () => {
   const signerEnabled = useAppSelector(
     (state) => state.user.user?.signerEnabled || false,
   );
-  const activeNook = useAppSelector((state) => state.user.activeNook);
+  const theme = useAppSelector((state) => state.user.theme);
   const entity = useAppSelector((state) => state.user.entity);
   const inputRef = useRef<TextInput>(null);
   const [channel, setChannel] = useState<(typeof CHANNELS_LIST)[0]>();
@@ -119,7 +119,7 @@ export const CreatePostModal = () => {
         flexGrow={1}
         backgroundColor="$background"
         justifyContent="space-between"
-        theme={activeNook?.theme}
+        theme={theme}
         style={{
           paddingTop: insets.top,
           paddingBottom: insets.bottom,

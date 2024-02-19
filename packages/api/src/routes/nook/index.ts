@@ -1,6 +1,6 @@
 import { FastifyInstance } from "fastify";
 import { NookService } from "../../services/nookService";
-import { GetEntitiesRequest } from "../../../types";
+import { GetEntitiesRequest, GetNookRequest } from "../../../types";
 import { ContentFeedArgs } from "@flink/common/types";
 
 export const nookRoutes = async (fastify: FastifyInstance) => {
@@ -34,6 +34,14 @@ export const nookRoutes = async (fastify: FastifyInstance) => {
       async (request, reply) => {
         const entities = await nookService.getEntities(request.body.entityIds);
         return reply.send({ data: entities });
+      },
+    );
+
+    fastify.get<{ Params: GetNookRequest }>(
+      "/nooks/:nookId",
+      async (request, reply) => {
+        const nook = await nookService.getNook(request.params.nookId);
+        return reply.send(nook);
       },
     );
   });
