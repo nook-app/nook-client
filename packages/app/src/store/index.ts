@@ -7,6 +7,7 @@ import contentReducer from "./slices/content";
 import userReducer from "./slices/user";
 import entityReducer from "./slices/entity";
 import nookReducer from "./slices/nook";
+import channelReducer from "./slices/channel";
 
 export const store = configureStore({
   reducer: {
@@ -18,6 +19,7 @@ export const store = configureStore({
     entities: entityReducer,
     user: userReducer,
     nook: nookReducer,
+    channel: channelReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

@@ -9,12 +9,13 @@ import {
   formatTipsAmount,
 } from "@/components/utils";
 import { EntityDisplay } from "../entity/display";
-import { CHANNELS } from "@/constants";
 import { Image } from "expo-image";
 import { Heart, MessageSquare, RefreshCw } from "@tamagui/lucide-icons";
 import { useAppDispatch } from "@/store/hooks/useAppDispatch";
 import { setActiveChannelModal } from "@/store/slices/user";
 import { TouchableOpacity } from "react-native-gesture-handler";
+import { useAppSelector } from "@/store/hooks/useAppSelector";
+import { selectChannelById } from "@/store/slices/channel";
 
 export const ContentPostCompact = ({
   item: { data, timestamp, engagement, tips },
@@ -23,6 +24,9 @@ export const ContentPostCompact = ({
   const degenTips =
     tips["chain://eip155:8453/erc20:0xc9034c3e7f58003e6ae0c8438e7c8f4598d5acaa"]
       ?.amount || 0;
+  const channel = useAppSelector((state) =>
+    data.channelId ? selectChannelById(state, data.channelId) : undefined,
+  );
 
   return (
     <XStack
@@ -40,7 +44,7 @@ export const ContentPostCompact = ({
           <Text color="$gray11">
             {`${formatTimeAgo(timestamp as unknown as string)} ago`}
           </Text>
-          {data.channelId && CHANNELS[data.channelId] && (
+          {channel && (
             <>
               <Text color="$gray11">in</Text>
               <TouchableOpacity
@@ -48,7 +52,7 @@ export const ContentPostCompact = ({
               >
                 <View borderRadius="$10" overflow="hidden">
                   <Image
-                    source={{ uri: CHANNELS[data.channelId]?.imageUrl }}
+                    source={{ uri: channel.imageUrl }}
                     style={{ width: 16, height: 16 }}
                   />
                 </View>
@@ -57,7 +61,7 @@ export const ContentPostCompact = ({
                 onPress={() => dispatch(setActiveChannelModal(data.channelId))}
               >
                 <Text numberOfLines={1} ellipsizeMode="tail" fontWeight="500">
-                  {CHANNELS[data.channelId].name}
+                  {channel.name}
                 </Text>
               </TouchableOpacity>
             </>

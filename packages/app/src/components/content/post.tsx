@@ -5,12 +5,13 @@ import { Embed } from "@/components/embeds";
 import { EntityAvatar } from "@/components/entity/avatar";
 import { PostContent, formatTipsAmount } from "@/components/utils";
 import { EntityDisplay } from "../entity/display";
-import { CHANNELS } from "@/constants";
 import { Image } from "expo-image";
 import { ContentFeedPanel } from "../panels/ContentFeedPanel";
 import { useAppDispatch } from "@/store/hooks/useAppDispatch";
 import { setActiveChannelModal } from "@/store/slices/user";
 import { TouchableOpacity } from "react-native-gesture-handler";
+import { useAppSelector } from "@/store/hooks/useAppSelector";
+import { selectChannelById } from "@/store/slices/channel";
 
 export const ContentPost = ({
   item: { data, engagement, tips },
@@ -19,6 +20,9 @@ export const ContentPost = ({
   const degenTips =
     tips["chain://eip155:8453/erc20:0xc9034c3e7f58003e6ae0c8438e7c8f4598d5acaa"]
       ?.amount || 0;
+  const channel = useAppSelector((state) =>
+    data.channelId ? selectChannelById(state, data.channelId) : undefined,
+  );
 
   return (
     <ScrollView>
@@ -50,7 +54,7 @@ export const ContentPost = ({
           <Text color="$gray11">
             {new Date(data.timestamp).toLocaleDateString()}
           </Text>
-          {data.channelId && CHANNELS[data.channelId] && (
+          {channel && (
             <>
               <Text color="$gray11">{"·"}</Text>
               <TouchableOpacity
@@ -58,7 +62,7 @@ export const ContentPost = ({
               >
                 <View borderRadius="$10" overflow="hidden">
                   <Image
-                    source={{ uri: CHANNELS[data.channelId]?.imageUrl }}
+                    source={{ uri: channel.imageUrl }}
                     style={{ width: 16, height: 16 }}
                   />
                 </View>
@@ -67,7 +71,7 @@ export const ContentPost = ({
                 onPress={() => dispatch(setActiveChannelModal(data.channelId))}
               >
                 <Text numberOfLines={1} ellipsizeMode="tail">
-                  {CHANNELS[data.channelId].name}
+                  {channel.name}
                 </Text>
               </TouchableOpacity>
             </>

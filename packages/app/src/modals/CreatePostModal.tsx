@@ -23,9 +23,9 @@ import {
   Platform,
   TextInput,
 } from "react-native";
-import { CHANNELS_LIST } from "@/constants";
 import { nookApi } from "@/store/apis/nookApi";
 import { farcasterApi } from "@/store/apis/farcasterApi";
+import { Channel } from "@nook/common/types";
 
 export const CreatePostModal = () => {
   const [selectChannelModalOpen, setSelectChannelModalOpen] = useState(false);
@@ -36,7 +36,7 @@ export const CreatePostModal = () => {
   );
   const entity = useAppSelector((state) => state.user.entity);
   const inputRef = useRef<TextInput>(null);
-  const [channel, setChannel] = useState<(typeof CHANNELS_LIST)[0]>();
+  const [channel, setChannel] = useState<Channel>();
   const [message, setMessage] = useState("");
   const [isPosting, setIsPosting] = useState(false);
   const [error, setError] = useState<Error | null>(null);
@@ -60,7 +60,7 @@ export const CreatePostModal = () => {
 
   const handleCreatePost = async () => {
     setIsPosting(true);
-    const response = await createPost({ message, channel: channel?.url });
+    const response = await createPost({ message, channel: channel?.contentId });
     if ("error" in response) {
       let errorMessage = "An unknown error occurred";
       if (typeof response.error === "object" && "status" in response.error) {

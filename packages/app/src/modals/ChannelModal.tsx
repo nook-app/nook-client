@@ -6,23 +6,23 @@ import { useAppDispatch } from "@/store/hooks/useAppDispatch";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { RootStackParamList } from "@/types";
 import { NavigationProp, useNavigation } from "@react-navigation/native";
-import { CHANNELS } from "@/constants";
+import { selectChannelById } from "@/store/slices/channel";
 
 export const ChannelModal = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const dispatch = useAppDispatch();
   const insets = useSafeAreaInsets();
-  const activeChannelModal = useAppSelector(
-    (state) => state.user.activeChannelModal,
+  const channel = useAppSelector((state) =>
+    state.user.activeChannelModal
+      ? selectChannelById(state, state.user.activeChannelModal)
+      : undefined,
   );
 
   const [position, setPosition] = useState(0);
 
-  const channel = CHANNELS[activeChannelModal || ""];
-
   return (
     <Sheet
-      open={!!activeChannelModal}
+      open={!!channel}
       onOpenChange={() => {
         dispatch(setActiveChannelModal());
       }}
@@ -41,7 +41,7 @@ export const ChannelModal = () => {
       />
       <Sheet.Handle />
       <Sheet.Frame style={{ paddingBottom: insets.bottom }}>
-        {channel && activeChannelModal && (
+        {channel && (
           <View flexGrow={1} justifyContent="space-between" padding="$4">
             <YStack gap="$4">
               <XStack gap="$2" alignItems="center">
@@ -60,11 +60,11 @@ export const ChannelModal = () => {
             <Button
               onPress={() => {
                 const params = {
-                  nookId: `channel:${activeChannelModal}`,
+                  nookId: `channel:${channel.contentId}`,
                 };
                 navigation.navigate("Shelf", params);
                 dispatch(setActiveChannelModal());
-                dispatch(setActiveNook(`channel:${activeChannelModal}`));
+                dispatch(setActiveNook(`channel:${channel.contentId}`));
               }}
             >
               Visit Nook

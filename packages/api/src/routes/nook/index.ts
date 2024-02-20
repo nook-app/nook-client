@@ -1,6 +1,10 @@
 import { FastifyInstance } from "fastify";
 import { NookService } from "../../services/nookService";
-import { GetEntitiesRequest, GetNookRequest } from "../../../types";
+import {
+  GetEntitiesRequest,
+  GetNookRequest,
+  SearchChannelsRequest,
+} from "../../../types";
 import { ContentFeedArgs } from "@nook/common/types";
 
 export const nookRoutes = async (fastify: FastifyInstance) => {
@@ -41,5 +45,13 @@ export const nookRoutes = async (fastify: FastifyInstance) => {
       const nook = await nookService.getNook(request.body.nookId);
       return reply.send(nook);
     });
+
+    fastify.post<{ Querystring: SearchChannelsRequest }>(
+      "/channels",
+      async (request, reply) => {
+        const channels = await nookService.searchChannels(request.query.search);
+        return reply.send({ data: channels });
+      },
+    );
   });
 };

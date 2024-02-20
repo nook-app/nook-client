@@ -5,9 +5,11 @@ import {
   GetEntitiesRequest,
   GetEntitiesResponse,
   GetNookRequest,
+  SearchChannelsRequest,
+  SearchChannelsResponse,
 } from "@nook/api/types";
 import { baseQuery } from "@/store/utils";
-import { ContentFeedArgs, Entity, Nook } from "@nook/common/types";
+import { Channel, ContentFeedArgs, Entity, Nook } from "@nook/common/types";
 
 export const nookApi = createApi({
   reducerPath: "nookApi",
@@ -46,6 +48,16 @@ export const nookApi = createApi({
         method: "POST",
         body: request,
       }),
+    }),
+    searchChannels: builder.query<Channel[], SearchChannelsRequest>({
+      query: (request) => ({
+        url: "/channels",
+        method: "POST",
+        params: request,
+      }),
+      transformResponse: (response: SearchChannelsResponse) => {
+        return response.data;
+      },
     }),
   }),
 });

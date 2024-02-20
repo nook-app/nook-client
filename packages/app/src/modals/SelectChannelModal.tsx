@@ -2,6 +2,8 @@ import { Avatar, Input, Sheet, Text, XStack, YStack } from "tamagui";
 import { useEffect, useState } from "react";
 import { FlatList } from "react-native";
 import { CHANNELS_LIST } from "@/constants";
+import { Channel } from "@nook/common/types";
+import { nookApi } from "@/store/apis/nookApi";
 
 export const SelectChannelModal = ({
   open,
@@ -10,24 +12,27 @@ export const SelectChannelModal = ({
 }: {
   open: boolean;
   setOpen: (open: boolean) => void;
-  onChange: (channel: (typeof CHANNELS_LIST)[0]) => void;
+  onChange: (channel: Channel) => void;
 }) => {
   const [input, setInput] = useState("");
-  const [channels, setChannels] = useState(CHANNELS_LIST.slice(0, 5));
+  const [channels, setChannels] = useState<Channel[]>([]);
   const [position, setPosition] = useState(0);
   const [disableDrag, setDisableDrag] = useState(false);
 
-  useEffect(() => {
+  const [getSearchResults] = nookApi.useLazySearchChannelsQuery();
+
+  const handleSearch = async (input: string) => {
+    setInput(input);
     if (!input) {
       setChannels([]);
-    } else {
-      setChannels(
-        CHANNELS_LIST.filter((channel) =>
-          channel.name.toLowerCase().includes(input.toLowerCase()),
-        ),
-      );
+      return;
     }
-  }, [input]);
+
+    const { data } = await getSearchResults({ search: input });
+    if (data) {
+      setChannels(data);
+    }
+  };
 
   return (
     <Sheet
@@ -50,7 +55,9 @@ export const SelectChannelModal = ({
       <Sheet.Handle />
       <Sheet.Frame padding="$4">
         <YStack gap="$2">
-          {open && <Input value={input} onChangeText={(e) => setInput(e)} />}
+          {open && (
+            <Input value={input} onChangeText={(e) => handleSearch(e)} />
+          )}
           <Text
             fontWeight="700"
             textTransform="uppercase"
@@ -62,7 +69,7 @@ export const SelectChannelModal = ({
           <FlatList
             showsVerticalScrollIndicator={false}
             data={channels}
-            keyExtractor={(item) => item.url}
+            keyExtractor={(item) => item.contentId}
             renderItem={({ item }) => (
               <XStack
                 alignItems="center"

@@ -1,10 +1,17 @@
-import { Content, ContentData, Entity, Nook } from "@nook/common/types";
+import {
+  Channel,
+  Content,
+  ContentData,
+  Entity,
+  Nook,
+} from "@nook/common/types";
 import { User } from "@nook/common/prisma/nook";
 
 export type ContentFeedItem<T = ContentData> = Content<T> & {
   _id: string;
   entities: Entity[];
   contents: Content<ContentData>[];
+  channels: Channel[];
 };
 
 export type ContentFeed = {
@@ -47,4 +54,12 @@ export type GetEntitiesResponse = {
 
 export type GetNookRequest = {
   nookId: string;
+};
+
+export type SearchChannelsRequest = {
+  search: string;
+};
+
+export type SearchChannelsResponse = {
+  data: Channel[];
 };

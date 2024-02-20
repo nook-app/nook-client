@@ -21,14 +21,20 @@ export const getOrCreateChannel = async (
   }
 
   const response = await fetch("https://api.warpcast.com/v2/all-channels");
-  if (!response.ok) return;
+  if (!response.ok) {
+    throw new Error("Failed to fetch channels");
+  }
 
   const data = await response.json();
   const channels: WarpcastChannelData[] = data?.result?.channels;
-  if (!channels) return;
+  if (!channels) {
+    throw new Error("Channel not found");
+  }
 
   const channelData = channels.find((channel) => channel.url === contentId);
-  if (!channelData) return;
+  if (!channelData) {
+    throw new Error("Channel not found");
+  }
 
   let entity: Entity | undefined;
   if (channelData.leadFid) {

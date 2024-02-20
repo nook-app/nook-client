@@ -1,6 +1,7 @@
 import { FastifyInstance } from "fastify";
 import { MongoClient, MongoCollection } from "@nook/common/mongo";
 import {
+  Channel,
   Content,
   ContentData,
   ContentFeedArgs,
@@ -10,7 +11,7 @@ import {
 import { ContentFeed, ContentFeedItem } from "../../types";
 import { ObjectId } from "mongodb";
 import { createChannelNook, createEntityNook } from "../utils/nooks";
-import { getOrCreateChannel } from "@nook/common/scraper/channel";
+import { getOrCreateChannel } from "@nook/common/scraper";
 
 const PAGE_SIZE = 25;
 
@@ -66,16 +67,21 @@ export class NookService {
       .limit(PAGE_SIZE)
       .toArray();
 
-    const { contents, entities } =
+    const { contents, entities, channels } =
       await this.getReferencedContentsAndEntities(content);
 
     const data = content.map((a) => {
       const relevantContents = [];
+      const relevantChannels = [];
 
       for (const contentId of a.referencedContentIds) {
         const content = contents.find((c) => c.contentId === contentId);
         if (content) {
           relevantContents.push(content);
+        }
+        const channel = channels.find((c) => c.contentId === contentId);
+        if (channel) {
+          relevantChannels.push(channel);
         }
       }
 
@@ -86,6 +92,10 @@ export class NookService {
         const content = contents.find((c) => c.contentId === contentId);
         if (content) {
           relevantContents.push(content);
+        }
+        const channel = channels.find((c) => c.contentId === contentId);
+        if (channel) {
+          relevantChannels.push(channel);
         }
       }
 
@@ -107,11 +117,13 @@ export class NookService {
           relevantEntities.push(entity);
         }
       }
+
       return {
         ...a,
         _id: a._id.toString(),
         entities: relevantEntities,
         contents: relevantContents,
+        channels: relevantChannels,
       };
     });
 
@@ -157,9 +169,16 @@ export class NookService {
       .find({ _id: { $in: referencedEntityIds } })
       .toArray();
 
+    const channels = await this.getChannels(
+      Array.from(
+        new Set([...referencedContentIds, ...secondLevelReferencedContentIds]),
+      ),
+    );
+
     return {
       contents: [...contents, ...secondLevelContents],
       entities,
+      channels,
     };
   }
 
@@ -167,15 +186,15 @@ export class NookService {
     const content = await this.client.findContent(contentId);
     if (!content) return;
 
-    const { contents, entities } = await this.getReferencedContentsAndEntities([
-      content,
-    ]);
+    const { contents, entities, channels } =
+      await this.getReferencedContentsAndEntities([content]);
 
     return {
       ...content,
       _id: content._id.toString(),
       entities,
       contents,
+      channels,
     };
   }
 
@@ -185,6 +204,14 @@ export class NookService {
       .find({ _id: { $in: entityIds.map((id) => new ObjectId(id)) } })
       .toArray();
     return entities;
+  }
+
+  async getChannels(channelIds: string[]): Promise<Channel[]> {
+    const channels = await this.client
+      .getCollection<Channel>(MongoCollection.Channels)
+      .find({ contentId: { $in: channelIds } })
+      .toArray();
+    return channels;
   }
 
   async getNook(nookId: string): Promise<Nook> {
@@ -220,5 +247,13 @@ export class NookService {
     }
 
     throw new Error("Nook not found");
+  }
+
+  async searchChannels(query: string): Promise<Channel[]> {
+    const channels = await this.client
+      .getCollection<Channel>(MongoCollection.Channels)
+      .find({ name: { $regex: new RegExp(query, "i") } })
+      .toArray();
+    return channels;
   }
 }

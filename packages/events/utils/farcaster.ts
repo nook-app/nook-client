@@ -13,7 +13,7 @@ import { Entity } from "@nook/common/types/entity";
 import { getOrCreateEntitiesForFids } from "@nook/common/entity";
 import { publishContent } from "@nook/common/queues";
 import { ObjectId } from "mongodb";
-import { getOrCreateChannel } from "@nook/common/scraper/channel";
+import { getOrCreateChannel } from "@nook/common/scraper";
 
 export const getOrCreatePostContent = async (
   client: MongoClient,
