@@ -6,7 +6,6 @@ export default function NotificationsScreen() {
   return (
     <View
       backgroundColor="$background"
-      theme="gray"
       height="100%"
       style={{
         paddingTop: insets.top,

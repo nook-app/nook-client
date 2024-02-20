@@ -1,5 +1,6 @@
 import { UrlMetadata } from "@nook/common/types";
-import { Image, Text, View, XStack, YStack } from "tamagui";
+import { Image } from "expo-image";
+import { Text, View, XStack, YStack } from "tamagui";
 
 export const EmbedTwitter = ({
   metadata,
@@ -19,7 +20,11 @@ export const EmbedTwitter = ({
         <View marginRight="$1">
           <Image
             source={{ width: 20, height: 20, uri: metadata.metadata?.image }}
-            borderRadius="$10"
+            style={{
+              width: 20,
+              height: 20,
+              borderRadius: 10,
+            }}
           />
         </View>
         <Text fontWeight="700">{metadata.metadata?.title}</Text>

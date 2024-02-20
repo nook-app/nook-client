@@ -2,7 +2,7 @@ import { configureStore } from "@reduxjs/toolkit";
 import { userApi } from "./apis/userApi";
 import { nookApi } from "./apis/nookApi";
 import { farcasterApi } from "./apis/farcasterApi";
-import drawerReducer from "./slices/drawer";
+import navigatorReducer from "./slices/navigator";
 import contentReducer from "./slices/content";
 import userReducer from "./slices/user";
 import entityReducer from "./slices/entity";
@@ -13,7 +13,7 @@ export const store = configureStore({
     [userApi.reducerPath]: userApi.reducer,
     [nookApi.reducerPath]: nookApi.reducer,
     [farcasterApi.reducerPath]: farcasterApi.reducer,
-    drawer: drawerReducer,
+    navigator: navigatorReducer,
     content: contentReducer,
     entities: entityReducer,
     user: userReducer,

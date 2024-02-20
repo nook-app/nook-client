@@ -133,3 +133,7 @@ dist
 **/generated
 
 .DS_Store
+
+android
+
+ios

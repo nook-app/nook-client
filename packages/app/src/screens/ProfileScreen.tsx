@@ -4,6 +4,55 @@ import { Image } from "tamagui";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
 import { useAppSelector } from "@/store/hooks/useAppSelector";
+import { EntityAvatar } from "@/components/entity/avatar";
+import { EntityDisplay } from "@/components/entity/display";
+import { TouchableOpacity } from "react-native-gesture-handler";
+import { useAppDispatch } from "@/store/hooks/useAppDispatch";
+import { setTheme } from "@/store/slices/user";
+
+export const ThemeSelector = () => {
+  const dispatch = useAppDispatch();
+  const themes = [
+    "blue",
+    "gray",
+    "green",
+    "orange",
+    "pink",
+    "purple",
+    "red",
+    "yellow",
+  ];
+  return (
+    <YStack gap="$2">
+      <Text
+        color="$gray11"
+        fontSize="$1"
+        fontWeight="700"
+        textTransform="uppercase"
+      >
+        SELECT THEME
+      </Text>
+      <XStack gap="$2">
+        {themes.map((theme) => (
+          <TouchableOpacity
+            key={theme}
+            onPress={() => dispatch(setTheme(theme))}
+          >
+            <View
+              theme={theme}
+              backgroundColor="$color5"
+              width="$3"
+              height="$3"
+              borderRadius="$10"
+              borderWidth="$1"
+              borderColor="$color7"
+            />
+          </TouchableOpacity>
+        ))}
+      </XStack>
+    </YStack>
+  );
+};
 
 export default function ProfilePage() {
   const { signOut } = useAuth();
@@ -11,53 +60,51 @@ export default function ProfilePage() {
   const insets = useSafeAreaInsets();
   const tabHeight = useBottomTabBarHeight();
 
+  if (!entity) return null;
+
   return (
     <YStack
-      flex={1}
-      justifyContent="space-between"
-      alignItems="center"
-      backgroundColor="$background"
-      theme="gray"
+      flexGrow={1}
+      backgroundColor="$backgroundStrong"
+      minHeight="100%"
+      justifyContent="flex-end"
       style={{
         paddingTop: insets.top,
-        paddingBottom: insets.bottom + tabHeight,
+        paddingBottom: tabHeight,
         paddingLeft: insets.left,
         paddingRight: insets.right,
       }}
     >
-      {entity && (
-        <>
-          <View flexGrow={1} alignItems="center" marginTop="$10">
-            <XStack gap="$2" alignItems="center">
-              <Image
-                source={{
-                  width: 40,
-                  height: 40,
-                  uri: entity.farcaster?.pfp,
-                }}
-                borderRadius="$10"
-              />
-              <YStack>
-                <Text fontWeight="700" fontSize="$5">
-                  {entity.farcaster?.displayName}
-                </Text>
-                <Text color="$gray11" fontSize="$4">
-                  {`@${entity.farcaster?.username}`}
-                </Text>
-              </YStack>
-            </XStack>
-          </View>
-          <YStack padding="$5" paddingVertical="$2" width="100%" gap="$2">
-            <Button
-              onPress={() => {
-                signOut();
-              }}
-            >
-              Sign Out
-            </Button>
-          </YStack>
-        </>
-      )}
+      <View
+        backgroundColor="$background"
+        flexGrow={1}
+        marginHorizontal="$2"
+        borderTopStartRadius="$8"
+        borderTopEndRadius="$8"
+        paddingHorizontal="$3"
+        paddingVertical="$4"
+        justifyContent="space-between"
+      >
+        <YStack gap="$4">
+          <XStack gap="$2" alignItems="center">
+            <EntityAvatar entityId={entity._id.toString()} size="$5" />
+            <EntityDisplay
+              entityId={entity._id.toString()}
+              orientation="vertical"
+            />
+          </XStack>
+          <ThemeSelector />
+        </YStack>
+        <YStack padding="$5" paddingVertical="$2" width="100%" gap="$2">
+          <Button
+            onPress={() => {
+              signOut();
+            }}
+          >
+            Sign Out
+          </Button>
+        </YStack>
+      </View>
     </YStack>
   );
 }

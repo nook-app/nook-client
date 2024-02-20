@@ -10,10 +10,9 @@ import { useDrawerStatus } from "@react-navigation/drawer";
 import { useEffect } from "react";
 import { ArrowLeft } from "@tamagui/lucide-icons";
 import { useAppDispatch } from "@/store/hooks/useAppDispatch";
-import { setDrawerOpen } from "@/store/slices/drawer";
+import { setDrawerOpen } from "@/store/slices/navigator";
 import { View } from "tamagui";
 import ShelfScreen from "@/screens/ShelfScreen";
-import { useAppSelector } from "@/store/hooks/useAppSelector";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import ContentScreen from "@/screens/ContentScreen";
 import { RootStackParamList } from "@/types";
@@ -93,6 +92,5 @@ export function NookNavigator() {
 }
 
 const HeaderBackground = () => {
-  const theme = useAppSelector((state) => state.user.theme);
-  return <View backgroundColor="$background" theme={theme} height="100%" />;
+  return <View backgroundColor="$backgroundStrong" height="100%" />;
 };

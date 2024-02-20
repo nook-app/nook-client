@@ -88,7 +88,11 @@ export const SwipeablePanels = ({ panels }: { panels: NookPanel[] }) => {
   return (
     <>
       <CreatePostButton />
-      <YStack borderBottomWidth="$1" borderColor="$borderColor">
+      <YStack
+        borderBottomWidth="$1"
+        borderColor="$borderColor"
+        backgroundColor="$backgroundStrong"
+      >
         <XStack
           paddingHorizontal="$5"
           paddingVertical="$1"

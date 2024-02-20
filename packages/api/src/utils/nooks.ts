@@ -41,8 +41,7 @@ export const getDefaultEntityNook = (entity: Entity): Nook => {
       "Home",
     description: entity.farcaster.bio || "Your personal space",
     image: entity.farcaster.pfp || "",
-    slug: entity._id.toString(),
-    theme: "gray",
+    slug: `@${entity.farcaster.username || entity.farcaster.fid}`,
     shelves: [
       {
         name: "Posts",
@@ -110,8 +109,7 @@ export const getDefaultChannelNook = (content: Content<ContentData>): Nook => {
     name: content.channel?.name || "Channel",
     description: content.channel?.description || "Channel",
     image: content.channel?.imageUrl || "",
-    slug: content.channel?.id || content.contentId,
-    theme: "gray",
+    slug: content.channel?.id ? `/${content.channel.id}` : content.contentId,
     shelves: [
       {
         name: "Posts",

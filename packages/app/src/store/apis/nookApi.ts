@@ -5,9 +5,10 @@ import {
   GetEntitiesRequest,
   GetEntitiesResponse,
   GetNookRequest,
+  GetNookResponse,
 } from "@nook/api/types";
 import { baseQuery } from "@/store/utils";
-import { ContentFeedArgs, Nook } from "@nook/common/types";
+import { ContentFeedArgs, Entity, Nook } from "@nook/common/types";
 
 export const nookApi = createApi({
   reducerPath: "nookApi",
@@ -30,14 +31,17 @@ export const nookApi = createApi({
         body: { contentId },
       }),
     }),
-    getEntities: builder.query<GetEntitiesResponse, GetEntitiesRequest>({
+    getEntities: builder.query<Entity[], GetEntitiesRequest>({
       query: (request) => ({
         url: "/entities",
         method: "POST",
         body: request,
       }),
+      transformResponse: (response: GetEntitiesResponse) => {
+        return response.data;
+      },
     }),
-    getNook: builder.query<Nook, GetNookRequest>({
+    getNook: builder.query<GetNookResponse, GetNookRequest>({
       query: (request) => ({
         url: "/nooks",
         method: "POST",

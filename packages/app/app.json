@@ -12,7 +12,9 @@
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
-    "assetBundlePatterns": ["**/*"],
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "social.nook"
@@ -21,13 +23,17 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/nook.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "social.nook"
     },
     "web": {
       "bundler": "metro",
       "favicon": "./assets/nook.png"
     },
-    "plugins": ["expo-secure-store", "expo-font"],
+    "plugins": [
+      "expo-secure-store",
+      "expo-font"
+    ],
     "extra": {
       "eas": {
         "projectId": "8d68d9d0-c390-497b-9bf9-294d39f27e4f"

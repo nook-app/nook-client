@@ -22,7 +22,7 @@ export const CreatePostButton = () => {
       }}
       animation="bouncy"
     >
-      <Plus size={24} />
+      <Plus size={24} color="$gray12" />
     </View>
   );
 };

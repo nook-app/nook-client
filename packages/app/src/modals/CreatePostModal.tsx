@@ -1,5 +1,4 @@
 import {
-  Avatar,
   Button,
   ScrollView,
   Spinner,
@@ -17,7 +16,7 @@ import { EnableSignerModal } from "./EnableSignerModal";
 import { EntityAvatar } from "@/components/entity/avatar";
 import { useEffect, useRef, useState } from "react";
 import { SelectChannelModal } from "./SelectChannelModal";
-import { ChevronDown, Image, X } from "@tamagui/lucide-icons";
+import { ChevronDown, Image } from "@tamagui/lucide-icons";
 import {
   Keyboard,
   KeyboardAvoidingView,
@@ -35,7 +34,6 @@ export const CreatePostModal = () => {
   const signerEnabled = useAppSelector(
     (state) => state.user.user?.signerEnabled || false,
   );
-  const theme = useAppSelector((state) => state.user.theme);
   const entity = useAppSelector((state) => state.user.entity);
   const inputRef = useRef<TextInput>(null);
   const [channel, setChannel] = useState<(typeof CHANNELS_LIST)[0]>();
@@ -119,7 +117,6 @@ export const CreatePostModal = () => {
         flexGrow={1}
         backgroundColor="$background"
         justifyContent="space-between"
-        theme={theme}
         style={{
           paddingTop: insets.top,
           paddingBottom: insets.bottom,

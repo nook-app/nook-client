@@ -19,7 +19,6 @@ export default function ShelfScreen() {
   const storedNook = nookId
     ? selectNookById(store.getState(), nookId)
     : undefined;
-  const theme = useAppSelector((state) => state.user.theme);
   const { data: fetchedNook } = nookApi.useGetNookQuery(
     { nookId },
     {
@@ -46,7 +45,6 @@ export default function ShelfScreen() {
         backgroundColor="$background"
         justifyContent="center"
         height="100%"
-        theme={theme}
       >
         <Spinner size="large" paddingTop="$5" />
       </View>
@@ -54,7 +52,7 @@ export default function ShelfScreen() {
   }
 
   return (
-    <View backgroundColor="$background" height="100%" theme={theme}>
+    <View backgroundColor="$background" height="100%">
       <SwipeablePanels key={activeShelf.slug} panels={activeShelf.panels} />
       <EntityModal />
       <ChannelModal />

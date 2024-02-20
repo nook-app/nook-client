@@ -1,11 +1,9 @@
-import { useAuth } from "@/context/auth";
-import NotificationsScreen from "@/screens/NotficationsScreen";
 import ProfileScreen from "@/screens/ProfileScreen";
 import {
   BottomTabBar,
   createBottomTabNavigator,
 } from "@react-navigation/bottom-tabs";
-import { Bell, LayoutGrid } from "@tamagui/lucide-icons";
+import { LayoutGrid } from "@tamagui/lucide-icons";
 import Animated, {
   useAnimatedStyle,
   withTiming,
@@ -21,7 +19,7 @@ export function AuthNavigator() {
   const entity = useAppSelector((state) => state.user.entity);
   const theme = useTheme();
   const nooks = useAppSelector((state) => state.user.nooks);
-  const isDrawerOpen = useAppSelector((state) => state.drawer.isOpen);
+  const isDrawerOpen = useAppSelector((state) => state.navigator.isDrawerOpen);
 
   const animatedStyle = useAnimatedStyle(() => {
     return {
@@ -47,7 +45,6 @@ export function AuthNavigator() {
         tabBarBackground: () => (
           <View
             backgroundColor="$background"
-            theme="gray"
             height="100%"
             borderTopWidth="$0.5"
             borderTopColor="$borderColor"
@@ -78,7 +75,7 @@ export function AuthNavigator() {
           ),
         }}
       />
-      <Tabs.Screen
+      {/* <Tabs.Screen
         name="Notifications"
         component={NotificationsScreen}
         options={{
@@ -95,7 +92,7 @@ export function AuthNavigator() {
             </Text>
           ),
         }}
-      />
+      /> */}
       <Tabs.Screen
         name="Profile"
         component={ProfileScreen}

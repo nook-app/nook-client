@@ -29,9 +29,7 @@ export const userSlice = createSlice({
       state.activeNook = action.payload;
     },
     setTheme: (state, action: PayloadAction<string>) => {
-      if (action.payload) {
-        state.theme = action.payload;
-      }
+      state.theme = action.payload;
     },
     setActiveShelf: (
       state,
@@ -63,7 +61,7 @@ export const userSlice = createSlice({
         state.user = action.payload.user;
         state.entity = action.payload.entity;
         state.nooks = action.payload.nooks;
-        state.theme = action.payload.nooks[0]?.theme || "gray";
+        state.theme = "green";
       },
     );
   },

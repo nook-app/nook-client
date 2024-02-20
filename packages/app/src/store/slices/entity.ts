@@ -29,13 +29,19 @@ const entitySlice = createSlice({
     builder.addMatcher(
       nookApi.endpoints.getEntities.matchFulfilled,
       (state, action) => {
-        entityAdapter.addMany(state, action.payload.data);
+        entityAdapter.addMany(state, action.payload);
       },
     );
     builder.addMatcher(
       userApi.endpoints.getUser.matchFulfilled,
       (state, action) => {
         entityAdapter.addOne(state, action.payload.entity);
+      },
+    );
+    builder.addMatcher(
+      nookApi.endpoints.getNook.matchFulfilled,
+      (state, action) => {
+        entityAdapter.addMany(state, action.payload.entities);
       },
     );
   },

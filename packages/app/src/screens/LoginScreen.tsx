@@ -78,7 +78,6 @@ export default function LoginScreen() {
       justifyContent="space-between"
       alignItems="center"
       backgroundColor="$background"
-      theme="gray"
       style={{
         paddingTop: insets.top,
         paddingBottom: insets.bottom,

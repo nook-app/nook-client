@@ -17,7 +17,6 @@ export type Nook = {
   slug: string;
   description: string;
   image: string;
-  theme: string;
   shelves: NookShelf[];
   creatorId: ObjectId;
   createdAt: Date;
