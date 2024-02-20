@@ -131,7 +131,9 @@ export const getAndBackfillVerfications = async (
         return message.value.messages;
       }),
     )
-  ).flat() as Message[];
+  )
+    .flat()
+    .filter(Boolean) as Message[];
 
   return await backfillVerifications(messages);
 };

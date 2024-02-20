@@ -86,7 +86,7 @@ const getFarcasterUsers = async (fids: string[]) => {
   });
 
   if (!response.ok) {
-    throw new Error(`Failed getting cast with ${response.status} for ${fids}`);
+    throw new Error(`Failed getting user with ${response.status} for ${fids}`);
   }
 
   return await response.json();

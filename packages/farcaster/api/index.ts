@@ -149,18 +149,34 @@ const run = async () => {
           },
         });
 
-        const username = userData.find(
+        let username = userData.find(
           (d) => d.type === UserDataType.USERNAME,
         )?.value;
-        const pfp = userData.find((d) => d.type === UserDataType.PFP)?.value;
-        const displayName = userData.find(
+        let pfp = userData.find((d) => d.type === UserDataType.PFP)?.value;
+        let displayName = userData.find(
           (d) => d.type === UserDataType.DISPLAY,
         )?.value;
-        const bio = userData.find((d) => d.type === UserDataType.BIO)?.value;
+        let bio = userData.find((d) => d.type === UserDataType.BIO)?.value;
         const url = userData.find((d) => d.type === UserDataType.URL)?.value;
 
         if (!username || !displayName || !pfp || !bio) {
           userData = await getAndBackfillUserDatas(client, [fid]);
+          if (!username) {
+            username = userData.find(
+              (d) => d.type === UserDataType.USERNAME,
+            )?.value;
+          }
+          if (!pfp) {
+            pfp = userData.find((d) => d.type === UserDataType.PFP)?.value;
+          }
+          if (!displayName) {
+            displayName = userData.find(
+              (d) => d.type === UserDataType.DISPLAY,
+            )?.value;
+          }
+          if (!bio) {
+            bio = userData.find((d) => d.type === UserDataType.BIO)?.value;
+          }
         }
 
         // TODO: get custody address

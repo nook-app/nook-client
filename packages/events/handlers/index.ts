@@ -23,7 +23,6 @@ import { handleUrlReactionAddOrRemove } from "./farcaster/urlReactionAddOrRemove
 import { handleLinkAddOrRemove } from "./farcaster/linkAddOrRemove";
 import { handleUserDataAdd } from "./farcaster/userDataAdd";
 import { handleVerificationAddOrRemove } from "./farcaster/verificationAddOrRemove";
-import { publishAction } from "@nook/common/queues";
 
 export const getEventsHandler = async () => {
   const client = new MongoClient();
