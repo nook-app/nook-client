@@ -2,14 +2,28 @@ import { ObjectId } from "mongodb";
 import { PostData } from "./contentTypes/post";
 import { Metadata } from "metascraper";
 import { Topic } from "./topics";
+import { NFT } from "./providers/simplehash/nft";
+import { NFTCollection } from "./providers/simplehash/contract";
 
-export type ContentData = PostData | UrlMetadata;
+export type ContentData = PostData | UrlMetadata | NFT | NFTCollection;
 
 export enum ContentType {
   POST = "POST",
   REPLY = "REPLY",
   URL = "URL",
+  NFT = "NFT",
+  NFT_CONTRACT = "NFT_CONTRACT",
 }
+
+export type ContentChannel = {
+  id: string;
+  url: string;
+  name: string;
+  description: string;
+  imageUrl: string;
+  creatorId?: ObjectId;
+  createdAt: Date;
+};
 
 export type ContentBase = {
   /** ID for the content in URI format */
@@ -54,6 +68,9 @@ export type ContentBase = {
 
   /** References entity IDs */
   referencedEntityIds: ObjectId[];
+
+  /** Content channel, if it exists */
+  channel?: ContentChannel;
 };
 
 export type UnstructuredFrameMetascraperButtonKeys = {

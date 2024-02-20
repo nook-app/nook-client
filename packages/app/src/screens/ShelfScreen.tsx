@@ -8,23 +8,24 @@ import { nookApi } from "@/store/apis/nookApi";
 import { Spinner, View } from "tamagui";
 import { useAppSelector } from "@/store/hooks/useAppSelector";
 import { EntityModal } from "@/modals/EntityModal";
-import { useAppDispatch } from "@/store/hooks/useAppDispatch";
-import { setActiveNook } from "@/store/slices/user";
+import { ChannelModal } from "@/modals/ChannelModal";
 
 export default function ShelfScreen() {
   const {
     params: { nookId, shelfId },
   } = useRoute<RouteProp<RootStackParamList, "Shelf">>();
   const navigation = useNavigation();
-  const dispatch = useAppDispatch();
 
   const storedNook = nookId
     ? selectNookById(store.getState(), nookId)
     : undefined;
   const theme = useAppSelector((state) => state.user.theme);
-  const { data: fetchedNook } = nookApi.useGetNookQuery(nookId, {
-    skip: !!storedNook,
-  });
+  const { data: fetchedNook } = nookApi.useGetNookQuery(
+    { nookId },
+    {
+      skip: !!storedNook,
+    },
+  );
   const activeNook = storedNook || fetchedNook;
 
   const activeShelf =
@@ -46,7 +47,9 @@ export default function ShelfScreen() {
         justifyContent="center"
         height="100%"
         theme={theme}
-      />
+      >
+        <Spinner size="large" paddingTop="$5" />
+      </View>
     );
   }
 
@@ -54,6 +57,7 @@ export default function ShelfScreen() {
     <View backgroundColor="$background" height="100%" theme={theme}>
       <SwipeablePanels key={activeShelf.slug} panels={activeShelf.panels} />
       <EntityModal />
+      <ChannelModal />
     </View>
   );
 }

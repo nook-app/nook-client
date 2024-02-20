@@ -7,7 +7,7 @@ import {
   timestampToDate,
   MessageHandlerArgs,
   bufferToHexAddress,
-} from "../../utils";
+} from "@nook/common/farcaster";
 import { HubRpcClient, Message } from "@farcaster/hub-nodejs";
 import {
   EventService,

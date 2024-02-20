@@ -16,7 +16,9 @@
     "./prisma/farcaster": "./dist/prisma/farcaster.js",
     "./prisma/nook": "./dist/prisma/nook.js",
     "./mongo": "./dist/mongo/index.js",
-    "./constants": "./dist/constants/index.js"
+    "./constants": "./dist/constants/index.js",
+    "./farcaster": "./dist/farcaster/index.js",
+    "./scraper": "./dist/scraper/index.js"
   },
   "dependencies": {
     "@prisma/client": "5.7.1",

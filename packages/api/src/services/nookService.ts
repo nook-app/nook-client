@@ -9,7 +9,8 @@ import {
 } from "@nook/common/types";
 import { ContentFeed, ContentFeedItem } from "../../types";
 import { ObjectId } from "mongodb";
-import { createEntityNook } from "../utils/nooks";
+import { createChannelNook, createEntityNook } from "../utils/nooks";
+import { getContentWithChannel } from "../utils/channels";
 
 const PAGE_SIZE = 25;
 
@@ -194,7 +195,6 @@ export class NookService {
     if (nook) return nook;
 
     if (nookId.startsWith("entity:")) {
-      console.log(nookId);
       const entity = await this.client.findEntity(
         new ObjectId(nookId.replace("entity:", "")),
       );
@@ -202,6 +202,16 @@ export class NookService {
         throw new Error("Entity not found");
       }
       return createEntityNook(this.client, entity);
+    }
+    if (nookId.startsWith("channel:")) {
+      const content = await getContentWithChannel(
+        this.client,
+        nookId.replace("channel:", ""),
+      );
+      if (!content) {
+        throw new Error("Channel not found");
+      }
+      return createChannelNook(this.client, content);
     }
   }
 }

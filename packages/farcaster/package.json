@@ -11,9 +11,6 @@
     "start:backfill": "node dist/consumer/backfill.js",
     "start:test": "tsc && node dist/test.js"
   },
-  "exports": {
-    "./utils": "./dist/utils/index.js"
-  },
   "dependencies": {
     "@ethersproject/abstract-signer": "^5.7.0",
     "@farcaster/fishery": "^2.2.3",

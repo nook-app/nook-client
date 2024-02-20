@@ -5,7 +5,7 @@ import {
   MessageHandlerArgs,
   bufferToHex,
   bufferToHexAddress,
-} from "../../utils";
+} from "@nook/common/farcaster";
 import {
   EventService,
   EventType,

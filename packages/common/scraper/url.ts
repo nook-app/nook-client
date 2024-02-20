@@ -18,7 +18,7 @@ import metascraperPublisher from "metascraper-publisher";
 import metascraperReadability from "metascraper-readability";
 import metascraperUrl from "metascraper-url";
 import metascraperVideo from "metascraper-video";
-import { metascraperFrame } from "../utils/metascraper-frame";
+import { metascraperFrame } from "./utils/metascraper-frame";
 import {
   UrlMetadata,
   FrameMetascraperData,
@@ -75,15 +75,10 @@ const USER_AGENT_OVERRIDES: { [key: string]: string } = {
  * @param request
  * @returns
  */
-export const getOrCreateUrlContent = async (
+export const createUrlContent = async (
   client: MongoClient,
   contentId: string,
 ): Promise<Content<UrlMetadata>> => {
-  const existingContent = await client.findContent(contentId);
-  if (existingContent) {
-    return existingContent as Content<UrlMetadata>;
-  }
-
   const timestamp = new Date();
   const content = {
     _id: ObjectId.createFromTime(timestamp.getTime() / 1000),

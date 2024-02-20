@@ -10,10 +10,10 @@ import {
   TokenResponse,
   GetUserResponse,
 } from "../../types";
-import { Entity, Nook, NookSource } from "@nook/common/types";
+import { Entity, Nook } from "@nook/common/types";
 import { PrismaClient } from "@nook/common/prisma/nook";
 import { ObjectId } from "mongodb";
-import { getDefaultEntityNook, getOrCreateEntityNook } from "../utils/nooks";
+import { getOrCreateEntityNook } from "../utils/nooks";
 
 export class UserService {
   private client: MongoClient;

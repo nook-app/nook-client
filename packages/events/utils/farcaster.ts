@@ -7,7 +7,7 @@ import {
   Topic,
   TopicType,
 } from "@nook/common/types";
-import { toFarcasterURI } from "@nook/farcaster/utils";
+import { toFarcasterURI } from "@nook/common/farcaster";
 import { MongoClient } from "@nook/common/mongo";
 import { Entity } from "@nook/common/types/entity";
 import { getOrCreateEntitiesForFids } from "@nook/common/entity";

@@ -8,7 +8,7 @@ import {
   EventActionData,
 } from "@nook/common/types";
 import { MongoClient } from "@nook/common/mongo";
-import { toFarcasterURI } from "@nook/farcaster/utils";
+import { toFarcasterURI } from "@nook/common/farcaster";
 import { getOrCreatePostContentFromData } from "../../utils/farcaster";
 
 export const handleCastAddOrRemove = async (

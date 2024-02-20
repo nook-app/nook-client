@@ -8,7 +8,7 @@ import {
   bufferToHex,
   bufferToHexAddress,
   timestampToDate,
-} from "../../utils";
+} from "@nook/common/farcaster";
 
 const prisma = new PrismaClient();
 

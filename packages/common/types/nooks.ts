@@ -1,13 +1,17 @@
 import { ObjectId } from "mongodb";
 
-export enum NookSource {
-  Entity = "ENTITY",
-  Content = "CONTENT",
-  Custom = "CUSTOM",
+export enum NookType {
+  Entity = "entity",
+  Entities = "entities",
+  Channel = "channel",
+  Channels = "channels",
+  Content = "content",
+  Custom = "custom",
 }
 
 export type Nook = {
   _id: ObjectId;
+  type: NookType;
   nookId: string;
   name: string;
   slug: string;

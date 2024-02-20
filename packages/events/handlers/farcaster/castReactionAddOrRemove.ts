@@ -13,7 +13,7 @@ import {
   ContentActionData,
 } from "@nook/common/types";
 import { ObjectId } from "mongodb";
-import { toFarcasterURI } from "@nook/farcaster/utils";
+import { toFarcasterURI } from "@nook/common/farcaster";
 import { getOrCreateEntitiesForFids } from "@nook/common/entity";
 import { getOrCreatePostContent } from "../../utils/farcaster";
 

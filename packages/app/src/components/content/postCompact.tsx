@@ -12,10 +12,14 @@ import { EntityDisplay } from "../entity/display";
 import { CHANNELS } from "@/constants";
 import { Image } from "expo-image";
 import { Heart, MessageSquare, RefreshCw } from "@tamagui/lucide-icons";
+import { useAppDispatch } from "@/store/hooks/useAppDispatch";
+import { setActiveChannelModal } from "@/store/slices/user";
+import { TouchableOpacity } from "react-native-gesture-handler";
 
 export const ContentPostCompact = ({
   item: { data, timestamp, engagement, tips },
 }: { item: ContentFeedItem<PostData> }) => {
+  const dispatch = useAppDispatch();
   const degenTips =
     tips["chain://eip155:8453/erc20:0xc9034c3e7f58003e6ae0c8438e7c8f4598d5acaa"]
       ?.amount || 0;
@@ -39,15 +43,23 @@ export const ContentPostCompact = ({
           {data.channelId && CHANNELS[data.channelId] && (
             <>
               <Text color="$gray11">in</Text>
-              <View borderRadius="$10" overflow="hidden">
-                <Image
-                  source={{ uri: CHANNELS[data.channelId]?.imageUrl }}
-                  style={{ width: 16, height: 16 }}
-                />
-              </View>
-              <Text numberOfLines={1} ellipsizeMode="tail" fontWeight="500">
-                {CHANNELS[data.channelId].name}
-              </Text>
+              <TouchableOpacity
+                onPress={() => dispatch(setActiveChannelModal(data.channelId))}
+              >
+                <View borderRadius="$10" overflow="hidden">
+                  <Image
+                    source={{ uri: CHANNELS[data.channelId]?.imageUrl }}
+                    style={{ width: 16, height: 16 }}
+                  />
+                </View>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => dispatch(setActiveChannelModal(data.channelId))}
+              >
+                <Text numberOfLines={1} ellipsizeMode="tail" fontWeight="500">
+                  {CHANNELS[data.channelId].name}
+                </Text>
+              </TouchableOpacity>
             </>
           )}
         </XStack>

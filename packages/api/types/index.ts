@@ -1,10 +1,4 @@
-import {
-  Content,
-  ContentData,
-  Entity,
-  Nook,
-  NookSource,
-} from "@nook/common/types";
+import { Content, ContentData, Entity, Nook } from "@nook/common/types";
 import { User } from "@nook/common/prisma/nook";
 
 export type ContentFeedItem<T = ContentData> = Content<T> & {

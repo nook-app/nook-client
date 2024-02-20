@@ -11,6 +11,7 @@ interface UserState {
   activeNook?: string;
   activeShelves: Record<string, string>;
   activeEntityModal?: string;
+  activeChannelModal?: string;
 }
 
 const initialState: UserState = {
@@ -48,6 +49,12 @@ export const userSlice = createSlice({
     ) => {
       state.activeEntityModal = action.payload;
     },
+    setActiveChannelModal: (
+      state,
+      action: PayloadAction<string | undefined>,
+    ) => {
+      state.activeChannelModal = action.payload;
+    },
   },
   extraReducers: (builder) => {
     builder.addMatcher(
@@ -68,6 +75,7 @@ export const {
   setActiveShelf,
   setSignerEnabled,
   setActiveEntityModal,
+  setActiveChannelModal,
 } = userSlice.actions;
 
 export default userSlice.reducer;

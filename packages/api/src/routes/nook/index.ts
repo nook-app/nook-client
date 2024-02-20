@@ -37,12 +37,9 @@ export const nookRoutes = async (fastify: FastifyInstance) => {
       },
     );
 
-    fastify.get<{ Params: GetNookRequest }>(
-      "/nooks/:nookId",
-      async (request, reply) => {
-        const nook = await nookService.getNook(request.params.nookId);
-        return reply.send(nook);
-      },
-    );
+    fastify.post<{ Body: GetNookRequest }>("/nooks", async (request, reply) => {
+      const nook = await nookService.getNook(request.body.nookId);
+      return reply.send(nook);
+    });
   });
 };

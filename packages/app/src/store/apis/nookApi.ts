@@ -37,10 +37,11 @@ export const nookApi = createApi({
         body: request,
       }),
     }),
-    getNook: builder.query<Nook, string>({
+    getNook: builder.query<Nook, GetNookRequest>({
       query: (request) => ({
-        url: `/nooks/${request}`,
-        method: "GET",
+        url: "/nooks",
+        method: "POST",
+        body: request,
       }),
     }),
   }),

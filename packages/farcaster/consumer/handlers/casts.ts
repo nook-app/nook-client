@@ -6,7 +6,7 @@ import {
   MessageHandlerArgs,
   toFarcasterURI,
   bufferToHexAddress,
-} from "../../utils";
+} from "@nook/common/farcaster";
 import {
   FarcasterCast,
   FarcasterCastEmbedCast,
