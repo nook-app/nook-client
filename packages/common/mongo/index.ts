@@ -32,7 +32,7 @@ export class MongoClient {
   private db: Db;
 
   constructor() {
-    this.client = new Client(process.env.EVENT_DATABASE_URL || "");
+    this.client = new Client(process.env.NOOK_MONGO_URL || "");
     this.db = this.client.db(DB_NAME);
   }
 
