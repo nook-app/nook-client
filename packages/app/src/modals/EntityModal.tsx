@@ -1,27 +1,25 @@
-import { Button, Sheet, Text, View, XStack, YStack } from "tamagui";
-import { useState } from "react";
+import { Button, Text, View, XStack, YStack } from "tamagui";
 import { useAppSelector } from "@/store/hooks/useAppSelector";
-import { setActiveEntityModal, setActiveNook } from "@/store/slices/user";
+import { setActiveNook } from "@/store/slices/user";
 import { EntityAvatar } from "@/components/entity/avatar";
 import { useAppDispatch } from "@/store/hooks/useAppDispatch";
 import { selectEntityById } from "@/store/slices/entity";
 import { store } from "@/store";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { RootStackParamList } from "@/types";
 import { NavigationProp, useNavigation } from "@react-navigation/native";
+import { BottomSheetModal } from "@/components/utils/BottomSheetModal";
+import { setActiveEntityModal } from "@/store/slices/navigator";
 
 export const EntityModal = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+  const theme = useAppSelector((state) => state.user.theme);
   const dispatch = useAppDispatch();
-  const insets = useSafeAreaInsets();
   const activeEntityModal = useAppSelector(
-    (state) => state.user.activeEntityModal,
+    (state) => state.navigator.activeEntityModal,
   );
   const entity = activeEntityModal
     ? selectEntityById(store.getState(), activeEntityModal)
     : undefined;
-
-  const [position, setPosition] = useState(0);
 
   let displayName = entity?.farcaster?.displayName;
   if (!displayName) {
@@ -40,57 +38,67 @@ export const EntityModal = () => {
   }
 
   return (
-    <Sheet
-      open={!!activeEntityModal}
-      onOpenChange={() => {
-        dispatch(setActiveEntityModal());
-      }}
-      snapPoints={[50]}
-      snapPointsMode="percent"
-      dismissOnSnapToBottom
-      zIndex={100_000}
-      animation="quick"
-      position={position}
-      onPositionChange={setPosition}
+    <BottomSheetModal
+      open={!!entity}
+      onClose={() => dispatch(setActiveEntityModal())}
+      enableDynamicSizing
     >
-      <Sheet.Overlay
-        animation="quick"
-        enterStyle={{ opacity: 0 }}
-        exitStyle={{ opacity: 0 }}
-      />
-      <Sheet.Handle />
-      <Sheet.Frame style={{ paddingBottom: insets.bottom }}>
-        {entity && activeEntityModal && (
-          <View flexGrow={1} justifyContent="space-between" padding="$4">
-            <YStack gap="$4">
+      <View theme={theme}>
+        {entity && (
+          <YStack
+            flexGrow={1}
+            justifyContent="space-between"
+            gap="$3"
+            paddingHorizontal="$3"
+          >
+            <YStack
+              gap="$4"
+              backgroundColor="$backgroundStrong"
+              borderRadius="$4"
+              padding="$3"
+            >
               <XStack gap="$2" alignItems="center">
-                <EntityAvatar entityId={activeEntityModal} size="$6" />
+                <EntityAvatar entityId={entity._id.toString()} size="$5" />
                 <YStack>
-                  <Text fontWeight="700" fontSize="$6">
+                  <Text fontWeight="700" fontSize="$5">
                     {displayName}
                   </Text>
-                  <Text color="$gray11" fontSize="$5">
+                  <Text color="$gray11" fontSize="$4">
                     {username}
                   </Text>
                 </YStack>
               </XStack>
               {entity?.farcaster?.bio && <Text>{entity.farcaster.bio}</Text>}
+              <XStack gap="$2">
+                <View flexDirection="row" alignItems="center" gap="$1">
+                  <Text fontWeight="700">
+                    {entity.farcaster.following || 0}
+                  </Text>
+                  <Text color="$gray11">following</Text>
+                </View>
+                <View flexDirection="row" alignItems="center" gap="$1">
+                  <Text fontWeight="700">
+                    {entity.farcaster.followers || 0}
+                  </Text>
+                  <Text color="$gray11">followers</Text>
+                </View>
+              </XStack>
             </YStack>
             <Button
               onPress={() => {
                 const params = {
-                  nookId: `entity:${activeEntityModal}`,
+                  nookId: `entity:${entity._id.toString()}`,
                 };
                 navigation.navigate("Shelf", params);
                 dispatch(setActiveEntityModal());
-                dispatch(setActiveNook(`entity:${activeEntityModal}`));
+                dispatch(setActiveNook(`entity:${entity._id.toString()}`));
               }}
             >
               Visit Nook
             </Button>
-          </View>
+          </YStack>
         )}
-      </Sheet.Frame>
-    </Sheet>
+      </View>
+    </BottomSheetModal>
   );
 };

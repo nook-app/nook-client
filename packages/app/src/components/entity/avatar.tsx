@@ -1,7 +1,7 @@
 import { store } from "@/store";
 import { useAppDispatch } from "@/store/hooks/useAppDispatch";
 import { selectEntityById } from "@/store/slices/entity";
-import { setActiveEntityModal } from "@/store/slices/user";
+import { setActiveEntityModal } from "@/store/slices/navigator";
 import { TouchableOpacity } from "react-native-gesture-handler";
 import { Avatar } from "tamagui";
 

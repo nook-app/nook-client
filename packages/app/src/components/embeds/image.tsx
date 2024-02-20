@@ -13,7 +13,9 @@ export const EmbedImage = ({ embed }: { embed: string }) => {
       onLayout={({ nativeEvent }) => {
         if (embed) {
           TImage.getSize(embed, (w, h) => {
-            setHeight((h / w) * nativeEvent.layout.width);
+            if (w > 0) {
+              setHeight((h / w) * nativeEvent.layout.width);
+            }
           });
         }
       }}

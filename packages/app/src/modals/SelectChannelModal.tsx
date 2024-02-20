@@ -1,23 +1,25 @@
-import { Avatar, Input, Sheet, Text, XStack, YStack } from "tamagui";
-import { useEffect, useState } from "react";
+import { Avatar, Input, Text, View, XStack, YStack } from "tamagui";
+import { useState } from "react";
 import { FlatList } from "react-native";
-import { CHANNELS_LIST } from "@/constants";
 import { Channel } from "@nook/common/types";
 import { nookApi } from "@/store/apis/nookApi";
+import { BottomSheetModal } from "@/components/utils/BottomSheetModal";
+import { useAppSelector } from "@/store/hooks/useAppSelector";
 
 export const SelectChannelModal = ({
   open,
   setOpen,
+  channel,
   onChange,
 }: {
   open: boolean;
   setOpen: (open: boolean) => void;
+  channel?: Channel;
   onChange: (channel: Channel) => void;
 }) => {
+  const theme = useAppSelector((state) => state.user.theme);
   const [input, setInput] = useState("");
   const [channels, setChannels] = useState<Channel[]>([]);
-  const [position, setPosition] = useState(0);
-  const [disableDrag, setDisableDrag] = useState(false);
 
   const [getSearchResults] = nookApi.useLazySearchChannelsQuery();
 
@@ -35,67 +37,59 @@ export const SelectChannelModal = ({
   };
 
   return (
-    <Sheet
+    <BottomSheetModal
       open={open}
-      onOpenChange={setOpen}
-      snapPoints={[75, 50]}
-      snapPointsMode="percent"
-      dismissOnSnapToBottom
-      zIndex={100_000}
-      animation="quick"
-      position={position}
-      onPositionChange={setPosition}
-      disableDrag={disableDrag}
+      onClose={() => setOpen(false)}
+      snapPoints={["50%", "75%"]}
     >
-      <Sheet.Overlay
-        animation="quick"
-        enterStyle={{ opacity: 0 }}
-        exitStyle={{ opacity: 0 }}
-      />
-      <Sheet.Handle />
-      <Sheet.Frame padding="$4">
-        <YStack gap="$2">
-          {open && (
-            <Input value={input} onChangeText={(e) => handleSearch(e)} />
+      <YStack gap="$2" theme={theme} paddingHorizontal="$3">
+        <Input value={input} onChangeText={(e) => handleSearch(e)} />
+        <Text
+          fontWeight="700"
+          textTransform="uppercase"
+          color="$gray11"
+          fontSize="$2"
+        >
+          results
+        </Text>
+        <FlatList
+          showsVerticalScrollIndicator={false}
+          data={channels}
+          keyExtractor={(item) => item.contentId}
+          renderItem={({ item }) => (
+            <XStack
+              alignItems="center"
+              gap="$2"
+              marginVertical="$2"
+              borderWidth={
+                channel?.contentId === item.contentId ? "$1" : "$0.25"
+              }
+              borderColor={
+                channel?.contentId === item.contentId
+                  ? "$borderColorHover"
+                  : "$borderColor"
+              }
+              backgroundColor={
+                channel?.contentId === item.contentId
+                  ? "$backgroundPress"
+                  : "$background"
+              }
+              borderRadius="$4"
+              padding="$2"
+              onPress={() => {
+                onChange(item);
+              }}
+            >
+              <Avatar circular size="$3">
+                <Avatar.Image src={item.imageUrl} />
+                <Avatar.Fallback backgroundColor="$backgroundPress" />
+              </Avatar>
+              <Text>{item.name}</Text>
+            </XStack>
           )}
-          <Text
-            fontWeight="700"
-            textTransform="uppercase"
-            color="$gray11"
-            fontSize="$2"
-          >
-            Channel results
-          </Text>
-          <FlatList
-            showsVerticalScrollIndicator={false}
-            data={channels}
-            keyExtractor={(item) => item.contentId}
-            renderItem={({ item }) => (
-              <XStack
-                alignItems="center"
-                gap="$2"
-                marginVertical="$2"
-                borderWidth="$0.5"
-                borderColor="$borderColor"
-                borderRadius="$4"
-                padding="$2"
-                onPress={() => {
-                  onChange(item);
-                }}
-              >
-                <Avatar circular size="$3">
-                  <Avatar.Image src={item.imageUrl} />
-                  <Avatar.Fallback backgroundColor="$backgroundPress" />
-                </Avatar>
-                <Text>{item.name}</Text>
-              </XStack>
-            )}
-            contentContainerStyle={{ paddingBottom: 50 }}
-            onScrollBeginDrag={() => setDisableDrag(true)}
-            onScrollEndDrag={() => setDisableDrag(false)}
-          />
-        </YStack>
-      </Sheet.Frame>
-    </Sheet>
+          contentContainerStyle={{ paddingBottom: 150 }}
+        />
+      </YStack>
+    </BottomSheetModal>
   );
 };

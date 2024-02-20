@@ -210,6 +210,7 @@ export const CreatePostModal = () => {
         <SelectChannelModal
           open={selectChannelModalOpen}
           setOpen={setSelectChannelModalOpen}
+          channel={channel}
           onChange={(channel) => {
             setChannel(channel);
             setSelectChannelModalOpen(false);

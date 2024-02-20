@@ -7,7 +7,12 @@ import { Nook, NookType } from "@nook/common/types";
 
 const ActiveNookHeader = ({ nook }: { nook: Nook }) => {
   return (
-    <YStack gap="$2" paddingBottom="$3">
+    <YStack
+      gap="$2"
+      padding="$2"
+      backgroundColor="$backgroundStrong"
+      borderRadius="$8"
+    >
       <Text
         color="$gray11"
         fontSize="$1"
@@ -50,23 +55,19 @@ export const ActiveNook = () => {
   }
 
   return (
-    <View
-      minHeight="100%"
-      backgroundColor="$backgroundStrong"
-      flexGrow={1}
-      marginRight="$2"
-      borderRadius="$8"
-      paddingHorizontal="$2"
-      paddingVertical="$3"
-    >
+    <YStack minHeight="100%" marginRight="$2" gap="$3">
       <ActiveNookHeader nook={activeNook} />
-      <View>
+      <View
+        backgroundColor="$backgroundStrong"
+        borderRadius="$8"
+        padding="$2"
+        flexGrow={1}
+      >
         <Text
           color="$gray11"
           textTransform="uppercase"
           fontSize="$1"
           fontWeight="700"
-          marginTop="$2"
           marginBottom="$1.5"
         >
           Shelves
@@ -104,6 +105,6 @@ export const ActiveNook = () => {
           </View>
         ))}
       </View>
-    </View>
+    </YStack>
   );
 };

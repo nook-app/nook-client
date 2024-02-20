@@ -1,57 +1,54 @@
-import { Avatar, Button, Sheet, Text, View, XStack, YStack } from "tamagui";
-import { useState } from "react";
+import { Avatar, Button, Text, View, XStack, YStack } from "tamagui";
 import { useAppSelector } from "@/store/hooks/useAppSelector";
-import { setActiveChannelModal, setActiveNook } from "@/store/slices/user";
+import { setActiveNook } from "@/store/slices/user";
 import { useAppDispatch } from "@/store/hooks/useAppDispatch";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { RootStackParamList } from "@/types";
 import { NavigationProp, useNavigation } from "@react-navigation/native";
 import { selectChannelById } from "@/store/slices/channel";
+import { BottomSheetModal } from "@/components/utils/BottomSheetModal";
+import { setActiveChannelModal } from "@/store/slices/navigator";
 
 export const ChannelModal = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+  const theme = useAppSelector((state) => state.user.theme);
   const dispatch = useAppDispatch();
-  const insets = useSafeAreaInsets();
   const channel = useAppSelector((state) =>
-    state.user.activeChannelModal
-      ? selectChannelById(state, state.user.activeChannelModal)
+    state.navigator.activeChannelModal
+      ? selectChannelById(state, state.navigator.activeChannelModal)
       : undefined,
   );
 
-  const [position, setPosition] = useState(0);
-
   return (
-    <Sheet
+    <BottomSheetModal
       open={!!channel}
-      onOpenChange={() => {
-        dispatch(setActiveChannelModal());
-      }}
-      snapPoints={[50]}
-      snapPointsMode="percent"
-      dismissOnSnapToBottom
-      zIndex={100_000}
-      animation="quick"
-      position={position}
-      onPositionChange={setPosition}
+      onClose={() => dispatch(setActiveChannelModal())}
+      enableDynamicSizing
     >
-      <Sheet.Overlay
-        animation="quick"
-        enterStyle={{ opacity: 0 }}
-        exitStyle={{ opacity: 0 }}
-      />
-      <Sheet.Handle />
-      <Sheet.Frame style={{ paddingBottom: insets.bottom }}>
+      <View theme={theme}>
         {channel && (
-          <View flexGrow={1} justifyContent="space-between" padding="$4">
-            <YStack gap="$4">
+          <YStack
+            flexGrow={1}
+            justifyContent="space-between"
+            gap="$3"
+            paddingHorizontal="$3"
+          >
+            <YStack
+              gap="$4"
+              backgroundColor="$backgroundStrong"
+              borderRadius="$4"
+              padding="$3"
+            >
               <XStack gap="$2" alignItems="center">
-                <Avatar circular size="$6">
+                <Avatar circular size="$5">
                   <Avatar.Image src={channel.imageUrl} />
                   <Avatar.Fallback backgroundColor="$backgroundPress" />
                 </Avatar>
                 <YStack>
-                  <Text fontWeight="700" fontSize="$6">
+                  <Text fontWeight="700" fontSize="$5">
                     {channel.name}
+                  </Text>
+                  <Text color="$gray11" fontSize="$4">
+                    {channel.slug}
                   </Text>
                 </YStack>
               </XStack>
@@ -69,9 +66,9 @@ export const ChannelModal = () => {
             >
               Visit Nook
             </Button>
-          </View>
+          </YStack>
         )}
-      </Sheet.Frame>
-    </Sheet>
+      </View>
+    </BottomSheetModal>
   );
 };

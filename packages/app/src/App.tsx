@@ -18,6 +18,7 @@ import { Navigator } from "./components/navigator/Navigator";
 import { AuthProvider } from "./context/auth";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -50,8 +51,10 @@ export function App() {
                 <ThemeProvider
                   value={colorScheme === "dark" ? DarkTheme : DefaultTheme}
                 >
-                  <StatusBar />
-                  <Navigator />
+                  <BottomSheetModalProvider>
+                    <StatusBar />
+                    <Navigator />
+                  </BottomSheetModalProvider>
                 </ThemeProvider>
               </TamaguiProvider>
             </AuthProvider>

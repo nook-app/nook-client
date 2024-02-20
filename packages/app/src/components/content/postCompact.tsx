@@ -12,7 +12,7 @@ import { EntityDisplay } from "../entity/display";
 import { Image } from "expo-image";
 import { Heart, MessageSquare, RefreshCw } from "@tamagui/lucide-icons";
 import { useAppDispatch } from "@/store/hooks/useAppDispatch";
-import { setActiveChannelModal } from "@/store/slices/user";
+import { setActiveChannelModal } from "@/store/slices/navigator";
 import { TouchableOpacity } from "react-native-gesture-handler";
 import { useAppSelector } from "@/store/hooks/useAppSelector";
 import { selectChannelById } from "@/store/slices/channel";

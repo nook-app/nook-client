@@ -1,5 +1,4 @@
 import Constants from "expo-constants";
-import channels from "./channels.json";
 import { SignInParams } from "@/store/apis/userApi";
 
 export const CONFIG =
@@ -16,18 +15,6 @@ export const CONFIG =
         siwfUri: "https://nook-api.up.railway.app",
         siwfDomain: "nook-api.up.railway.app",
       };
-
-export const CHANNELS = channels.reduce(
-  (acc, channel) => {
-    acc[channel.url] = channel;
-    return acc;
-  },
-  {} as Record<string, (typeof channels)[0]>,
-);
-
-export const CHANNELS_LIST = channels.sort((a, b) =>
-  a.name.localeCompare(b.name),
-);
 
 export const DEV_SIGN_IN: SignInParams = {
   message:

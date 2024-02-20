@@ -1,13 +1,16 @@
-import { Spinner, Text, View } from "tamagui";
-import { ContentFeedItem } from "@nook/api/types";
+import { Spinner, Text, View, useTheme } from "tamagui";
 import { FlatList, ViewToken } from "react-native";
 import { useCallback, useEffect, useState } from "react";
 import { NavigationProp, useNavigation } from "@react-navigation/native";
 import { RootStackParamList } from "@/types";
 import { nookApi } from "@/store/apis/nookApi";
-import { ContentFeedArgs, ContentType, PostData } from "@nook/common/types";
-import { TouchableWithoutFeedback } from "react-native-gesture-handler";
+import {
+  RefreshControl,
+  TouchableWithoutFeedback,
+} from "react-native-gesture-handler";
 import { ContentPostCompact } from "../content/postCompact";
+import { ContentFeedItem } from "@nook/api/types";
+import { ContentFeedArgs, ContentType, PostData } from "@nook/common/types";
 
 export const renderFeedItem = (
   navigation: NavigationProp<RootStackParamList>,
@@ -35,6 +38,7 @@ export const ContentFeedPanel = ({ args }: { args: ContentFeedArgs }) => {
   const [cursor, setCursor] = useState<string | undefined>(undefined);
   const [accumulatedData, setAccumulatedData] = useState<ContentFeedItem[]>([]);
   const [refreshing, setRefreshing] = useState(false);
+  const theme = useTheme();
 
   const { data, error, isLoading, isFetching, refetch } =
     nookApi.useGetContentFeedQuery({
@@ -119,8 +123,14 @@ export const ContentFeedPanel = ({ args }: { args: ContentFeedArgs }) => {
           </View>
         ) : null
       }
-      onRefresh={onRefresh}
-      refreshing={refreshing}
+      refreshControl={
+        <RefreshControl
+          colors={[theme.color11.val]}
+          tintColor={theme.color11.val}
+          onRefresh={onRefresh}
+          refreshing={refreshing}
+        />
+      }
     />
   );
 };

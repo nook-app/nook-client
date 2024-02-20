@@ -2867,6 +2867,40 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@gorhom/bottom-sheet@npm:^4":
+  version: 4.6.1
+  resolution: "@gorhom/bottom-sheet@npm:4.6.1"
+  dependencies:
+    "@gorhom/portal": "npm:1.0.14"
+    invariant: "npm:^2.2.4"
+  peerDependencies:
+    "@types/react": "*"
+    "@types/react-native": "*"
+    react: "*"
+    react-native: "*"
+    react-native-gesture-handler: ">=1.10.1"
+    react-native-reanimated: ">=2.2.0"
+  peerDependenciesMeta:
+    "@types/react":
+      optional: true
+    "@types/react-native":
+      optional: true
+  checksum: 10c0/a808d292f073b896e1722433ee982d43c83c89fcb440a5f79a61ed8600966d02a6ceaea647c6ba898736b714bd271a6de0f3de330cdadfe5310c12e333068a84
+  languageName: node
+  linkType: hard
+
+"@gorhom/portal@npm:1.0.14":
+  version: 1.0.14
+  resolution: "@gorhom/portal@npm:1.0.14"
+  dependencies:
+    nanoid: "npm:^3.3.1"
+  peerDependencies:
+    react: "*"
+    react-native: "*"
+  checksum: 10c0/86f33afc2ac2656a86a6f3fd1e41565419839576ede2c38333434a93a0a2fe4fb6fc18ab3360579427f2a1fc3b4564b933cc5ae1793a7e2825c93860a00b215f
+  languageName: node
+  linkType: hard
+
 "@graphql-typed-document-node/core@npm:^3.1.0":
   version: 3.2.0
   resolution: "@graphql-typed-document-node/core@npm:3.2.0"
@@ -3569,6 +3603,7 @@ __metadata:
     "@babel/core": "npm:^7.23.3"
     "@expo/metro-runtime": "npm:3.1.3"
     "@farcaster/auth-kit": "npm:^0.2.0"
+    "@gorhom/bottom-sheet": "npm:^4"
     "@nook/api": "npm:*"
     "@react-native/babel-plugin-codegen": "npm:^0.73.4"
     "@react-navigation/bottom-tabs": "npm:^6.5.12"
@@ -13338,7 +13373,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"nanoid@npm:^3.1.23, nanoid@npm:^3.3.7":
+"nanoid@npm:^3.1.23, nanoid@npm:^3.3.1, nanoid@npm:^3.3.7":
   version: 3.3.7
   resolution: "nanoid@npm:3.3.7"
   bin:
