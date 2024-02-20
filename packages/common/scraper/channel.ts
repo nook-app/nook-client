@@ -1,4 +1,4 @@
-import { ContentChannel, Entity } from "@nook/common/types";
+import { Channel, Entity } from "@nook/common/types";
 import { MongoClient, MongoCollection } from "../mongo";
 
 type WarpcastChannelData = {
@@ -11,10 +11,15 @@ type WarpcastChannelData = {
   createdAt: number;
 };
 
-export const getChannelDataFromWarpcast = async (
+export const getOrCreateChannel = async (
   client: MongoClient,
   contentId: string,
 ) => {
+  const existingChannel = await client.findChannel(contentId);
+  if (existingChannel) {
+    return existingChannel;
+  }
+
   const response = await fetch("https://api.warpcast.com/v2/all-channels");
   if (!response.ok) return;
 
@@ -34,15 +39,18 @@ export const getChannelDataFromWarpcast = async (
       })) as Entity | undefined;
   }
 
-  const channel: ContentChannel = {
-    id: channelData.id,
+  const channel: Channel = {
+    contentId,
+    slug: channelData.id,
     name: channelData.name,
-    url: channelData.url,
     description: channelData.description,
     imageUrl: channelData.imageUrl,
     creatorId: entity?._id,
     createdAt: new Date(channelData.createdAt),
+    updatedAt: new Date(),
   };
+
+  await client.upsertChannel(channel);
 
   return channel;
 };

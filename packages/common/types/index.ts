@@ -7,3 +7,4 @@ export * from "./sources";
 export * from "./entity";
 export * from "./topics";
 export * from "./nooks";
+export * from "./channels";

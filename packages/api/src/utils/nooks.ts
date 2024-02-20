@@ -1,7 +1,6 @@
 import { MongoClient, MongoCollection } from "@nook/common/mongo";
 import {
-  Content,
-  ContentData,
+  Channel,
   ContentType,
   Entity,
   Nook,
@@ -93,23 +92,23 @@ export const getDefaultEntityNook = (entity: Entity): Nook => {
 
 export const createChannelNook = async (
   client: MongoClient,
-  content: Content<ContentData>,
+  channel: Channel,
 ) => {
-  const nook = getDefaultChannelNook(content);
+  const nook = getDefaultChannelNook(channel);
   await client.getCollection<Nook>(MongoCollection.Nooks).insertOne(nook);
   return nook;
 };
 
-export const getDefaultChannelNook = (content: Content<ContentData>): Nook => {
+export const getDefaultChannelNook = (channel: Channel): Nook => {
   const date = new Date();
   return {
     _id: new ObjectId(),
-    nookId: `${NookType.Channel}:${content.contentId}`,
+    nookId: `${NookType.Channel}:${channel.contentId}`,
     type: NookType.Channel,
-    name: content.channel?.name || "Channel",
-    description: content.channel?.description || "Channel",
-    image: content.channel?.imageUrl || "",
-    slug: content.channel?.id ? `/${content.channel.id}` : content.contentId,
+    name: channel.name,
+    description: channel.description,
+    image: channel.imageUrl,
+    slug: `f/${channel.slug}`,
     shelves: [
       {
         name: "Posts",
@@ -126,7 +125,7 @@ export const getDefaultChannelNook = (content: Content<ContentData>): Nook => {
                 deletedAt: null,
                 topics: {
                   type: TopicType.CHANNEL,
-                  value: content.contentId,
+                  value: channel.contentId,
                 },
               },
             },
@@ -141,7 +140,7 @@ export const getDefaultChannelNook = (content: Content<ContentData>): Nook => {
                 deletedAt: null,
                 topics: {
                   type: TopicType.CHANNEL,
-                  value: content.contentId,
+                  value: channel.contentId,
                 },
                 sort: "engagement.likes",
                 sortDirection: -1,

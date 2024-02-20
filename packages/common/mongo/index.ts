@@ -13,6 +13,7 @@ import {
   EntityEvent,
   EventActionType,
   Entity,
+  Channel,
 } from "../types";
 import { publishAction } from "../queues";
 
@@ -24,7 +25,7 @@ export enum MongoCollection {
   Content = "content",
   Entity = "entity",
   Nooks = "nooks",
-  Panels = "panels",
+  Channels = "channels",
 }
 
 export class MongoClient {
@@ -85,6 +86,13 @@ export class MongoClient {
     );
     return await collection.findOne({
       eventId,
+    });
+  };
+
+  findChannel = async (channelId: string) => {
+    const collection = this.getCollection<Channel>(MongoCollection.Channels);
+    return await collection.findOne({
+      contentId: channelId,
     });
   };
 
@@ -183,6 +191,32 @@ export class MongoClient {
     await collection.insertOne({ ...action, _id });
     await publishAction(_id.toHexString(), true);
     return _id;
+  };
+
+  upsertChannel = async (channel: Channel) => {
+    const collection = this.getCollection<Channel>(MongoCollection.Channels);
+    const existingChannel = await collection.findOne({
+      contentId: channel.contentId,
+    });
+    if (existingChannel) {
+      return await collection.updateOne(
+        {
+          contentId: channel.contentId,
+        },
+        {
+          $set: {
+            ...channel,
+            _id: existingChannel._id,
+            updatedAt: new Date(),
+          },
+        },
+      );
+    }
+
+    return await collection.insertOne({
+      ...channel,
+      _id: this.generateObjectIdFromDate(channel.createdAt),
+    });
   };
 
   markActionsDeleted = async (id: string, type: EventActionType) => {

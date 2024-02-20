@@ -13,6 +13,7 @@ import { Entity } from "@nook/common/types/entity";
 import { getOrCreateEntitiesForFids } from "@nook/common/entity";
 import { publishContent } from "@nook/common/queues";
 import { ObjectId } from "mongodb";
+import { getOrCreateChannel } from "@nook/common/scraper/channel";
 
 export const getOrCreatePostContent = async (
   client: MongoClient,
@@ -62,11 +63,8 @@ const createPostContent = async (
     }
   }
 
-  if (
-    content.data.channelId &&
-    !(await client.findContent(content.data.channelId))
-  ) {
-    await publishContent(content.data.channelId, true);
+  if (content.data.channelId) {
+    await getOrCreateChannel(client, content.data.channelId);
   }
 
   return content;

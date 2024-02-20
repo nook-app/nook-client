@@ -25,12 +25,6 @@ const contentSlice = createSlice({
         contentAdapter.addMany(state, action.payload.contents);
       },
     );
-    builder.addMatcher(
-      nookApi.endpoints.getNook.matchFulfilled,
-      (state, action) => {
-        contentAdapter.addMany(state, action.payload.contents);
-      },
-    );
   },
 });
 

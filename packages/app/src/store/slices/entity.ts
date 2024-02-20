@@ -38,12 +38,6 @@ const entitySlice = createSlice({
         entityAdapter.addOne(state, action.payload.entity);
       },
     );
-    builder.addMatcher(
-      nookApi.endpoints.getNook.matchFulfilled,
-      (state, action) => {
-        entityAdapter.addMany(state, action.payload.entities);
-      },
-    );
   },
 });
 

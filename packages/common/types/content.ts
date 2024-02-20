@@ -15,16 +15,6 @@ export enum ContentType {
   NFT_CONTRACT = "NFT_CONTRACT",
 }
 
-export type ContentChannel = {
-  id: string;
-  url: string;
-  name: string;
-  description: string;
-  imageUrl: string;
-  creatorId?: ObjectId;
-  createdAt: Date;
-};
-
 export type ContentBase = {
   /** ID for the content in URI format */
   contentId: string;
@@ -68,9 +58,6 @@ export type ContentBase = {
 
   /** References entity IDs */
   referencedEntityIds: ObjectId[];
-
-  /** Content channel, if it exists */
-  channel?: ContentChannel;
 };
 
 export type UnstructuredFrameMetascraperButtonKeys = {

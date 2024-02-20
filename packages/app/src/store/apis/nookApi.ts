@@ -5,7 +5,6 @@ import {
   GetEntitiesRequest,
   GetEntitiesResponse,
   GetNookRequest,
-  GetNookResponse,
 } from "@nook/api/types";
 import { baseQuery } from "@/store/utils";
 import { ContentFeedArgs, Entity, Nook } from "@nook/common/types";
@@ -41,7 +40,7 @@ export const nookApi = createApi({
         return response.data;
       },
     }),
-    getNook: builder.query<GetNookResponse, GetNookRequest>({
+    getNook: builder.query<Nook, GetNookRequest>({
       query: (request) => ({
         url: "/nooks",
         method: "POST",

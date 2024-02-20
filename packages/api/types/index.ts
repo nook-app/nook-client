@@ -48,8 +48,3 @@ export type GetEntitiesResponse = {
 export type GetNookRequest = {
   nookId: string;
 };
-
-export type GetNookResponse = Nook & {
-  entities: Entity[];
-  contents: Content<ContentData>[];
-};

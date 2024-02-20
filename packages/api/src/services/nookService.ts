@@ -7,10 +7,10 @@ import {
   Entity,
   Nook,
 } from "@nook/common/types";
-import { ContentFeed, ContentFeedItem, GetNookResponse } from "../../types";
+import { ContentFeed, ContentFeedItem } from "../../types";
 import { ObjectId } from "mongodb";
 import { createChannelNook, createEntityNook } from "../utils/nooks";
-import { getOrCreateContent } from "@nook/common/scraper";
+import { getOrCreateChannel } from "@nook/common/scraper/channel";
 
 const PAGE_SIZE = 25;
 
@@ -187,7 +187,7 @@ export class NookService {
     return entities;
   }
 
-  async getNook(nookId: string): Promise<GetNookResponse> {
+  async getNook(nookId: string): Promise<Nook> {
     let nook = await this.client
       .getCollection<Nook>(MongoCollection.Nooks)
       .findOne({ nookId });
@@ -202,30 +202,21 @@ export class NookService {
       if (!nook) {
         nook = await createEntityNook(this.client, entity);
       }
-      return {
-        ...nook,
-        entities: [entity],
-        contents: [],
-      };
+      return nook;
     }
 
     if (nookId.startsWith("channel:")) {
-      const content = await getOrCreateContent(
+      const channel = await getOrCreateChannel(
         this.client,
         nookId.replace("channel:", ""),
-        true,
       );
-      if (!content) {
-        throw new Error("Content not found");
+      if (!channel) {
+        throw new Error("Channel not found");
       }
       if (!nook) {
-        nook = await createChannelNook(this.client, content);
+        nook = await createChannelNook(this.client, channel);
       }
-      return {
-        ...nook,
-        entities: [],
-        contents: [content],
-      };
+      return nook;
     }
 
     throw new Error("Nook not found");
