@@ -62,6 +62,13 @@ const createPostContent = async (
     }
   }
 
+  if (
+    content.data.channelId &&
+    !(await client.findContent(content.data.channelId))
+  ) {
+    await publishContent(content.data.channelId, true);
+  }
+
   return content;
 };
 

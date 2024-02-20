@@ -139,16 +139,6 @@ export const getActionsHandler = async () => {
         );
         break;
       }
-      case EventActionType.UNFOLLOW: {
-        const typedAction = action as EventAction<EntityActionData>;
-        promises.push(
-          client.markActionsDeleted(
-            typedAction.source.id,
-            EventActionType.FOLLOW,
-          ),
-        );
-        break;
-      }
       case EventActionType.UPDATE_USER_INFO: {
         const typedAction = action as EventAction<UpdateEntityInfoActionData>;
         const collection = client.getCollection<Entity>(MongoCollection.Entity);
@@ -260,6 +250,64 @@ export const getActionsHandler = async () => {
             true,
           ),
           client.markActionsDeleted(typedAction.source.id, EventActionType.TIP),
+        );
+        break;
+      }
+      case EventActionType.FOLLOW: {
+        const typedAction = action as EventAction<EntityActionData>;
+        const collection = client.getCollection<Entity>(MongoCollection.Entity);
+        promises.push(
+          collection.updateOne(
+            {
+              _id: typedAction.data.entityId,
+            },
+            {
+              $inc: {
+                "farcaster.following": 1,
+              },
+            },
+          ),
+          collection.updateOne(
+            {
+              _id: typedAction.data.targetEntityId,
+            },
+            {
+              $inc: {
+                "farcaster.followers": 1,
+              },
+            },
+          ),
+        );
+        break;
+      }
+      case EventActionType.UNFOLLOW: {
+        const typedAction = action as EventAction<EntityActionData>;
+        const collection = client.getCollection<Entity>(MongoCollection.Entity);
+        promises.push(
+          client.markActionsDeleted(
+            typedAction.source.id,
+            EventActionType.FOLLOW,
+          ),
+          collection.updateOne(
+            {
+              _id: typedAction.data.entityId,
+            },
+            {
+              $inc: {
+                "farcaster.following": -1,
+              },
+            },
+          ),
+          collection.updateOne(
+            {
+              _id: typedAction.data.targetEntityId,
+            },
+            {
+              $inc: {
+                "farcaster.followers": -1,
+              },
+            },
+          ),
         );
         break;
       }

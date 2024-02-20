@@ -14,6 +14,7 @@ import { Entity, Nook } from "@nook/common/types";
 import { PrismaClient } from "@nook/common/prisma/nook";
 import { ObjectId } from "mongodb";
 import { getOrCreateEntityNook } from "../utils/nooks";
+import { getOrCreateEntitiesForFids } from "@nook/common/entity";
 
 export class UserService {
   private client: MongoClient;
@@ -45,9 +46,15 @@ export class UserService {
     const collection = this.client.getCollection<Entity>(
       MongoCollection.Entity,
     );
-    const entity = await collection.findOne({
-      "farcaster.fid": verifyResult.fid.toString(),
+
+    const fid = verifyResult.fid.toString();
+    let entity = await collection.findOne({
+      "farcaster.fid": fid,
     });
+
+    if (!entity) {
+      entity = (await getOrCreateEntitiesForFids(this.client, [fid]))[fid];
+    }
 
     if (!entity) {
       return;

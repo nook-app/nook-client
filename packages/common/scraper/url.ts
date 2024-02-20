@@ -1,4 +1,3 @@
-import { MongoClient } from "@nook/common/mongo";
 import { Content, ContentType } from "@nook/common/types";
 import { ObjectId } from "mongodb";
 import metascraper, { MetascraperOptions } from "metascraper";
@@ -75,8 +74,7 @@ const USER_AGENT_OVERRIDES: { [key: string]: string } = {
  * @param request
  * @returns
  */
-export const createUrlContent = async (
-  client: MongoClient,
+export const getUrlContent = async (
   contentId: string,
 ): Promise<Content<UrlMetadata>> => {
   const timestamp = new Date();
@@ -100,7 +98,6 @@ export const createUrlContent = async (
     referencedEntityIds: [],
     referencedContentIds: [],
   };
-  await client.upsertContent(content);
   return content;
 };
 

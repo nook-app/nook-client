@@ -1,4 +1,3 @@
-import { MongoClient } from "../mongo";
 import { Content, ContentData, ContentType } from "../types";
 import {
   NFTCollection,
@@ -73,10 +72,7 @@ const CHAIN_ID_TO_NAME: Record<string, string> = {
   "eip155:999999999": "zora-sepolia",
 };
 
-export const createChainContent = async (
-  client: MongoClient,
-  contentId: string,
-) => {
+export const getChainContent = async (contentId: string) => {
   const asset = parseChainUri(contentId);
 
   let content: Content<ContentData> | undefined;
@@ -88,7 +84,6 @@ export const createChainContent = async (
     throw new Error("Unsupported chain content");
   }
 
-  await client.upsertContent(content);
   return content;
 };
 

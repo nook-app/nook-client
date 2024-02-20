@@ -10,7 +10,7 @@ import {
 import { ContentFeed, ContentFeedItem, GetNookResponse } from "../../types";
 import { ObjectId } from "mongodb";
 import { createChannelNook, createEntityNook } from "../utils/nooks";
-import { getContentWithChannel } from "../utils/channels";
+import { getOrCreateContent } from "@nook/common/scraper";
 
 const PAGE_SIZE = 25;
 
@@ -210,9 +210,10 @@ export class NookService {
     }
 
     if (nookId.startsWith("channel:")) {
-      const content = await getContentWithChannel(
+      const content = await getOrCreateContent(
         this.client,
         nookId.replace("channel:", ""),
+        true,
       );
       if (!content) {
         throw new Error("Content not found");

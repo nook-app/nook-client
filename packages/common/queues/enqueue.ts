@@ -31,11 +31,11 @@ export const publishRawEvents = async <T>(events: RawEvent<T>[]) => {
   );
 };
 
-export const publishContent = async <T>(contentId: string) => {
+export const publishContent = async (contentId: string, channel?: boolean) => {
   const queue = getQueue(QueueName.Content);
   await queue.add(
     contentId,
-    { contentId },
+    { contentId, channel },
     {
       jobId: contentId,
       removeOnComplete: {

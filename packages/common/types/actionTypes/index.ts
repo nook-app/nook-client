@@ -16,10 +16,10 @@ export type EntityActionData = {
   targetEntityId: ObjectId;
 
   /** Source entity acting */
-  sourceEntityId: string;
+  sourceUserId: string;
 
   /** Source entity who was acted on */
-  sourceTargetEntityId: string;
+  sourceTargetUserId: string;
 };
 
 export enum Protocol {

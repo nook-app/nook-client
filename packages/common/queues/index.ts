@@ -17,7 +17,7 @@ type QueueType<T> = {
   [QueueName.Farcaster]: Message;
   [QueueName.FarcasterBackfill]: FarcasterBackfillRequest;
   [QueueName.Events]: RawEvent<T>;
-  [QueueName.Content]: { contentId: string };
+  [QueueName.Content]: { contentId: string; channel?: boolean };
   [QueueName.Actions]: { actionId: string; created: boolean };
 };
 

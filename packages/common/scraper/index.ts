@@ -1,20 +1,43 @@
 import { MongoClient } from "../mongo";
-import { createUrlContent } from "./url";
-import { createChainContent } from "./chain";
+import { getUrlContent } from "./url";
+import { getChainContent } from "./chain";
+import { Content, ContentData } from "../types";
+import { getChannelDataFromWarpcast } from "./channel";
 
 export const getOrCreateContent = async (
   client: MongoClient,
   contentId: string,
+  channel?: boolean,
 ) => {
   const existingContent = await client.findContent(contentId);
   if (existingContent) {
+    if (channel && !existingContent.channel) {
+      existingContent.channel = await getChannelDataFromWarpcast(
+        client,
+        contentId,
+      );
+      await client.upsertContent(existingContent);
+    }
     return existingContent;
   }
 
+  let content: Content<ContentData> | undefined;
+
   if (contentId.startsWith("http://") || contentId.startsWith("https://")) {
-    return await createUrlContent(client, contentId);
+    content = await getUrlContent(contentId);
   }
   if (contentId.startsWith("chain://")) {
-    return await createChainContent(client, contentId);
+    content = await getChainContent(contentId);
   }
+
+  if (!content) {
+    throw new Error("Unsupported content");
+  }
+
+  if (channel) {
+    content.channel = await getChannelDataFromWarpcast(client, contentId);
+  }
+
+  await client.upsertContent(content);
+  return content;
 };

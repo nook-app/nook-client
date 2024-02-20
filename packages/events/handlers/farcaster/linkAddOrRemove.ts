@@ -39,8 +39,8 @@ export const handleLinkAddOrRemove = async (
       data: {
         entityId,
         targetEntityId,
-        sourceEntityId: rawEvent.data.fid,
-        sourceTargetEntityId: rawEvent.data.targetFid,
+        sourceUserId: rawEvent.data.fid,
+        sourceTargetUserId: rawEvent.data.targetFid,
       },
       deletedAt: isRemove ? new Date() : undefined,
       topics: [
