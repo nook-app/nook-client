@@ -39,28 +39,46 @@ export const getOrCreateEntitiesForFids = async (
   if (missingFids.length > 0) {
     const data = await getFarcasterUsers(missingFids);
     if (data) {
-      const newEntities: Entity[] = missingFids.map((fid, i) => {
-        const usernames = [];
+      const newEntities = await Promise.all(
+        missingFids.map(async (fid, i) => {
+          const usernames = [];
+          const username = data.users[i].farcaster.username;
+          if (username) {
+            usernames.push({
+              type: username.endsWith(".eth")
+                ? UsernameType.ENS
+                : UsernameType.FNAME,
+              username,
+            });
+          }
+          const entity = {
+            ...data.users[i],
+            _id: new ObjectId(),
+            usernames,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          };
 
-        const username = data.users[i].farcaster.username;
-        if (username) {
-          usernames.push({
-            type: username.endsWith(".eth")
-              ? UsernameType.ENS
-              : UsernameType.FNAME,
-            username,
-          });
-        }
-
-        return {
-          ...data.users[i],
-          usernames,
-          _id: new ObjectId(),
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        };
-      });
-      await collection.insertMany(newEntities);
+          try {
+            await collection.insertOne(entity);
+            return entity;
+          } catch (error) {
+            if (
+              error instanceof Error &&
+              error.name === "MongoServerError" &&
+              "code" in error &&
+              error.code === 11000
+            ) {
+              const existingEntity = await collection.findOne({
+                "farcaster.fid": entity.farcaster.fid,
+              });
+              if (!existingEntity) throw new Error("Entity not found");
+              return existingEntity;
+            }
+            throw error;
+          }
+        }),
+      );
       for (const entity of newEntities) {
         entities[entity.farcaster.fid] = entity;
       }
