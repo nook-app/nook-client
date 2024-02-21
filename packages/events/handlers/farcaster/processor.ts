@@ -184,7 +184,7 @@ export class FarcasterProcessor {
   async fetchContentFromSource(contentId: string) {
     const { fid, hash } = fromFarcasterURI(contentId);
     const response = await fetch(
-      `${process.env.FARCASTER_API_URL}/cast/${fid}/${hash}`,
+      `${process.env.FARCASTER_SERVICE_URL}/cast/${fid}/${hash}`,
     );
     if (!response.ok) {
       throw new Error(`Failed to fetch content for ${contentId}`);
