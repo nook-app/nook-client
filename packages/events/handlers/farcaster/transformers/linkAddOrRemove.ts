@@ -16,8 +16,8 @@ export const transformLinkAddOrRemove = async (
 ) => {
   const isRemove = rawEvent.source.type === EventType.LINK_REMOVE;
 
-  const entityId = entities[rawEvent.data.fid]._id;
-  const targetEntityId = entities[rawEvent.data.targetFid]._id;
+  const entityId = entities[rawEvent.data.fid]._id.toString();
+  const targetEntityId = entities[rawEvent.data.targetFid]._id.toString();
 
   const actions: EventAction<EntityActionData>[] = [
     {

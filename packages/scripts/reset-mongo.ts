@@ -15,6 +15,12 @@ const run = async () => {
   await client.connect();
 
   await dropCollectionIfExists(client, MongoCollection.Entity);
+  await client.getCollection(MongoCollection.Entity).createIndex(
+    { "farcaster.fid": 1 },
+    {
+      unique: true,
+    },
+  );
   await Promise.all([
     dropCollectionIfExists(client, MongoCollection.Content),
     dropCollectionIfExists(client, MongoCollection.Actions),
@@ -24,15 +30,19 @@ const run = async () => {
   await Promise.all([
     client
       .getCollection(MongoCollection.Actions)
-      .createIndex({ eventId: 1, type: 1 }),
+      .createIndex({ eventId: 1, type: 1 }, { unique: true }),
     client
       .getCollection(MongoCollection.Actions)
       .createIndex({ "source.id": 1 }),
-    client.getCollection(MongoCollection.Content).createIndex({ contentId: 1 }),
+    client.getCollection(MongoCollection.Content).createIndex(
+      { contentId: 1 },
+      {
+        unique: true,
+      },
+    ),
     client
-      .getCollection(MongoCollection.Entity)
-      .createIndex({ "farcaster.fid": 1 }),
-    client.getCollection(MongoCollection.Events).createIndex({ eventId: 1 }),
+      .getCollection(MongoCollection.Events)
+      .createIndex({ eventId: 1 }, { unique: true }),
   ]);
 };
 

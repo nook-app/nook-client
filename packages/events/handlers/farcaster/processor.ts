@@ -2,6 +2,8 @@ import { getOrCreateEntitiesForFids } from "@nook/common/entity";
 import { MongoClient } from "@nook/common/mongo";
 import {
   Entity,
+  EntityEventData,
+  EventType,
   FarcasterCastData,
   FarcasterCastReactionData,
   FarcasterLinkData,
@@ -23,14 +25,53 @@ import { transformLinkAddOrRemove } from "./transformers/linkAddOrRemove";
 import { transformUrlReactionAddOrRemove } from "./transformers/urlReactionAddOrRemove";
 import { transformUsernameProofAdd } from "./transformers/usernameProofAdd";
 import { transformVerificationAddOrRemove } from "./transformers/verificationAddOrRemove";
+import { RedisClient } from "@nook/common/cache";
 
 export class FarcasterProcessor {
   private client: MongoClient;
-  private fidCache: Record<string, Entity>;
+  private redis: RedisClient;
 
-  constructor(client: MongoClient) {
+  constructor(client: MongoClient, redis: RedisClient) {
     this.client = client;
-    this.fidCache = {};
+    this.redis = redis;
+  }
+
+  async process(rawEvent: RawEvent<EntityEventData>) {
+    switch (rawEvent.source.type) {
+      case EventType.CAST_ADD:
+      case EventType.CAST_REMOVE:
+        return this.processCastAddOrRemove(
+          rawEvent as RawEvent<FarcasterCastData>,
+        );
+      case EventType.CAST_REACTION_ADD:
+      case EventType.CAST_REACTION_REMOVE:
+        return this.processCastReactionAddOrRemove(
+          rawEvent as RawEvent<FarcasterCastReactionData>,
+        );
+      case EventType.URL_REACTION_ADD:
+      case EventType.URL_REACTION_REMOVE:
+        return this.processUrlReactionAddOrRemove(
+          rawEvent as RawEvent<FarcasterUrlReactionData>,
+        );
+      case EventType.LINK_ADD:
+      case EventType.LINK_REMOVE:
+        return this.processLinkAddOrRemove(
+          rawEvent as RawEvent<FarcasterLinkData>,
+        );
+      case EventType.USER_DATA_ADD:
+        return this.processUserDataAdd(
+          rawEvent as RawEvent<FarcasterUserDataAddData>,
+        );
+      case EventType.VERIFICATION_ADD:
+      case EventType.VERIFICATION_REMOVE:
+        return this.processVerificationAddOrRemove(
+          rawEvent as RawEvent<FarcasterVerificationData>,
+        );
+      default:
+        throw new Error(
+          `[${rawEvent.source.service}] [${rawEvent.source.type}] no handler found`,
+        );
+    }
   }
 
   async processUserDataAdd(rawEvent: RawEvent<FarcasterUserDataAddData>) {
@@ -91,28 +132,38 @@ export class FarcasterProcessor {
   }
 
   async fetchEntities(fids: string[]) {
-    const cachedFids = fids.map((fid) => this.fidCache[fid]).filter(Boolean);
-    const missingFids = fids.filter((fid) => !this.fidCache[fid]);
-
-    const fetchedFids = await getOrCreateEntitiesForFids(
-      this.client,
-      missingFids,
+    const cachedEntities = (
+      await Promise.all(fids.map((fid) => this.redis.getEntityByFid(fid)))
+    ).filter(Boolean) as Entity[];
+    const missingEntities = fids.filter(
+      (fid) => !cachedEntities.find((entity) => entity.farcaster.fid === fid),
     );
 
-    this.fidCache = {
-      ...this.fidCache,
-      ...fetchedFids,
-    };
+    console.log({
+      cached: cachedEntities.length,
+      missing: missingEntities.length,
+    });
+
+    const fetchedEntityMap = await getOrCreateEntitiesForFids(
+      this.client,
+      missingEntities,
+    );
+
+    await Promise.all(
+      Object.values(fetchedEntityMap).map((entity) =>
+        this.redis.setEntity(entity),
+      ),
+    );
 
     return {
-      ...cachedFids.reduce(
+      ...cachedEntities.reduce(
         (acc, entity) => {
           acc[entity.farcaster.fid] = entity;
           return acc;
         },
         {} as Record<string, Entity>,
       ),
-      ...fetchedFids,
+      ...fetchedEntityMap,
     };
   }
 }

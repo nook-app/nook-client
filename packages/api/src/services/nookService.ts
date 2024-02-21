@@ -181,7 +181,7 @@ export class NookService {
       .concat(contents.flatMap((c) => c.referencedEntityIds));
     const entities = await this.client
       .getCollection<Entity>(MongoCollection.Entity)
-      .find({ _id: { $in: referencedEntityIds } })
+      .find({ _id: { $in: referencedEntityIds.map((e) => new ObjectId(e)) } })
       .toArray();
 
     const channels = await this.getChannels(contentIds);
@@ -232,7 +232,7 @@ export class NookService {
 
     if (nookId.startsWith("entity:")) {
       const entity = await this.client.findEntity(
-        new ObjectId(nookId.replace("entity:", "")),
+        nookId.replace("entity:", ""),
       );
       if (!entity) {
         throw new Error("Entity not found");

@@ -12,7 +12,6 @@ import {
   Content,
   Entity,
 } from "@nook/common/types";
-import { ObjectId } from "mongodb";
 
 export const transformCastReactionAddOrRemove = async (
   rawEvent: RawEvent<FarcasterCastReactionData>,
@@ -39,7 +38,7 @@ export const transformCastReactionAddOrRemove = async (
       );
   }
 
-  const entityId = entities[rawEvent.data.fid]._id;
+  const entityId = entities[rawEvent.data.fid]._id.toString();
 
   const actions: EventAction<ContentActionData>[] = [
     {
@@ -49,7 +48,7 @@ export const transformCastReactionAddOrRemove = async (
       entityId,
       referencedEntityIds: Array.from(
         new Set([entityId, ...content.referencedEntityIds]),
-      ).filter(Boolean) as ObjectId[],
+      ).filter(Boolean) as string[],
       referencedContentIds: content.referencedContentIds,
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -78,7 +77,7 @@ export const transformCastReactionAddOrRemove = async (
   return { event, actions, content: [content] };
 };
 
-const generateTopics = (entityId: ObjectId, data: PostData) => {
+const generateTopics = (entityId: string, data: PostData) => {
   const topics: Topic[] = [
     {
       type: TopicType.SOURCE_ENTITY,

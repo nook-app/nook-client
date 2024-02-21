@@ -5,7 +5,7 @@
   "scripts": {
     "build": "tsc",
     "reset:mongo": "tsc && node ./dist/reset-mongo.js",
-    "backfill:farcaster": "tsc && node ./dist/backfill-farcaster.js"
+    "enqueue:fids": "tsc && node ./dist/enqueue-fids.js"
   },
   "dependencies": {
     "@nook/common": "*"

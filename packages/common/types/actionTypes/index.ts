@@ -1,8 +1,6 @@
-import { ObjectId } from "mongodb";
-
 export type ContentActionData = {
   /** Entity acting */
-  entityId: ObjectId;
+  entityId: string;
 
   /** Content being acted on */
   contentId: string;
@@ -10,10 +8,10 @@ export type ContentActionData = {
 
 export type EntityActionData = {
   /** Entity acting */
-  entityId: ObjectId;
+  entityId: string;
 
   /** Entity who was acted on */
-  targetEntityId: ObjectId;
+  targetEntityId: string;
 
   /** Source entity acting */
   sourceUserId: string;
@@ -42,7 +40,7 @@ export enum EntityInfoType {
 
 export type UpdateEntityInfoActionData = {
   /** Identity of user acting */
-  entityId: ObjectId;
+  entityId: string;
 
   /** Source entity acting */
   sourceEntityId: string;
@@ -61,7 +59,7 @@ export enum UsernameType {
 
 export type EntityUsernameData = {
   /** Identity of user acting */
-  entityId: ObjectId;
+  entityId: string;
 
   /** Source entity acting */
   sourceEntityId: string;
@@ -78,7 +76,7 @@ export type EntityUsernameData = {
 
 export type LinkBlockchainAddressActionData = {
   /** Identity of user acting */
-  entityId: ObjectId;
+  entityId: string;
 
   /** Source entity acting */
   sourceEntityId: string;
@@ -104,10 +102,10 @@ export type LinkBlockchainAddressActionData = {
 
 export type TipActionData = {
   /** Identity of user tipping */
-  entityId: ObjectId;
+  entityId: string;
 
   /** Identity of user receiving the tip */
-  targetEntityId: ObjectId;
+  targetEntityId: string;
 
   /** CAIP-19 identifier of the asset being tipped */
   contentId: string;

@@ -18,7 +18,8 @@
     "./mongo": "./dist/mongo/index.js",
     "./constants": "./dist/constants/index.js",
     "./farcaster": "./dist/farcaster/index.js",
-    "./scraper": "./dist/scraper/index.js"
+    "./scraper": "./dist/scraper/index.js",
+    "./cache": "./dist/cache/index.js"
   },
   "dependencies": {
     "@prisma/client": "5.7.1",

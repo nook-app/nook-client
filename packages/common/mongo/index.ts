@@ -55,10 +55,10 @@ export class MongoClient {
     return this.getDb().collection<T>(collection);
   }
 
-  findEntity = async (entityId: ObjectId) => {
+  findEntity = async (entityId: string) => {
     const collection = this.getCollection<Entity>(MongoCollection.Entity);
     return await collection.findOne({
-      _id: entityId,
+      _id: new ObjectId(entityId),
     });
   };
 

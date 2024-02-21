@@ -3574,6 +3574,7 @@ __metadata:
     "@types/metascraper": "npm:^5.14.3"
     "@types/node": "npm:^20.10.5"
     jest: "npm:^29.7.0"
+    mongodb: "npm:^6.3.0"
     ts-jest: "npm:^29.1.2"
     ts-node: "npm:^10.9.2"
     typescript: "npm:^5.3.3"

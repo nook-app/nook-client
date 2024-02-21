@@ -16,7 +16,7 @@ export const transformVerificationAddOrRemove = async (
   entities: Record<string, Entity>,
 ) => {
   const isRemove = rawEvent.source.type === EventType.VERIFICATION_REMOVE;
-  const entityId = entities[rawEvent.data.fid]._id;
+  const entityId = entities[rawEvent.data.fid]._id.toString();
   const action: EventAction<LinkBlockchainAddressActionData> = {
     eventId: rawEvent.eventId,
     source: rawEvent.source,

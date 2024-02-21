@@ -51,7 +51,7 @@ export const getOrCreateChannel = async (
     name: channelData.name,
     description: channelData.description,
     imageUrl: channelData.imageUrl,
-    creatorId: entity?._id,
+    creatorId: entity?._id.toString(),
     createdAt: new Date(channelData.createdAt * 1000),
     updatedAt: new Date(),
   };

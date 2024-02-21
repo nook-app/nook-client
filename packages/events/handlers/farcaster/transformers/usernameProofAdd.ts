@@ -14,7 +14,7 @@ export const transformUsernameProofAdd = async (
   rawEvent: RawEvent<FarcasterUsernameProofData>,
   entities: Record<string, Entity>,
 ) => {
-  const entityId = entities[rawEvent.data.fid]._id;
+  const entityId = entities[rawEvent.data.fid]._id.toString();
 
   let usernameType: UsernameType;
   switch (rawEvent.data.type) {

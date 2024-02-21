@@ -33,7 +33,7 @@ export const transformUrlReactionAddOrRemove = async (
       );
   }
 
-  const entityId = entities[rawEvent.data.fid]._id;
+  const entityId = entities[rawEvent.data.fid]._id.toString();
   const contentId = rawEvent.data.url;
   const actions: EventAction<ContentActionData>[] = [
     {

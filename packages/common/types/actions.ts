@@ -1,4 +1,3 @@
-import { ObjectId } from "mongodb";
 import { EventSource } from "./events";
 import {
   ContentActionData,
@@ -54,19 +53,19 @@ export type EventAction<T> = {
   timestamp: Date;
 
   /** Entity who triggered the event */
-  entityId: ObjectId;
+  entityId: string;
 
   /** Set of contentIds involved in this action */
   referencedContentIds: string[];
 
   /** Set of entityIds involved in this action */
-  referencedEntityIds: ObjectId[];
+  referencedEntityIds: string[];
 
   /** Optional parent of the action */
-  parent?: ObjectId;
+  parent?: string;
 
   /** Optional children of the action */
-  children?: ObjectId[];
+  children?: string[];
 
   /** Timestamp for when the event action was created */
   createdAt: Date;

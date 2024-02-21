@@ -9,7 +9,8 @@
     "test": "jest"
   },
   "dependencies": {
-    "@nook/common": "*"
+    "@nook/common": "*",
+    "mongodb": "^6.3.0"
   },
   "devDependencies": {
     "@types/jest": "^29.5.11",

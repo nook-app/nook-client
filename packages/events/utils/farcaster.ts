@@ -11,7 +11,6 @@ import { toFarcasterURI } from "@nook/common/farcaster";
 import { MongoClient } from "@nook/common/mongo";
 import { Entity } from "@nook/common/types/entity";
 import { getOrCreateEntitiesForFids } from "@nook/common/entity";
-import { ObjectId } from "mongodb";
 
 export const getOrCreatePostContent = async (
   client: MongoClient,
@@ -141,7 +140,7 @@ const formatContent = (data: PostData): Content<PostData> => {
         data.rootParentEntityId,
         ...data.mentions.map(({ entityId }) => entityId),
       ]),
-    ).filter(Boolean) as ObjectId[],
+    ).filter(Boolean) as string[],
     referencedContentIds: Array.from(
       new Set([
         data.contentId,
@@ -162,9 +161,9 @@ const generatePost = (
     contentId: toFarcasterURI(cast),
     text: cast.text,
     timestamp: cast.timestamp,
-    entityId: fidToEntity[cast.fid]._id,
+    entityId: fidToEntity[cast.fid]._id.toString(),
     mentions: cast.mentions.map(({ mention, mentionPosition }) => ({
-      entityId: fidToEntity[mention]._id,
+      entityId: fidToEntity[mention]._id.toString(),
       position: parseInt(mentionPosition),
     })),
     embeds: cast.embeds,
@@ -180,7 +179,7 @@ const generatePost = (
       fid: cast.rootParentFid,
       hash: cast.rootParentHash,
     }),
-    rootParentEntityId: fidToEntity[cast.rootParentFid]._id,
+    rootParentEntityId: fidToEntity[cast.rootParentFid]._id.toString(),
   };
 };
 

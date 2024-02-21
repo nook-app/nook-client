@@ -157,7 +157,7 @@ export class UserService {
       return;
     }
 
-    const entity = await this.client.findEntity(new ObjectId(user.id));
+    const entity = await this.client.findEntity(user.id);
     if (!entity) {
       return;
     }

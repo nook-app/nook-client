@@ -1,4 +1,3 @@
-import { ObjectId } from "mongodb";
 import { PostData } from "./contentTypes/post";
 import { Metadata } from "metascraper";
 import { Topic } from "./topics";
@@ -20,7 +19,7 @@ export type ContentBase = {
   contentId: string;
 
   /** Entity who created the content */
-  creatorId?: ObjectId;
+  creatorId?: string;
 
   /** Timestamp content was created at */
   timestamp: Date;
@@ -57,7 +56,7 @@ export type ContentBase = {
   referencedContentIds: string[];
 
   /** References entity IDs */
-  referencedEntityIds: ObjectId[];
+  referencedEntityIds: string[];
 };
 
 export type UnstructuredFrameMetascraperButtonKeys = {

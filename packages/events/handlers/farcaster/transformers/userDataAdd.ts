@@ -14,7 +14,7 @@ export const transformUserDataAddEvent = async (
   rawEvent: RawEvent<FarcasterUserDataAddData>,
   entities: Record<string, Entity>,
 ) => {
-  const entityId = entities[rawEvent.data.fid]._id;
+  const entityId = entities[rawEvent.data.fid]._id.toString();
 
   let entityDataType: EntityInfoType | undefined;
   switch (rawEvent.data.type) {

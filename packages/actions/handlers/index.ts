@@ -17,6 +17,7 @@ import {
 import { MongoClient, MongoCollection } from "@nook/common/mongo";
 import { Job } from "bullmq";
 import { handleTips } from "./tips";
+import { ObjectId } from "mongodb";
 
 export const getActionsHandler = async () => {
   const client = new MongoClient();
@@ -172,7 +173,7 @@ export const getActionsHandler = async () => {
         promises.push(
           collection.updateOne(
             {
-              _id: action.data.entityId,
+              _id: new ObjectId(action.data.entityId),
               "farcaster.fid": typedAction.data.sourceEntityId,
             },
             {
@@ -189,7 +190,7 @@ export const getActionsHandler = async () => {
           promises.push(
             collection.updateOne(
               {
-                _id: typedAction.data.entityId,
+                _id: new ObjectId(typedAction.data.entityId),
                 "farcaster.fid": typedAction.data.sourceEntityId,
               },
               {
@@ -216,7 +217,7 @@ export const getActionsHandler = async () => {
         promises.push(
           collection.updateOne(
             {
-              _id: typedAction.data.entityId,
+              _id: new ObjectId(typedAction.data.entityId),
               "farcaster.fid": typedAction.data.sourceEntityId,
             },
             {
@@ -240,7 +241,7 @@ export const getActionsHandler = async () => {
         const collection = client.getCollection<Entity>(MongoCollection.Entity);
         promises.push(
           collection.updateOne(
-            { _id: typedAction.data.entityId },
+            { _id: new ObjectId(typedAction.data.entityId) },
             {
               $addToSet: {
                 blockchain: {
@@ -267,7 +268,7 @@ export const getActionsHandler = async () => {
             EventActionType.LINK_BLOCKCHAIN_ADDRESS,
           ),
           collection.updateOne(
-            { _id: typedAction.data.entityId },
+            { _id: new ObjectId(typedAction.data.entityId) },
             {
               $pull: {
                 blockchain: { address: typedAction.data.address },
@@ -308,7 +309,7 @@ export const getActionsHandler = async () => {
         promises.push(
           collection.updateOne(
             {
-              _id: typedAction.data.entityId,
+              _id: new ObjectId(typedAction.data.entityId),
             },
             {
               $inc: {
@@ -318,7 +319,7 @@ export const getActionsHandler = async () => {
           ),
           collection.updateOne(
             {
-              _id: typedAction.data.targetEntityId,
+              _id: new ObjectId(typedAction.data.targetEntityId),
             },
             {
               $inc: {
@@ -339,7 +340,7 @@ export const getActionsHandler = async () => {
           ),
           collection.updateOne(
             {
-              _id: typedAction.data.entityId,
+              _id: new ObjectId(typedAction.data.entityId),
             },
             {
               $inc: {
@@ -349,7 +350,7 @@ export const getActionsHandler = async () => {
           ),
           collection.updateOne(
             {
-              _id: typedAction.data.targetEntityId,
+              _id: new ObjectId(typedAction.data.targetEntityId),
             },
             {
               $inc: {

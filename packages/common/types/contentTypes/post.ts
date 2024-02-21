@@ -1,11 +1,9 @@
-import { ObjectId } from "mongodb";
-
 export type PostData = {
   /** ID of the post */
   contentId: string;
 
   /** Entity who posted */
-  entityId: ObjectId;
+  entityId: string;
 
   /** Timestamp for when the post was made */
   timestamp: Date;
@@ -15,7 +13,7 @@ export type PostData = {
 
   /** ID and position of mentions */
   mentions: {
-    entityId: ObjectId;
+    entityId: string;
     position: number;
   }[];
 
@@ -29,7 +27,7 @@ export type PostData = {
   rootParentId: string;
 
   /** ID of entity who posted the root post */
-  rootParentEntityId: ObjectId;
+  rootParentEntityId: string;
 
   /** Root post - Optional because doesn't exist if this post is the root */
   rootParent?: PostData;
@@ -38,7 +36,7 @@ export type PostData = {
   parentId?: string;
 
   /** ID of entity who posted the parent content */
-  parentEntityId?: ObjectId;
+  parentEntityId?: string;
 
   /** Parent post - Optional because of Farcaster data retention */
   parent?: PostData;

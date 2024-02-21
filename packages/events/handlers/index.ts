@@ -11,14 +11,17 @@ import {
   PostData,
 } from "@nook/common/types";
 import { MongoClient } from "@nook/common/mongo";
+import { RedisClient } from "@nook/common/cache";
 import { Job } from "bullmq";
 import { publishContent } from "@nook/common/queues";
 import { getOrCreateChannel } from "@nook/common/scraper";
-import { handleFarcasterEvent } from "./farcaster";
+import { FarcasterProcessor } from "./farcaster/processor";
 
 export const getEventsHandler = async () => {
   const client = new MongoClient();
   await client.connect();
+
+  const redis = new RedisClient();
 
   return async (job: Job<RawEvent<EntityEventData>>) => {
     const rawEvent = job.data;
@@ -32,9 +35,10 @@ export const getEventsHandler = async () => {
       | undefined;
 
     switch (rawEvent.source.service) {
-      case EventService.FARCASTER:
-        response = await handleFarcasterEvent(client, rawEvent);
+      case EventService.FARCASTER: {
+        new FarcasterProcessor(client, redis).process(rawEvent);
         break;
+      }
       default:
         throw new Error(`[${rawEvent.source.service}] no handler found`);
     }

@@ -86,7 +86,7 @@ export const getDefaultEntityNook = (entity: Entity): Nook => {
     ],
     createdAt: date,
     updatedAt: date,
-    creatorId: new ObjectId("65d003330f2e60b1c360d9a3"),
+    creatorId: "65d003330f2e60b1c360d9a3",
   };
 };
 
@@ -152,6 +152,6 @@ export const getDefaultChannelNook = (channel: Channel): Nook => {
     ],
     createdAt: date,
     updatedAt: date,
-    creatorId: new ObjectId("65d003330f2e60b1c360d9a3"),
+    creatorId: "65d003330f2e60b1c360d9a3",
   };
 };

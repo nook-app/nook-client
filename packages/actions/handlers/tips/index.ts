@@ -97,7 +97,7 @@ const extractTips = ({
   text,
 }: PostData): TipActionData[] => {
   if (!parentId || !parentEntityId) return [];
-  if (parentEntityId.equals(entityId)) return [];
+  if (parentEntityId === entityId) return [];
   const degenTipPattern = /(\d+)\s+\$DEGEN/gi;
   const matches = [...text.matchAll(degenTipPattern)];
   return matches.map((match) => ({

@@ -1,4 +1,3 @@
-import { ObjectId } from "mongodb";
 import {
   FarcasterCastData,
   FarcasterCastReactionData,
@@ -88,7 +87,7 @@ export type EntityEvent<T> = {
   data: T;
 
   /** Entity who triggered the event */
-  entityId: ObjectId;
+  entityId: string;
 
   /** Timestamp for when the event was created */
   createdAt: Date;
