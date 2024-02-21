@@ -10,6 +10,9 @@ import {
   ContentActionData,
   PostData,
   TipActionData,
+  Nook,
+  EntityUsernameData,
+  UsernameType,
 } from "@nook/common/types";
 import { MongoClient, MongoCollection } from "@nook/common/mongo";
 import { Job } from "bullmq";
@@ -139,6 +142,7 @@ export const getActionsHandler = async () => {
         );
         break;
       }
+      // TODO: Update nook metadata
       case EventActionType.UPDATE_USER_INFO: {
         const typedAction = action as EventAction<UpdateEntityInfoActionData>;
         const collection = client.getCollection<Entity>(MongoCollection.Entity);
@@ -175,6 +179,54 @@ export const getActionsHandler = async () => {
               $set: {
                 [field]: typedAction.data.entityData,
 
+                updatedAt: new Date(),
+              },
+            },
+          ),
+        );
+
+        if (typedAction.data.entityDataType === EntityInfoType.USERNAME) {
+          promises.push(
+            collection.updateOne(
+              {
+                _id: typedAction.data.entityId,
+                "farcaster.fid": typedAction.data.sourceEntityId,
+              },
+              {
+                $addToSet: {
+                  usernames: {
+                    type: typedAction.data.entityData.endsWith(".eth")
+                      ? UsernameType.ENS
+                      : UsernameType.FNAME,
+                    username: typedAction.data.entityData,
+                  },
+                },
+                $set: {
+                  updatedAt: new Date(),
+                },
+              },
+            ),
+          );
+        }
+        break;
+      }
+      case EventActionType.ADD_USERNAME: {
+        const typedAction = action as EventAction<EntityUsernameData>;
+        const collection = client.getCollection<Entity>(MongoCollection.Entity);
+        promises.push(
+          collection.updateOne(
+            {
+              _id: typedAction.data.entityId,
+              "farcaster.fid": typedAction.data.sourceEntityId,
+            },
+            {
+              $addToSet: {
+                usernames: {
+                  type: typedAction.data.usernameType,
+                  username: typedAction.data.username,
+                },
+              },
+              $set: {
                 updatedAt: new Date(),
               },
             },

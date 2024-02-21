@@ -41,7 +41,7 @@ export const handleUsernameProofAdd = async (
     referencedContentIds: [],
     createdAt: new Date(),
     updatedAt: new Date(),
-    type: EventActionType.UPDATE_USER_INFO,
+    type: EventActionType.ADD_USERNAME,
     data: {
       sourceEntityId: rawEvent.data.fid,
       entityId,

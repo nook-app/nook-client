@@ -1,5 +1,5 @@
 import { ObjectId } from "mongodb";
-import { Protocol } from "./actionTypes";
+import { Protocol, UsernameType } from "./actionTypes";
 
 export type FarcasterAccount = {
   fid: string;
@@ -28,6 +28,12 @@ export type Entity = {
 
   /** Blockchain accounts */
   blockchain: BlockchainAccount[];
+
+  /** Usernames */
+  usernames: {
+    type: UsernameType;
+    username: string;
+  }[];
 
   /** Date record was created */
   createdAt: Date;

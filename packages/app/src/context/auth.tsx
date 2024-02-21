@@ -110,8 +110,8 @@ export function AuthProvider(props: AuthProviderProps) {
   return (
     <AuthKitProvider
       config={{
-        relay: "https://relay.farcaster.xyz",
-        rpcUrl: "https://mainnet.optimism.io",
+        rpcUrl:
+          "https://opt-mainnet.g.alchemy.com/v2/jrjomnn0ub8MFFQOXz3X9s9oVk_Oj5Q2",
         siweUri: CONFIG.siwfUri,
         domain: CONFIG.siwfDomain,
       }}

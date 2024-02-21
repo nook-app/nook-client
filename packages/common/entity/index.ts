@@ -1,6 +1,7 @@
 import { ObjectId } from "mongodb";
 import { MongoClient, MongoCollection } from "../mongo";
-import { Entity } from "../types/entity";
+import { BlockchainAccount, Entity, FarcasterAccount } from "../types/entity";
+import { UsernameType } from "../types";
 
 export const getOrCreateEntitiesForFids = async (
   client: MongoClient,
@@ -36,36 +37,73 @@ export const getOrCreateEntitiesForFids = async (
     .map((entity) => entity.farcaster.fid);
 
   if (missingFids.length > 0) {
-    const { users } = await getFarcasterUsers(missingFids);
-    const newEntities = missingFids.map((fid, i) => ({
-      ...users[i],
-      _id: new ObjectId(),
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    }));
-    await collection.insertMany(newEntities);
-    for (const entity of newEntities) {
-      entities[entity.farcaster.fid] = entity;
+    const data = await getFarcasterUsers(missingFids);
+    if (data) {
+      const newEntities: Entity[] = missingFids.map((fid, i) => {
+        const usernames = [];
+
+        const username = data.users[i].farcaster.username;
+        if (username) {
+          usernames.push({
+            type: username.endsWith(".eth")
+              ? UsernameType.ENS
+              : UsernameType.FNAME,
+            username,
+          });
+        }
+
+        return {
+          ...data.users[i],
+          usernames,
+          _id: new ObjectId(),
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        };
+      });
+      await collection.insertMany(newEntities);
+      for (const entity of newEntities) {
+        entities[entity.farcaster.fid] = entity;
+      }
     }
   }
 
   if (missingDataFids.length > 0) {
-    const { users } = await getFarcasterUsers(missingDataFids);
-    for (const user of users) {
-      const entity = entities[user.farcaster.fid];
-      entity.farcaster = user.farcaster;
-      entity.blockchain = user.blockchain;
-      await collection.updateOne(
-        {
-          _id: entity._id,
-        },
-        {
-          $set: {
-            farcaster: user.farcaster,
-            blockchain: user.blockchain,
+    const data = await getFarcasterUsers(missingDataFids);
+    if (data) {
+      for (const user of data.users) {
+        const entity = entities[user.farcaster.fid];
+        entity.farcaster = user.farcaster;
+        entity.blockchain = user.blockchain;
+
+        const usernames = [];
+
+        const username = user.farcaster.username;
+        if (username) {
+          usernames.push({
+            type: username.endsWith(".eth")
+              ? UsernameType.ENS
+              : UsernameType.FNAME,
+            username,
+          });
+        }
+
+        await collection.updateOne(
+          {
+            _id: entity._id,
           },
-        },
-      );
+          {
+            $set: {
+              farcaster: user.farcaster,
+              blockchain: user.blockchain,
+            },
+            $addToSet: {
+              usernames: {
+                $each: usernames,
+              },
+            },
+          },
+        );
+      }
     }
   }
 
@@ -73,7 +111,7 @@ export const getOrCreateEntitiesForFids = async (
 };
 
 const getFarcasterUsers = async (fids: string[]) => {
-  if (!fids?.length) return [];
+  if (!fids?.length) return;
 
   const response = await fetch(`${process.env.FARCASTER_SERVICE_URL}/users`, {
     method: "POST",
@@ -89,5 +127,10 @@ const getFarcasterUsers = async (fids: string[]) => {
     throw new Error(`Failed getting user with ${response.status} for ${fids}`);
   }
 
-  return await response.json();
+  return (await response.json()) as {
+    users: {
+      farcaster: FarcasterAccount;
+      blockchain: BlockchainAccount[];
+    }[];
+  };
 };
