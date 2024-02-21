@@ -1,5 +1,5 @@
 import Redis from "ioredis";
-import { Content, ContentData, Entity } from "../types";
+import { Channel, Content, ContentData, Entity } from "../types";
 import { ObjectId } from "mongodb";
 
 // biome-ignore lint/suspicious/noExplicitAny: generic reviver
@@ -51,6 +51,10 @@ export class RedisClient {
     });
   }
 
+  async close() {
+    await this.redis.quit();
+  }
+
   async getJson(key: string) {
     try {
       const json = await this.redis.get(key);
@@ -58,6 +62,18 @@ export class RedisClient {
       return JSON.parse(json, reviver);
     } catch (error) {
       throw new Error(`Failed to parse JSON for ${key}: ${error}`);
+    }
+  }
+
+  async getJsons(keys: string[]) {
+    if (keys.length === 0) return [];
+    try {
+      const jsons = await this.redis.mget(keys);
+      return jsons.map((json) =>
+        json ? JSON.parse(json, reviver) : undefined,
+      );
+    } catch (error) {
+      throw new Error(`Failed to parse JSONs for ${keys}: ${error}`);
     }
   }
 
@@ -74,6 +90,10 @@ export class RedisClient {
     return await this.getJson(`entity:${id}`);
   }
 
+  async getEntities(ids: string[]): Promise<Entity[]> {
+    return await this.getJsons(ids.map((id) => `entity:${id}`));
+  }
+
   async setEntity(entity: Entity) {
     await Promise.all([
       this.setJson(`entity:${entity._id.toString()}`, entity),
@@ -81,11 +101,50 @@ export class RedisClient {
     ]);
   }
 
+  async setEntities(entities: Entity[]) {
+    if (entities.length === 0) return;
+    const keyValuePairs = entities.flatMap((entity) => [
+      `entity:${entity._id.toString()}`,
+      JSON.stringify(entity),
+      `fid:${entity.farcaster.fid}`,
+      JSON.stringify(entity),
+    ]);
+    await this.redis.mset(...keyValuePairs);
+  }
+
   async getContent(contentId: string): Promise<Content<ContentData>> {
     return await this.getJson(`content:${contentId}`);
   }
 
+  async getContents(
+    contentIds: string[],
+  ): Promise<(Content<ContentData> | undefined)[]> {
+    return await this.getJsons(contentIds.map((id) => `content:${id}`));
+  }
+
   async setContent(content: Content<ContentData>) {
     await this.setJson(`content:${content.contentId}`, content);
+  }
+
+  async setContents(contents: Content<ContentData>[]) {
+    if (contents.length === 0) return;
+    const keyValuePairs = contents.flatMap((content) => [
+      `content:${content.contentId}`,
+      JSON.stringify(content),
+    ]);
+    await this.redis.mset(...keyValuePairs);
+  }
+
+  async getChannels(ids: string[]) {
+    return await this.getJsons(ids.map((id) => `channel:${id}`));
+  }
+
+  async setChannels(channels: Channel[]) {
+    if (channels.length === 0) return;
+    const keyValuePairs = channels.flatMap((channel) => [
+      `channel:${channel.contentId}`,
+      JSON.stringify(channel),
+    ]);
+    await this.redis.mset(...keyValuePairs);
   }
 }

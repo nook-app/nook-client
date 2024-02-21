@@ -1,5 +1,10 @@
 import fastify from "fastify";
-import { farcasterHubPlugin, mongoPlugin, nookPlugin } from "./plugins";
+import {
+  cachePlugin,
+  farcasterHubPlugin,
+  mongoPlugin,
+  nookPlugin,
+} from "./plugins";
 import { nookRoutes } from "./routes/nook";
 import { userRoutes } from "./routes/user";
 import fastifyJwt from "@fastify/jwt";
@@ -28,6 +33,7 @@ const buildApp = () => {
   app.register(mongoPlugin);
   app.register(nookPlugin);
   app.register(farcasterHubPlugin);
+  app.register(cachePlugin);
 
   app.register(nookRoutes);
   app.register(userRoutes);

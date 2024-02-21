@@ -5,21 +5,26 @@ import {
   Content,
   ContentData,
   ContentFeedArgs,
+  ContentType,
   Entity,
   Nook,
+  PostData,
 } from "@nook/common/types";
 import { ContentFeed, ContentFeedItem } from "../../types";
 import { ObjectId } from "mongodb";
 import { createChannelNook, createEntityNook } from "../utils/nooks";
 import { getOrCreateChannel, getOrCreateContent } from "@nook/common/scraper";
+import { RedisClient } from "@nook/common/cache";
 
 const PAGE_SIZE = 10;
 
 export class NookService {
   private client: MongoClient;
+  private cache: RedisClient;
 
   constructor(fastify: FastifyInstance) {
     this.client = fastify.mongo.client;
+    this.cache = fastify.cache.client;
   }
 
   async getContentFeed(
@@ -67,8 +72,9 @@ export class NookService {
       .limit(PAGE_SIZE)
       .toArray();
 
-    const { contents, entities, channels } =
-      await this.getReferencedContentsAndEntities(content);
+    const contents = await this.getReferencedContents(content);
+    const entities = await this.getReferencedEntities(contents);
+    const channels = await this.getReferencedChannels(contents);
 
     const data = content.map((a) => {
       const relevantContents = [];
@@ -146,59 +152,106 @@ export class NookService {
     };
   }
 
-  async getReferencedContentsAndEntities(content: Content<ContentData>[]) {
-    const referencedContentIds = content.flatMap((a) => a.referencedContentIds);
-    const referencedContents = await this.client
+  async fetchContents(contentIds: string[]) {
+    const cachedContents = (await this.cache.getContents(contentIds)).filter(
+      Boolean,
+    ) as Content<ContentData>[];
+    const cachedContentIds = cachedContents.map((c) => c.contentId);
+    const uncachedContentIds = contentIds.filter(
+      (id) => !cachedContentIds.includes(id),
+    );
+    const existingContents = await this.client
       .getCollection<Content<ContentData>>(MongoCollection.Content)
-      .find({ contentId: { $in: referencedContentIds } })
+      .find({ contentId: { $in: uncachedContentIds } })
       .toArray();
+    const existingContentIds = existingContents.map((c) => c.contentId);
+    const missingContentIds = uncachedContentIds.filter(
+      (id) => !existingContentIds.includes(id),
+    );
+    const missingContents = (
+      await Promise.all(
+        missingContentIds.map(async (id) => {
+          try {
+            return await getOrCreateContent(this.client, id);
+          } catch (e) {}
+        }),
+      )
+    ).filter(Boolean) as Content<ContentData>[];
+    await this.cache.setContents([...existingContents, ...missingContents]);
+    return [...cachedContents, ...existingContents, ...missingContents];
+  }
+
+  async getReferencedContents(content: Content<ContentData>[]) {
+    const referencedContentIds = content.flatMap((a) => a.referencedContentIds);
+    const referencedContents = await this.fetchContents(referencedContentIds);
 
     const secondLevelReferencedContentIds = referencedContents
       .flatMap((c) => c.referencedContentIds)
       .filter((id) => !referencedContentIds.includes(id));
-    const secondLevelContents = await this.client
-      .getCollection<Content<ContentData>>(MongoCollection.Content)
-      .find({ contentId: { $in: secondLevelReferencedContentIds } })
-      .toArray();
-
-    const contentIds = Array.from(
-      new Set([...referencedContentIds, ...secondLevelReferencedContentIds]),
+    const secondLevelContents = await this.fetchContents(
+      secondLevelReferencedContentIds,
     );
-    const contents = [...referencedContents, ...secondLevelContents];
-    const foundContentIds = contents.map((c) => c.contentId);
-    const missingContentIds = contentIds.filter(
-      (id) => !foundContentIds.includes(id),
+    return [...referencedContents, ...secondLevelContents];
+  }
+
+  async fetchEntities(entityIds: string[]) {
+    const cachedEntities = (await this.cache.getEntities(entityIds)).filter(
+      Boolean,
+    ) as Entity[];
+    const cachedEntityIds = cachedEntities.map((e) => e._id.toString());
+    const uncachedEntityIds = entityIds.filter(
+      (id) => !cachedEntityIds.includes(id),
     );
-
-    const missingContents = (
-      await Promise.all(
-        missingContentIds.map((id) => getOrCreateContent(this.client, id)),
-      )
-    ).filter(Boolean) as Content<ContentData>[];
-
-    const referencedEntityIds = content
-      .flatMap((a) => a.referencedEntityIds)
-      .concat(contents.flatMap((c) => c.referencedEntityIds));
-    const entities = await this.client
+    const existingEntities = await this.client
       .getCollection<Entity>(MongoCollection.Entity)
-      .find({ _id: { $in: referencedEntityIds.map((e) => new ObjectId(e)) } })
+      .find({ _id: { $in: uncachedEntityIds.map((id) => new ObjectId(id)) } })
       .toArray();
+    await this.cache.setEntities(existingEntities);
+    return [...cachedEntities, ...existingEntities];
+  }
 
-    const channels = await this.getChannels(contentIds);
+  async getReferencedEntities(content: Content<ContentData>[]) {
+    const referencedEntityIds = content.flatMap((a) => a.referencedEntityIds);
+    const referencedEntities = await this.fetchEntities(referencedEntityIds);
+    return referencedEntities;
+  }
 
-    return {
-      contents: [...contents, ...missingContents],
-      entities,
-      channels,
-    };
+  async fetchChannels(channelIds: string[]) {
+    const cachedChannels = (await this.cache.getChannels(channelIds)).filter(
+      Boolean,
+    ) as Channel[];
+    const cachedChannelIds = cachedChannels.map((c) => c.contentId);
+    const uncachedChannelIds = channelIds.filter(
+      (id) => !cachedChannelIds.includes(id),
+    );
+    const existingChannels = await this.client
+      .getCollection<Channel>(MongoCollection.Channels)
+      .find({ contentId: { $in: uncachedChannelIds } })
+      .toArray();
+    await this.cache.setChannels(existingChannels);
+    return [...cachedChannels, ...existingChannels];
+  }
+
+  async getReferencedChannels(content: Content<ContentData>[]) {
+    const referencedChannelIds = content
+      .map((c) => {
+        if (c.type === ContentType.POST || c.type === ContentType.REPLY) {
+          const post = c.data as PostData;
+          return post.channelId;
+        }
+      })
+      .filter(Boolean) as string[];
+    const referencedChannels = await this.fetchChannels(referencedChannelIds);
+    return referencedChannels;
   }
 
   async getContent(contentId: string): Promise<ContentFeedItem | undefined> {
     const content = await this.client.findContent(contentId);
     if (!content) return;
 
-    const { contents, entities, channels } =
-      await this.getReferencedContentsAndEntities([content]);
+    const contents = await this.getReferencedContents([content]);
+    const entities = await this.getReferencedEntities(contents);
+    const channels = await this.getReferencedChannels(contents);
 
     return {
       ...content,
@@ -215,14 +268,6 @@ export class NookService {
       .find({ _id: { $in: entityIds.map((id) => new ObjectId(id)) } })
       .toArray();
     return entities;
-  }
-
-  async getChannels(channelIds: string[]): Promise<Channel[]> {
-    const channels = await this.client
-      .getCollection<Channel>(MongoCollection.Channels)
-      .find({ contentId: { $in: channelIds } })
-      .toArray();
-    return channels;
   }
 
   async getNook(nookId: string): Promise<Nook> {

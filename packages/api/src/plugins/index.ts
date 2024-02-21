@@ -1,5 +1,6 @@
 import fp from "fastify-plugin";
 import { MongoClient } from "@nook/common/mongo";
+import { RedisClient } from "@nook/common/cache";
 import { PrismaClient } from "@nook/common/prisma/nook";
 import { HubRpcClient, getSSLHubRpcClient } from "@farcaster/hub-nodejs";
 
@@ -13,6 +14,9 @@ declare module "fastify" {
     };
     farcasterHub: {
       client: HubRpcClient;
+    };
+    cache: {
+      client: RedisClient;
     };
   }
 }
@@ -40,5 +44,14 @@ export const farcasterHubPlugin = fp(async (fastify, opts) => {
   fastify.decorate("farcasterHub", { client });
   fastify.addHook("onClose", async (fastify) => {
     fastify.farcasterHub.client.close();
+  });
+});
+
+export const cachePlugin = fp(async (fastify, opts) => {
+  const client = new RedisClient();
+  await client.connect();
+  fastify.decorate("cache", { client });
+  fastify.addHook("onClose", async (fastify) => {
+    await fastify.cache.client.close();
   });
 });
