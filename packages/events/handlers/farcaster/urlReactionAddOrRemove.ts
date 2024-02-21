@@ -2,7 +2,6 @@ import {
   EventAction,
   EventActionType,
   EventType,
-  FarcasterReactionType,
   FarcasterUrlReactionData,
   RawEvent,
   EntityEvent,
@@ -16,21 +15,23 @@ export const handleUrlReactionAddOrRemove = async (
   client: MongoClient,
   rawEvent: RawEvent<FarcasterUrlReactionData>,
 ) => {
-  let eventActionType: EventActionType | undefined;
-
   const isRemove = [
     EventType.CAST_REACTION_REMOVE,
     EventType.URL_REACTION_REMOVE,
   ].includes(rawEvent.source.type);
 
-  if (rawEvent.data.reactionType === FarcasterReactionType.LIKE) {
-    eventActionType = isRemove ? EventActionType.UNLIKE : EventActionType.LIKE;
-  } else if (rawEvent.data.reactionType === FarcasterReactionType.RECAST) {
-    eventActionType = isRemove
-      ? EventActionType.UNREPOST
-      : EventActionType.REPOST;
-  } else {
-    throw Error(`Unsupported reaction type: ${rawEvent.data.reactionType}`);
+  let type: EventActionType;
+  switch (rawEvent.data.reactionType) {
+    case 1:
+      type = isRemove ? EventActionType.UNLIKE : EventActionType.LIKE;
+      break;
+    case 2:
+      type = isRemove ? EventActionType.UNREPOST : EventActionType.REPOST;
+      break;
+    default:
+      throw new Error(
+        `Unsupported reaction type: ${rawEvent.data.reactionType}`,
+      );
   }
 
   const fidToEntity = await getOrCreateEntitiesForFids(client, [
@@ -49,7 +50,7 @@ export const handleUrlReactionAddOrRemove = async (
       referencedContentIds: [contentId],
       createdAt: new Date(),
       updatedAt: new Date(),
-      type: eventActionType,
+      type,
       data: {
         entityId,
         contentId,

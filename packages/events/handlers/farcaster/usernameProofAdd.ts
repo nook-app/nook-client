@@ -3,45 +3,36 @@ import {
   EntityEvent,
   EventAction,
   EventActionType,
-  FarcasterUserDataAddData,
   RawEvent,
-  UpdateEntityInfoActionData,
-  EntityInfoType,
   TopicType,
+  FarcasterUsernameProofData,
+  EntityUsernameData,
+  UsernameType,
 } from "@nook/common/types";
 import { getOrCreateEntitiesForFids } from "@nook/common/entity";
 
-export const handleUserDataAdd = async (
+export const handleUsernameProofAdd = async (
   client: MongoClient,
-  rawEvent: RawEvent<FarcasterUserDataAddData>,
+  rawEvent: RawEvent<FarcasterUsernameProofData>,
 ) => {
   const fidToIdentity = await getOrCreateEntitiesForFids(client, [
     rawEvent.data.fid,
   ]);
   const entityId = fidToIdentity[rawEvent.data.fid]._id;
 
-  let entityDataType: EntityInfoType | undefined;
+  let usernameType: UsernameType;
   switch (rawEvent.data.type) {
     case 1:
-      entityDataType = EntityInfoType.PFP;
+      usernameType = UsernameType.FNAME;
       break;
     case 2:
-      entityDataType = EntityInfoType.DISPLAY;
-      break;
-    case 3:
-      entityDataType = EntityInfoType.BIO;
-      break;
-    case 5:
-      entityDataType = EntityInfoType.URL;
-      break;
-    case 6:
-      entityDataType = EntityInfoType.USERNAME;
+      usernameType = UsernameType.ENS;
       break;
     default:
-      throw new Error(`Unknown entity data type: ${rawEvent.data.type}`);
+      throw new Error(`Unsupported username type: ${rawEvent.data.type}`);
   }
 
-  const action: EventAction<UpdateEntityInfoActionData> = {
+  const action: EventAction<EntityUsernameData> = {
     eventId: rawEvent.eventId,
     source: rawEvent.source,
     timestamp: new Date(rawEvent.timestamp),
@@ -54,8 +45,9 @@ export const handleUserDataAdd = async (
     data: {
       sourceEntityId: rawEvent.data.fid,
       entityId,
-      entityDataType: entityDataType,
-      entityData: rawEvent.data.value,
+      username: rawEvent.data.username,
+      usernameType,
+      owner: rawEvent.data.owner,
     },
     topics: [
       {
@@ -65,7 +57,7 @@ export const handleUserDataAdd = async (
     ],
   };
 
-  const event: EntityEvent<FarcasterUserDataAddData> = {
+  const event: EntityEvent<FarcasterUsernameProofData> = {
     ...rawEvent,
     entityId,
     timestamp: new Date(rawEvent.timestamp),

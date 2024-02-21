@@ -38,6 +38,8 @@ model FarcasterUsernameProof {
 
     timestamp DateTime
     deletedAt DateTime?
+
+    @@index([fid])
 }
 
 model FarcasterVerification {
@@ -107,6 +109,7 @@ model FarcasterCastMention {
     cast FarcasterCast @relation(fields: [hash], references: [hash], onDelete: Cascade)
 
     @@id([hash, mention, mentionPosition])
+    @@index([fid])
 }
 
 model FarcasterCastEmbedCast {
@@ -122,6 +125,7 @@ model FarcasterCastEmbedCast {
     cast FarcasterCast @relation(fields: [hash], references: [hash], onDelete: Cascade)
 
     @@id([hash, embedHash])
+    @@index([fid])
 }
 
 model FarcasterCastEmbedUrl {
@@ -136,6 +140,7 @@ model FarcasterCastEmbedUrl {
     cast FarcasterCast @relation(fields: [hash], references: [hash], onDelete: Cascade)
 
     @@id([hash, url])
+    @@index([fid])
 }
 
 model FarcasterCastReaction {
@@ -155,6 +160,7 @@ model FarcasterCastReaction {
     deletedAt DateTime?
 
     @@id([targetHash, reactionType, fid])
+    @@index([fid])
 }
 
 model FarcasterUrlReaction {
@@ -172,6 +178,7 @@ model FarcasterUrlReaction {
     deletedAt DateTime?
 
     @@id([targetUrl, reactionType, fid])
+    @@index([fid])
 }
 
 model FarcasterLink {

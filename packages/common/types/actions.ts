@@ -3,6 +3,7 @@ import { EventSource } from "./events";
 import {
   ContentActionData,
   EntityActionData,
+  EntityUsernameData,
   LinkBlockchainAddressActionData,
   TipActionData,
   UpdateEntityInfoActionData,
@@ -14,6 +15,7 @@ export type EventActionData =
   | EntityActionData
   | UpdateEntityInfoActionData
   | LinkBlockchainAddressActionData
+  | EntityUsernameData
   | TipActionData;
 
 /**

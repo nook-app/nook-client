@@ -114,19 +114,24 @@ export const getAndBackfillLinks = async (
     ])
   ).filter(Boolean) as Message[][];
 
-  return await backfillLinks(messages.flat());
+  const links = await backfillLinks(messages.flat());
+
+  const events = links.map((link) =>
+    transformToLinkEvent(EventType.LINK_ADD, link),
+  );
+  await publishRawEvents(events);
+  return events;
 };
 
 export const backfillLinks = async (messages: Message[]) => {
   const links = messages.map(messageToLink).filter(Boolean) as FarcasterLink[];
-  await prisma.farcasterLink.createMany({
-    data: links,
-    skipDuplicates: true,
-  });
-
-  await publishRawEvents(
-    links.map((link) => transformToLinkEvent(EventType.LINK_ADD, link)),
-  );
+  if (links.length > 0) {
+    await prisma.farcasterLink.createMany({
+      data: links,
+      skipDuplicates: true,
+    });
+  }
+  return links;
 };
 
 const transformToLinkEvent = (

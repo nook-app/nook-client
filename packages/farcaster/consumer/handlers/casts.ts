@@ -338,7 +338,18 @@ export const getAndBackfillCasts = async (
     )
   ).filter(Boolean) as Message[];
 
-  return await backfillCasts(client, messages);
+  await backfillCasts(client, messages);
+
+  const events = messages.map((message) => {
+    return transformToCastEvent(
+      EventType.CAST_ADD,
+      messageToCast(message) as FarcasterCast,
+    );
+  });
+
+  await publishRawEvents(events);
+
+  return events.map((event) => event.data);
 };
 
 export const backfillCasts = async (
@@ -346,6 +357,7 @@ export const backfillCasts = async (
   messages: Message[],
 ) => {
   const casts = messages.map(messageToCast).filter(Boolean) as FarcasterCast[];
+  if (casts.length === 0) return [];
 
   const rootParents = await Promise.all(
     casts.map((cast) => findRootParent(client, cast)),
@@ -366,39 +378,30 @@ export const backfillCasts = async (
     .map(messageToCastEmbedCast)
     .filter(Boolean) as FarcasterCastEmbedCast[][];
 
+  const embedUrls = messages
+    .map(messageToCastEmbedUrl)
+    .filter(Boolean) as FarcasterCastEmbedUrl[][];
+
+  const mentions = messages
+    .map(messageToCastMentions)
+    .filter(Boolean) as FarcasterCastMention[][];
+
   await prisma.farcasterCastEmbedCast.createMany({
     data: embedCasts.flat(),
     skipDuplicates: true,
   });
-
-  const embedUrls = messages
-    .map(messageToCastEmbedUrl)
-    .filter(Boolean) as FarcasterCastEmbedUrl[][];
 
   await prisma.farcasterCastEmbedUrl.createMany({
     data: embedUrls.flat(),
     skipDuplicates: true,
   });
 
-  const mentions = messages
-    .map(messageToCastMentions)
-    .filter(Boolean) as FarcasterCastMention[][];
-
   await prisma.farcasterCastMention.createMany({
     data: mentions.flat(),
     skipDuplicates: true,
   });
 
-  const events = messages.map((message) => {
-    return transformToCastEvent(
-      EventType.CAST_ADD,
-      messageToCast(message) as FarcasterCast,
-    );
-  });
-
-  await publishRawEvents(events);
-
-  return events.map((event) => event.data);
+  return casts;
 };
 
 export const transformToCastEvent = (

@@ -54,6 +54,28 @@ export type UpdateEntityInfoActionData = {
   entityData: string;
 };
 
+export enum UsernameType {
+  FNAME = "fname",
+  ENS = "ens",
+}
+
+export type EntityUsernameData = {
+  /** Identity of user acting */
+  entityId: ObjectId;
+
+  /** Source entity acting */
+  sourceEntityId: string;
+
+  /** Username */
+  username: string;
+
+  /** Owner of the username */
+  owner: string;
+
+  /** Type of username */
+  usernameType: UsernameType;
+};
+
 export type LinkBlockchainAddressActionData = {
   /** Identity of user acting */
   entityId: ObjectId;

@@ -15,7 +15,6 @@ import {
   EventService,
   EventType,
   FarcasterCastReactionData,
-  FarcasterReactionType,
   FarcasterUrlReactionData,
   FidHash,
   RawEvent,
@@ -206,52 +205,51 @@ export const getAndBackfillReactions = async (
     )
   ).filter(Boolean) as Message[][];
 
-  return await backfillReactions(messages.flat());
+  const { castReactions, urlReactions } = await backfillReactions(
+    messages.flat(),
+  );
+
+  const castReactionEvents = castReactions.map((reaction) =>
+    transformToCastReactionEvent(EventType.CAST_REACTION_ADD, reaction),
+  );
+  await publishRawEvents(castReactionEvents);
+
+  const urlReactionEvents = urlReactions.map((reaction) =>
+    transformToUrlReactionEvent(EventType.URL_REACTION_ADD, reaction),
+  );
+  await publishRawEvents(urlReactionEvents);
+
+  return [...castReactionEvents, ...urlReactionEvents];
 };
 
 export const backfillReactions = async (messages: Message[]) => {
   const castReactions = messages
     .map(messageToCastReaction)
     .filter(Boolean) as FarcasterCastReaction[];
-  const urlReactions = messages
-    .map(messageToUrlReaction)
-    .filter(Boolean) as FarcasterUrlReaction[];
-  if (castReactions.length) {
+  if (castReactions.length > 0) {
     await prisma.farcasterCastReaction.createMany({
       data: castReactions,
       skipDuplicates: true,
     });
-    await publishRawEvents(
-      castReactions.map((reaction) =>
-        transformToCastReactionEvent(EventType.CAST_REACTION_ADD, reaction),
-      ),
-    );
   }
 
-  if (urlReactions.length) {
+  const urlReactions = messages
+    .map(messageToUrlReaction)
+    .filter(Boolean) as FarcasterUrlReaction[];
+  if (urlReactions.length > 0) {
     await prisma.farcasterUrlReaction.createMany({
       data: urlReactions,
       skipDuplicates: true,
     });
-    await publishRawEvents(
-      urlReactions.map((reaction) =>
-        transformToUrlReactionEvent(EventType.URL_REACTION_ADD, reaction),
-      ),
-    );
   }
+
+  return { castReactions, urlReactions };
 };
 
 export const transformToCastReactionEvent = (
   type: EventType,
   reaction: FarcasterCastReaction,
 ): RawEvent<FarcasterCastReactionData> => {
-  let reactionType = FarcasterReactionType.NONE;
-  if (reaction.reactionType === 1) {
-    reactionType = FarcasterReactionType.LIKE;
-  } else if (reaction.reactionType === 2) {
-    reactionType = FarcasterReactionType.RECAST;
-  }
-
   const source = {
     service: EventService.FARCASTER,
     type,
@@ -266,7 +264,7 @@ export const transformToCastReactionEvent = (
     data: {
       timestamp: reaction.timestamp,
       fid: reaction.fid.toString(),
-      reactionType,
+      reactionType: reaction.reactionType,
       targetFid: reaction.targetFid.toString(),
       targetHash: reaction.targetHash,
       signature: {
@@ -284,13 +282,6 @@ const transformToUrlReactionEvent = (
   type: EventType,
   reaction: FarcasterUrlReaction,
 ): RawEvent<FarcasterUrlReactionData> => {
-  let reactionType = FarcasterReactionType.NONE;
-  if (reaction.reactionType === 1) {
-    reactionType = FarcasterReactionType.LIKE;
-  } else if (reaction.reactionType === 2) {
-    reactionType = FarcasterReactionType.RECAST;
-  }
-
   const source = {
     service: EventService.FARCASTER,
     type,
@@ -305,7 +296,7 @@ const transformToUrlReactionEvent = (
     data: {
       timestamp: reaction.timestamp,
       fid: reaction.fid.toString(),
-      reactionType,
+      reactionType: reaction.reactionType,
       url: reaction.targetUrl,
       signature: {
         hash: reaction.hash,

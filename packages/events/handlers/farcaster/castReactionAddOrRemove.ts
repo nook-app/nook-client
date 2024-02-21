@@ -4,7 +4,6 @@ import {
   EventActionType,
   EventType,
   FarcasterCastReactionData,
-  FarcasterReactionType,
   RawEvent,
   EntityEvent,
   PostData,
@@ -30,18 +29,23 @@ export const handleCastReactionAddOrRemove = async (
   if (!content) return;
 
   let type: EventActionType;
-  if (rawEvent.data.reactionType === FarcasterReactionType.LIKE) {
-    type =
-      rawEvent.source.type === EventType.CAST_REACTION_ADD
-        ? EventActionType.LIKE
-        : EventActionType.UNLIKE;
-  } else if (rawEvent.data.reactionType === FarcasterReactionType.RECAST) {
-    type =
-      rawEvent.source.type === EventType.CAST_REACTION_ADD
-        ? EventActionType.REPOST
-        : EventActionType.UNREPOST;
-  } else {
-    throw Error(`Unsupported reaction type: ${rawEvent.data.reactionType}`);
+  switch (rawEvent.data.reactionType) {
+    case 1:
+      type =
+        rawEvent.source.type === EventType.CAST_REACTION_ADD
+          ? EventActionType.LIKE
+          : EventActionType.UNLIKE;
+      break;
+    case 2:
+      type =
+        rawEvent.source.type === EventType.CAST_REACTION_ADD
+          ? EventActionType.REPOST
+          : EventActionType.UNREPOST;
+      break;
+    default:
+      throw new Error(
+        `Unsupported reaction type: ${rawEvent.data.reactionType}`,
+      );
   }
 
   const identities = await getOrCreateEntitiesForFids(client, [

@@ -21,7 +21,6 @@ export const getFarcasterHandler = () => {
 
   return async (job: Job<Message>) => {
     const message = job.data;
-    console.log(`[${job.id}] processing event`);
 
     const args = { message, client };
     switch (message.data?.type) {

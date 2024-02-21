@@ -15,7 +15,11 @@ import {
   FarcasterVerificationData,
   RawEvent,
 } from "@nook/common/types";
-import { publishRawEvent, toJobId } from "@nook/common/queues";
+import {
+  publishRawEvent,
+  publishRawEvents,
+  toJobId,
+} from "@nook/common/queues";
 
 const prisma = new PrismaClient();
 
@@ -135,25 +139,28 @@ export const getAndBackfillVerfications = async (
     .flat()
     .filter(Boolean) as Message[];
 
-  return await backfillVerifications(messages);
+  const verifications = await backfillVerifications(messages);
+  await publishRawEvents(
+    verifications.map((verification) =>
+      transformToVerificationEvent(
+        EventType.VERIFICATION_ADD_ETH_ADDRESS,
+        verification,
+      ),
+    ),
+  );
+  return verifications;
 };
 
 export const backfillVerifications = async (messages: Message[]) => {
   const verifications = messages
     .map(messageToVerification)
     .filter(Boolean) as FarcasterVerification[];
-  await prisma.farcasterVerification.deleteMany({
-    where: {
-      OR: verifications.map((verification) => ({
-        fid: verification.fid,
-        address: verification.address,
-      })),
-    },
-  });
-  await prisma.farcasterVerification.createMany({
-    data: verifications,
-    skipDuplicates: true,
-  });
+  if (verifications.length) {
+    await prisma.farcasterVerification.createMany({
+      data: verifications,
+      skipDuplicates: true,
+    });
+  }
   return verifications;
 };
 
@@ -167,7 +174,6 @@ const transformToVerificationEvent = (
     id: data.hash,
     entityId: data.fid.toString(),
   };
-
   return {
     eventId: toJobId(source),
     source,

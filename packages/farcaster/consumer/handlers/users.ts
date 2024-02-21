@@ -11,7 +11,11 @@ import {
   FarcasterUserDataAddData,
   RawEvent,
 } from "@nook/common/types";
-import { publishRawEvent, toJobId } from "@nook/common/queues";
+import {
+  publishRawEvent,
+  publishRawEvents,
+  toJobId,
+} from "@nook/common/queues";
 
 const prisma = new PrismaClient();
 
@@ -78,22 +82,17 @@ export const getAndBackfillUserDatas = async (
     )
   ).filter(Boolean) as Message[][];
 
-  return await backfillUserDatas(messages.flat());
+  const userDatas = await backfillUserDatas(messages.flat());
+  const events = userDatas.map(transformToUserDataEvent);
+  await publishRawEvents(events);
+  return userDatas;
 };
 
 export const backfillUserDatas = async (messages: Message[]) => {
   const userDatas = messages
     .map(messageToUserData)
     .filter(Boolean) as FarcasterUserData[];
-  if (userDatas.length !== 0) {
-    await prisma.farcasterUserData.deleteMany({
-      where: {
-        OR: userDatas.map((userData) => ({
-          fid: userData.fid,
-          type: userData.type,
-        })),
-      },
-    });
+  if (userDatas.length > 0) {
     await prisma.farcasterUserData.createMany({
       data: userDatas,
       skipDuplicates: true,
