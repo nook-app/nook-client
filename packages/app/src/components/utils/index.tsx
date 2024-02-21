@@ -1,9 +1,12 @@
-import { Entity, PostData } from "@nook/common/types";
+import { PostData } from "@nook/common/types";
 import { Linking } from "react-native";
-import { Text } from "tamagui";
+import { Text, View } from "tamagui";
 import { Buffer } from "buffer";
 import { selectEntityById } from "@/store/slices/entity";
 import { store } from "@/store";
+import { useAppDispatch } from "@/store/hooks/useAppDispatch";
+import { setActiveEntityModal } from "@/store/slices/navigator";
+import { TouchableOpacity } from "react-native-gesture-handler";
 
 const isWarpcastUrl = (url: string) => {
   return (
@@ -56,6 +59,7 @@ export const PostContent = ({
 }: {
   data: PostData;
 }) => {
+  const dispatch = useAppDispatch();
   const state = store.getState();
   const textParts = [];
 
@@ -124,12 +128,22 @@ export const PostContent = ({
       ),
     );
     textParts.push(
-      <Text
+      <TouchableOpacity
         key={`${data.contentId}-${mention.position}-${label}`}
-        color="$color10"
+        onPress={() =>
+          dispatch(setActiveEntityModal(mention.entityId.toString()))
+        }
       >
-        {label}
-      </Text>,
+        <View
+          style={{
+            flexDirection: "row",
+            alignItems: "flex-end",
+            marginBottom: -2.5,
+          }}
+        >
+          <Text color="$color10">{label}</Text>
+        </View>
+      </TouchableOpacity>,
     );
     index = mention.position;
   }

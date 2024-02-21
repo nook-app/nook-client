@@ -15,17 +15,15 @@ export const EntityAvatar = ({
     : undefined;
 
   return (
-    <>
-      <TouchableOpacity
-        onPress={() => {
-          dispatch(setActiveEntityModal(entity?._id.toString()));
-        }}
-      >
-        <Avatar circular size={size}>
-          <Avatar.Image src={entity?.farcaster.pfp} />
-          <Avatar.Fallback backgroundColor="$backgroundPress" />
-        </Avatar>
-      </TouchableOpacity>
-    </>
+    <TouchableOpacity
+      onPress={() => {
+        dispatch(setActiveEntityModal(entity?._id.toString()));
+      }}
+    >
+      <Avatar circular size={size}>
+        <Avatar.Image src={entity?.farcaster.pfp} />
+        <Avatar.Fallback backgroundColor="$backgroundPress" />
+      </Avatar>
+    </TouchableOpacity>
   );
 };

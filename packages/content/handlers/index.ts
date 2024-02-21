@@ -7,7 +7,11 @@ export const getContentHandler = async () => {
   await client.connect();
 
   return async (job: Job<{ contentId: string }>) => {
-    await getOrCreateContent(client, job.data.contentId);
+    if (!(await getOrCreateContent(client, job.data.contentId))) {
+      throw new Error(
+        `failed to get or create content for ${job.data.contentId}`,
+      );
+    }
     console.log(`processed ${job.data.contentId}`);
   };
 };

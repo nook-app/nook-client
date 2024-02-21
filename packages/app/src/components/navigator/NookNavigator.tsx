@@ -11,7 +11,7 @@ import { useEffect } from "react";
 import { ArrowLeft } from "@tamagui/lucide-icons";
 import { useAppDispatch } from "@/store/hooks/useAppDispatch";
 import { setDrawerOpen } from "@/store/slices/navigator";
-import { View } from "tamagui";
+import { Avatar, View } from "tamagui";
 import ShelfScreen from "@/screens/ShelfScreen";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import ContentScreen from "@/screens/ContentScreen";
@@ -19,6 +19,8 @@ import { RootStackParamList } from "@/types";
 import { CreatePostModal } from "@/modals/CreatePostModal";
 import { Text } from "tamagui";
 import { store } from "@/store";
+import { useAppSelector } from "@/store/hooks/useAppSelector";
+import { selectNookById } from "@/store/slices/nook";
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -26,6 +28,11 @@ const DrawerToggleButton = () => {
   const navigation = useNavigation();
   const drawerStatus = useDrawerStatus();
   const dispatch = useAppDispatch();
+  const {
+    params: { nookId },
+  } = useRoute<RouteProp<RootStackParamList, "Shelf">>();
+
+  const nook = useAppSelector((state) => selectNookById(state, nookId));
 
   useEffect(() => {
     dispatch(setDrawerOpen(drawerStatus === "open"));
@@ -45,7 +52,10 @@ const DrawerToggleButton = () => {
         default: { top: 16, right: 16, bottom: 16, left: 16 },
       })}
     >
-      <ArrowLeft size={24} />
+      <Avatar circular size="$1.5">
+        <Avatar.Image src={nook?.image} />
+        <Avatar.Fallback backgroundColor="$backgroundPress" />
+      </Avatar>
     </PlatformPressable>
   );
 };
@@ -63,7 +73,9 @@ export function NookNavigator() {
         initialParams={{ nookId }}
         options={{
           headerLeft: () => <DrawerToggleButton />,
-          headerBackground: () => <HeaderBackground />,
+          headerBackground: () => (
+            <View backgroundColor="$background" height="100%" />
+          ),
           headerTitle: (props) => <Text {...props} />,
         }}
       />
@@ -73,7 +85,9 @@ export function NookNavigator() {
         options={{
           headerBackTitleVisible: false,
           headerTintColor: "white",
-          headerBackground: () => <HeaderBackground />,
+          headerBackground: () => (
+            <View backgroundColor="$background" height="100%" />
+          ),
           gestureEnabled: true,
           fullScreenGestureEnabled: true,
         }}
@@ -90,7 +104,3 @@ export function NookNavigator() {
     </Stack.Navigator>
   );
 }
-
-const HeaderBackground = () => {
-  return <View backgroundColor="$backgroundStrong" height="100%" />;
-};

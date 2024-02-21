@@ -44,7 +44,7 @@ export function AuthNavigator() {
         headerShown: false,
         tabBarBackground: () => (
           <View
-            backgroundColor="$background"
+            backgroundColor="$backgroundStrong"
             height="100%"
             borderTopWidth="$0.5"
             borderTopColor="$borderColor"

@@ -65,7 +65,7 @@ export default function ProfilePage() {
   return (
     <YStack
       flexGrow={1}
-      backgroundColor="$backgroundStrong"
+      backgroundColor="$background"
       minHeight="100%"
       justifyContent="flex-end"
       style={{
@@ -76,11 +76,9 @@ export default function ProfilePage() {
       }}
     >
       <View
-        backgroundColor="$background"
         flexGrow={1}
-        marginHorizontal="$2"
-        borderTopStartRadius="$8"
-        borderTopEndRadius="$8"
+        borderTopStartRadius="$6"
+        borderTopEndRadius="$6"
         paddingHorizontal="$3"
         paddingVertical="$4"
         justifyContent="space-between"

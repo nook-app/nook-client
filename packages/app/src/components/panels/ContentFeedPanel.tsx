@@ -33,7 +33,10 @@ export const renderFeedItem = (
   return <></>;
 };
 
-export const ContentFeedPanel = ({ args }: { args: ContentFeedArgs }) => {
+export const ContentFeedPanel = ({
+  args,
+  asList,
+}: { args: ContentFeedArgs; asList?: boolean }) => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const [cursor, setCursor] = useState<string | undefined>(undefined);
   const [accumulatedData, setAccumulatedData] = useState<ContentFeedItem[]>([]);
@@ -105,6 +108,14 @@ export const ContentFeedPanel = ({ args }: { args: ContentFeedArgs }) => {
         ) : (
           <Text>No data found.</Text>
         )}
+      </View>
+    );
+  }
+
+  if (asList) {
+    return (
+      <View>
+        {accumulatedData.map((item) => renderFeedItem(navigation, item))}
       </View>
     );
   }

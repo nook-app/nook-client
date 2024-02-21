@@ -11,9 +11,9 @@ import {
 import { ContentFeed, ContentFeedItem } from "../../types";
 import { ObjectId } from "mongodb";
 import { createChannelNook, createEntityNook } from "../utils/nooks";
-import { getOrCreateChannel } from "@nook/common/scraper";
+import { getOrCreateChannel, getOrCreateContent } from "@nook/common/scraper";
 
-const PAGE_SIZE = 25;
+const PAGE_SIZE = 10;
 
 export class NookService {
   private client: MongoClient;
@@ -148,18 +148,33 @@ export class NookService {
 
   async getReferencedContentsAndEntities(content: Content<ContentData>[]) {
     const referencedContentIds = content.flatMap((a) => a.referencedContentIds);
-    const contents = await this.client
+    const referencedContents = await this.client
       .getCollection<Content<ContentData>>(MongoCollection.Content)
       .find({ contentId: { $in: referencedContentIds } })
       .toArray();
 
-    const secondLevelReferencedContentIds = contents
+    const secondLevelReferencedContentIds = referencedContents
       .flatMap((c) => c.referencedContentIds)
       .filter((id) => !referencedContentIds.includes(id));
     const secondLevelContents = await this.client
       .getCollection<Content<ContentData>>(MongoCollection.Content)
       .find({ contentId: { $in: secondLevelReferencedContentIds } })
       .toArray();
+
+    const contentIds = Array.from(
+      new Set([...referencedContentIds, ...secondLevelReferencedContentIds]),
+    );
+    const contents = [...referencedContents, ...secondLevelContents];
+    const foundContentIds = contents.map((c) => c.contentId);
+    const missingContentIds = contentIds.filter(
+      (id) => !foundContentIds.includes(id),
+    );
+
+    const missingContents = (
+      await Promise.all(
+        missingContentIds.map((id) => getOrCreateContent(this.client, id)),
+      )
+    ).filter(Boolean) as Content<ContentData>[];
 
     const referencedEntityIds = content
       .flatMap((a) => a.referencedEntityIds)
@@ -169,14 +184,10 @@ export class NookService {
       .find({ _id: { $in: referencedEntityIds } })
       .toArray();
 
-    const channels = await this.getChannels(
-      Array.from(
-        new Set([...referencedContentIds, ...secondLevelReferencedContentIds]),
-      ),
-    );
+    const channels = await this.getChannels(contentIds);
 
     return {
-      contents: [...contents, ...secondLevelContents],
+      contents: [...contents, ...missingContents],
       entities,
       channels,
     };

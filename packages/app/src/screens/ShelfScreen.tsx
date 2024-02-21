@@ -6,7 +6,6 @@ import { useEffect } from "react";
 import { store } from "@/store";
 import { nookApi } from "@/store/apis/nookApi";
 import { Spinner, View } from "tamagui";
-import { useAppSelector } from "@/store/hooks/useAppSelector";
 import { EntityModal } from "@/modals/EntityModal";
 import { ChannelModal } from "@/modals/ChannelModal";
 

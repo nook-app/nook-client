@@ -23,7 +23,7 @@ export const getOrCreateContent = async (
   }
 
   if (!content) {
-    throw new Error("Unsupported content");
+    return;
   }
 
   await client.upsertContent(content);

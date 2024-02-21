@@ -98,27 +98,20 @@ export const ContentPost = ({
           )}
         </XStack>
       </YStack>
-      <ScrollView
-        horizontal
-        contentContainerStyle={{
-          justifyContent: "center",
-          width: "100%",
-        }}
-      >
-        <ContentFeedPanel
-          args={{
-            filter: {
-              type: ContentType.REPLY,
-              deletedAt: null,
-              topics: {
-                type: TopicType.TARGET_CONTENT,
-                value: data.contentId,
-              },
+      <ContentFeedPanel
+        args={{
+          filter: {
+            type: ContentType.REPLY,
+            deletedAt: null,
+            topics: {
+              type: TopicType.TARGET_CONTENT,
+              value: data.contentId,
             },
-            sort: "engagement.likes",
-          }}
-        />
-      </ScrollView>
+          },
+          sort: "engagement.likes",
+        }}
+        asList
+      />
     </ScrollView>
   );
 };
