@@ -13,21 +13,15 @@ const prisma = new PrismaClient();
 const processFid = async (client: HubRpcClient, fid: number) => {
   console.time(`[${fid}] backfill took`);
 
-  const [
-    userDatas,
-    usernameProofs,
-    //  verifications,
-    //  casts,
-    //  reactions,
-    //  links
-  ] = await Promise.all([
-    client.getUserDataByFid({ fid }),
-    client.getUserNameProofsByFid({ fid }),
-    // client.getVerificationsByFid({ fid }),
-    // client.getCastsByFid({ fid }),
-    // client.getReactionsByFid({ fid }),
-    // client.getLinksByFid({ fid }),
-  ]);
+  const [userDatas, usernameProofs, verifications, casts, reactions, links] =
+    await Promise.all([
+      client.getUserDataByFid({ fid }),
+      client.getUserNameProofsByFid({ fid }),
+      client.getVerificationsByFid({ fid }),
+      client.getCastsByFid({ fid }),
+      client.getReactionsByFid({ fid }),
+      client.getLinksByFid({ fid }),
+    ]);
 
   if (userDatas.isErr()) {
     console.error(userDatas.error);
@@ -37,52 +31,52 @@ const processFid = async (client: HubRpcClient, fid: number) => {
     console.error(usernameProofs.error);
     throw new Error(usernameProofs.error.message);
   }
-  // if (verifications.isErr()) {
-  //   console.error(verifications.error);
-  //   throw new Error(verifications.error.message);
-  // }
-  // if (casts.isErr()) {
-  //   console.error(casts.error);
-  //   throw new Error(casts.error.message);
-  // }
-  // if (reactions.isErr()) {
-  //   console.error(reactions.error);
-  //   throw new Error(reactions.error.message);
-  // }
-  // if (links.isErr()) {
-  //   console.error(links.error);
-  //   throw new Error(links.error.message);
-  // }
+  if (verifications.isErr()) {
+    console.error(verifications.error);
+    throw new Error(verifications.error.message);
+  }
+  if (casts.isErr()) {
+    console.error(casts.error);
+    throw new Error(casts.error.message);
+  }
+  if (reactions.isErr()) {
+    console.error(reactions.error);
+    throw new Error(reactions.error.message);
+  }
+  if (links.isErr()) {
+    console.error(links.error);
+    throw new Error(links.error.message);
+  }
 
   await Promise.all([
     prisma.farcasterUserData.deleteMany({ where: { fid: fid } }),
     prisma.farcasterUsernameProof.deleteMany({ where: { fid: fid } }),
-    // prisma.farcasterVerification.deleteMany({ where: { fid: fid } }),
-    // prisma.farcasterCast.deleteMany({ where: { fid: fid } }),
-    // prisma.farcasterCastMention.deleteMany({ where: { fid: fid } }),
-    // prisma.farcasterCastEmbedCast.deleteMany({ where: { fid: fid } }),
-    // prisma.farcasterCastEmbedUrl.deleteMany({ where: { fid: fid } }),
-    // prisma.farcasterCastReaction.deleteMany({ where: { fid: fid } }),
-    // prisma.farcasterUrlReaction.deleteMany({ where: { fid: fid } }),
-    // prisma.farcasterLink.deleteMany({ where: { fid: fid } }),
+    prisma.farcasterVerification.deleteMany({ where: { fid: fid } }),
+    prisma.farcasterCast.deleteMany({ where: { fid: fid } }),
+    prisma.farcasterCastMention.deleteMany({ where: { fid: fid } }),
+    prisma.farcasterCastEmbedCast.deleteMany({ where: { fid: fid } }),
+    prisma.farcasterCastEmbedUrl.deleteMany({ where: { fid: fid } }),
+    prisma.farcasterCastReaction.deleteMany({ where: { fid: fid } }),
+    prisma.farcasterUrlReaction.deleteMany({ where: { fid: fid } }),
+    prisma.farcasterLink.deleteMany({ where: { fid: fid } }),
   ]);
 
   await Promise.all([
     backfillUserDatas(userDatas.value.messages),
     backfillUsernameProofs(usernameProofs.value.proofs),
-    // backfillVerifications(verifications.value.messages),
-    // backfillCasts(client, casts.value.messages),
-    // backfillReactions(reactions.value.messages),
-    // backfillLinks(links.value.messages),
+    backfillVerifications(verifications.value.messages),
+    backfillCasts(client, casts.value.messages),
+    backfillReactions(reactions.value.messages),
+    backfillLinks(links.value.messages),
   ]);
 
   console.log(
     `[${fid}] backfilled user datas - ${userDatas.value.messages.length}\n` +
-      `[${fid}] backfilled username proofs - ${usernameProofs.value.proofs.length}\n`,
-    // `[${fid}] backfilled verifications - ${verifications.value.messages.length}\n` +
-    // `[${fid}] backfilled casts - ${casts.value.messages.length}\n` +
-    // `[${fid}] backfilled reactions - ${reactions.value.messages.length}\n` +
-    // `[${fid}] backfilled links - ${links.value.messages.length}`,
+      `[${fid}] backfilled username proofs - ${usernameProofs.value.proofs.length}\n` +
+      `[${fid}] backfilled verifications - ${verifications.value.messages.length}\n` +
+      `[${fid}] backfilled casts - ${casts.value.messages.length}\n` +
+      `[${fid}] backfilled reactions - ${reactions.value.messages.length}\n` +
+      `[${fid}] backfilled links - ${links.value.messages.length}`,
   );
 
   console.timeEnd(`[${fid}] backfill took`);
@@ -97,9 +91,7 @@ const run = async () => {
 
   const inputFid = process.argv[2];
   if (inputFid) {
-    for (let i = 10909; i < 18000; i++) {
-      await processFid(client, i);
-    }
+    await processFid(client, Number(inputFid));
     process.exit(0);
   }
 
