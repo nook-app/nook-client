@@ -97,7 +97,7 @@ const parseChainUri = (uri: string) => {
   return {
     contentId: uri,
     chainId: CHAIN_ID_TO_NAME[chainId] || chainId,
-    spec,
+    spec: spec || (tokenId ? "erc721" : undefined),
     contractAddress,
     tokenId,
   } as Asset;

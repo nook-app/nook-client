@@ -10,7 +10,6 @@ import {
   ContentActionData,
   PostData,
   TipActionData,
-  Nook,
   EntityUsernameData,
   UsernameType,
 } from "@nook/common/types";

@@ -2642,20 +2642,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@farcaster/core@npm:0.13.8":
-  version: 0.13.8
-  resolution: "@farcaster/core@npm:0.13.8"
-  dependencies:
-    "@noble/curves": "npm:^1.0.0"
-    "@noble/hashes": "npm:^1.3.0"
-    ffi-napi: "npm:^4.0.3"
-    neverthrow: "npm:^6.0.0"
-    ref-napi: "npm:^3.0.3"
-    viem: "npm:^1.12.2"
-  checksum: 10c0/aaf2dbf83499a3cdf4628750e632c59db35d27471484b60114f2bb325c14cd209999610248e5eebd659a4a07734f3730dc4912d1c69967294dd434bc250050e7
-  languageName: node
-  linkType: hard
-
 "@farcaster/core@npm:0.14.0":
   version: 0.14.0
   resolution: "@farcaster/core@npm:0.14.0"
@@ -2676,18 +2662,6 @@ __metadata:
   dependencies:
     lodash.mergewith: "npm:^4.6.2"
   checksum: 10c0/3cbe9272542086dbad96e19279de97493715ea87ebc19ca6f89446b0b7d0eaa1a357d67d33f25c24fd76ed6490361fd281069880bc32a565f58e8917b69502c7
-  languageName: node
-  linkType: hard
-
-"@farcaster/hub-nodejs@npm:^0.10.5":
-  version: 0.10.24
-  resolution: "@farcaster/hub-nodejs@npm:0.10.24"
-  dependencies:
-    "@farcaster/core": "npm:0.13.8"
-    "@grpc/grpc-js": "npm:~1.8.21"
-    "@noble/hashes": "npm:^1.3.0"
-    neverthrow: "npm:^6.0.0"
-  checksum: 10c0/ea83c8f7d15481737702c629d439a48af483b8efc96f5314be6fc2796e8fe73804f43e9dbc49aec2c85ab6ee9cbf20f5f28cc3a53b5e2cca10ca5768f9e129ac
   languageName: node
   linkType: hard
 
@@ -3735,7 +3709,7 @@ __metadata:
   dependencies:
     "@ethersproject/abstract-signer": "npm:^5.7.0"
     "@farcaster/fishery": "npm:^2.2.3"
-    "@farcaster/hub-nodejs": "npm:^0.10.5"
+    "@farcaster/hub-nodejs": "npm:^0.11.0"
     "@nook/common": "npm:*"
     "@types/jest": "npm:^29.5.11"
     "@types/node": "npm:^20.10.5"
