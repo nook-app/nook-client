@@ -15,7 +15,7 @@ const reviver = (k: string, v: any): any => {
     }
   } else if (v !== null && typeof v === "object") {
     // If it's an object (but not null), iterate over its properties
-    for (const innerKey in Object.keys(v)) {
+    for (const innerKey of Object.keys(v)) {
       v[innerKey] = reviver(innerKey, v[innerKey]);
     }
   } else if (Array.isArray(v)) {
