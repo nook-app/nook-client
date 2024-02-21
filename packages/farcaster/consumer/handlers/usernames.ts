@@ -53,7 +53,7 @@ const messageToUsernameProof = (
     owner: bufferToHexAddress(message.owner),
     signature: bufferToHex(message.signature),
     type: message.type,
-    timestamp: timestampToDate(message.timestamp),
+    timestamp: new Date(message.timestamp * 1000),
     deletedAt: null,
   };
 };

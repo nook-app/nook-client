@@ -3,6 +3,7 @@ import {
   MessageHandlerArgs,
   bufferToHex,
   bufferToHexAddress,
+  timestampToDate,
 } from "@nook/common/farcaster";
 import { HubRpcClient, Message } from "@farcaster/hub-nodejs";
 import {
@@ -53,7 +54,7 @@ export const messageToUserData = (
     fid,
     type: message.data.userDataBody.type,
     value: message.data.userDataBody.value,
-    timestamp: new Date(message.data.timestamp),
+    timestamp: timestampToDate(message.data.timestamp),
     hash: bufferToHex(message.hash),
     hashScheme: message.hashScheme,
     signer: bufferToHexAddress(message.signer),
