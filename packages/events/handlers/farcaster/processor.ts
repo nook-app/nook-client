@@ -1,6 +1,7 @@
 import { getOrCreateEntitiesForFids } from "@nook/common/entity";
 import { MongoClient } from "@nook/common/mongo";
 import {
+  Content,
   Entity,
   EntityEventData,
   EventType,
@@ -11,12 +12,13 @@ import {
   FarcasterUserDataAddData,
   FarcasterUsernameProofData,
   FarcasterVerificationData,
+  PostData,
   RawEvent,
 } from "@nook/common/types";
 import { transformUserDataAddEvent } from "./transformers/userDataAdd";
 import {
-  getOrCreatePostContent,
-  getOrCreatePostContentFromData,
+  createPostContent,
+  createPostContentFromURI,
 } from "../../utils/farcaster";
 import { transformCastAddOrRemove } from "./transformers/castAddOrRemove";
 import { toFarcasterURI } from "@nook/common/farcaster";
@@ -40,31 +42,31 @@ export class FarcasterProcessor {
     switch (rawEvent.source.type) {
       case EventType.CAST_ADD:
       case EventType.CAST_REMOVE:
-        return this.processCastAddOrRemove(
+        return await this.processCastAddOrRemove(
           rawEvent as RawEvent<FarcasterCastData>,
         );
       case EventType.CAST_REACTION_ADD:
       case EventType.CAST_REACTION_REMOVE:
-        return this.processCastReactionAddOrRemove(
+        return await this.processCastReactionAddOrRemove(
           rawEvent as RawEvent<FarcasterCastReactionData>,
         );
       case EventType.URL_REACTION_ADD:
       case EventType.URL_REACTION_REMOVE:
-        return this.processUrlReactionAddOrRemove(
+        return await this.processUrlReactionAddOrRemove(
           rawEvent as RawEvent<FarcasterUrlReactionData>,
         );
       case EventType.LINK_ADD:
       case EventType.LINK_REMOVE:
-        return this.processLinkAddOrRemove(
+        return await this.processLinkAddOrRemove(
           rawEvent as RawEvent<FarcasterLinkData>,
         );
       case EventType.USER_DATA_ADD:
-        return this.processUserDataAdd(
+        return await this.processUserDataAdd(
           rawEvent as RawEvent<FarcasterUserDataAddData>,
         );
       case EventType.VERIFICATION_ADD:
       case EventType.VERIFICATION_REMOVE:
-        return this.processVerificationAddOrRemove(
+        return await this.processVerificationAddOrRemove(
           rawEvent as RawEvent<FarcasterVerificationData>,
         );
       default:
@@ -80,24 +82,25 @@ export class FarcasterProcessor {
   }
 
   async processCastAddOrRemove(rawEvent: RawEvent<FarcasterCastData>) {
-    const content = await getOrCreatePostContentFromData(
-      this.client,
-      rawEvent.data,
-    );
+    let content = await this.fetchContent(toFarcasterURI(rawEvent.data));
+    if (!content) {
+      content = await createPostContent(this.client, rawEvent.data);
+    }
     return transformCastAddOrRemove(rawEvent, content);
   }
 
   async processCastReactionAddOrRemove(
     rawEvent: RawEvent<FarcasterCastReactionData>,
   ) {
-    const content = await getOrCreatePostContent(
-      this.client,
-      toFarcasterURI({
-        fid: rawEvent.data.targetFid,
-        hash: rawEvent.data.targetHash,
-      }),
-    );
-    if (!content) return;
+    const contentId = toFarcasterURI({
+      fid: rawEvent.data.targetFid,
+      hash: rawEvent.data.targetHash,
+    });
+    let content = await this.fetchContent(contentId);
+    if (!content) {
+      content = await createPostContentFromURI(this.client, contentId);
+      if (!content) return;
+    }
     const entities = await this.fetchEntities([rawEvent.data.fid]);
     return transformCastReactionAddOrRemove(rawEvent, content, entities);
   }
@@ -139,11 +142,6 @@ export class FarcasterProcessor {
       (fid) => !cachedEntities.find((entity) => entity.farcaster.fid === fid),
     );
 
-    console.log({
-      cached: cachedEntities.length,
-      missing: missingEntities.length,
-    });
-
     const fetchedEntityMap = await getOrCreateEntitiesForFids(
       this.client,
       missingEntities,
@@ -165,5 +163,15 @@ export class FarcasterProcessor {
       ),
       ...fetchedEntityMap,
     };
+  }
+
+  async fetchContent(contentId: string) {
+    const cachedContent = await this.redis.getContent(contentId);
+    if (cachedContent) return cachedContent as Content<PostData>;
+    const existingContent = await this.client.findContent(contentId);
+    if (existingContent) {
+      await this.redis.setContent(existingContent);
+      return existingContent as Content<PostData>;
+    }
   }
 }

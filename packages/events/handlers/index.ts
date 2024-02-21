@@ -22,6 +22,7 @@ export const getEventsHandler = async () => {
   await client.connect();
 
   const redis = new RedisClient();
+  await redis.connect();
 
   return async (job: Job<RawEvent<EntityEventData>>) => {
     const rawEvent = job.data;
@@ -36,7 +37,9 @@ export const getEventsHandler = async () => {
 
     switch (rawEvent.source.service) {
       case EventService.FARCASTER: {
-        new FarcasterProcessor(client, redis).process(rawEvent);
+        response = await new FarcasterProcessor(client, redis).process(
+          rawEvent,
+        );
         break;
       }
       default:

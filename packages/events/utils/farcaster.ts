@@ -12,15 +12,10 @@ import { MongoClient } from "@nook/common/mongo";
 import { Entity } from "@nook/common/types/entity";
 import { getOrCreateEntitiesForFids } from "@nook/common/entity";
 
-export const getOrCreatePostContent = async (
+export const createPostContentFromURI = async (
   client: MongoClient,
   contentId: string,
 ) => {
-  const existingContent = await client.findContent(contentId);
-  if (existingContent) {
-    return existingContent as Content<PostData>;
-  }
-
   const cast = await getFarcasterCastByURI(contentId);
   if (!cast) {
     return;
@@ -29,19 +24,7 @@ export const getOrCreatePostContent = async (
   return await createPostContent(client, cast);
 };
 
-export const getOrCreatePostContentFromData = async (
-  client: MongoClient,
-  cast: FarcasterCastData,
-) => {
-  const existingContent = await client.findContent(toFarcasterURI(cast));
-  if (existingContent) {
-    return existingContent as Content<PostData>;
-  }
-
-  return await createPostContent(client, cast);
-};
-
-const createPostContent = async (
+export const createPostContent = async (
   client: MongoClient,
   cast: FarcasterCastData,
 ) => {
@@ -84,7 +67,7 @@ const generateReplyContent = async (
   }
 
   const contents = (
-    await Promise.all(uris.map((uri) => getOrCreatePostContent(client, uri)))
+    await Promise.all(uris.map((uri) => createPostContentFromURI(client, uri)))
   ).filter(Boolean) as Content<PostData>[];
 
   const identities = await getOrCreateEntitiesForFids(
@@ -160,7 +143,7 @@ const generatePost = (
   return {
     contentId: toFarcasterURI(cast),
     text: cast.text,
-    timestamp: cast.timestamp,
+    timestamp: new Date(cast.timestamp),
     entityId: fidToEntity[cast.fid]._id.toString(),
     mentions: cast.mentions.map(({ mention, mentionPosition }) => ({
       entityId: fidToEntity[mention]._id.toString(),
