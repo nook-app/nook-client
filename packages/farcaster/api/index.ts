@@ -57,6 +57,12 @@ const run = async () => {
       }
 
       const cast = await getAndBackfillCasts(client, [{ fid, hash }]);
+
+      if (cast.length === 0) {
+        reply.status(404).send({ message: "Cast not found" });
+        return;
+      }
+      
       reply.send(cast[0]);
     },
   );
