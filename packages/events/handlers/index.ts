@@ -53,6 +53,7 @@ export const getEventsHandler = async () => {
         ) {
           const postData = content.data as PostData;
           for (const embed of postData.embeds) {
+            if (embed.startsWith("farcaster://")) continue;
             if (!(await client.findContent(embed))) {
               await publishContent(embed);
             }
