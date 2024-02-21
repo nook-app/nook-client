@@ -188,21 +188,18 @@ export const getActionsHandler = async () => {
         const collection = client.getCollection<Entity>(MongoCollection.Entity);
         promises.push(
           collection.updateOne(
+            { _id: typedAction.data.entityId },
             {
-              _id: typedAction.data.entityId,
-              "ethereum.$.address": typedAction.data.address,
-            },
-            {
-              $set: {
-                "ethereum.$": {
+              $addToSet: {
+                blockchain: {
+                  protocol: typedAction.data.protocol,
                   address: typedAction.data.address,
                   isContract: typedAction.data.isContract,
                 },
+              },
+              $set: {
                 updatedAt: new Date(),
               },
-            },
-            {
-              upsert: true,
             },
           ),
         );
@@ -221,7 +218,7 @@ export const getActionsHandler = async () => {
             { _id: typedAction.data.entityId },
             {
               $pull: {
-                ethereum: { address: typedAction.data.address },
+                blockchain: { address: typedAction.data.address },
               },
               $set: { updatedAt: new Date() },
             },

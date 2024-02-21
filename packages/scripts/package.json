@@ -5,7 +5,7 @@
   "scripts": {
     "build": "tsc",
     "reset:mongo": "tsc && node ./dist/reset-mongo.js",
-    "setup:nooks": "tsc && node ./dist/setup-nooks.js"
+    "backfill:farcaster": "tsc && node ./dist/backfill-farcaster.js"
   },
   "dependencies": {
     "@nook/common": "*"
