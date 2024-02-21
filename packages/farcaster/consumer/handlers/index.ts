@@ -10,6 +10,17 @@ import { handleLinkAdd, handleLinkRemove } from "./links";
 import { handleUserDataAdd } from "./users";
 import { Job } from "bullmq";
 import { handleUsernameProofAdd } from "./usernames";
+import { EntityEventData, EventType, RawEvent } from "@nook/common/types";
+import {
+  transformToCastEvent,
+  transformToCastReactionEvent,
+  transformToLinkEvent,
+  transformToUrlReactionEvent,
+  transformToUserDataEvent,
+  transformToUsernameProofEvent,
+  transformToVerificationEvent,
+} from "../events";
+import { publishRawEvents } from "@nook/common/queues";
 
 export const getFarcasterHandler = () => {
   const hubRpcEndpoint = process.env.HUB_RPC_ENDPOINT;
@@ -22,40 +33,103 @@ export const getFarcasterHandler = () => {
   return async (job: Job<Message>) => {
     const message = job.data;
 
-    const args = { message, client };
+    const events: RawEvent<EntityEventData>[] = [];
+
     switch (message.data?.type) {
-      case MessageType.CAST_ADD:
-        await handleCastAdd(args);
+      case MessageType.CAST_ADD: {
+        const record = await handleCastAdd(message, client);
+        if (record) {
+          events.push(transformToCastEvent(EventType.CAST_ADD, record));
+        }
         break;
-      case MessageType.CAST_REMOVE:
-        await handleCastRemove(args);
+      }
+      case MessageType.CAST_REMOVE: {
+        const record = await handleCastRemove(message);
+        if (record) {
+          events.push(transformToCastEvent(EventType.CAST_REMOVE, record));
+        }
         break;
-      case MessageType.VERIFICATION_ADD_ETH_ADDRESS:
-        await handleVerificationAdd(args);
+      }
+      case MessageType.VERIFICATION_ADD_ETH_ADDRESS: {
+        const record = await handleVerificationAdd(message);
+        if (record) {
+          events.push(
+            transformToVerificationEvent(EventType.VERIFICATION_ADD, record),
+          );
+        }
         break;
-      case MessageType.VERIFICATION_REMOVE:
-        await handleVerificationRemove(args);
+      }
+      case MessageType.VERIFICATION_REMOVE: {
+        const record = await handleVerificationRemove(message);
+        if (record) {
+          events.push(
+            transformToVerificationEvent(EventType.VERIFICATION_REMOVE, record),
+          );
+        }
         break;
-      case MessageType.REACTION_ADD:
-        await handleReactionAdd(args);
+      }
+      case MessageType.REACTION_ADD: {
+        const record = await handleReactionAdd(message);
+        if (record) {
+          if ("targetUrl" in record) {
+            events.push(
+              transformToUrlReactionEvent(EventType.URL_REACTION_ADD, record),
+            );
+          } else if ("targetHash" in record) {
+            events.push(
+              transformToCastReactionEvent(EventType.CAST_REACTION_ADD, record),
+            );
+          }
+        }
         break;
-      case MessageType.REACTION_REMOVE:
-        await handleReactionRemove(args);
+      }
+      case MessageType.REACTION_REMOVE: {
+        const record = await handleReactionRemove(message);
+        if (record) {
+          if ("targetUrl" in record) {
+            events.push(
+              transformToUrlReactionEvent(EventType.URL_REACTION_ADD, record),
+            );
+          } else if ("targetHash" in record) {
+            events.push(
+              transformToCastReactionEvent(EventType.CAST_REACTION_ADD, record),
+            );
+          }
+        }
         break;
-      case MessageType.LINK_ADD:
-        await handleLinkAdd(args);
+      }
+      case MessageType.LINK_ADD: {
+        const record = await handleLinkAdd(message);
+        if (record) {
+          events.push(transformToLinkEvent(EventType.LINK_ADD, record));
+        }
         break;
-      case MessageType.LINK_REMOVE:
-        await handleLinkRemove(args);
+      }
+      case MessageType.LINK_REMOVE: {
+        const record = await handleLinkRemove(message);
+        if (record) {
+          events.push(transformToLinkEvent(EventType.LINK_REMOVE, record));
+        }
         break;
-      case MessageType.USER_DATA_ADD:
-        await handleUserDataAdd(args);
+      }
+      case MessageType.USER_DATA_ADD: {
+        const record = await handleUserDataAdd(message);
+        if (record) {
+          events.push(transformToUserDataEvent(record));
+        }
         break;
-      case MessageType.USERNAME_PROOF:
-        await handleUsernameProofAdd(args);
+      }
+      case MessageType.USERNAME_PROOF: {
+        const record = await handleUsernameProofAdd(message);
+        if (record) {
+          events.push(transformToUsernameProofEvent(record));
+        }
         break;
+      }
       default:
         break;
     }
+
+    await publishRawEvents(events);
   };
 };

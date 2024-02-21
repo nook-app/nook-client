@@ -3,8 +3,6 @@ import {
   bufferToHex,
   hexToBuffer,
   timestampToDate,
-  MessageHandlerArgs,
-  toFarcasterURI,
   bufferToHexAddress,
 } from "@nook/common/farcaster";
 import {
@@ -15,25 +13,10 @@ import {
   PrismaClient,
   Prisma,
 } from "@nook/common/prisma/farcaster";
-import {
-  EventService,
-  EventType,
-  FarcasterCastData,
-  FidHash,
-  RawEvent,
-} from "@nook/common/types";
-import {
-  publishRawEvent,
-  publishRawEvents,
-  toJobId,
-} from "@nook/common/queues";
 
 const prisma = new PrismaClient();
 
-export const handleCastAdd = async ({
-  message,
-  client,
-}: MessageHandlerArgs) => {
+export const handleCastAdd = async (message: Message, client: HubRpcClient) => {
   const cast = messageToCast(message);
   if (!cast) return;
 
@@ -101,12 +84,10 @@ export const handleCastAdd = async ({
 
   console.log(`[cast-add] [${cast.fid}] added ${cast.hash}`);
 
-  const event = transformToCastEvent(EventType.CAST_ADD, cast);
-  await publishRawEvent(event);
-  return event.data;
+  return cast;
 };
 
-export const handleCastRemove = async ({ message }: MessageHandlerArgs) => {
+export const handleCastRemove = async (message: Message) => {
   if (!message.data?.castRemoveBody) return;
 
   const hash = bufferToHex(message.data.castRemoveBody.targetHash);
@@ -134,11 +115,7 @@ export const handleCastRemove = async ({ message }: MessageHandlerArgs) => {
 
   console.log(`[cast-remove] [${message.data?.fid}] removed ${hash}`);
 
-  const cast = await prisma.farcasterCast.findUnique({ where: { hash } });
-  if (cast) {
-    const event = transformToCastEvent(EventType.CAST_REMOVE, cast);
-    await publishRawEvent(event);
-  }
+  return await prisma.farcasterCast.findUnique({ where: { hash } });
 };
 
 const messageToCast = (message: Message): FarcasterCast | undefined => {
@@ -317,42 +294,7 @@ const findRootParent = async (client: HubRpcClient, cast: FarcasterCast) => {
   };
 };
 
-export const getAndBackfillCasts = async (
-  client: HubRpcClient,
-  fidHashes: FidHash[],
-) => {
-  const messages = (
-    await Promise.all(
-      fidHashes.map(async ({ fid, hash }) => {
-        const message = await client.getCast({
-          fid: parseInt(fid),
-          hash: hexToBuffer(hash),
-        });
-
-        if (message.isErr()) {
-          return undefined;
-        }
-
-        return message.value;
-      }),
-    )
-  ).filter(Boolean) as Message[];
-
-  await backfillCasts(client, messages);
-
-  const events = messages.map((message) => {
-    return transformToCastEvent(
-      EventType.CAST_ADD,
-      messageToCast(message) as FarcasterCast,
-    );
-  });
-
-  await publishRawEvents(events);
-
-  return events.map((event) => event.data);
-};
-
-export const backfillCasts = async (
+export const backfillCastAdd = async (
   client: HubRpcClient,
   messages: Message[],
 ) => {
@@ -402,76 +344,4 @@ export const backfillCasts = async (
   });
 
   return casts;
-};
-
-export const transformToCastEvent = (
-  type: EventType,
-  cast: FarcasterCast,
-): RawEvent<FarcasterCastData> => {
-  const source = {
-    service: EventService.FARCASTER,
-    type,
-    id: cast.hash,
-    entityId: cast.fid.toString(),
-  };
-  return {
-    eventId: toJobId(source),
-    source,
-    timestamp: cast.timestamp.toString(),
-    data: transformToCastData(cast),
-  };
-};
-
-export const transformToCastData = (cast: FarcasterCast): FarcasterCastData => {
-  const mentions = [];
-  // @ts-ignore
-  if (cast.rawMentions && cast.rawMentions !== Prisma.DbNull) {
-    for (const mention of cast.rawMentions as unknown as FarcasterCastMention[]) {
-      mentions.push({
-        mention: mention.mention.toString(),
-        mentionPosition: mention.mentionPosition.toString(),
-      });
-    }
-  }
-
-  const embeds: string[] = [];
-  // @ts-ignore
-  if (cast.rawUrlEmbeds && cast.rawUrlEmbeds !== Prisma.DbNull) {
-    for (const url of cast.rawUrlEmbeds as string[]) {
-      embeds.push(url);
-    }
-  }
-
-  if (cast.rawCastEmbeds && (cast.rawCastEmbeds as unknown) !== Prisma.DbNull) {
-    for (const embed of cast.rawCastEmbeds as unknown as FarcasterCastEmbedCast[]) {
-      embeds.push(
-        toFarcasterURI({
-          fid: embed.embedFid.toString(),
-          hash: embed.embedHash,
-        }),
-      );
-    }
-  }
-
-  return {
-    timestamp: cast.timestamp,
-    fid: cast.fid.toString(),
-    hash: cast.hash,
-    text: cast.text,
-    parentFid: cast.parentFid?.toString(),
-    parentHash: cast.parentHash || undefined,
-    parentUrl: cast.parentUrl || undefined,
-    rootParentFid: cast.rootParentFid.toString(),
-    rootParentHash: cast.rootParentHash,
-    rootParentUrl: cast.rootParentUrl || undefined,
-    mentions,
-    embeds,
-    signature: {
-      hash: cast.hash,
-      hashScheme: cast.hashScheme,
-      signature: cast.signature,
-      signatureScheme: cast.signatureScheme,
-      signer: cast.signer,
-    },
-  };
 };

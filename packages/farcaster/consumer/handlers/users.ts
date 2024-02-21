@@ -1,26 +1,14 @@
 import { PrismaClient, FarcasterUserData } from "@nook/common/prisma/farcaster";
 import {
-  MessageHandlerArgs,
   bufferToHex,
   bufferToHexAddress,
   timestampToDate,
 } from "@nook/common/farcaster";
-import { HubRpcClient, Message } from "@farcaster/hub-nodejs";
-import {
-  EventService,
-  EventType,
-  FarcasterUserDataAddData,
-  RawEvent,
-} from "@nook/common/types";
-import {
-  publishRawEvent,
-  publishRawEvents,
-  toJobId,
-} from "@nook/common/queues";
+import { Message } from "@farcaster/hub-nodejs";
 
 const prisma = new PrismaClient();
 
-export const handleUserDataAdd = async ({ message }: MessageHandlerArgs) => {
+export const handleUserDataAdd = async (message: Message) => {
   const userData = messageToUserData(message);
   if (!userData) return;
 
@@ -39,8 +27,7 @@ export const handleUserDataAdd = async ({ message }: MessageHandlerArgs) => {
     `[user-data-add] [${userData.fid}] added ${userData.type} with value ${userData.value}`,
   );
 
-  const event = transformToUserDataEvent(userData);
-  await publishRawEvent(event);
+  return userData;
 };
 
 export const messageToUserData = (
@@ -63,33 +50,7 @@ export const messageToUserData = (
   };
 };
 
-export const getAndBackfillUserDatas = async (
-  client: HubRpcClient,
-  fids: string[],
-) => {
-  const messages = (
-    await Promise.all(
-      fids.map(async (fid) => {
-        const message = await client.getAllUserDataMessagesByFid({
-          fid: parseInt(fid),
-        });
-
-        if (message.isErr()) {
-          return undefined;
-        }
-
-        return message.value.messages;
-      }),
-    )
-  ).filter(Boolean) as Message[][];
-
-  const userDatas = await backfillUserDatas(messages.flat());
-  const events = userDatas.map(transformToUserDataEvent);
-  await publishRawEvents(events);
-  return userDatas;
-};
-
-export const backfillUserDatas = async (messages: Message[]) => {
+export const backfillUserDataAdd = async (messages: Message[]) => {
   const userDatas = messages
     .map(messageToUserData)
     .filter(Boolean) as FarcasterUserData[];
@@ -100,32 +61,4 @@ export const backfillUserDatas = async (messages: Message[]) => {
     });
   }
   return userDatas;
-};
-
-const transformToUserDataEvent = (
-  data: FarcasterUserData,
-): RawEvent<FarcasterUserDataAddData> => {
-  const source = {
-    service: EventService.FARCASTER,
-    type: EventType.USER_DATA_ADD,
-    id: data.hash,
-    entityId: data.fid.toString(),
-  };
-  return {
-    eventId: toJobId(source),
-    source,
-    timestamp: data.timestamp.toString(),
-    data: {
-      fid: data.fid.toString(),
-      type: data.type,
-      value: data.value,
-      signature: {
-        hash: data.hash,
-        hashScheme: data.hashScheme,
-        signature: data.signature,
-        signatureScheme: data.signatureScheme,
-        signer: data.signer,
-      },
-    },
-  };
 };

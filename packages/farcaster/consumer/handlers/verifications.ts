@@ -5,27 +5,13 @@ import {
 import {
   bufferToHex,
   timestampToDate,
-  MessageHandlerArgs,
   bufferToHexAddress,
 } from "@nook/common/farcaster";
-import { HubRpcClient, Message } from "@farcaster/hub-nodejs";
-import {
-  EventService,
-  EventType,
-  FarcasterVerificationData,
-  RawEvent,
-} from "@nook/common/types";
-import {
-  publishRawEvent,
-  publishRawEvents,
-  toJobId,
-} from "@nook/common/queues";
+import { Message } from "@farcaster/hub-nodejs";
 
 const prisma = new PrismaClient();
 
-export const handleVerificationAdd = async ({
-  message,
-}: MessageHandlerArgs) => {
+export const handleVerificationAdd = async (message: Message) => {
   const verification = messageToVerification(message);
   if (!verification) return;
 
@@ -44,17 +30,10 @@ export const handleVerificationAdd = async ({
     `[verification-add] [${verification.fid}] added ${verification.address}`,
   );
 
-  const event = transformToVerificationEvent(
-    EventType.VERIFICATION_ADD,
-    verification,
-  );
-
-  return event;
+  return verification;
 };
 
-export const handleVerificationRemove = async ({
-  message,
-}: MessageHandlerArgs) => {
+export const handleVerificationRemove = async (message: Message) => {
   if (!message.data?.verificationRemoveBody?.address) return;
 
   const fid = BigInt(message.data.fid);
@@ -75,16 +54,9 @@ export const handleVerificationRemove = async ({
 
   console.log(`[verification-remove] [${fid}] removed ${address}`);
 
-  const verification = await prisma.farcasterVerification.findFirst({
+  return await prisma.farcasterVerification.findFirst({
     where: { address, protocol },
   });
-  if (verification) {
-    const event = transformToVerificationEvent(
-      EventType.VERIFICATION_REMOVE,
-      verification,
-    );
-    await publishRawEvent(event);
-  }
 };
 
 const messageToVerification = (
@@ -117,38 +89,7 @@ const messageToVerification = (
   };
 };
 
-export const getAndBackfillVerfications = async (
-  client: HubRpcClient,
-  fids: string[],
-) => {
-  const messages = (
-    await Promise.all(
-      fids.map(async (fid) => {
-        const message = await client.getAllVerificationMessagesByFid({
-          fid: parseInt(fid),
-        });
-
-        if (message.isErr()) {
-          return undefined;
-        }
-
-        return message.value.messages;
-      }),
-    )
-  )
-    .flat()
-    .filter(Boolean) as Message[];
-
-  const verifications = await backfillVerifications(messages);
-  await publishRawEvents(
-    verifications.map((verification) =>
-      transformToVerificationEvent(EventType.VERIFICATION_ADD, verification),
-    ),
-  );
-  return verifications;
-};
-
-export const backfillVerifications = async (messages: Message[]) => {
+export const backfillVerificationAdd = async (messages: Message[]) => {
   const verifications = messages
     .map(messageToVerification)
     .filter(Boolean) as FarcasterVerification[];
@@ -159,37 +100,4 @@ export const backfillVerifications = async (messages: Message[]) => {
     });
   }
   return verifications;
-};
-
-const transformToVerificationEvent = (
-  type: EventType,
-  data: FarcasterVerification,
-): RawEvent<FarcasterVerificationData> => {
-  const source = {
-    service: EventService.FARCASTER,
-    type,
-    id: data.hash,
-    entityId: data.fid.toString(),
-  };
-  return {
-    eventId: toJobId(source),
-    source,
-    timestamp: data.timestamp.toString(),
-    data: {
-      fid: data.fid.toString(),
-      address: data.address,
-      protocol: data.protocol,
-      verificationType: data.verificationType,
-      blockHash: data.blockHash,
-      chainId: data.chainId,
-      claimSignature: data.claimSignature,
-      signature: {
-        hash: data.hash,
-        hashScheme: data.hashScheme,
-        signature: data.signature,
-        signatureScheme: data.signatureScheme,
-        signer: data.signer,
-      },
-    },
-  };
 };

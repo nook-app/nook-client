@@ -1,17 +1,18 @@
 import fastify, { FastifyRequest } from "fastify";
 import { PrismaClient } from "@nook/common/prisma/farcaster";
 import { UserDataType, getSSLHubRpcClient } from "@farcaster/hub-nodejs";
-import {
-  getAndBackfillCasts,
-  transformToCastData,
-} from "../consumer/handlers/casts";
-import { getAndBackfillUserDatas } from "../consumer/handlers/users";
+import { backfillCastAdd } from "../consumer/handlers/casts";
+import { backfillUserDataAdd } from "../consumer/handlers/users";
 import {
   BlockchainAccount,
+  EventType,
   FarcasterAccount,
   Protocol,
 } from "@nook/common/types";
-import { getAndBackfillVerfications } from "../consumer/handlers/verifications";
+import { backfillVerificationAdd } from "../consumer/handlers/verifications";
+import { transformToCastEvent } from "../consumer/events";
+import { hexToBuffer } from "@nook/common/farcaster";
+import { publishRawEvents } from "@nook/common/queues";
 
 const prisma = new PrismaClient();
 
@@ -52,18 +53,26 @@ const run = async () => {
       });
 
       if (existingCast) {
-        reply.send(transformToCastData(existingCast));
+        reply.send(transformToCastEvent(EventType.CAST_ADD, existingCast).data);
         return;
       }
 
-      const cast = await getAndBackfillCasts(client, [{ fid, hash }]);
+      const message = await client.getCast({
+        fid: parseInt(fid),
+        hash: hexToBuffer(hash),
+      });
 
-      if (cast.length === 0) {
+      if (message.isErr()) {
         reply.status(404).send({ message: "Cast not found" });
         return;
       }
-      
-      reply.send(cast[0]);
+
+      const casts = await backfillCastAdd(client, [message.value]);
+      await publishRawEvents(
+        casts.map((cast) => transformToCastEvent(EventType.CAST_ADD, cast)),
+      );
+
+      reply.send(casts[0]);
     },
   );
 
@@ -108,22 +117,28 @@ const run = async () => {
         const url = userData.find((d) => d.type === UserDataType.URL)?.value;
 
         if (!username || !displayName || !pfp || !bio) {
-          userData = await getAndBackfillUserDatas(client, [fid]);
-          if (!username) {
-            username = userData.find(
-              (d) => d.type === UserDataType.USERNAME,
-            )?.value;
-          }
-          if (!pfp) {
-            pfp = userData.find((d) => d.type === UserDataType.PFP)?.value;
-          }
-          if (!displayName) {
-            displayName = userData.find(
-              (d) => d.type === UserDataType.DISPLAY,
-            )?.value;
-          }
-          if (!bio) {
-            bio = userData.find((d) => d.type === UserDataType.BIO)?.value;
+          const messages = await client.getAllUserDataMessagesByFid({
+            fid: parseInt(fid),
+          });
+
+          if (messages.isOk()) {
+            userData = await backfillUserDataAdd(messages.value.messages);
+            if (!username) {
+              username = userData.find(
+                (d) => d.type === UserDataType.USERNAME,
+              )?.value;
+            }
+            if (!pfp) {
+              pfp = userData.find((d) => d.type === UserDataType.PFP)?.value;
+            }
+            if (!displayName) {
+              displayName = userData.find(
+                (d) => d.type === UserDataType.DISPLAY,
+              )?.value;
+            }
+            if (!bio) {
+              bio = userData.find((d) => d.type === UserDataType.BIO)?.value;
+            }
           }
         }
 
@@ -146,7 +161,14 @@ const run = async () => {
         });
 
         if (verifications.length === 0) {
-          verifications = await getAndBackfillVerfications(client, [fid]);
+          const messages = await client.getAllVerificationMessagesByFid({
+            fid: parseInt(fid),
+          });
+          if (messages.isOk()) {
+            verifications = await backfillVerificationAdd(
+              messages.value.messages,
+            );
+          }
         }
 
         const blockchain: BlockchainAccount[] = verifications.map((v) => ({

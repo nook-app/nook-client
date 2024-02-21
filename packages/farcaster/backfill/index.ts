@@ -1,11 +1,11 @@
 import { QueueName, getWorker } from "@nook/common/queues";
 import { HubRpcClient, getSSLHubRpcClient } from "@farcaster/hub-nodejs";
-import { backfillCasts } from "../consumer/handlers/casts";
-import { backfillVerifications } from "../consumer/handlers/verifications";
-import { backfillUsernameProofs } from "../consumer/handlers/usernames";
-import { backfillUserDatas } from "../consumer/handlers/users";
-import { backfillReactions } from "../consumer/handlers/reactions";
-import { backfillLinks } from "../consumer/handlers/links";
+import { backfillCastAdd } from "../consumer/handlers/casts";
+import { backfillVerificationAdd } from "../consumer/handlers/verifications";
+import { backfillUsernameProofAdd } from "../consumer/handlers/usernames";
+import { backfillUserDataAdd } from "../consumer/handlers/users";
+import { backfillReactionAdd } from "../consumer/handlers/reactions";
+import { backfillLinkAdd } from "../consumer/handlers/links";
 import { PrismaClient } from "@nook/common/prisma/farcaster";
 
 const prisma = new PrismaClient();
@@ -62,12 +62,12 @@ const processFid = async (client: HubRpcClient, fid: number) => {
   ]);
 
   await Promise.all([
-    backfillUserDatas(userDatas.value.messages),
-    backfillUsernameProofs(usernameProofs.value.proofs),
-    backfillVerifications(verifications.value.messages),
-    backfillCasts(client, casts.value.messages),
-    backfillReactions(reactions.value.messages),
-    backfillLinks(links.value.messages),
+    backfillUserDataAdd(userDatas.value.messages),
+    backfillUsernameProofAdd(usernameProofs.value.proofs),
+    backfillVerificationAdd(verifications.value.messages),
+    backfillCastAdd(client, casts.value.messages),
+    backfillReactionAdd(reactions.value.messages),
+    backfillLinkAdd(links.value.messages),
   ]);
 
   console.log(

@@ -1,4 +1,4 @@
-import { HubRpcClient, Message } from "@farcaster/hub-nodejs";
+import { Message } from "@farcaster/hub-nodejs";
 import {
   PrismaClient,
   FarcasterCastReaction,
@@ -7,37 +7,26 @@ import {
 import {
   bufferToHex,
   timestampToDate,
-  MessageHandlerArgs,
-  hexToBuffer,
   bufferToHexAddress,
 } from "@nook/common/farcaster";
-import {
-  EventService,
-  EventType,
-  FarcasterCastReactionData,
-  FarcasterUrlReactionData,
-  FidHash,
-  RawEvent,
-} from "@nook/common/types";
-import {
-  publishRawEvent,
-  publishRawEvents,
-  toJobId,
-} from "@nook/common/queues";
 
 const prisma = new PrismaClient();
 
-export const handleReactionAdd = async (args: MessageHandlerArgs) => {
-  await handleCastReactionAdd(args);
-  await handleUrlReactionAdd(args);
+export const handleReactionAdd = async (message: Message) => {
+  return (
+    (await handleCastReactionAdd(message)) ||
+    (await handleUrlReactionAdd(message))
+  );
 };
 
-export const handleReactionRemove = async (args: MessageHandlerArgs) => {
-  await handleCastReactionRemove(args);
-  await handleUrlReactionRemove(args);
+export const handleReactionRemove = async (message: Message) => {
+  return (
+    (await handleCastReactionRemove(message)) ||
+    (await handleUrlReactionRemove(message))
+  );
 };
 
-const handleCastReactionAdd = async ({ message }: MessageHandlerArgs) => {
+const handleCastReactionAdd = async (message: Message) => {
   const reaction = messageToCastReaction(message);
   if (!reaction) return;
 
@@ -57,14 +46,10 @@ const handleCastReactionAdd = async ({ message }: MessageHandlerArgs) => {
     `[reaction-add] [${reaction.fid}] added ${reaction.reactionType} from ${reaction.targetHash}`,
   );
 
-  const event = transformToCastReactionEvent(
-    EventType.CAST_REACTION_ADD,
-    reaction,
-  );
-  await publishRawEvent(event);
+  return reaction;
 };
 
-const handleUrlReactionAdd = async ({ message }: MessageHandlerArgs) => {
+const handleUrlReactionAdd = async (message: Message) => {
   const reaction = messageToUrlReaction(message);
   if (!reaction) return;
 
@@ -84,14 +69,10 @@ const handleUrlReactionAdd = async ({ message }: MessageHandlerArgs) => {
     `[reaction-add] [${reaction.fid}] added ${reaction.reactionType} from ${reaction.targetUrl}`,
   );
 
-  const event = transformToUrlReactionEvent(
-    EventType.URL_REACTION_ADD,
-    reaction,
-  );
-  await publishRawEvent(event);
+  return reaction;
 };
 
-const handleCastReactionRemove = async ({ message }: MessageHandlerArgs) => {
+const handleCastReactionRemove = async (message: Message) => {
   const reaction = messageToCastReaction(message);
   if (!reaction) return;
 
@@ -110,14 +91,10 @@ const handleCastReactionRemove = async ({ message }: MessageHandlerArgs) => {
     `[reaction-remove] [${reaction.fid}] removed ${reaction.reactionType} from ${reaction.targetHash}`,
   );
 
-  const event = transformToCastReactionEvent(
-    EventType.CAST_REACTION_REMOVE,
-    reaction,
-  );
-  await publishRawEvent(event);
+  return reaction;
 };
 
-const handleUrlReactionRemove = async ({ message }: MessageHandlerArgs) => {
+const handleUrlReactionRemove = async (message: Message) => {
   const reaction = messageToUrlReaction(message);
   if (!reaction) return;
 
@@ -136,11 +113,7 @@ const handleUrlReactionRemove = async ({ message }: MessageHandlerArgs) => {
     `[reaction-remove] [${reaction.fid}] removed ${reaction.reactionType} from ${reaction.targetUrl}`,
   );
 
-  const event = transformToUrlReactionEvent(
-    EventType.URL_REACTION_REMOVE,
-    reaction,
-  );
-  await publishRawEvent(event);
+  return reaction;
 };
 
 const messageToCastReaction = (
@@ -182,47 +155,7 @@ const messageToUrlReaction = (
   };
 };
 
-export const getAndBackfillReactions = async (
-  client: HubRpcClient,
-  fidHashes: FidHash[],
-) => {
-  const messages = (
-    await Promise.all(
-      fidHashes.map(async ({ fid, hash }) => {
-        const message = await client.getReactionsByCast({
-          targetCastId: {
-            fid: parseInt(fid),
-            hash: hexToBuffer(hash),
-          },
-        });
-
-        if (message.isErr()) {
-          return undefined;
-        }
-
-        return message.value.messages;
-      }),
-    )
-  ).filter(Boolean) as Message[][];
-
-  const { castReactions, urlReactions } = await backfillReactions(
-    messages.flat(),
-  );
-
-  const castReactionEvents = castReactions.map((reaction) =>
-    transformToCastReactionEvent(EventType.CAST_REACTION_ADD, reaction),
-  );
-  await publishRawEvents(castReactionEvents);
-
-  const urlReactionEvents = urlReactions.map((reaction) =>
-    transformToUrlReactionEvent(EventType.URL_REACTION_ADD, reaction),
-  );
-  await publishRawEvents(urlReactionEvents);
-
-  return [...castReactionEvents, ...urlReactionEvents];
-};
-
-export const backfillReactions = async (messages: Message[]) => {
+export const backfillReactionAdd = async (messages: Message[]) => {
   const castReactions = messages
     .map(messageToCastReaction)
     .filter(Boolean) as FarcasterCastReaction[];
@@ -244,67 +177,4 @@ export const backfillReactions = async (messages: Message[]) => {
   }
 
   return { castReactions, urlReactions };
-};
-
-export const transformToCastReactionEvent = (
-  type: EventType,
-  reaction: FarcasterCastReaction,
-): RawEvent<FarcasterCastReactionData> => {
-  const source = {
-    service: EventService.FARCASTER,
-    type,
-    id: reaction.hash,
-    entityId: reaction.fid.toString(),
-  };
-
-  return {
-    eventId: toJobId(source),
-    source,
-    timestamp: reaction.timestamp.toString(),
-    data: {
-      timestamp: reaction.timestamp,
-      fid: reaction.fid.toString(),
-      reactionType: reaction.reactionType,
-      targetFid: reaction.targetFid.toString(),
-      targetHash: reaction.targetHash,
-      signature: {
-        hash: reaction.hash,
-        hashScheme: reaction.hashScheme,
-        signature: reaction.signature,
-        signatureScheme: reaction.signatureScheme,
-        signer: reaction.signer,
-      },
-    },
-  };
-};
-
-const transformToUrlReactionEvent = (
-  type: EventType,
-  reaction: FarcasterUrlReaction,
-): RawEvent<FarcasterUrlReactionData> => {
-  const source = {
-    service: EventService.FARCASTER,
-    type,
-    id: reaction.hash,
-    entityId: reaction.fid.toString(),
-  };
-
-  return {
-    eventId: toJobId(source),
-    source,
-    timestamp: reaction.timestamp.toString(),
-    data: {
-      timestamp: reaction.timestamp,
-      fid: reaction.fid.toString(),
-      reactionType: reaction.reactionType,
-      url: reaction.targetUrl,
-      signature: {
-        hash: reaction.hash,
-        hashScheme: reaction.hashScheme,
-        signature: reaction.signature,
-        signatureScheme: reaction.signatureScheme,
-        signer: reaction.signer,
-      },
-    },
-  };
 };

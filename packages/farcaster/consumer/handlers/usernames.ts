@@ -1,30 +1,13 @@
-import { HubRpcClient, UserNameProof } from "@farcaster/hub-nodejs";
+import { Message, UserNameProof } from "@farcaster/hub-nodejs";
 import {
   PrismaClient,
   FarcasterUsernameProof,
 } from "@nook/common/prisma/farcaster";
-import {
-  MessageHandlerArgs,
-  bufferToHex,
-  bufferToHexAddress,
-} from "@nook/common/farcaster";
-import {
-  EventService,
-  EventType,
-  FarcasterUsernameProofData,
-  RawEvent,
-} from "@nook/common/types";
-import {
-  publishRawEvent,
-  publishRawEvents,
-  toJobId,
-} from "@nook/common/queues";
+import { bufferToHex, bufferToHexAddress } from "@nook/common/farcaster";
 
 const prisma = new PrismaClient();
 
-export const handleUsernameProofAdd = async ({
-  message,
-}: MessageHandlerArgs) => {
+export const handleUsernameProofAdd = async (message: Message) => {
   if (!message?.data?.usernameProofBody) return;
   const proof = messageToUsernameProof(message.data.usernameProofBody);
 
@@ -38,8 +21,7 @@ export const handleUsernameProofAdd = async ({
 
   console.log(`[username-proof-add] [${proof.fid}] added ${proof.username}`);
 
-  const event = transformToUsernameProofEvent(proof);
-  await publishRawEvent(event);
+  return proof;
 };
 
 const messageToUsernameProof = (
@@ -56,33 +38,7 @@ const messageToUsernameProof = (
   };
 };
 
-export const getAndBackfillUsernameProofs = async (
-  client: HubRpcClient,
-  fids: string[],
-) => {
-  const messages = (
-    await Promise.all(
-      fids.map(async (fid) => {
-        const message = await client.getUserNameProofsByFid({
-          fid: parseInt(fid),
-        });
-
-        if (message.isErr()) {
-          return undefined;
-        }
-
-        return message.value.proofs;
-      }),
-    )
-  ).filter(Boolean) as UserNameProof[][];
-
-  const usernameProofs = await backfillUsernameProofs(messages.flat());
-  const events = usernameProofs.map(transformToUsernameProofEvent);
-  await publishRawEvents(events);
-  return events;
-};
-
-export const backfillUsernameProofs = async (messages: UserNameProof[]) => {
+export const backfillUsernameProofAdd = async (messages: UserNameProof[]) => {
   const proofs = messages
     .map(messageToUsernameProof)
     .filter(Boolean) as FarcasterUsernameProof[];
@@ -93,27 +49,4 @@ export const backfillUsernameProofs = async (messages: UserNameProof[]) => {
     });
   }
   return proofs;
-};
-
-const transformToUsernameProofEvent = (
-  data: FarcasterUsernameProof,
-): RawEvent<FarcasterUsernameProofData> => {
-  const source = {
-    service: EventService.FARCASTER,
-    type: EventType.USERNAME_PROOF,
-    id: data.signature,
-    entityId: data.fid.toString(),
-  };
-  return {
-    eventId: toJobId(source),
-    source,
-    timestamp: data.timestamp.toString(),
-    data: {
-      fid: data.fid.toString(),
-      username: data.username,
-      owner: data.owner,
-      claimSignature: data.signature,
-      type: data.type,
-    },
-  };
 };
