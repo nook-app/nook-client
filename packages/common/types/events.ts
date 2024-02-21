@@ -5,6 +5,7 @@ import {
   FarcasterLinkData,
   FarcasterUrlReactionData,
   FarcasterUserDataAddData,
+  FarcasterUsernameProofData,
   FarcasterVerificationData,
 } from "./sources/farcaster";
 
@@ -14,7 +15,8 @@ export type EntityEventData =
   | FarcasterLinkData
   | FarcasterUrlReactionData
   | FarcasterUserDataAddData
-  | FarcasterVerificationData;
+  | FarcasterVerificationData
+  | FarcasterUsernameProofData;
 
 /**
  * Supported event services
@@ -32,7 +34,7 @@ export enum EventType {
   URL_REACTION_REMOVE = "URL_REACTION_REMOVE",
   LINK_ADD = "LINK_ADD",
   LINK_REMOVE = "LINK_REMOVE",
-  VERIFICATION_ADD_ETH_ADDRESS = "VERIFICATION_ADD_ETH_ADDRESS",
+  VERIFICATION_ADD = "VERIFICATION_ADD",
   VERIFICATION_REMOVE = "VERIFICATION_REMOVE",
   USER_DATA_ADD = "USER_DATA_ADD",
   USERNAME_PROOF = "USERNAME_PROOF",

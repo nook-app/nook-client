@@ -1,7 +1,7 @@
 export * from "./enqueue";
 import Redis from "ioredis";
 import { Job, Queue, QueueOptions, Worker } from "bullmq";
-import { RawEvent } from "../types";
+import { EntityEventData, RawEvent } from "../types";
 import { Message } from "@farcaster/hub-nodejs";
 import { FarcasterBackfillRequest } from "../types/backfill";
 
@@ -16,7 +16,7 @@ export enum QueueName {
 type QueueType<T> = {
   [QueueName.Farcaster]: Message;
   [QueueName.FarcasterBackfill]: FarcasterBackfillRequest;
-  [QueueName.Events]: RawEvent<T>;
+  [QueueName.Events]: RawEvent<EntityEventData>;
   [QueueName.Content]: { contentId: string; channel?: boolean };
   [QueueName.Actions]: { actionId: string; created: boolean };
 };

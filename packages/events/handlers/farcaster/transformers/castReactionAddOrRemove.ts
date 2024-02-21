@@ -1,4 +1,3 @@
-import { MongoClient } from "@nook/common/mongo";
 import {
   EventAction,
   EventActionType,
@@ -10,24 +9,16 @@ import {
   Topic,
   TopicType,
   ContentActionData,
+  Content,
+  Entity,
 } from "@nook/common/types";
 import { ObjectId } from "mongodb";
-import { toFarcasterURI } from "@nook/common/farcaster";
-import { getOrCreateEntitiesForFids } from "@nook/common/entity";
-import { getOrCreatePostContent } from "../../utils/farcaster";
 
-export const handleCastReactionAddOrRemove = async (
-  client: MongoClient,
+export const transformCastReactionAddOrRemove = async (
   rawEvent: RawEvent<FarcasterCastReactionData>,
+  content: Content<PostData>,
+  entities: Record<string, Entity>,
 ) => {
-  const contentId = toFarcasterURI({
-    fid: rawEvent.data.targetFid,
-    hash: rawEvent.data.targetHash,
-  });
-
-  const content = await getOrCreatePostContent(client, contentId);
-  if (!content) return;
-
   let type: EventActionType;
   switch (rawEvent.data.reactionType) {
     case 1:
@@ -48,10 +39,7 @@ export const handleCastReactionAddOrRemove = async (
       );
   }
 
-  const identities = await getOrCreateEntitiesForFids(client, [
-    rawEvent.data.fid,
-  ]);
-  const entityId = identities[rawEvent.data.fid]._id;
+  const entityId = entities[rawEvent.data.fid]._id;
 
   const actions: EventAction<ContentActionData>[] = [
     {
@@ -68,7 +56,7 @@ export const handleCastReactionAddOrRemove = async (
       type,
       data: {
         entityId: content.data.entityId,
-        contentId,
+        contentId: content.contentId,
       },
       deletedAt: [EventActionType.UNPOST, EventActionType.UNREPLY].includes(
         type,

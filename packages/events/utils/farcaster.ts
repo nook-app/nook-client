@@ -11,9 +11,7 @@ import { toFarcasterURI } from "@nook/common/farcaster";
 import { MongoClient } from "@nook/common/mongo";
 import { Entity } from "@nook/common/types/entity";
 import { getOrCreateEntitiesForFids } from "@nook/common/entity";
-import { publishContent } from "@nook/common/queues";
 import { ObjectId } from "mongodb";
-import { getOrCreateChannel } from "@nook/common/scraper";
 
 export const getOrCreatePostContent = async (
   client: MongoClient,
@@ -26,7 +24,7 @@ export const getOrCreatePostContent = async (
 
   const cast = await getFarcasterCastByURI(contentId);
   if (!cast) {
-    return;
+    throw new Error(`Failed to get cast for ${contentId}`);
   }
 
   return await createPostContent(client, cast);
@@ -53,18 +51,6 @@ const createPostContent = async (
     content = await generateReplyContent(client, cast);
   } else {
     content = await generatePostContent(client, cast);
-  }
-
-  await client.upsertContent(content);
-
-  for (const embed of content.data.embeds) {
-    if (!(await client.findContent(embed))) {
-      await publishContent(embed);
-    }
-  }
-
-  if (content.data.channelId) {
-    await getOrCreateChannel(client, content.data.channelId);
   }
 
   return content;

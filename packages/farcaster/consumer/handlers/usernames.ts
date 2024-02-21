@@ -7,14 +7,12 @@ import {
   MessageHandlerArgs,
   bufferToHex,
   bufferToHexAddress,
-  timestampToDate,
 } from "@nook/common/farcaster";
 import {
   EventService,
   EventType,
   FarcasterUsernameProofData,
   RawEvent,
-  UsernameType,
 } from "@nook/common/types";
 import {
   publishRawEvent,

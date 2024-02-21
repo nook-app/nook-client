@@ -6,14 +6,13 @@ import {
   RawEvent,
   EntityEvent,
   TopicType,
+  Entity,
 } from "@nook/common/types";
 import { ContentActionData } from "@nook/common/types/actionTypes";
-import { MongoClient } from "@nook/common/mongo";
-import { getOrCreateEntitiesForFids } from "@nook/common/entity";
 
-export const handleUrlReactionAddOrRemove = async (
-  client: MongoClient,
+export const transformUrlReactionAddOrRemove = async (
   rawEvent: RawEvent<FarcasterUrlReactionData>,
+  entities: Record<string, Entity>,
 ) => {
   const isRemove = [
     EventType.CAST_REACTION_REMOVE,
@@ -34,11 +33,7 @@ export const handleUrlReactionAddOrRemove = async (
       );
   }
 
-  const fidToEntity = await getOrCreateEntitiesForFids(client, [
-    rawEvent.data.fid,
-  ]);
-
-  const entityId = fidToEntity[rawEvent.data.fid]._id;
+  const entityId = entities[rawEvent.data.fid]._id;
   const contentId = rawEvent.data.url;
   const actions: EventAction<ContentActionData>[] = [
     {

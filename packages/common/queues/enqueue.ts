@@ -1,11 +1,11 @@
 import { QueueName, getQueue } from ".";
-import { EventSource, RawEvent } from "../types";
+import { EntityEventData, EventSource, RawEvent } from "../types";
 
 export const toJobId = (source: EventSource) => {
   return `${source.service}-${source.type}-${source.id}`;
 };
 
-export const publishRawEvent = async <T>(event: RawEvent<T>) => {
+export const publishRawEvent = async (event: RawEvent<EntityEventData>) => {
   const jobId = toJobId(event.source);
   const queue = getQueue(QueueName.Events);
   await queue.add(jobId, event, {
@@ -16,7 +16,7 @@ export const publishRawEvent = async <T>(event: RawEvent<T>) => {
   });
 };
 
-export const publishRawEvents = async <T>(events: RawEvent<T>[]) => {
+export const publishRawEvents = async (events: RawEvent<EntityEventData>[]) => {
   if (!events.length) return;
   const queue = getQueue(QueueName.Events);
   await queue.addBulk(

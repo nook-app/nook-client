@@ -5,7 +5,8 @@
   "scripts": {
     "build": "tsc",
     "start": "node dist/worker.js",
-    "start:manual": "tsc && node --enable-source-maps dist/manual.js"
+    "start:manual": "tsc && node --enable-source-maps dist/manual.js",
+    "start:backfill": "node dist/backfill/index.js"
   },
   "dependencies": {
     "@nook/common": "*",

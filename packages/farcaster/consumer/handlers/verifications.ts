@@ -45,7 +45,7 @@ export const handleVerificationAdd = async ({
   );
 
   const event = transformToVerificationEvent(
-    EventType.VERIFICATION_ADD_ETH_ADDRESS,
+    EventType.VERIFICATION_ADD,
     verification,
   );
 
@@ -142,10 +142,7 @@ export const getAndBackfillVerfications = async (
   const verifications = await backfillVerifications(messages);
   await publishRawEvents(
     verifications.map((verification) =>
-      transformToVerificationEvent(
-        EventType.VERIFICATION_ADD_ETH_ADDRESS,
-        verification,
-      ),
+      transformToVerificationEvent(EventType.VERIFICATION_ADD, verification),
     ),
   );
   return verifications;

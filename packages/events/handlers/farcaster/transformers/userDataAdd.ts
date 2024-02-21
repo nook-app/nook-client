@@ -1,4 +1,3 @@
-import { MongoClient } from "@nook/common/mongo";
 import {
   EntityEvent,
   EventAction,
@@ -8,17 +7,14 @@ import {
   UpdateEntityInfoActionData,
   EntityInfoType,
   TopicType,
+  Entity,
 } from "@nook/common/types";
-import { getOrCreateEntitiesForFids } from "@nook/common/entity";
 
-export const handleUserDataAdd = async (
-  client: MongoClient,
+export const transformUserDataAddEvent = async (
   rawEvent: RawEvent<FarcasterUserDataAddData>,
+  entities: Record<string, Entity>,
 ) => {
-  const fidToIdentity = await getOrCreateEntitiesForFids(client, [
-    rawEvent.data.fid,
-  ]);
-  const entityId = fidToIdentity[rawEvent.data.fid]._id;
+  const entityId = entities[rawEvent.data.fid]._id;
 
   let entityDataType: EntityInfoType | undefined;
   switch (rawEvent.data.type) {

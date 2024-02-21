@@ -6,17 +6,15 @@ import {
   RawEvent,
   EventType,
   EventActionData,
+  Content,
+  PostData,
 } from "@nook/common/types";
-import { MongoClient } from "@nook/common/mongo";
 import { toFarcasterURI } from "@nook/common/farcaster";
-import { getOrCreatePostContentFromData } from "../../utils/farcaster";
 
-export const handleCastAddOrRemove = async (
-  client: MongoClient,
+export const transformCastAddOrRemove = async (
   rawEvent: RawEvent<FarcasterCastData>,
+  content: Content<PostData>,
 ) => {
-  const content = await getOrCreatePostContentFromData(client, rawEvent.data);
-
   let type: EventActionType;
   if (content.data.parentId) {
     type =
