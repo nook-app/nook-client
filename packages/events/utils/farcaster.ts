@@ -24,7 +24,7 @@ export const getOrCreatePostContent = async (
 
   const cast = await getFarcasterCastByURI(contentId);
   if (!cast) {
-    throw new Error(`Failed to get cast for ${contentId}`);
+    return;
   }
 
   return await createPostContent(client, cast);

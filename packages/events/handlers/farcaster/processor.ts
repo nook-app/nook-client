@@ -56,6 +56,7 @@ export class FarcasterProcessor {
         hash: rawEvent.data.targetHash,
       }),
     );
+    if (!content) return;
     const entities = await this.fetchEntities([rawEvent.data.fid]);
     return transformCastReactionAddOrRemove(rawEvent, content, entities);
   }
