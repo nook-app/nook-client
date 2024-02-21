@@ -127,10 +127,22 @@ export class MongoClient {
       );
     }
 
-    return await collection.insertOne({
-      ...content,
-      _id: this.generateObjectIdFromDate(content.timestamp),
-    });
+    try {
+      return await collection.insertOne({
+        ...content,
+        _id: this.generateObjectIdFromDate(content.timestamp),
+      });
+    } catch (error) {
+      if (
+        error instanceof Error &&
+        error.name === "MongoServerError" &&
+        "code" in error &&
+        error.code === 11000
+      ) {
+        return;
+      }
+      throw error;
+    }
   };
 
   upsertEvent = async <T>(event: EntityEvent<T>) => {
@@ -155,10 +167,22 @@ export class MongoClient {
       );
     }
 
-    return await collection.insertOne({
-      ...event,
-      _id: this.generateObjectIdFromDate(event.timestamp),
-    });
+    try {
+      return await collection.insertOne({
+        ...event,
+        _id: this.generateObjectIdFromDate(event.timestamp),
+      });
+    } catch (error) {
+      if (
+        error instanceof Error &&
+        error.name === "MongoServerError" &&
+        "code" in error &&
+        error.code === 11000
+      ) {
+        return;
+      }
+      throw error;
+    }
   };
 
   upsertAction = async (action: EventAction<EventActionData>) => {
@@ -187,10 +211,22 @@ export class MongoClient {
       return existingAction._id;
     }
 
-    const _id = this.generateObjectIdFromDate(action.timestamp);
-    await collection.insertOne({ ...action, _id });
-    await publishAction(_id.toHexString(), true);
-    return _id;
+    try {
+      const _id = this.generateObjectIdFromDate(action.timestamp);
+      await collection.insertOne({ ...action, _id });
+      await publishAction(_id.toHexString(), true);
+      return _id;
+    } catch (error) {
+      if (
+        error instanceof Error &&
+        error.name === "MongoServerError" &&
+        "code" in error &&
+        error.code === 11000
+      ) {
+        return;
+      }
+      throw error;
+    }
   };
 
   upsertChannel = async (channel: Channel) => {
