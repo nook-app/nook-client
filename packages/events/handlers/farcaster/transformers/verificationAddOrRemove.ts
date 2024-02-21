@@ -11,7 +11,7 @@ import {
   Entity,
 } from "@nook/common/types";
 
-export const transformVerificationAddOrRemove = async (
+export const transformVerificationAddOrRemove = (
   rawEvent: RawEvent<FarcasterVerificationData>,
   entities: Record<string, Entity>,
 ) => {

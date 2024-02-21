@@ -10,7 +10,7 @@ import {
 } from "@nook/common/types";
 import { EntityActionData } from "@nook/common/types/actionTypes";
 
-export const transformLinkAddOrRemove = async (
+export const transformLinkAddOrRemove = (
   rawEvent: RawEvent<FarcasterLinkData>,
   entities: Record<string, Entity>,
 ) => {

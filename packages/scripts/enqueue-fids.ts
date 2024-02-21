@@ -5,7 +5,7 @@ const BATCH_SIZE = 1000;
 const run = async () => {
   const queue = getQueue(QueueName.FarcasterBackfill);
 
-  for (let fid = 1; fid < 365_000; fid += BATCH_SIZE) {
+  for (let fid = 180_000; fid < 315_000; fid += BATCH_SIZE) {
     const jobs = [];
     for (let j = fid; j < fid + BATCH_SIZE && j < 365_000; j++) {
       jobs.push({

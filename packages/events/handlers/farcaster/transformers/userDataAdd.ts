@@ -10,7 +10,7 @@ import {
   Entity,
 } from "@nook/common/types";
 
-export const transformUserDataAddEvent = async (
+export const transformUserDataAddEvent = (
   rawEvent: RawEvent<FarcasterUserDataAddData>,
   entities: Record<string, Entity>,
 ) => {

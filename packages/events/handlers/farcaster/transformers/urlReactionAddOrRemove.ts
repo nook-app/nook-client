@@ -10,7 +10,7 @@ import {
 } from "@nook/common/types";
 import { ContentActionData } from "@nook/common/types/actionTypes";
 
-export const transformUrlReactionAddOrRemove = async (
+export const transformUrlReactionAddOrRemove = (
   rawEvent: RawEvent<FarcasterUrlReactionData>,
   entities: Record<string, Entity>,
 ) => {

@@ -13,7 +13,7 @@ import {
   Entity,
 } from "@nook/common/types";
 
-export const transformCastReactionAddOrRemove = async (
+export const transformCastReactionAddOrRemove = (
   rawEvent: RawEvent<FarcasterCastReactionData>,
   content: Content<PostData>,
   entities: Record<string, Entity>,

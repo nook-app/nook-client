@@ -11,7 +11,7 @@ import {
 } from "@nook/common/types";
 import { toFarcasterURI } from "@nook/common/farcaster";
 
-export const transformCastAddOrRemove = async (
+export const transformCastAddOrRemove = (
   rawEvent: RawEvent<FarcasterCastData>,
   content: Content<PostData>,
 ) => {

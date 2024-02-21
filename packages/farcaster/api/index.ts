@@ -9,7 +9,6 @@ import { getAndBackfillUserDatas } from "../consumer/handlers/users";
 import {
   BlockchainAccount,
   FarcasterAccount,
-  FarcasterCastData,
   Protocol,
 } from "@nook/common/types";
 import { getAndBackfillVerfications } from "../consumer/handlers/verifications";
@@ -38,84 +37,27 @@ const run = async () => {
     },
   });
 
-  server.post(
-    "/casts",
-    {
-      schema: {
-        body: {
-          type: "object",
-          properties: {
-            ids: {
-              type: "array",
-              items: {
-                type: "object",
-                required: ["fid", "hash"],
-                properties: {
-                  fid: { type: "string" },
-                  hash: { type: "string" },
-                },
-              },
-              nullable: true,
-            },
-            uris: {
-              type: "array",
-              items: {
-                type: "string",
-              },
-              nullable: true,
-            },
-          },
-        },
-      },
-    },
+  server.get<{Params: {fid: string, hash: string}}>(
+    "/casts/:fid/:hash",
     async (
-      request: FastifyRequest<{
-        Body: { ids?: { fid: string; hash: string }[]; uris?: string[] };
-      }>,
+      request,
       reply,
     ) => {
-      const ids = [];
-      if (request.body.ids) {
-        ids.push(...request.body.ids);
-      }
-
-      if (request.body.uris) {
-        ids.push(
-          ...request.body.uris.map((uri) => {
-            const [fid, hash] = uri.replace("farcaster://cast/", "").split("/");
-            return { fid, hash };
-          }),
-        );
-      }
-
-      const casts = (
-        await prisma.farcasterCast.findMany({
-          where: {
-            OR: ids.map(({ fid, hash }) => ({
-              fid: Number(fid),
-              hash,
-            })),
-          },
-        })
-      ).map(transformToCastData);
-
-      const existingHashes = casts.map((cast) => cast.hash);
-      const missingCasts = ids.filter(
-        ({ hash }) => !existingHashes.includes(hash),
-      );
-
-      if (missingCasts.length > 0) {
-        casts.push(...(await getAndBackfillCasts(client, missingCasts)));
-      }
-
-      const hashToCast = casts.filter(Boolean).reduce((acc, cast) => {
-        acc[`${cast.fid}-${cast.hash}`] = cast;
-        return acc;
-      }, {} as { [key: string]: FarcasterCastData });
-
-      reply.send({
-        casts: ids.map(({ fid, hash }) => hashToCast[`${fid}-${hash}`]),
+      const { fid, hash } = request.params;
+      const existingCast = await prisma.farcasterCast.findFirst({
+        where: {
+          fid: Number(fid),
+          hash,
+        },
       });
+
+      if (existingCast) {
+        reply.send(transformToCastData(existingCast));
+        return;
+      }
+
+      const cast = await getAndBackfillCasts(client, [{ fid, hash }]);
+      reply.send(cast[0]);
     },
   );
 

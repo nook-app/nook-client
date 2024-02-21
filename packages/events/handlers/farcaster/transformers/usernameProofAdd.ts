@@ -10,7 +10,7 @@ import {
   Entity,
 } from "@nook/common/types";
 
-export const transformUsernameProofAdd = async (
+export const transformUsernameProofAdd = (
   rawEvent: RawEvent<FarcasterUsernameProofData>,
   entities: Record<string, Entity>,
 ) => {

@@ -33,3 +33,13 @@ export const hexToBuffer = (hex: string) => {
 export const toFarcasterURI = ({ fid, hash }: FidHash) => {
   return `farcaster://cast/${fid}/${hash}`;
 };
+
+export const fromFarcasterURI = (uri: string) => {
+  const parts = uri.split("/");
+  if (parts[0] !== "farcaster:" || parts[1] !== "" || parts[2] !== "cast") {
+    throw new Error("Invalid Farcaster URI format");
+  }
+  const fid = parts[3];
+  const hash = parts[4];
+  return { fid, hash } as FidHash;
+};
