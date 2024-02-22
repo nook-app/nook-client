@@ -8,7 +8,7 @@ import {
   RefreshControl,
   TouchableWithoutFeedback,
 } from "react-native-gesture-handler";
-import { ContentPostCompact } from "../content/postCompact";
+import { ContentPostCompact } from "../content/ContentPostCompact";
 import { ContentFeedItem } from "@nook/api/types";
 import { ContentFeedArgs, ContentType, PostData } from "@nook/common/types";
 

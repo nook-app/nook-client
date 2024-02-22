@@ -1,4 +1,4 @@
-import { ContentPost } from "@/components/content/post";
+import { ContentPost } from "@/components/content/ContentPost";
 import { useAppSelector } from "@/hooks/useAppSelector";
 import { selectContentById } from "@/store/slices/content";
 import { RootStackParamList } from "@/types";
