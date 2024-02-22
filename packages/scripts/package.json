@@ -4,11 +4,13 @@
   "private": true,
   "scripts": {
     "build": "tsc",
-    "reset:mongo": "tsc && node ./dist/reset-mongo.js",
-    "enqueue:fids": "tsc && node ./dist/enqueue-fids.js"
+    "reset:mongo": "tsc && node ./dist/src/reset-mongo.js",
+    "enqueue:fids": "tsc && node ./dist/src/enqueue-fids.js",
+    "backfill:followers": "tsc && node ./dist/src/backfill-followers.js"
   },
   "dependencies": {
-    "@nook/common": "*"
+    "@nook/common": "*",
+    "mongodb": "^6.3.0"
   },
   "devDependencies": {
     "@types/jest": "^29.5.11",

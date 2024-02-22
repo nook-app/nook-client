@@ -109,29 +109,10 @@ export class MongoClient {
     const collection = this.getCollection<Content<ContentData>>(
       MongoCollection.Content,
     );
-    const existingContent = await collection.findOne({
-      contentId: content.contentId,
-    });
-    if (existingContent) {
-      return await collection.updateOne(
-        {
-          contentId: content.contentId,
-        },
-        {
-          $set: {
-            ...content,
-            _id: existingContent._id,
-            updatedAt: new Date(),
-          },
-        },
-      );
-    }
-
+    const _id = this.generateObjectIdFromDate(content.timestamp);
     try {
-      return await collection.insertOne({
-        ...content,
-        _id: this.generateObjectIdFromDate(content.timestamp),
-      });
+      await collection.insertOne({ ...content, _id });
+      return _id;
     } catch (error) {
       if (
         error instanceof Error &&
@@ -139,7 +120,21 @@ export class MongoClient {
         "code" in error &&
         error.code === 11000
       ) {
-        return;
+        const existingContent = await collection.findOneAndUpdate(
+          {
+            contentId: content.contentId,
+          },
+          {
+            $set: {
+              ...content,
+              updatedAt: new Date(),
+            },
+          },
+        );
+        if (!existingContent) {
+          throw new Error("Failed to find existing content");
+        }
+        return existingContent._id;
       }
       throw error;
     }
@@ -149,29 +144,10 @@ export class MongoClient {
     const collection = this.getCollection<EntityEvent<T>>(
       MongoCollection.Events,
     );
-    const existingEvent = await collection.findOne({
-      eventId: event.eventId,
-    });
-    if (existingEvent) {
-      return await collection.updateOne(
-        {
-          eventId: event.eventId,
-        },
-        {
-          $set: {
-            ...event,
-            _id: existingEvent._id,
-            updatedAt: new Date(),
-          },
-        },
-      );
-    }
-
+    const _id = this.generateObjectIdFromDate(event.timestamp);
     try {
-      return await collection.insertOne({
-        ...event,
-        _id: this.generateObjectIdFromDate(event.timestamp),
-      });
+      await collection.insertOne({ ...event, _id });
+      return _id;
     } catch (error) {
       if (
         error instanceof Error &&
@@ -179,7 +155,21 @@ export class MongoClient {
         "code" in error &&
         error.code === 11000
       ) {
-        return;
+        const existingEvent = await collection.findOneAndUpdate(
+          {
+            eventId: event.eventId,
+          },
+          {
+            $set: {
+              ...event,
+              updatedAt: new Date(),
+            },
+          },
+        );
+        if (!existingEvent) {
+          throw new Error("Failed to find existing event");
+        }
+        return existingEvent._id;
       }
       throw error;
     }
@@ -189,30 +179,8 @@ export class MongoClient {
     const collection = this.getCollection<EventAction<EventActionData>>(
       MongoCollection.Actions,
     );
-    const existingAction = await collection.findOne({
-      eventId: action.eventId,
-      type: action.type,
-    });
-    if (existingAction) {
-      await collection.updateOne(
-        {
-          eventId: action.eventId,
-          type: action.type,
-        },
-        {
-          $set: {
-            ...action,
-            _id: existingAction._id,
-            updatedAt: new Date(),
-          },
-        },
-      );
-      await publishAction(existingAction._id.toHexString(), false);
-      return existingAction._id;
-    }
-
+    const _id = this.generateObjectIdFromDate(action.timestamp);
     try {
-      const _id = this.generateObjectIdFromDate(action.timestamp);
       await collection.insertOne({ ...action, _id });
       await publishAction(_id.toHexString(), true);
       return _id;
@@ -223,7 +191,23 @@ export class MongoClient {
         "code" in error &&
         error.code === 11000
       ) {
-        return;
+        const existingAction = await collection.findOneAndUpdate(
+          {
+            eventId: action.eventId,
+            type: action.type,
+          },
+          {
+            $set: {
+              ...action,
+              updatedAt: new Date(),
+            },
+          },
+        );
+        if (!existingAction) {
+          throw new Error("Failed to find existing action");
+        }
+        await publishAction(existingAction._id.toString(), false);
+        return existingAction._id;
       }
       throw error;
     }

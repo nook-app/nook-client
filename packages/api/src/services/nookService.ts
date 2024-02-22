@@ -291,6 +291,7 @@ export class NookService {
     if (nookId.startsWith("channel:")) {
       const channel = await getOrCreateChannel(
         this.client,
+        this.cache,
         nookId.replace("channel:", ""),
       );
       if (!channel) {

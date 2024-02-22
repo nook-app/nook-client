@@ -1,5 +1,6 @@
 import { Channel, Entity } from "@nook/common/types";
 import { MongoClient, MongoCollection } from "../mongo";
+import { RedisClient } from "../cache";
 
 type WarpcastChannelData = {
   id: string;
@@ -13,10 +14,17 @@ type WarpcastChannelData = {
 
 export const getOrCreateChannel = async (
   client: MongoClient,
+  redis: RedisClient,
   contentId: string,
 ) => {
+  const cachedChannel = await redis.getChannel(contentId);
+  if (cachedChannel) {
+    return cachedChannel;
+  }
+
   const existingChannel = await client.findChannel(contentId);
   if (existingChannel) {
+    await redis.setChannel(existingChannel);
     return existingChannel;
   }
 
@@ -57,6 +65,7 @@ export const getOrCreateChannel = async (
   };
 
   await client.upsertChannel(channel);
+  await redis.setChannel(channel);
 
   return channel;
 };

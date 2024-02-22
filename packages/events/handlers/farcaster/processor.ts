@@ -207,6 +207,7 @@ export class FarcasterProcessor {
   }
 
   async fetchEntities(fids: string[]) {
+    if (fids.length === 0) return {};
     const uniqueFids = Array.from(new Set(fids));
     const cachedEntities = (
       await Promise.all(uniqueFids.map((fid) => this.redis.getEntityByFid(fid)))
@@ -329,6 +330,7 @@ export class FarcasterProcessor {
   }
 
   async fetchCastsFromStorage(contentIds: string[]) {
+    if (contentIds.length === 0) return [];
     return await this.client
       .getCollection<Content<PostData>>(MongoCollection.Content)
       .find({
@@ -338,6 +340,7 @@ export class FarcasterProcessor {
   }
 
   async fetchCastsFromSource(contentIds: string[]) {
+    if (contentIds.length === 0) return [];
     const response = await fetch(`${process.env.FARCASTER_SERVICE_URL}/casts`, {
       method: "POST",
       headers: {

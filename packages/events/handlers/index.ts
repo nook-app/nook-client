@@ -4,6 +4,8 @@ import {
   EntityEventData,
   ContentType,
   PostData,
+  Content,
+  ContentData,
 } from "@nook/common/types";
 import { MongoClient } from "@nook/common/mongo";
 import { RedisClient } from "@nook/common/cache";
@@ -19,6 +21,33 @@ export const getEventsHandler = async () => {
 
   const redis = new RedisClient();
   await redis.connect();
+
+  const fetchOrPublishContent = async (contentId: string) => {
+    const cachedContent = await redis.getContent(contentId);
+    if (cachedContent) return;
+    const existingContent = await client.findContent(contentId);
+    if (existingContent) {
+      await redis.setContent(existingContent);
+      return;
+    }
+    await publishContent(contentId);
+  };
+
+  const upsertContentPromises = (content: Content<ContentData>) => {
+    const promises = [];
+    promises.push(client.upsertContent(content));
+    if (![ContentType.POST, ContentType.REPLY].includes(content.type))
+      return promises;
+    const post = content.data as PostData;
+    for (const embed of post.embeds) {
+      if (embed.startsWith("farcaster://")) continue;
+      promises.push(fetchOrPublishContent(embed));
+    }
+    if (post.channelId) {
+      promises.push(getOrCreateChannel(client, redis, post.channelId));
+    }
+    return promises;
+  };
 
   return async (job: Job<RawEvent<EntityEventData>>) => {
     const rawEvent = job.data;
@@ -38,31 +67,19 @@ export const getEventsHandler = async () => {
 
     if (!response) return;
 
-    await Promise.all([
-      ...response.events.flatMap(({ event }) => client.upsertEvent(event)),
-      ...response.events.flatMap(({ actions }) =>
-        actions.flatMap((action) => client.upsertAction(action)),
-      ),
-      ...(response.contents?.map(async (content) => {
-        await client.upsertContent(content);
-        if (
-          content.type === ContentType.POST ||
-          content.type === ContentType.REPLY
-        ) {
-          const postData = content.data as PostData;
-          for (const embed of postData.embeds) {
-            if (embed.startsWith("farcaster://")) continue;
-            if (!(await client.findContent(embed))) {
-              await publishContent(embed);
-            }
-          }
+    const promises = [];
+    for (const event of response.events) {
+      promises.push(client.upsertEvent(event.event));
+      for (const action of event.actions) {
+        promises.push(client.upsertAction(action));
+      }
+    }
 
-          if (postData.channelId) {
-            await getOrCreateChannel(client, postData.channelId);
-          }
-        }
-      }) || []),
-    ]);
+    for (const content of response.contents || []) {
+      promises.push(...upsertContentPromises(content));
+    }
+
+    await Promise.all(promises);
 
     console.log(
       `[${rawEvent.source.service}] [${rawEvent.source.type}] processed ${rawEvent.source.id} by ${rawEvent.source.entityId}`,

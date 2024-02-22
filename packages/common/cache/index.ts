@@ -135,8 +135,16 @@ export class RedisClient {
     await this.redis.mset(...keyValuePairs);
   }
 
+  async getChannel(id: string): Promise<Channel> {
+    return await this.getJson(`channel:${id}`);
+  }
+
   async getChannels(ids: string[]) {
     return await this.getJsons(ids.map((id) => `channel:${id}`));
+  }
+
+  async setChannel(channel: Channel) {
+    await this.setJson(`channel:${channel.contentId}`, channel);
   }
 
   async setChannels(channels: Channel[]) {
