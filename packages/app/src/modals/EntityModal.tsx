@@ -1,25 +1,32 @@
 import { Button, Text, View, XStack, YStack } from "tamagui";
-import { useAppSelector } from "@/store/hooks/useAppSelector";
+import { useAppSelector } from "@/hooks/useAppSelector";
 import { setActiveNook } from "@/store/slices/user";
 import { EntityAvatar } from "@/components/entity/avatar";
-import { useAppDispatch } from "@/store/hooks/useAppDispatch";
+import { useAppDispatch } from "@/hooks/useAppDispatch";
 import { selectEntityById } from "@/store/slices/entity";
-import { store } from "@/store";
 import { RootStackParamList } from "@/types";
 import { NavigationProp, useNavigation } from "@react-navigation/native";
 import { BottomSheetModal } from "@/components/utils/BottomSheetModal";
-import { setActiveEntityModal } from "@/store/slices/navigator";
+import { useCallback } from "react";
+import { closeModal } from "@/store/slices/navigator";
+import { ModalName } from "./types";
 
 export const EntityModal = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const theme = useAppSelector((state) => state.user.theme);
   const dispatch = useAppDispatch();
-  const activeEntityModal = useAppSelector(
-    (state) => state.navigator.activeEntityModal,
+  const { initialState } = useAppSelector(
+    (state) => state.navigator.modals[ModalName.Entity],
   );
-  const entity = activeEntityModal
-    ? selectEntityById(store.getState(), activeEntityModal)
-    : undefined;
+  const entity = useAppSelector((state) =>
+    initialState?.entityId
+      ? selectEntityById(state, initialState?.entityId)
+      : undefined,
+  );
+
+  const onClose = useCallback(() => {
+    dispatch(closeModal({ name: ModalName.Entity }));
+  }, [dispatch]);
 
   let displayName = entity?.farcaster?.displayName;
   if (!displayName) {
@@ -38,11 +45,7 @@ export const EntityModal = () => {
   }
 
   return (
-    <BottomSheetModal
-      open={!!entity}
-      onClose={() => dispatch(setActiveEntityModal())}
-      enableDynamicSizing
-    >
+    <BottomSheetModal onClose={onClose} enableDynamicSizing>
       <View theme={theme}>
         {entity && (
           <YStack
@@ -90,7 +93,7 @@ export const EntityModal = () => {
                   nookId: `entity:${entity._id.toString()}`,
                 };
                 navigation.navigate("Shelf", params);
-                dispatch(setActiveEntityModal());
+                onClose();
                 dispatch(setActiveNook(`entity:${entity._id.toString()}`));
               }}
             >

@@ -1,7 +1,7 @@
 import { useNavigation, NavigationProp } from "@react-navigation/native";
 import { Avatar, Text, View, XStack, YStack } from "tamagui";
 import { RootStackParamList } from "@/types";
-import { useAppSelector } from "@/store/hooks/useAppSelector";
+import { useAppSelector } from "@/hooks/useAppSelector";
 import { selectNookById } from "@/store/slices/nook";
 import { Nook, NookType } from "@nook/common/types";
 import { selectEntityById } from "@/store/slices/entity";

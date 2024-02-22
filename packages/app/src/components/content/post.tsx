@@ -7,11 +7,13 @@ import { PostContent } from "@/components/utils";
 import { EntityDisplay } from "../entity/display";
 import { Image } from "expo-image";
 import { ContentFeedPanel } from "../panels/ContentFeedPanel";
-import { useAppDispatch } from "@/store/hooks/useAppDispatch";
-import { setActiveChannelModal } from "@/store/slices/navigator";
+import { useAppDispatch } from "@/hooks/useAppDispatch";
 import { TouchableOpacity } from "react-native-gesture-handler";
-import { useAppSelector } from "@/store/hooks/useAppSelector";
+import { useAppSelector } from "@/hooks/useAppSelector";
 import { selectChannelById } from "@/store/slices/channel";
+import { useCallback } from "react";
+import { openModal } from "@/store/slices/navigator";
+import { ModalName } from "@/modals/types";
 
 export const ContentPost = ({
   item: { data, engagement },
@@ -20,6 +22,18 @@ export const ContentPost = ({
   const channel = useAppSelector((state) =>
     data.channelId ? selectChannelById(state, data.channelId) : undefined,
   );
+
+  const onPress = useCallback(async () => {
+    if (!data.channelId) return;
+    dispatch(
+      openModal({
+        name: ModalName.Channel,
+        initialState: {
+          channelId: data.channelId,
+        },
+      }),
+    );
+  }, [dispatch, data.channelId]);
 
   return (
     <ScrollView>
@@ -54,9 +68,7 @@ export const ContentPost = ({
           {channel && (
             <>
               <Text color="$gray11">{"·"}</Text>
-              <TouchableOpacity
-                onPress={() => dispatch(setActiveChannelModal(data.channelId))}
-              >
+              <TouchableOpacity onPress={onPress}>
                 <View borderRadius="$10" overflow="hidden">
                   <Image
                     source={{ uri: channel.imageUrl }}
@@ -64,9 +76,7 @@ export const ContentPost = ({
                   />
                 </View>
               </TouchableOpacity>
-              <TouchableOpacity
-                onPress={() => dispatch(setActiveChannelModal(data.channelId))}
-              >
+              <TouchableOpacity onPress={onPress}>
                 <Text numberOfLines={1} ellipsizeMode="tail">
                   {channel.name}
                 </Text>

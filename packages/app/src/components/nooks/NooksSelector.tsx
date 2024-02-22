@@ -1,11 +1,11 @@
 import { useNavigation, NavigationProp } from "@react-navigation/native";
 import { Separator, View, YStack } from "tamagui";
 import { Image } from "expo-image";
-import { useAppSelector } from "@/store/hooks/useAppSelector";
+import { useAppSelector } from "@/hooks/useAppSelector";
 import { Nook } from "@nook/common/types";
 import { selectNookById } from "@/store/slices/nook";
 import { RootStackParamList } from "@/types";
-import { useAppDispatch } from "@/store/hooks/useAppDispatch";
+import { useAppDispatch } from "@/hooks/useAppDispatch";
 
 const NookButton = ({
   nook,

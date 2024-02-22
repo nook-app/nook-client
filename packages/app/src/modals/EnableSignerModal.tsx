@@ -5,8 +5,8 @@ import { useState } from "react";
 import { Linking } from "react-native";
 import { NavigationProp, useNavigation } from "@react-navigation/native";
 import { RootStackParamList } from "@/types";
-import { useAppSelector } from "@/store/hooks/useAppSelector";
-import { useAppDispatch } from "@/store/hooks/useAppDispatch";
+import { useAppSelector } from "@/hooks/useAppSelector";
+import { useAppDispatch } from "@/hooks/useAppDispatch";
 import { setSignerEnabled } from "@/store/slices/user";
 import { farcasterApi } from "@/store/apis/farcasterApi";
 

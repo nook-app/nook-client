@@ -11,7 +11,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { NavigationProp, useNavigation } from "@react-navigation/native";
 import { RootStackParamList } from "@/types";
-import { useAppSelector } from "@/store/hooks/useAppSelector";
+import { useAppSelector } from "@/hooks/useAppSelector";
 import { EnableSignerModal } from "./EnableSignerModal";
 import { EntityAvatar } from "@/components/entity/avatar";
 import { useEffect, useRef, useState } from "react";

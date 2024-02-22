@@ -1,29 +1,34 @@
 import { Avatar, Button, Text, View, XStack, YStack } from "tamagui";
-import { useAppSelector } from "@/store/hooks/useAppSelector";
+import { useAppSelector } from "@/hooks/useAppSelector";
 import { setActiveNook } from "@/store/slices/user";
-import { useAppDispatch } from "@/store/hooks/useAppDispatch";
+import { useAppDispatch } from "@/hooks/useAppDispatch";
 import { RootStackParamList } from "@/types";
 import { NavigationProp, useNavigation } from "@react-navigation/native";
 import { selectChannelById } from "@/store/slices/channel";
 import { BottomSheetModal } from "@/components/utils/BottomSheetModal";
-import { setActiveChannelModal } from "@/store/slices/navigator";
+import { useCallback } from "react";
+import { closeModal } from "@/store/slices/navigator";
+import { ModalName } from "./types";
 
 export const ChannelModal = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const theme = useAppSelector((state) => state.user.theme);
   const dispatch = useAppDispatch();
+  const { initialState } = useAppSelector(
+    (state) => state.navigator.modals[ModalName.Channel],
+  );
   const channel = useAppSelector((state) =>
-    state.navigator.activeChannelModal
-      ? selectChannelById(state, state.navigator.activeChannelModal)
+    initialState?.channelId
+      ? selectChannelById(state, initialState?.channelId)
       : undefined,
   );
 
+  const onClose = useCallback(() => {
+    dispatch(closeModal({ name: ModalName.Channel }));
+  }, [dispatch]);
+
   return (
-    <BottomSheetModal
-      open={!!channel}
-      onClose={() => dispatch(setActiveChannelModal())}
-      enableDynamicSizing
-    >
+    <BottomSheetModal onClose={onClose} enableDynamicSizing>
       <View theme={theme}>
         {channel && (
           <YStack
@@ -60,7 +65,7 @@ export const ChannelModal = () => {
                   nookId: `channel:${channel.contentId}`,
                 };
                 navigation.navigate("Shelf", params);
-                dispatch(setActiveChannelModal());
+                onClose();
                 dispatch(setActiveNook(`channel:${channel.contentId}`));
               }}
             >

@@ -3,11 +3,11 @@ import { useAuth } from "@/context/auth";
 import { Image } from "tamagui";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
-import { useAppSelector } from "@/store/hooks/useAppSelector";
+import { useAppSelector } from "@/hooks/useAppSelector";
 import { EntityAvatar } from "@/components/entity/avatar";
 import { EntityDisplay } from "@/components/entity/display";
 import { TouchableOpacity } from "react-native-gesture-handler";
-import { useAppDispatch } from "@/store/hooks/useAppDispatch";
+import { useAppDispatch } from "@/hooks/useAppDispatch";
 import { setTheme } from "@/store/slices/user";
 
 export const ThemeSelector = () => {

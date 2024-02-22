@@ -9,13 +9,11 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { FullWindowOverlay } from "react-native-screens";
 
 export const BottomSheetModal = ({
-  open,
   onClose,
   children,
   enableDynamicSizing,
   snapPoints,
 }: {
-  open: boolean;
   onClose: () => void;
   children: ReactNode;
   enableDynamicSizing?: boolean;
@@ -23,13 +21,13 @@ export const BottomSheetModal = ({
 }) => {
   const insets = useSafeAreaInsets();
   const theme = useTheme();
+  const modalRef = useRef<BaseBottomSheetModal>(null);
+
+  // biome-ignore lint/correctness/useExhaustiveDependencies: TODO: Figure out why modals are showing on initial load
   useEffect(() => {
-    if (open) {
-      bottomSheetModalRef.current?.present();
-    } else {
-      bottomSheetModalRef.current?.close();
-    }
-  }, [open]);
+    modalRef.current?.present();
+    return modalRef.current?.close;
+  }, [modalRef]);
 
   const bottomSheetModalRef = useRef<BaseBottomSheetModal>(null);
 
@@ -44,7 +42,7 @@ export const BottomSheetModal = ({
 
   return (
     <BaseBottomSheetModal
-      ref={bottomSheetModalRef}
+      ref={modalRef}
       index={0}
       snapPoints={memoSnapPoints}
       enableDynamicSizing={enableDynamicSizing}
@@ -72,6 +70,7 @@ export const BottomSheetModal = ({
       handleIndicatorStyle={{
         backgroundColor: theme.backgroundStrong.val,
       }}
+      onDismiss={onClose}
     >
       <BottomSheetView style={{ paddingBottom: insets.bottom }}>
         {children}

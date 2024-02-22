@@ -6,8 +6,6 @@ import { useEffect } from "react";
 import { store } from "@/store";
 import { nookApi } from "@/store/apis/nookApi";
 import { Spinner, View } from "tamagui";
-import { EntityModal } from "@/modals/EntityModal";
-import { ChannelModal } from "@/modals/ChannelModal";
 
 export default function ShelfScreen() {
   const {
@@ -53,8 +51,6 @@ export default function ShelfScreen() {
   return (
     <View backgroundColor="$background" height="100%">
       <SwipeablePanels key={activeShelf.slug} panels={activeShelf.panels} />
-      <EntityModal />
-      <ChannelModal />
     </View>
   );
 }

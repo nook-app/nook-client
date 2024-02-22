@@ -10,7 +10,7 @@ import Animated, {
 } from "react-native-reanimated";
 import { Image, Text, View, useTheme } from "tamagui";
 import { NooksNavigator } from "./NooksNavigator";
-import { useAppSelector } from "@/store/hooks/useAppSelector";
+import { useAppSelector } from "@/hooks/useAppSelector";
 import { RootStackParamList } from "@/types";
 
 const Tabs = createBottomTabNavigator<RootStackParamList>();

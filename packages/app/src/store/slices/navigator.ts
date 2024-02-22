@@ -1,13 +1,37 @@
+import { ModalName, ModalsState } from "@/modals/types";
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
-interface NavigatorState {
+type EntityModalParams = {
+  name: typeof ModalName.Entity;
+  initialState: {
+    entityId: string;
+  };
+};
+
+type ChannelModalParams = {
+  name: typeof ModalName.Channel;
+  initialState: {
+    channelId: string;
+  };
+};
+
+type NavigatorState = {
   isDrawerOpen: boolean;
-  activeEntityModal?: string;
-  activeChannelModal?: string;
-}
+  modals: ModalsState;
+};
 
 const initialState: NavigatorState = {
   isDrawerOpen: false,
+  modals: {
+    [ModalName.Entity]: {
+      isOpen: false,
+      initialState: undefined,
+    },
+    [ModalName.Channel]: {
+      isOpen: false,
+      initialState: undefined,
+    },
+  },
 };
 
 export const navigatorSlice = createSlice({
@@ -17,22 +41,28 @@ export const navigatorSlice = createSlice({
     setDrawerOpen: (state, action: PayloadAction<boolean>) => {
       state.isDrawerOpen = action.payload;
     },
-    setActiveEntityModal: (
+    openModal: (
       state,
-      action: PayloadAction<string | undefined>,
+      action: PayloadAction<EntityModalParams | ChannelModalParams>,
     ) => {
-      state.activeEntityModal = action.payload;
+      const { name, initialState } = action.payload;
+      state.modals[name].isOpen = true;
+      state.modals[name].initialState = initialState;
     },
-    setActiveChannelModal: (
-      state,
-      action: PayloadAction<string | undefined>,
-    ) => {
-      state.activeChannelModal = action.payload;
+    closeModal: (state, action: PayloadAction<{ name: keyof ModalsState }>) => {
+      state.modals[action.payload.name].isOpen = false;
+      state.modals[action.payload.name].initialState = undefined;
+    },
+    closeAllModals: (state) => {
+      for (const modal of Object.values(state.modals)) {
+        modal.isOpen = false;
+        modal.initialState = undefined;
+      }
     },
   },
 });
 
-export const { setDrawerOpen, setActiveEntityModal, setActiveChannelModal } =
+export const { setDrawerOpen, openModal, closeModal, closeAllModals } =
   navigatorSlice.actions;
 
 export default navigatorSlice.reducer;

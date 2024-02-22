@@ -4,7 +4,7 @@ import { FlatList } from "react-native";
 import { Channel } from "@nook/common/types";
 import { nookApi } from "@/store/apis/nookApi";
 import { BottomSheetModal } from "@/components/utils/BottomSheetModal";
-import { useAppSelector } from "@/store/hooks/useAppSelector";
+import { useAppSelector } from "@/hooks/useAppSelector";
 
 export const SelectChannelModal = ({
   open,

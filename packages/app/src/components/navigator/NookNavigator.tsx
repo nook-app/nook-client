@@ -9,7 +9,7 @@ import { Platform } from "react-native";
 import { useDrawerStatus } from "@react-navigation/drawer";
 import { useEffect } from "react";
 import { ArrowLeft } from "@tamagui/lucide-icons";
-import { useAppDispatch } from "@/store/hooks/useAppDispatch";
+import { useAppDispatch } from "@/hooks/useAppDispatch";
 import { setDrawerOpen } from "@/store/slices/navigator";
 import { Avatar, View } from "tamagui";
 import ShelfScreen from "@/screens/ShelfScreen";
@@ -19,7 +19,7 @@ import { RootStackParamList } from "@/types";
 import { CreatePostModal } from "@/modals/CreatePostModal";
 import { Text } from "tamagui";
 import { store } from "@/store";
-import { useAppSelector } from "@/store/hooks/useAppSelector";
+import { useAppSelector } from "@/hooks/useAppSelector";
 import { selectNookById } from "@/store/slices/nook";
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
