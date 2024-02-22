@@ -72,6 +72,5 @@ export const transformUserDataAddEvent = (
   return {
     event,
     actions: [action],
-    content: [],
   };
 };

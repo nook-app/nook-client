@@ -58,5 +58,5 @@ export const transformLinkAddOrRemove = (
     updatedAt: actions[0].updatedAt,
   };
 
-  return { event, actions, content: [] };
+  return { event, actions };
 };

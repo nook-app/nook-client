@@ -1,8 +1,7 @@
 import { getOrCreateEntitiesForFids } from "@nook/common/entity";
-import { MongoClient } from "@nook/common/mongo";
+import { MongoClient, MongoCollection } from "@nook/common/mongo";
 import {
   Content,
-  ContentType,
   Entity,
   EntityEventData,
   EventType,
@@ -15,18 +14,22 @@ import {
   FarcasterVerificationData,
   PostData,
   RawEvent,
-  Topic,
-  TopicType,
 } from "@nook/common/types";
 import { transformUserDataAddEvent } from "./transformers/userDataAdd";
 import { transformCastAddOrRemove } from "./transformers/castAddOrRemove";
-import { fromFarcasterURI, toFarcasterURI } from "@nook/common/farcaster";
+import { toFarcasterURI } from "@nook/common/farcaster";
 import { transformCastReactionAddOrRemove } from "./transformers/castReactionAddOrRemove";
 import { transformLinkAddOrRemove } from "./transformers/linkAddOrRemove";
 import { transformUrlReactionAddOrRemove } from "./transformers/urlReactionAddOrRemove";
 import { transformUsernameProofAdd } from "./transformers/usernameProofAdd";
 import { transformVerificationAddOrRemove } from "./transformers/verificationAddOrRemove";
 import { RedisClient } from "@nook/common/cache";
+import {
+  extractFidFromCast,
+  extractRelatedCastsFromCast,
+  formatPostContent,
+} from "./utils";
+import { EventHandlerResponse, EventHandlerResponseEvent } from "../../types";
 
 export class FarcasterProcessor {
   private client: MongoClient;
@@ -37,37 +40,43 @@ export class FarcasterProcessor {
     this.redis = redis;
   }
 
-  async process(rawEvent: RawEvent<EntityEventData>) {
+  async process(
+    rawEvent: RawEvent<EntityEventData>,
+  ): Promise<EventHandlerResponse> {
     switch (rawEvent.source.type) {
       case EventType.CAST_ADD:
       case EventType.CAST_REMOVE:
-        return await this.processCastAddOrRemove(
+        return await this.processCastAddOrRemove([
           rawEvent as RawEvent<FarcasterCastData>,
-        );
+        ]);
       case EventType.CAST_REACTION_ADD:
       case EventType.CAST_REACTION_REMOVE:
-        return await this.processCastReactionAddOrRemove(
+        return await this.processCastReactionAddOrRemove([
           rawEvent as RawEvent<FarcasterCastReactionData>,
-        );
+        ]);
       case EventType.URL_REACTION_ADD:
       case EventType.URL_REACTION_REMOVE:
-        return await this.processUrlReactionAddOrRemove(
+        return await this.processUrlReactionAddOrRemove([
           rawEvent as RawEvent<FarcasterUrlReactionData>,
-        );
+        ]);
       case EventType.LINK_ADD:
       case EventType.LINK_REMOVE:
-        return await this.processLinkAddOrRemove(
+        return await this.processLinkAddOrRemove([
           rawEvent as RawEvent<FarcasterLinkData>,
-        );
+        ]);
       case EventType.USER_DATA_ADD:
-        return await this.processUserDataAdd(
+        return await this.processUserDataAdd([
           rawEvent as RawEvent<FarcasterUserDataAddData>,
-        );
+        ]);
+      case EventType.USERNAME_PROOF:
+        return await this.processUsernameProofAdd([
+          rawEvent as RawEvent<FarcasterUsernameProofData>,
+        ]);
       case EventType.VERIFICATION_ADD:
       case EventType.VERIFICATION_REMOVE:
-        return await this.processVerificationAddOrRemove(
+        return await this.processVerificationAddOrRemove([
           rawEvent as RawEvent<FarcasterVerificationData>,
-        );
+        ]);
       default:
         throw new Error(
           `[${rawEvent.source.service}] [${rawEvent.source.type}] no handler found`,
@@ -75,67 +84,124 @@ export class FarcasterProcessor {
     }
   }
 
-  async processUserDataAdd(rawEvent: RawEvent<FarcasterUserDataAddData>) {
-    const entities = await this.fetchEntities([rawEvent.data.fid]);
-    return transformUserDataAddEvent(rawEvent, entities);
+  async processUserDataAdd(rawEvents: RawEvent<FarcasterUserDataAddData>[]) {
+    const fids = rawEvents.map((event) => event.data.fid);
+    const entities = await this.fetchEntities(fids);
+    return {
+      events: rawEvents.map((event) =>
+        transformUserDataAddEvent(event, entities),
+      ),
+    };
   }
 
-  async processCastAddOrRemove(rawEvent: RawEvent<FarcasterCastData>) {
-    const content = await this.fetchContent(
-      toFarcasterURI(rawEvent.data),
-      rawEvent.data,
+  async processCastAddOrRemove(rawEvents: RawEvent<FarcasterCastData>[]) {
+    const contentIds = rawEvents.map((event) => toFarcasterURI(event.data));
+    const contents = await this.fetchCasts(contentIds);
+    const events = rawEvents.map((event) =>
+      contents[toFarcasterURI(event.data)]
+        ? transformCastAddOrRemove(event, contents[toFarcasterURI(event.data)])
+        : undefined,
     );
-    return transformCastAddOrRemove(rawEvent, content);
+    return {
+      events: events.filter(Boolean) as EventHandlerResponseEvent[],
+      contents: Object.values(contents),
+    };
   }
 
   async processCastReactionAddOrRemove(
-    rawEvent: RawEvent<FarcasterCastReactionData>,
+    rawEvents: RawEvent<FarcasterCastReactionData>[],
   ) {
-    const content = await this.fetchContent(
+    const contentIds = rawEvents.map((event) =>
       toFarcasterURI({
-        fid: rawEvent.data.targetFid,
-        hash: rawEvent.data.targetHash,
+        fid: event.data.targetFid,
+        hash: event.data.targetHash,
       }),
     );
-    if (!content) return;
-    const entities = await this.fetchEntities([rawEvent.data.fid]);
-    return transformCastReactionAddOrRemove(rawEvent, content, entities);
+    const contents = await this.fetchCasts(contentIds);
+    const entities = await this.fetchEntities(
+      rawEvents.map((event) => event.data.fid),
+    );
+    const events = rawEvents.map((event) =>
+      contents[
+        toFarcasterURI({
+          fid: event.data.targetFid,
+          hash: event.data.targetHash,
+        })
+      ]
+        ? transformCastReactionAddOrRemove(
+            event,
+            contents[
+              toFarcasterURI({
+                fid: event.data.targetFid,
+                hash: event.data.targetHash,
+              })
+            ],
+            entities,
+          )
+        : undefined,
+    );
+    return {
+      events: events.filter(Boolean) as EventHandlerResponseEvent[],
+      contents: Object.values(contents),
+    };
   }
 
-  async processLinkAddOrRemove(rawEvent: RawEvent<FarcasterLinkData>) {
-    const entities = await this.fetchEntities([
-      rawEvent.data.fid,
-      rawEvent.data.targetFid,
-    ]);
-    return transformLinkAddOrRemove(rawEvent, entities);
+  async processLinkAddOrRemove(rawEvents: RawEvent<FarcasterLinkData>[]) {
+    const entities = await this.fetchEntities(
+      rawEvents.flatMap((event) => [event.data.fid, event.data.targetFid]),
+    );
+    return {
+      events: rawEvents.map((event) =>
+        transformLinkAddOrRemove(event, entities),
+      ),
+    };
   }
 
   async processUrlReactionAddOrRemove(
-    rawEvent: RawEvent<FarcasterUrlReactionData>,
+    rawEvents: RawEvent<FarcasterUrlReactionData>[],
   ) {
-    const entities = await this.fetchEntities([rawEvent.data.fid]);
-    return transformUrlReactionAddOrRemove(rawEvent, entities);
+    const entities = await this.fetchEntities(
+      rawEvents.map((event) => event.data.fid),
+    );
+    return {
+      events: rawEvents.map((event) =>
+        transformUrlReactionAddOrRemove(event, entities),
+      ),
+    };
   }
 
   async processUsernameProofAdd(
-    rawEvent: RawEvent<FarcasterUsernameProofData>,
+    rawEvents: RawEvent<FarcasterUsernameProofData>[],
   ) {
-    const entities = await this.fetchEntities([rawEvent.data.fid]);
-    return transformUsernameProofAdd(rawEvent, entities);
+    const entities = await this.fetchEntities(
+      rawEvents.map((event) => event.data.fid),
+    );
+    return {
+      events: rawEvents.map((event) =>
+        transformUsernameProofAdd(event, entities),
+      ),
+    };
   }
 
   async processVerificationAddOrRemove(
-    rawEvent: RawEvent<FarcasterVerificationData>,
+    rawEvents: RawEvent<FarcasterVerificationData>[],
   ) {
-    const entities = await this.fetchEntities([rawEvent.data.fid]);
-    return transformVerificationAddOrRemove(rawEvent, entities);
+    const entities = await this.fetchEntities(
+      rawEvents.map((event) => event.data.fid),
+    );
+    return {
+      events: rawEvents.map((event) =>
+        transformVerificationAddOrRemove(event, entities),
+      ),
+    };
   }
 
   async fetchEntities(fids: string[]) {
+    const uniqueFids = Array.from(new Set(fids));
     const cachedEntities = (
-      await Promise.all(fids.map((fid) => this.redis.getEntityByFid(fid)))
+      await Promise.all(uniqueFids.map((fid) => this.redis.getEntityByFid(fid)))
     ).filter(Boolean) as Entity[];
-    const missingEntities = fids.filter(
+    const missingEntities = uniqueFids.filter(
       (fid) => !cachedEntities.find((entity) => entity.farcaster.fid === fid),
     );
 
@@ -162,236 +228,114 @@ export class FarcasterProcessor {
     };
   }
 
-  async fetchContent(
-    contentId: string,
-    data?: FarcasterCastData,
-    fetchNested = true,
-  ) {
-    const cachedContent = await this.redis.getContent(contentId);
-    if (cachedContent) return cachedContent as Content<PostData>;
-    const existingContent = await this.client.findContent(contentId);
-    if (existingContent) {
-      await this.redis.setContent(existingContent);
-      return existingContent as Content<PostData>;
-    }
-
-    const cast = data || (await this.fetchContentFromSource(contentId));
-    const content = await this.createPostContent(cast, fetchNested);
-    await this.redis.setContent(content);
-    return content;
-  }
-
-  async fetchContentFromSource(contentId: string) {
-    const { fid, hash } = fromFarcasterURI(contentId);
-    const response = await fetch(
-      `${process.env.FARCASTER_SERVICE_URL}/casts/${fid}/${hash}`,
+  async fetchCasts(contentIds: string[]) {
+    // 1. Get casts from cache
+    const cachedCasts = await this.fetchCastsFromCache(contentIds);
+    const contentMap = cachedCasts.reduce(
+      (acc, cast) => {
+        acc[cast.contentId] = cast;
+        return acc;
+      },
+      {} as Record<string, Content<PostData>>,
     );
-    if (!response.ok) {
-      throw new Error(`Failed to fetch content for ${contentId}`);
-    }
-    return (await response.json()) as FarcasterCastData;
-  }
 
-  async createPostContent(cast: FarcasterCastData, fetchNested = true) {
-    const entities = await this.fetchEntities(
-      Array.from(
-        new Set(
-          [
-            cast.fid,
-            cast.parentFid,
-            cast.rootParentFid,
-            ...cast.mentions.map((mention) => mention.mention),
-          ].filter(Boolean) as string[],
-        ),
+    // 2. Get casts from storage (Mongo)
+    const uncachedCasts = contentIds.filter(
+      (contentId) => !contentMap[contentId],
+    );
+    const storedCasts = await this.fetchCastsFromStorage(uncachedCasts);
+    for (const cast of storedCasts) {
+      contentMap[cast.contentId] = cast;
+    }
+
+    // 3. Get raw casts from source (Farcaster DB) and transform them into Content<PostData>
+    const unstoredCasts = uncachedCasts.filter(
+      (contentId) => !contentMap[contentId],
+    );
+    const rawCasts = await this.fetchCastsFromSource(unstoredCasts);
+
+    const rawParentCastIds = Array.from(
+      new Set(rawCasts.flatMap(extractRelatedCastsFromCast)),
+    ).filter((contentId) => !contentMap[contentId]);
+    const rawParentCasts = await this.fetchCastsFromSource(rawParentCastIds);
+
+    const rawSecondaryParentCastIds = Array.from(
+      new Set(rawParentCasts.flatMap(extractRelatedCastsFromCast)),
+    ).filter((contentId) => !contentMap[contentId]);
+    const rawSecondaryParentCasts = await this.fetchCastsFromSource(
+      rawSecondaryParentCastIds,
+    );
+
+    // 4. Get fid to entity mapping for raw casts
+    const fids = Array.from(
+      new Set(
+        rawCasts
+          .concat(rawParentCasts)
+          .concat(rawSecondaryParentCasts)
+          .flatMap(extractFidFromCast),
       ),
     );
+    const entities = await this.fetchEntities(fids);
 
-    const content = this.formatContent(cast, entities);
-
-    if (!cast.parentFid || !cast.parentHash) {
-      return content;
+    // 5. Transform raw casts into Content<PostData> in reverse from secondary parent to primary cast
+    const secondaryParentCasts = rawSecondaryParentCasts.map((cast) =>
+      formatPostContent(cast, entities, contentMap),
+    );
+    for (const content of secondaryParentCasts) {
+      contentMap[content.contentId] = content;
     }
 
-    const parentId = toFarcasterURI({
-      fid: cast.parentFid,
-      hash: cast.parentHash,
-    });
-
-    const rootParentId = toFarcasterURI({
-      fid: cast.rootParentFid,
-      hash: cast.rootParentHash,
-    });
-
-    if (!fetchNested) {
-      content.data.parentId = parentId;
-      content.data.rootParentId = rootParentId;
-      return content;
+    const parentCasts = rawParentCasts.map((cast) =>
+      formatPostContent(cast, entities, contentMap),
+    );
+    for (const content of parentCasts) {
+      contentMap[content.contentId] = content;
     }
 
-    const parent = await this.fetchContent(parentId, undefined, false);
-    if (parent) {
-      content.data.parent = parent.data;
-      content.data.parentId = parentId;
-      content.data.parentEntityId = parent.data.entityId;
+    const casts = rawCasts.map((cast) =>
+      formatPostContent(cast, entities, contentMap),
+    );
+    for (const content of casts) {
+      contentMap[content.contentId] = content;
     }
 
-    const rootParent = await this.fetchContent(rootParentId, undefined, false);
-    if (rootParent) {
-      content.data.rootParent = rootParent.data;
-      content.data.rootParentId = rootParentId;
-      content.data.rootParentEntityId = rootParent.data.entityId;
-    }
+    // 6. Update cache with new casts
+    await this.redis.setContents(storedCasts);
+    await this.redis.setContents(secondaryParentCasts);
+    await this.redis.setContents(parentCasts);
+    await this.redis.setContents(casts);
 
-    return content;
+    return contentMap;
   }
 
-  formatContent(
-    cast: FarcasterCastData,
-    entities: Record<string, Entity>,
-  ): Content<PostData> {
-    const data: PostData = {
-      contentId: toFarcasterURI(cast),
-      text: cast.text,
-      timestamp: new Date(cast.timestamp),
-      entityId: entities[cast.fid]._id.toString(),
-      mentions: cast.mentions.map(({ mention, mentionPosition }) => ({
-        entityId: entities[mention]._id.toString(),
-        position: parseInt(mentionPosition),
-      })),
-      embeds: cast.embeds,
-      channelId: cast.rootParentUrl,
-      parentId:
-        cast.parentFid && cast.parentHash
-          ? toFarcasterURI({
-              fid: cast.parentFid,
-              hash: cast.parentHash,
-            })
-          : undefined,
-      rootParentId: toFarcasterURI({
-        fid: cast.rootParentFid,
-        hash: cast.rootParentHash,
-      }),
-      rootParentEntityId: entities[cast.rootParentFid]._id.toString(),
-    };
-    return {
-      contentId: data.contentId,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      timestamp: new Date(data.timestamp),
-      type: data.parentId ? ContentType.REPLY : ContentType.POST,
-      data,
-      engagement: {
-        likes: 0,
-        reposts: 0,
-        replies: 0,
-        embeds: 0,
-      },
-      tips: {},
-      topics: this.generateTopics(data),
-      referencedEntityIds: Array.from(
-        new Set([
-          data.entityId,
-          data.parentEntityId,
-          data.rootParentEntityId,
-          ...data.mentions.map(({ entityId }) => entityId),
-        ]),
-      ).filter(Boolean) as string[],
-      referencedContentIds: Array.from(
-        new Set([
-          data.contentId,
-          data.rootParentId,
-          data.parentId,
-          ...data.embeds,
-          data.channelId,
-        ]),
-      ).filter(Boolean) as string[],
-    };
+  async fetchCastsFromCache(contentIds: string[]) {
+    const cacheResults = await this.redis.getContents(contentIds);
+    return cacheResults.filter(Boolean) as Content<PostData>[];
   }
 
-  generateTopics(data: PostData) {
-    const topics: Topic[] = [
-      {
-        type: TopicType.SOURCE_ENTITY,
-        value: data.entityId.toString(),
+  async fetchCastsFromStorage(contentIds: string[]) {
+    return await this.client
+      .getCollection<Content<PostData>>(MongoCollection.Content)
+      .find({
+        contentId: { $in: contentIds },
+      })
+      .toArray();
+  }
+
+  async fetchCastsFromSource(contentIds: string[]) {
+    const response = await fetch(`${process.env.FARCASTER_SERVICE_URL}/casts`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
       },
-      {
-        type: TopicType.SOURCE_CONTENT,
-        value: data.contentId,
-      },
-      {
-        type: TopicType.ROOT_TARGET_ENTITY,
-        value: data.rootParentEntityId.toString(),
-      },
-      {
-        type: TopicType.ROOT_TARGET_CONTENT,
-        value: data.rootParentId,
-      },
-    ];
-
-    for (const mention of data.mentions) {
-      topics.push({
-        type: TopicType.SOURCE_TAG,
-        value: mention.entityId.toString(),
-      });
+      body: JSON.stringify({ ids: contentIds }),
+    });
+    if (!response.ok) {
+      throw new Error(
+        `Failed to fetch content from source: ${await response.text()}`,
+      );
     }
-
-    for (const embed of data.embeds) {
-      topics.push({
-        type: TopicType.SOURCE_EMBED,
-        value: embed,
-      });
-    }
-
-    if (data.parentId && data.parentEntityId) {
-      topics.push({
-        type: TopicType.TARGET_ENTITY,
-        value: data.parentEntityId.toString(),
-      });
-      topics.push({
-        type: TopicType.TARGET_CONTENT,
-        value: data.parentId,
-      });
-
-      if (data.parent) {
-        for (const mention of data.parent.mentions) {
-          topics.push({
-            type: TopicType.TARGET_TAG,
-            value: mention.entityId.toString(),
-          });
-        }
-
-        for (const embed of data.parent.embeds) {
-          topics.push({
-            type: TopicType.TARGET_EMBED,
-            value: embed,
-          });
-        }
-      }
-    }
-
-    if (data.rootParent) {
-      for (const mention of data.rootParent.mentions) {
-        topics.push({
-          type: TopicType.ROOT_TARGET_TAG,
-          value: mention.entityId.toString(),
-        });
-      }
-
-      for (const embed of data.rootParent.embeds) {
-        topics.push({
-          type: TopicType.ROOT_TARGET_EMBED,
-          value: embed,
-        });
-      }
-    }
-
-    if (data.channelId) {
-      topics.push({
-        type: TopicType.CHANNEL,
-        value: data.channelId,
-      });
-    }
-
-    return topics;
+    const { casts } = await response.json();
+    return casts as FarcasterCastData[];
   }
 }

@@ -64,6 +64,5 @@ export const transformUsernameProofAdd = (
   return {
     event,
     actions: [action],
-    content: [],
   };
 };

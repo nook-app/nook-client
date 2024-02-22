@@ -72,5 +72,5 @@ export const transformUrlReactionAddOrRemove = (
     updatedAt: actions[0].updatedAt,
   };
 
-  return { event, actions, content: [] };
+  return { event, actions };
 };

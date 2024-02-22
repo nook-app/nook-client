@@ -79,7 +79,7 @@ export class RedisClient {
 
   // biome-ignore lint/suspicious/noExplicitAny: generic setter
   async setJson(key: string, value: any) {
-    await this.redis.set(key, JSON.stringify(value), "EX", 60 * 60);
+    await this.redis.set(key, JSON.stringify(value), "EX", 60 * 60 * 24);
   }
 
   async getEntityByFid(fid: string): Promise<Entity> {

@@ -26,15 +26,6 @@ export const getOrCreateEntitiesForFids = async (
 
   const existingFids = new Set(Object.keys(entities));
   const missingFids = fids.filter((fid) => !existingFids.has(fid));
-  const missingDataFids = Object.values(entities)
-    .filter(
-      (entity) =>
-        !entity.farcaster.username ||
-        !entity.farcaster.displayName ||
-        !entity.farcaster.pfp ||
-        !entity.farcaster.bio,
-    )
-    .map((entity) => entity.farcaster.fid);
 
   if (missingFids.length > 0) {
     const data = await getFarcasterUsers(missingFids);
@@ -85,46 +76,6 @@ export const getOrCreateEntitiesForFids = async (
     }
   }
 
-  if (missingDataFids.length > 0) {
-    const data = await getFarcasterUsers(missingDataFids);
-    if (data) {
-      for (const user of data.users) {
-        const entity = entities[user.farcaster.fid];
-        entity.farcaster = user.farcaster;
-        entity.blockchain = user.blockchain;
-
-        const usernames = [];
-
-        const username = user.farcaster.username;
-        if (username) {
-          usernames.push({
-            type: username.endsWith(".eth")
-              ? UsernameType.ENS
-              : UsernameType.FNAME,
-            username,
-          });
-        }
-
-        await collection.updateOne(
-          {
-            _id: entity._id,
-          },
-          {
-            $set: {
-              farcaster: user.farcaster,
-              blockchain: user.blockchain,
-            },
-            $addToSet: {
-              usernames: {
-                $each: usernames,
-              },
-            },
-          },
-        );
-      }
-    }
-  }
-
   return entities;
 };
 
@@ -142,7 +93,11 @@ const getFarcasterUsers = async (fids: string[]) => {
   });
 
   if (!response.ok) {
-    throw new Error(`Failed getting user with ${response.status} for ${fids}`);
+    throw new Error(
+      `Failed getting user with ${
+        response.status
+      } for ${fids} with ${await response.text()}`,
+    );
   }
 
   return (await response.json()) as {

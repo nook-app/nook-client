@@ -19,7 +19,7 @@ import {
   transformToUserDataEvent,
   transformToUsernameProofEvent,
   transformToVerificationEvent,
-} from "../events";
+} from "@nook/common/farcaster";
 import { publishRawEvents } from "@nook/common/queues";
 
 export const getFarcasterHandler = () => {

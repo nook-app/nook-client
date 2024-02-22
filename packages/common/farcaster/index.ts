@@ -1,5 +1,6 @@
 import { FARCASTER_EPOCH } from "@farcaster/hub-nodejs";
 import { FidHash } from "@nook/common/types";
+export * from "./events";
 
 export const timestampToDate = (timestamp: number) =>
   new Date(timestamp * 1000 + FARCASTER_EPOCH);

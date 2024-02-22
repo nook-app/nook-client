@@ -1,12 +1,7 @@
 import {
-  EventAction,
-  EventActionData,
   EventService,
   RawEvent,
-  EntityEvent,
   EntityEventData,
-  Content,
-  ContentData,
   ContentType,
   PostData,
 } from "@nook/common/types";
@@ -16,6 +11,7 @@ import { Job } from "bullmq";
 import { publishContent } from "@nook/common/queues";
 import { getOrCreateChannel } from "@nook/common/scraper";
 import { FarcasterProcessor } from "./farcaster/processor";
+import { EventHandlerResponse } from "../types";
 
 export const getEventsHandler = async () => {
   const client = new MongoClient();
@@ -27,13 +23,7 @@ export const getEventsHandler = async () => {
   return async (job: Job<RawEvent<EntityEventData>>) => {
     const rawEvent = job.data;
 
-    let response:
-      | {
-          event: EntityEvent<EntityEventData>;
-          actions: EventAction<EventActionData>[];
-          content: Content<ContentData>[];
-        }
-      | undefined;
+    let response: EventHandlerResponse | undefined;
 
     switch (rawEvent.source.service) {
       case EventService.FARCASTER: {
@@ -49,11 +39,12 @@ export const getEventsHandler = async () => {
     if (!response) return;
 
     await Promise.all([
-      client.upsertEvent(response.event),
-      ...response.actions.map((action) => client.upsertAction(action)),
-      ...response.content.map(async (content) => {
+      ...response.events.flatMap(({ event }) => client.upsertEvent(event)),
+      ...response.events.flatMap(({ actions }) =>
+        actions.flatMap((action) => client.upsertAction(action)),
+      ),
+      ...(response.contents?.map(async (content) => {
         await client.upsertContent(content);
-
         if (
           content.type === ContentType.POST ||
           content.type === ContentType.REPLY
@@ -70,7 +61,7 @@ export const getEventsHandler = async () => {
             await getOrCreateChannel(client, postData.channelId);
           }
         }
-      }),
+      }) || []),
     ]);
 
     console.log(

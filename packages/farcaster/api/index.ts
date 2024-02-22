@@ -1,6 +1,10 @@
 import fastify, { FastifyRequest } from "fastify";
 import { PrismaClient } from "@nook/common/prisma/farcaster";
-import { UserDataType, getSSLHubRpcClient } from "@farcaster/hub-nodejs";
+import {
+  UserDataType,
+  getSSLHubRpcClient,
+  Message,
+} from "@farcaster/hub-nodejs";
 import { backfillCastAdd } from "../consumer/handlers/casts";
 import { backfillUserDataAdd } from "../consumer/handlers/users";
 import {
@@ -10,9 +14,13 @@ import {
   Protocol,
 } from "@nook/common/types";
 import { backfillVerificationAdd } from "../consumer/handlers/verifications";
-import { transformToCastEvent } from "../consumer/events";
+import {
+  fromFarcasterURI,
+  toFarcasterURI,
+  transformToCastEvent,
+} from "@nook/common/farcaster";
 import { hexToBuffer } from "@nook/common/farcaster";
-import { publishRawEvents } from "@nook/common/queues";
+import { publishRawEvent, publishRawEvents } from "@nook/common/queues";
 
 const prisma = new PrismaClient();
 
@@ -68,11 +76,51 @@ const run = async () => {
       }
 
       const casts = await backfillCastAdd(client, [message.value]);
-      await publishRawEvents(
-        casts.map((cast) => transformToCastEvent(EventType.CAST_ADD, cast)),
-      );
+      const cast = transformToCastEvent(EventType.CAST_ADD, casts[0]);
+      await publishRawEvent(cast);
 
-      reply.send(casts[0]);
+      reply.send(cast.data);
+    },
+  );
+
+  server.post<{Body: {ids: string[]}}>(
+    "/casts",
+    async (
+      request,
+      reply,
+    ) => {
+      const { ids } = request.body;
+      const fidHashes = ids.map(fromFarcasterURI)
+      const existingCasts = await prisma.farcasterCast.findMany({
+        where: {
+          OR: fidHashes.map(({ fid, hash }) => ({
+            fid: Number(fid),
+            hash,
+          })),
+        },
+      });
+
+      const existingCastIds = existingCasts.map(({fid, hash}) =>toFarcasterURI({fid: fid.toString(), hash}))
+      const missingCastIds = ids.filter((id) => !existingCastIds.includes(id));
+
+      const missingCastMessages = (await Promise.all(
+        missingCastIds.map(async (cast) => {
+          const { fid, hash } = fromFarcasterURI(cast);
+         const result =  await client.getCast({
+            fid: parseInt(fid),
+            hash: hexToBuffer(hash),
+          })
+          if (result.isOk()) {
+            return result.value
+          }
+        })
+        )).filter(Boolean) as Message[]
+
+      const casts = await backfillCastAdd(client, missingCastMessages);
+
+      reply.send({
+        casts: existingCasts.concat(casts).map((cast) => transformToCastEvent(EventType.CAST_ADD, cast).data),
+      });
     },
   );
 

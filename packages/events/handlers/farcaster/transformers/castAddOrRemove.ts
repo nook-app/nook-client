@@ -61,5 +61,5 @@ export const transformCastAddOrRemove = (
     updatedAt: new Date(),
   };
 
-  return { event, actions, content: [content] };
+  return { event, actions };
 };

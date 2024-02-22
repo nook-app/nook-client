@@ -74,7 +74,7 @@ export const transformCastReactionAddOrRemove = (
     updatedAt: new Date(),
   };
 
-  return { event, actions, content: [content] };
+  return { event, actions };
 };
 
 const generateTopics = (entityId: string, data: PostData) => {

@@ -60,6 +60,5 @@ export const transformVerificationAddOrRemove = (
   return {
     event,
     actions: [action],
-    content: [],
   };
 };
