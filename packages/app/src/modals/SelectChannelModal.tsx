@@ -3,8 +3,8 @@ import { useState } from "react";
 import { FlatList } from "react-native";
 import { Channel } from "@nook/common/types";
 import { nookApi } from "@/store/apis/nookApi";
-import { BottomSheetModal } from "@/components/utils/BottomSheetModal";
 import { useAppSelector } from "@/hooks/useAppSelector";
+import { BottomSheetModal } from "@/components/modals/BottomSheetModal";
 
 export const SelectChannelModal = ({
   open,
@@ -36,9 +36,10 @@ export const SelectChannelModal = ({
     }
   };
 
+  if (!open) return null;
+
   return (
     <BottomSheetModal
-      open={open}
       onClose={() => setOpen(false)}
       snapPoints={["50%", "75%"]}
     >

@@ -3,6 +3,8 @@ import { useAppSelector } from "../hooks/useAppSelector";
 import { EntityModal } from "@/modals/EntityModal";
 import { ChannelModal } from "@/modals/ChannelModal";
 import { ModalName, ModalsState } from "./types";
+import { CreatePostModal } from "./CreatePostModal";
+import { EnableSignerModal } from "./EnableSignerModal";
 
 function ModalWrapper({
   name,
@@ -29,6 +31,14 @@ export function Modals() {
 
       <ModalWrapper name={ModalName.Channel}>
         <ChannelModal />
+      </ModalWrapper>
+
+      <ModalWrapper name={ModalName.EnableSigner}>
+        <EnableSignerModal />
+      </ModalWrapper>
+
+      <ModalWrapper name={ModalName.CreatePost}>
+        <CreatePostModal />
       </ModalWrapper>
     </>
   );

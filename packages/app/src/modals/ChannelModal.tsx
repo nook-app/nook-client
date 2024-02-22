@@ -5,10 +5,10 @@ import { useAppDispatch } from "@/hooks/useAppDispatch";
 import { RootStackParamList } from "@/types";
 import { NavigationProp, useNavigation } from "@react-navigation/native";
 import { selectChannelById } from "@/store/slices/channel";
-import { BottomSheetModal } from "@/components/utils/BottomSheetModal";
 import { useCallback } from "react";
 import { closeModal } from "@/store/slices/navigator";
 import { ModalName } from "./types";
+import { BottomSheetModal } from "@/components/modals/BottomSheetModal";
 
 export const ChannelModal = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();

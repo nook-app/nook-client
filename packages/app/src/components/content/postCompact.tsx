@@ -13,7 +13,7 @@ import { useAppSelector } from "@/hooks/useAppSelector";
 import { selectChannelById } from "@/store/slices/channel";
 import { useCallback } from "react";
 import { openModal } from "@/store/slices/navigator";
-import { ModalName } from "../../modals/Modals";
+import { ModalName } from "@/modals/types";
 
 export const ContentPostCompact = ({
   item: { data, timestamp, engagement },

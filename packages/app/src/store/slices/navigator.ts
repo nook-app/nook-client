@@ -15,6 +15,22 @@ type ChannelModalParams = {
   };
 };
 
+type CreatePostModalParams = {
+  name: typeof ModalName.CreatePost;
+  initialState: undefined;
+};
+
+type EnableSignerModalParams = {
+  name: typeof ModalName.EnableSigner;
+  initialState: undefined;
+};
+
+type ModalParams =
+  | EntityModalParams
+  | ChannelModalParams
+  | CreatePostModalParams
+  | EnableSignerModalParams;
+
 type NavigatorState = {
   isDrawerOpen: boolean;
   modals: ModalsState;
@@ -31,6 +47,14 @@ const initialState: NavigatorState = {
       isOpen: false,
       initialState: undefined,
     },
+    [ModalName.CreatePost]: {
+      isOpen: false,
+      initialState: undefined,
+    },
+    [ModalName.EnableSigner]: {
+      isOpen: false,
+      initialState: undefined,
+    },
   },
 };
 
@@ -41,10 +65,7 @@ export const navigatorSlice = createSlice({
     setDrawerOpen: (state, action: PayloadAction<boolean>) => {
       state.isDrawerOpen = action.payload;
     },
-    openModal: (
-      state,
-      action: PayloadAction<EntityModalParams | ChannelModalParams>,
-    ) => {
+    openModal: (state, action: PayloadAction<ModalParams>) => {
       const { name, initialState } = action.payload;
       state.modals[name].isOpen = true;
       state.modals[name].initialState = initialState;

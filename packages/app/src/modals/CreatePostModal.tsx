@@ -12,9 +12,8 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { NavigationProp, useNavigation } from "@react-navigation/native";
 import { RootStackParamList } from "@/types";
 import { useAppSelector } from "@/hooks/useAppSelector";
-import { EnableSignerModal } from "./EnableSignerModal";
 import { EntityAvatar } from "@/components/entity/avatar";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { SelectChannelModal } from "./SelectChannelModal";
 import { ChevronDown, Image } from "@tamagui/lucide-icons";
 import {
@@ -26,11 +25,16 @@ import {
 import { nookApi } from "@/store/apis/nookApi";
 import { farcasterApi } from "@/store/apis/farcasterApi";
 import { Channel } from "@nook/common/types";
+import { useAppDispatch } from "@/hooks/useAppDispatch";
+import { closeModal, openModal } from "@/store/slices/navigator";
+import { ModalName } from "./types";
+import { BottomSheetModal } from "@/components/modals/BottomSheetModal";
+import { BottomSheetScrollView } from "@gorhom/bottom-sheet";
 
 export const CreatePostModal = () => {
   const [selectChannelModalOpen, setSelectChannelModalOpen] = useState(false);
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
-  const insets = useSafeAreaInsets();
+  const dispatch = useAppDispatch();
   const signerEnabled = useAppSelector(
     (state) => state.user.user?.signerEnabled || false,
   );
@@ -54,9 +58,17 @@ export const CreatePostModal = () => {
     }
   }, [selectChannelModalOpen]);
 
-  if (!signerEnabled) {
-    return <EnableSignerModal />;
-  }
+  useEffect(() => {
+    if (!signerEnabled) {
+      dispatch(
+        openModal({ name: ModalName.EnableSigner, initialState: undefined }),
+      );
+    }
+  }, [signerEnabled, dispatch]);
+
+  const onClose = useCallback(() => {
+    dispatch(closeModal({ name: ModalName.CreatePost }));
+  }, [dispatch]);
 
   const handleCreatePost = async () => {
     setIsPosting(true);
@@ -109,57 +121,35 @@ export const CreatePostModal = () => {
   const isDisabled = !message?.length || isPosting;
 
   return (
-    <KeyboardAvoidingView
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-      style={{ flex: 1 }}
-    >
-      <YStack
-        flexGrow={1}
-        backgroundColor="$background"
-        justifyContent="space-between"
-        style={{
-          paddingTop: insets.top,
-          paddingBottom: insets.bottom,
-          paddingLeft: insets.left,
-          paddingRight: insets.right,
-        }}
+    <BottomSheetModal onClose={onClose} fullScreen>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        style={{ flex: 1 }}
       >
-        <View>
-          <XStack
-            justifyContent="space-between"
-            alignItems="center"
-            paddingHorizontal="$3"
-            height="$4"
-          >
-            <Text fontSize="$6" onPress={() => navigation.goBack()}>
-              Cancel
-            </Text>
-            <Button
-              size="$3"
-              borderRadius="$10"
-              paddingHorizontal="$3.5"
-              backgroundColor={
-                isDisabled ? "$backgroundStrong" : "$backgroundFocus"
-              }
-              fontWeight="700"
-              fontSize="$4"
-              onPress={handleCreatePost}
-              disabled={isDisabled}
+        <YStack
+          flexGrow={1}
+          backgroundColor="$background"
+          justifyContent="space-between"
+        >
+          <BottomSheetScrollView keyboardShouldPersistTaps="handled">
+            <XStack
+              justifyContent="space-between"
+              alignItems="center"
+              paddingHorizontal="$1"
+              height="$4"
+              marginBottom="$4"
             >
-              {isPosting ? <Spinner /> : "Post"}
-            </Button>
-          </XStack>
-          <ScrollView keyboardShouldPersistTaps="handled">
-            <XStack alignItems="center">
-              <View
-                width="$6"
-                height="$4"
-                justifyContent="center"
-                alignItems="center"
-              >
-                <EntityAvatar entityId={entity?._id.toString()} size="$4" />
-              </View>
-              <YStack>
+              <XStack alignItems="center">
+                <View
+                  width="$6"
+                  height="$4"
+                  justifyContent="center"
+                  alignItems="center"
+                >
+                  {entity && (
+                    <EntityAvatar entityId={entity._id.toString()} size="$4" />
+                  )}
+                </View>
                 <Button
                   onPress={() => setSelectChannelModalOpen(true)}
                   backgroundColor="transparent"
@@ -177,46 +167,62 @@ export const CreatePostModal = () => {
                     <ChevronDown size={20} color="$color11" />
                   </XStack>
                 </Button>
-              </YStack>
+              </XStack>
+              <Button
+                size="$3"
+                borderRadius="$10"
+                paddingHorizontal="$3.5"
+                marginHorizontal="$2"
+                backgroundColor={
+                  isDisabled ? "$backgroundStrong" : "$backgroundFocus"
+                }
+                fontWeight="700"
+                fontSize="$4"
+                onPress={handleCreatePost}
+                disabled={isDisabled}
+              >
+                {isPosting ? <Spinner /> : "Post"}
+              </Button>
             </XStack>
-            <XStack>
-              <TextArea
-                ref={inputRef}
-                autoFocus
-                size="$8"
-                paddingVertical="$0"
-                paddingLeft="$10"
-                paddingRight="$3"
-                placeholder="What's happening?"
-                placeholderTextColor="$gray11"
-                height="$20"
-                borderWidth="$0"
-                value={message}
-                onChangeText={setMessage}
-              />
-            </XStack>
-          </ScrollView>
-        </View>
-        <YStack gap="$2">
-          {error && (
-            <Text color="$red11" textAlign="center">
-              {error?.message}
-            </Text>
-          )}
-          <View borderTopWidth="$1" borderTopColor="$borderColor" padding="$3">
-            <Image size={24} />
-          </View>
+            <TextArea
+              ref={inputRef}
+              autoFocus
+              size="$8"
+              paddingVertical="$0"
+              paddingHorizontal="$3"
+              placeholder="What's happening?"
+              placeholderTextColor="$gray11"
+              height="$20"
+              borderWidth="$0"
+              value={message}
+              onChangeText={setMessage}
+            />
+          </BottomSheetScrollView>
+          <YStack gap="$2">
+            {error && (
+              <Text color="$red11" textAlign="center">
+                {error?.message}
+              </Text>
+            )}
+            <View
+              borderTopWidth="$1"
+              borderTopColor="$borderColor"
+              padding="$3"
+            >
+              <Image size={24} />
+            </View>
+          </YStack>
+          <SelectChannelModal
+            open={selectChannelModalOpen}
+            setOpen={setSelectChannelModalOpen}
+            channel={channel}
+            onChange={(channel) => {
+              setChannel(channel);
+              setSelectChannelModalOpen(false);
+            }}
+          />
         </YStack>
-        <SelectChannelModal
-          open={selectChannelModalOpen}
-          setOpen={setSelectChannelModalOpen}
-          channel={channel}
-          onChange={(channel) => {
-            setChannel(channel);
-            setSelectChannelModalOpen(false);
-          }}
-        />
-      </YStack>
-    </KeyboardAvoidingView>
+      </KeyboardAvoidingView>
+    </BottomSheetModal>
   );
 };

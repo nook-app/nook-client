@@ -3598,6 +3598,7 @@ __metadata:
     burnt: "npm:^0.12.2"
     expo: "npm:50.0.7"
     expo-av: "npm:~13.10.5"
+    expo-blur: "npm:~12.9.2"
     expo-image: "npm:~1.10.6"
     expo-linking: "npm:~6.2.1"
     expo-secure-store: "npm:^12.8.1"
@@ -3618,6 +3619,7 @@ __metadata:
     react-redux: "npm:^9.1.0"
     tamagui: "npm:^1.89.28"
     text-encoding-polyfill: "npm:^0.6.7"
+    ua-parser-js: "npm:^1.0.37"
   languageName: unknown
   linkType: soft
 
@@ -9175,6 +9177,15 @@ __metadata:
   peerDependencies:
     expo: "*"
   checksum: 10c0/54fc3f6722019c2086343512836ec98d9aea3ca813821e3355d8b016edfd07f9655693f4a8af86b80ca01332e66586da543703558d4eccd540536eade725ea65
+  languageName: node
+  linkType: hard
+
+"expo-blur@npm:~12.9.2":
+  version: 12.9.2
+  resolution: "expo-blur@npm:12.9.2"
+  peerDependencies:
+    expo: "*"
+  checksum: 10c0/dbe6dc66ff8b047d069c4d99abef6594201487a807af032572d4006837081bb074bbbf2da066a680b7f5583d4d9753187130979c356d8c9f275ffc51691bc610
   languageName: node
   linkType: hard
 
@@ -16986,7 +16997,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ua-parser-js@npm:^1.0.35":
+"ua-parser-js@npm:^1.0.35, ua-parser-js@npm:^1.0.37":
   version: 1.0.37
   resolution: "ua-parser-js@npm:1.0.37"
   checksum: 10c0/dac8cf82a55b2e097bd2286954e01454c4cfcf23c9d9b56961ce94bda3cec5a38ca536e6e84c20a4000a9d4b4a4abcbd98ec634ccebe21be36595ea3069126e4

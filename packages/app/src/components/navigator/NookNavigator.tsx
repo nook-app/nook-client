@@ -93,14 +93,6 @@ export function NookNavigator() {
         }}
         getId={({ params }) => params.contentId}
       />
-      <Stack.Screen
-        name="CreatePost"
-        component={CreatePostModal}
-        options={{
-          presentation: "fullScreenModal",
-          headerShown: false,
-        }}
-      />
     </Stack.Navigator>
   );
 }

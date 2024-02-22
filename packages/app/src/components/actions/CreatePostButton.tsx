@@ -1,14 +1,24 @@
-import { RootStackParamList } from "@/types";
-import { NavigationProp, useNavigation } from "@react-navigation/native";
+import { useAppDispatch } from "@/hooks/useAppDispatch";
+import { ModalName } from "@/modals/types";
+import { openModal } from "@/store/slices/navigator";
 import { Plus } from "@tamagui/lucide-icons";
 import { View } from "tamagui";
 
 export const CreatePostButton = () => {
-  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+  const dispatch = useAppDispatch();
+
+  const onPress = () => {
+    dispatch(
+      openModal({
+        name: ModalName.CreatePost,
+        initialState: undefined,
+      }),
+    );
+  };
 
   return (
     <View
-      onPress={() => navigation.navigate("CreatePost")}
+      onPress={onPress}
       position="absolute"
       bottom="$5"
       right="$5"
