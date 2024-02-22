@@ -7,125 +7,195 @@ import {
   transformToUsernameProofEvent,
   transformToVerificationEvent,
 } from "@nook/common/farcaster";
-import { MongoClient } from "@nook/common/mongo";
+import { MongoClient, MongoCollection } from "@nook/common/mongo";
 import { PrismaClient } from "@nook/common/prisma/farcaster";
 import { FarcasterProcessor } from "../handlers/farcaster/processor";
 import { RedisClient } from "@nook/common/cache";
-import { EventType } from "@nook/common/types";
+import { Content, ContentData, EventType } from "@nook/common/types";
+import { QueueName, getWorker } from "@nook/common/queues";
 
 const prisma = new PrismaClient();
 
-const processFid = async (processor: FarcasterProcessor, fid: number) => {
-  console.time(`[${fid}] backfill took`);
-
-  console.log("fetching initial data");
-  const [
-    userDatas,
-    verifications,
-    usernames,
-    links,
-    urlReactions,
-    castReactions,
-    casts,
-  ] = await Promise.all([
-    prisma.farcasterUserData.findMany({
-      where: { fid: fid },
-    }),
-    prisma.farcasterVerification.findMany({
-      where: { fid: fid },
-    }),
-    prisma.farcasterUsernameProof.findMany({
-      where: { fid: fid },
-    }),
-    prisma.farcasterLink.findMany({
-      where: { fid: fid },
-    }),
-    prisma.farcasterUrlReaction.findMany({
-      where: { fid: fid },
-    }),
-    prisma.farcasterCastReaction.findMany({
-      where: { fid: fid },
-    }),
-    prisma.farcasterCast.findMany({
-      where: { fid: fid },
-    }),
-  ]);
-
-  console.log({
-    userData: userDatas.length,
-    verification: verifications.length,
-    username: usernames.length,
-    link: links.length,
-    urlReaction: urlReactions.length,
-    castReaction: castReactions.length,
-    cast: casts.length,
+const processUserDatas = async (processor: FarcasterProcessor, fid: number) => {
+  const userDatas = await prisma.farcasterUserData.findMany({
+    where: { fid: fid },
   });
-
-  console.time(`[${fid}] batchProcessUserDataAdd took`);
   const userDataResponse = await processor.processUserDataAdd(
     userDatas.map(transformToUserDataEvent),
   );
-  console.timeEnd(`[${fid}] batchProcessUserDataAdd took`);
-  console.log(`[${fid}] userDataEvents`, userDataResponse.events.length);
+  return userDataResponse;
+};
 
-  console.time(`[${fid}] batchProcessVerificationAdd took`);
+const processVerifications = async (
+  processor: FarcasterProcessor,
+  fid: number,
+) => {
+  const verifications = await prisma.farcasterVerification.findMany({
+    where: { fid: fid },
+  });
   const verificationResponse = await processor.processVerificationAddOrRemove(
     verifications.map((verification) =>
       transformToVerificationEvent(EventType.VERIFICATION_ADD, verification),
     ),
   );
-  console.timeEnd(`[${fid}] batchProcessVerificationAdd took`);
-  console.log(
-    `[${fid}] verificationEvents`,
-    verificationResponse.events.length,
-  );
+  return verificationResponse;
+};
 
-  console.time(`[${fid}] batchProcessUsernameProofAdd took`);
+const processUsernames = async (processor: FarcasterProcessor, fid: number) => {
+  const usernames = await prisma.farcasterUsernameProof.findMany({
+    where: { fid: fid },
+  });
   const usernameProofResponse = await processor.processUsernameProofAdd(
     usernames.map(transformToUsernameProofEvent),
   );
-  console.timeEnd(`[${fid}] batchProcessUsernameProofAdd took`);
-  console.log(
-    `[${fid}] usernameProofEvents`,
-    usernameProofResponse.events.length,
-  );
+  return usernameProofResponse;
+};
 
-  console.time(`[${fid}] batchProcessLinkAdd took`);
+const processLinks = async (processor: FarcasterProcessor, fid: number) => {
+  const links = await prisma.farcasterLink.findMany({
+    where: { fid: fid },
+  });
   const linkResponse = await processor.processLinkAddOrRemove(
     links.map((link) => transformToLinkEvent(EventType.LINK_ADD, link)),
   );
-  console.timeEnd(`[${fid}] batchProcessLinkAdd took`);
-  console.log(`[${fid}] linkEvents`, linkResponse.events.length);
+  return linkResponse;
+};
 
-  console.time(`[${fid}] batchProcessUrlReactionAdd took`);
+const processUrlReactions = async (
+  processor: FarcasterProcessor,
+  fid: number,
+) => {
+  const urlReactions = await prisma.farcasterUrlReaction.findMany({
+    where: { fid: fid },
+  });
   const urlReactionResponse = await processor.processUrlReactionAddOrRemove(
     urlReactions.map((reaction) =>
       transformToUrlReactionEvent(EventType.URL_REACTION_ADD, reaction),
     ),
   );
-  console.timeEnd(`[${fid}] batchProcessUrlReactionAdd took`);
-  console.log(`[${fid}] urlReactionEvents`, urlReactionResponse.events.length);
+  return urlReactionResponse;
+};
 
-  console.time(`[${fid}] batchProcessCastAdd took`);
-  const castResponse = await processor.processCastAddOrRemove(
-    casts.map((cast) => transformToCastEvent(EventType.CAST_ADD, cast)),
-  );
-  console.timeEnd(`[${fid}] batchProcessCastAdd took`);
-  console.log(`[${fid}] castEvents`, castResponse.events.length);
-
-  console.time(`[${fid}] batchProcessCastReactionAdd took`);
+const processCastReactions = async (
+  processor: FarcasterProcessor,
+  fid: number,
+) => {
+  const castReactions = await prisma.farcasterCastReaction.findMany({
+    where: { fid: fid },
+  });
   const castReactionResponse = await processor.processCastReactionAddOrRemove(
     castReactions.map((reaction) =>
       transformToCastReactionEvent(EventType.CAST_REACTION_ADD, reaction),
     ),
   );
-  console.timeEnd(`[${fid}] batchProcessCastReactionAdd took`);
-  console.log(
-    `[${fid}] castReactionEvents`,
-    castReactionResponse.events.length,
+  return castReactionResponse;
+};
+
+const processCasts = async (processor: FarcasterProcessor, fid: number) => {
+  const casts = await prisma.farcasterCast.findMany({
+    where: { fid: fid },
+  });
+  const castResponse = await processor.processCastAddOrRemove(
+    casts.map((cast) => transformToCastEvent(EventType.CAST_ADD, cast)),
+  );
+  return castResponse;
+};
+
+const processFid = async (processor: FarcasterProcessor, fid: number) => {
+  console.time(`[${fid}] backfill took`);
+
+  const responses = await Promise.all([
+    processUserDatas(processor, fid),
+    processVerifications(processor, fid),
+    processUsernames(processor, fid),
+    processLinks(processor, fid),
+    processUrlReactions(processor, fid),
+    processCastReactions(processor, fid),
+    processCasts(processor, fid),
+  ]);
+
+  const responseEvents = responses.flatMap((response) => response.events);
+  const events = responseEvents.map(({ event }) => event);
+  const actions = responseEvents.flatMap(({ actions }) => actions);
+  const contents = responses.flatMap((response) => response.contents || []);
+  const contentMap = contents.reduce(
+    (acc, content) => {
+      acc[content.contentId] = content;
+      return acc;
+    },
+    {} as Record<string, Content<ContentData>>,
   );
 
+  let duplicateEvents = 0;
+  let duplicateActions = 0;
+  let duplicateContents = 0;
+
+  const promises = [];
+  if (events.length > 0) {
+    promises.push(
+      processor.client
+        .getCollection(MongoCollection.Events)
+        .insertMany(events, {
+          ordered: false,
+        })
+        .catch((err) => {
+          if (err?.code === 11000) {
+            duplicateEvents++;
+            return;
+          }
+          console.error(`[${fid}] ERROR`, err);
+        }),
+    );
+  }
+
+  if (actions.length > 0) {
+    promises.push(
+      processor.client
+        .getCollection(MongoCollection.Actions)
+        .insertMany(actions, {
+          ordered: false,
+        })
+        .catch((err) => {
+          if (err?.code === 11000) {
+            duplicateActions++;
+            return;
+          }
+          console.error(`[${fid}] ERROR`, err);
+        }),
+    );
+  }
+
+  if (Object.keys(contentMap).length > 0) {
+    promises.push(
+      processor.client
+        .getCollection(MongoCollection.Content)
+        .insertMany(Object.values(contentMap), {
+          ordered: false,
+        })
+        .catch((err) => {
+          if (err?.code === 11000) {
+            duplicateContents++;
+            return;
+          }
+          console.error(`[${fid}] ERROR`, err);
+        }),
+    );
+  }
+
+  await Promise.all(promises);
+
   console.timeEnd(`[${fid}] backfill took`);
+  console.log(
+    `[${fid}] ${events.length} events, duplicates ${duplicateEvents}`,
+  );
+  console.log(
+    `[${fid}] ${actions.length} actions, duplicates ${duplicateActions}`,
+  );
+  console.log(
+    `[${fid}] ${
+      Object.keys(contents).length
+    } contents, duplicates ${duplicateContents}`,
+  );
 };
 
 const run = async () => {
@@ -135,12 +205,26 @@ const run = async () => {
   const redis = new RedisClient();
   await redis.connect();
 
+  const processor = new FarcasterProcessor(client, redis);
+
   const inputFid = process.argv[2];
   if (inputFid) {
-    const processor = new FarcasterProcessor(client, redis);
     await processFid(processor, Number(inputFid));
     process.exit(0);
   }
+
+  const worker = getWorker(QueueName.EventsBackfill, async (job) => {
+    const fid = Number(job.data.fid);
+    await processFid(processor, fid);
+
+    console.log(`processing fid: ${fid}`);
+  });
+
+  worker.on("failed", (job, err) => {
+    if (job) {
+      console.log(`[${job.id}] failed with ${err.message}`);
+    }
+  });
 };
 
 run().catch((e) => {

@@ -3,7 +3,7 @@ import { ContentType, PostData, TopicType } from "@nook/common/types";
 import { ScrollView, Text, View, XStack, YStack } from "tamagui";
 import { Embed } from "@/components/embeds";
 import { EntityAvatar } from "@/components/entity/avatar";
-import { PostContent, formatTipsAmount } from "@/components/utils";
+import { PostContent } from "@/components/utils";
 import { EntityDisplay } from "../entity/display";
 import { Image } from "expo-image";
 import { ContentFeedPanel } from "../panels/ContentFeedPanel";
@@ -14,12 +14,9 @@ import { useAppSelector } from "@/store/hooks/useAppSelector";
 import { selectChannelById } from "@/store/slices/channel";
 
 export const ContentPost = ({
-  item: { data, engagement, tips },
+  item: { data, engagement },
 }: { item: ContentFeedItem<PostData> }) => {
   const dispatch = useAppDispatch();
-  const degenTips =
-    tips["chain://eip155:8453/erc20:0xc9034c3e7f58003e6ae0c8438e7c8f4598d5acaa"]
-      ?.amount || 0;
   const channel = useAppSelector((state) =>
     data.channelId ? selectChannelById(state, data.channelId) : undefined,
   );
@@ -90,12 +87,6 @@ export const ContentPost = ({
             <Text fontWeight="700">{engagement.likes}</Text>
             <Text color="$gray11">Likes</Text>
           </View>
-          {degenTips > 0 && (
-            <View flexDirection="row" alignItems="center" gap="$1">
-              <Text fontWeight="700">{formatTipsAmount(degenTips)}</Text>
-              <Text color="$gray11">$DEGEN</Text>
-            </View>
-          )}
         </XStack>
       </YStack>
       <ContentFeedPanel

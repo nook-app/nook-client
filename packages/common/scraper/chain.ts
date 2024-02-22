@@ -97,7 +97,7 @@ const parseChainUri = (uri: string) => {
   return {
     contentId: uri,
     chainId: CHAIN_ID_TO_NAME[chainId] || chainId,
-    spec: spec || (tokenId ? "erc721" : undefined),
+    spec: spec === "unknown" && tokenId ? "erc721" : spec,
     contractAddress,
     tokenId,
   } as Asset;
@@ -148,7 +148,6 @@ const handleNftContract = async (
       replies: 0,
       embeds: 0,
     },
-    tips: {},
     topics: [],
     referencedEntityIds: [],
     referencedContentIds: [],
@@ -184,7 +183,6 @@ const handleNftToken = async (
       replies: 0,
       embeds: 0,
     },
-    tips: {},
     topics: [],
     referencedEntityIds: [],
     referencedContentIds: [],

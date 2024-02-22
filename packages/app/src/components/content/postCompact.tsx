@@ -3,11 +3,7 @@ import { PostData } from "@nook/common/types";
 import { Text, View, XStack, YStack } from "tamagui";
 import { Embed } from "@/components/embeds";
 import { EntityAvatar } from "@/components/entity/avatar";
-import {
-  PostContent,
-  formatTimeAgo,
-  formatTipsAmount,
-} from "@/components/utils";
+import { PostContent, formatTimeAgo } from "@/components/utils";
 import { EntityDisplay } from "../entity/display";
 import { Image } from "expo-image";
 import { Heart, MessageSquare, RefreshCw } from "@tamagui/lucide-icons";
@@ -18,12 +14,9 @@ import { useAppSelector } from "@/store/hooks/useAppSelector";
 import { selectChannelById } from "@/store/slices/channel";
 
 export const ContentPostCompact = ({
-  item: { data, timestamp, engagement, tips },
+  item: { data, timestamp, engagement },
 }: { item: ContentFeedItem<PostData> }) => {
   const dispatch = useAppDispatch();
-  const degenTips =
-    tips["chain://eip155:8453/erc20:0xc9034c3e7f58003e6ae0c8438e7c8f4598d5acaa"]
-      ?.amount || 0;
   const channel = useAppSelector((state) =>
     data.channelId ? selectChannelById(state, data.channelId) : undefined,
   );
@@ -84,15 +77,6 @@ export const ContentPostCompact = ({
             <Heart size={16} color="$gray11" />
             <Text color="$gray11">{engagement.likes}</Text>
           </View>
-          {degenTips > 0 && (
-            <View flexDirection="row" alignItems="center" gap="$2" width="$5">
-              <Image
-                source={{ uri: "https://www.degen.tips/logo_light.svg" }}
-                style={{ width: 12, height: 12 }}
-              />
-              <Text color="$gray11">{formatTipsAmount(degenTips)}</Text>
-            </View>
-          )}
         </XStack>
       </YStack>
     </XStack>

@@ -68,7 +68,6 @@ const formatContent = (
       replies: 0,
       embeds: 0,
     },
-    tips: {},
     topics: generateTopicsForPost(data),
     referencedEntityIds: Array.from(
       new Set([

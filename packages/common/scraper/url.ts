@@ -93,7 +93,6 @@ export const getUrlContent = async (
       replies: 0,
       embeds: 0,
     },
-    tips: {},
     topics: [],
     referencedEntityIds: [],
     referencedContentIds: [],

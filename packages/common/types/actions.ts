@@ -4,7 +4,6 @@ import {
   EntityActionData,
   EntityUsernameData,
   LinkBlockchainAddressActionData,
-  TipActionData,
   UpdateEntityInfoActionData,
 } from "./actionTypes";
 import { Topic } from "./topics";
@@ -14,8 +13,7 @@ export type EventActionData =
   | EntityActionData
   | UpdateEntityInfoActionData
   | LinkBlockchainAddressActionData
-  | EntityUsernameData
-  | TipActionData;
+  | EntityUsernameData;
 
 /**
  * Supported actions for events
@@ -35,8 +33,6 @@ export enum EventActionType {
   ADD_USERNAME = "ADD_USERNAME",
   LINK_BLOCKCHAIN_ADDRESS = "LINK_BLOCKCHAIN_ADDRESS",
   UNLINK_BLOCKCHAIN_ADDRESS = "UNLINK_BLOCKCHAIN_ADDRESS",
-  TIP = "TIP",
-  UNTIP = "UNTIP",
 }
 
 /**

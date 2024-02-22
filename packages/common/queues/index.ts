@@ -8,6 +8,7 @@ export enum QueueName {
   Farcaster = "farcaster",
   FarcasterBackfill = "farcaster-backfill",
   Events = "events",
+  EventsBackfill = "events-backfill",
   Content = "content",
   Actions = "actions",
 }
@@ -16,6 +17,7 @@ type QueueType<T> = {
   [QueueName.Farcaster]: Message;
   [QueueName.FarcasterBackfill]: { fid: string };
   [QueueName.Events]: RawEvent<EntityEventData>;
+  [QueueName.EventsBackfill]: { fid: string };
   [QueueName.Content]: { contentId: string; channel?: boolean };
   [QueueName.Actions]: { actionId: string; created: boolean };
 };

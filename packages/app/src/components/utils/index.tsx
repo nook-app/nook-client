@@ -42,18 +42,6 @@ export function formatTimeAgo(date: string) {
   return `${Math.floor(seconds)}s`; // Seconds
 }
 
-export function formatTipsAmount(amount: number): string {
-  let div = Math.floor((amount / 1000000) * 100) / 100;
-  if (div >= 1) {
-    return `${div}M`;
-  }
-  div = Math.floor((amount / 1000) * 10) / 10;
-  if (div >= 1) {
-    return `${div}K`;
-  }
-  return amount.toString();
-}
-
 export const PostContent = ({
   data,
 }: {

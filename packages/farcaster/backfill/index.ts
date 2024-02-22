@@ -24,27 +24,27 @@ const processFid = async (client: HubRpcClient, fid: number) => {
     ]);
 
   if (userDatas.isErr()) {
-    console.error(userDatas.error);
+    console.error("u", userDatas.error);
     throw new Error(userDatas.error.message);
   }
   if (usernameProofs.isErr()) {
-    console.error(usernameProofs.error);
+    console.error("p", usernameProofs.error);
     throw new Error(usernameProofs.error.message);
   }
   if (verifications.isErr()) {
-    console.error(verifications.error);
+    console.error("v", verifications.error);
     throw new Error(verifications.error.message);
   }
   if (casts.isErr()) {
-    console.error(casts.error);
+    console.error("c", casts.error);
     throw new Error(casts.error.message);
   }
   if (reactions.isErr()) {
-    console.error(reactions.error);
+    console.error("r", reactions.error);
     throw new Error(reactions.error.message);
   }
   if (links.isErr()) {
-    console.error(links.error);
+    console.error("l", links.error);
     throw new Error(links.error.message);
   }
 
@@ -87,7 +87,9 @@ const run = async () => {
   if (!hubRpcEndpoint) {
     throw new Error("Missing HUB_RPC_ENDPOINT");
   }
-  const client = getSSLHubRpcClient(hubRpcEndpoint);
+  const client = getSSLHubRpcClient(hubRpcEndpoint, {
+    "grpc.max_receive_message_length": 4300000,
+  });
 
   const inputFid = process.argv[2];
   if (inputFid) {

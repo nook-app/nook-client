@@ -30,7 +30,7 @@ const run = async () => {
   await Promise.all([
     client
       .getCollection(MongoCollection.Actions)
-      .createIndex({ eventId: 1, type: 1 }, { unique: true }),
+      .createIndex({ eventId: 1, type: 1, timestamp: 1 }, { unique: true }),
     client
       .getCollection(MongoCollection.Actions)
       .createIndex({ "source.id": 1 }),
@@ -42,7 +42,7 @@ const run = async () => {
     ),
     client
       .getCollection(MongoCollection.Events)
-      .createIndex({ eventId: 1 }, { unique: true }),
+      .createIndex({ eventId: 1, timestamp: 1 }, { unique: true }),
   ]);
 };
 

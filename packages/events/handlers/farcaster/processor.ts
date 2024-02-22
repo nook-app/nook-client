@@ -2,6 +2,7 @@ import { getOrCreateEntitiesForFids } from "@nook/common/entity";
 import { MongoClient, MongoCollection } from "@nook/common/mongo";
 import {
   Content,
+  ContentData,
   Entity,
   EntityEventData,
   EventType,
@@ -32,8 +33,8 @@ import {
 import { EventHandlerResponse, EventHandlerResponseEvent } from "../../types";
 
 export class FarcasterProcessor {
-  private client: MongoClient;
-  private redis: RedisClient;
+  client: MongoClient;
+  redis: RedisClient;
 
   constructor(client: MongoClient, redis: RedisClient) {
     this.client = client;
@@ -100,15 +101,18 @@ export class FarcasterProcessor {
     rawEvents: RawEvent<FarcasterCastData>[],
   ): Promise<EventHandlerResponse> {
     const contentIds = rawEvents.map((event) => toFarcasterURI(event.data));
-    const contents = await this.fetchCasts(contentIds);
+    const { contentMap, newContents } = await this.fetchCasts(contentIds);
     const events = rawEvents.map((event) =>
-      contents[toFarcasterURI(event.data)]
-        ? transformCastAddOrRemove(event, contents[toFarcasterURI(event.data)])
+      contentMap[toFarcasterURI(event.data)]
+        ? transformCastAddOrRemove(
+            event,
+            contentMap[toFarcasterURI(event.data)],
+          )
         : undefined,
     );
     return {
       events: events.filter(Boolean) as EventHandlerResponseEvent[],
-      contents: Object.values(contents),
+      contents: newContents,
     };
   }
 
@@ -121,12 +125,12 @@ export class FarcasterProcessor {
         hash: event.data.targetHash,
       }),
     );
-    const contents = await this.fetchCasts(contentIds);
+    const { contentMap, newContents } = await this.fetchCasts(contentIds);
     const entities = await this.fetchEntities(
       rawEvents.map((event) => event.data.fid),
     );
     const events = rawEvents.map((event) =>
-      contents[
+      contentMap[
         toFarcasterURI({
           fid: event.data.targetFid,
           hash: event.data.targetHash,
@@ -134,7 +138,7 @@ export class FarcasterProcessor {
       ]
         ? transformCastReactionAddOrRemove(
             event,
-            contents[
+            contentMap[
               toFarcasterURI({
                 fid: event.data.targetFid,
                 hash: event.data.targetHash,
@@ -146,7 +150,7 @@ export class FarcasterProcessor {
     );
     return {
       events: events.filter(Boolean) as EventHandlerResponseEvent[],
-      contents: Object.values(contents),
+      contents: newContents,
     };
   }
 
@@ -292,12 +296,14 @@ export class FarcasterProcessor {
       tempContentMap[content.contentId] = content;
     }
 
+    const newContentMap: Record<string, Content<ContentData>> = {};
     const parentCasts = rawParentCasts.map((cast) =>
       formatPostContent(cast, entities, tempContentMap),
     );
     for (const content of parentCasts) {
       tempContentMap[content.contentId] = content;
       contentMap[content.contentId] = content;
+      newContentMap[content.contentId] = content;
     }
 
     const casts = rawCasts.map((cast) =>
@@ -305,6 +311,7 @@ export class FarcasterProcessor {
     );
     for (const content of casts) {
       contentMap[content.contentId] = content;
+      newContentMap[content.contentId] = content;
     }
 
     // 6. Update cache with new casts
@@ -313,7 +320,7 @@ export class FarcasterProcessor {
     await this.redis.setContents(parentCasts);
     await this.redis.setContents(casts);
 
-    return contentMap;
+    return { contentMap, newContents: Object.values(newContentMap) };
   }
 
   async fetchCastsFromCache(contentIds: string[]) {

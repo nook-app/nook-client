@@ -99,23 +99,3 @@ export type LinkBlockchainAddressActionData = {
   /** Block hash of claimSignature */
   blockHash: string;
 };
-
-export type TipActionData = {
-  /** Identity of user tipping */
-  entityId: string;
-
-  /** Identity of user receiving the tip */
-  targetEntityId: string;
-
-  /** CAIP-19 identifier of the asset being tipped */
-  contentId: string;
-
-  /** Amount being tipped */
-  amount: number;
-
-  /** Content ID being tipped from */
-  sourceContentId: string;
-
-  /** Content ID being tipped for */
-  targetContentId: string;
-};
