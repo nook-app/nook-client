@@ -84,7 +84,9 @@ export class FarcasterProcessor {
     }
   }
 
-  async processUserDataAdd(rawEvents: RawEvent<FarcasterUserDataAddData>[]) {
+  async processUserDataAdd(
+    rawEvents: RawEvent<FarcasterUserDataAddData>[],
+  ): Promise<EventHandlerResponse> {
     const fids = rawEvents.map((event) => event.data.fid);
     const entities = await this.fetchEntities(fids);
     return {
@@ -94,7 +96,9 @@ export class FarcasterProcessor {
     };
   }
 
-  async processCastAddOrRemove(rawEvents: RawEvent<FarcasterCastData>[]) {
+  async processCastAddOrRemove(
+    rawEvents: RawEvent<FarcasterCastData>[],
+  ): Promise<EventHandlerResponse> {
     const contentIds = rawEvents.map((event) => toFarcasterURI(event.data));
     const contents = await this.fetchCasts(contentIds);
     const events = rawEvents.map((event) =>
@@ -110,7 +114,7 @@ export class FarcasterProcessor {
 
   async processCastReactionAddOrRemove(
     rawEvents: RawEvent<FarcasterCastReactionData>[],
-  ) {
+  ): Promise<EventHandlerResponse> {
     const contentIds = rawEvents.map((event) =>
       toFarcasterURI({
         fid: event.data.targetFid,
@@ -146,7 +150,9 @@ export class FarcasterProcessor {
     };
   }
 
-  async processLinkAddOrRemove(rawEvents: RawEvent<FarcasterLinkData>[]) {
+  async processLinkAddOrRemove(
+    rawEvents: RawEvent<FarcasterLinkData>[],
+  ): Promise<EventHandlerResponse> {
     const entities = await this.fetchEntities(
       rawEvents.flatMap((event) => [event.data.fid, event.data.targetFid]),
     );
@@ -159,7 +165,7 @@ export class FarcasterProcessor {
 
   async processUrlReactionAddOrRemove(
     rawEvents: RawEvent<FarcasterUrlReactionData>[],
-  ) {
+  ): Promise<EventHandlerResponse> {
     const entities = await this.fetchEntities(
       rawEvents.map((event) => event.data.fid),
     );
@@ -172,7 +178,7 @@ export class FarcasterProcessor {
 
   async processUsernameProofAdd(
     rawEvents: RawEvent<FarcasterUsernameProofData>[],
-  ) {
+  ): Promise<EventHandlerResponse> {
     const entities = await this.fetchEntities(
       rawEvents.map((event) => event.data.fid),
     );
@@ -185,7 +191,7 @@ export class FarcasterProcessor {
 
   async processVerificationAddOrRemove(
     rawEvents: RawEvent<FarcasterVerificationData>[],
-  ) {
+  ): Promise<EventHandlerResponse> {
     const entities = await this.fetchEntities(
       rawEvents.map((event) => event.data.fid),
     );
@@ -278,22 +284,24 @@ export class FarcasterProcessor {
     const entities = await this.fetchEntities(fids);
 
     // 5. Transform raw casts into Content<PostData> in reverse from secondary parent to primary cast
+    const tempContentMap = { ...contentMap };
     const secondaryParentCasts = rawSecondaryParentCasts.map((cast) =>
       formatPostContent(cast, entities, contentMap),
     );
     for (const content of secondaryParentCasts) {
-      contentMap[content.contentId] = content;
+      tempContentMap[content.contentId] = content;
     }
 
     const parentCasts = rawParentCasts.map((cast) =>
-      formatPostContent(cast, entities, contentMap),
+      formatPostContent(cast, entities, tempContentMap),
     );
     for (const content of parentCasts) {
+      tempContentMap[content.contentId] = content;
       contentMap[content.contentId] = content;
     }
 
     const casts = rawCasts.map((cast) =>
-      formatPostContent(cast, entities, contentMap),
+      formatPostContent(cast, entities, tempContentMap),
     );
     for (const content of casts) {
       contentMap[content.contentId] = content;

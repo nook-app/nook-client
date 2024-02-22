@@ -27,6 +27,8 @@ export const formatPostContent = (
     if (parent) {
       content.data.parent = parent.data;
       content.data.parentEntityId = parent.data.entityId;
+      content.data.parent.parent = undefined;
+      content.data.parent.rootParent = undefined;
     }
   }
 

@@ -11,7 +11,6 @@ import { MongoClient } from "@nook/common/mongo";
 import { PrismaClient } from "@nook/common/prisma/farcaster";
 import { FarcasterProcessor } from "../handlers/farcaster/processor";
 import { RedisClient } from "@nook/common/cache";
-import { Payload } from "../types";
 import { EventType } from "@nook/common/types";
 
 const prisma = new PrismaClient();
@@ -63,59 +62,68 @@ const processFid = async (processor: FarcasterProcessor, fid: number) => {
   });
 
   console.time(`[${fid}] batchProcessUserDataAdd took`);
-  const userDataEvents = await processor.batchProcessUserDataAdd(
+  const userDataResponse = await processor.processUserDataAdd(
     userDatas.map(transformToUserDataEvent),
   );
   console.timeEnd(`[${fid}] batchProcessUserDataAdd took`);
-  console.log(`[${fid}] userDataEvents`, userDataEvents.length);
+  console.log(`[${fid}] userDataEvents`, userDataResponse.events.length);
 
   console.time(`[${fid}] batchProcessVerificationAdd took`);
-  const verificationEvents = await processor.batchProcessVerificationAdd(
+  const verificationResponse = await processor.processVerificationAddOrRemove(
     verifications.map((verification) =>
       transformToVerificationEvent(EventType.VERIFICATION_ADD, verification),
     ),
   );
   console.timeEnd(`[${fid}] batchProcessVerificationAdd took`);
-  console.log(`[${fid}] verificationEvents`, verificationEvents.length);
+  console.log(
+    `[${fid}] verificationEvents`,
+    verificationResponse.events.length,
+  );
 
   console.time(`[${fid}] batchProcessUsernameProofAdd took`);
-  const usernameProofEvents = await processor.batchProcessUsernameProofAdd(
+  const usernameProofResponse = await processor.processUsernameProofAdd(
     usernames.map(transformToUsernameProofEvent),
   );
   console.timeEnd(`[${fid}] batchProcessUsernameProofAdd took`);
-  console.log(`[${fid}] usernameProofEvents`, usernameProofEvents.length);
+  console.log(
+    `[${fid}] usernameProofEvents`,
+    usernameProofResponse.events.length,
+  );
 
   console.time(`[${fid}] batchProcessLinkAdd took`);
-  const linkEvents = await processor.batchProcessLinkAdd(
+  const linkResponse = await processor.processLinkAddOrRemove(
     links.map((link) => transformToLinkEvent(EventType.LINK_ADD, link)),
   );
   console.timeEnd(`[${fid}] batchProcessLinkAdd took`);
-  console.log(`[${fid}] linkEvents`, linkEvents.length);
+  console.log(`[${fid}] linkEvents`, linkResponse.events.length);
 
   console.time(`[${fid}] batchProcessUrlReactionAdd took`);
-  const urlReactionEvents = await processor.batchProcessUrlReactionAdd(
+  const urlReactionResponse = await processor.processUrlReactionAddOrRemove(
     urlReactions.map((reaction) =>
       transformToUrlReactionEvent(EventType.URL_REACTION_ADD, reaction),
     ),
   );
   console.timeEnd(`[${fid}] batchProcessUrlReactionAdd took`);
-  console.log(`[${fid}] urlReactionEvents`, urlReactionEvents.length);
+  console.log(`[${fid}] urlReactionEvents`, urlReactionResponse.events.length);
 
   console.time(`[${fid}] batchProcessCastAdd took`);
-  const castEvents = await processor.batchProcessCastAdd(
+  const castResponse = await processor.processCastAddOrRemove(
     casts.map((cast) => transformToCastEvent(EventType.CAST_ADD, cast)),
   );
   console.timeEnd(`[${fid}] batchProcessCastAdd took`);
-  console.log(`[${fid}] castEvents`, castEvents.length);
+  console.log(`[${fid}] castEvents`, castResponse.events.length);
 
   console.time(`[${fid}] batchProcessCastReactionAdd took`);
-  const castReactionEvents = await processor.batchProcessCastReactionAdd(
+  const castReactionResponse = await processor.processCastReactionAddOrRemove(
     castReactions.map((reaction) =>
       transformToCastReactionEvent(EventType.CAST_REACTION_ADD, reaction),
     ),
   );
   console.timeEnd(`[${fid}] batchProcessCastReactionAdd took`);
-  console.log(`[${fid}] castReactionEvents`, castReactionEvents.length);
+  console.log(
+    `[${fid}] castReactionEvents`,
+    castReactionResponse.events.length,
+  );
 
   console.timeEnd(`[${fid}] backfill took`);
 };
