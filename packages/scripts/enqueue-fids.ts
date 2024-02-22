@@ -3,11 +3,11 @@ import { QueueName, getQueue } from "@nook/common/queues";
 const BATCH_SIZE = 1000;
 
 const run = async () => {
-  const queue = getQueue(QueueName.FarcasterBackfill);
+  const queue = getQueue(QueueName.EventsBackfill);
 
-  for (let fid = 180_000; fid < 315_000; fid += BATCH_SIZE) {
+  for (let fid = 1; fid < 400_000; fid += BATCH_SIZE) {
     const jobs = [];
-    for (let j = fid; j < fid + BATCH_SIZE && j < 365_000; j++) {
+    for (let j = fid; j < fid + BATCH_SIZE && j < 400_000; j++) {
       jobs.push({
         name: `fid-${j}`,
         data: { fid: j.toString() },
