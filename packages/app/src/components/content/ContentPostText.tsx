@@ -8,7 +8,7 @@ import { useAppDispatch } from "@/hooks/useAppDispatch";
 import { openModal } from "@/store/slices/navigator";
 import { TouchableOpacity } from "react-native-gesture-handler";
 import { useCallback } from "react";
-import { ModalName } from "../../modals/Modals";
+import { ModalName } from "@/modals/types";
 
 const isWarpcastUrl = (url: string) => {
   return (

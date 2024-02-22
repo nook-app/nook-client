@@ -1,10 +1,10 @@
 import { ContentFeedItem } from "@nook/api/types";
 import { ContentType, PostData, TopicType } from "@nook/common/types";
 import { ScrollView, Text, View, XStack, YStack } from "tamagui";
-import { Embed } from "@/components/embeds";
-import { EntityAvatar } from "@/components/entity/avatar";
-import { PostContent } from "@/components/utils";
-import { EntityDisplay } from "../entity/display";
+import { Embed } from "@/components/embeds/Embed";
+import { EntityAvatar } from "@/components/entity/EntityAvatar";
+import { PostContent } from "@/components/content/ContentPostText";
+import { EntityDisplay } from "../entity/EntityDisplay";
 import { Image } from "expo-image";
 import { ContentFeedPanel } from "../panels/ContentFeedPanel";
 import { useAppDispatch } from "@/hooks/useAppDispatch";

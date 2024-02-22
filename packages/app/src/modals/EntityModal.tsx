@@ -1,7 +1,7 @@
 import { Button, Text, View, XStack, YStack } from "tamagui";
 import { useAppSelector } from "@/hooks/useAppSelector";
 import { setActiveNook } from "@/store/slices/user";
-import { EntityAvatar } from "@/components/entity/avatar";
+import { EntityAvatar } from "@/components/entity/EntityAvatar";
 import { useAppDispatch } from "@/hooks/useAppDispatch";
 import { selectEntityById } from "@/store/slices/entity";
 import { RootStackParamList } from "@/types";

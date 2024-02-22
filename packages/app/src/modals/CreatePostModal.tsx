@@ -12,7 +12,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { NavigationProp, useNavigation } from "@react-navigation/native";
 import { RootStackParamList } from "@/types";
 import { useAppSelector } from "@/hooks/useAppSelector";
-import { EntityAvatar } from "@/components/entity/avatar";
+import { EntityAvatar } from "@/components/entity/EntityAvatar";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { SelectChannelModal } from "./SelectChannelModal";
 import { ChevronDown, Image } from "@tamagui/lucide-icons";

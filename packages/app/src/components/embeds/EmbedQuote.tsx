@@ -1,7 +1,7 @@
 import { XStack, YStack } from "tamagui";
 import { ReactNode } from "react";
-import { EntityAvatar } from "@/components/entity/avatar";
-import { EntityDisplay } from "../entity/display";
+import { EntityAvatar } from "@/components/entity/EntityAvatar";
+import { EntityDisplay } from "../entity/EntityDisplay";
 
 export const EmbedQuote = ({
   entityId,
