@@ -25,7 +25,12 @@ export const publishRawEvents = async (events: RawEvent<EntityEventData>[]) => {
       return {
         name: jobId,
         data: event,
-        opts: { jobId },
+        opts: {
+          jobId,
+          removeOnComplete: {
+            count: 10000,
+          },
+        },
       };
     }),
   );
