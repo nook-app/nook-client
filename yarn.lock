@@ -3544,7 +3544,6 @@ __metadata:
   resolution: "@nook/actions@workspace:packages/actions"
   dependencies:
     "@nook/common": "npm:*"
-    "@nook/events": "npm:*"
     "@types/jest": "npm:^29.5.11"
     "@types/metascraper": "npm:^5.14.3"
     "@types/node": "npm:^20.10.5"
@@ -3692,7 +3691,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@nook/events@npm:*, @nook/events@workspace:packages/events":
+"@nook/events@workspace:packages/events":
   version: 0.0.0-use.local
   resolution: "@nook/events@workspace:packages/events"
   dependencies:
