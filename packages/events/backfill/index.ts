@@ -104,15 +104,14 @@ const processCasts = async (processor: FarcasterProcessor, fid: number) => {
 const processFid = async (processor: FarcasterProcessor, fid: number) => {
   console.time(`[${fid}] backfill took`);
 
-  const responses = await Promise.all([
-    processUserDatas(processor, fid),
-    processVerifications(processor, fid),
-    processUsernames(processor, fid),
-    processLinks(processor, fid),
-    processUrlReactions(processor, fid),
-    processCastReactions(processor, fid),
-    processCasts(processor, fid),
-  ]);
+  const responses = [];
+  responses.push(await processUserDatas(processor, fid));
+  responses.push(await processVerifications(processor, fid));
+  responses.push(await processUsernames(processor, fid));
+  responses.push(await processLinks(processor, fid));
+  responses.push(await processUrlReactions(processor, fid));
+  responses.push(await processCastReactions(processor, fid));
+  responses.push(await processCasts(processor, fid));
 
   const responseEvents = responses.flatMap((response) => response.events);
   const events = responseEvents.map(({ event }) => event);
