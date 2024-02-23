@@ -13,12 +13,16 @@ import {
   UsernameType,
 } from "@nook/common/types";
 import { MongoClient, MongoCollection } from "@nook/common/mongo";
+import { RedisClient } from "@nook/common/cache";
 import { Job } from "bullmq";
 import { ObjectId } from "mongodb";
 
 export const getActionsHandler = async () => {
   const client = new MongoClient();
   await client.connect();
+
+  const redis = new RedisClient();
+  await redis.connect();
 
   return async <T>(job: Job<{ actionId: string; created: boolean }>) => {
     // If the action was not created, we don't need to process it again
@@ -50,6 +54,7 @@ export const getActionsHandler = async () => {
         if (typedContent.data.parentId) {
           promises.push(
             client.incrementEngagement(typedContent.data.parentId, "replies"),
+            redis.removeContent(typedContent.data.parentId),
           );
         }
         break;
@@ -83,6 +88,7 @@ export const getActionsHandler = async () => {
               "replies",
               true,
             ),
+            redis.removeContent(typedContent.data.parentId),
           );
         }
         break;
@@ -91,6 +97,7 @@ export const getActionsHandler = async () => {
         const typedAction = action as EventAction<ContentActionData>;
         promises.push(
           client.incrementEngagement(typedAction.data.contentId, "likes"),
+          redis.removeContent(typedAction.data.contentId),
         );
         break;
       }
@@ -98,6 +105,7 @@ export const getActionsHandler = async () => {
         const typedAction = action as EventAction<ContentActionData>;
         promises.push(
           client.incrementEngagement(typedAction.data.contentId, "reposts"),
+          redis.removeContent(typedAction.data.contentId),
         );
         break;
       }
@@ -109,6 +117,7 @@ export const getActionsHandler = async () => {
             EventActionType.LIKE,
           ),
           client.incrementEngagement(typedAction.data.contentId, "likes", true),
+          redis.removeContent(typedAction.data.contentId),
         );
         break;
       }
@@ -124,6 +133,7 @@ export const getActionsHandler = async () => {
             "reposts",
             true,
           ),
+          redis.removeContent(typedAction.data.contentId),
         );
         break;
       }

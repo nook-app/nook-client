@@ -135,6 +135,10 @@ export class RedisClient {
     await this.redis.mset(...keyValuePairs);
   }
 
+  async removeContent(contentId: string) {
+    await this.redis.del(`content:${contentId}`);
+  }
+
   async getChannel(id: string): Promise<Channel> {
     return await this.getJson(`channel:${id}`);
   }

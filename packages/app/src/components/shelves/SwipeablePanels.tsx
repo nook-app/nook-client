@@ -87,7 +87,6 @@ export const SwipeablePanels = ({
           paddingVertical="$1"
           gap="$2"
           alignItems="flex-end"
-          justifyContent="center"
         >
           {shelf.panels.map((panel, i) => (
             <View key={`${nook.nookId}-${shelf.slug}-${panel.slug}`}>
