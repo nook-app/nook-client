@@ -317,7 +317,6 @@ export class FarcasterProcessor {
 
     // 6. Update cache with new casts
     await this.redis.setContents(storedCasts);
-    await this.redis.setContents(secondaryParentCasts);
     await this.redis.setContents(parentCasts);
     await this.redis.setContents(casts);
 

@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@nook/common": "*",
+    "@nook/events": "*",
     "mongodb": "^6.3.0"
   },
   "devDependencies": {
