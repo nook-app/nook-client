@@ -1,6 +1,5 @@
 import { ContentPost } from "@/components/content/ContentPost";
-import { useAppSelector } from "@/hooks/useAppSelector";
-import { selectContentById } from "@/store/slices/content";
+import { useContent } from "@/hooks/useContent";
 import { RootStackParamList } from "@/types";
 import { ContentFeedItem } from "@nook/api/types";
 import { PostData } from "@nook/common/types";
@@ -9,9 +8,7 @@ import { View } from "tamagui";
 
 export default function ContentScreen() {
   const route = useRoute<RouteProp<RootStackParamList, "Content">>();
-  const content = useAppSelector((state) =>
-    selectContentById(state, route.params.contentId),
-  );
+  const content = useContent(route.params.contentId);
 
   return (
     <View backgroundColor="$background" height="100%">

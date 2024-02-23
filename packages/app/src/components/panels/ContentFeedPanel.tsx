@@ -12,10 +12,10 @@ import { ContentPostCompact } from "../content/ContentPostCompact";
 import { ContentFeedItem } from "@nook/api/types";
 import { ContentFeedArgs, ContentType, PostData } from "@nook/common/types";
 
-export const renderFeedItem = (
-  navigation: NavigationProp<RootStackParamList>,
-  item: ContentFeedItem,
-) => {
+export const TouchableContentFeedItem = ({
+  item,
+}: { item: ContentFeedItem }) => {
+  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   if (item.type === ContentType.POST || item.type === ContentType.REPLY) {
     const typedItem = item as ContentFeedItem<PostData>;
     return (
@@ -37,7 +37,6 @@ export const ContentFeedPanel = ({
   args,
   asList,
 }: { args: ContentFeedArgs; asList?: boolean }) => {
-  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const [cursor, setCursor] = useState<string | undefined>(undefined);
   const [accumulatedData, setAccumulatedData] = useState<ContentFeedItem[]>([]);
   const [refreshing, setRefreshing] = useState(false);
@@ -115,7 +114,9 @@ export const ContentFeedPanel = ({
   if (asList) {
     return (
       <View>
-        {accumulatedData.map((item) => renderFeedItem(navigation, item))}
+        {accumulatedData.map((item) => (
+          <TouchableContentFeedItem item={item} />
+        ))}
       </View>
     );
   }
@@ -123,7 +124,7 @@ export const ContentFeedPanel = ({
   return (
     <FlatList
       data={accumulatedData}
-      renderItem={({ item }) => renderFeedItem(navigation, item)}
+      renderItem={({ item }) => <TouchableContentFeedItem item={item} />}
       keyExtractor={(item) => item._id.toString()}
       onViewableItemsChanged={onViewableItemsChanged}
       viewabilityConfig={viewabilityConfig}

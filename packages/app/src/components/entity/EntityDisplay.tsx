@@ -1,19 +1,21 @@
-import { store } from "@/store";
-import { useAppDispatch } from "@/hooks/useAppDispatch";
-import { selectEntityById } from "@/store/slices/entity";
 import { TouchableOpacity } from "react-native-gesture-handler";
 import { Text } from "tamagui";
 import { XStack, YStack } from "tamagui";
 import { useCallback } from "react";
-import { openModal } from "@/store/slices/navigator";
 import { ModalName } from "@/modals/types";
+import { useModal } from "@/hooks/useModal";
+import { useEntity } from "@/hooks/useEntity";
 
 export const EntityDisplay = ({
   entityId,
   orientation = "horizontal",
 }: { entityId: string; orientation?: "horizontal" | "vertical" }) => {
-  const dispatch = useAppDispatch();
-  const entity = selectEntityById(store.getState(), entityId.toString());
+  const entity = useEntity(entityId);
+  const { open } = useModal(ModalName.Entity);
+
+  const onPress = useCallback(() => {
+    open({ entityId });
+  }, [open, entityId]);
 
   const Stack = orientation === "horizontal" ? XStack : YStack;
 
@@ -32,17 +34,6 @@ export const EntityDisplay = ({
       ? `fid:${entity.farcaster.fid}`
       : "@unknown";
   }
-
-  const onPress = useCallback(async () => {
-    dispatch(
-      openModal({
-        name: ModalName.Entity,
-        initialState: {
-          entityId: entityId,
-        },
-      }),
-    );
-  }, [dispatch, entityId]);
 
   return (
     <TouchableOpacity onPress={onPress}>

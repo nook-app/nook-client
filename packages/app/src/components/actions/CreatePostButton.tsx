@@ -1,20 +1,12 @@
-import { useAppDispatch } from "@/hooks/useAppDispatch";
+import { useModal } from "@/hooks/useModal";
 import { ModalName } from "@/modals/types";
-import { openModal } from "@/store/slices/navigator";
 import { Plus } from "@tamagui/lucide-icons";
+import { useCallback } from "react";
 import { View } from "tamagui";
 
 export const CreatePostButton = () => {
-  const dispatch = useAppDispatch();
-
-  const onPress = () => {
-    dispatch(
-      openModal({
-        name: ModalName.CreatePost,
-        initialState: undefined,
-      }),
-    );
-  };
+  const { open } = useModal(ModalName.CreatePost);
+  const onPress = useCallback(() => open(), [open]);
 
   return (
     <View

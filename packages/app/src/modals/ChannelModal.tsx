@@ -1,19 +1,15 @@
 import { Avatar, Button, Text, View, XStack, YStack } from "tamagui";
 import { useAppSelector } from "@/hooks/useAppSelector";
-import { setActiveNook } from "@/store/slices/user";
-import { useAppDispatch } from "@/hooks/useAppDispatch";
-import { RootStackParamList } from "@/types";
-import { NavigationProp, useNavigation } from "@react-navigation/native";
 import { selectChannelById } from "@/store/slices/channel";
-import { useCallback } from "react";
-import { closeModal } from "@/store/slices/navigator";
 import { ModalName } from "./types";
 import { BottomSheetModal } from "@/components/modals/BottomSheetModal";
+import { useModal } from "@/hooks/useModal";
+import { useCallback } from "react";
+import { useNooks } from "@/hooks/useNooks";
 
 export const ChannelModal = () => {
-  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+  const { navigateToNook } = useNooks();
   const theme = useAppSelector((state) => state.user.theme);
-  const dispatch = useAppDispatch();
   const { initialState } = useAppSelector(
     (state) => state.navigator.modals[ModalName.Channel],
   );
@@ -22,13 +18,17 @@ export const ChannelModal = () => {
       ? selectChannelById(state, initialState?.channelId)
       : undefined,
   );
+  const { close } = useModal(ModalName.Channel);
 
-  const onClose = useCallback(() => {
-    dispatch(closeModal({ name: ModalName.Channel }));
-  }, [dispatch]);
+  const onPress = useCallback(() => {
+    if (channel) {
+      navigateToNook(`channel:${channel.contentId}`);
+      close();
+    }
+  }, [channel, close, navigateToNook]);
 
   return (
-    <BottomSheetModal onClose={onClose} enableDynamicSizing>
+    <BottomSheetModal onClose={close} enableDynamicSizing>
       <View theme={theme}>
         {channel && (
           <YStack
@@ -59,18 +59,7 @@ export const ChannelModal = () => {
               </XStack>
               {channel.description && <Text>{channel.description}</Text>}
             </YStack>
-            <Button
-              onPress={() => {
-                const params = {
-                  nookId: `channel:${channel.contentId}`,
-                };
-                navigation.navigate("Shelf", params);
-                onClose();
-                dispatch(setActiveNook(`channel:${channel.contentId}`));
-              }}
-            >
-              Visit Nook
-            </Button>
+            <Button onPress={onPress}>Visit Nook</Button>
           </YStack>
         )}
       </View>

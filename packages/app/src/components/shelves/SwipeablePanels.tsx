@@ -1,6 +1,6 @@
-import { NookPanel, NookPanelType } from "@nook/common/types";
+import { Nook, NookPanel, NookPanelType, NookShelf } from "@nook/common/types";
 import { ContentFeedPanel } from "../panels/ContentFeedPanel";
-import { useRef, useState } from "react";
+import { memo, useRef, useState } from "react";
 import { Dimensions } from "react-native";
 import { View, XStack, YStack, useTheme } from "tamagui";
 import Animated, {
@@ -14,7 +14,10 @@ import { CreatePostButton } from "../actions/CreatePostButton";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
-export const SwipeablePanels = ({ panels }: { panels: NookPanel[] }) => {
+export const SwipeablePanels = ({
+  nook,
+  shelf,
+}: { nook: Nook; shelf: NookShelf }) => {
   const scrollViewRef = useRef<Animated.ScrollView>(null);
   const scrollX = useSharedValue(0);
   const [tabLayouts, setTabLayouts] = useState<{ width: number; x: number }[]>(
@@ -99,9 +102,9 @@ export const SwipeablePanels = ({ panels }: { panels: NookPanel[] }) => {
           gap="$2"
           alignItems="flex-end"
         >
-          {panels.map((panel, i) => (
+          {shelf.panels.map((panel, i) => (
             <View
-              key={panel.slug.toString()}
+              key={`${nook.nookId}-${shelf.slug}-${panel.slug}`}
               onLayout={(event) => {
                 const { width, x } = event.nativeEvent.layout;
                 const newLayouts = [...tabLayouts];
@@ -134,9 +137,9 @@ export const SwipeablePanels = ({ panels }: { panels: NookPanel[] }) => {
         alwaysBounceHorizontal={false}
         bounces={false}
       >
-        {panels.map((panel) => (
+        {shelf.panels.map((panel) => (
           <View
-            key={panel.slug}
+            key={`${nook.nookId}-${shelf.slug}-${panel.slug}`}
             style={{
               width: SCREEN_WIDTH,
               alignItems: "center",
@@ -152,11 +155,11 @@ export const SwipeablePanels = ({ panels }: { panels: NookPanel[] }) => {
   );
 };
 
-const Panel = ({ panel }: { panel: NookPanel }) => {
+const Panel = memo(({ panel }: { panel: NookPanel }) => {
   switch (panel.type) {
     case NookPanelType.ContentFeed:
       return <ContentFeedPanel args={panel.args} />;
     default:
       return null;
   }
-};
+});

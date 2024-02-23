@@ -1,6 +1,7 @@
 import ProfileScreen from "@/screens/ProfileScreen";
 import {
   BottomTabBar,
+  BottomTabBarProps,
   createBottomTabNavigator,
 } from "@react-navigation/bottom-tabs";
 import { LayoutGrid } from "@tamagui/lucide-icons";
@@ -12,13 +13,11 @@ import { Image, Text, View, useTheme } from "tamagui";
 import { NooksNavigator } from "./NooksNavigator";
 import { useAppSelector } from "@/hooks/useAppSelector";
 import { RootStackParamList } from "@/types";
+import { memo } from "react";
 
 const Tabs = createBottomTabNavigator<RootStackParamList>();
 
-export function AuthNavigator() {
-  const entity = useAppSelector((state) => state.user.entity);
-  const theme = useTheme();
-  const nooks = useAppSelector((state) => state.user.nooks);
+const TabBar = memo((props: BottomTabBarProps) => {
   const isDrawerOpen = useAppSelector((state) => state.navigator.isDrawerOpen);
 
   const animatedStyle = useAnimatedStyle(() => {
@@ -34,12 +33,19 @@ export function AuthNavigator() {
   });
 
   return (
+    <Animated.View style={animatedStyle}>
+      <BottomTabBar {...props} />
+    </Animated.View>
+  );
+});
+
+export function AuthNavigator() {
+  const entity = useAppSelector((state) => state.user.entity);
+  const theme = useTheme();
+
+  return (
     <Tabs.Navigator
-      tabBar={(props) => (
-        <Animated.View style={animatedStyle}>
-          <BottomTabBar {...props} />
-        </Animated.View>
-      )}
+      tabBar={(props) => <TabBar {...props} />}
       screenOptions={{
         headerShown: false,
         tabBarBackground: () => (
@@ -58,7 +64,6 @@ export function AuthNavigator() {
       <Tabs.Screen
         name="Nooks"
         component={NooksNavigator}
-        initialParams={{ nookId: nooks[0]?.nookId }}
         options={{
           title: "Nooks",
           tabBarIcon: ({ focused }) => (
@@ -75,24 +80,6 @@ export function AuthNavigator() {
           ),
         }}
       />
-      {/* <Tabs.Screen
-        name="Notifications"
-        component={NotificationsScreen}
-        options={{
-          tabBarIcon: ({ focused }) => (
-            <Bell
-              size={20}
-              color={focused ? "white" : "$gray11"}
-              fill={focused ? "white" : theme.$gray11.val}
-            />
-          ),
-          tabBarLabel: ({ focused }) => (
-            <Text fontSize="$2" color={focused ? undefined : "$gray11"}>
-              Notifications
-            </Text>
-          ),
-        }}
-      /> */}
       <Tabs.Screen
         name="Profile"
         component={ProfileScreen}

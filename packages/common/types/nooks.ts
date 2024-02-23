@@ -1,4 +1,5 @@
 import { ObjectId } from "mongodb";
+import { ContentType } from "./content";
 
 export enum NookType {
   Entity = "entity",

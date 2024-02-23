@@ -3,25 +3,22 @@ import LoginScreen from "@/screens/LoginScreen";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { AuthNavigator } from "./AuthNavigator";
 import { useAppSelector } from "@/hooks/useAppSelector";
-import { selectNookById } from "@/store/slices/nook";
 import { Theme } from "tamagui";
 import { Modals } from "@/modals/Modals";
+import { useNooks } from "@/hooks/useNooks";
 
 const Stack = createNativeStackNavigator();
 
 export function Navigator() {
   const { session } = useAuth();
-  const nooks = useAppSelector((state) => state.user.nooks);
-  const nook = useAppSelector((state) =>
-    selectNookById(state, nooks[0]?.nookId),
-  );
+  const { nooks } = useNooks();
   const theme = useAppSelector((state) => state.user.theme);
 
   return (
     <Theme name={theme || "gray"}>
       <Modals />
       <Stack.Navigator screenOptions={{ headerShown: false }}>
-        {session && nook ? (
+        {session && nooks.length > 0 ? (
           <Stack.Screen name="AuthNavigator" component={AuthNavigator} />
         ) : (
           <>

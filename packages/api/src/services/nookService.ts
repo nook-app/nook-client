@@ -37,7 +37,7 @@ export class NookService {
 
     let queryFilter = { ...filter };
     type SortDirection = 1 | -1;
-    const sortField = sort || "_id";
+    const sortField = sort || "timestamp";
 
     if (cursor) {
       const cursorObj = JSON.parse(Buffer.from(cursor, "base64").toString());
@@ -51,9 +51,9 @@ export class NookService {
           },
           {
             [sortField]: cursorObj.value,
-            _id: {
+            timestamp: {
               [sortDirection === 1 ? "$gt" : "$lt"]: new ObjectId(
-                cursorObj._id,
+                cursorObj.timestamp,
               ),
             },
           },
@@ -61,10 +61,12 @@ export class NookService {
       };
     }
 
-    let sortOptions: Record<string, SortDirection> = { _id: -1 };
+    let sortOptions: Record<string, SortDirection> = { timestamp: -1 };
     if (sort) {
       sortOptions = { [sort]: sortDirection as SortDirection, ...sortOptions };
     }
+
+    console.log({ queryFilter, sortOptions });
 
     const content = await collection
       .find(queryFilter)

@@ -1,11 +1,9 @@
-import { useNavigation, NavigationProp } from "@react-navigation/native";
 import { Separator, View, YStack } from "tamagui";
 import { Image } from "expo-image";
 import { useAppSelector } from "@/hooks/useAppSelector";
 import { Nook } from "@nook/common/types";
-import { selectNookById } from "@/store/slices/nook";
-import { RootStackParamList } from "@/types";
-import { useAppDispatch } from "@/hooks/useAppDispatch";
+import { useNooks } from "@/hooks/useNooks";
+import { useCallback } from "react";
 
 const NookButton = ({
   nook,
@@ -50,14 +48,8 @@ const NookButton = ({
 };
 
 export const NooksSelector = () => {
-  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
-  const activeNookId = useAppSelector((state) => state.user.activeNook);
-  const nooks = useAppSelector((state) => state.user.nooks);
-  const nookId = activeNookId || nooks[0]?.nookId.toString();
-  const activeNook = useAppSelector((state) => selectNookById(state, nookId));
+  const { nooks, activeNook, navigateToNook } = useNooks();
   const entity = useAppSelector((state) => state.user.entity);
-  const activeShelves = useAppSelector((state) => state.user.activeShelves);
-  const dispatch = useAppDispatch();
 
   const userNook = nooks.find(
     ({ nookId }) => nookId === `entity:${entity?._id.toString()}`,
@@ -70,22 +62,19 @@ export const NooksSelector = () => {
     ({ nookId }) => nookId === activeNook?.nookId,
   );
 
-  const handleNookPress = (nook: Nook) => {
-    const params = {
-      nookId: nook.nookId,
-      shelfId: activeShelves[nook.nookId] || nook.shelves[0]?.slug,
-    };
-    navigation.setParams(params);
-    navigation.navigate("Nook", params);
-    navigation.navigate("Shelf", params);
-  };
+  const onPress = useCallback(
+    (nook: Nook) => {
+      navigateToNook(nook.nookId);
+    },
+    [navigateToNook],
+  );
 
   return (
     <YStack gap="$1.5" alignItems="center">
       {userNook && (
         <NookButton
           nook={userNook}
-          onPress={handleNookPress}
+          onPress={onPress}
           isActive={activeNook?.nookId === userNook.nookId}
         />
       )}
@@ -94,7 +83,7 @@ export const NooksSelector = () => {
         <NookButton
           nook={nook}
           key={nook.nookId}
-          onPress={handleNookPress}
+          onPress={onPress}
           isActive={activeNook?.nookId === nook.nookId}
         />
       ))}
@@ -102,7 +91,7 @@ export const NooksSelector = () => {
         <NookButton
           nook={activeNook}
           key={activeNook?.nookId}
-          onPress={handleNookPress}
+          onPress={onPress}
           isActive
           isUnfollowed
         />

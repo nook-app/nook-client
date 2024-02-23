@@ -1,19 +1,9 @@
-import {
-  Button,
-  ScrollView,
-  Spinner,
-  Text,
-  TextArea,
-  View,
-  XStack,
-  YStack,
-} from "tamagui";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { Button, Spinner, Text, TextArea, View, XStack, YStack } from "tamagui";
 import { NavigationProp, useNavigation } from "@react-navigation/native";
 import { RootStackParamList } from "@/types";
 import { useAppSelector } from "@/hooks/useAppSelector";
 import { EntityAvatar } from "@/components/entity/EntityAvatar";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { SelectChannelModal } from "./SelectChannelModal";
 import { ChevronDown, Image } from "@tamagui/lucide-icons";
 import {
@@ -25,16 +15,14 @@ import {
 import { nookApi } from "@/store/apis/nookApi";
 import { farcasterApi } from "@/store/apis/farcasterApi";
 import { Channel } from "@nook/common/types";
-import { useAppDispatch } from "@/hooks/useAppDispatch";
-import { closeModal, openModal } from "@/store/slices/navigator";
 import { ModalName } from "./types";
 import { BottomSheetModal } from "@/components/modals/BottomSheetModal";
 import { BottomSheetScrollView } from "@gorhom/bottom-sheet";
+import { useModal } from "@/hooks/useModal";
 
 export const CreatePostModal = () => {
   const [selectChannelModalOpen, setSelectChannelModalOpen] = useState(false);
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
-  const dispatch = useAppDispatch();
   const signerEnabled = useAppSelector(
     (state) => state.user.user?.signerEnabled || false,
   );
@@ -46,6 +34,8 @@ export const CreatePostModal = () => {
   const [error, setError] = useState<Error | null>(null);
   const [fetchContent] = nookApi.useLazyGetContentQuery();
   const [createPost] = farcasterApi.useCreatePostMutation();
+  const { open } = useModal(ModalName.EnableSigner);
+  const { close } = useModal(ModalName.CreatePost);
 
   useEffect(() => {
     if (selectChannelModalOpen) {
@@ -60,15 +50,9 @@ export const CreatePostModal = () => {
 
   useEffect(() => {
     if (!signerEnabled) {
-      dispatch(
-        openModal({ name: ModalName.EnableSigner, initialState: undefined }),
-      );
+      open();
     }
-  }, [signerEnabled, dispatch]);
-
-  const onClose = useCallback(() => {
-    dispatch(closeModal({ name: ModalName.CreatePost }));
-  }, [dispatch]);
+  }, [signerEnabled, open]);
 
   const handleCreatePost = async () => {
     setIsPosting(true);
@@ -121,7 +105,7 @@ export const CreatePostModal = () => {
   const isDisabled = !message?.length || isPosting;
 
   return (
-    <BottomSheetModal onClose={onClose} fullScreen>
+    <BottomSheetModal onClose={close} fullScreen>
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={{ flex: 1 }}

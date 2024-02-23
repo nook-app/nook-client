@@ -3,37 +3,29 @@ import { ContentType, PostData, TopicType } from "@nook/common/types";
 import { ScrollView, Text, View, XStack, YStack } from "tamagui";
 import { Embed } from "@/components/embeds/Embed";
 import { EntityAvatar } from "@/components/entity/EntityAvatar";
-import { PostContent } from "@/components/content/ContentPostText";
 import { EntityDisplay } from "../entity/EntityDisplay";
 import { Image } from "expo-image";
 import { ContentFeedPanel } from "../panels/ContentFeedPanel";
-import { useAppDispatch } from "@/hooks/useAppDispatch";
 import { TouchableOpacity } from "react-native-gesture-handler";
 import { useAppSelector } from "@/hooks/useAppSelector";
 import { selectChannelById } from "@/store/slices/channel";
 import { useCallback } from "react";
-import { openModal } from "@/store/slices/navigator";
 import { ModalName } from "@/modals/types";
+import { ContentPostText } from "./ContentPostText";
+import { useModal } from "@/hooks/useModal";
 
 export const ContentPost = ({
   item: { data, engagement },
 }: { item: ContentFeedItem<PostData> }) => {
-  const dispatch = useAppDispatch();
   const channel = useAppSelector((state) =>
     data.channelId ? selectChannelById(state, data.channelId) : undefined,
   );
+  const { open } = useModal(ModalName.Channel);
 
   const onPress = useCallback(async () => {
     if (!data.channelId) return;
-    dispatch(
-      openModal({
-        name: ModalName.Channel,
-        initialState: {
-          channelId: data.channelId,
-        },
-      }),
-    );
-  }, [dispatch, data.channelId]);
+    open({ channelId: data.channelId });
+  }, [open, data.channelId]);
 
   return (
     <ScrollView>
@@ -50,7 +42,7 @@ export const ContentPost = ({
             orientation="vertical"
           />
         </XStack>
-        <PostContent data={data} />
+        <ContentPostText data={data} />
         {data.embeds.map((embed) => (
           <Embed key={embed} embed={embed} data={data} />
         ))}

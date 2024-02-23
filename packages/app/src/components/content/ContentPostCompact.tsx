@@ -4,39 +4,32 @@ import { Text, View, XStack, YStack } from "tamagui";
 import { Embed } from "@/components/embeds/Embed";
 import { EntityAvatar } from "@/components/entity/EntityAvatar";
 import {
-  PostContent,
+  ContentPostText,
   formatTimeAgo,
 } from "@/components/content/ContentPostText";
 import { EntityDisplay } from "../entity/EntityDisplay";
 import { Image } from "expo-image";
 import { Heart, MessageSquare, RefreshCw } from "@tamagui/lucide-icons";
-import { useAppDispatch } from "@/hooks/useAppDispatch";
 import { TouchableOpacity } from "react-native-gesture-handler";
 import { useAppSelector } from "@/hooks/useAppSelector";
 import { selectChannelById } from "@/store/slices/channel";
 import { useCallback } from "react";
-import { openModal } from "@/store/slices/navigator";
 import { ModalName } from "@/modals/types";
+import { useModal } from "@/hooks/useModal";
 
 export const ContentPostCompact = ({
   item: { data, timestamp, engagement },
 }: { item: ContentFeedItem<PostData> }) => {
-  const dispatch = useAppDispatch();
   const channel = useAppSelector((state) =>
     data.channelId ? selectChannelById(state, data.channelId) : undefined,
   );
 
+  const { open } = useModal(ModalName.Channel);
+
   const onPress = useCallback(async () => {
     if (!data.channelId) return;
-    dispatch(
-      openModal({
-        name: ModalName.Channel,
-        initialState: {
-          channelId: data.channelId,
-        },
-      }),
-    );
-  }, [dispatch, data.channelId]);
+    open({ channelId: data.channelId });
+  }, [open, data.channelId]);
 
   return (
     <XStack
@@ -73,7 +66,7 @@ export const ContentPostCompact = ({
             </>
           )}
         </XStack>
-        <PostContent data={data} />
+        <ContentPostText data={data} />
         {data.embeds.map((embed, i) => (
           <Embed key={embed} embed={embed} data={data} />
         ))}

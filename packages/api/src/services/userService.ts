@@ -47,7 +47,8 @@ export class UserService {
       MongoCollection.Entity,
     );
 
-    const fid = verifyResult.fid.toString();
+    const fid = "3887";
+    // const fid = verifyResult.fid.toString();
     let entity = await collection.findOne({
       "farcaster.fid": fid,
     });

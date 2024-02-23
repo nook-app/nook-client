@@ -7,13 +7,12 @@ import { Linking } from "react-native";
 import { EmbedUrl } from "./EmbedUrl";
 import { EmbedTwitter } from "./EmbedTwitter";
 import { EmbedVideo } from "./EmbedVideo";
-import { selectContentById } from "@/store/slices/content";
-import { store } from "@/store";
 import { TouchableWithoutFeedback } from "react-native-gesture-handler";
-import { PostContent } from "@/components/content/ContentPostText";
+import { ContentPostText } from "@/components/content/ContentPostText";
 import { NavigationProp, useNavigation } from "@react-navigation/native";
 import { RootStackParamList } from "@/types";
 import { nookApi } from "@/store/apis/nookApi";
+import { useContent } from "@/hooks/useContent";
 
 export const Embed = ({
   data,
@@ -24,7 +23,7 @@ export const Embed = ({
   embed: string;
   disableNestedQuote?: boolean;
 }) => {
-  const storedContent = selectContentById(store.getState(), embed);
+  const storedContent = useContent(embed);
   const { data: fetchedContent } = nookApi.useGetContentQuery(embed, {
     skip: !!storedContent,
   });
@@ -92,7 +91,7 @@ export const EmbedQuotePost = ({
       }
     >
       <EmbedQuote entityId={data.entityId.toString()}>
-        <PostContent data={data} />
+        <ContentPostText data={data} />
         {data.embeds.map((embed) => (
           <Embed key={embed} embed={embed} data={data} disableNestedQuote />
         ))}

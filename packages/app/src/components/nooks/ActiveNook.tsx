@@ -1,10 +1,9 @@
-import { useNavigation, NavigationProp } from "@react-navigation/native";
 import { Avatar, Text, View, XStack, YStack } from "tamagui";
-import { RootStackParamList } from "@/types";
 import { useAppSelector } from "@/hooks/useAppSelector";
-import { selectNookById } from "@/store/slices/nook";
 import { Nook, NookType } from "@nook/common/types";
 import { selectEntityById } from "@/store/slices/entity";
+import { useNooks } from "@/hooks/useNooks";
+import { useCallback } from "react";
 
 const EntityMetadata = ({ nook }: { nook: Nook }) => {
   const entity = useAppSelector((state) =>
@@ -68,12 +67,14 @@ const ActiveNookHeader = ({ nook }: { nook: Nook }) => {
 };
 
 export const ActiveNook = () => {
-  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
-  const activeNookId = useAppSelector((state) => state.user.activeNook);
-  const nooks = useAppSelector((state) => state.user.nooks);
-  const nookId = activeNookId || nooks[0]?.nookId.toString();
-  const activeNook = useAppSelector((state) => selectNookById(state, nookId));
-  const activeShelves = useAppSelector((state) => state.user.activeShelves);
+  const { activeNook, activeShelf, navigateToShelf } = useNooks();
+
+  const onPress = useCallback(
+    (shelfId: string) => {
+      navigateToShelf(shelfId);
+    },
+    [navigateToShelf],
+  );
 
   if (!activeNook) {
     return null;
@@ -102,24 +103,18 @@ export const ActiveNook = () => {
             key={shelf.slug}
             padding="$2"
             backgroundColor={
-              activeShelves[nookId] === shelf.slug || i === 0
-                ? "$backgroundHover"
-                : "$background"
+              activeShelf?.slug === shelf.slug || (!activeShelf && i === 0)
+                ? "$backgroundFocus"
+                : "$backgroundStrong"
             }
             borderRadius="$4"
-            onPress={() => {
-              const params = {
-                nookId: activeNook.nookId,
-                shelfId: shelf.slug,
-              };
-              navigation.setParams(params);
-              navigation.navigate("Nook", params);
-              navigation.navigate("Shelf", params);
-            }}
+            onPress={() => onPress(shelf.slug)}
           >
             <Text
               fontWeight={
-                activeShelves[nookId] === shelf.slug || i === 0 ? "700" : "500"
+                activeShelf?.slug === shelf.slug || (!activeShelf && i === 0)
+                  ? "700"
+                  : "500"
               }
             >
               {shelf.name}

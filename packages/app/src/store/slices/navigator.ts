@@ -1,35 +1,13 @@
 import { ModalName, ModalsState } from "@/modals/types";
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
-type EntityModalParams = {
-  name: typeof ModalName.Entity;
-  initialState: {
-    entityId: string;
-  };
-};
+type EntityModalState = { entityId: string };
+type ChannelModalState = { channelId: string };
 
-type ChannelModalParams = {
-  name: typeof ModalName.Channel;
-  initialState: {
-    channelId: string;
-  };
+type ModalParams = {
+  name: ModalName;
+  initialState: EntityModalState | ChannelModalState | undefined;
 };
-
-type CreatePostModalParams = {
-  name: typeof ModalName.CreatePost;
-  initialState: undefined;
-};
-
-type EnableSignerModalParams = {
-  name: typeof ModalName.EnableSigner;
-  initialState: undefined;
-};
-
-type ModalParams =
-  | EntityModalParams
-  | ChannelModalParams
-  | CreatePostModalParams
-  | EnableSignerModalParams;
 
 type NavigatorState = {
   isDrawerOpen: boolean;

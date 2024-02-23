@@ -34,7 +34,7 @@ export default function ShelfScreen() {
     });
   }, [activeShelf, navigation]);
 
-  if (!activeShelf) {
+  if (!activeShelf || !activeNook) {
     return (
       <View
         padding="$3"
@@ -48,9 +48,11 @@ export default function ShelfScreen() {
     );
   }
 
+  console.log({ activeShelf });
+
   return (
     <View backgroundColor="$background" height="100%">
-      <SwipeablePanels key={activeShelf.slug} panels={activeShelf.panels} />
+      <SwipeablePanels nook={activeNook} shelf={activeShelf} />
     </View>
   );
 }

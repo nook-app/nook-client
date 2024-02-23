@@ -4,11 +4,10 @@ import { Text, View } from "tamagui";
 import { Buffer } from "buffer";
 import { selectEntityById } from "@/store/slices/entity";
 import { store } from "@/store";
-import { useAppDispatch } from "@/hooks/useAppDispatch";
-import { openModal } from "@/store/slices/navigator";
 import { TouchableOpacity } from "react-native-gesture-handler";
 import { useCallback } from "react";
 import { ModalName } from "@/modals/types";
+import { useModal } from "@/hooks/useModal";
 
 const isWarpcastUrl = (url: string) => {
   return (
@@ -44,26 +43,17 @@ export function formatTimeAgo(date: string) {
   return `${Math.floor(seconds)}s`; // Seconds
 }
 
-export const PostContent = ({
+export const ContentPostText = ({
   data,
 }: {
   data: PostData;
 }) => {
-  const dispatch = useAppDispatch();
+  const { open } = useModal(ModalName.Entity);
   const state = store.getState();
 
   const onPress = useCallback(
-    async (entityId: string) => {
-      dispatch(
-        openModal({
-          name: ModalName.Entity,
-          initialState: {
-            entityId,
-          },
-        }),
-      );
-    },
-    [dispatch],
+    async (entityId: string) => open({ entityId }),
+    [open],
   );
 
   const textParts = [];

@@ -1,29 +1,20 @@
-import { store } from "@/store";
-import { useAppDispatch } from "@/hooks/useAppDispatch";
-import { selectEntityById } from "@/store/slices/entity";
-import { openModal } from "@/store/slices/navigator";
 import { TouchableOpacity } from "react-native-gesture-handler";
 import { Avatar } from "tamagui";
 import { useCallback } from "react";
 import { ModalName } from "@/modals/types";
+import { useModal } from "@/hooks/useModal";
+import { useEntity } from "@/hooks/useEntity";
 
 export const EntityAvatar = ({
   entityId,
   size = "$3.5",
 }: { entityId: string; size?: string }) => {
-  const dispatch = useAppDispatch();
-  const entity = selectEntityById(store.getState(), entityId.toString());
+  const entity = useEntity(entityId);
+  const { open } = useModal(ModalName.Entity);
 
-  const onPress = useCallback(async () => {
-    dispatch(
-      openModal({
-        name: ModalName.Entity,
-        initialState: {
-          entityId: entityId,
-        },
-      }),
-    );
-  }, [dispatch, entityId]);
+  const onPress = useCallback(() => {
+    open({ entityId });
+  }, [open, entityId]);
 
   return (
     <TouchableOpacity onPress={onPress}>

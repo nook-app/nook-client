@@ -1,7 +1,5 @@
 export type RootStackParamList = {
-  Nooks: {
-    nookId: string;
-  };
+  Nooks: undefined;
   Nook: {
     nookId: string;
   };
