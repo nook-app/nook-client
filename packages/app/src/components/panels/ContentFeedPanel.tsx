@@ -1,35 +1,31 @@
 import { Spinner, Text, View, useTheme } from "tamagui";
 import { FlatList, ViewToken } from "react-native";
 import { useCallback, useEffect, useState } from "react";
-import { NavigationProp, useNavigation } from "@react-navigation/native";
-import { RootStackParamList } from "@/types";
 import { nookApi } from "@/store/apis/nookApi";
-import {
-  RefreshControl,
-  TouchableWithoutFeedback,
-} from "react-native-gesture-handler";
+import { RefreshControl } from "react-native-gesture-handler";
 import { ContentPostCompact } from "../content/ContentPostCompact";
 import { ContentFeedItem } from "@nook/api/types";
-import { ContentFeedArgs, ContentType, PostData } from "@nook/common/types";
+import {
+  Content,
+  ContentFeedArgs,
+  ContentType,
+  PostData,
+} from "@nook/common/types";
+import { ContentReplyCompact } from "../content/ContentReplyCompact";
 
-export const TouchableContentFeedItem = ({
-  item,
-}: { item: ContentFeedItem }) => {
-  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
-  if (item.type === ContentType.POST || item.type === ContentType.REPLY) {
-    const typedItem = item as ContentFeedItem<PostData>;
+export const ContentFeedEntry = ({ item }: { item: ContentFeedItem }) => {
+  if (item.type === ContentType.POST) {
+    const typedItem = item as Content<PostData>;
+    return <ContentPostCompact key={typedItem.contentId} content={typedItem} />;
+  }
+
+  if (item.type === ContentType.REPLY) {
+    const typedItem = item as Content<PostData>;
     return (
-      <TouchableWithoutFeedback
-        onPress={() =>
-          navigation.navigate("Content", {
-            contentId: typedItem.contentId,
-          })
-        }
-      >
-        <ContentPostCompact key={typedItem._id.toString()} item={typedItem} />
-      </TouchableWithoutFeedback>
+      <ContentReplyCompact key={typedItem.contentId} content={typedItem} />
     );
   }
+
   return <></>;
 };
 
@@ -60,7 +56,6 @@ export const ContentFeedPanel = ({
   }, [data, isLoading]);
 
   const onRefresh = useCallback(() => {
-    console.log("hi");
     setRefreshing(true);
     setCursor(undefined);
     refetch().finally(() => setRefreshing(false));
@@ -85,7 +80,6 @@ export const ContentFeedPanel = ({
           lastVisibleItemIndex >= accumulatedData.length - 4
         ) {
           // When the last visible item is among the last 4 items
-          console.log(data.nextCursor, cursor);
           if (data.nextCursor && data.nextCursor !== cursor) {
             setCursor(data.nextCursor);
           }
@@ -117,7 +111,7 @@ export const ContentFeedPanel = ({
     return (
       <View>
         {accumulatedData.map((item) => (
-          <TouchableContentFeedItem item={item} />
+          <ContentFeedEntry item={item} />
         ))}
       </View>
     );
@@ -126,7 +120,7 @@ export const ContentFeedPanel = ({
   return (
     <FlatList
       data={accumulatedData}
-      renderItem={({ item }) => <TouchableContentFeedItem item={item} />}
+      renderItem={({ item }) => <ContentFeedEntry item={item} />}
       keyExtractor={(item) => item._id.toString()}
       onViewableItemsChanged={onViewableItemsChanged}
       viewabilityConfig={viewabilityConfig}

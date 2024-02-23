@@ -18,7 +18,7 @@ export const EntityModalButton = ({
   return (
     <TouchableOpacity
       onPress={onPress}
-      disabled={activeNook.nookId === `entity:${entityId}`}
+      disabled={activeNook?.nookId === `entity:${entityId}`}
     >
       {children}
     </TouchableOpacity>

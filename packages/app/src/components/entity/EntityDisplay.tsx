@@ -6,7 +6,12 @@ import { EntityModalButton } from "./EntityModalButton";
 export const EntityDisplay = ({
   entityId,
   orientation = "horizontal",
-}: { entityId: string; orientation?: "horizontal" | "vertical" }) => {
+  hideDisplayName,
+}: {
+  entityId: string;
+  orientation?: "horizontal" | "vertical";
+  hideDisplayName?: boolean;
+}) => {
   const entity = useEntity(entityId);
   const Stack = orientation === "horizontal" ? XStack : YStack;
 
@@ -33,8 +38,8 @@ export const EntityDisplay = ({
         alignItems={orientation === "horizontal" ? "center" : "flex-start"}
         justifyContent={orientation === "horizontal" ? "flex-start" : "center"}
       >
-        <Text fontWeight="700">{displayName}</Text>
-        <Text color="$gray11">{username}</Text>
+        {!hideDisplayName && <Text fontWeight="700">{displayName}</Text>}
+        <Text color={hideDisplayName ? "$gray12" : "$gray11"}>{username}</Text>
       </Stack>
     </EntityModalButton>
   );

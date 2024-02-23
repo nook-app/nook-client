@@ -12,7 +12,7 @@ export const EmbedQuote = ({
 }) => {
   return (
     <YStack
-      borderWidth="$0.75"
+      borderWidth="$0.5"
       borderColor="$borderColor"
       borderRadius="$2"
       padding="$2.5"
