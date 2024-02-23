@@ -1,6 +1,6 @@
 import { Nook, NookPanel, NookPanelType, NookShelf } from "@nook/common/types";
 import { ContentFeedPanel } from "../panels/ContentFeedPanel";
-import { memo, useRef, useState } from "react";
+import { memo, useRef } from "react";
 import { Dimensions } from "react-native";
 import { View, XStack, YStack, useTheme } from "tamagui";
 import Animated, {
@@ -20,10 +20,6 @@ export const SwipeablePanels = ({
 }: { nook: Nook; shelf: NookShelf }) => {
   const scrollViewRef = useRef<Animated.ScrollView>(null);
   const scrollX = useSharedValue(0);
-  const [tabLayouts, setTabLayouts] = useState<{ width: number; x: number }[]>(
-    [],
-  );
-
   const theme = useTheme();
 
   const scrollHandler = useAnimatedScrollHandler({
@@ -37,37 +33,11 @@ export const SwipeablePanels = ({
     scrollViewRef.current?.scrollTo({ x, animated: true });
   };
 
-  const indicatorStyle = useAnimatedStyle(() => {
-    if (tabLayouts.length <= 1) {
-      // Handle single item case
-      return {
-        transform: [{ translateX: tabLayouts[0]?.x || 0 }], // Or any default starting position
-        width: tabLayouts[0]?.width || SCREEN_WIDTH, // Or the width of the single tab if different
-      };
-    }
-    // Assuming each panel has the same width as the screen
-    const translateX = interpolate(
-      scrollX.value,
-      tabLayouts.map((_, index) => index * SCREEN_WIDTH),
-      tabLayouts.map((tab) => tab.x), // Assuming `tab.x` is the starting position of each tab
-    );
-
-    // Assuming the width of the indicator should match the width of the tab
-    // This could be a fixed value or dynamically calculated if tabs have different widths
-    const width = interpolate(
-      scrollX.value,
-      tabLayouts.map((_, index) => index * SCREEN_WIDTH),
-      tabLayouts.map((tab) => tab.width), // Assuming `tab.width` is the width of each tab
-    );
-
-    return {
-      transform: [{ translateX: translateX }],
-      width: width,
-    };
-  });
-
   const activeColor = theme.$color12.val;
-  const inactiveColor = theme.$gray11.val;
+  const inactiveColor = theme.$gray10.val;
+
+  const activeFontSize = 16;
+  const inactiveFontSize = 14;
 
   // TODO: Figure out how to make this dynamic based on number of panels
   const animatedTextStyles = new Array(5).fill(0).map((_, index) =>
@@ -84,7 +54,23 @@ export const SwipeablePanels = ({
         [inactiveColor, activeColor, inactiveColor], // Colors for transitioning: from inactive to active to inactive
       );
 
-      return { color, fontWeight: "700" };
+      // Interpolate the font size based on the scroll position
+      const fontSize = interpolate(
+        scrollX.value,
+        inputRange,
+        [inactiveFontSize, activeFontSize, inactiveFontSize], // Transition from inactive to active to inactive font size
+      );
+      // Interpolate a numeric value for fontWeight
+      const fontWeightNumeric = interpolate(
+        scrollX.value,
+        inputRange,
+        [400, 700, 400], // Example: 400 for "normal", 700 for "bold"
+      );
+
+      // Map the numeric fontWeight to string values
+      const fontWeight = fontWeightNumeric > 550 ? "bold" : "bold";
+
+      return { color, fontWeight, fontSize };
     }),
   );
 
@@ -92,7 +78,7 @@ export const SwipeablePanels = ({
     <>
       <CreatePostButton />
       <YStack
-        borderBottomWidth="$1"
+        borderBottomWidth="$0.25"
         borderColor="$borderColor"
         backgroundColor="$background"
       >
@@ -101,21 +87,12 @@ export const SwipeablePanels = ({
           paddingVertical="$1"
           gap="$2"
           alignItems="flex-end"
+          justifyContent="center"
         >
           {shelf.panels.map((panel, i) => (
-            <View
-              key={`${nook.nookId}-${shelf.slug}-${panel.slug}`}
-              onLayout={(event) => {
-                const { width, x } = event.nativeEvent.layout;
-                const newLayouts = [...tabLayouts];
-                newLayouts[i] = { width, x };
-                setTabLayouts(newLayouts);
-              }}
-              paddingHorizontal="$1"
-            >
+            <View key={`${nook.nookId}-${shelf.slug}-${panel.slug}`}>
               <Animated.Text
                 onPress={() => handlePress(i)}
-                // fontWeight={currentIndex === i ? "700" : "500"}
                 style={animatedTextStyles[i]}
               >
                 {panel.name}
@@ -123,9 +100,6 @@ export const SwipeablePanels = ({
             </View>
           ))}
         </XStack>
-        <Animated.View
-          style={[{ height: 2, backgroundColor: "white" }, indicatorStyle]}
-        />
       </YStack>
       <Animated.ScrollView
         ref={scrollViewRef}

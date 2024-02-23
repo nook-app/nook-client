@@ -48,8 +48,6 @@ export default function ShelfScreen() {
     );
   }
 
-  console.log({ activeShelf });
-
   return (
     <View backgroundColor="$background" height="100%">
       <SwipeablePanels nook={activeNook} shelf={activeShelf} />
