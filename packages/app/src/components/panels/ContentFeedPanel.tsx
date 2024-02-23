@@ -60,6 +60,7 @@ export const ContentFeedPanel = ({
   }, [data, isLoading]);
 
   const onRefresh = useCallback(() => {
+    console.log("hi");
     setRefreshing(true);
     setCursor(undefined);
     refetch().finally(() => setRefreshing(false));
@@ -84,6 +85,7 @@ export const ContentFeedPanel = ({
           lastVisibleItemIndex >= accumulatedData.length - 4
         ) {
           // When the last visible item is among the last 4 items
+          console.log(data.nextCursor, cursor);
           if (data.nextCursor && data.nextCursor !== cursor) {
             setCursor(data.nextCursor);
           }

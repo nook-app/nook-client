@@ -1,22 +1,13 @@
-import { TouchableOpacity } from "react-native-gesture-handler";
 import { Text } from "tamagui";
 import { XStack, YStack } from "tamagui";
-import { useCallback } from "react";
-import { ModalName } from "@/modals/types";
-import { useModal } from "@/hooks/useModal";
 import { useEntity } from "@/hooks/useEntity";
+import { EntityModalButton } from "./EntityModalButton";
 
 export const EntityDisplay = ({
   entityId,
   orientation = "horizontal",
 }: { entityId: string; orientation?: "horizontal" | "vertical" }) => {
   const entity = useEntity(entityId);
-  const { open } = useModal(ModalName.Entity);
-
-  const onPress = useCallback(() => {
-    open({ entityId });
-  }, [open, entityId]);
-
   const Stack = orientation === "horizontal" ? XStack : YStack;
 
   let displayName = entity?.farcaster?.displayName;
@@ -36,7 +27,7 @@ export const EntityDisplay = ({
   }
 
   return (
-    <TouchableOpacity onPress={onPress}>
+    <EntityModalButton entityId={entityId}>
       <Stack
         gap="$1"
         alignItems={orientation === "horizontal" ? "center" : "flex-start"}
@@ -45,6 +36,6 @@ export const EntityDisplay = ({
         <Text fontWeight="700">{displayName}</Text>
         <Text color="$gray11">{username}</Text>
       </Stack>
-    </TouchableOpacity>
+    </EntityModalButton>
   );
 };

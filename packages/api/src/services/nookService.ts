@@ -52,7 +52,7 @@ export class NookService {
           {
             [sortField]: cursorObj.value,
             timestamp: {
-              [sortDirection === 1 ? "$gt" : "$lt"]: new ObjectId(
+              [sortDirection === 1 ? "$gt" : "$lt"]: new Date(
                 cursorObj.timestamp,
               ),
             },
@@ -65,8 +65,6 @@ export class NookService {
     if (sort) {
       sortOptions = { [sort]: sortDirection as SortDirection, ...sortOptions };
     }
-
-    console.log({ queryFilter, sortOptions });
 
     const content = await collection
       .find(queryFilter)
@@ -146,7 +144,7 @@ export class NookService {
         content.length === PAGE_SIZE
           ? Buffer.from(
               JSON.stringify({
-                _id: content[content.length - 1]._id,
+                timestamp: content[content.length - 1].timestamp,
                 value: getNestedValue(content[content.length - 1], sortField),
               }),
             ).toString("base64")

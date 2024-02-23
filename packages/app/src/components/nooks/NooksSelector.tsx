@@ -4,6 +4,7 @@ import { useAppSelector } from "@/hooks/useAppSelector";
 import { Nook } from "@nook/common/types";
 import { useNooks } from "@/hooks/useNooks";
 import { useCallback } from "react";
+import { TouchableOpacity } from "react-native-gesture-handler";
 
 const NookButton = ({
   nook,
@@ -17,33 +18,34 @@ const NookButton = ({
   isUnfollowed?: boolean;
 }) => {
   return (
-    <View
-      key={nook.nookId}
-      justifyContent="center"
-      alignItems="center"
-      borderRadius="$4"
-      backgroundColor={
-        isActive && !isUnfollowed ? "$backgroundFocus" : undefined
-      }
-      borderWidth={isUnfollowed ? "$1" : undefined}
-      borderColor={isUnfollowed ? "$backgroundFocus" : undefined}
-      borderStyle="dashed"
-      onPress={() => onPress(nook)}
-      style={{
-        width: 48,
-        height: 48,
-      }}
-    >
-      <View borderRadius="$10" overflow="hidden">
-        <Image
-          source={nook.image}
-          style={{
-            width: 32,
-            height: 32,
-          }}
-        />
+    <TouchableOpacity onPress={() => onPress(nook)}>
+      <View
+        key={nook.nookId}
+        justifyContent="center"
+        alignItems="center"
+        borderRadius="$4"
+        backgroundColor={
+          isActive && !isUnfollowed ? "$backgroundFocus" : undefined
+        }
+        borderWidth={isUnfollowed ? "$1" : undefined}
+        borderColor={isUnfollowed ? "$backgroundFocus" : undefined}
+        borderStyle="dashed"
+        style={{
+          width: 48,
+          height: 48,
+        }}
+      >
+        <View borderRadius="$10" overflow="hidden">
+          <Image
+            source={nook.image}
+            style={{
+              width: 32,
+              height: 32,
+            }}
+          />
+        </View>
       </View>
-    </View>
+    </TouchableOpacity>
   );
 };
 
@@ -70,7 +72,7 @@ export const NooksSelector = () => {
   );
 
   return (
-    <YStack gap="$1.5" alignItems="center">
+    <YStack alignItems="center">
       {userNook && (
         <NookButton
           nook={userNook}

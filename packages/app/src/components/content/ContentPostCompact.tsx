@@ -10,12 +10,9 @@ import {
 import { EntityDisplay } from "../entity/EntityDisplay";
 import { Image } from "expo-image";
 import { Heart, MessageSquare, RefreshCw } from "@tamagui/lucide-icons";
-import { TouchableOpacity } from "react-native-gesture-handler";
 import { useAppSelector } from "@/hooks/useAppSelector";
 import { selectChannelById } from "@/store/slices/channel";
-import { useCallback } from "react";
-import { ModalName } from "@/modals/types";
-import { useModal } from "@/hooks/useModal";
+import { ChannelModalButton } from "../channel/ChannelModalButton";
 
 export const ContentPostCompact = ({
   item: { data, timestamp, engagement },
@@ -23,13 +20,6 @@ export const ContentPostCompact = ({
   const channel = useAppSelector((state) =>
     data.channelId ? selectChannelById(state, data.channelId) : undefined,
   );
-
-  const { open } = useModal(ModalName.Channel);
-
-  const onPress = useCallback(async () => {
-    if (!data.channelId) return;
-    open({ channelId: data.channelId });
-  }, [open, data.channelId]);
 
   return (
     <XStack
@@ -39,10 +29,10 @@ export const ContentPostCompact = ({
       gap="$2"
     >
       <View width="$3.5">
-        <EntityAvatar entityId={data.entityId?.toString()} />
+        <EntityAvatar entityId={data.entityId} />
       </View>
       <YStack flex={1} gap="$0.5">
-        <EntityDisplay entityId={data.entityId?.toString()} />
+        <EntityDisplay entityId={data.entityId} />
         <XStack alignItems="center" gap="$1.5" paddingBottom="$2">
           <Text color="$gray11">
             {`${formatTimeAgo(timestamp as unknown as string)} ago`}
@@ -50,38 +40,44 @@ export const ContentPostCompact = ({
           {channel && (
             <>
               <Text color="$gray11">in</Text>
-              <TouchableOpacity onPress={onPress}>
+              <ChannelModalButton channelId={channel.contentId}>
                 <View borderRadius="$10" overflow="hidden">
                   <Image
                     source={{ uri: channel.imageUrl }}
                     style={{ width: 16, height: 16 }}
                   />
                 </View>
-              </TouchableOpacity>
-              <TouchableOpacity onPress={onPress}>
+              </ChannelModalButton>
+              <ChannelModalButton channelId={channel.contentId}>
                 <Text numberOfLines={1} ellipsizeMode="tail" fontWeight="500">
                   {channel.name}
                 </Text>
-              </TouchableOpacity>
+              </ChannelModalButton>
             </>
           )}
         </XStack>
         <ContentPostText data={data} />
-        {data.embeds.map((embed, i) => (
+        {data.embeds.map((embed) => (
           <Embed key={embed} embed={embed} data={data} />
         ))}
-        <XStack justifyContent="space-between" marginTop="$2" width="$20">
-          <View flexDirection="row" alignItems="center" gap="$2" width="$5">
-            <MessageSquare size={16} color="$gray11" />
-            <Text color="$gray11">{engagement.replies}</Text>
+        <XStack justifyContent="space-between" marginTop="$2" width="$15">
+          <View flexDirection="row" alignItems="center" gap="$1.5" width="$3">
+            <MessageSquare size={14} color="$gray9" />
+            <Text color="$gray9" fontSize="$3">
+              {engagement.replies}
+            </Text>
           </View>
-          <View flexDirection="row" alignItems="center" gap="$2" width="$5">
-            <RefreshCw size={16} color="$gray11" />
-            <Text color="$gray11">{engagement.reposts}</Text>
+          <View flexDirection="row" alignItems="center" gap="$1.5" width="$3">
+            <RefreshCw size={14} color="$gray9" />
+            <Text color="$gray9" fontSize="$3">
+              {engagement.reposts}
+            </Text>
           </View>
-          <View flexDirection="row" alignItems="center" gap="$2" width="$5">
-            <Heart size={16} color="$gray11" />
-            <Text color="$gray11">{engagement.likes}</Text>
+          <View flexDirection="row" alignItems="center" gap="$1.5" width="$3">
+            <Heart size={14} color="$gray9" />
+            <Text color="$gray9" fontSize="$3">
+              {engagement.likes}
+            </Text>
           </View>
         </XStack>
       </YStack>

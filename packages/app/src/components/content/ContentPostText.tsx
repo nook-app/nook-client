@@ -4,10 +4,7 @@ import { Text, View } from "tamagui";
 import { Buffer } from "buffer";
 import { selectEntityById } from "@/store/slices/entity";
 import { store } from "@/store";
-import { TouchableOpacity } from "react-native-gesture-handler";
-import { useCallback } from "react";
-import { ModalName } from "@/modals/types";
-import { useModal } from "@/hooks/useModal";
+import { EntityModalButton } from "../entity/EntityModalButton";
 
 const isWarpcastUrl = (url: string) => {
   return (
@@ -48,13 +45,7 @@ export const ContentPostText = ({
 }: {
   data: PostData;
 }) => {
-  const { open } = useModal(ModalName.Entity);
   const state = store.getState();
-
-  const onPress = useCallback(
-    async (entityId: string) => open({ entityId }),
-    [open],
-  );
 
   const textParts = [];
 
@@ -106,14 +97,11 @@ export const ContentPostText = ({
     (a, b) => b.position - a.position,
   );
   for (const mention of sortedMentions) {
-    const mentionedEntity = selectEntityById(
-      state,
-      mention.entityId.toString(),
-    );
+    const mentionedEntity = selectEntityById(state, mention.entityId);
     const label = `@${
       mentionedEntity?.farcaster?.username ||
       mentionedEntity?.farcaster?.fid ||
-      mention.entityId.toString()
+      mention.entityId
     }`;
 
     textParts.push(
@@ -123,20 +111,20 @@ export const ContentPostText = ({
       ),
     );
     textParts.push(
-      <TouchableOpacity
+      <EntityModalButton
         key={`${data.contentId}-${mention.position}-${label}`}
-        onPress={() => onPress(mention.entityId.toString())}
+        entityId={mention.entityId}
       >
         <View
           style={{
             flexDirection: "row",
             alignItems: "flex-end",
-            marginBottom: -2.5,
+            marginBottom: -2.25,
           }}
         >
           <Text color="$color10">{label}</Text>
         </View>
-      </TouchableOpacity>,
+      </EntityModalButton>,
     );
     index = mention.position;
   }

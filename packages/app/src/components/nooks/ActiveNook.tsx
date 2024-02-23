@@ -4,6 +4,7 @@ import { Nook, NookType } from "@nook/common/types";
 import { selectEntityById } from "@/store/slices/entity";
 import { useNooks } from "@/hooks/useNooks";
 import { useCallback } from "react";
+import { TouchableOpacity } from "react-native-gesture-handler";
 
 const EntityMetadata = ({ nook }: { nook: Nook }) => {
   const entity = useAppSelector((state) =>
@@ -99,30 +100,33 @@ export const ActiveNook = () => {
           Shelves
         </Text>
         {activeNook?.shelves.map((shelf, i) => (
-          <View
+          <TouchableOpacity
             key={shelf.slug}
-            padding="$2"
-            backgroundColor={
-              activeShelf?.slug === shelf.slug || (!activeShelf && i === 0)
-                ? "$backgroundFocus"
-                : "$backgroundStrong"
-            }
-            borderRadius="$4"
             onPress={() => onPress(shelf.slug)}
           >
-            <Text
-              fontWeight={
+            <View
+              padding="$2"
+              backgroundColor={
                 activeShelf?.slug === shelf.slug || (!activeShelf && i === 0)
-                  ? "700"
-                  : "500"
+                  ? "$backgroundFocus"
+                  : "$backgroundStrong"
               }
+              borderRadius="$4"
             >
-              {shelf.name}
-            </Text>
-            <Text color="$gray11" fontSize="$3">
-              {shelf.description}
-            </Text>
-          </View>
+              <Text
+                fontWeight={
+                  activeShelf?.slug === shelf.slug || (!activeShelf && i === 0)
+                    ? "700"
+                    : "500"
+                }
+              >
+                {shelf.name}
+              </Text>
+              <Text color="$gray11" fontSize="$3">
+                {shelf.description}
+              </Text>
+            </View>
+          </TouchableOpacity>
         ))}
       </View>
     </YStack>

@@ -6,13 +6,10 @@ import { EntityAvatar } from "@/components/entity/EntityAvatar";
 import { EntityDisplay } from "../entity/EntityDisplay";
 import { Image } from "expo-image";
 import { ContentFeedPanel } from "../panels/ContentFeedPanel";
-import { TouchableOpacity } from "react-native-gesture-handler";
 import { useAppSelector } from "@/hooks/useAppSelector";
 import { selectChannelById } from "@/store/slices/channel";
-import { useCallback } from "react";
-import { ModalName } from "@/modals/types";
 import { ContentPostText } from "./ContentPostText";
-import { useModal } from "@/hooks/useModal";
+import { ChannelModalButton } from "../channel/ChannelModalButton";
 
 export const ContentPost = ({
   item: { data, engagement },
@@ -20,12 +17,6 @@ export const ContentPost = ({
   const channel = useAppSelector((state) =>
     data.channelId ? selectChannelById(state, data.channelId) : undefined,
   );
-  const { open } = useModal(ModalName.Channel);
-
-  const onPress = useCallback(async () => {
-    if (!data.channelId) return;
-    open({ channelId: data.channelId });
-  }, [open, data.channelId]);
 
   return (
     <ScrollView>
@@ -36,11 +27,8 @@ export const ContentPost = ({
         borderBottomWidth="$0.5"
       >
         <XStack gap="$2">
-          <EntityAvatar entityId={data.entityId.toString()} />
-          <EntityDisplay
-            entityId={data.entityId.toString()}
-            orientation="vertical"
-          />
+          <EntityAvatar entityId={data.entityId} />
+          <EntityDisplay entityId={data.entityId} orientation="vertical" />
         </XStack>
         <ContentPostText data={data} />
         {data.embeds.map((embed) => (
@@ -60,19 +48,19 @@ export const ContentPost = ({
           {channel && (
             <>
               <Text color="$gray11">{"·"}</Text>
-              <TouchableOpacity onPress={onPress}>
+              <ChannelModalButton channelId={channel.contentId}>
                 <View borderRadius="$10" overflow="hidden">
                   <Image
                     source={{ uri: channel.imageUrl }}
                     style={{ width: 16, height: 16 }}
                   />
                 </View>
-              </TouchableOpacity>
-              <TouchableOpacity onPress={onPress}>
+              </ChannelModalButton>
+              <ChannelModalButton channelId={channel.contentId}>
                 <Text numberOfLines={1} ellipsizeMode="tail">
                   {channel.name}
                 </Text>
-              </TouchableOpacity>
+              </ChannelModalButton>
             </>
           )}
         </XStack>

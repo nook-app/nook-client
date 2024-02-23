@@ -90,7 +90,7 @@ export const EmbedQuotePost = ({
         })
       }
     >
-      <EmbedQuote entityId={data.entityId.toString()}>
+      <EmbedQuote entityId={data.entityId}>
         <ContentPostText data={data} />
         {data.embeds.map((embed) => (
           <Embed key={embed} embed={embed} data={data} disableNestedQuote />
