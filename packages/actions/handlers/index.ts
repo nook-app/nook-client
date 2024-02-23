@@ -16,7 +16,6 @@ import { MongoClient, MongoCollection } from "@nook/common/mongo";
 import { RedisClient } from "@nook/common/cache";
 import { Job } from "bullmq";
 import { ObjectId } from "mongodb";
-import { FarcasterProcessor } from "@nook/events/handlers/farcaster/processor";
 
 export const getActionsHandler = async () => {
   const client = new MongoClient();
@@ -24,8 +23,6 @@ export const getActionsHandler = async () => {
 
   const redis = new RedisClient();
   await redis.connect();
-
-  const processor = new FarcasterProcessor(client, redis);
 
   return async <T>(job: Job<{ actionId: string; created: boolean }>) => {
     // If the action was not created, we don't need to process it again
@@ -42,21 +39,11 @@ export const getActionsHandler = async () => {
       case EventActionType.POST:
       case EventActionType.REPLY: {
         const typedAction = action as EventAction<ContentActionData>;
-        let content = await client.findContent(typedAction.data.contentId);
+        const content = await client.findContent(typedAction.data.contentId);
         if (!content) {
-          const { contentMap } = await processor.fetchCasts([
-            typedAction.data.contentId,
-          ]);
-          const rawContent = contentMap[typedAction.data.contentId];
-          content = {
-            ...rawContent,
-            _id: await client.upsertContent(rawContent),
-          };
-          if (!content) {
-            throw new Error(
-              `Content not found for ${typedAction.data.contentId}`,
-            );
-          }
+          throw new Error(
+            `Content not found for ${typedAction.data.contentId}`,
+          );
         }
         const typedContent = content as Content<PostData>;
         promises.push(
@@ -310,6 +297,8 @@ export const getActionsHandler = async () => {
               },
             },
           ),
+          redis.removeEntity(typedAction.data.entityId),
+          redis.removeEntity(typedAction.data.targetEntityId),
         );
         break;
       }
@@ -341,6 +330,8 @@ export const getActionsHandler = async () => {
               },
             },
           ),
+          redis.removeEntity(typedAction.data.entityId),
+          redis.removeEntity(typedAction.data.targetEntityId),
         );
         break;
       }

@@ -8,9 +8,6 @@
     "start:manual": "tsc && node --enable-source-maps dist/manual.js",
     "start:backfill": "tsc && node dist/backfill/index.js"
   },
-  "exports": {
-    "./handlers/farcaster/processor": "./dist/handlers/farcaster/processor.js"
-  },
   "dependencies": {
     "@nook/common": "*",
     "bullmq": "^5.1.0",

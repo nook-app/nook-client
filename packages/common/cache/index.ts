@@ -94,6 +94,10 @@ export class RedisClient {
     return await this.getJsons(ids.map((id) => `entity:${id}`));
   }
 
+  async removeEntity(id: string) {
+    await this.redis.del(`entity:${id}`);
+  }
+
   async setEntity(entity: Entity) {
     await Promise.all([
       this.setJson(`entity:${entity._id.toString()}`, entity),
