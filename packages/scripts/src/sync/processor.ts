@@ -9,6 +9,7 @@ import {
   FarcasterCast,
   FarcasterCastReaction,
   FarcasterLink,
+  FarcasterUrlReaction,
   PrismaClient,
 } from "@nook/common/prisma/farcaster";
 import { MongoClient, MongoCollection } from "@nook/common/mongo";
@@ -69,7 +70,8 @@ export class HubSyncProcessor {
     if (!entityId) return;
     await Promise.all([
       this.syncCasts(fid, entityId),
-      this.syncReactions(fid, entityId),
+      this.syncCastReactions(fid, entityId),
+      this.syncUrlReactions(fid, entityId),
       this.syncLinks(fid, entityId),
     ]);
   }
@@ -142,36 +144,38 @@ export class HubSyncProcessor {
     console.log(`[${fid}] [casts] synced`);
   }
 
-  async syncReactions(fid: number, entityId: string) {
+  async syncCastReactions(fid: number, entityId: string) {
     const {
       expectedCount,
       missingFromPostgres,
       missingFromMongo,
       extraInMongo,
-    } = await this.getMissingReactions(fid, entityId);
+    } = await this.getMissingCastReactions(fid, entityId);
 
     if (missingFromPostgres.length > 0) {
       console.log(
-        `[${fid}] [reactions] [postgres] missing ${missingFromPostgres.length}`,
+        `[${fid}] [cast-reactions] [postgres] missing ${missingFromPostgres.length}`,
       );
 
-      await this.syncReactionsToPostgres(missingFromPostgres);
+      await this.syncCastReactionsToPostgres(missingFromPostgres);
     } else {
-      console.log(`[${fid}] [reactions] [postgres] already in sync`);
+      console.log(`[${fid}] [cast-reactions] [postgres] already in sync`);
     }
 
     if (missingFromMongo.length > 0) {
       console.log(
-        `[${fid}] [reactions] [mongo] missing ${missingFromMongo.length}`,
+        `[${fid}] [cast-reactions] [mongo] missing ${missingFromMongo.length}`,
       );
 
-      await this.syncReactionsToMongo(missingFromMongo);
+      await this.syncCastReactionsToMongo(missingFromMongo);
     } else {
-      console.log(`[${fid}] [reactions] [mongo] already in sync`);
+      console.log(`[${fid}] [cast-reactions] [mongo] already in sync`);
     }
 
     if (extraInMongo.length > 0) {
-      console.log(`[${fid}] [reactions] [mongo] extra ${extraInMongo.length}`);
+      console.log(
+        `[${fid}] [cast-reactions] [mongo] extra ${extraInMongo.length}`,
+      );
       await this.mongo
         .getCollection<EventAction<EventActionType>>(MongoCollection.Actions)
         .updateMany(
@@ -191,16 +195,79 @@ export class HubSyncProcessor {
 
     const validations = [];
     if (missingFromPostgres.length > 0) {
-      validations.push(this.validateReactionsInPostgres(fid, expectedCount));
+      validations.push(
+        this.validateCastReactionsInPostgres(fid, expectedCount),
+      );
     }
     if (missingFromMongo.length > 0 || extraInMongo.length > 0) {
       validations.push(
-        this.validateReactionsInMongo(fid, entityId, expectedCount),
+        this.validateCastReactionsInMongo(fid, entityId, expectedCount),
       );
     }
     await Promise.all(validations);
 
-    console.log(`[${fid}] [reactions] synced`);
+    console.log(`[${fid}] [cast-reactions] synced`);
+  }
+
+  async syncUrlReactions(fid: number, entityId: string) {
+    const {
+      expectedCount,
+      missingFromPostgres,
+      missingFromMongo,
+      extraInMongo,
+    } = await this.getMissingUrlReactions(fid, entityId);
+
+    if (missingFromPostgres.length > 0) {
+      console.log(
+        `[${fid}] [url-reactions] [postgres] missing ${missingFromPostgres.length}`,
+      );
+
+      await this.syncUrlReactionsToPostgres(missingFromPostgres);
+    } else {
+      console.log(`[${fid}] [url-reactions] [postgres] already in sync`);
+    }
+
+    if (missingFromMongo.length > 0) {
+      console.log(
+        `[${fid}] [url-reactions] [mongo] missing ${missingFromMongo.length}`,
+      );
+
+      await this.syncUrlReactionsToMongo(missingFromMongo);
+    } else {
+      console.log(`[${fid}] [url-reactions] [mongo] already in sync`);
+    }
+
+    if (extraInMongo.length > 0) {
+      console.log(
+        `[${fid}] [url-reactions] [mongo] extra ${extraInMongo.length}`,
+      );
+      await this.mongo
+        .getCollection<EventAction<EventActionType>>(MongoCollection.Actions)
+        .updateMany(
+          {
+            "source.type": EventType.URL_REACTION_ADD,
+            "source.id": {
+              $in: extraInMongo,
+            },
+          },
+          {
+            $set: {
+              deletedAt: new Date(),
+            },
+          },
+        );
+    }
+
+    const validations = [];
+    if (missingFromPostgres.length > 0) {
+      validations.push(this.validateUrlReactionsInPostgres(fid, expectedCount));
+    }
+    if (missingFromMongo.length > 0 || extraInMongo.length > 0) {
+      validations.push(
+        this.validateUrlReactionsInMongo(fid, entityId, expectedCount),
+      );
+    }
+    await Promise.all(validations);
   }
 
   async syncLinks(fid: number, entityId: string) {
@@ -267,7 +334,12 @@ export class HubSyncProcessor {
     await backfillCastAdd(this.prisma, messages, this.hub);
   }
 
-  async syncReactionsToPostgres(messages: Message[]) {
+  async syncCastReactionsToPostgres(messages: Message[]) {
+    if (messages.length === 0) return;
+    await backfillReactionAdd(this.prisma, messages);
+  }
+
+  async syncUrlReactionsToPostgres(messages: Message[]) {
     if (messages.length === 0) return;
     await backfillReactionAdd(this.prisma, messages);
   }
@@ -291,7 +363,25 @@ export class HubSyncProcessor {
     await this.handleEventHandlerResponse(response);
   }
 
-  async syncReactionsToMongo(messages: Message[]) {
+  async syncCastReactionsToMongo(messages: Message[]) {
+    if (messages.length === 0) return;
+    const rawEvents = messages
+      .map((message) => {
+        const reaction = messageToCastReaction(message);
+        if (!reaction) return;
+        return transformToCastReactionEvent(
+          EventType.CAST_REACTION_ADD,
+          reaction,
+        );
+      })
+      .filter(Boolean) as RawEvent<FarcasterCastReactionData>[];
+
+    const response =
+      await this.processor.processCastReactionAddOrRemove(rawEvents);
+    await this.handleEventHandlerResponse(response);
+  }
+
+  async syncUrlReactionsToMongo(messages: Message[]) {
     if (messages.length === 0) return;
     const rawEvents = messages
       .map((message) => {
@@ -427,24 +517,46 @@ export class HubSyncProcessor {
     }
   }
 
-  async validateReactionsInPostgres(fid: number, expectedCount: number) {
-    const reactionsFromPostgres = await this.getReactionsFromPostgres(fid);
+  async validateCastReactionsInPostgres(fid: number, expectedCount: number) {
+    const reactionsFromPostgres = await this.getCastReactionsFromPostgres(fid);
     if (reactionsFromPostgres.length !== expectedCount) {
       throw new Error(
-        `[${fid}] [reactions] [postgres] failed to sync, expected: ${expectedCount}, got: ${reactionsFromPostgres.length} in postgres`,
+        `[${fid}] [cast-reactions] [postgres] failed to sync, expected: ${expectedCount}, got: ${reactionsFromPostgres.length} in postgres`,
       );
     }
   }
 
-  async validateReactionsInMongo(
+  async validateCastReactionsInMongo(
     fid: number,
     entityId: string,
     expectedCount: number,
   ) {
-    const reactionsFromMongo = await this.getReactionsFromMongo(entityId);
+    const reactionsFromMongo = await this.getCastReactionsFromMongo(entityId);
     if (reactionsFromMongo.length !== expectedCount) {
       throw new Error(
-        `[${fid}] [reactions] [mongo] failed to sync, expected: ${expectedCount}, got: ${reactionsFromMongo.length} in mongo`,
+        `[${fid}] [cast-reactions] [mongo] failed to sync, expected: ${expectedCount}, got: ${reactionsFromMongo.length} in mongo`,
+      );
+    }
+  }
+
+  async validateUrlReactionsInPostgres(fid: number, expectedCount: number) {
+    const reactionsFromPostgres = await this.getUrlReactionsFromPostgres(fid);
+    if (reactionsFromPostgres.length !== expectedCount) {
+      throw new Error(
+        `[${fid}] [url-reactions] [postgres] failed to sync, expected: ${expectedCount}, got: ${reactionsFromPostgres.length} in postgres`,
+      );
+    }
+  }
+
+  async validateUrlReactionsInMongo(
+    fid: number,
+    entityId: string,
+    expectedCount: number,
+  ) {
+    const reactionsFromMongo = await this.getUrlReactionsFromMongo(entityId);
+    if (reactionsFromMongo.length !== expectedCount) {
+      throw new Error(
+        `[${fid}] [url-reactions] [mongo] failed to sync, expected: ${expectedCount}, got: ${reactionsFromMongo.length} in mongo`,
       );
     }
   }
@@ -547,12 +659,12 @@ export class HubSyncProcessor {
     };
   }
 
-  async getMissingReactions(fid: number, entityId: string) {
+  async getMissingCastReactions(fid: number, entityId: string) {
     const [reactionsFromHub, reactionsFromPostgres, reactionsFromMongo] =
       await Promise.all([
-        this.getReactionsFromHub(fid),
-        this.getReactionsFromPostgres(fid),
-        this.getReactionsFromMongo(entityId),
+        this.getCastReactionsFromHub(fid),
+        this.getCastReactionsFromPostgres(fid),
+        this.getCastReactionsFromMongo(entityId),
       ]);
 
     const postgresHashMap = reactionsFromPostgres.reduce(
@@ -561,6 +673,58 @@ export class HubSyncProcessor {
         return acc;
       },
       {} as Record<string, FarcasterCastReaction>,
+    );
+
+    const mongoHashMap = reactionsFromMongo.reduce(
+      (acc, reaction) => {
+        acc[reaction.source.id] = reaction;
+        return acc;
+      },
+      {} as Record<string, EventAction<EventActionType>>,
+    );
+
+    const hubHashMap = reactionsFromHub.reduce(
+      (acc, reaction) => {
+        acc[bufferToHex(reaction.hash)] = reaction;
+        return acc;
+      },
+      {} as Record<string, Message>,
+    );
+
+    const missingFromPostgres = reactionsFromHub.filter(
+      (reaction) => !postgresHashMap[bufferToHex(reaction.hash)],
+    );
+
+    const missingFromMongo = reactionsFromHub.filter(
+      (reaction) => !mongoHashMap[bufferToHex(reaction.hash)],
+    );
+
+    const extraInMongo = Object.keys(mongoHashMap).filter(
+      (hash) => !hubHashMap[hash],
+    );
+
+    return {
+      expectedCount: reactionsFromHub.length,
+      missingFromPostgres,
+      missingFromMongo,
+      extraInMongo,
+    };
+  }
+
+  async getMissingUrlReactions(fid: number, entityId: string) {
+    const [reactionsFromHub, reactionsFromPostgres, reactionsFromMongo] =
+      await Promise.all([
+        this.getUrlReactionsFromHub(fid),
+        this.getUrlReactionsFromPostgres(fid),
+        this.getUrlReactionsFromMongo(entityId),
+      ]);
+
+    const postgresHashMap = reactionsFromPostgres.reduce(
+      (acc, reaction) => {
+        acc[reaction.hash] = reaction;
+        return acc;
+      },
+      {} as Record<string, FarcasterUrlReaction>,
     );
 
     const mongoHashMap = reactionsFromMongo.reduce(
@@ -669,10 +833,28 @@ export class HubSyncProcessor {
       .toArray();
   }
 
-  async getReactionsFromMongo(entityId: string) {
+  async getCastReactionsFromMongo(entityId: string) {
     return await this.mongo
       .getCollection<EventAction<EventActionType>>(MongoCollection.Actions)
       .find({
+        "source.type": EventType.CAST_REACTION_ADD,
+        type: {
+          $in: [EventActionType.LIKE, EventActionType.REPOST],
+        },
+        topics: {
+          type: TopicType.SOURCE_ENTITY,
+          value: entityId,
+        },
+        deletedAt: undefined,
+      })
+      .toArray();
+  }
+
+  async getUrlReactionsFromMongo(entityId: string) {
+    return await this.mongo
+      .getCollection<EventAction<EventActionType>>(MongoCollection.Actions)
+      .find({
+        "source.type": EventType.URL_REACTION_ADD,
         type: {
           $in: [EventActionType.LIKE, EventActionType.REPOST],
         },
@@ -704,8 +886,14 @@ export class HubSyncProcessor {
     return await this.prisma.farcasterCast.findMany({ where: { fid } });
   }
 
-  async getReactionsFromPostgres(fid: number) {
+  async getCastReactionsFromPostgres(fid: number) {
     return await this.prisma.farcasterCastReaction.findMany({
+      where: { fid },
+    });
+  }
+
+  async getUrlReactionsFromPostgres(fid: number) {
+    return await this.prisma.farcasterUrlReaction.findMany({
       where: { fid },
     });
   }
@@ -722,10 +910,20 @@ export class HubSyncProcessor {
     );
   }
 
-  async getReactionsFromHub(fid: number) {
-    return await this.getMessagesFromHub(fid, (fid, pageToken) =>
-      this.hub.getReactionsByFid({ fid, pageToken }),
-    );
+  async getCastReactionsFromHub(fid: number) {
+    return (
+      await this.getMessagesFromHub(fid, (fid, pageToken) =>
+        this.hub.getReactionsByFid({ fid, pageToken }),
+      )
+    ).filter((message) => !message.data?.reactionBody?.targetUrl);
+  }
+
+  async getUrlReactionsFromHub(fid: number) {
+    return (
+      await this.getMessagesFromHub(fid, (fid, pageToken) =>
+        this.hub.getReactionsByFid({ fid, pageToken }),
+      )
+    ).filter((message) => message.data?.reactionBody?.targetUrl);
   }
 
   async getLinksFromHub(fid: number) {

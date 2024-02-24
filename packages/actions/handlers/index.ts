@@ -70,13 +70,13 @@ export const getActionsHandler = async () => {
         }
         const typedContent = content as Content<PostData>;
         promises.push(
-          client.markActionsDeleted(
+          client.deleteAction(
             typedAction.source.id,
             typedAction.type === EventActionType.UNPOST
               ? EventActionType.POST
               : EventActionType.REPLY,
           ),
-          client.markContentDeleted(typedAction.data.contentId),
+          client.deleteContent(typedAction.data.contentId),
           ...typedContent.data.embeds.map((contentId) =>
             client.incrementEngagement(contentId, "embeds", true),
           ),
@@ -112,10 +112,7 @@ export const getActionsHandler = async () => {
       case EventActionType.UNLIKE: {
         const typedAction = action as EventAction<ContentActionData>;
         promises.push(
-          client.markActionsDeleted(
-            typedAction.source.id,
-            EventActionType.LIKE,
-          ),
+          client.deleteAction(typedAction.source.id, EventActionType.LIKE),
           client.incrementEngagement(typedAction.data.contentId, "likes", true),
           redis.removeContent(typedAction.data.contentId),
         );
@@ -124,10 +121,7 @@ export const getActionsHandler = async () => {
       case EventActionType.UNREPOST: {
         const typedAction = action as EventAction<ContentActionData>;
         promises.push(
-          client.markActionsDeleted(
-            typedAction.source.id,
-            EventActionType.REPOST,
-          ),
+          client.deleteAction(typedAction.source.id, EventActionType.REPOST),
           client.incrementEngagement(
             typedAction.data.contentId,
             "reposts",
@@ -257,7 +251,7 @@ export const getActionsHandler = async () => {
           action as EventAction<LinkBlockchainAddressActionData>;
         const collection = client.getCollection<Entity>(MongoCollection.Entity);
         promises.push(
-          client.markActionsDeleted(
+          client.deleteAction(
             typedAction.source.id,
             EventActionType.LINK_BLOCKCHAIN_ADDRESS,
           ),
@@ -306,10 +300,7 @@ export const getActionsHandler = async () => {
         const typedAction = action as EventAction<EntityActionData>;
         const collection = client.getCollection<Entity>(MongoCollection.Entity);
         promises.push(
-          client.markActionsDeleted(
-            typedAction.source.id,
-            EventActionType.FOLLOW,
-          ),
+          client.deleteAction(typedAction.source.id, EventActionType.FOLLOW),
           collection.updateOne(
             {
               _id: new ObjectId(typedAction.data.entityId),

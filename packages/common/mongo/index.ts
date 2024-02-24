@@ -239,61 +239,17 @@ export class MongoClient {
     });
   };
 
-  markActionsDeleted = async (id: string, type: EventActionType) => {
-    this.getCollection(MongoCollection.Actions).updateOne(
-      {
-        "source.id": id,
-        type: type,
-      },
-      {
-        $set: {
-          deletedAt: new Date(),
-          updatedAt: new Date(),
-        },
-      },
-    );
+  deleteAction = async (id: string, type: EventActionType) => {
+    this.getCollection(MongoCollection.Actions).deleteOne({
+      "source.id": id,
+      type: type,
+    });
   };
 
-  markActionsUndeleted = async (id: string) => {
-    this.getCollection(MongoCollection.Actions).updateOne(
-      {
-        "source.id": id,
-      },
-      {
-        $set: {
-          deletedAt: null,
-          updatedAt: new Date(),
-        },
-      },
-    );
-  };
-
-  markContentDeleted = async (contentId: string) => {
-    this.getCollection(MongoCollection.Content).updateOne(
-      {
-        contentId,
-      },
-      {
-        $set: {
-          deletedAt: new Date(),
-          updatedAt: new Date(),
-        },
-      },
-    );
-  };
-
-  markContentUndeleted = async (contentId: string) => {
-    this.getCollection(MongoCollection.Content).updateOne(
-      {
-        contentId,
-      },
-      {
-        $set: {
-          deletedAt: null,
-          updatedAt: new Date(),
-        },
-      },
-    );
+  deleteContent = async (contentId: string) => {
+    this.getCollection(MongoCollection.Content).deleteOne({
+      contentId,
+    });
   };
 
   incrementEngagement = async (
