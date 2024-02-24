@@ -1,124 +1,25 @@
-import { HubRpcClient, Message } from "@farcaster/hub-nodejs";
+import { HubRpcClient, Message, UserNameProof } from "@farcaster/hub-nodejs";
 import {
   bufferToHex,
-  hexToBuffer,
   timestampToDate,
   bufferToHexAddress,
+  hexToBuffer,
 } from "@nook/common/farcaster";
 import {
   FarcasterCast,
   FarcasterCastEmbedCast,
   FarcasterCastEmbedUrl,
   FarcasterCastMention,
-  PrismaClient,
+  FarcasterCastReaction,
+  FarcasterLink,
+  FarcasterUrlReaction,
+  FarcasterUserData,
+  FarcasterUsernameProof,
+  FarcasterVerification,
   Prisma,
 } from "@nook/common/prisma/farcaster";
 
-const prisma = new PrismaClient();
-
-export const handleCastAdd = async (message: Message, client: HubRpcClient) => {
-  const cast = messageToCast(message);
-  if (!cast) return;
-
-  if (cast.parentHash) {
-    const { rootParentFid, rootParentHash, rootParentUrl } =
-      await findRootParent(client, cast);
-    cast.rootParentFid = rootParentFid;
-    cast.rootParentHash = rootParentHash;
-    cast.rootParentUrl = rootParentUrl;
-  }
-
-  await prisma.farcasterCast.upsert({
-    where: {
-      hash: cast.hash,
-    },
-    create: cast as Prisma.FarcasterCastCreateInput,
-    update: cast as Prisma.FarcasterCastCreateInput,
-  });
-
-  const embedCasts = messageToCastEmbedCast(message);
-
-  for (const embedCast of embedCasts) {
-    await prisma.farcasterCastEmbedCast.upsert({
-      where: {
-        hash_embedHash: {
-          hash: embedCast.hash,
-          embedHash: embedCast.embedHash,
-        },
-      },
-      create: embedCast,
-      update: embedCast,
-    });
-  }
-
-  const embedUrls = messageToCastEmbedUrl(message);
-
-  for (const embedUrl of embedUrls) {
-    await prisma.farcasterCastEmbedUrl.upsert({
-      where: {
-        hash_url: {
-          hash: embedUrl.hash,
-          url: embedUrl.url,
-        },
-      },
-      create: embedUrl,
-      update: embedUrl,
-    });
-  }
-
-  const mentions = messageToCastMentions(message);
-
-  for (const mention of mentions) {
-    await prisma.farcasterCastMention.upsert({
-      where: {
-        hash_mention_mentionPosition: {
-          hash: mention.hash,
-          mention: mention.mention,
-          mentionPosition: mention.mentionPosition,
-        },
-      },
-      create: mention,
-      update: mention,
-    });
-  }
-
-  console.log(`[cast-add] [${cast.fid}] added ${cast.hash}`);
-
-  return cast;
-};
-
-export const handleCastRemove = async (message: Message) => {
-  if (!message.data?.castRemoveBody) return;
-
-  const hash = bufferToHex(message.data.castRemoveBody.targetHash);
-  const deletedAt = timestampToDate(message.data.timestamp);
-
-  await prisma.farcasterCast.updateMany({
-    where: { hash },
-    data: { deletedAt },
-  });
-
-  await prisma.farcasterCastEmbedCast.updateMany({
-    where: { hash },
-    data: { deletedAt },
-  });
-
-  await prisma.farcasterCastEmbedUrl.updateMany({
-    where: { hash },
-    data: { deletedAt },
-  });
-
-  await prisma.farcasterCastMention.updateMany({
-    where: { hash },
-    data: { deletedAt },
-  });
-
-  console.log(`[cast-remove] [${message.data?.fid}] removed ${hash}`);
-
-  return await prisma.farcasterCast.findUnique({ where: { hash } });
-};
-
-const messageToCast = (message: Message): FarcasterCast | undefined => {
+export const messageToCast = (message: Message): FarcasterCast | undefined => {
   if (!message.data?.castAddBody) return;
 
   const hash = bufferToHex(message.hash);
@@ -179,7 +80,9 @@ const messageToCast = (message: Message): FarcasterCast | undefined => {
   };
 };
 
-const messageToCastEmbedCast = (message: Message): FarcasterCastEmbedCast[] => {
+export const messageToCastEmbedCast = (
+  message: Message,
+): FarcasterCastEmbedCast[] => {
   if (!message.data?.castAddBody) return [];
   const embeds = message.data.castAddBody.embeds;
   if (embeds.length === 0) return [];
@@ -204,7 +107,9 @@ const messageToCastEmbedCast = (message: Message): FarcasterCastEmbedCast[] => {
   return embedCasts;
 };
 
-const messageToCastEmbedUrl = (message: Message): FarcasterCastEmbedUrl[] => {
+export const messageToCastEmbedUrl = (
+  message: Message,
+): FarcasterCastEmbedUrl[] => {
   if (!message.data?.castAddBody) return [];
 
   const hash = bufferToHex(message.hash);
@@ -239,7 +144,9 @@ const messageToCastEmbedUrl = (message: Message): FarcasterCastEmbedUrl[] => {
   return embedUrls;
 };
 
-const messageToCastMentions = (message: Message): FarcasterCastMention[] => {
+export const messageToCastMentions = (
+  message: Message,
+): FarcasterCastMention[] => {
   if (!message.data?.castAddBody) return [];
 
   const mentionPositions = message.data.castAddBody.mentionsPositions;
@@ -268,7 +175,129 @@ const messageToCastMentions = (message: Message): FarcasterCastMention[] => {
   return castMentions;
 };
 
-const findRootParent = async (client: HubRpcClient, cast: FarcasterCast) => {
+export const messageToLink = (message: Message): FarcasterLink | undefined => {
+  if (!message.data?.linkBody?.targetFid) return;
+  return {
+    fid: BigInt(message.data.fid),
+    linkType: message.data.linkBody.type,
+    targetFid: BigInt(message.data.linkBody.targetFid),
+    timestamp: timestampToDate(message.data.timestamp),
+    deletedAt: null,
+    hash: bufferToHex(message.hash),
+    hashScheme: message.hashScheme,
+    signer: bufferToHexAddress(message.signer),
+    signatureScheme: message.signatureScheme,
+    signature: bufferToHex(message.signature),
+  };
+};
+
+export const messageToCastReaction = (
+  message: Message,
+): FarcasterCastReaction | undefined => {
+  if (!message.data?.reactionBody?.targetCastId) return;
+
+  return {
+    fid: BigInt(message.data.fid),
+    targetFid: BigInt(message.data.reactionBody.targetCastId.fid),
+    targetHash: bufferToHex(message.data.reactionBody.targetCastId.hash),
+    reactionType: message.data.reactionBody.type,
+    timestamp: timestampToDate(message.data.timestamp),
+    deletedAt: null,
+    hash: bufferToHex(message.hash),
+    hashScheme: message.hashScheme,
+    signer: bufferToHexAddress(message.signer),
+    signatureScheme: message.signatureScheme,
+    signature: bufferToHex(message.signature),
+  };
+};
+
+export const messageToUrlReaction = (
+  message: Message,
+): FarcasterUrlReaction | undefined => {
+  if (!message.data?.reactionBody?.targetUrl) return;
+
+  return {
+    fid: BigInt(message.data.fid),
+    targetUrl: message.data.reactionBody.targetUrl,
+    reactionType: message.data.reactionBody.type,
+    timestamp: timestampToDate(message.data.timestamp),
+    deletedAt: null,
+    hash: bufferToHex(message.hash),
+    hashScheme: message.hashScheme,
+    signer: bufferToHexAddress(message.signer),
+    signatureScheme: message.signatureScheme,
+    signature: bufferToHex(message.signature),
+  };
+};
+
+export const messageToUserData = (
+  message: Message,
+): FarcasterUserData | undefined => {
+  if (!message.data?.userDataBody) return;
+
+  const fid = BigInt(message.data.fid);
+
+  return {
+    fid,
+    type: message.data.userDataBody.type,
+    value: message.data.userDataBody.value,
+    timestamp: timestampToDate(message.data.timestamp),
+    hash: bufferToHex(message.hash),
+    hashScheme: message.hashScheme,
+    signer: bufferToHexAddress(message.signer),
+    signatureScheme: message.signatureScheme,
+    signature: bufferToHex(message.signature),
+  };
+};
+
+export const messageToVerification = (
+  message: Message,
+): FarcasterVerification | undefined => {
+  if (!message.data?.verificationAddAddressBody) return;
+
+  const fid = BigInt(message.data.fid);
+  const address = bufferToHexAddress(
+    message.data.verificationAddAddressBody.address,
+  );
+
+  return {
+    fid,
+    address,
+    protocol: message.data.verificationAddAddressBody.protocol,
+    verificationType: message.data.verificationAddAddressBody.verificationType,
+    chainId: message.data.verificationAddAddressBody.chainId,
+    claimSignature: bufferToHex(
+      message.data.verificationAddAddressBody.claimSignature,
+    ),
+    blockHash: bufferToHex(message.data.verificationAddAddressBody.blockHash),
+    timestamp: timestampToDate(message.data.timestamp),
+    deletedAt: null,
+    hash: bufferToHex(message.hash),
+    hashScheme: message.hashScheme,
+    signer: bufferToHexAddress(message.signer),
+    signatureScheme: message.signatureScheme,
+    signature: bufferToHex(message.signature),
+  };
+};
+
+export const messageToUsernameProof = (
+  message: UserNameProof,
+): FarcasterUsernameProof => {
+  return {
+    fid: BigInt(message.fid),
+    username: Buffer.from(message.name).toString(),
+    owner: bufferToHexAddress(message.owner),
+    signature: bufferToHex(message.signature),
+    type: message.type,
+    timestamp: new Date(message.timestamp * 1000),
+    deletedAt: null,
+  };
+};
+
+export const findRootParent = async (
+  client: HubRpcClient,
+  cast: FarcasterCast,
+) => {
   let hash = hexToBuffer(cast.hash);
   let fid = Number(cast.fid);
   let url = cast.parentUrl;
@@ -292,56 +321,4 @@ const findRootParent = async (client: HubRpcClient, cast: FarcasterCast) => {
     rootParentHash: bufferToHex(hash),
     rootParentUrl: url,
   };
-};
-
-export const backfillCastAdd = async (
-  client: HubRpcClient,
-  messages: Message[],
-) => {
-  const casts = messages.map(messageToCast).filter(Boolean) as FarcasterCast[];
-  if (casts.length === 0) return [];
-
-  const rootParents = await Promise.all(
-    casts.map((cast) => findRootParent(client, cast)),
-  );
-
-  for (let i = 0; i < casts.length; i++) {
-    casts[i].rootParentFid = rootParents[i].rootParentFid;
-    casts[i].rootParentHash = rootParents[i].rootParentHash;
-    casts[i].rootParentUrl = rootParents[i].rootParentUrl;
-  }
-
-  await prisma.farcasterCast.createMany({
-    data: casts as Prisma.FarcasterCastCreateInput[],
-    skipDuplicates: true,
-  });
-
-  const embedCasts = messages
-    .map(messageToCastEmbedCast)
-    .filter(Boolean) as FarcasterCastEmbedCast[][];
-
-  const embedUrls = messages
-    .map(messageToCastEmbedUrl)
-    .filter(Boolean) as FarcasterCastEmbedUrl[][];
-
-  const mentions = messages
-    .map(messageToCastMentions)
-    .filter(Boolean) as FarcasterCastMention[][];
-
-  await prisma.farcasterCastEmbedCast.createMany({
-    data: embedCasts.flat(),
-    skipDuplicates: true,
-  });
-
-  await prisma.farcasterCastEmbedUrl.createMany({
-    data: embedUrls.flat(),
-    skipDuplicates: true,
-  });
-
-  await prisma.farcasterCastMention.createMany({
-    data: mentions.flat(),
-    skipDuplicates: true,
-  });
-
-  return casts;
 };

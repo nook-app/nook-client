@@ -5,15 +5,12 @@ import {
   getSSLHubRpcClient,
   Message,
 } from "@farcaster/hub-nodejs";
-import { backfillCastAdd } from "../consumer/handlers/casts";
-import { backfillUserDataAdd } from "../consumer/handlers/users";
 import {
   BlockchainAccount,
   EventType,
   FarcasterAccount,
   Protocol,
 } from "@nook/common/types";
-import { backfillVerificationAdd } from "../consumer/handlers/verifications";
 import {
   fromFarcasterURI,
   toFarcasterURI,
@@ -21,8 +18,11 @@ import {
 } from "@nook/common/farcaster";
 import { hexToBuffer } from "@nook/common/farcaster";
 import { publishRawEvent, publishRawEvents } from "@nook/common/queues";
-
-const prisma = new PrismaClient();
+import {
+  backfillCastAdd,
+  backfillUserDataAdd,
+  backfillVerificationAdd,
+} from "../backfill";
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore: Unreachable code error
@@ -31,6 +31,8 @@ BigInt.prototype.toJSON = function () {
 };
 
 const run = async () => {
+  const prisma = new PrismaClient();
+
   const hubRpcEndpoint = process.env.HUB_RPC_ENDPOINT;
   if (!hubRpcEndpoint) {
     throw new Error("Missing HUB_RPC_ENDPOINT");
@@ -75,7 +77,7 @@ const run = async () => {
         return;
       }
 
-      const casts = await backfillCastAdd(client, [message.value]);
+      const casts = await backfillCastAdd(prisma,[message.value], client);
       const cast = transformToCastEvent(EventType.CAST_ADD, casts[0]);
       await publishRawEvent(cast);
 
@@ -116,7 +118,7 @@ const run = async () => {
         })
         )).filter(Boolean) as Message[]
 
-      const casts = await backfillCastAdd(client, missingCastMessages);
+      const casts = await backfillCastAdd(prisma, missingCastMessages, client);
 
       reply.send({
         casts: existingCasts.concat(casts).map((cast) => transformToCastEvent(EventType.CAST_ADD, cast).data),
@@ -170,7 +172,10 @@ const run = async () => {
           });
 
           if (messages.isOk()) {
-            userData = await backfillUserDataAdd(messages.value.messages);
+            userData = await backfillUserDataAdd(
+              prisma,
+              messages.value.messages,
+            );
             if (!username) {
               username = userData.find(
                 (d) => d.type === UserDataType.USERNAME,
@@ -214,6 +219,7 @@ const run = async () => {
           });
           if (messages.isOk()) {
             verifications = await backfillVerificationAdd(
+              prisma,
               messages.value.messages,
             );
           }

@@ -1,5 +1,12 @@
+import { getSSLHubRpcClient } from "@farcaster/hub-nodejs";
 import { MongoClient, MongoCollection } from "@nook/common/mongo";
-import { Entity, EventAction, EventActionType } from "@nook/common/types";
+import {
+  Entity,
+  EntityActionData,
+  EventAction,
+  EventActionType,
+  TopicType,
+} from "@nook/common/types";
 import { ObjectId } from "mongodb";
 
 type FollowerData = Record<string, { following: number; followers: number }>;
@@ -94,16 +101,59 @@ const updateFollowerData = async (
 };
 
 const run = async () => {
+  const hub = getSSLHubRpcClient(process.env.HUB_RPC_ENDPOINT as string, {
+    "grpc.max_receive_message_length": 4300000,
+  });
+
   const client = new MongoClient();
   await client.connect();
 
-  console.time("fetchFollowerData");
-  const followerData = await fetchFollowerData(client);
-  console.timeEnd("fetchFollowerData");
+  // const result = await client
+  //   .getCollection<EventAction<EntityActionData>>(MongoCollection.Actions)
+  //   .find({
+  //     type: EventActionType.FOLLOW,
+  //     topics: {
+  //       type: TopicType.TARGET_ENTITY,
+  //       value: "65d6d626bcf8dea3200bb8f7",
+  //     },
+  //   })
+  //   .toArray();
 
-  console.time("updateFollowerData");
-  await updateFollowerData(client, followerData);
-  console.timeEnd("updateFollowerData");
+  // const distinctFids = new Set<string>();
+  // for (const action of result) {
+  //   distinctFids.add(action.data.sourceUserId);
+  // }
+
+  // console.log(distinctFids.size);
+  // return;
+
+  let totalMessages = 0;
+  let pageToken = undefined;
+  let morePages = true;
+
+  while (morePages) {
+    console.log(totalMessages);
+    const response = await hub.getReactionsByFid({
+      fid: 3,
+      pageToken: pageToken,
+    });
+    if (response.isOk()) {
+      totalMessages += response.value.messages.length;
+      pageToken = response.value.nextPageToken;
+      morePages = !!pageToken;
+    } else {
+      morePages = false;
+    }
+  }
+
+  console.log(totalMessages);
+  // console.time("fetchFollowerData");
+  // const followerData = await fetchFollowerData(client);
+  // console.timeEnd("fetchFollowerData");
+
+  // console.time("updateFollowerData");
+  // await updateFollowerData(client, followerData);
+  // console.timeEnd("updateFollowerData");
 };
 
 run()

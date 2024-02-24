@@ -4,17 +4,19 @@
   "private": true,
   "scripts": {
     "build": "tsc",
-    "start:consumer": "node dist/consumer/index.js",
-    "start:manual": "tsc && node dist/consumer/manual.js",
-    "start:publisher": "node dist/publisher/index.js",
+    "start:consumer": "node dist/src/consumer.js",
+    "start:manual": "tsc && node dist/src/manual.js",
+    "start:publisher": "node dist/src/publisher.js",
     "start:api": "node dist/api/index.js",
-    "start:backfill": "tsc && node dist/backfill/index.js",
     "start:test": "tsc && node dist/test.js"
+  },
+  "exports": {
+    "./backfill": "./dist/backfill/index.js"
   },
   "dependencies": {
     "@ethersproject/abstract-signer": "^5.7.0",
     "@farcaster/fishery": "^2.2.3",
-    "@farcaster/hub-nodejs": "^0.11.0",
+    "@farcaster/hub-nodejs": "^0.11.3",
     "@nook/common": "*",
     "bullmq": "^5.1.0",
     "ethers": "^6.9.1",

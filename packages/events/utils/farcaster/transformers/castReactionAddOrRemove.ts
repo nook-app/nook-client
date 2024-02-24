@@ -15,8 +15,9 @@ import {
 
 export const transformCastReactionAddOrRemove = (
   rawEvent: RawEvent<FarcasterCastReactionData>,
-  content: Content<PostData>,
   entities: Record<string, Entity>,
+  contentId: string,
+  content?: Content<PostData>,
 ) => {
   let type: EventActionType;
   switch (rawEvent.data.reactionType) {
@@ -47,22 +48,29 @@ export const transformCastReactionAddOrRemove = (
       timestamp: new Date(rawEvent.timestamp),
       entityId,
       referencedEntityIds: Array.from(
-        new Set([entityId, ...content.referencedEntityIds]),
+        new Set([entityId, ...(content?.referencedEntityIds || [])]),
       ).filter(Boolean) as string[],
-      referencedContentIds: content.referencedContentIds,
+      referencedContentIds: content?.referencedContentIds || [],
       createdAt: new Date(),
       updatedAt: new Date(),
       type,
       data: {
-        entityId: content.data.entityId,
-        contentId: content.contentId,
+        entityId,
+        contentId,
       },
       deletedAt: [EventActionType.UNPOST, EventActionType.UNREPLY].includes(
         type,
       )
         ? new Date()
         : undefined,
-      topics: generateTopics(entityId, content.data),
+      topics: content
+        ? generateTopics(entityId, content.data)
+        : [
+            {
+              type: TopicType.SOURCE_ENTITY,
+              value: entityId.toString(),
+            },
+          ],
     },
   ];
 

@@ -16,21 +16,21 @@ import {
   PostData,
   RawEvent,
 } from "@nook/common/types";
-import { transformUserDataAddEvent } from "./transformers/userDataAdd";
-import { transformCastAddOrRemove } from "./transformers/castAddOrRemove";
 import { toFarcasterURI } from "@nook/common/farcaster";
-import { transformCastReactionAddOrRemove } from "./transformers/castReactionAddOrRemove";
-import { transformLinkAddOrRemove } from "./transformers/linkAddOrRemove";
-import { transformUrlReactionAddOrRemove } from "./transformers/urlReactionAddOrRemove";
-import { transformUsernameProofAdd } from "./transformers/usernameProofAdd";
-import { transformVerificationAddOrRemove } from "./transformers/verificationAddOrRemove";
-import { RedisClient } from "@nook/common/cache";
 import {
   extractFidFromCast,
   extractRelatedCastsFromCast,
   formatPostContent,
-} from "./utils";
-import { EventHandlerResponse, EventHandlerResponseEvent } from "../../types";
+  transformUserDataAddEvent,
+  transformCastAddOrRemove,
+  transformCastReactionAddOrRemove,
+  transformLinkAddOrRemove,
+  transformUrlReactionAddOrRemove,
+  transformUsernameProofAdd,
+  transformVerificationAddOrRemove,
+} from "../utils/farcaster";
+import { RedisClient } from "@nook/common/cache";
+import { EventHandlerResponse, EventHandlerResponseEvent } from "../types";
 
 export class FarcasterProcessor {
   client: MongoClient;
@@ -129,27 +129,20 @@ export class FarcasterProcessor {
     const entities = await this.fetchEntities(
       rawEvents.map((event) => event.data.fid),
     );
-    const events = rawEvents.map((event) =>
-      contentMap[
-        toFarcasterURI({
-          fid: event.data.targetFid,
-          hash: event.data.targetHash,
-        })
-      ]
-        ? transformCastReactionAddOrRemove(
-            event,
-            contentMap[
-              toFarcasterURI({
-                fid: event.data.targetFid,
-                hash: event.data.targetHash,
-              })
-            ],
-            entities,
-          )
-        : undefined,
-    );
+    const events = rawEvents.map((event) => {
+      const contentId = toFarcasterURI({
+        fid: event.data.targetFid,
+        hash: event.data.targetHash,
+      });
+      return transformCastReactionAddOrRemove(
+        event,
+        entities,
+        contentId,
+        contentMap[contentId],
+      );
+    });
     return {
-      events: events.filter(Boolean) as EventHandlerResponseEvent[],
+      events,
       contents: newContents,
     };
   }

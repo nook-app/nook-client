@@ -12,7 +12,7 @@ import { RedisClient } from "@nook/common/cache";
 import { Job } from "bullmq";
 import { publishContent } from "@nook/common/queues";
 import { getOrCreateChannel } from "@nook/common/scraper";
-import { FarcasterProcessor } from "./farcaster/processor";
+import { FarcasterProcessor } from "../processors/farcaster";
 import { EventHandlerResponse } from "../types";
 
 export const getEventsHandler = async () => {

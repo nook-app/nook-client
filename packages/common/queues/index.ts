@@ -6,18 +6,16 @@ import { Message } from "@farcaster/hub-nodejs";
 
 export enum QueueName {
   Farcaster = "farcaster",
-  FarcasterBackfill = "farcaster-backfill",
+  Backfill = "backfill",
   Events = "events",
-  EventsBackfill = "events-backfill",
   Content = "content",
   Actions = "actions",
 }
 
-type QueueType<T> = {
+type QueueType = {
+  [QueueName.Backfill]: { fid: string };
   [QueueName.Farcaster]: Message;
-  [QueueName.FarcasterBackfill]: { fid: string };
   [QueueName.Events]: RawEvent<EntityEventData>;
-  [QueueName.EventsBackfill]: { fid: string };
   [QueueName.Content]: { contentId: string; channel?: boolean };
   [QueueName.Actions]: { actionId: string; created: boolean };
 };
@@ -47,14 +45,14 @@ const formatQueueName = (queueName: QueueName) => {
 
 export const getQueue = <N extends QueueName, T>(
   queueName: N,
-): Queue<QueueType<T>[N]> => {
-  return new Queue<QueueType<T>[N]>(formatQueueName(queueName), queueOptions);
+): Queue<QueueType[N]> => {
+  return new Queue<QueueType[N]>(formatQueueName(queueName), queueOptions);
 };
 
-export const getWorker = <N extends QueueName, T>(
+export const getWorker = <N extends QueueName>(
   queueName: N,
-  jobFunction: (job: Job<QueueType<T>[N]>) => Promise<void>,
-): Worker<QueueType<T>[N]> => {
+  jobFunction: (job: Job<QueueType[N]>) => Promise<void>,
+): Worker<QueueType[N]> => {
   return new Worker(formatQueueName(queueName), jobFunction, {
     connection,
   });

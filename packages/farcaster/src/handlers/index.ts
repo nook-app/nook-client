@@ -21,6 +21,7 @@ import {
   transformToVerificationEvent,
 } from "@nook/common/farcaster";
 import { publishRawEvents } from "@nook/common/queues";
+import { PrismaClient } from "@nook/common/prisma/farcaster";
 
 export const getFarcasterHandler = () => {
   const hubRpcEndpoint = process.env.HUB_RPC_ENDPOINT;
@@ -30,6 +31,8 @@ export const getFarcasterHandler = () => {
 
   const client = getSSLHubRpcClient(hubRpcEndpoint);
 
+  const prisma = new PrismaClient();
+
   return async (job: Job<Message>) => {
     const message = job.data;
 
@@ -37,21 +40,21 @@ export const getFarcasterHandler = () => {
 
     switch (message.data?.type) {
       case MessageType.CAST_ADD: {
-        const record = await handleCastAdd(message, client);
+        const record = await handleCastAdd(prisma, message, client);
         if (record) {
           events.push(transformToCastEvent(EventType.CAST_ADD, record));
         }
         break;
       }
       case MessageType.CAST_REMOVE: {
-        const record = await handleCastRemove(message);
+        const record = await handleCastRemove(prisma, message);
         if (record) {
           events.push(transformToCastEvent(EventType.CAST_REMOVE, record));
         }
         break;
       }
       case MessageType.VERIFICATION_ADD_ETH_ADDRESS: {
-        const record = await handleVerificationAdd(message);
+        const record = await handleVerificationAdd(prisma, message);
         if (record) {
           events.push(
             transformToVerificationEvent(EventType.VERIFICATION_ADD, record),
@@ -60,7 +63,7 @@ export const getFarcasterHandler = () => {
         break;
       }
       case MessageType.VERIFICATION_REMOVE: {
-        const record = await handleVerificationRemove(message);
+        const record = await handleVerificationRemove(prisma, message);
         if (record) {
           events.push(
             transformToVerificationEvent(EventType.VERIFICATION_REMOVE, record),
@@ -69,7 +72,7 @@ export const getFarcasterHandler = () => {
         break;
       }
       case MessageType.REACTION_ADD: {
-        const record = await handleReactionAdd(message);
+        const record = await handleReactionAdd(prisma, message);
         if (record) {
           if ("targetUrl" in record) {
             events.push(
@@ -84,7 +87,7 @@ export const getFarcasterHandler = () => {
         break;
       }
       case MessageType.REACTION_REMOVE: {
-        const record = await handleReactionRemove(message);
+        const record = await handleReactionRemove(prisma, message);
         if (record) {
           if ("targetUrl" in record) {
             events.push(
@@ -99,28 +102,28 @@ export const getFarcasterHandler = () => {
         break;
       }
       case MessageType.LINK_ADD: {
-        const record = await handleLinkAdd(message);
+        const record = await handleLinkAdd(prisma, message);
         if (record) {
           events.push(transformToLinkEvent(EventType.LINK_ADD, record));
         }
         break;
       }
       case MessageType.LINK_REMOVE: {
-        const record = await handleLinkRemove(message);
+        const record = await handleLinkRemove(prisma, message);
         if (record) {
           events.push(transformToLinkEvent(EventType.LINK_REMOVE, record));
         }
         break;
       }
       case MessageType.USER_DATA_ADD: {
-        const record = await handleUserDataAdd(message);
+        const record = await handleUserDataAdd(prisma, message);
         if (record) {
           events.push(transformToUserDataEvent(record));
         }
         break;
       }
       case MessageType.USERNAME_PROOF: {
-        const record = await handleUsernameProofAdd(message);
+        const record = await handleUsernameProofAdd(prisma, message);
         if (record) {
           events.push(transformToUsernameProofEvent(record));
         }

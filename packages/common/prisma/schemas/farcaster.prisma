@@ -196,4 +196,5 @@ model FarcasterLink {
     deletedAt DateTime?
 
     @@id([fid, linkType, targetFid])
+    @@index([targetFid, linkType])
 }

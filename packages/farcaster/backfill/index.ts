@@ -1,117 +1,184 @@
-import { QueueName, getWorker } from "@nook/common/queues";
-import { HubRpcClient, getSSLHubRpcClient } from "@farcaster/hub-nodejs";
-import { backfillCastAdd } from "../consumer/handlers/casts";
-import { backfillVerificationAdd } from "../consumer/handlers/verifications";
-import { backfillUsernameProofAdd } from "../consumer/handlers/usernames";
-import { backfillUserDataAdd } from "../consumer/handlers/users";
-import { backfillReactionAdd } from "../consumer/handlers/reactions";
-import { backfillLinkAdd } from "../consumer/handlers/links";
-import { PrismaClient } from "@nook/common/prisma/farcaster";
+import { HubRpcClient, Message, UserNameProof } from "@farcaster/hub-nodejs";
+import {
+  findRootParent,
+  messageToCast,
+  messageToCastEmbedCast,
+  messageToCastEmbedUrl,
+  messageToCastMentions,
+  messageToCastReaction,
+  messageToLink,
+  messageToUrlReaction,
+  messageToUserData,
+  messageToUsernameProof,
+  messageToVerification,
+} from "../src/utils";
+import {
+  FarcasterCast,
+  FarcasterCastEmbedCast,
+  FarcasterCastEmbedUrl,
+  FarcasterCastMention,
+  FarcasterCastReaction,
+  FarcasterLink,
+  FarcasterUrlReaction,
+  FarcasterUserData,
+  FarcasterUsernameProof,
+  FarcasterVerification,
+  Prisma,
+  PrismaClient,
+} from "@nook/common/prisma/farcaster";
 
-const prisma = new PrismaClient();
+export const backfillCastAdd = async (
+  prisma: PrismaClient,
+  messages: Message[],
+  client: HubRpcClient,
+) => {
+  const casts = messages.map(messageToCast).filter(Boolean) as FarcasterCast[];
+  if (casts.length === 0) return [];
 
-const processFid = async (client: HubRpcClient, fid: number) => {
-  console.time(`[${fid}] backfill took`);
-
-  const [userDatas, usernameProofs, verifications, casts, reactions, links] =
-    await Promise.all([
-      client.getUserDataByFid({ fid }),
-      client.getUserNameProofsByFid({ fid }),
-      client.getVerificationsByFid({ fid }),
-      client.getCastsByFid({ fid }),
-      client.getReactionsByFid({ fid }),
-      client.getLinksByFid({ fid }),
-    ]);
-
-  if (userDatas.isErr()) {
-    console.error("u", userDatas.error);
-    throw new Error(userDatas.error.message);
-  }
-  if (usernameProofs.isErr()) {
-    console.error("p", usernameProofs.error);
-    throw new Error(usernameProofs.error.message);
-  }
-  if (verifications.isErr()) {
-    console.error("v", verifications.error);
-    throw new Error(verifications.error.message);
-  }
-  if (casts.isErr()) {
-    console.error("c", casts.error);
-    throw new Error(casts.error.message);
-  }
-  if (reactions.isErr()) {
-    console.error("r", reactions.error);
-    throw new Error(reactions.error.message);
-  }
-  if (links.isErr()) {
-    console.error("l", links.error);
-    throw new Error(links.error.message);
-  }
-
-  await Promise.all([
-    prisma.farcasterUserData.deleteMany({ where: { fid: fid } }),
-    prisma.farcasterUsernameProof.deleteMany({ where: { fid: fid } }),
-    prisma.farcasterVerification.deleteMany({ where: { fid: fid } }),
-    prisma.farcasterCast.deleteMany({ where: { fid: fid } }),
-    prisma.farcasterCastMention.deleteMany({ where: { fid: fid } }),
-    prisma.farcasterCastEmbedCast.deleteMany({ where: { fid: fid } }),
-    prisma.farcasterCastEmbedUrl.deleteMany({ where: { fid: fid } }),
-    prisma.farcasterCastReaction.deleteMany({ where: { fid: fid } }),
-    prisma.farcasterUrlReaction.deleteMany({ where: { fid: fid } }),
-    prisma.farcasterLink.deleteMany({ where: { fid: fid } }),
-  ]);
-
-  await Promise.all([
-    backfillUserDataAdd(userDatas.value.messages),
-    backfillUsernameProofAdd(usernameProofs.value.proofs),
-    backfillVerificationAdd(verifications.value.messages),
-    backfillCastAdd(client, casts.value.messages),
-    backfillReactionAdd(reactions.value.messages),
-    backfillLinkAdd(links.value.messages),
-  ]);
-
-  console.log(
-    `[${fid}] backfilled user datas - ${userDatas.value.messages.length}\n` +
-      `[${fid}] backfilled username proofs - ${usernameProofs.value.proofs.length}\n` +
-      `[${fid}] backfilled verifications - ${verifications.value.messages.length}\n` +
-      `[${fid}] backfilled casts - ${casts.value.messages.length}\n` +
-      `[${fid}] backfilled reactions - ${reactions.value.messages.length}\n` +
-      `[${fid}] backfilled links - ${links.value.messages.length}`,
+  const rootParents = await Promise.all(
+    casts.map((cast) => findRootParent(client, cast)),
   );
 
-  console.timeEnd(`[${fid}] backfill took`);
-};
-
-const run = async () => {
-  const hubRpcEndpoint = process.env.HUB_RPC_ENDPOINT;
-  if (!hubRpcEndpoint) {
-    throw new Error("Missing HUB_RPC_ENDPOINT");
-  }
-  const client = getSSLHubRpcClient(hubRpcEndpoint, {
-    "grpc.max_receive_message_length": 4300000,
-  });
-
-  const inputFid = process.argv[2];
-  if (inputFid) {
-    await processFid(client, Number(inputFid));
-    process.exit(0);
+  for (let i = 0; i < casts.length; i++) {
+    casts[i].rootParentFid = rootParents[i].rootParentFid;
+    casts[i].rootParentHash = rootParents[i].rootParentHash;
+    casts[i].rootParentUrl = rootParents[i].rootParentUrl;
   }
 
-  const worker = getWorker(QueueName.FarcasterBackfill, async (job) => {
-    const fid = Number(job.data.fid);
-    await processFid(client, fid);
-
-    console.log(`processing fid: ${fid}`);
+  await prisma.farcasterCast.createMany({
+    data: casts as Prisma.FarcasterCastCreateInput[],
+    skipDuplicates: true,
   });
 
-  worker.on("failed", (job, err) => {
-    if (job) {
-      console.log(`[${job.id}] failed with ${err.message}`);
-    }
+  const embedCasts = messages
+    .map(messageToCastEmbedCast)
+    .filter(Boolean) as FarcasterCastEmbedCast[][];
+
+  const embedUrls = messages
+    .map(messageToCastEmbedUrl)
+    .filter(Boolean) as FarcasterCastEmbedUrl[][];
+
+  const mentions = messages
+    .map(messageToCastMentions)
+    .filter(Boolean) as FarcasterCastMention[][];
+
+  await prisma.farcasterCastEmbedCast.createMany({
+    data: embedCasts.flat(),
+    skipDuplicates: true,
   });
+
+  await prisma.farcasterCastEmbedUrl.createMany({
+    data: embedUrls.flat(),
+    skipDuplicates: true,
+  });
+
+  await prisma.farcasterCastMention.createMany({
+    data: mentions.flat(),
+    skipDuplicates: true,
+  });
+
+  return casts;
 };
 
-run().catch((e) => {
-  console.error(e);
-  process.exit(1);
-});
+export const backfillLinkAdd = async (
+  prisma: PrismaClient,
+  messages: Message[],
+) => {
+  const links = messages.map(messageToLink).filter(Boolean) as FarcasterLink[];
+  if (links.length > 0) {
+    await prisma.farcasterLink.createMany({
+      data: links,
+      skipDuplicates: true,
+    });
+  }
+  return links;
+};
+
+export const backfillReactionAdd = async (
+  prisma: PrismaClient,
+  messages: Message[],
+) => {
+  const castReactions = messages
+    .map(messageToCastReaction)
+    .filter(Boolean) as FarcasterCastReaction[];
+  if (castReactions.length > 0) {
+    await prisma.farcasterCastReaction.createMany({
+      data: castReactions,
+      skipDuplicates: true,
+    });
+  }
+
+  const urlReactions = messages
+    .map(messageToUrlReaction)
+    .filter(Boolean) as FarcasterUrlReaction[];
+  if (urlReactions.length > 0) {
+    await prisma.farcasterUrlReaction.createMany({
+      data: urlReactions,
+      skipDuplicates: true,
+    });
+  }
+
+  return { castReactions, urlReactions };
+};
+
+export const backfillUsernameProofAdd = async (
+  prisma: PrismaClient,
+  messages: UserNameProof[],
+) => {
+  const proofs = messages
+    .map(messageToUsernameProof)
+    .filter(Boolean) as FarcasterUsernameProof[];
+  if (proofs.length > 0) {
+    await prisma.farcasterUsernameProof.createMany({
+      data: proofs,
+      skipDuplicates: true,
+    });
+  }
+  return proofs;
+};
+
+export const backfillUserDataAdd = async (
+  prisma: PrismaClient,
+  messages: Message[],
+) => {
+  const userDatas = messages
+    .map(messageToUserData)
+    .filter(Boolean) as FarcasterUserData[];
+  if (userDatas.length > 0) {
+    await prisma.farcasterUserData.createMany({
+      data: userDatas,
+      skipDuplicates: true,
+    });
+  }
+  return userDatas;
+};
+
+export const backfillVerificationAdd = async (
+  prisma: PrismaClient,
+  messages: Message[],
+) => {
+  const verifications = messages
+    .map(messageToVerification)
+    .filter(Boolean) as FarcasterVerification[];
+  if (verifications.length) {
+    await prisma.farcasterVerification.createMany({
+      data: verifications,
+      skipDuplicates: true,
+    });
+  }
+  return verifications;
+};
+
+export {
+  findRootParent,
+  messageToCast,
+  messageToCastEmbedCast,
+  messageToCastEmbedUrl,
+  messageToCastMentions,
+  messageToCastReaction,
+  messageToLink,
+  messageToUrlReaction,
+  messageToUserData,
+  messageToUsernameProof,
+  messageToVerification,
+};
