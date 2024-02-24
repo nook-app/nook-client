@@ -104,28 +104,30 @@ export class CountSyncProcessor {
       ),
     );
 
-    await this.mongo
-      .getCollection<Content<ContentData>>(MongoCollection.Content)
-      .bulkWrite(
-        engagementCounts.map((counts, i) => ({
-          updateOne: {
-            filter: { contentId: counts.contentId },
-            update: {
-              $set: {
-                engagement: {
-                  likes: counts.likes,
-                  reposts: counts.reposts,
-                  replies: counts.replies,
-                  embeds: counts.embeds,
+    if (engagementCounts.length > 0) {
+      await this.mongo
+        .getCollection<Content<ContentData>>(MongoCollection.Content)
+        .bulkWrite(
+          engagementCounts.map((counts, i) => ({
+            updateOne: {
+              filter: { contentId: counts.contentId },
+              update: {
+                $set: {
+                  engagement: {
+                    likes: counts.likes,
+                    reposts: counts.reposts,
+                    replies: counts.replies,
+                    embeds: counts.embeds,
+                  },
                 },
               },
             },
+          })),
+          {
+            ordered: false,
           },
-        })),
-        {
-          ordered: false,
-        },
-      );
+        );
+    }
   }
 
   async getCastEngagementCounts(contentId: string) {
