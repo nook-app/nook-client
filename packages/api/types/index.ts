@@ -3,6 +3,8 @@ import {
   Content,
   ContentData,
   Entity,
+  EventAction,
+  EventActionData,
   Nook,
 } from "@nook/common/types";
 import { User } from "@nook/common/prisma/nook";
@@ -16,6 +18,17 @@ export type ContentFeedItem<T = ContentData> = Content<T> & {
 
 export type ContentFeed = {
   data: ContentFeedItem[];
+  nextCursor?: string;
+};
+
+export type ActionFeedItem<T = EventActionData> = EventAction<T> & {
+  _id: string;
+  entities: Entity[];
+  contents: Content<ContentData>[];
+};
+
+export type ActionFeed = {
+  data: ActionFeedItem[];
   nextCursor?: string;
 };
 

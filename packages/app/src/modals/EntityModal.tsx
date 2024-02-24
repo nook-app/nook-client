@@ -7,6 +7,7 @@ import { useModal } from "@/hooks/useModal";
 import { useEntity } from "@/hooks/useEntity";
 import { useNooks } from "@/hooks/useNooks";
 import { useCallback } from "react";
+import { formatNumber } from "@/utils";
 
 export const EntityModal = () => {
   const { navigateToNook } = useNooks();
@@ -15,14 +16,14 @@ export const EntityModal = () => {
     (state) => state.navigator.modals[ModalName.Entity],
   );
   const entity = useEntity(initialState?.entityId);
-  const { close } = useModal(ModalName.Entity);
+  const { closeAll, close } = useModal(ModalName.Entity);
 
   const onPress = useCallback(() => {
     if (entity) {
       navigateToNook(`entity:${entity._id.toString()}`);
-      close();
+      closeAll();
     }
-  }, [entity, close, navigateToNook]);
+  }, [entity, closeAll, navigateToNook]);
 
   let displayName = entity?.farcaster?.displayName;
   if (!displayName) {
@@ -71,13 +72,13 @@ export const EntityModal = () => {
               <XStack gap="$2">
                 <View flexDirection="row" alignItems="center" gap="$1">
                   <Text fontWeight="700">
-                    {entity.farcaster.following || 0}
+                    {formatNumber(entity.farcaster.following || 0)}
                   </Text>
                   <Text color="$gray11">following</Text>
                 </View>
                 <View flexDirection="row" alignItems="center" gap="$1">
                   <Text fontWeight="700">
-                    {entity.farcaster.followers || 0}
+                    {formatNumber(entity.farcaster.followers || 0)}
                   </Text>
                   <Text color="$gray11">followers</Text>
                 </View>

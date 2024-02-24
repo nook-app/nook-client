@@ -14,6 +14,13 @@ const entitySlice = createSlice({
   reducers: {},
   extraReducers: (builder) => {
     builder.addMatcher(
+      nookApi.endpoints.getActionsFeed.matchFulfilled,
+      (state, action) => {
+        const entities = action.payload.data.flatMap((item) => item.entities);
+        entityAdapter.addMany(state, entities);
+      },
+    );
+    builder.addMatcher(
       nookApi.endpoints.getContentFeed.matchFulfilled,
       (state, action) => {
         const entities = action.payload.data.flatMap((item) => item.entities);

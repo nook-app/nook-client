@@ -13,6 +13,13 @@ const contentSlice = createSlice({
   reducers: {},
   extraReducers: (builder) => {
     builder.addMatcher(
+      nookApi.endpoints.getActionsFeed.matchFulfilled,
+      (state, action) => {
+        const content = action.payload.data.flatMap((item) => item.contents);
+        contentAdapter.addMany(state, content);
+      },
+    );
+    builder.addMatcher(
       nookApi.endpoints.getContentFeed.matchFulfilled,
       (state, action) => {
         const content = action.payload.data.flatMap((item) => item.contents);

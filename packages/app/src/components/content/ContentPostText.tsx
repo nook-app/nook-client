@@ -4,7 +4,7 @@ import { Text, View } from "tamagui";
 import { Buffer } from "buffer";
 import { selectEntityById } from "@/store/slices/entity";
 import { store } from "@/store";
-import { EntityModalButton } from "../entity/EntityModalButton";
+import { EntityModalButton } from "../buttons/EntityModalButton";
 
 const isWarpcastUrl = (url: string) => {
   return (

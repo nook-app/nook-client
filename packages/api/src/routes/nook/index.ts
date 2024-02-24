@@ -20,6 +20,15 @@ export const nookRoutes = async (fastify: FastifyInstance) => {
       },
     );
 
+    fastify.post<{ Body: ContentFeedArgs & { cursor?: string } }>(
+      "/actions/feed",
+      async (request, reply) => {
+        return reply.send(
+          await nookService.getActionFeed(request.body, request.body.cursor),
+        );
+      },
+    );
+
     fastify.post<{ Body: { contentId: string } }>(
       "/content",
       async (request, reply) => {

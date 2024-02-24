@@ -18,14 +18,14 @@ export const ChannelModal = () => {
       ? selectChannelById(state, initialState?.channelId)
       : undefined,
   );
-  const { close } = useModal(ModalName.Channel);
+  const { closeAll, close } = useModal(ModalName.Channel);
 
   const onPress = useCallback(() => {
     if (channel) {
       navigateToNook(`channel:${channel.contentId}`);
-      close();
+      closeAll();
     }
-  }, [channel, close, navigateToNook]);
+  }, [channel, closeAll, navigateToNook]);
 
   return (
     <BottomSheetModal onClose={close} enableDynamicSizing>

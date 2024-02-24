@@ -7,16 +7,18 @@ import {
   ContentFeedArgs,
   ContentType,
   Entity,
+  EventAction,
+  EventActionData,
   Nook,
   PostData,
 } from "@nook/common/types";
-import { ContentFeed, ContentFeedItem } from "../../types";
+import { ActionFeed, ContentFeed, ContentFeedItem } from "../../types";
 import { ObjectId } from "mongodb";
 import { createChannelNook, createEntityNook } from "../utils/nooks";
 import { getOrCreateChannel, getOrCreateContent } from "@nook/common/scraper";
 import { RedisClient } from "@nook/common/cache";
 
-const PAGE_SIZE = 10;
+const PAGE_SIZE = 25;
 
 export class NookService {
   private client: MongoClient;
@@ -25,6 +27,114 @@ export class NookService {
   constructor(fastify: FastifyInstance) {
     this.client = fastify.mongo.client;
     this.cache = fastify.cache.client;
+  }
+
+  async getActionFeed(
+    { filter, sort, sortDirection = -1 }: ContentFeedArgs,
+    cursor?: string,
+  ): Promise<ActionFeed> {
+    const collection = this.client.getCollection<EventAction<EventActionData>>(
+      MongoCollection.Actions,
+    );
+
+    let queryFilter = { ...filter };
+    type SortDirection = 1 | -1;
+    const sortField = sort || "timestamp";
+
+    if (cursor) {
+      const cursorObj = JSON.parse(Buffer.from(cursor, "base64").toString());
+      queryFilter = {
+        ...queryFilter,
+        $or: [
+          {
+            [sortField]: {
+              [sortDirection === 1 ? "$gt" : "$lt"]: cursorObj.value,
+            },
+          },
+          {
+            [sortField]: cursorObj.value,
+            timestamp: {
+              [sortDirection === 1 ? "$gt" : "$lt"]: new Date(
+                cursorObj.timestamp,
+              ),
+            },
+          },
+        ],
+      };
+    }
+
+    let sortOptions: Record<string, SortDirection> = { timestamp: -1 };
+    if (sort) {
+      sortOptions = { [sort]: sortDirection as SortDirection, ...sortOptions };
+    }
+
+    const actions = await collection
+      .find(queryFilter)
+      .sort(sortOptions)
+      .limit(PAGE_SIZE)
+      .toArray();
+
+    const referencedContentIds = actions.flatMap((a) => a.referencedContentIds);
+    const contents = await this.getReferencedContents(referencedContentIds);
+
+    const referencedEntityIds = actions
+      .flatMap((a) => a.referencedEntityIds)
+      .concat(contents.flatMap((a) => a.referencedEntityIds));
+    const entities = await this.fetchEntities(referencedEntityIds);
+
+    const data = actions.map((a) => {
+      const relevantContents = [];
+
+      for (const contentId of a.referencedContentIds) {
+        const content = contents.find((c) => c.contentId === contentId);
+        if (content) {
+          relevantContents.push(content);
+        }
+      }
+
+      const relevantEntities = [];
+      for (const entityId of a.referencedEntityIds) {
+        const entity = entities.find((e) => e._id.equals(entityId));
+        if (entity) {
+          relevantEntities.push(entity);
+        }
+      }
+
+      for (const entityId of relevantContents.flatMap(
+        (c) => c?.referencedEntityIds,
+      )) {
+        if (!entityId) continue;
+        const entity = entities.find((e) => e._id.equals(entityId));
+        if (entity) {
+          relevantEntities.push(entity);
+        }
+      }
+
+      return {
+        ...a,
+        _id: a._id.toString(),
+        entities: relevantEntities,
+        contents: relevantContents,
+      };
+    });
+
+    function getNestedValue<T>(obj: T, path: string) {
+      // biome-ignore lint/suspicious/noExplicitAny: <explanation>
+      return path.split(".").reduce((acc: any, part) => acc?.[part], obj);
+    }
+
+    return {
+      data,
+      nextCursor:
+        actions.length === PAGE_SIZE
+          ? Buffer.from(
+              JSON.stringify({
+                timestamp: actions[actions.length - 1].timestamp,
+                value: getNestedValue(actions[actions.length - 1], sortField),
+              }),
+            ).toString("base64")
+          : undefined,
+    };
   }
 
   async getContentFeed(
@@ -72,8 +182,12 @@ export class NookService {
       .limit(PAGE_SIZE)
       .toArray();
 
-    const contents = await this.getReferencedContents(content);
-    const entities = await this.getReferencedEntities(contents);
+    const referencedContentIds = content.flatMap((a) => a.referencedContentIds);
+    const contents = await this.getReferencedContents(referencedContentIds);
+
+    const referencedEntityIds = contents.flatMap((a) => a.referencedEntityIds);
+    const entities = await this.fetchEntities(referencedEntityIds);
+
     const channels = await this.getReferencedChannels(contents);
 
     const data = content.map((a) => {
@@ -181,13 +295,11 @@ export class NookService {
     return [...cachedContents, ...existingContents, ...missingContents];
   }
 
-  async getReferencedContents(content: Content<ContentData>[]) {
-    const referencedContentIds = content.flatMap((a) => a.referencedContentIds);
-    const referencedContents = await this.fetchContents(referencedContentIds);
-
+  async getReferencedContents(contentIds: string[]) {
+    const referencedContents = await this.fetchContents(contentIds);
     const secondLevelReferencedContentIds = referencedContents
       .flatMap((c) => c.referencedContentIds)
-      .filter((id) => !referencedContentIds.includes(id));
+      .filter((id) => !contentIds.includes(id));
     const secondLevelContents = await this.fetchContents(
       secondLevelReferencedContentIds,
     );
@@ -208,12 +320,6 @@ export class NookService {
       .toArray();
     await this.cache.setEntities(existingEntities);
     return [...cachedEntities, ...existingEntities];
-  }
-
-  async getReferencedEntities(content: Content<ContentData>[]) {
-    const referencedEntityIds = content.flatMap((a) => a.referencedEntityIds);
-    const referencedEntities = await this.fetchEntities(referencedEntityIds);
-    return referencedEntities;
   }
 
   async fetchChannels(channelIds: string[]) {
@@ -249,8 +355,12 @@ export class NookService {
     const content = await this.client.findContent(contentId);
     if (!content) return;
 
-    const contents = await this.getReferencedContents([content]);
-    const entities = await this.getReferencedEntities(contents);
+    const contents = await this.getReferencedContents(
+      content.referencedContentIds,
+    );
+    const entities = await this.fetchEntities(
+      contents.flatMap((c) => c.referencedEntityIds),
+    );
     const channels = await this.getReferencedChannels(contents);
 
     return {

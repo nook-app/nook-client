@@ -1,7 +1,7 @@
 import { Text } from "tamagui";
 import { XStack, YStack } from "tamagui";
 import { useEntity } from "@/hooks/useEntity";
-import { EntityModalButton } from "./EntityModalButton";
+import { EntityModalButton } from "../buttons/EntityModalButton";
 
 export const EntityDisplay = ({
   entityId,

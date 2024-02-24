@@ -10,7 +10,7 @@ import Animated, {
   interpolate,
   interpolateColor,
 } from "react-native-reanimated";
-import { CreatePostButton } from "../actions/CreatePostButton";
+import { CreatePostButton } from "../buttons/CreatePostButton";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 

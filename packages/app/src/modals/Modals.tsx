@@ -5,6 +5,11 @@ import { ChannelModal } from "@/modals/ChannelModal";
 import { ModalName, ModalsState } from "./types";
 import { CreatePostModal } from "./CreatePostModal";
 import { EnableSignerModal } from "./EnableSignerModal";
+import { ContentQuotesModal } from "./ContentQuotesModal";
+import { ContentLikesModal } from "./ContentLikesModal";
+import { ContentRepostsModal } from "./ContentRepostsModal";
+import { EntityFollowersModal } from "./EntityFollowersModal";
+import { EntityFollowingModal } from "./EntityFollowingModal";
 
 function ModalWrapper({
   name,
@@ -39,6 +44,26 @@ export function Modals() {
 
       <ModalWrapper name={ModalName.CreatePost}>
         <CreatePostModal />
+      </ModalWrapper>
+
+      <ModalWrapper name={ModalName.ContentQuotes}>
+        <ContentQuotesModal />
+      </ModalWrapper>
+
+      <ModalWrapper name={ModalName.ContentLikes}>
+        <ContentLikesModal />
+      </ModalWrapper>
+
+      <ModalWrapper name={ModalName.ContentReposts}>
+        <ContentRepostsModal />
+      </ModalWrapper>
+
+      <ModalWrapper name={ModalName.EntityFollowers}>
+        <EntityFollowersModal />
+      </ModalWrapper>
+
+      <ModalWrapper name={ModalName.EntityFollowing}>
+        <EntityFollowingModal />
       </ModalWrapper>
     </>
   );

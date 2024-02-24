@@ -1,6 +1,6 @@
 import { Avatar } from "tamagui";
 import { useEntity } from "@/hooks/useEntity";
-import { EntityModalButton } from "./EntityModalButton";
+import { EntityModalButton } from "../buttons/EntityModalButton";
 
 export const EntityAvatar = ({
   entityId,

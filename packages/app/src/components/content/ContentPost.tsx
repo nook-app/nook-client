@@ -1,5 +1,5 @@
 import { ContentFeedItem } from "@nook/api/types";
-import { ContentType, PostData, TopicType } from "@nook/common/types";
+import { ContentType, PostData } from "@nook/common/types";
 import { ScrollView, Text, View, XStack, YStack } from "tamagui";
 import { Embed } from "@/components/embeds/Embed";
 import { EntityAvatar } from "@/components/entity/EntityAvatar";
@@ -9,7 +9,9 @@ import { ContentFeedPanel } from "../panels/ContentFeedPanel";
 import { useAppSelector } from "@/hooks/useAppSelector";
 import { selectChannelById } from "@/store/slices/channel";
 import { ContentPostText } from "./ContentPostText";
-import { ChannelModalButton } from "../channel/ChannelModalButton";
+import { ChannelModalButton } from "../buttons/ChannelModalButton";
+import { ModalButton } from "../buttons/ModalButton";
+import { ModalName } from "@/modals/types";
 
 export const ContentPost = ({
   item: { data, engagement },
@@ -69,24 +71,43 @@ export const ContentPost = ({
             <Text fontWeight="700">{engagement.replies}</Text>
             <Text color="$gray11">Replies</Text>
           </View>
-          <View flexDirection="row" alignItems="center" gap="$1">
-            <Text fontWeight="700">{engagement.reposts}</Text>
-            <Text color="$gray11">Reposts</Text>
-          </View>
-          <View flexDirection="row" alignItems="center" gap="$1">
-            <Text fontWeight="700">{engagement.likes}</Text>
-            <Text color="$gray11">Likes</Text>
-          </View>
+          <ModalButton
+            modalName={ModalName.ContentReposts}
+            modalArgs={{ contentId: data.contentId }}
+            disabled={engagement.reposts === 0}
+          >
+            <View flexDirection="row" alignItems="center" gap="$1">
+              <Text fontWeight="700">{engagement.reposts}</Text>
+              <Text color="$gray11">Reposts</Text>
+            </View>
+          </ModalButton>
+          <ModalButton
+            modalName={ModalName.ContentQuotes}
+            modalArgs={{ contentId: data.contentId }}
+            disabled={engagement.embeds === 0}
+          >
+            <View flexDirection="row" alignItems="center" gap="$1">
+              <Text fontWeight="700">{engagement.embeds}</Text>
+              <Text color="$gray11">Quotes</Text>
+            </View>
+          </ModalButton>
+          <ModalButton
+            modalName={ModalName.ContentLikes}
+            modalArgs={{ contentId: data.contentId }}
+            disabled={engagement.likes === 0}
+          >
+            <View flexDirection="row" alignItems="center" gap="$1">
+              <Text fontWeight="700">{engagement.likes}</Text>
+              <Text color="$gray11">Likes</Text>
+            </View>
+          </ModalButton>
         </XStack>
       </YStack>
       <ContentFeedPanel
         args={{
           filter: {
             type: ContentType.REPLY,
-            topics: {
-              type: TopicType.TARGET_CONTENT,
-              value: data.contentId,
-            },
+            "data.parentId": data.contentId,
           },
           sort: "engagement.likes",
         }}

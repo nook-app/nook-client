@@ -1,4 +1,4 @@
-import { ModalName, ModalsState } from "@/modals/types";
+import { ContentModalState, ModalName, ModalsState } from "@/modals/types";
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 type EntityModalState = { entityId: string };
@@ -6,7 +6,11 @@ type ChannelModalState = { channelId: string };
 
 type ModalParams = {
   name: ModalName;
-  initialState: EntityModalState | ChannelModalState | undefined;
+  initialState:
+    | EntityModalState
+    | ChannelModalState
+    | ContentModalState
+    | undefined;
 };
 
 type NavigatorState = {
@@ -30,6 +34,26 @@ const initialState: NavigatorState = {
       initialState: undefined,
     },
     [ModalName.EnableSigner]: {
+      isOpen: false,
+      initialState: undefined,
+    },
+    [ModalName.ContentQuotes]: {
+      isOpen: false,
+      initialState: undefined,
+    },
+    [ModalName.ContentLikes]: {
+      isOpen: false,
+      initialState: undefined,
+    },
+    [ModalName.ContentReposts]: {
+      isOpen: false,
+      initialState: undefined,
+    },
+    [ModalName.EntityFollowers]: {
+      isOpen: false,
+      initialState: undefined,
+    },
+    [ModalName.EntityFollowing]: {
       isOpen: false,
       initialState: undefined,
     },

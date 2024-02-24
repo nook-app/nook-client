@@ -1,5 +1,6 @@
 import { createApi } from "@reduxjs/toolkit/query/react";
 import {
+  ActionFeed,
   ContentFeed,
   ContentFeedItem,
   GetEntitiesRequest,
@@ -15,6 +16,16 @@ export const nookApi = createApi({
   reducerPath: "nookApi",
   baseQuery,
   endpoints: (builder) => ({
+    getActionsFeed: builder.query<
+      ActionFeed,
+      ContentFeedArgs & { cursor?: string }
+    >({
+      query: (request) => ({
+        url: "/actions/feed",
+        method: "POST",
+        body: request,
+      }),
+    }),
     getContentFeed: builder.query<
       ContentFeed,
       ContentFeedArgs & { cursor?: string }

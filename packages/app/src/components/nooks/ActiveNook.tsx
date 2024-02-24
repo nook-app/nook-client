@@ -5,6 +5,9 @@ import { selectEntityById } from "@/store/slices/entity";
 import { useNooks } from "@/hooks/useNooks";
 import { useCallback } from "react";
 import { TouchableOpacity } from "react-native-gesture-handler";
+import { formatNumber } from "@/utils";
+import { ModalButton } from "../buttons/ModalButton";
+import { ModalName } from "@/modals/types";
 
 const EntityMetadata = ({ nook }: { nook: Nook }) => {
   const entity = useAppSelector((state) =>
@@ -13,18 +16,34 @@ const EntityMetadata = ({ nook }: { nook: Nook }) => {
 
   return (
     <XStack gap="$2">
-      <View flexDirection="row" alignItems="center" gap="$1">
-        <Text fontWeight="700">{entity.farcaster.following || 0}</Text>
-        <Text color="$gray11" fontSize="$3">
-          following
-        </Text>
-      </View>
-      <View flexDirection="row" alignItems="center" gap="$1">
-        <Text fontWeight="700">{entity.farcaster.followers || 0}</Text>
-        <Text color="$gray11" fontSize="$3">
-          followers
-        </Text>
-      </View>
+      <ModalButton
+        modalName={ModalName.EntityFollowing}
+        modalArgs={{ entityId: entity._id.toString() }}
+        disabled={!entity.farcaster.following}
+      >
+        <View flexDirection="row" alignItems="center" gap="$1">
+          <Text fontWeight="700">
+            {formatNumber(entity.farcaster.following || 0)}
+          </Text>
+          <Text color="$gray11" fontSize="$3">
+            following
+          </Text>
+        </View>
+      </ModalButton>
+      <ModalButton
+        modalName={ModalName.EntityFollowers}
+        modalArgs={{ entityId: entity._id.toString() }}
+        disabled={!entity.farcaster.following}
+      >
+        <View flexDirection="row" alignItems="center" gap="$1">
+          <Text fontWeight="700">
+            {formatNumber(entity.farcaster.followers || 0)}
+          </Text>
+          <Text color="$gray11" fontSize="$3">
+            followers
+          </Text>
+        </View>
+      </ModalButton>
     </XStack>
   );
 };
@@ -90,15 +109,6 @@ export const ActiveNook = () => {
         padding="$3"
         flexGrow={1}
       >
-        <Text
-          color="$gray11"
-          textTransform="uppercase"
-          fontSize="$1"
-          fontWeight="700"
-          marginBottom="$1.5"
-        >
-          Shelves
-        </Text>
         {activeNook?.shelves.map((shelf, i) => (
           <TouchableOpacity
             key={shelf.slug}

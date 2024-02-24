@@ -1,54 +1,57 @@
-import { Spinner, Text, View, useTheme } from "tamagui";
+import { Spinner, Text, View, XStack, useTheme } from "tamagui";
 import { FlatList, ViewToken } from "react-native";
 import { memo, useCallback, useEffect, useState } from "react";
 import { nookApi } from "@/store/apis/nookApi";
 import { RefreshControl } from "react-native-gesture-handler";
-import { ContentPostCompact } from "../content/ContentPostCompact";
-import { ContentFeedItem } from "@nook/api/types";
-import {
-  Content,
-  ContentFeedArgs,
-  ContentType,
-  PostData,
-} from "@nook/common/types";
-import { ContentReplyCompact } from "../content/ContentReplyCompact";
+import { ActionFeedItem } from "@nook/api/types";
+import { ContentFeedArgs } from "@nook/common/types";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { EntityAvatar } from "../entity/EntityAvatar";
+import { EntityDisplay } from "../entity/EntityDisplay";
+import { BottomSheetFlatList } from "@gorhom/bottom-sheet";
 
-export const ContentFeedEntry = memo(
-  ({ item, replyAsPost }: { item: ContentFeedItem; replyAsPost?: boolean }) => {
-    if (
-      item.type === ContentType.POST ||
-      (item.type === ContentType.REPLY && replyAsPost)
-    ) {
-      const typedItem = item as Content<PostData>;
-      return (
-        <ContentPostCompact key={typedItem.contentId} content={typedItem} />
-      );
-    }
+function getNestedValue<T>(obj: T, path: string) {
+  // biome-ignore lint/suspicious/noExplicitAny: <explanation>
+  return path.split(".").reduce((acc: any, part) => acc?.[part], obj);
+}
 
-    if (item.type === ContentType.REPLY) {
-      const typedItem = item as Content<PostData>;
-      return (
-        <ContentReplyCompact key={typedItem.contentId} content={typedItem} />
-      );
-    }
-
-    return <></>;
+export const EntityListEntry = memo(
+  ({ item, entityField }: { item: ActionFeedItem; entityField?: string }) => {
+    return (
+      <XStack gap="$2" padding="$2">
+        <EntityAvatar
+          entityId={
+            !entityField ? item.entityId : getNestedValue(item, entityField)
+          }
+        />
+        <EntityDisplay
+          entityId={
+            !entityField ? item.entityId : getNestedValue(item, entityField)
+          }
+          orientation="vertical"
+        />
+      </XStack>
+    );
   },
 );
 
-export const ContentFeedPanel = ({
+export const EntityListPanel = ({
   args,
-  asList,
-}: { args: ContentFeedArgs; asList?: boolean }) => {
+  entityField,
+  isBottomSheet,
+}: {
+  args: ContentFeedArgs;
+  entityField?: string;
+  isBottomSheet?: boolean;
+}) => {
   const insets = useSafeAreaInsets();
   const [cursor, setCursor] = useState<string | undefined>(undefined);
-  const [accumulatedData, setAccumulatedData] = useState<ContentFeedItem[]>([]);
+  const [accumulatedData, setAccumulatedData] = useState<ActionFeedItem[]>([]);
   const [refreshing, setRefreshing] = useState(false);
   const theme = useTheme();
 
   const { data, error, isLoading, isFetching, refetch } =
-    nookApi.useGetContentFeedQuery({
+    nookApi.useGetActionsFeedQuery({
       ...args,
       cursor,
     });
@@ -116,20 +119,14 @@ export const ContentFeedPanel = ({
     );
   }
 
-  if (asList) {
-    return (
-      <View paddingBottom={insets.bottom}>
-        {accumulatedData.map((item) => (
-          <ContentFeedEntry key={item.contentId} item={item} replyAsPost />
-        ))}
-      </View>
-    );
-  }
+  const FlatListComponent = isBottomSheet ? BottomSheetFlatList : FlatList;
 
   return (
-    <FlatList
+    <FlatListComponent
       data={accumulatedData}
-      renderItem={({ item }) => <ContentFeedEntry item={item} />}
+      renderItem={({ item }) => (
+        <EntityListEntry item={item} entityField={entityField} />
+      )}
       keyExtractor={(item) => item._id.toString()}
       onViewableItemsChanged={onViewableItemsChanged}
       viewabilityConfig={viewabilityConfig}
@@ -148,6 +145,7 @@ export const ContentFeedPanel = ({
           refreshing={refreshing}
         />
       }
+      contentContainerStyle={{ paddingBottom: insets.bottom }}
     />
   );
 };

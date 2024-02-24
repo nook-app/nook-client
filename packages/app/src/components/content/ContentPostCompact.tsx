@@ -11,7 +11,7 @@ import { Image } from "expo-image";
 import { Heart, MessageSquare, RefreshCw } from "@tamagui/lucide-icons";
 import { useAppSelector } from "@/hooks/useAppSelector";
 import { selectChannelById } from "@/store/slices/channel";
-import { ChannelModalButton } from "../channel/ChannelModalButton";
+import { ChannelModalButton } from "../buttons/ChannelModalButton";
 import { NavigationProp, useNavigation } from "@react-navigation/native";
 import { RootStackParamList } from "@/types";
 import { TouchableWithoutFeedback } from "react-native-gesture-handler";
@@ -33,7 +33,9 @@ export const ContentPostContent = ({
         {isParent && <Separator vertical />}
       </View>
       <YStack flex={1} gap="$1" paddingBottom={isParent ? "$2" : "$0"}>
-        <EntityDisplay entityId={data.entityId} />
+        <View alignSelf="flex-start">
+          <EntityDisplay entityId={data.entityId} />
+        </View>
         <XStack alignItems="center" gap="$1.5">
           <Text color="$gray11">
             {`${formatTimeAgo(timestamp as unknown as string)} ago`}
@@ -74,22 +76,22 @@ export const ContentPostContent = ({
         {data.embeds.map((embed) => (
           <Embed key={embed} embed={embed} data={data} />
         ))}
-        <XStack justifyContent="space-between" width="$15">
+        <XStack justifyContent="space-between" width="$15" paddingTop="$1">
           <View flexDirection="row" alignItems="center" gap="$1.5" width="$3">
-            <MessageSquare size={14} color="$gray9" />
-            <Text color="$gray9" fontSize="$3">
+            <MessageSquare size={14} color="$gray10" />
+            <Text color="$gray10" fontSize="$3">
               {engagement.replies}
             </Text>
           </View>
           <View flexDirection="row" alignItems="center" gap="$1.5" width="$3">
-            <RefreshCw size={14} color="$gray9" />
-            <Text color="$gray9" fontSize="$3">
+            <RefreshCw size={14} color="$gray10" />
+            <Text color="$gray10" fontSize="$3">
               {engagement.reposts}
             </Text>
           </View>
           <View flexDirection="row" alignItems="center" gap="$1.5" width="$3">
-            <Heart size={14} color="$gray9" />
-            <Text color="$gray9" fontSize="$3">
+            <Heart size={14} color="$gray10" />
+            <Text color="$gray10" fontSize="$3">
               {engagement.likes}
             </Text>
           </View>
