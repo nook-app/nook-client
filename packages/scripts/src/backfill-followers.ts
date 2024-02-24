@@ -13,7 +13,6 @@ type FollowerData = Record<string, { following: number; followers: number }>;
 
 const $match = {
   type: EventActionType.FOLLOW,
-  deletedAt: null,
 };
 
 const $facet = {

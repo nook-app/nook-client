@@ -36,7 +36,6 @@ export const transformLinkAddOrRemove = (
         sourceUserId: rawEvent.data.fid,
         sourceTargetUserId: rawEvent.data.targetFid,
       },
-      deletedAt: isRemove ? new Date() : undefined,
       topics: [
         {
           type: TopicType.SOURCE_ENTITY,

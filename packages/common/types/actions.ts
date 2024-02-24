@@ -69,9 +69,6 @@ export type EventAction<T> = {
   /** Date record was updated at */
   updatedAt: Date;
 
-  /** Timestamp for when the event action was deleted */
-  deletedAt?: Date;
-
   /** Type of action */
   type: EventActionType;
 

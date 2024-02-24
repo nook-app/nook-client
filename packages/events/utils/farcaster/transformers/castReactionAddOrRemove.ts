@@ -58,11 +58,6 @@ export const transformCastReactionAddOrRemove = (
         entityId,
         contentId,
       },
-      deletedAt: [EventActionType.UNPOST, EventActionType.UNREPLY].includes(
-        type,
-      )
-        ? new Date()
-        : undefined,
       topics: content
         ? generateTopics(entityId, content.data)
         : [

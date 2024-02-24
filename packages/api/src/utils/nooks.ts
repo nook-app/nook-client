@@ -58,7 +58,6 @@ export const getDefaultEntityNook = (entity: Entity): Nook => {
             args: {
               filter: {
                 type: ContentType.POST,
-                deletedAt: null,
                 topics: {
                   type: TopicType.SOURCE_ENTITY,
                   value: entity._id.toString(),
@@ -73,7 +72,6 @@ export const getDefaultEntityNook = (entity: Entity): Nook => {
             args: {
               filter: {
                 type: ContentType.REPLY,
-                deletedAt: null,
                 topics: {
                   type: TopicType.SOURCE_ENTITY,
                   value: entity._id.toString(),
@@ -122,7 +120,6 @@ export const getDefaultChannelNook = (channel: Channel): Nook => {
             args: {
               filter: {
                 type: ContentType.POST,
-                deletedAt: null,
                 topics: {
                   type: TopicType.CHANNEL,
                   value: channel.contentId,
@@ -137,7 +134,6 @@ export const getDefaultChannelNook = (channel: Channel): Nook => {
             args: {
               filter: {
                 type: ContentType.POST,
-                deletedAt: null,
                 topics: {
                   type: TopicType.CHANNEL,
                   value: channel.contentId,

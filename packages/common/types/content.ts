@@ -30,9 +30,6 @@ export type ContentBase = {
   /** Date record was updated at */
   updatedAt: Date;
 
-  /** Date record was deleted at */
-  deletedAt?: Date;
-
   /** Engagement for the content */
   engagement: {
     likes: number;

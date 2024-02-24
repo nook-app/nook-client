@@ -118,18 +118,11 @@ export class HubSyncProcessor {
       console.log(`[${fid}] [casts] [mongo] extra ${extraInMongo.length}`);
       await this.mongo
         .getCollection<Content<ContentData>>(MongoCollection.Content)
-        .updateMany(
-          {
-            contentId: {
-              $in: extraInMongo,
-            },
+        .deleteMany({
+          contentId: {
+            $in: extraInMongo,
           },
-          {
-            $set: {
-              deletedAt: new Date(),
-            },
-          },
-        );
+        });
     }
 
     const validations = [];
@@ -178,19 +171,12 @@ export class HubSyncProcessor {
       );
       await this.mongo
         .getCollection<EventAction<EventActionType>>(MongoCollection.Actions)
-        .updateMany(
-          {
-            "source.type": EventType.CAST_REACTION_ADD,
-            "source.id": {
-              $in: extraInMongo,
-            },
+        .deleteMany({
+          "source.type": EventType.CAST_REACTION_ADD,
+          "source.id": {
+            $in: extraInMongo,
           },
-          {
-            $set: {
-              deletedAt: new Date(),
-            },
-          },
-        );
+        });
     }
 
     const validations = [];
@@ -243,19 +229,12 @@ export class HubSyncProcessor {
       );
       await this.mongo
         .getCollection<EventAction<EventActionType>>(MongoCollection.Actions)
-        .updateMany(
-          {
-            "source.type": EventType.URL_REACTION_ADD,
-            "source.id": {
-              $in: extraInMongo,
-            },
+        .deleteMany({
+          "source.type": EventType.URL_REACTION_ADD,
+          "source.id": {
+            $in: extraInMongo,
           },
-          {
-            $set: {
-              deletedAt: new Date(),
-            },
-          },
-        );
+        });
     }
 
     const validations = [];
@@ -302,19 +281,12 @@ export class HubSyncProcessor {
       console.log(`[${fid}] [links] [mongo] extra ${extraInMongo.length}`);
       await this.mongo
         .getCollection<EventAction<EventActionType>>(MongoCollection.Actions)
-        .updateMany(
-          {
-            "source.type": EventType.LINK_ADD,
-            "source.id": {
-              $in: extraInMongo,
-            },
+        .deleteMany({
+          "source.type": EventType.LINK_ADD,
+          "source.id": {
+            $in: extraInMongo,
           },
-          {
-            $set: {
-              deletedAt: new Date(),
-            },
-          },
-        );
+        });
     }
 
     const validations = [];
@@ -449,19 +421,12 @@ export class HubSyncProcessor {
               console.error(err);
             }
           }),
-        this.mongo.getCollection(MongoCollection.Actions).updateMany(
-          {
-            "source.type": EventType.CAST_REACTION_ADD,
-            "source.id": {
-              $in: actions.map((action) => action.source.id),
-            },
+        this.mongo.getCollection(MongoCollection.Actions).deleteMany({
+          "source.type": EventType.CAST_REACTION_ADD,
+          "source.id": {
+            $in: actions.map((action) => action.source.id),
           },
-          {
-            $set: {
-              deletedAt: null,
-            },
-          },
-        ),
+        }),
       );
     }
 
@@ -477,18 +442,11 @@ export class HubSyncProcessor {
               console.error(err);
             }
           }),
-        this.mongo.getCollection(MongoCollection.Content).updateMany(
-          {
-            contentId: {
-              $in: contents.map((content) => content.contentId),
-            },
+        this.mongo.getCollection(MongoCollection.Content).deleteMany({
+          contentId: {
+            $in: contents.map((content) => content.contentId),
           },
-          {
-            $set: {
-              deletedAt: null,
-            },
-          },
-        ),
+        }),
       );
     }
 
@@ -828,7 +786,6 @@ export class HubSyncProcessor {
           type: TopicType.SOURCE_ENTITY,
           value: entityId,
         },
-        deletedAt: undefined,
       })
       .toArray();
   }
@@ -845,7 +802,6 @@ export class HubSyncProcessor {
           type: TopicType.SOURCE_ENTITY,
           value: entityId,
         },
-        deletedAt: undefined,
       })
       .toArray();
   }
@@ -862,7 +818,6 @@ export class HubSyncProcessor {
           type: TopicType.SOURCE_ENTITY,
           value: entityId,
         },
-        deletedAt: undefined,
       })
       .toArray();
   }
@@ -876,7 +831,6 @@ export class HubSyncProcessor {
           type: TopicType.SOURCE_ENTITY,
           value: entityId,
         },
-        deletedAt: undefined,
       })
       .toArray();
   }

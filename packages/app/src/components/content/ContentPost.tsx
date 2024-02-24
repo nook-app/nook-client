@@ -83,7 +83,6 @@ export const ContentPost = ({
         args={{
           filter: {
             type: ContentType.REPLY,
-            deletedAt: null,
             topics: {
               type: TopicType.TARGET_CONTENT,
               value: data.contentId,

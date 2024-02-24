@@ -50,7 +50,6 @@ export const transformUrlReactionAddOrRemove = (
         entityId,
         contentId,
       },
-      deletedAt: isRemove ? new Date() : undefined,
       topics: [
         {
           type: TopicType.SOURCE_ENTITY,

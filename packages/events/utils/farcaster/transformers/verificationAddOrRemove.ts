@@ -40,7 +40,6 @@ export const transformVerificationAddOrRemove = (
       claimSignature: rawEvent.data.claimSignature,
       blockHash: rawEvent.data.blockHash,
     },
-    deletedAt: isRemove ? new Date() : undefined,
     topics: [
       {
         type: TopicType.SOURCE_ENTITY,
