@@ -26,6 +26,7 @@ import {
   FarcasterCastData,
   FarcasterCastReactionData,
   FarcasterLinkData,
+  FarcasterUrlReactionData,
   RawEvent,
   TopicType,
 } from "@nook/common/types";
@@ -35,6 +36,7 @@ import {
   transformToCastEvent,
   transformToCastReactionEvent,
   transformToLinkEvent,
+  transformToUrlReactionEvent,
 } from "@nook/common/farcaster";
 import {
   backfillCastAdd,
@@ -43,6 +45,7 @@ import {
   messageToCast,
   messageToCastReaction,
   messageToLink,
+  messageToUrlReaction,
 } from "@nook/farcaster/backfill";
 import { FarcasterProcessor } from "@nook/events/processors";
 import { EventHandlerResponse } from "@nook/events/types";
@@ -357,17 +360,17 @@ export class HubSyncProcessor {
     if (messages.length === 0) return;
     const rawEvents = messages
       .map((message) => {
-        const reaction = messageToCastReaction(message);
+        const reaction = messageToUrlReaction(message);
         if (!reaction) return;
-        return transformToCastReactionEvent(
-          EventType.CAST_REACTION_ADD,
+        return transformToUrlReactionEvent(
+          EventType.URL_REACTION_ADD,
           reaction,
         );
       })
-      .filter(Boolean) as RawEvent<FarcasterCastReactionData>[];
+      .filter(Boolean) as RawEvent<FarcasterUrlReactionData>[];
 
     const response =
-      await this.processor.processCastReactionAddOrRemove(rawEvents);
+      await this.processor.processUrlReactionAddOrRemove(rawEvents);
     await this.handleEventHandlerResponse(response);
   }
 
