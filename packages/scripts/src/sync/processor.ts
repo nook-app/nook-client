@@ -66,6 +66,7 @@ export class HubSyncProcessor {
   async syncFid(fid: number) {
     console.log(`[${fid}] syncing`);
     const entityId = await this.getEntityId(fid);
+    if (!entityId) return;
     await Promise.all([
       this.syncCasts(fid, entityId),
       this.syncReactions(fid, entityId),
@@ -78,7 +79,7 @@ export class HubSyncProcessor {
       .getCollection<Entity>(MongoCollection.Entity)
       .findOne({ "farcaster.fid": fid.toString() });
     if (!entity) {
-      throw new Error(`Entity not found for fid: ${fid}`);
+      return;
     }
     return entity._id.toString();
   }
@@ -358,6 +359,19 @@ export class HubSyncProcessor {
               console.error(err);
             }
           }),
+        this.mongo.getCollection(MongoCollection.Actions).updateMany(
+          {
+            "source.type": EventType.CAST_REACTION_ADD,
+            "source.id": {
+              $in: actions.map((action) => action.source.id),
+            },
+          },
+          {
+            $set: {
+              deletedAt: null,
+            },
+          },
+        ),
       );
     }
 
@@ -373,6 +387,18 @@ export class HubSyncProcessor {
               console.error(err);
             }
           }),
+        this.mongo.getCollection(MongoCollection.Content).updateMany(
+          {
+            contentId: {
+              $in: contents.map((content) => content.contentId),
+            },
+          },
+          {
+            $set: {
+              deletedAt: null,
+            },
+          },
+        ),
       );
     }
 
