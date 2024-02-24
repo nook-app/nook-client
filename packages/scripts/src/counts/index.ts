@@ -1,8 +1,8 @@
 import { QueueName, getWorker } from "@nook/common/queues";
-import { DataSyncProcessor } from "../processors/dataSyncProcessor";
+import { CountSyncProcessor } from "../processors/countSyncProcessor";
 
 const run = async () => {
-  const processor = new DataSyncProcessor();
+  const processor = new CountSyncProcessor();
 
   const inputFid = process.argv[2];
   if (inputFid) {

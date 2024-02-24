@@ -50,7 +50,7 @@ import {
 import { FarcasterProcessor } from "@nook/events/processors";
 import { EventHandlerResponse } from "@nook/events/types";
 
-export class HubSyncProcessor {
+export class DataSyncProcessor {
   private mongo: MongoClient;
   private cache: RedisClient;
   private hub: HubRpcClient;
@@ -83,9 +83,7 @@ export class HubSyncProcessor {
     const entity = await this.mongo
       .getCollection<Entity>(MongoCollection.Entity)
       .findOne({ "farcaster.fid": fid.toString() });
-    if (!entity) {
-      return;
-    }
+    if (!entity) return;
     return entity._id.toString();
   }
 

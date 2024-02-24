@@ -7,7 +7,7 @@
     "reset:mongo": "tsc && node ./dist/src/reset-mongo.js",
     "enqueue:fids": "tsc && node ./dist/src/enqueue-fids.js",
     "sync": "tsc && node ./dist/src/sync/index.js",
-    "backfill:followers": "tsc && node ./dist/src/backfill-followers.js"
+    "sync:counts": "tsc && node ./dist/src/counts/index.js"
   },
   "dependencies": {
     "@farcaster/hub-nodejs": "^0.11.3",
