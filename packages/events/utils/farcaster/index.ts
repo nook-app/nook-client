@@ -112,6 +112,9 @@ const formatPost = (
             hash: cast.parentHash,
           })
         : undefined,
+    parentEntityId: cast.parentFid
+      ? entities[cast.parentFid]._id.toString()
+      : undefined,
     rootParentId: toFarcasterURI({
       fid: cast.rootParentFid,
       hash: cast.rootParentHash,
