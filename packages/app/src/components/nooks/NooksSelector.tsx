@@ -29,7 +29,7 @@ const NookButton = ({
         }
         borderWidth={isUnfollowed ? "$1" : undefined}
         borderColor={isUnfollowed ? "$backgroundFocus" : undefined}
-        borderStyle="dashed"
+        borderStyle={isUnfollowed ? "dashed" : undefined}
         style={{
           width: 48,
           height: 48,
@@ -80,7 +80,12 @@ export const NooksSelector = () => {
           isActive={activeNook?.nookId === userNook.nookId}
         />
       )}
-      <Separator borderWidth="$0.5" alignSelf="stretch" marginHorizontal="$2" />
+      <Separator
+        borderWidth="$0.5"
+        alignSelf="stretch"
+        marginHorizontal="$2"
+        marginVertical="$2"
+      />
       {otherNooks.map((nook) => (
         <NookButton
           nook={nook}

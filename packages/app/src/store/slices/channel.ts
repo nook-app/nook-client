@@ -15,14 +15,13 @@ const channelSlice = createSlice({
     builder.addMatcher(
       nookApi.endpoints.getContentFeed.matchFulfilled,
       (state, action) => {
-        const channels = action.payload.data.flatMap((item) => item.channels);
-        channelAdapter.addMany(state, channels);
+        channelAdapter.addMany(state, action.payload.referencedChannels);
       },
     );
     builder.addMatcher(
       nookApi.endpoints.getContent.matchFulfilled,
       (state, action) => {
-        channelAdapter.addMany(state, action.payload.channels);
+        channelAdapter.addMany(state, action.payload.referencedChannels);
       },
     );
     builder.addMatcher(

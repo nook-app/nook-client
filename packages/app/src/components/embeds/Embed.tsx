@@ -28,7 +28,7 @@ export const Embed = ({
     skip: !!storedContent,
   });
 
-  const content = storedContent || fetchedContent;
+  const content = storedContent?.content || fetchedContent?.data;
 
   if (content) {
     switch (content.type) {

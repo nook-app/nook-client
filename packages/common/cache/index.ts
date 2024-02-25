@@ -90,7 +90,7 @@ export class RedisClient {
     return await this.getJson(`entity:${id}`);
   }
 
-  async getEntities(ids: string[]): Promise<Entity[]> {
+  async getEntities(ids: string[]): Promise<(Entity | undefined)[]> {
     return await this.getJsons(ids.map((id) => `entity:${id}`));
   }
 
@@ -116,21 +116,19 @@ export class RedisClient {
     await this.redis.mset(...keyValuePairs);
   }
 
-  async getContent(contentId: string): Promise<Content<ContentData>> {
+  async getContent(contentId: string): Promise<Content> {
     return await this.getJson(`content:${contentId}`);
   }
 
-  async getContents(
-    contentIds: string[],
-  ): Promise<(Content<ContentData> | undefined)[]> {
+  async getContents(contentIds: string[]): Promise<(Content | undefined)[]> {
     return await this.getJsons(contentIds.map((id) => `content:${id}`));
   }
 
-  async setContent(content: Content<ContentData>) {
+  async setContent(content: Content) {
     await this.setJson(`content:${content.contentId}`, content);
   }
 
-  async setContents(contents: Content<ContentData>[]) {
+  async setContents(contents: Content[]) {
     if (contents.length === 0) return;
     const keyValuePairs = contents.flatMap((content) => [
       `content:${content.contentId}`,

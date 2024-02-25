@@ -2,8 +2,6 @@ import { ContentPost } from "@/components/content/ContentPost";
 import { ContentReply } from "@/components/content/ContentReply";
 import { useContent } from "@/hooks/useContent";
 import { RootStackParamList } from "@/types";
-import { ContentFeedItem } from "@nook/api/types";
-import { PostData } from "@nook/common/types";
 import { RouteProp, useRoute } from "@react-navigation/native";
 import { View } from "tamagui";
 
@@ -13,11 +11,11 @@ export default function ContentScreen() {
 
   return (
     <View backgroundColor="$background" height="100%">
-      {content.type === "POST" && (
-        <ContentPost item={content as ContentFeedItem<PostData>} />
+      {content?.content.type === "POST" && (
+        <ContentPost contentId={route.params.contentId} />
       )}
-      {content.type === "REPLY" && (
-        <ContentReply item={content as ContentFeedItem<PostData>} />
+      {content?.content.type === "REPLY" && (
+        <ContentReply contentId={route.params.contentId} />
       )}
     </View>
   );

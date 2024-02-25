@@ -8,6 +8,7 @@ export const EmbedUrl = ({
   metadata: { metadata },
 }: { embed: string; metadata: UrlMetadata }) => {
   if (!metadata) return null;
+
   return (
     <YStack
       borderRadius="$2"

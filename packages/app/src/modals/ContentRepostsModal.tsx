@@ -4,7 +4,6 @@ import { ModalName } from "./types";
 import { BottomSheetModal } from "@/components/modals/BottomSheetModal";
 import { useModal } from "@/hooks/useModal";
 import { EventActionType, TopicType } from "@nook/common/types";
-import { BottomSheetScrollView } from "@gorhom/bottom-sheet";
 import { EntityListPanel } from "@/components/panels/EntityListPanel";
 
 export const ContentRepostsModal = () => {

@@ -78,6 +78,16 @@ const handleCastReactionRemove = async (
   const reaction = messageToCastReaction(message);
   if (!reaction) return;
 
+  const existingReaction = await prisma.farcasterCastReaction.findUnique({
+    where: {
+      targetHash_reactionType_fid: {
+        targetHash: reaction.targetHash,
+        reactionType: reaction.reactionType,
+        fid: reaction.fid,
+      },
+    },
+  });
+
   await prisma.farcasterCastReaction.updateMany({
     where: {
       targetHash: reaction.targetHash,
@@ -93,7 +103,7 @@ const handleCastReactionRemove = async (
     `[reaction-remove] [${reaction.fid}] removed ${reaction.reactionType} from ${reaction.targetHash}`,
   );
 
-  return reaction;
+  return existingReaction;
 };
 
 const handleUrlReactionRemove = async (
@@ -102,6 +112,16 @@ const handleUrlReactionRemove = async (
 ) => {
   const reaction = messageToUrlReaction(message);
   if (!reaction) return;
+
+  const existingReaction = await prisma.farcasterUrlReaction.findUnique({
+    where: {
+      targetUrl_reactionType_fid: {
+        targetUrl: reaction.targetUrl,
+        reactionType: reaction.reactionType,
+        fid: reaction.fid,
+      },
+    },
+  });
 
   await prisma.farcasterUrlReaction.updateMany({
     where: {
@@ -118,5 +138,5 @@ const handleUrlReactionRemove = async (
     `[reaction-remove] [${reaction.fid}] removed ${reaction.reactionType} from ${reaction.targetUrl}`,
   );
 
-  return reaction;
+  return existingReaction;
 };

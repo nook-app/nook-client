@@ -9,10 +9,10 @@ import {
 
 export type EventHandlerResponseEvent = {
   event: EntityEvent<EntityEventData>;
-  actions: EventAction<EventActionData>[];
+  actions: EventAction[];
 };
 
 export type EventHandlerResponse = {
   events: EventHandlerResponseEvent[];
-  contents?: Content<ContentData>[];
+  contents?: Content[];
 };

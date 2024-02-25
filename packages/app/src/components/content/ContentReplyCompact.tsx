@@ -6,10 +6,11 @@ import { RootStackParamList } from "@/types";
 import { ContentPostContent } from "./ContentPostCompact";
 import { useContent } from "@/hooks/useContent";
 
-export const ContentReplyCompact = ({
-  content,
-}: { content: Content<PostData> }) => {
+export const ContentReplyCompact = ({ contentId }: { contentId: string }) => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+  const contentData = useContent(contentId);
+  if (!contentData) return null;
+  const { content } = contentData;
   const parentContent = useContent(content.data.parentId);
   return (
     <View
@@ -21,12 +22,12 @@ export const ContentReplyCompact = ({
         <TouchableWithoutFeedback
           onPress={() =>
             navigation.navigate("Content", {
-              contentId: parentContent.contentId,
+              contentId: parentContent.content.contentId,
             })
           }
         >
           <ContentPostContent
-            content={parentContent as Content<PostData>}
+            contentId={parentContent.content.data.contentId}
             isParent
           />
         </TouchableWithoutFeedback>
@@ -38,7 +39,7 @@ export const ContentReplyCompact = ({
           })
         }
       >
-        <ContentPostContent content={content} />
+        <ContentPostContent contentId={content.contentId} />
       </TouchableWithoutFeedback>
     </View>
   );

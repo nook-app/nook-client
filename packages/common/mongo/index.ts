@@ -14,8 +14,10 @@ import {
   EventActionType,
   Entity,
   Channel,
+  Nook,
 } from "../types";
 import { publishAction } from "../queues";
+import { getDefaultChannelNook, getDefaultEntityNook } from "../nooks";
 
 const DB_NAME = "nook";
 
@@ -55,6 +57,46 @@ export class MongoClient {
     return this.getDb().collection<T>(collection);
   }
 
+  getEntities = async (entityIds: string[]) => {
+    const collection = this.getCollection<Entity>(MongoCollection.Entity);
+    return await collection
+      .find({
+        _id: {
+          $in: entityIds.map((id) => new ObjectId(id)),
+        },
+      })
+      .toArray();
+  };
+
+  getContents = async (contentIds: string[]) => {
+    const collection = this.getCollection<Content>(MongoCollection.Content);
+    return await collection
+      .find({
+        contentId: {
+          $in: contentIds,
+        },
+      })
+      .toArray();
+  };
+
+  getChannels = async (channelIds: string[]) => {
+    const collection = this.getCollection<Channel>(MongoCollection.Channels);
+    return await collection
+      .find({
+        contentId: {
+          $in: channelIds,
+        },
+      })
+      .toArray();
+  };
+
+  getNook = async (nookId: string) => {
+    const collection = this.getCollection<Nook>(MongoCollection.Nooks);
+    return await collection.findOne({
+      nookId,
+    });
+  };
+
   findEntity = async (entityId: string) => {
     const collection = this.getCollection<Entity>(MongoCollection.Entity);
     return await collection.findOne({
@@ -63,18 +105,14 @@ export class MongoClient {
   };
 
   findContent = async (contentId: string) => {
-    const collection = this.getCollection<Content<ContentData>>(
-      MongoCollection.Content,
-    );
+    const collection = this.getCollection<Content>(MongoCollection.Content);
     return await collection.findOne({
       contentId,
     });
   };
 
   findAction = async (actionId: string) => {
-    const collection = this.getCollection<EventAction<EventActionData>>(
-      MongoCollection.Actions,
-    );
+    const collection = this.getCollection<EventAction>(MongoCollection.Actions);
     return await collection.findOne({
       _id: new ObjectId(actionId),
     });
@@ -105,10 +143,8 @@ export class MongoClient {
     return new ObjectId(id);
   };
 
-  upsertContent = async (content: Content<ContentData>) => {
-    const collection = this.getCollection<Content<ContentData>>(
-      MongoCollection.Content,
-    );
+  upsertContent = async (content: Content) => {
+    const collection = this.getCollection<Content>(MongoCollection.Content);
     const _id = this.generateObjectIdFromDate(content.timestamp);
     try {
       await collection.insertOne({ ...content, _id });
@@ -175,10 +211,8 @@ export class MongoClient {
     }
   };
 
-  upsertAction = async (action: EventAction<EventActionData>) => {
-    const collection = this.getCollection<EventAction<EventActionData>>(
-      MongoCollection.Actions,
-    );
+  upsertAction = async (action: EventAction) => {
+    const collection = this.getCollection<EventAction>(MongoCollection.Actions);
     const _id = this.generateObjectIdFromDate(action.timestamp);
     try {
       await collection.insertOne({ ...action, _id });
@@ -270,5 +304,44 @@ export class MongoClient {
         },
       },
     );
+  };
+
+  getOrCreateEntityNook = async (entity: Entity) => {
+    const nook = await this.getCollection<Nook>(MongoCollection.Nooks).findOne({
+      nookId: `entity:${entity._id.toString()}`,
+    });
+    if (nook) return nook;
+    return this.createEntityNook(entity);
+  };
+
+  createEntityNook = async (entity: Entity) => {
+    const nook = getDefaultEntityNook(entity);
+    await this.getCollection<Nook>(MongoCollection.Nooks).insertOne(nook);
+    return nook;
+  };
+
+  getOrCreateChannelNook = async (channel: Channel) => {
+    const nook = await this.getCollection<Nook>(MongoCollection.Nooks).findOne({
+      nookId: `channel:${channel.contentId}`,
+    });
+    if (nook) return nook;
+    return this.createChannelNook(channel);
+  };
+
+  createChannelNook = async (channel: Channel) => {
+    const nook = getDefaultChannelNook(channel);
+    await this.getCollection<Nook>(MongoCollection.Nooks).insertOne(nook);
+    return nook;
+  };
+
+  searchChannels = async (query: string) => {
+    const collection = this.getCollection<Channel>(MongoCollection.Channels);
+    return await collection
+      .find({
+        $text: {
+          $search: query,
+        },
+      })
+      .toArray();
   };
 }

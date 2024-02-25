@@ -10,7 +10,7 @@ export const EntityAvatar = ({
   return (
     <EntityModalButton entityId={entityId}>
       <Avatar circular size={size}>
-        <Avatar.Image src={entity?.farcaster.pfp} />
+        <Avatar.Image src={entity?.entity.farcaster.pfp} />
         <Avatar.Fallback backgroundColor="$backgroundPress" />
       </Avatar>
     </EntityModalButton>

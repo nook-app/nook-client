@@ -38,7 +38,7 @@ export enum EventActionType {
 /**
  * Event action parsed from the event data
  */
-export type EventAction<T> = {
+export type EventAction<T = EventActionData> = {
   /** Event ID */
   eventId: string;
 

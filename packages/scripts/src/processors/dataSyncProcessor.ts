@@ -118,7 +118,7 @@ export class DataSyncProcessor {
     if (extraInMongo.length > 0) {
       console.log(`[${fid}] [casts] [mongo] extra ${extraInMongo.length}`);
       await this.mongo
-        .getCollection<Content<ContentData>>(MongoCollection.Content)
+        .getCollection<Content>(MongoCollection.Content)
         .deleteMany({
           contentId: {
             $in: extraInMongo,
@@ -570,7 +570,7 @@ export class DataSyncProcessor {
         acc[cast.contentId] = cast;
         return acc;
       },
-      {} as Record<string, Content<ContentData>>,
+      {} as Record<string, Content>,
     );
 
     const hubHashMap = castsFromHub.reduce(
@@ -778,7 +778,7 @@ export class DataSyncProcessor {
   // Mongo Calls
   async getCastsFromMongo(entityId: string) {
     return await this.mongo
-      .getCollection<Content<ContentData>>(MongoCollection.Content)
+      .getCollection<Content>(MongoCollection.Content)
       .find({
         type: {
           $in: [ContentType.POST, ContentType.REPLY],

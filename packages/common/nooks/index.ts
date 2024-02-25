@@ -1,4 +1,3 @@
-import { MongoClient, MongoCollection } from "@nook/common/mongo";
 import {
   Channel,
   ContentType,
@@ -10,46 +9,33 @@ import {
 } from "@nook/common/types";
 import { ObjectId } from "mongodb";
 
-export const getOrCreateEntityNook = async (
-  client: MongoClient,
-  entity: Entity,
-) => {
-  const nook = await client.getCollection<Nook>(MongoCollection.Nooks).findOne({
-    nookId: `entity:${entity._id.toString()}`,
-  });
-  if (nook) return nook;
-  return createEntityNook(client, entity);
-};
-
-export const createEntityNook = async (client: MongoClient, entity: Entity) => {
-  const nook = getDefaultEntityNook(entity);
-  await client.getCollection<Nook>(MongoCollection.Nooks).insertOne(nook);
-  return nook;
-};
+const DEFAULT_CREATOR_ID = "65d6d628bcf8dea3200bb9c3";
 
 export const getDefaultEntityNook = (entity: Entity): Nook => {
   const date = new Date();
+  const type = NookType.Entity;
+  const nookId = `${type}:${entity._id.toString()}`;
+  const name =
+    entity.farcaster.displayName ||
+    entity.farcaster.username ||
+    entity.farcaster.fid ||
+    "Home";
+  const description = entity.farcaster.bio || "Your personal space";
+  const image = entity.farcaster.pfp || "";
+  const slug = `@${entity.farcaster.username || entity.farcaster.fid}`;
   return {
     _id: new ObjectId(),
-    nookId: `${NookType.Entity}:${entity._id.toString()}`,
-    type: NookType.Entity,
-    name:
-      entity.farcaster.displayName ||
-      entity.farcaster.username ||
-      entity.farcaster.fid ||
-      "Home",
-    description: entity.farcaster.bio || "Your personal space",
-    image: entity.farcaster.pfp || "",
-    slug: `@${entity.farcaster.username || entity.farcaster.fid}`,
+    type,
+    nookId,
+    name,
+    description,
+    image,
+    slug,
     shelves: [
       {
-        name: "Posts",
-        slug: "posts",
-        description: `by ${
-          entity.farcaster.displayName ||
-          entity.farcaster.username ||
-          entity.farcaster.fid
-        }`,
+        name: "New posts",
+        slug: "new",
+        description: `by ${slug}`,
         panels: [
           {
             name: "Posts",
@@ -81,37 +67,57 @@ export const getDefaultEntityNook = (entity: Entity): Nook => {
           },
         ],
       },
+      {
+        name: "Top posts",
+        slug: "top",
+        description: `by ${slug}`,
+        panels: [
+          {
+            name: "All time",
+            slug: "all",
+            type: NookPanelType.ContentFeed,
+            args: {
+              filter: {
+                type: ContentType.POST,
+                topics: {
+                  type: TopicType.SOURCE_ENTITY,
+                  value: entity._id.toString(),
+                },
+              },
+              sort: "engagement.likes",
+            },
+          },
+        ],
+      },
     ],
     createdAt: date,
     updatedAt: date,
-    creatorId: "65d003330f2e60b1c360d9a3",
+    creatorId: DEFAULT_CREATOR_ID,
   };
-};
-
-export const createChannelNook = async (
-  client: MongoClient,
-  channel: Channel,
-) => {
-  const nook = getDefaultChannelNook(channel);
-  await client.getCollection<Nook>(MongoCollection.Nooks).insertOne(nook);
-  return nook;
 };
 
 export const getDefaultChannelNook = (channel: Channel): Nook => {
   const date = new Date();
+  const type = NookType.Channel;
+  const nookId = `${type}:${channel.contentId}`;
+  const name = channel.name;
+  const description = channel.description;
+  const image = channel.imageUrl;
+  const slug = `f/${channel.slug}`;
+
   return {
     _id: new ObjectId(),
-    nookId: `${NookType.Channel}:${channel.contentId}`,
-    type: NookType.Channel,
-    name: channel.name,
-    description: channel.description,
-    image: channel.imageUrl,
-    slug: `f/${channel.slug}`,
+    type,
+    nookId,
+    name,
+    description,
+    image,
+    slug,
     shelves: [
       {
-        name: "Posts",
-        slug: "posts",
-        description: "Posts in this channel",
+        name: "New & Trending",
+        slug: "trending",
+        description: `Hot posts in ${slug}`,
         panels: [
           {
             name: "New",
@@ -127,9 +133,16 @@ export const getDefaultChannelNook = (channel: Channel): Nook => {
               },
             },
           },
+        ],
+      },
+      {
+        name: "Top posts",
+        slug: "top",
+        description: `Popular posts in ${slug}`,
+        panels: [
           {
-            name: "Top",
-            slug: "top",
+            name: "All time",
+            slug: "all",
             type: NookPanelType.ContentFeed,
             args: {
               filter: {
@@ -138,9 +151,8 @@ export const getDefaultChannelNook = (channel: Channel): Nook => {
                   type: TopicType.CHANNEL,
                   value: channel.contentId,
                 },
-                sort: "engagement.likes",
-                sortDirection: -1,
               },
+              sort: "engagement.likes",
             },
           },
         ],
@@ -148,6 +160,6 @@ export const getDefaultChannelNook = (channel: Channel): Nook => {
     ],
     createdAt: date,
     updatedAt: date,
-    creatorId: "65d003330f2e60b1c360d9a3",
+    creatorId: DEFAULT_CREATOR_ID,
   };
 };

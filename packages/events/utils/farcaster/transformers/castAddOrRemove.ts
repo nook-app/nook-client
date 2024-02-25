@@ -29,7 +29,7 @@ export const transformCastAddOrRemove = (
   }
 
   const contentId = toFarcasterURI(rawEvent.data);
-  const actions: EventAction<EventActionData>[] = [
+  const actions: EventAction[] = [
     {
       eventId: rawEvent.eventId,
       source: rawEvent.source,

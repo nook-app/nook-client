@@ -1,10 +1,5 @@
 import { FastifyInstance } from "fastify";
 import { NookService } from "../../services/nookService";
-import {
-  GetEntitiesRequest,
-  GetNookRequest,
-  SearchChannelsRequest,
-} from "../../../types";
 import { ContentFeedArgs } from "@nook/common/types";
 
 export const nookRoutes = async (fastify: FastifyInstance) => {
@@ -14,8 +9,13 @@ export const nookRoutes = async (fastify: FastifyInstance) => {
     fastify.post<{ Body: ContentFeedArgs & { cursor?: string } }>(
       "/content/feed",
       async (request, reply) => {
+        const { id } = (await request.jwtDecode()) as { id: string };
         return reply.send(
-          await nookService.getContentFeed(request.body, request.body.cursor),
+          await nookService.getContentFeed(
+            id,
+            request.body,
+            request.body.cursor,
+          ),
         );
       },
     );
@@ -23,8 +23,13 @@ export const nookRoutes = async (fastify: FastifyInstance) => {
     fastify.post<{ Body: ContentFeedArgs & { cursor?: string } }>(
       "/actions/feed",
       async (request, reply) => {
+        const { id } = (await request.jwtDecode()) as { id: string };
         return reply.send(
-          await nookService.getActionFeed(request.body, request.body.cursor),
+          await nookService.getActionFeed(
+            id,
+            request.body,
+            request.body.cursor,
+          ),
         );
       },
     );
@@ -32,7 +37,11 @@ export const nookRoutes = async (fastify: FastifyInstance) => {
     fastify.post<{ Body: { contentId: string } }>(
       "/content",
       async (request, reply) => {
-        const content = await nookService.getContent(request.body.contentId);
+        const { id } = (await request.jwtDecode()) as { id: string };
+        const content = await nookService.getContent(
+          id,
+          request.body.contentId,
+        );
         if (!content) {
           return reply
             .status(404)
@@ -42,20 +51,27 @@ export const nookRoutes = async (fastify: FastifyInstance) => {
       },
     );
 
-    fastify.post<{ Body: GetEntitiesRequest }>(
+    fastify.post<{ Body: { entityIds: string[] } }>(
       "/entities",
       async (request, reply) => {
-        const entities = await nookService.getEntities(request.body.entityIds);
+        const { id } = (await request.jwtDecode()) as { id: string };
+        const entities = await nookService.fetchEntities(
+          id,
+          request.body.entityIds,
+        );
         return reply.send({ data: entities });
       },
     );
 
-    fastify.post<{ Body: GetNookRequest }>("/nooks", async (request, reply) => {
-      const nook = await nookService.getNook(request.body.nookId);
-      return reply.send(nook);
-    });
+    fastify.post<{ Body: { nookId: string } }>(
+      "/nooks",
+      async (request, reply) => {
+        const nook = await nookService.getNook(request.body.nookId);
+        return reply.send(nook);
+      },
+    );
 
-    fastify.post<{ Querystring: SearchChannelsRequest }>(
+    fastify.post<{ Querystring: { search: string } }>(
       "/channels",
       async (request, reply) => {
         const channels = await nookService.searchChannels(request.query.search);

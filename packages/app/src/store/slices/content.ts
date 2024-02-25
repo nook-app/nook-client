@@ -1,10 +1,10 @@
 import { createEntityAdapter, createSlice } from "@reduxjs/toolkit";
 import { nookApi } from "../apis/nookApi";
 import { RootState } from "..";
-import { Content, ContentData } from "@nook/common/types";
+import { ContentWithContext } from "@nook/api/types";
 
 const contentAdapter = createEntityAdapter({
-  selectId: (content: Content<ContentData>) => content.contentId,
+  selectId: (content: ContentWithContext) => content.content.contentId,
 });
 
 const contentSlice = createSlice({
@@ -15,21 +15,19 @@ const contentSlice = createSlice({
     builder.addMatcher(
       nookApi.endpoints.getActionsFeed.matchFulfilled,
       (state, action) => {
-        const content = action.payload.data.flatMap((item) => item.contents);
-        contentAdapter.addMany(state, content);
+        contentAdapter.addMany(state, action.payload.referencedContents);
       },
     );
     builder.addMatcher(
       nookApi.endpoints.getContentFeed.matchFulfilled,
       (state, action) => {
-        const content = action.payload.data.flatMap((item) => item.contents);
-        contentAdapter.addMany(state, content);
+        contentAdapter.addMany(state, action.payload.referencedContents);
       },
     );
     builder.addMatcher(
       nookApi.endpoints.getContent.matchFulfilled,
       (state, action) => {
-        contentAdapter.addMany(state, action.payload.contents);
+        contentAdapter.addMany(state, action.payload.referencedContents);
       },
     );
   },

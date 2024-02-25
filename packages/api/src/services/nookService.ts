@@ -1,24 +1,38 @@
 import { FastifyInstance } from "fastify";
 import { MongoClient, MongoCollection } from "@nook/common/mongo";
+import { RedisClient } from "@nook/common/cache";
+import {
+  CONTENT_ACTIONS,
+  ContentActionType,
+  ENTITY_ACTIONS,
+  EntityActionType,
+} from "../utils/action";
 import {
   Channel,
   Content,
-  ContentData,
   ContentFeedArgs,
   ContentType,
   Entity,
   EventAction,
-  EventActionData,
   Nook,
   PostData,
 } from "@nook/common/types";
-import { ActionFeed, ContentFeed, ContentFeedItem } from "../../types";
-import { ObjectId } from "mongodb";
-import { createChannelNook, createEntityNook } from "../utils/nooks";
 import { getOrCreateChannel, getOrCreateContent } from "@nook/common/scraper";
-import { RedisClient } from "@nook/common/cache";
+import {
+  ContentWithContext,
+  EntityWithContext,
+  GetActionFeedResponse,
+  GetContentFeedResponse,
+  GetContentResponse,
+} from "../../types";
+import { Document, Filter } from "mongodb";
 
 const PAGE_SIZE = 25;
+
+function getNestedValue<T>(obj: T, path: string) {
+  // biome-ignore lint/suspicious/noExplicitAny: <explanation>
+  return path.split(".").reduce((acc: any, part) => acc?.[part], obj);
+}
 
 export class NookService {
   private client: MongoClient;
@@ -29,121 +43,151 @@ export class NookService {
     this.cache = fastify.cache.client;
   }
 
-  async getActionFeed(
-    { filter, sort, sortDirection = -1 }: ContentFeedArgs,
-    cursor?: string,
-  ): Promise<ActionFeed> {
-    const collection = this.client.getCollection<EventAction<EventActionData>>(
-      MongoCollection.Actions,
+  async getContent(
+    viewerId: string,
+    contentId: string,
+  ): Promise<GetContentResponse | undefined> {
+    const content = await this.fetchContent(viewerId, contentId);
+    if (!content) return;
+
+    const contents = await this.fetchContents(
+      viewerId,
+      content.content.referencedContentIds,
     );
 
-    let queryFilter = { ...filter };
-    type SortDirection = 1 | -1;
-    const sortField = sort || "timestamp";
-
-    if (cursor) {
-      const cursorObj = JSON.parse(Buffer.from(cursor, "base64").toString());
-      queryFilter = {
-        ...queryFilter,
-        $or: [
-          {
-            [sortField]: {
-              [sortDirection === 1 ? "$gt" : "$lt"]: cursorObj.value,
-            },
-          },
-          {
-            [sortField]: cursorObj.value,
-            timestamp: {
-              [sortDirection === 1 ? "$gt" : "$lt"]: new Date(
-                cursorObj.timestamp,
-              ),
-            },
-          },
-        ],
-      };
-    }
-
-    let sortOptions: Record<string, SortDirection> = { timestamp: -1 };
-    if (sort) {
-      sortOptions = { [sort]: sortDirection as SortDirection, ...sortOptions };
-    }
-
-    const actions = await collection
-      .find(queryFilter)
-      .sort(sortOptions)
-      .limit(PAGE_SIZE)
-      .toArray();
-
-    const referencedContentIds = actions.flatMap((a) => a.referencedContentIds);
-    const contents = await this.getReferencedContents(referencedContentIds);
-
-    const referencedEntityIds = actions
-      .flatMap((a) => a.referencedEntityIds)
-      .concat(contents.flatMap((a) => a.referencedEntityIds));
-    const entities = await this.fetchEntities(referencedEntityIds);
-
-    const data = actions.map((a) => {
-      const relevantContents = [];
-
-      for (const contentId of a.referencedContentIds) {
-        const content = contents.find((c) => c.contentId === contentId);
-        if (content) {
-          relevantContents.push(content);
-        }
-      }
-
-      const relevantEntities = [];
-      for (const entityId of a.referencedEntityIds) {
-        const entity = entities.find((e) => e._id.equals(entityId));
-        if (entity) {
-          relevantEntities.push(entity);
-        }
-      }
-
-      for (const entityId of relevantContents.flatMap(
-        (c) => c?.referencedEntityIds,
-      )) {
-        if (!entityId) continue;
-        const entity = entities.find((e) => e._id.equals(entityId));
-        if (entity) {
-          relevantEntities.push(entity);
-        }
-      }
-
-      return {
-        ...a,
-        _id: a._id.toString(),
-        entities: relevantEntities,
-        contents: relevantContents,
-      };
-    });
-
-    function getNestedValue<T>(obj: T, path: string) {
-      // biome-ignore lint/suspicious/noExplicitAny: <explanation>
-      return path.split(".").reduce((acc: any, part) => acc?.[part], obj);
-    }
+    const [entities, channels] = await Promise.all([
+      this.getReferencedEntities(viewerId, contents),
+      this.getReferencedChannels(viewerId, contents),
+    ]);
 
     return {
-      data,
-      nextCursor:
-        actions.length === PAGE_SIZE
-          ? Buffer.from(
-              JSON.stringify({
-                timestamp: actions[actions.length - 1].timestamp,
-                value: getNestedValue(actions[actions.length - 1], sortField),
-              }),
-            ).toString("base64")
-          : undefined,
+      data: content.content,
+      referencedEntities: entities,
+      referencedContents: contents,
+      referencedChannels: channels,
     };
+  }
+
+  async getReferencedEntities(
+    viewerId: string,
+    contents: ContentWithContext[],
+  ) {
+    const entityIds = Array.from(
+      new Set(
+        contents.flatMap((content) => content.content.referencedEntityIds),
+      ),
+    );
+    return await this.fetchEntities(viewerId, entityIds);
+  }
+
+  async getReferencedChannels(
+    viewerId: string,
+    contents: ContentWithContext[],
+  ) {
+    const channelIds = contents
+      .map(({ content }) => {
+        if (
+          content.type === ContentType.POST ||
+          content.type === ContentType.REPLY
+        ) {
+          const post = content.data as PostData;
+          return post.channelId;
+        }
+      })
+      .filter(Boolean) as string[];
+    return await this.fetchChannels(channelIds);
   }
 
   async getContentFeed(
+    viewerId: string,
+    args: ContentFeedArgs,
+    cursor?: string,
+  ): Promise<GetContentFeedResponse> {
+    const feed = await this.getFeedRaw<Content>(
+      MongoCollection.Content,
+      args,
+      cursor,
+    );
+
+    const contents = await this.fetchContents(
+      viewerId,
+      feed.flatMap((content) => content.referencedContentIds),
+    );
+
+    const [entities, channels] = await Promise.all([
+      this.getReferencedEntities(viewerId, contents),
+      this.getReferencedChannels(viewerId, contents),
+    ]);
+
+    let nextCursor;
+    if (feed.length === PAGE_SIZE) {
+      const timestamp = feed[feed.length - 1].timestamp;
+      const value = getNestedValue(
+        feed[feed.length - 1],
+        args.sort || "timestamp",
+      );
+      nextCursor = Buffer.from(JSON.stringify({ timestamp, value })).toString(
+        "base64",
+      );
+    }
+
+    return {
+      data: feed,
+      nextCursor,
+      referencedEntities: entities,
+      referencedContents: contents,
+      referencedChannels: channels,
+    };
+  }
+
+  async getActionFeed(
+    viewerId: string,
+    args: ContentFeedArgs,
+    cursor?: string,
+  ): Promise<GetActionFeedResponse> {
+    const feed = await this.getFeedRaw<EventAction>(
+      MongoCollection.Actions,
+      args,
+      cursor,
+    );
+
+    const contents = await this.fetchContents(
+      viewerId,
+      feed.flatMap((action) => action.referencedContentIds),
+    );
+
+    const entityIds = contents
+      .flatMap((content) => content.content.referencedEntityIds)
+      .concat(feed.flatMap((action) => action.referencedEntityIds));
+    const entities = await this.fetchEntities(viewerId, entityIds);
+
+    let nextCursor;
+    if (feed.length === PAGE_SIZE) {
+      const timestamp = feed[feed.length - 1].timestamp;
+      const value = getNestedValue(
+        feed[feed.length - 1],
+        args.sort || "timestamp",
+      );
+      nextCursor = Buffer.from(JSON.stringify({ timestamp, value })).toString(
+        "base64",
+      );
+    }
+
+    return {
+      data: feed,
+      nextCursor,
+      referencedEntities: entities,
+      referencedContents: contents,
+      referencedChannels: [],
+    };
+  }
+
+  async getFeedRaw<T extends Document>(
+    colName: MongoCollection,
     { filter, sort, sortDirection = -1 }: ContentFeedArgs,
     cursor?: string,
-  ): Promise<ContentFeed> {
-    const collection = this.client.getCollection<Content<ContentData>>(
-      MongoCollection.Content,
-    );
+  ) {
+    const collection = this.client.getCollection<T>(colName);
 
     let queryFilter = { ...filter };
     type SortDirection = 1 | -1;
@@ -176,109 +220,99 @@ export class NookService {
       sortOptions = { [sort]: sortDirection as SortDirection, ...sortOptions };
     }
 
-    const content = await collection
-      .find(queryFilter)
+    return await collection
+      .find(queryFilter as Filter<T>)
       .sort(sortOptions)
       .limit(PAGE_SIZE)
       .toArray();
-
-    const referencedContentIds = content.flatMap((a) => a.referencedContentIds);
-    const contents = await this.getReferencedContents(referencedContentIds);
-
-    const referencedEntityIds = contents.flatMap((a) => a.referencedEntityIds);
-    const entities = await this.fetchEntities(referencedEntityIds);
-
-    const channels = await this.getReferencedChannels(contents);
-
-    const data = content.map((a) => {
-      const relevantContents = [];
-      const relevantChannels = [];
-
-      for (const contentId of a.referencedContentIds) {
-        const content = contents.find((c) => c.contentId === contentId);
-        if (content) {
-          relevantContents.push(content);
-        }
-        const channel = channels.find((c) => c.contentId === contentId);
-        if (channel) {
-          relevantChannels.push(channel);
-        }
-      }
-
-      for (const contentId of relevantContents.flatMap(
-        (c) => c?.referencedContentIds,
-      )) {
-        if (!contentId) continue;
-        const content = contents.find((c) => c.contentId === contentId);
-        if (content) {
-          relevantContents.push(content);
-        }
-        const channel = channels.find((c) => c.contentId === contentId);
-        if (channel) {
-          relevantChannels.push(channel);
-        }
-      }
-
-      const relevantEntities = [];
-
-      for (const entityId of a.referencedEntityIds) {
-        const entity = entities.find((e) => e._id.equals(entityId));
-        if (entity) {
-          relevantEntities.push(entity);
-        }
-      }
-
-      for (const entityId of relevantContents.flatMap(
-        (c) => c?.referencedEntityIds,
-      )) {
-        if (!entityId) continue;
-        const entity = entities.find((e) => e._id.equals(entityId));
-        if (entity) {
-          relevantEntities.push(entity);
-        }
-      }
-
-      return {
-        ...a,
-        _id: a._id.toString(),
-        entities: relevantEntities,
-        contents: relevantContents,
-        channels: relevantChannels,
-      };
-    });
-
-    function getNestedValue<T>(obj: T, path: string) {
-      // biome-ignore lint/suspicious/noExplicitAny: <explanation>
-      return path.split(".").reduce((acc: any, part) => acc?.[part], obj);
-    }
-
-    return {
-      data,
-      nextCursor:
-        content.length === PAGE_SIZE
-          ? Buffer.from(
-              JSON.stringify({
-                timestamp: content[content.length - 1].timestamp,
-                value: getNestedValue(content[content.length - 1], sortField),
-              }),
-            ).toString("base64")
-          : undefined,
-    };
   }
 
-  async fetchContents(contentIds: string[]) {
-    const cachedContents = (await this.cache.getContents(contentIds)).filter(
-      Boolean,
-    ) as Content<ContentData>[];
-    const cachedContentIds = cachedContents.map((c) => c.contentId);
+  /** FETCH FUNCTIONS */
+
+  async fetchEntity(viewerId: string, entityId: string) {
+    return (await this.fetchEntities(viewerId, [entityId]))[0];
+  }
+
+  async fetchEntities(
+    viewerId: string,
+    entityIds: string[],
+  ): Promise<EntityWithContext[]> {
+    const [entities, following] = await Promise.all([
+      this.fetchEntitiesData(entityIds),
+      ENTITY_ACTIONS[EntityActionType.FOLLOWING].validateActions({
+        client: this.client,
+        viewerId,
+        entityIds,
+      }),
+    ]);
+
+    return entities.map((entity) => ({
+      entity,
+      context: {
+        [EntityActionType.FOLLOWING]: following[entity._id.toString()] ?? false,
+      },
+    }));
+  }
+
+  async fetchEntitiesData(entityIds: string[]) {
+    const cachedResponse = await this.cache.getEntities(entityIds);
+    const cachedEntities = cachedResponse.filter(Boolean) as Entity[];
+    const cachedEntityIds = cachedEntities.map((entity) =>
+      entity._id.toString(),
+    );
+    const uncachedEntityIds = entityIds.filter(
+      (id) => !cachedEntityIds.includes(id),
+    );
+    const existingEntities = await this.client.getEntities(uncachedEntityIds);
+    await this.cache.setEntities(existingEntities);
+    return [...cachedEntities, ...existingEntities];
+  }
+
+  async fetchContent(
+    viewerId: string,
+    contentId: string,
+  ): Promise<ContentWithContext> {
+    return (await this.fetchContents(viewerId, [contentId]))[0];
+  }
+
+  async fetchContents(
+    viewerId: string,
+    contentIds: string[],
+  ): Promise<ContentWithContext[]> {
+    const [contents, liked, reposted] = await Promise.all([
+      this.fetchContentsData(contentIds),
+      CONTENT_ACTIONS[ContentActionType.LIKED].validateActions({
+        client: this.client,
+        viewerId,
+        contentIds,
+      }),
+      CONTENT_ACTIONS[ContentActionType.REPOSTED].validateActions({
+        client: this.client,
+        viewerId,
+        contentIds,
+      }),
+    ]);
+
+    return contents.map((content) => ({
+      content,
+      context: {
+        [ContentActionType.LIKED]: liked[content.contentId] ?? false,
+        [ContentActionType.REPOSTED]: reposted[content.contentId] ?? false,
+      },
+    }));
+  }
+
+  async fetchContentsData(contentIds: string[]) {
+    const cachedResponse = await this.cache.getContents(contentIds);
+    const cachedContents = cachedResponse.filter(Boolean) as Content[];
+    const cachedContentIds = cachedContents.map((content) => content.contentId);
     const uncachedContentIds = contentIds.filter(
       (id) => !cachedContentIds.includes(id),
     );
-    const existingContents = await this.client
-      .getCollection<Content<ContentData>>(MongoCollection.Content)
-      .find({ contentId: { $in: uncachedContentIds } })
-      .toArray();
-    const existingContentIds = existingContents.map((c) => c.contentId);
+    const existingContents = await this.client.getContents(uncachedContentIds);
+    const existingContentIds = existingContents.map(
+      (content) => content.contentId,
+    );
     const missingContentIds = uncachedContentIds.filter(
       (id) => !existingContentIds.includes(id),
     );
@@ -290,111 +324,30 @@ export class NookService {
           } catch (e) {}
         }),
       )
-    ).filter(Boolean) as Content<ContentData>[];
+    ).filter(Boolean) as Content[];
     await this.cache.setContents([...existingContents, ...missingContents]);
     return [...cachedContents, ...existingContents, ...missingContents];
   }
 
-  async getReferencedContents(contentIds: string[]) {
-    const referencedContents = await this.fetchContents(contentIds);
-    const secondLevelReferencedContentIds = referencedContents
-      .flatMap((c) => c.referencedContentIds)
-      .filter((id) => !contentIds.includes(id));
-    const secondLevelContents = await this.fetchContents(
-      secondLevelReferencedContentIds,
-    );
-    return [...referencedContents, ...secondLevelContents];
-  }
-
-  async fetchEntities(entityIds: string[]) {
-    const cachedEntities = (await this.cache.getEntities(entityIds)).filter(
-      Boolean,
-    ) as Entity[];
-    const cachedEntityIds = cachedEntities.map((e) => e._id.toString());
-    const uncachedEntityIds = entityIds.filter(
-      (id) => !cachedEntityIds.includes(id),
-    );
-    const existingEntities = await this.client
-      .getCollection<Entity>(MongoCollection.Entity)
-      .find({ _id: { $in: uncachedEntityIds.map((id) => new ObjectId(id)) } })
-      .toArray();
-    await this.cache.setEntities(existingEntities);
-    return [...cachedEntities, ...existingEntities];
-  }
-
   async fetchChannels(channelIds: string[]) {
-    const cachedChannels = (await this.cache.getChannels(channelIds)).filter(
-      Boolean,
-    ) as Channel[];
-    const cachedChannelIds = cachedChannels.map((c) => c.contentId);
+    const cachedResponse = await this.cache.getChannels(channelIds);
+    const cachedChannels = cachedResponse.filter(Boolean) as Channel[];
+    const cachedChannelIds = cachedChannels.map((channel) => channel.contentId);
     const uncachedChannelIds = channelIds.filter(
       (id) => !cachedChannelIds.includes(id),
     );
-    const existingChannels = await this.client
-      .getCollection<Channel>(MongoCollection.Channels)
-      .find({ contentId: { $in: uncachedChannelIds } })
-      .toArray();
+    const existingChannels = await this.client.getChannels(uncachedChannelIds);
     await this.cache.setChannels(existingChannels);
     return [...cachedChannels, ...existingChannels];
   }
 
-  async getReferencedChannels(content: Content<ContentData>[]) {
-    const referencedChannelIds = content
-      .map((c) => {
-        if (c.type === ContentType.POST || c.type === ContentType.REPLY) {
-          const post = c.data as PostData;
-          return post.channelId;
-        }
-      })
-      .filter(Boolean) as string[];
-    const referencedChannels = await this.fetchChannels(referencedChannelIds);
-    return referencedChannels;
-  }
-
-  async getContent(contentId: string): Promise<ContentFeedItem | undefined> {
-    const content = await this.client.findContent(contentId);
-    if (!content) return;
-
-    const contents = await this.getReferencedContents(
-      content.referencedContentIds,
-    );
-    const entities = await this.fetchEntities(
-      contents.flatMap((c) => c.referencedEntityIds),
-    );
-    const channels = await this.getReferencedChannels(contents);
-
-    return {
-      ...content,
-      _id: content._id.toString(),
-      entities,
-      contents,
-      channels,
-    };
-  }
-
-  async getEntities(entityIds: string[]): Promise<Entity[]> {
-    const entities = await this.client
-      .getCollection<Entity>(MongoCollection.Entity)
-      .find({ _id: { $in: entityIds.map((id) => new ObjectId(id)) } })
-      .toArray();
-    return entities;
-  }
-
   async getNook(nookId: string): Promise<Nook> {
-    let nook = await this.client
-      .getCollection<Nook>(MongoCollection.Nooks)
-      .findOne({ nookId });
-
+    let nook = await this.client.getNook(nookId);
     if (nookId.startsWith("entity:")) {
-      const entity = await this.client.findEntity(
-        nookId.replace("entity:", ""),
-      );
-      if (!entity) {
-        throw new Error("Entity not found");
-      }
-      if (!nook) {
-        nook = await createEntityNook(this.client, entity);
-      }
+      const entityId = nookId.replace("entity:", "");
+      const entity = await this.client.findEntity(entityId);
+      if (!entity) throw new Error("Entity not found");
+      if (!nook) nook = await this.client.createEntityNook(entity);
       return nook;
     }
 
@@ -408,7 +361,7 @@ export class NookService {
         throw new Error("Channel not found");
       }
       if (!nook) {
-        nook = await createChannelNook(this.client, channel);
+        nook = await this.client.createChannelNook(channel);
       }
       return nook;
     }
@@ -417,10 +370,6 @@ export class NookService {
   }
 
   async searchChannels(query: string): Promise<Channel[]> {
-    const channels = await this.client
-      .getCollection<Channel>(MongoCollection.Channels)
-      .find({ name: { $regex: new RegExp(query, "i") } })
-      .toArray();
-    return channels;
+    return await this.client.searchChannels(query);
   }
 }

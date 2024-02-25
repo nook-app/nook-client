@@ -33,7 +33,7 @@ export const getEventsHandler = async () => {
     await publishContent(contentId);
   };
 
-  const upsertContentPromises = (content: Content<ContentData>) => {
+  const upsertContentPromises = (content: Content) => {
     const promises = [];
     promises.push(client.upsertContent(content));
     if (![ContentType.POST, ContentType.REPLY].includes(content.type))

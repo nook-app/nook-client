@@ -4,7 +4,6 @@ import { memo, useCallback, useEffect, useState } from "react";
 import { nookApi } from "@/store/apis/nookApi";
 import { RefreshControl } from "react-native-gesture-handler";
 import { ContentPostCompact } from "../content/ContentPostCompact";
-import { ContentFeedItem } from "@nook/api/types";
 import {
   Content,
   ContentFeedArgs,
@@ -15,21 +14,22 @@ import { ContentReplyCompact } from "../content/ContentReplyCompact";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export const ContentFeedEntry = memo(
-  ({ item, replyAsPost }: { item: ContentFeedItem; replyAsPost?: boolean }) => {
+  ({
+    item,
+    replyAsPost,
+  }: { item: Content<PostData>; replyAsPost?: boolean }) => {
     if (
       item.type === ContentType.POST ||
       (item.type === ContentType.REPLY && replyAsPost)
     ) {
-      const typedItem = item as Content<PostData>;
       return (
-        <ContentPostCompact key={typedItem.contentId} content={typedItem} />
+        <ContentPostCompact key={item.contentId} contentId={item.contentId} />
       );
     }
 
     if (item.type === ContentType.REPLY) {
-      const typedItem = item as Content<PostData>;
       return (
-        <ContentReplyCompact key={typedItem.contentId} content={typedItem} />
+        <ContentReplyCompact key={item.contentId} contentId={item.contentId} />
       );
     }
 
@@ -43,7 +43,7 @@ export const ContentFeedPanel = ({
 }: { args: ContentFeedArgs; asList?: boolean }) => {
   const insets = useSafeAreaInsets();
   const [cursor, setCursor] = useState<string | undefined>(undefined);
-  const [accumulatedData, setAccumulatedData] = useState<ContentFeedItem[]>([]);
+  const [accumulatedData, setAccumulatedData] = useState<Content[]>([]);
   const [refreshing, setRefreshing] = useState(false);
   const theme = useTheme();
 
@@ -120,7 +120,11 @@ export const ContentFeedPanel = ({
     return (
       <View paddingBottom={insets.bottom}>
         {accumulatedData.map((item) => (
-          <ContentFeedEntry key={item.contentId} item={item} replyAsPost />
+          <ContentFeedEntry
+            key={item.contentId}
+            item={item as Content<PostData>}
+            replyAsPost
+          />
         ))}
       </View>
     );
@@ -129,8 +133,10 @@ export const ContentFeedPanel = ({
   return (
     <FlatList
       data={accumulatedData}
-      renderItem={({ item }) => <ContentFeedEntry item={item} />}
-      keyExtractor={(item) => item._id.toString()}
+      renderItem={({ item }) => (
+        <ContentFeedEntry item={item as Content<PostData>} />
+      )}
+      keyExtractor={(item) => item.contentId}
       onViewableItemsChanged={onViewableItemsChanged}
       viewabilityConfig={viewabilityConfig}
       ListFooterComponent={() =>

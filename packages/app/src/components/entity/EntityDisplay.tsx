@@ -15,19 +15,19 @@ export const EntityDisplay = ({
   const entity = useEntity(entityId);
   const Stack = orientation === "horizontal" ? XStack : YStack;
 
-  let displayName = entity?.farcaster?.displayName;
+  let displayName = entity?.entity.farcaster?.displayName;
   if (!displayName) {
-    displayName = entity?.farcaster?.fid
-      ? `fid:${entity.farcaster.fid}`
+    displayName = entity?.entity.farcaster?.fid
+      ? `fid:${entity.entity.farcaster.fid}`
       : "Unknown";
   }
 
-  let username = entity?.farcaster?.username;
+  let username = entity?.entity.farcaster?.username;
   if (username) {
     username = `@${username}`;
   } else {
-    username = entity?.farcaster?.fid
-      ? `fid:${entity.farcaster.fid}`
+    username = entity?.entity.farcaster?.fid
+      ? `fid:${entity.entity.farcaster.fid}`
       : "@unknown";
   }
 

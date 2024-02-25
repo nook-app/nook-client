@@ -32,6 +32,16 @@ export const handleLinkRemove = async (
   const link = messageToLink(message);
   if (!link) return;
 
+  const existingLink = await prisma.farcasterLink.findUnique({
+    where: {
+      fid_linkType_targetFid: {
+        fid: link.fid,
+        linkType: link.linkType,
+        targetFid: link.targetFid,
+      },
+    },
+  });
+
   await prisma.farcasterLink.updateMany({
     where: {
       fid: link.fid,
@@ -47,5 +57,5 @@ export const handleLinkRemove = async (
     `[link-remove] [${link.fid}] removed ${link.linkType} to ${link.targetFid}`,
   );
 
-  return link;
+  return existingLink;
 };

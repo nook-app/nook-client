@@ -75,7 +75,7 @@ const CHAIN_ID_TO_NAME: Record<string, string> = {
 export const getChainContent = async (contentId: string) => {
   const asset = parseChainUri(contentId);
 
-  let content: Content<ContentData> | undefined;
+  let content: Content | undefined;
   if (asset.spec === "erc721" || asset.spec === "erc1155") {
     content = await handleNftContent(asset);
   }

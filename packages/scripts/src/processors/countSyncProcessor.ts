@@ -1,11 +1,9 @@
 import { MongoClient, MongoCollection } from "@nook/common/mongo";
 import {
   Content,
-  ContentData,
   ContentType,
   Entity,
   EventAction,
-  EventActionData,
   EventActionType,
   TopicType,
 } from "@nook/common/types";
@@ -58,7 +56,7 @@ export class CountSyncProcessor {
 
   async getFollowers(entityId: string) {
     const followers = await this.mongo
-      .getCollection<EventAction<EventActionData>>(MongoCollection.Actions)
+      .getCollection<EventAction>(MongoCollection.Actions)
       .countDocuments({
         type: EventActionType.FOLLOW,
         topics: {
@@ -71,7 +69,7 @@ export class CountSyncProcessor {
 
   async getFollowing(entityId: string) {
     const following = await this.mongo
-      .getCollection<EventAction<EventActionData>>(MongoCollection.Actions)
+      .getCollection<EventAction>(MongoCollection.Actions)
       .countDocuments({
         type: EventActionType.FOLLOW,
         topics: {
@@ -84,7 +82,7 @@ export class CountSyncProcessor {
 
   async syncCastEngagement(fid: number, entityId: string) {
     const contents = await this.mongo
-      .getCollection<Content<ContentData>>(MongoCollection.Content)
+      .getCollection<Content>(MongoCollection.Content)
       .find({
         type: {
           $in: [ContentType.POST, ContentType.REPLY],
@@ -106,7 +104,7 @@ export class CountSyncProcessor {
 
     if (engagementCounts.length > 0) {
       await this.mongo
-        .getCollection<Content<ContentData>>(MongoCollection.Content)
+        .getCollection<Content>(MongoCollection.Content)
         .bulkWrite(
           engagementCounts.map((counts, i) => ({
             updateOne: {
@@ -148,7 +146,7 @@ export class CountSyncProcessor {
 
   async getCastLikes(contentId: string) {
     const likes = await this.mongo
-      .getCollection<EventAction<EventActionData>>(MongoCollection.Actions)
+      .getCollection<EventAction>(MongoCollection.Actions)
       .countDocuments({
         type: EventActionType.LIKE,
         topics: {
@@ -161,7 +159,7 @@ export class CountSyncProcessor {
 
   async getCastReposts(contentId: string) {
     const reposts = await this.mongo
-      .getCollection<EventAction<EventActionData>>(MongoCollection.Actions)
+      .getCollection<EventAction>(MongoCollection.Actions)
       .countDocuments({
         type: EventActionType.REPOST,
         topics: {
@@ -174,7 +172,7 @@ export class CountSyncProcessor {
 
   async getCastReplies(contentId: string) {
     const replies = await this.mongo
-      .getCollection<Content<ContentData>>(MongoCollection.Content)
+      .getCollection<Content>(MongoCollection.Content)
       .countDocuments({
         "data.parentId": contentId,
       });
@@ -183,7 +181,7 @@ export class CountSyncProcessor {
 
   async getCastEmbeds(contentId: string) {
     const embeds = await this.mongo
-      .getCollection<EventAction<EventActionData>>(MongoCollection.Actions)
+      .getCollection<EventAction>(MongoCollection.Actions)
       .countDocuments({
         type: {
           $in: [EventActionType.POST, EventActionType.REPLY],

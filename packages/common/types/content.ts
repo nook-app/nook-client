@@ -103,7 +103,7 @@ export type UrlMetadata = {
   contentLength?: number;
 };
 
-export type Content<T> = ContentBase & {
+export type Content<T = ContentData> = ContentBase & {
   type: ContentType;
   data: T;
 };

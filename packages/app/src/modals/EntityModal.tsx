@@ -20,24 +20,24 @@ export const EntityModal = () => {
 
   const onPress = useCallback(() => {
     if (entity) {
-      navigateToNook(`entity:${entity._id.toString()}`);
+      navigateToNook(`entity:${entity.entity._id.toString()}`);
       closeAll();
     }
   }, [entity, closeAll, navigateToNook]);
 
-  let displayName = entity?.farcaster?.displayName;
+  let displayName = entity?.entity.farcaster?.displayName;
   if (!displayName) {
-    displayName = entity?.farcaster?.fid
-      ? `fid:${entity.farcaster.fid}`
+    displayName = entity?.entity.farcaster?.fid
+      ? `fid:${entity.entity.farcaster.fid}`
       : "Unknown";
   }
 
-  let username = entity?.farcaster?.username;
+  let username = entity?.entity.farcaster?.username;
   if (username) {
     username = `@${username}`;
   } else {
-    username = entity?.farcaster?.fid
-      ? `fid:${entity.farcaster.fid}`
+    username = entity?.entity.farcaster?.fid
+      ? `fid:${entity.entity.farcaster.fid}`
       : "@unknown";
   }
 
@@ -58,7 +58,10 @@ export const EntityModal = () => {
               padding="$3"
             >
               <XStack gap="$2" alignItems="center">
-                <EntityAvatar entityId={entity._id.toString()} size="$5" />
+                <EntityAvatar
+                  entityId={entity.entity._id.toString()}
+                  size="$5"
+                />
                 <YStack>
                   <Text fontWeight="700" fontSize="$5">
                     {displayName}
@@ -68,17 +71,19 @@ export const EntityModal = () => {
                   </Text>
                 </YStack>
               </XStack>
-              {entity?.farcaster?.bio && <Text>{entity.farcaster.bio}</Text>}
+              {entity?.entity.farcaster?.bio && (
+                <Text>{entity.entity.farcaster.bio}</Text>
+              )}
               <XStack gap="$2">
                 <View flexDirection="row" alignItems="center" gap="$1">
                   <Text fontWeight="700">
-                    {formatNumber(entity.farcaster.following || 0)}
+                    {formatNumber(entity.entity.farcaster.following || 0)}
                   </Text>
                   <Text color="$gray11">following</Text>
                 </View>
                 <View flexDirection="row" alignItems="center" gap="$1">
                   <Text fontWeight="700">
-                    {formatNumber(entity.farcaster.followers || 0)}
+                    {formatNumber(entity.entity.farcaster.followers || 0)}
                   </Text>
                   <Text color="$gray11">followers</Text>
                 </View>

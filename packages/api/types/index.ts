@@ -4,31 +4,59 @@ import {
   ContentData,
   Entity,
   EventAction,
-  EventActionData,
   Nook,
 } from "@nook/common/types";
 import { User } from "@nook/common/prisma/nook";
+import { EntityActionType } from "../src/utils/action";
 
-export type ContentFeedItem<T = ContentData> = Content<T> & {
-  _id: string;
-  entities: Entity[];
-  contents: Content<ContentData>[];
-  channels: Channel[];
+export type EntityWithContext = {
+  entity: Entity;
+  context: Record<EntityActionType, boolean>;
 };
 
-export type ContentFeed = {
-  data: ContentFeedItem[];
+export type ContentWithContext<T = ContentData> = {
+  content: Content<T>;
+  context: {
+    reposted: boolean;
+    liked: boolean;
+  };
+};
+
+export type BaseResponse = {
+  referencedEntities: EntityWithContext[];
+  referencedContents: ContentWithContext[];
+  referencedChannels: Channel[];
+};
+
+export type GetContentFeedResponse = BaseResponse & {
+  data: Content[];
   nextCursor?: string;
 };
 
-export type ActionFeedItem<T = EventActionData> = EventAction<T> & {
-  _id: string;
-  entities: Entity[];
-  contents: Content<ContentData>[];
+export type GetContentResponse = BaseResponse & {
+  data: Content;
 };
 
-export type ActionFeed = {
-  data: ActionFeedItem[];
+export type GetActionFeedResponse = BaseResponse & {
+  data: EventAction[];
+  nextCursor?: string;
+};
+
+export type GetActionResponse = BaseResponse & {
+  data: EventAction;
+};
+
+export type GetEntityFeedResponse = BaseResponse & {
+  data: EntityWithContext[];
+  nextCursor?: string;
+};
+
+export type GetEntityResponse = BaseResponse & {
+  data: EntityWithContext;
+};
+
+export type SearchChannelsResponse = {
+  data: Channel[];
   nextCursor?: string;
 };
 
@@ -55,24 +83,4 @@ export type GetUserResponse = {
   user: User;
   entity: Entity;
   nooks: Nook[];
-};
-
-export type GetEntitiesRequest = {
-  entityIds: string[];
-};
-
-export type GetEntitiesResponse = {
-  data: Entity[];
-};
-
-export type GetNookRequest = {
-  nookId: string;
-};
-
-export type SearchChannelsRequest = {
-  search: string;
-};
-
-export type SearchChannelsResponse = {
-  data: Channel[];
 };

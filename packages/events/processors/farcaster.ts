@@ -290,7 +290,7 @@ export class FarcasterProcessor {
       tempContentMap[content.contentId] = content;
     }
 
-    const newContentMap: Record<string, Content<ContentData>> = {};
+    const newContentMap: Record<string, Content> = {};
     const parentCasts = rawParentCasts.map((cast) =>
       formatPostContent(cast, entities, tempContentMap),
     );

@@ -1,14 +1,15 @@
-import { Spinner, Text, View, XStack, useTheme } from "tamagui";
+import { Button, Spinner, Text, View, XStack, useTheme } from "tamagui";
 import { FlatList, ViewToken } from "react-native";
 import { memo, useCallback, useEffect, useState } from "react";
 import { nookApi } from "@/store/apis/nookApi";
 import { RefreshControl } from "react-native-gesture-handler";
-import { ActionFeedItem } from "@nook/api/types";
-import { ContentFeedArgs } from "@nook/common/types";
+import { ContentFeedArgs, EventAction } from "@nook/common/types";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { EntityAvatar } from "../entity/EntityAvatar";
 import { EntityDisplay } from "../entity/EntityDisplay";
 import { BottomSheetFlatList } from "@gorhom/bottom-sheet";
+import { useEntity } from "@/hooks/useEntity";
+import { useAppSelector } from "@/hooks/useAppSelector";
 
 function getNestedValue<T>(obj: T, path: string) {
   // biome-ignore lint/suspicious/noExplicitAny: <explanation>
@@ -16,21 +17,31 @@ function getNestedValue<T>(obj: T, path: string) {
 }
 
 export const EntityListEntry = memo(
-  ({ item, entityField }: { item: ActionFeedItem; entityField?: string }) => {
+  ({ item, entityField }: { item: EventAction; entityField?: string }) => {
+    const entityId = !entityField
+      ? item.entityId
+      : getNestedValue(item, entityField);
+    const entity = useEntity(entityId);
     return (
-      <XStack gap="$2" padding="$2">
-        <EntityAvatar
-          entityId={
-            !entityField ? item.entityId : getNestedValue(item, entityField)
-          }
-        />
-        <EntityDisplay
-          entityId={
-            !entityField ? item.entityId : getNestedValue(item, entityField)
-          }
-          orientation="vertical"
-        />
-      </XStack>
+      <View
+        alignItems="center"
+        flexDirection="row"
+        justifyContent="space-between"
+        padding="$2"
+        paddingHorizontal="$3"
+      >
+        <XStack gap="$2">
+          <EntityAvatar entityId={entityId} />
+          <EntityDisplay entityId={entityId} orientation="vertical" />
+        </XStack>
+        {entity?.context.following ? (
+          <Button size="$3" variant="outlined" borderColor="$backgroundHover">
+            Unfollow
+          </Button>
+        ) : (
+          <Button size="$3">Follow</Button>
+        )}
+      </View>
     );
   },
 );
@@ -46,7 +57,7 @@ export const EntityListPanel = ({
 }) => {
   const insets = useSafeAreaInsets();
   const [cursor, setCursor] = useState<string | undefined>(undefined);
-  const [accumulatedData, setAccumulatedData] = useState<ActionFeedItem[]>([]);
+  const [accumulatedData, setAccumulatedData] = useState<EventAction[]>([]);
   const [refreshing, setRefreshing] = useState(false);
   const theme = useTheme();
 
@@ -127,7 +138,7 @@ export const EntityListPanel = ({
       renderItem={({ item }) => (
         <EntityListEntry item={item} entityField={entityField} />
       )}
-      keyExtractor={(item) => item._id.toString()}
+      keyExtractor={(item) => item.eventId}
       onViewableItemsChanged={onViewableItemsChanged}
       viewabilityConfig={viewabilityConfig}
       ListFooterComponent={() =>

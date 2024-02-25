@@ -13,7 +13,7 @@ export const getOrCreateContent = async (
     return existingContent;
   }
 
-  let content: Content<ContentData> | undefined;
+  let content: Content | undefined;
 
   if (contentId.startsWith("http://") || contentId.startsWith("https://")) {
     content = await getUrlContent(contentId);

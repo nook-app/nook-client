@@ -1,11 +1,8 @@
 import { Content, PostData } from "@nook/common/types";
-import { Separator, Text, View, XStack, YStack } from "tamagui";
+import { Separator, Text, View, XStack, YStack, useTheme } from "tamagui";
 import { Embed } from "@/components/embeds/Embed";
 import { EntityAvatar } from "@/components/entity/EntityAvatar";
-import {
-  ContentPostText,
-  formatTimeAgo,
-} from "@/components/content/ContentPostText";
+import { ContentPostText } from "@/components/content/ContentPostText";
 import { EntityDisplay } from "../entity/EntityDisplay";
 import { Image } from "expo-image";
 import { Heart, MessageSquare, RefreshCw } from "@tamagui/lucide-icons";
@@ -16,35 +13,42 @@ import { NavigationProp, useNavigation } from "@react-navigation/native";
 import { RootStackParamList } from "@/types";
 import { TouchableWithoutFeedback } from "react-native-gesture-handler";
 import { useContent } from "@/hooks/useContent";
+import { formatNumber, formatTimeAgo } from "@/utils";
 
 export const ContentPostContent = ({
-  content: { data, timestamp, engagement },
+  contentId,
   isParent,
-}: { content: Content<PostData>; isParent?: boolean }) => {
+}: { contentId: string; isParent?: boolean }) => {
+  const theme = useTheme();
+  const contentData = useContent(contentId);
+  if (!contentData) return null;
+  const { content, context } = contentData;
   const channel = useAppSelector((state) =>
-    data.channelId ? selectChannelById(state, data.channelId) : undefined,
+    content.data.channelId
+      ? selectChannelById(state, content.data.channelId)
+      : undefined,
   );
-  const parentContent = useContent(data.parentId);
+  const parentContent = useContent(content.data.parentId);
   const showParentContext = isParent && parentContent;
   return (
     <XStack gap="$2">
       <View width="$3.5" alignItems="center">
-        <EntityAvatar entityId={data.entityId} />
+        <EntityAvatar entityId={content.data.entityId} />
         {isParent && <Separator vertical />}
       </View>
       <YStack flex={1} gap="$1" paddingBottom={isParent ? "$2" : "$0"}>
         <View alignSelf="flex-start">
-          <EntityDisplay entityId={data.entityId} />
+          <EntityDisplay entityId={content.data.entityId} />
         </View>
         <XStack alignItems="center" gap="$1.5">
           <Text color="$gray11">
-            {`${formatTimeAgo(timestamp as unknown as string)} ago`}
+            {formatTimeAgo(content.timestamp as unknown as string)}
           </Text>
-          {showParentContext && data.parentEntityId && (
+          {showParentContext && content.data.parentEntityId && (
             <>
               <Text color="$gray11">replying to</Text>
               <EntityDisplay
-                entityId={parentContent.data.entityId}
+                entityId={parentContent.content.data.entityId}
                 hideDisplayName
               />
             </>
@@ -68,31 +72,41 @@ export const ContentPostContent = ({
             </>
           )}
         </XStack>
-        {data.text && (
+        {content.data.text && (
           <View paddingVertical="$1.5">
-            <ContentPostText data={data} />
+            <ContentPostText data={content.data} />
           </View>
         )}
-        {data.embeds.map((embed) => (
-          <Embed key={embed} embed={embed} data={data} />
+        {content.data.embeds.map((embed) => (
+          <Embed key={embed} embed={embed} data={content.data} />
         ))}
         <XStack justifyContent="space-between" width="$15" paddingTop="$1">
           <View flexDirection="row" alignItems="center" gap="$1.5" width="$3">
-            <MessageSquare size={14} color="$gray10" />
-            <Text color="$gray10" fontSize="$3">
-              {engagement.replies}
+            <MessageSquare size={16} color="$gray10" />
+            <Text color="$gray10" fontSize="$4">
+              {formatNumber(content.engagement.replies)}
             </Text>
           </View>
           <View flexDirection="row" alignItems="center" gap="$1.5" width="$3">
-            <RefreshCw size={14} color="$gray10" />
-            <Text color="$gray10" fontSize="$3">
-              {engagement.reposts}
+            <RefreshCw
+              size={16}
+              color={context.reposted ? "$green9" : "$gray10"}
+              fill={
+                context.reposted ? theme.$green9.val : theme.$background.val
+              }
+            />
+            <Text color="$gray10" fontSize="$4">
+              {formatNumber(content.engagement.reposts)}
             </Text>
           </View>
           <View flexDirection="row" alignItems="center" gap="$1.5" width="$3">
-            <Heart size={14} color="$gray10" />
-            <Text color="$gray10" fontSize="$3">
-              {engagement.likes}
+            <Heart
+              size={16}
+              color={context.liked ? "$red9" : "$gray10"}
+              fill={context.liked ? theme.$red9.val : theme.$background.val}
+            />
+            <Text color="$gray10" fontSize="$4">
+              {formatNumber(content.engagement.likes)}
             </Text>
           </View>
         </XStack>
@@ -101,9 +115,7 @@ export const ContentPostContent = ({
   );
 };
 
-export const ContentPostCompact = ({
-  content,
-}: { content: Content<PostData> }) => {
+export const ContentPostCompact = ({ contentId }: { contentId: string }) => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   return (
     <View
@@ -114,11 +126,11 @@ export const ContentPostCompact = ({
       <TouchableWithoutFeedback
         onPress={() =>
           navigation.navigate("Content", {
-            contentId: content.contentId,
+            contentId,
           })
         }
       >
-        <ContentPostContent content={content} />
+        <ContentPostContent contentId={contentId} />
       </TouchableWithoutFeedback>
     </View>
   );

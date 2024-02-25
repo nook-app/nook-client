@@ -13,7 +13,6 @@ import {
 import { Entity, Nook } from "@nook/common/types";
 import { PrismaClient } from "@nook/common/prisma/nook";
 import { ObjectId } from "mongodb";
-import { getOrCreateEntityNook } from "../utils/nooks";
 import { getOrCreateEntitiesForFids } from "@nook/common/entity";
 
 export class UserService {
@@ -82,7 +81,7 @@ export class UserService {
         },
       });
 
-      const defaultNook = await getOrCreateEntityNook(this.client, entity);
+      const defaultNook = await this.client.getOrCreateEntityNook(entity);
       await this.nookClient.nookMembership.createMany({
         skipDuplicates: true,
         data: [
@@ -175,7 +174,7 @@ export class UserService {
     if (
       !nooks.some(({ nookId }) => nookId === `entity:${entity._id.toString()}`)
     ) {
-      const defaultNook = await getOrCreateEntityNook(this.client, entity);
+      const defaultNook = await this.client.getOrCreateEntityNook(entity);
       await this.nookClient.nookMembership.create({
         data: {
           nookId: defaultNook._id.toString(),
