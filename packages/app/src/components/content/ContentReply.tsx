@@ -47,7 +47,11 @@ export const ContentReply = ({ contentId }: { contentId: string }) => {
 
   return (
     <ScrollView ref={scrollViewRef}>
-      <View padding="$2">
+      <View
+        padding="$2"
+        borderBottomWidth="0.5"
+        borderBottomColor="$borderColor"
+      >
         {parentContent && (
           <TouchableWithoutFeedback
             onPress={() =>

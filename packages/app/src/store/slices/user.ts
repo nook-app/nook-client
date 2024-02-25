@@ -47,7 +47,7 @@ export const userSlice = createSlice({
         state.user = action.payload.user;
         state.entity = action.payload.entity;
         state.nooks = action.payload.nooks;
-        state.theme = "green";
+        state.theme = "gray";
       },
     );
   },

@@ -1,19 +1,17 @@
-import { Content, PostData } from "@nook/common/types";
 import { Separator, Text, View, XStack, YStack, useTheme } from "tamagui";
 import { Embed } from "@/components/embeds/Embed";
 import { EntityAvatar } from "@/components/entity/EntityAvatar";
 import { ContentPostText } from "@/components/content/ContentPostText";
 import { EntityDisplay } from "../entity/EntityDisplay";
-import { Image } from "expo-image";
 import { Heart, MessageSquare, RefreshCw } from "@tamagui/lucide-icons";
 import { useAppSelector } from "@/hooks/useAppSelector";
 import { selectChannelById } from "@/store/slices/channel";
-import { ChannelModalButton } from "../buttons/ChannelModalButton";
 import { NavigationProp, useNavigation } from "@react-navigation/native";
 import { RootStackParamList } from "@/types";
 import { TouchableWithoutFeedback } from "react-native-gesture-handler";
 import { useContent } from "@/hooks/useContent";
 import { formatNumber, formatTimeAgo } from "@/utils";
+import { ChannelDisplay } from "../channel/ChannelDisplay";
 
 export const ContentPostContent = ({
   contentId,
@@ -56,19 +54,7 @@ export const ContentPostContent = ({
           {channel && !showParentContext && (
             <>
               <Text color="$gray11">in</Text>
-              <ChannelModalButton channelId={channel.contentId}>
-                <View borderRadius="$10" overflow="hidden">
-                  <Image
-                    source={{ uri: channel.imageUrl }}
-                    style={{ width: 16, height: 16 }}
-                  />
-                </View>
-              </ChannelModalButton>
-              <ChannelModalButton channelId={channel.contentId}>
-                <Text numberOfLines={1} ellipsizeMode="tail" fontWeight="500">
-                  {channel.name}
-                </Text>
-              </ChannelModalButton>
+              <ChannelDisplay channel={channel} />
             </>
           )}
         </XStack>

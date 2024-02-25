@@ -3,47 +3,6 @@ import { Nook, NookType } from "@nook/common/types";
 import { useNooks } from "@/hooks/useNooks";
 import { useCallback } from "react";
 import { TouchableOpacity } from "react-native-gesture-handler";
-import { formatNumber } from "@/utils";
-import { ModalButton } from "../buttons/ModalButton";
-import { ModalName } from "@/modals/types";
-import { useEntity } from "@/hooks/useEntity";
-
-const EntityMetadata = ({ nook }: { nook: Nook }) => {
-  const entity = useEntity(nook.nookId.replace("entity:", ""));
-
-  return (
-    <XStack gap="$2">
-      <ModalButton
-        modalName={ModalName.EntityFollowing}
-        modalArgs={{ entityId: entity?.entity._id.toString() || "" }}
-        disabled={!entity?.entity.farcaster.following}
-      >
-        <View flexDirection="row" alignItems="center" gap="$1">
-          <Text fontWeight="700">
-            {formatNumber(entity?.entity.farcaster.following || 0)}
-          </Text>
-          <Text color="$gray11" fontSize="$3">
-            following
-          </Text>
-        </View>
-      </ModalButton>
-      <ModalButton
-        modalName={ModalName.EntityFollowers}
-        modalArgs={{ entityId: entity?.entity._id.toString() || "" }}
-        disabled={!entity?.entity.farcaster.following}
-      >
-        <View flexDirection="row" alignItems="center" gap="$1">
-          <Text fontWeight="700">
-            {formatNumber(entity?.entity.farcaster.followers || 0)}
-          </Text>
-          <Text color="$gray11" fontSize="$3">
-            followers
-          </Text>
-        </View>
-      </ModalButton>
-    </XStack>
-  );
-};
 
 const ActiveNookHeader = ({ nook }: { nook: Nook }) => {
   return (
@@ -78,7 +37,6 @@ const ActiveNookHeader = ({ nook }: { nook: Nook }) => {
       <View paddingVertical="$1">
         <Text fontSize="$3">{nook.description}</Text>
       </View>
-      {nook.type === NookType.Entity && <EntityMetadata nook={nook} />}
     </YStack>
   );
 };
@@ -98,7 +56,7 @@ export const ActiveNook = () => {
   }
 
   return (
-    <YStack minHeight="100%" marginRight="$2" gap="$2">
+    <YStack minHeight="100%" gap="$2">
       <ActiveNookHeader nook={activeNook} />
       <View
         backgroundColor="$backgroundStrong"

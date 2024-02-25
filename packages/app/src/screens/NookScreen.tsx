@@ -1,16 +1,16 @@
 import { RouteProp, useNavigation, useRoute } from "@react-navigation/native";
 import { RootStackParamList } from "@/types";
-import { SwipeablePanels } from "@/components/shelves/SwipeablePanels";
 import { selectNookById } from "@/store/slices/nook";
 import { useEffect } from "react";
 import { store } from "@/store";
 import { nookApi } from "@/store/apis/nookApi";
 import { Spinner, View } from "tamagui";
+import { Panels } from "@/components/panels/Panels";
 
-export default function ShelfScreen() {
+export const NookScreen = () => {
   const {
     params: { nookId, shelfId },
-  } = useRoute<RouteProp<RootStackParamList, "Shelf">>();
+  } = useRoute<RouteProp<RootStackParamList, "Nook">>();
   const navigation = useNavigation();
 
   const storedNook = nookId
@@ -50,7 +50,7 @@ export default function ShelfScreen() {
 
   return (
     <View backgroundColor="$background" height="100%">
-      <SwipeablePanels nook={activeNook} shelf={activeShelf} />
+      <Panels panels={activeShelf.panels} />
     </View>
   );
-}
+};

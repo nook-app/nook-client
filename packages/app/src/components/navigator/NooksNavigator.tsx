@@ -1,47 +1,55 @@
+import { useNooks } from "@/hooks/useNooks";
+import { View } from "tamagui";
 import {
   DrawerContentScrollView,
   createDrawerNavigator,
 } from "@react-navigation/drawer";
-import { getFocusedRouteNameFromRoute } from "@react-navigation/native";
-import { XStack, YStack } from "tamagui";
+import { XStack } from "tamagui";
 import { NookNavigator } from "./NookNavigator";
 import { NooksSelector } from "../nooks/NooksSelector";
 import { ActiveNook } from "../nooks/ActiveNook";
+import { getFocusedRouteNameFromRoute } from "@react-navigation/native";
 
 const Drawer = createDrawerNavigator();
 
-export function NooksNavigator() {
+export const NooksNavigator = () => {
+  const { nooks } = useNooks();
   return (
     <Drawer.Navigator
-      screenOptions={({ route }) => {
-        return {
-          swipeEnabled: getFocusedRouteNameFromRoute(route) !== "Content",
-          swipeEdgeWidth: 100,
-          drawerStyle: {
-            width: 300,
-          },
-        };
-      }}
+      screenOptions={({ route }) => ({
+        headerShown: false,
+        swipeEdgeWidth: 200,
+        drawerStyle: {
+          width: 300,
+        },
+        swipeEnabled: getFocusedRouteNameFromRoute(route) === "Nook",
+      })}
       drawerContent={(props) => (
-        <XStack height="100%" style={{ width: 300 }}>
-          <YStack style={{ width: 60 }} backgroundColor="$background">
+        <XStack height="100%" flexDirection="row">
+          <View
+            style={{ width: 60 }}
+            backgroundColor="$background"
+            paddingHorizontal="$2"
+          >
             <DrawerContentScrollView {...props}>
               <NooksSelector />
             </DrawerContentScrollView>
-          </YStack>
-          <YStack backgroundColor="$background" style={{ width: 240 }}>
+          </View>
+          <View
+            backgroundColor="$background"
+            style={{ width: 240 }}
+            paddingRight="$2"
+          >
             <DrawerContentScrollView {...props}>
               <ActiveNook />
             </DrawerContentScrollView>
-          </YStack>
+          </View>
         </XStack>
       )}
     >
-      <Drawer.Screen
-        name="Nook"
-        component={NookNavigator}
-        options={{ headerShown: false }}
-      />
+      {nooks.map((nook) => {
+        return <Drawer.Screen name={nook.name} component={NookNavigator} />;
+      })}
     </Drawer.Navigator>
   );
-}
+};

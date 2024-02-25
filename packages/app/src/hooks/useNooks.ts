@@ -23,7 +23,7 @@ export const useNooks = () => {
 
   const navigateToNook = useCallback(
     (nookId: string) => {
-      navigation.navigate("Shelf", { nookId, shelfId: activeShelves[nookId] });
+      navigation.navigate("Nook", { nookId, shelfId: activeShelves[nookId] });
       dispatch(setActiveNook(nookId));
     },
     [navigation, dispatch, activeShelves],
@@ -31,7 +31,7 @@ export const useNooks = () => {
 
   const navigateToShelf = useCallback(
     (shelfId: string) => {
-      navigation.navigate("Shelf", { nookId: activeNookId, shelfId });
+      navigation.navigate("Nook", { nookId: activeNookId, shelfId });
       dispatch(setActiveShelf({ nookId: activeNookId, shelfId }));
     },
     [navigation, dispatch, activeNookId],

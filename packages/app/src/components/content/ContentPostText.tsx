@@ -4,14 +4,17 @@ import { Text, View } from "tamagui";
 import { Buffer } from "buffer";
 import { selectEntityById } from "@/store/slices/entity";
 import { store } from "@/store";
-import { EntityModalButton } from "../buttons/EntityModalButton";
 import { isWarpcastUrl } from "@/utils";
+import { TouchableOpacity } from "react-native-gesture-handler";
+import { NavigationProp, useNavigation } from "@react-navigation/native";
+import { RootStackParamList } from "@/types";
 
 export const ContentPostText = ({
   data,
 }: {
   data: PostData;
 }) => {
+  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const state = store.getState();
 
   const textParts = [];
@@ -78,20 +81,22 @@ export const ContentPostText = ({
       ),
     );
     textParts.push(
-      <EntityModalButton
+      <TouchableOpacity
         key={`${data.contentId}-${mention.position}-${label}`}
-        entityId={mention.entityId}
+        onPress={() =>
+          navigation.navigate("Entity", { entityId: mention.entityId })
+        }
       >
         <View
           style={{
             flexDirection: "row",
             alignItems: "flex-end",
-            marginBottom: -2.25,
+            marginBottom: -2.5,
           }}
         >
           <Text color="$color10">{label}</Text>
         </View>
-      </EntityModalButton>,
+      </TouchableOpacity>,
     );
     index = mention.position;
   }

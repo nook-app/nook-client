@@ -1,61 +1,19 @@
-import ProfileScreen from "@/screens/ProfileScreen";
-import {
-  BottomTabBar,
-  BottomTabBarProps,
-  createBottomTabNavigator,
-} from "@react-navigation/bottom-tabs";
-import { LayoutGrid } from "@tamagui/lucide-icons";
-import Animated, {
-  useAnimatedStyle,
-  withTiming,
-} from "react-native-reanimated";
-import { Image, Text, View, useTheme } from "tamagui";
-import { NooksNavigator } from "./NooksNavigator";
+import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import { Avatar, Text, View, useTheme } from "tamagui";
+import { ElementType, memo } from "react";
+import { Bell, LayoutGrid, Search } from "@tamagui/lucide-icons";
 import { useAppSelector } from "@/hooks/useAppSelector";
-import { RootStackParamList } from "@/types";
-import { memo } from "react";
+import { NooksNavigator } from "./NooksNavigator";
+import { ProfileScreen } from "@/screens/ProfileScreen";
 
-const Tabs = createBottomTabNavigator<RootStackParamList>();
+const Tabs = createBottomTabNavigator();
 
-const TabBar = memo((props: BottomTabBarProps) => {
-  const isDrawerOpen = useAppSelector((state) => state.navigator.isDrawerOpen);
-
-  const animatedStyle = useAnimatedStyle(() => {
-    return {
-      transform: [
-        { translateY: withTiming(isDrawerOpen ? 0 : 100, { duration: 250 }) },
-      ],
-      position: "absolute",
-      bottom: 0,
-      left: 0,
-      right: 0,
-    };
-  });
-
-  return (
-    <Animated.View style={animatedStyle}>
-      <BottomTabBar {...props} />
-    </Animated.View>
-  );
-});
-
-export function AuthNavigator() {
-  const entity = useAppSelector((state) => state.user.entity);
-  const theme = useTheme();
-
+export const AuthNavigator = () => {
   return (
     <Tabs.Navigator
-      tabBar={(props) => <TabBar {...props} />}
       screenOptions={{
         headerShown: false,
-        tabBarBackground: () => (
-          <View
-            backgroundColor="$backgroundStrong"
-            height="100%"
-            borderTopWidth="$0.5"
-            borderTopColor="$borderColor"
-          />
-        ),
+        tabBarBackground: () => <TabBarBackground />,
         tabBarStyle: {
           borderTopWidth: 0,
         },
@@ -67,40 +25,112 @@ export function AuthNavigator() {
         options={{
           title: "Nooks",
           tabBarIcon: ({ focused }) => (
-            <LayoutGrid
-              size={20}
-              color={focused ? "white" : "$gray11"}
-              fill={focused ? "white" : theme.$gray11.val}
-            />
+            <TabBarIcon focused={focused} icon={LayoutGrid} focusType="fill" />
           ),
-          tabBarLabel: ({ focused }) => (
-            <Text fontSize="$2" color={focused ? undefined : "$gray11"}>
-              Nooks
-            </Text>
+          tabBarShowLabel: false,
+        }}
+        listeners={({ navigation }) => ({
+          tabPress: (e) => {
+            const state = navigation.getState();
+            const currentRoute = state.routes[state.index];
+            if (currentRoute.name === "Nooks") {
+              if (currentRoute.state?.routes[0].state?.routes.length > 1) {
+                e.preventDefault();
+                navigation.popToTop();
+              }
+            }
+          },
+        })}
+      />
+      <Tabs.Screen
+        name="Search"
+        component={TempSearchScreen}
+        options={{
+          title: "Nooks",
+          tabBarIcon: ({ focused }) => (
+            <TabBarIcon focused={focused} icon={Search} focusType="stroke" />
           ),
+          tabBarShowLabel: false,
+        }}
+      />
+      <Tabs.Screen
+        name="Notifications"
+        component={TempNotificationsScreen}
+        options={{
+          title: "Nooks",
+          tabBarIcon: ({ focused }) => (
+            <TabBarIcon focused={focused} icon={Bell} focusType="fill" />
+          ),
+          tabBarShowLabel: false,
         }}
       />
       <Tabs.Screen
         name="Profile"
         component={ProfileScreen}
         options={{
-          tabBarIcon: () => (
-            <Image
-              source={{
-                width: 24,
-                height: 24,
-                uri: entity?.farcaster?.pfp,
-              }}
-              borderRadius="$10"
-            />
-          ),
-          tabBarLabel: ({ focused }) => (
-            <Text fontSize="$2" color={focused ? undefined : "$gray11"}>
-              Profile
-            </Text>
-          ),
+          tabBarIcon: () => <TabBarUserImage />,
+          tabBarShowLabel: false,
         }}
       />
     </Tabs.Navigator>
   );
-}
+};
+
+export const TempSearchScreen = () => {
+  return (
+    <View>
+      <Text>Search</Text>
+    </View>
+  );
+};
+
+export const TempNotificationsScreen = () => {
+  return (
+    <View>
+      <Text>Notifications</Text>
+    </View>
+  );
+};
+
+const TabBarBackground = memo(() => {
+  return (
+    <View
+      backgroundColor="$backgroundStrong"
+      height="100%"
+      borderTopWidth="$0.5"
+      borderTopColor="$borderColor"
+    />
+  );
+});
+
+const TabBarIcon = memo(
+  ({
+    focused,
+    icon: Icon,
+    focusType,
+  }: { focused: boolean; icon: ElementType; focusType: "stroke" | "fill" }) => {
+    const theme = useTheme();
+    return (
+      <Icon
+        size={20}
+        color={focused ? "white" : "$gray11"}
+        strokeWidth={focused && focusType === "stroke" ? 3 : 2}
+        fill={
+          focused && focusType === "fill"
+            ? "white"
+            : theme.$backgroundStrong.val
+        }
+      />
+    );
+  },
+);
+
+const TabBarUserImage = memo(() => {
+  const entity = useAppSelector((state) => state.user.entity);
+  return (
+    <Avatar circular size="$1.5">
+      <Avatar.Image source={{ uri: entity?.farcaster?.pfp }} />
+      <Avatar.Fallback backgroundColor="$backgroundStrong" />
+    </Avatar>
+  );
+});

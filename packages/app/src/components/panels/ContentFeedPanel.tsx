@@ -12,6 +12,8 @@ import {
 } from "@nook/common/types";
 import { ContentReplyCompact } from "../content/ContentReplyCompact";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { BottomSheetFlatList } from "@gorhom/bottom-sheet";
+import { Tabs } from "react-native-collapsible-tab-view";
 
 export const ContentFeedEntry = memo(
   ({
@@ -40,7 +42,8 @@ export const ContentFeedEntry = memo(
 export const ContentFeedPanel = ({
   args,
   asList,
-}: { args: ContentFeedArgs; asList?: boolean }) => {
+  asTabs,
+}: { args: ContentFeedArgs; asList?: boolean; asTabs?: boolean }) => {
   const insets = useSafeAreaInsets();
   const [cursor, setCursor] = useState<string | undefined>(undefined);
   const [accumulatedData, setAccumulatedData] = useState<Content[]>([]);
@@ -99,20 +102,17 @@ export const ContentFeedPanel = ({
   );
 
   if (isLoading || error || !data) {
+    const Wrapper = asTabs ? Tabs.ScrollView : View;
     return (
-      <View
-        padding="$3"
-        alignItems="center"
-        backgroundColor="$background"
-        justifyContent="center"
-        height="100%"
-      >
-        {isLoading ? (
-          <Spinner size="large" color="$color11" />
-        ) : (
-          <Text>No data found.</Text>
-        )}
-      </View>
+      <Wrapper>
+        <View padding="$5" alignItems="center" backgroundColor="$background">
+          {isLoading ? (
+            <Spinner size="large" color="$color11" />
+          ) : (
+            <Text>No data found.</Text>
+          )}
+        </View>
+      </Wrapper>
     );
   }
 
@@ -130,8 +130,11 @@ export const ContentFeedPanel = ({
     );
   }
 
+  const FlatListCompnent = asTabs ? Tabs.FlatList : FlatList;
+
   return (
-    <FlatList
+    <FlatListCompnent
+      nestedScrollEnabled
       data={accumulatedData}
       renderItem={({ item }) => (
         <ContentFeedEntry item={item as Content<PostData>} />

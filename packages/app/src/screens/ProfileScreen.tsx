@@ -54,11 +54,10 @@ export const ThemeSelector = () => {
   );
 };
 
-export default function ProfilePage() {
+export const ProfileScreen = () => {
   const { signOut } = useAuth();
   const entity = useAppSelector((state) => state.user.entity);
   const insets = useSafeAreaInsets();
-  const tabHeight = useBottomTabBarHeight();
 
   if (!entity) return null;
 
@@ -70,7 +69,6 @@ export default function ProfilePage() {
       justifyContent="flex-end"
       style={{
         paddingTop: insets.top,
-        paddingBottom: tabHeight,
         paddingLeft: insets.left,
         paddingRight: insets.right,
       }}
@@ -105,4 +103,4 @@ export default function ProfilePage() {
       </View>
     </YStack>
   );
-}
+};

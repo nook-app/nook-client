@@ -5,13 +5,15 @@ import { useDrawerStatus } from "@react-navigation/drawer";
 import { memo, useEffect } from "react";
 import { useAppDispatch } from "@/hooks/useAppDispatch";
 import { setDrawerOpen } from "@/store/slices/navigator";
-import { Avatar, View } from "tamagui";
-import ShelfScreen from "@/screens/ShelfScreen";
+import { Avatar, View, useTheme } from "tamagui";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import ContentScreen from "@/screens/ContentScreen";
 import { RootStackParamList } from "@/types";
 import { Text } from "tamagui";
 import { useNooks } from "@/hooks/useNooks";
+import { EntityScreen } from "@/screens/EntityScreen";
+import { NookScreen } from "@/screens/NookScreen";
+import { ChannelScreen } from "@/screens/ChannelScreen";
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -56,19 +58,23 @@ const DrawerToggleButton = () => {
 
 export function NookNavigator() {
   const { activeNook } = useNooks();
+  const theme = useTheme();
 
   return (
     <Stack.Navigator>
       <Stack.Screen
-        name="Shelf"
-        component={ShelfScreen}
+        name="Nook"
+        component={NookScreen}
         initialParams={{ nookId: activeNook?.nookId }}
         options={{
           headerLeft: () => <DrawerToggleButton />,
-          headerBackground: () => (
-            <View backgroundColor="$background" height="100%" />
-          ),
-          headerTitle: (props) => <Text {...props} />,
+          headerStyle: {
+            backgroundColor: theme.$background.val,
+          },
+          headerTitleStyle: {
+            fontWeight: "700",
+          },
+          headerTitle: (props) => <Text {...props} fontWeight="700" />,
         }}
       />
       <Stack.Screen
@@ -77,13 +83,42 @@ export function NookNavigator() {
         options={{
           headerBackTitleVisible: false,
           headerTintColor: "white",
-          headerBackground: () => (
-            <View backgroundColor="$background" height="100%" />
-          ),
+          headerStyle: {
+            backgroundColor: theme.$background.val,
+          },
           gestureEnabled: true,
           fullScreenGestureEnabled: true,
         }}
         getId={({ params }) => params.contentId}
+      />
+      <Stack.Screen
+        name="Entity"
+        component={EntityScreen}
+        options={{
+          headerBackTitleVisible: false,
+          headerTintColor: "white",
+          headerStyle: {
+            backgroundColor: theme.$background.val,
+          },
+          gestureEnabled: true,
+          fullScreenGestureEnabled: true,
+        }}
+        getId={({ params }) => params.entityId}
+      />
+      <Stack.Screen
+        name="Channel"
+        component={ChannelScreen}
+        options={{
+          headerBackTitleVisible: false,
+          headerTintColor: "white",
+          headerStyle: {
+            backgroundColor: theme.$background.val,
+          },
+          gestureEnabled: true,
+          fullScreenGestureEnabled: true,
+          headerTitle: (props) => <Text {...props} fontWeight="700" />,
+        }}
+        getId={({ params }) => params.channelId}
       />
     </Stack.Navigator>
   );

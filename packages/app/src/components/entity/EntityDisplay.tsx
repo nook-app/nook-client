@@ -1,7 +1,9 @@
 import { Text } from "tamagui";
 import { XStack, YStack } from "tamagui";
 import { useEntity } from "@/hooks/useEntity";
-import { EntityModalButton } from "../buttons/EntityModalButton";
+import { NavigationProp, useNavigation } from "@react-navigation/native";
+import { RootStackParamList } from "@/types";
+import { TouchableOpacity } from "react-native-gesture-handler";
 
 export const EntityDisplay = ({
   entityId,
@@ -12,27 +14,14 @@ export const EntityDisplay = ({
   orientation?: "horizontal" | "vertical";
   hideDisplayName?: boolean;
 }) => {
-  const entity = useEntity(entityId);
+  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+  const { displayName, username } = useEntity(entityId);
   const Stack = orientation === "horizontal" ? XStack : YStack;
 
-  let displayName = entity?.entity.farcaster?.displayName;
-  if (!displayName) {
-    displayName = entity?.entity.farcaster?.fid
-      ? `fid:${entity.entity.farcaster.fid}`
-      : "Unknown";
-  }
-
-  let username = entity?.entity.farcaster?.username;
-  if (username) {
-    username = `@${username}`;
-  } else {
-    username = entity?.entity.farcaster?.fid
-      ? `fid:${entity.entity.farcaster.fid}`
-      : "@unknown";
-  }
-
   return (
-    <EntityModalButton entityId={entityId}>
+    <TouchableOpacity
+      onPress={() => navigation.navigate("Entity", { entityId })}
+    >
       <Stack
         gap="$1"
         alignItems={orientation === "horizontal" ? "center" : "flex-start"}
@@ -41,6 +30,6 @@ export const EntityDisplay = ({
         {!hideDisplayName && <Text fontWeight="700">{displayName}</Text>}
         <Text color={hideDisplayName ? "$gray12" : "$gray11"}>{username}</Text>
       </Stack>
-    </EntityModalButton>
+    </TouchableOpacity>
   );
 };
