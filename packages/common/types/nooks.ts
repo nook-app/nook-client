@@ -1,12 +1,8 @@
 import { ObjectId } from "mongodb";
+import { ContentType } from "./content";
 
 export enum NookType {
-  Entity = "entity",
-  Entities = "entities",
-  Channel = "channel",
-  Channels = "channels",
-  Content = "content",
-  Custom = "custom",
+  Default = "DEFAULT",
 }
 
 export type Nook = {
@@ -30,20 +26,105 @@ export type NookShelf = {
   panels: NookPanel[];
 };
 
-export enum NookPanelType {
-  ContentFeed = "CONTENT_FEED",
-}
-
 export type NookPanel = {
   name: string;
   slug: string;
-  type: NookPanelType;
-  args: ContentFeedArgs;
+  data: NookPanelData;
 };
 
-export type ContentFeedArgs = {
-  // biome-ignore lint/suspicious/noExplicitAny: filter is a dynamic object
-  filter: Record<string, any>;
-  sort?: string;
-  sortDirection?: number;
+export type NookPanelData =
+  | {
+      type: NookPanelType.UserPosts;
+      args: {
+        userFilter: UserFilter;
+        contentTypes: ContentType[];
+        sort?: "new" | "top";
+      };
+      cursor?: string;
+    }
+  | {
+      type: NookPanelType.ChannelPosts;
+      args: {
+        channelFilter: ChannelFilter;
+        contentTypes: ContentType[];
+        sort?: "new" | "top";
+      };
+      cursor?: string;
+    }
+  | {
+      type: NookPanelType.UserFollowers;
+      args: {
+        userFilter: UserFilter;
+      };
+      cursor?: string;
+    }
+  | {
+      type: NookPanelType.UserFollowing;
+      args: {
+        userFilter: UserFilter;
+      };
+      cursor?: string;
+    }
+  | {
+      type: NookPanelType.PostReplies;
+      args: {
+        targetContentId: string;
+        sort?: "new" | "top";
+      };
+      cursor?: string;
+    }
+  | {
+      type: NookPanelType.PostLikes;
+      args: {
+        targetContentId: string;
+      };
+      cursor?: string;
+    }
+  | {
+      type: NookPanelType.PostReposts;
+      args: {
+        targetContentId: string;
+      };
+      cursor?: string;
+    }
+  | {
+      type: NookPanelType.PostQuotes;
+      args: {
+        targetContentId: string;
+        sort?: "new" | "top";
+      };
+      cursor?: string;
+    };
+
+export enum NookPanelType {
+  UserPosts = "USER_POSTS",
+  ChannelPosts = "CHANNEL_POSTS",
+  UserFollowers = "USER_FOLLOWERS",
+  UserFollowing = "USER_FOLLOWING",
+  PostReplies = "POST_REPLIES",
+  PostLikes = "POST_LIKES",
+  PostReposts = "POST_REPOSTS",
+  PostQuotes = "POST_QUOTES",
+}
+
+export enum UserFilterType {
+  Entities = "ENTITIES",
+}
+
+export type UserFilter = {
+  type: UserFilterType.Entities;
+  args: {
+    entityIds: string[];
+  };
+};
+
+export enum ChannelFilterType {
+  Channels = "CHANNELS",
+}
+
+export type ChannelFilter = {
+  type: ChannelFilterType.Channels;
+  args: {
+    channelIds: string[];
+  };
 };

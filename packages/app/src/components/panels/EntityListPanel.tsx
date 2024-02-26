@@ -3,13 +3,12 @@ import { FlatList, ViewToken } from "react-native";
 import { memo, useCallback, useEffect, useState } from "react";
 import { nookApi } from "@/store/apis/nookApi";
 import { RefreshControl } from "react-native-gesture-handler";
-import { ContentFeedArgs, EventAction } from "@nook/common/types";
+import { EventAction, NookPanelData, NookPanelType } from "@nook/common/types";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { EntityAvatar } from "../entity/EntityAvatar";
 import { EntityDisplay } from "../entity/EntityDisplay";
-import { BottomSheetFlatList } from "@gorhom/bottom-sheet";
 import { useEntity } from "@/hooks/useEntity";
-import { useAppSelector } from "@/hooks/useAppSelector";
+import { Tabs } from "react-native-collapsible-tab-view";
 
 function getNestedValue<T>(obj: T, path: string) {
   // biome-ignore lint/suspicious/noExplicitAny: <explanation>
@@ -17,11 +16,9 @@ function getNestedValue<T>(obj: T, path: string) {
 }
 
 export const EntityListEntry = memo(
-  ({ item, entityField }: { item: EventAction; entityField?: string }) => {
-    const entityId = !entityField
-      ? item.entityId
-      : getNestedValue(item, entityField);
-    const entity = useEntity(entityId);
+  ({ item, entityField }: { item: EventAction; entityField: string }) => {
+    const entityId = getNestedValue(item, entityField);
+    const { context } = useEntity(entityId);
     return (
       <View
         alignItems="center"
@@ -34,7 +31,7 @@ export const EntityListEntry = memo(
           <EntityAvatar entityId={entityId} />
           <EntityDisplay entityId={entityId} orientation="vertical" />
         </XStack>
-        {entity?.context.following ? (
+        {context?.following ? (
           <Button size="$3" variant="outlined" borderColor="$backgroundHover">
             Unfollow
           </Button>
@@ -47,13 +44,11 @@ export const EntityListEntry = memo(
 );
 
 export const EntityListPanel = ({
-  args,
-  entityField,
-  isBottomSheet,
+  panel,
+  asTabs,
 }: {
-  args: ContentFeedArgs;
-  entityField?: string;
-  isBottomSheet?: boolean;
+  panel: NookPanelData;
+  asTabs?: boolean;
 }) => {
   const insets = useSafeAreaInsets();
   const [cursor, setCursor] = useState<string | undefined>(undefined);
@@ -63,7 +58,7 @@ export const EntityListPanel = ({
 
   const { data, error, isLoading, isFetching, refetch } =
     nookApi.useGetActionsFeedQuery({
-      ...args,
+      ...panel,
       cursor,
     });
 
@@ -130,13 +125,20 @@ export const EntityListPanel = ({
     );
   }
 
-  const FlatListComponent = isBottomSheet ? BottomSheetFlatList : FlatList;
+  const FlatListCompnent = asTabs ? Tabs.FlatList : FlatList;
 
   return (
-    <FlatListComponent
+    <FlatListCompnent
       data={accumulatedData}
       renderItem={({ item }) => (
-        <EntityListEntry item={item} entityField={entityField} />
+        <EntityListEntry
+          item={item}
+          entityField={
+            panel.type === NookPanelType.UserFollowing
+              ? "data.targetEntityId"
+              : "entityId"
+          }
+        />
       )}
       keyExtractor={(item) => item.eventId}
       onViewableItemsChanged={onViewableItemsChanged}

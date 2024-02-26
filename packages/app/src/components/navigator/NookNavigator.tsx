@@ -14,6 +14,10 @@ import { useNooks } from "@/hooks/useNooks";
 import { EntityScreen } from "@/screens/EntityScreen";
 import { NookScreen } from "@/screens/NookScreen";
 import { ChannelScreen } from "@/screens/ChannelScreen";
+import { EntityFollowersScreen } from "@/screens/EntityFollowersScreen";
+import { ContentLikesScreen } from "@/screens/ContentLikesScreen";
+import { ContentRepostsScreen } from "@/screens/ContentRepostsScreen";
+import { ContentQuotesScreen } from "@/screens/ContentQuotesScreen";
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -57,7 +61,6 @@ const DrawerToggleButton = () => {
 };
 
 export function NookNavigator() {
-  const { activeNook } = useNooks();
   const theme = useTheme();
 
   return (
@@ -65,7 +68,6 @@ export function NookNavigator() {
       <Stack.Screen
         name="Nook"
         component={NookScreen}
-        initialParams={{ nookId: activeNook?.nookId }}
         options={{
           headerLeft: () => <DrawerToggleButton />,
           headerStyle: {
@@ -75,6 +77,47 @@ export function NookNavigator() {
             fontWeight: "700",
           },
           headerTitle: (props) => <Text {...props} fontWeight="700" />,
+        }}
+      />
+      <Stack.Screen
+        name="Channel"
+        component={ChannelScreen}
+        options={{
+          headerBackTitleVisible: false,
+          headerTintColor: "white",
+          headerStyle: {
+            backgroundColor: theme.$background.val,
+          },
+          gestureEnabled: true,
+          fullScreenGestureEnabled: true,
+        }}
+        getId={({ params }) => params.channelId}
+      />
+      <Stack.Screen
+        name="Entity"
+        component={EntityScreen}
+        options={{
+          headerBackTitleVisible: false,
+          headerTintColor: "white",
+          headerStyle: {
+            backgroundColor: theme.$background.val,
+          },
+          gestureEnabled: true,
+          fullScreenGestureEnabled: true,
+        }}
+        getId={({ params }) => params.entityId}
+      />
+      <Stack.Screen
+        name="EntityFollowers"
+        component={EntityFollowersScreen}
+        options={{
+          headerBackTitleVisible: false,
+          headerTintColor: "white",
+          headerStyle: {
+            backgroundColor: theme.$background.val,
+          },
+          gestureEnabled: true,
+          fullScreenGestureEnabled: true,
         }}
       />
       <Stack.Screen
@@ -92,9 +135,10 @@ export function NookNavigator() {
         getId={({ params }) => params.contentId}
       />
       <Stack.Screen
-        name="Entity"
-        component={EntityScreen}
+        name="ContentLikes"
+        component={ContentLikesScreen}
         options={{
+          title: "Likes",
           headerBackTitleVisible: false,
           headerTintColor: "white",
           headerStyle: {
@@ -103,12 +147,13 @@ export function NookNavigator() {
           gestureEnabled: true,
           fullScreenGestureEnabled: true,
         }}
-        getId={({ params }) => params.entityId}
+        getId={({ params }) => params.contentId}
       />
       <Stack.Screen
-        name="Channel"
-        component={ChannelScreen}
+        name="ContentReposts"
+        component={ContentRepostsScreen}
         options={{
+          title: "Reposts",
           headerBackTitleVisible: false,
           headerTintColor: "white",
           headerStyle: {
@@ -116,9 +161,23 @@ export function NookNavigator() {
           },
           gestureEnabled: true,
           fullScreenGestureEnabled: true,
-          headerTitle: (props) => <Text {...props} fontWeight="700" />,
         }}
-        getId={({ params }) => params.channelId}
+        getId={({ params }) => params.contentId}
+      />
+      <Stack.Screen
+        name="ContentQuotes"
+        component={ContentQuotesScreen}
+        options={{
+          title: "Quotes",
+          headerBackTitleVisible: false,
+          headerTintColor: "white",
+          headerStyle: {
+            backgroundColor: theme.$background.val,
+          },
+          gestureEnabled: true,
+          fullScreenGestureEnabled: true,
+        }}
+        getId={({ params }) => params.contentId}
       />
     </Stack.Navigator>
   );

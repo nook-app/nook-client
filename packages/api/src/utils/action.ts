@@ -50,7 +50,6 @@ export const ENTITY_ACTIONS: Record<EntityActionType, EntityAction> = {
       viewerId,
       entityIds,
     }: EntityValidateActionsArgs) => {
-      console.time("getFollowedEntities");
       const entities = await client
         .getCollection<EventAction<EntityActionData>>(MongoCollection.Actions)
         .find({

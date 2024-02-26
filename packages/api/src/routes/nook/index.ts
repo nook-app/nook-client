@@ -1,36 +1,24 @@
 import { FastifyInstance } from "fastify";
 import { NookService } from "../../services/nookService";
-import { ContentFeedArgs } from "@nook/common/types";
+import { NookPanelData } from "@nook/common/types";
 
 export const nookRoutes = async (fastify: FastifyInstance) => {
   fastify.register(async (fastify: FastifyInstance) => {
     const nookService = new NookService(fastify);
 
-    fastify.post<{ Body: ContentFeedArgs & { cursor?: string } }>(
+    fastify.post<{ Body: NookPanelData & { cursor?: string } }>(
       "/content/feed",
       async (request, reply) => {
         const { id } = (await request.jwtDecode()) as { id: string };
-        return reply.send(
-          await nookService.getContentFeed(
-            id,
-            request.body,
-            request.body.cursor,
-          ),
-        );
+        return reply.send(await nookService.getContentFeed(id, request.body));
       },
     );
 
-    fastify.post<{ Body: ContentFeedArgs & { cursor?: string } }>(
+    fastify.post<{ Body: NookPanelData & { cursor?: string } }>(
       "/actions/feed",
       async (request, reply) => {
         const { id } = (await request.jwtDecode()) as { id: string };
-        return reply.send(
-          await nookService.getActionFeed(
-            id,
-            request.body,
-            request.body.cursor,
-          ),
-        );
+        return reply.send(await nookService.getActionFeed(id, request.body));
       },
     );
 

@@ -8,14 +8,16 @@ import { Spinner, View } from "tamagui";
 import { Panels } from "@/components/panels/Panels";
 
 export const NookScreen = () => {
-  const {
-    params: { nookId, shelfId },
-  } = useRoute<RouteProp<RootStackParamList, "Nook">>();
+  const { params } = useRoute<RouteProp<RootStackParamList, "Nook">>();
   const navigation = useNavigation();
+
+  const nookId = params?.nookId || "home";
+  const shelfId = params?.shelfId;
 
   const storedNook = nookId
     ? selectNookById(store.getState(), nookId)
     : undefined;
+
   const { data: fetchedNook } = nookApi.useGetNookQuery(
     { nookId },
     {

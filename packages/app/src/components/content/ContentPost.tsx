@@ -1,4 +1,4 @@
-import { ContentType } from "@nook/common/types";
+import { ContentType, NookPanelType } from "@nook/common/types";
 import { ScrollView, Text, View, XStack, YStack } from "tamagui";
 import { Embed } from "@/components/embeds/Embed";
 import { EntityAvatar } from "@/components/entity/EntityAvatar";
@@ -10,8 +10,12 @@ import { ContentPostText } from "./ContentPostText";
 import { useContent } from "@/hooks/useContent";
 import { formatNumber } from "@/utils";
 import { ChannelDisplay } from "../channel/ChannelDisplay";
+import { TouchableOpacity } from "react-native-gesture-handler";
+import { NavigationProp, useNavigation } from "@react-navigation/native";
+import { RootStackParamList } from "@/types";
 
 export const ContentPostContent = ({ contentId }: { contentId: string }) => {
+  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const contentData = useContent(contentId);
   if (!contentData) return null;
 
@@ -66,22 +70,48 @@ export const ContentPostContent = ({ contentId }: { contentId: string }) => {
           </Text>
           <Text color="$gray11">Replies</Text>
         </View>
-        <View flexDirection="row" alignItems="center" gap="$1">
-          <Text fontWeight="700">
-            {formatNumber(content.engagement.reposts)}
-          </Text>
-          <Text color="$gray11">Reposts</Text>
-        </View>
-        <View flexDirection="row" alignItems="center" gap="$1">
-          <Text fontWeight="700">
-            {formatNumber(content.engagement.embeds)}
-          </Text>
-          <Text color="$gray11">Quotes</Text>
-        </View>
-        <View flexDirection="row" alignItems="center" gap="$1">
-          <Text fontWeight="700">{formatNumber(content.engagement.likes)}</Text>
-          <Text color="$gray11">Likes</Text>
-        </View>
+        <TouchableOpacity
+          onPress={() =>
+            navigation.navigate("ContentReposts", {
+              contentId: content.contentId,
+            })
+          }
+        >
+          <View flexDirection="row" alignItems="center" gap="$1">
+            <Text fontWeight="700">
+              {formatNumber(content.engagement.reposts)}
+            </Text>
+            <Text color="$gray11">Reposts</Text>
+          </View>
+        </TouchableOpacity>
+        <TouchableOpacity
+          onPress={() =>
+            navigation.navigate("ContentQuotes", {
+              contentId: content.contentId,
+            })
+          }
+        >
+          <View flexDirection="row" alignItems="center" gap="$1">
+            <Text fontWeight="700">
+              {formatNumber(content.engagement.embeds)}
+            </Text>
+            <Text color="$gray11">Quotes</Text>
+          </View>
+        </TouchableOpacity>
+        <TouchableOpacity
+          onPress={() =>
+            navigation.navigate("ContentLikes", {
+              contentId: content.contentId,
+            })
+          }
+        >
+          <View flexDirection="row" alignItems="center" gap="$1">
+            <Text fontWeight="700">
+              {formatNumber(content.engagement.likes)}
+            </Text>
+            <Text color="$gray11">Likes</Text>
+          </View>
+        </TouchableOpacity>
       </XStack>
     </YStack>
   );
@@ -96,12 +126,11 @@ export const ContentPost = ({ contentId }: { contentId: string }) => {
     <ScrollView>
       <ContentPostContent contentId={content.contentId} />
       <ContentFeedPanel
-        args={{
-          filter: {
-            type: ContentType.REPLY,
-            "data.parentId": content.data.contentId,
+        panel={{
+          type: NookPanelType.PostReplies,
+          args: {
+            targetContentId: content.data.contentId,
           },
-          sort: "engagement.likes",
         }}
         asList
       />

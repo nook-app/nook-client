@@ -47,9 +47,7 @@ export const NooksNavigator = () => {
         </XStack>
       )}
     >
-      {nooks.map((nook) => {
-        return <Drawer.Screen name={nook.name} component={NookNavigator} />;
-      })}
+      <Drawer.Screen name="NookDrawer" component={NookNavigator} />
     </Drawer.Navigator>
   );
 };

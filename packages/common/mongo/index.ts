@@ -7,9 +7,7 @@ import {
 } from "mongodb";
 import {
   Content,
-  ContentData,
   EventAction,
-  EventActionData,
   EntityEvent,
   EventActionType,
   Entity,
@@ -17,7 +15,6 @@ import {
   Nook,
 } from "../types";
 import { publishAction } from "../queues";
-import { getDefaultChannelNook, getDefaultEntityNook } from "../nooks";
 
 const DB_NAME = "nook";
 
@@ -304,34 +301,6 @@ export class MongoClient {
         },
       },
     );
-  };
-
-  getOrCreateEntityNook = async (entity: Entity) => {
-    const nook = await this.getCollection<Nook>(MongoCollection.Nooks).findOne({
-      nookId: `entity:${entity._id.toString()}`,
-    });
-    if (nook) return nook;
-    return this.createEntityNook(entity);
-  };
-
-  createEntityNook = async (entity: Entity) => {
-    const nook = getDefaultEntityNook(entity);
-    await this.getCollection<Nook>(MongoCollection.Nooks).insertOne(nook);
-    return nook;
-  };
-
-  getOrCreateChannelNook = async (channel: Channel) => {
-    const nook = await this.getCollection<Nook>(MongoCollection.Nooks).findOne({
-      nookId: `channel:${channel.contentId}`,
-    });
-    if (nook) return nook;
-    return this.createChannelNook(channel);
-  };
-
-  createChannelNook = async (channel: Channel) => {
-    const nook = getDefaultChannelNook(channel);
-    await this.getCollection<Nook>(MongoCollection.Nooks).insertOne(nook);
-    return nook;
   };
 
   searchChannels = async (query: string) => {

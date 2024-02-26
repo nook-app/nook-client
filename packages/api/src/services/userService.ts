@@ -80,21 +80,6 @@ export class UserService {
           refreshToken,
         },
       });
-
-      const defaultNook = await this.client.getOrCreateEntityNook(entity);
-      await this.nookClient.nookMembership.createMany({
-        skipDuplicates: true,
-        data: [
-          {
-            nookId: defaultNook._id.toString(),
-            userId: user.id,
-          },
-          {
-            nookId: "65cec2e40c6be21bbe973650",
-            userId: user.id,
-          },
-        ],
-      });
     }
 
     const jwtPayload = {
@@ -162,7 +147,7 @@ export class UserService {
       return;
     }
 
-    let nooks = await this.client
+    const nooks = await this.client
       .getCollection<Nook>(MongoCollection.Nooks)
       .find({
         _id: {
@@ -170,19 +155,6 @@ export class UserService {
         },
       })
       .toArray();
-
-    if (
-      !nooks.some(({ nookId }) => nookId === `entity:${entity._id.toString()}`)
-    ) {
-      const defaultNook = await this.client.getOrCreateEntityNook(entity);
-      await this.nookClient.nookMembership.create({
-        data: {
-          nookId: defaultNook._id.toString(),
-          userId: user.id,
-        },
-      });
-      nooks = [defaultNook, ...nooks];
-    }
 
     return {
       user,

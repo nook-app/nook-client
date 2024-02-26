@@ -1,4 +1,4 @@
-import { ContentType } from "@nook/common/types";
+import { ContentType, NookPanelType } from "@nook/common/types";
 import { ScrollView, View } from "tamagui";
 import { NavigationProp, useNavigation } from "@react-navigation/native";
 import { ContentFeedPanel } from "../panels/ContentFeedPanel";
@@ -69,12 +69,11 @@ export const ContentReply = ({ contentId }: { contentId: string }) => {
         <ContentPostContent contentId={content.contentId} />
       </View>
       <ContentFeedPanel
-        args={{
-          filter: {
-            type: ContentType.REPLY,
-            "data.parentId": content.data.contentId,
+        panel={{
+          type: NookPanelType.PostReplies,
+          args: {
+            targetContentId: content.contentId,
           },
-          sort: "engagement.likes",
         }}
         asList
       />

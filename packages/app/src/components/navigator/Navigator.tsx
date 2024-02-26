@@ -5,20 +5,20 @@ import { AuthNavigator } from "./AuthNavigator";
 import { useAppSelector } from "@/hooks/useAppSelector";
 import { Theme } from "tamagui";
 import { Modals } from "@/modals/Modals";
-import { useNooks } from "@/hooks/useNooks";
+import { selectNookById } from "@/store/slices/nook";
 
 const Stack = createNativeStackNavigator();
 
 export function Navigator() {
   const { session } = useAuth();
-  const { nooks } = useNooks();
+  const homeNook = useAppSelector((state) => selectNookById(state, "home"));
   const theme = useAppSelector((state) => state.user.theme);
 
   return (
     <Theme name={theme || "gray"}>
       <Modals />
       <Stack.Navigator screenOptions={{ headerShown: false }}>
-        {session && nooks.length > 0 ? (
+        {session && homeNook ? (
           <Stack.Screen name="AuthNavigator" component={AuthNavigator} />
         ) : (
           <>

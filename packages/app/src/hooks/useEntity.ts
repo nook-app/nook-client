@@ -25,7 +25,7 @@ export const useEntity = (entityId?: string) => {
 
   return {
     entity: entity?.entity,
-    content: entity?.context,
+    context: entity?.context,
     displayName: getDisplayName(entity?.entity),
     username: getUsername(entity?.entity),
     bio: entity?.entity?.farcaster?.bio,

@@ -1,5 +1,10 @@
 import { Avatar, Text, XStack, YStack } from "tamagui";
-import { ContentType, NookPanelType, TopicType } from "@nook/common/types";
+import {
+  ChannelFilterType,
+  ContentType,
+  NookPanelType,
+  TopicType,
+} from "@nook/common/types";
 import { RouteProp, useNavigation, useRoute } from "@react-navigation/native";
 import { RootStackParamList } from "@/types";
 import { Panels } from "@/components/panels/Panels";
@@ -53,32 +58,34 @@ export const ChannelScreen = () => {
         {
           name: "New",
           slug: "new",
-          type: NookPanelType.ContentFeed,
-          args: {
-            filter: {
-              type: ContentType.POST,
-              topics: {
-                type: TopicType.CHANNEL,
-                value: channelId,
+          data: {
+            type: NookPanelType.ChannelPosts,
+            args: {
+              channelFilter: {
+                type: ChannelFilterType.Channels,
+                args: {
+                  channelIds: [channelId],
+                },
               },
+              contentTypes: [ContentType.POST],
             },
           },
         },
         {
           name: "Top",
           slug: "top",
-          type: NookPanelType.ContentFeed,
-          args: {
-            filter: {
-              type: {
-                $in: [ContentType.POST, ContentType.REPLY],
+          data: {
+            type: NookPanelType.ChannelPosts,
+            args: {
+              channelFilter: {
+                type: ChannelFilterType.Channels,
+                args: {
+                  channelIds: [channelId],
+                },
               },
-              topics: {
-                type: TopicType.CHANNEL,
-                value: channelId,
-              },
+              contentTypes: [ContentType.POST, ContentType.REPLY],
+              sort: "top",
             },
-            sort: "engagement.likes",
           },
         },
       ]}

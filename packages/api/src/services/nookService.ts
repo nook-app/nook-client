@@ -9,15 +9,20 @@ import {
 } from "../utils/action";
 import {
   Channel,
+  ChannelFilterType,
   Content,
-  ContentFeedArgs,
   ContentType,
   Entity,
   EventAction,
-  Nook,
+  EventActionType,
+  NookPanelData,
+  NookPanelType,
   PostData,
+  Topic,
+  TopicType,
+  UserFilterType,
 } from "@nook/common/types";
-import { getOrCreateChannel, getOrCreateContent } from "@nook/common/scraper";
+import { getOrCreateContent } from "@nook/common/scraper";
 import {
   ContentWithContext,
   EntityWithContext,
@@ -98,15 +103,144 @@ export class NookService {
     return await this.fetchChannels(channelIds);
   }
 
+  async getContentFilterAndSort({ type, args }: NookPanelData) {
+    switch (type) {
+      case NookPanelType.UserPosts: {
+        const filter = { type: { $in: args.contentTypes } } as Filter<Content>;
+        if (args.userFilter.type === UserFilterType.Entities) {
+          filter.$or = [];
+          for (const entityId of args.userFilter.args.entityIds) {
+            filter.$or.push({
+              topics: {
+                type: TopicType.SOURCE_ENTITY,
+                value: entityId,
+              },
+            });
+          }
+        }
+        return {
+          filter,
+          sort: args.sort === "top" ? "enagement.likes" : "timestamp",
+        };
+      }
+      case NookPanelType.ChannelPosts: {
+        const filter = { type: { $in: args.contentTypes } } as Filter<Content>;
+        if (args.channelFilter.type === ChannelFilterType.Channels) {
+          filter.$or = [];
+          for (const channelId of args.channelFilter.args.channelIds) {
+            filter.$or.push({
+              topics: {
+                type: TopicType.CHANNEL,
+                value: channelId,
+              },
+            });
+          }
+        }
+        return {
+          filter,
+          sort: args.sort === "top" ? "enagement.likes" : "timestamp",
+        };
+      }
+      case NookPanelType.PostReplies: {
+        return {
+          filter: {
+            "data.parentId": args.targetContentId,
+          },
+          sort: args.sort === "top" ? "enagement.likes" : "timestamp",
+        };
+      }
+      case NookPanelType.PostQuotes: {
+        return {
+          filter: {
+            type: EventActionType.POST,
+            topics: {
+              type: TopicType.SOURCE_EMBED,
+              value: args.targetContentId,
+            },
+          },
+          sort: args.sort === "top" ? "enagement.likes" : "timestamp",
+        };
+      }
+    }
+    throw new Error("Invalid NookPanelType");
+  }
+
+  async getActionFilterAndSort({ type, args }: NookPanelData) {
+    switch (type) {
+      case NookPanelType.UserFollowers: {
+        const filter = { type: EventActionType.FOLLOW } as Filter<EventAction>;
+        if (args.userFilter.type === UserFilterType.Entities) {
+          filter.$or = [];
+          for (const entityId of args.userFilter.args.entityIds) {
+            filter.$or.push({
+              topics: {
+                type: TopicType.TARGET_ENTITY,
+                value: entityId,
+              },
+            });
+          }
+        }
+        return {
+          filter,
+          sort: "timestamp",
+        };
+      }
+      case NookPanelType.UserFollowing: {
+        const filter = { type: EventActionType.FOLLOW } as Filter<EventAction>;
+        if (args.userFilter.type === UserFilterType.Entities) {
+          filter.$or = [];
+          for (const entityId of args.userFilter.args.entityIds) {
+            filter.$or.push({
+              topics: {
+                type: TopicType.SOURCE_ENTITY,
+                value: entityId,
+              },
+            });
+          }
+        }
+        return {
+          filter,
+          sort: "timestamp",
+        };
+      }
+      case NookPanelType.PostLikes: {
+        return {
+          filter: {
+            type: EventActionType.LIKE,
+            topics: {
+              type: TopicType.TARGET_CONTENT,
+              value: args.targetContentId,
+            },
+          },
+          sort: "timestamp",
+        };
+      }
+      case NookPanelType.PostReposts: {
+        return {
+          filter: {
+            type: EventActionType.REPOST,
+            topics: {
+              type: TopicType.TARGET_CONTENT,
+              value: args.targetContentId,
+            },
+          },
+          sort: "timestamp",
+        };
+      }
+    }
+    throw new Error("Invalid NookPanelType");
+  }
+
   async getContentFeed(
     viewerId: string,
-    args: ContentFeedArgs,
-    cursor?: string,
+    data: NookPanelData,
   ): Promise<GetContentFeedResponse> {
+    const { filter, sort } = await this.getContentFilterAndSort(data);
     const feed = await this.getFeedRaw<Content>(
       MongoCollection.Content,
-      args,
-      cursor,
+      filter,
+      sort,
+      data.cursor,
     );
 
     const contents = await this.fetchContents(
@@ -122,10 +256,7 @@ export class NookService {
     let nextCursor;
     if (feed.length === PAGE_SIZE) {
       const timestamp = feed[feed.length - 1].timestamp;
-      const value = getNestedValue(
-        feed[feed.length - 1],
-        args.sort || "timestamp",
-      );
+      const value = getNestedValue(feed[feed.length - 1], sort);
       nextCursor = Buffer.from(JSON.stringify({ timestamp, value })).toString(
         "base64",
       );
@@ -142,13 +273,14 @@ export class NookService {
 
   async getActionFeed(
     viewerId: string,
-    args: ContentFeedArgs,
-    cursor?: string,
+    data: NookPanelData,
   ): Promise<GetActionFeedResponse> {
+    const { filter, sort } = await this.getActionFilterAndSort(data);
     const feed = await this.getFeedRaw<EventAction>(
       MongoCollection.Actions,
-      args,
-      cursor,
+      filter,
+      sort,
+      data.cursor,
     );
 
     const contents = await this.fetchContents(
@@ -164,10 +296,7 @@ export class NookService {
     let nextCursor;
     if (feed.length === PAGE_SIZE) {
       const timestamp = feed[feed.length - 1].timestamp;
-      const value = getNestedValue(
-        feed[feed.length - 1],
-        args.sort || "timestamp",
-      );
+      const value = getNestedValue(feed[feed.length - 1], sort);
       nextCursor = Buffer.from(JSON.stringify({ timestamp, value })).toString(
         "base64",
       );
@@ -184,7 +313,8 @@ export class NookService {
 
   async getFeedRaw<T extends Document>(
     colName: MongoCollection,
-    { filter, sort, sortDirection = -1 }: ContentFeedArgs,
+    filter: object,
+    sort: string,
     cursor?: string,
   ) {
     const collection = this.client.getCollection<T>(colName);
@@ -200,15 +330,13 @@ export class NookService {
         $or: [
           {
             [sortField]: {
-              [sortDirection === 1 ? "$gt" : "$lt"]: cursorObj.value,
+              $lt: cursorObj.value,
             },
           },
           {
             [sortField]: cursorObj.value,
             timestamp: {
-              [sortDirection === 1 ? "$gt" : "$lt"]: new Date(
-                cursorObj.timestamp,
-              ),
+              $lt: new Date(cursorObj.timestamp),
             },
           },
         ],
@@ -217,7 +345,7 @@ export class NookService {
 
     let sortOptions: Record<string, SortDirection> = { timestamp: -1 };
     if (sort) {
-      sortOptions = { [sort]: sortDirection as SortDirection, ...sortOptions };
+      sortOptions = { [sort]: -1, ...sortOptions };
     }
 
     return await collection
@@ -341,32 +469,8 @@ export class NookService {
     return [...cachedChannels, ...existingChannels];
   }
 
-  async getNook(nookId: string): Promise<Nook> {
-    let nook = await this.client.getNook(nookId);
-    if (nookId.startsWith("entity:")) {
-      const entityId = nookId.replace("entity:", "");
-      const entity = await this.client.findEntity(entityId);
-      if (!entity) throw new Error("Entity not found");
-      if (!nook) nook = await this.client.createEntityNook(entity);
-      return nook;
-    }
-
-    if (nookId.startsWith("channel:")) {
-      const channel = await getOrCreateChannel(
-        this.client,
-        this.cache,
-        nookId.replace("channel:", ""),
-      );
-      if (!channel) {
-        throw new Error("Channel not found");
-      }
-      if (!nook) {
-        nook = await this.client.createChannelNook(channel);
-      }
-      return nook;
-    }
-
-    throw new Error("Nook not found");
+  async getNook(nookId: string) {
+    return await this.client.getNook(nookId);
   }
 
   async searchChannels(query: string): Promise<Channel[]> {

@@ -1,6 +1,6 @@
 import { createApi } from "@reduxjs/toolkit/query/react";
 import { baseQuery } from "@/store/utils";
-import { Channel, ContentFeedArgs, Nook } from "@nook/common/types";
+import { Channel, Nook, NookPanelData } from "@nook/common/types";
 import {
   EntityWithContext,
   GetActionFeedResponse,
@@ -12,20 +12,14 @@ export const nookApi = createApi({
   reducerPath: "nookApi",
   baseQuery,
   endpoints: (builder) => ({
-    getActionsFeed: builder.query<
-      GetActionFeedResponse,
-      ContentFeedArgs & { cursor?: string }
-    >({
+    getActionsFeed: builder.query<GetActionFeedResponse, NookPanelData>({
       query: (request) => ({
         url: "/actions/feed",
         method: "POST",
         body: request,
       }),
     }),
-    getContentFeed: builder.query<
-      GetContentFeedResponse,
-      ContentFeedArgs & { cursor?: string }
-    >({
+    getContentFeed: builder.query<GetContentFeedResponse, NookPanelData>({
       query: (request) => ({
         url: "/content/feed",
         method: "POST",

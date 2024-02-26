@@ -1,4 +1,4 @@
-import { NookPanel, NookPanelType } from "@nook/common/types";
+import { NookPanel, NookPanelData, NookPanelType } from "@nook/common/types";
 import {
   MaterialTabBar,
   TabBarProps,
@@ -7,13 +7,16 @@ import {
 import { ContentFeedPanel } from "./ContentFeedPanel";
 import { useTheme } from "tamagui";
 import { useCallback } from "react";
+import { EntityListPanel } from "./EntityListPanel";
 
 export const Panels = ({
   panels,
   renderHeader,
+  defaultTab,
 }: {
   panels: NookPanel[];
   renderHeader?: () => JSX.Element | null;
+  defaultTab?: string;
 }) => {
   const theme = useTheme();
 
@@ -48,6 +51,7 @@ export const Panels = ({
 
   return (
     <Tabs.Container
+      initialTabName={defaultTab}
       renderHeader={renderHeader}
       renderTabBar={renderTabBar}
       headerContainerStyle={{
@@ -60,16 +64,40 @@ export const Panels = ({
         backgroundColor: theme.$background.val,
       }}
     >
-      {panels.map(({ name, type, args }) => {
-        if (type === NookPanelType.ContentFeed) {
-          return (
-            <Tabs.Tab key={name} name={name}>
-              <ContentFeedPanel asTabs args={args} />
-            </Tabs.Tab>
-          );
-        }
-        return null;
-      })}
+      {panels.map(({ name, data }) => (
+        <Tabs.Tab key={name} name={name}>
+          <Panel panel={data} asTabs />
+        </Tabs.Tab>
+      ))}
     </Tabs.Container>
   );
+};
+
+export const Panel = ({
+  panel,
+  asTabs,
+}: { panel: NookPanelData; asTabs?: boolean }) => {
+  if (
+    [
+      NookPanelType.UserPosts,
+      NookPanelType.ChannelPosts,
+      NookPanelType.PostReplies,
+      NookPanelType.PostQuotes,
+    ].includes(panel.type)
+  ) {
+    return <ContentFeedPanel asTabs={asTabs} panel={panel} />;
+  }
+
+  if (
+    [
+      NookPanelType.UserFollowers,
+      NookPanelType.UserFollowing,
+      NookPanelType.PostLikes,
+      NookPanelType.PostReposts,
+    ].includes(panel.type)
+  ) {
+    return <EntityListPanel asTabs={asTabs} panel={panel} />;
+  }
+
+  return null;
 };

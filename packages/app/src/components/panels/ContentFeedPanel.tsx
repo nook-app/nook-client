@@ -6,13 +6,12 @@ import { RefreshControl } from "react-native-gesture-handler";
 import { ContentPostCompact } from "../content/ContentPostCompact";
 import {
   Content,
-  ContentFeedArgs,
   ContentType,
+  NookPanelData,
   PostData,
 } from "@nook/common/types";
 import { ContentReplyCompact } from "../content/ContentReplyCompact";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { BottomSheetFlatList } from "@gorhom/bottom-sheet";
 import { Tabs } from "react-native-collapsible-tab-view";
 
 export const ContentFeedEntry = memo(
@@ -40,10 +39,10 @@ export const ContentFeedEntry = memo(
 );
 
 export const ContentFeedPanel = ({
-  args,
+  panel,
   asList,
   asTabs,
-}: { args: ContentFeedArgs; asList?: boolean; asTabs?: boolean }) => {
+}: { panel: NookPanelData; asList?: boolean; asTabs?: boolean }) => {
   const insets = useSafeAreaInsets();
   const [cursor, setCursor] = useState<string | undefined>(undefined);
   const [accumulatedData, setAccumulatedData] = useState<Content[]>([]);
@@ -52,7 +51,7 @@ export const ContentFeedPanel = ({
 
   const { data, error, isLoading, isFetching, refetch } =
     nookApi.useGetContentFeedQuery({
-      ...args,
+      ...panel,
       cursor,
     });
 
