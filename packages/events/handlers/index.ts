@@ -79,8 +79,6 @@ export const getEventsHandler = async () => {
       promises.push(...upsertContentPromises(content));
     }
 
-    console.log(promises);
-
     await Promise.all(promises);
 
     console.log(

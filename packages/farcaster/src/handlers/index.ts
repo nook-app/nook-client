@@ -91,11 +91,17 @@ export const getFarcasterHandler = () => {
         if (record) {
           if ("targetUrl" in record) {
             events.push(
-              transformToUrlReactionEvent(EventType.URL_REACTION_ADD, record),
+              transformToUrlReactionEvent(
+                EventType.URL_REACTION_REMOVE,
+                record,
+              ),
             );
           } else if ("targetHash" in record) {
             events.push(
-              transformToCastReactionEvent(EventType.CAST_REACTION_ADD, record),
+              transformToCastReactionEvent(
+                EventType.CAST_REACTION_REMOVE,
+                record,
+              ),
             );
           }
         }

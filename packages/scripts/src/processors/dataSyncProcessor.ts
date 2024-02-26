@@ -17,7 +17,6 @@ import { RedisClient } from "@nook/common/cache";
 import {
   Content,
   ContentActionData,
-  ContentData,
   ContentType,
   Entity,
   EventAction,
