@@ -11,6 +11,7 @@ import {
   PostData,
   EntityUsernameData,
   UsernameType,
+  TopicType,
 } from "@nook/common/types";
 import { MongoClient, MongoCollection } from "@nook/common/mongo";
 import { RedisClient } from "@nook/common/cache";
@@ -56,6 +57,22 @@ export const getActionsHandler = async () => {
             client.incrementEngagement(typedContent.data.parentId, "replies"),
             redis.removeContent(typedContent.data.parentId),
           );
+        } else {
+          const addToFeeds = async () => {
+            const followers = await client
+              .getCollection<EventAction>(MongoCollection.Actions)
+              .find({
+                type: EventActionType.FOLLOW,
+                topics: {
+                  type: TopicType.TARGET_ENTITY,
+                  value: typedContent.data.entityId,
+                },
+              })
+              .toArray();
+            const followerIds = followers.map((f) => f.data.entityId);
+            await redis.addToFeeds(followerIds, typedContent.data.contentId);
+          };
+          promises.push(addToFeeds());
         }
         break;
       }

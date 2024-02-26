@@ -1,11 +1,9 @@
 import { FastifyInstance } from "fastify";
 import { SignerService } from "../../services/signerService";
-import { NookService } from "../../services/nookService";
 
 export const farcasterRoutes = async (fastify: FastifyInstance) => {
   fastify.register(async (fastify: FastifyInstance) => {
     const signerService = new SignerService(fastify);
-    const nookService = new NookService(fastify);
 
     fastify.get("/farcaster/signer", async (request, reply) => {
       const { id } = (await request.jwtDecode()) as { id: string };

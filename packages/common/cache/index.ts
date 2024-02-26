@@ -161,4 +161,27 @@ export class RedisClient {
     ]);
     await this.redis.mset(...keyValuePairs);
   }
+
+  async getFeed(feedId: string): Promise<string[]> {
+    try {
+      const contentIds = await this.redis.lrange(`feed:${feedId}`, 0, -1);
+      return contentIds;
+    } catch (error) {
+      throw new Error(`Failed to get feed for ${feedId}: ${error}`);
+    }
+  }
+
+  async addToFeeds(feedIds: string[], contentId: string) {
+    const pipeline = this.redis.pipeline();
+    for (const feedId of feedIds) {
+      pipeline.lpush(`feed:${feedId}`, contentId);
+      pipeline.ltrim(`feed:${feedId}`, 0, 500);
+    }
+    await pipeline.exec();
+  }
+
+  async setFeed(feedId: string, contentIds: string[]) {
+    await this.redis.del(`feed:${feedId}`);
+    await this.redis.lpush(`feed:${feedId}`, ...contentIds.reverse());
+  }
 }

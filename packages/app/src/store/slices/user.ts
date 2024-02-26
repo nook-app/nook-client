@@ -2,7 +2,6 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { User } from "@nook/common/prisma/nook";
 import { Entity, Nook } from "@nook/common/types";
 import { userApi } from "../apis/userApi";
-import { generateHomeNook } from "../utils";
 
 interface UserState {
   user?: User;

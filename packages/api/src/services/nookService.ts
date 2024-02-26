@@ -13,6 +13,7 @@ import {
   Content,
   ContentType,
   Entity,
+  EntityActionData,
   EventAction,
   EventActionType,
   NookPanelData,
@@ -114,6 +115,29 @@ export class NookService {
               topics: {
                 type: TopicType.SOURCE_ENTITY,
                 value: entityId,
+              },
+            });
+          }
+        } else if (args.userFilter.type === UserFilterType.Following) {
+          const following = await this.client
+            .getCollection<EventAction<EntityActionData>>(
+              MongoCollection.Actions,
+            )
+            .find({
+              type: EventActionType.FOLLOW,
+              topics: {
+                type: TopicType.SOURCE_ENTITY,
+                value: args.userFilter.args.entityId,
+              },
+            })
+            .toArray();
+
+          filter.$or = [];
+          for (const event of following) {
+            filter.$or.push({
+              topics: {
+                type: TopicType.SOURCE_ENTITY,
+                value: event.data.targetEntityId,
               },
             });
           }
@@ -235,13 +259,41 @@ export class NookService {
     viewerId: string,
     data: NookPanelData,
   ): Promise<GetContentFeedResponse> {
-    const { filter, sort } = await this.getContentFilterAndSort(data);
-    const feed = await this.getFeedRaw<Content>(
-      MongoCollection.Content,
-      filter,
-      sort,
-      data.cursor,
-    );
+    let feed: Content[];
+    let s;
+    if (
+      data.type === NookPanelType.UserPosts &&
+      data.args.userFilter.type === UserFilterType.Following
+    ) {
+      const feedIds = await this.cache.getFeed(viewerId);
+      if (feedIds.length < 25) {
+        const { filter, sort } = await this.getContentFilterAndSort(data);
+        feed = await this.getFeedRaw<Content>(
+          MongoCollection.Content,
+          filter,
+          sort,
+          data.cursor,
+        );
+        await this.cache.setFeed(
+          viewerId,
+          feed.map((c) => c.contentId),
+        );
+      } else {
+        feed = (await this.fetchContents(viewerId, feedIds)).map(
+          (c) => c.content,
+        );
+      }
+      s = "timestamp";
+    } else {
+      const { filter, sort } = await this.getContentFilterAndSort(data);
+      feed = await this.getFeedRaw<Content>(
+        MongoCollection.Content,
+        filter,
+        sort,
+        data.cursor,
+      );
+      s = sort;
+    }
 
     const contents = await this.fetchContents(
       viewerId,
@@ -256,7 +308,7 @@ export class NookService {
     let nextCursor;
     if (feed.length === PAGE_SIZE) {
       const timestamp = feed[feed.length - 1].timestamp;
-      const value = getNestedValue(feed[feed.length - 1], sort);
+      const value = getNestedValue(feed[feed.length - 1], s);
       nextCursor = Buffer.from(JSON.stringify({ timestamp, value })).toString(
         "base64",
       );

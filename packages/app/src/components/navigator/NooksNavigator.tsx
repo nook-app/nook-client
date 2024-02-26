@@ -1,4 +1,3 @@
-import { useNooks } from "@/hooks/useNooks";
 import { View } from "tamagui";
 import {
   DrawerContentScrollView,
@@ -13,7 +12,6 @@ import { getFocusedRouteNameFromRoute } from "@react-navigation/native";
 const Drawer = createDrawerNavigator();
 
 export const NooksNavigator = () => {
-  const { nooks } = useNooks();
   return (
     <Drawer.Navigator
       screenOptions={({ route }) => ({
@@ -28,7 +26,7 @@ export const NooksNavigator = () => {
         <XStack height="100%" flexDirection="row">
           <View
             style={{ width: 60 }}
-            backgroundColor="$background"
+            backgroundColor="$backgroundStrong"
             paddingHorizontal="$2"
           >
             <DrawerContentScrollView {...props}>
@@ -36,7 +34,7 @@ export const NooksNavigator = () => {
             </DrawerContentScrollView>
           </View>
           <View
-            backgroundColor="$background"
+            backgroundColor="$backgroundStrong"
             style={{ width: 240 }}
             paddingRight="$2"
           >

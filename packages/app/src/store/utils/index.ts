@@ -24,25 +24,27 @@ export const generateHomeNook = (entityId: string): Nook => {
   return {
     _id: "home",
     nookId: "home",
+    image: "https://upload.wikimedia.org/wikipedia/commons/3/34/Home-icon.svg",
     name: "Home",
+    description: "Your personally-curated nook",
     slug: "home",
     type: NookType.Default,
     shelves: [
       {
-        name: "main",
-        slug: "main",
-        description: "Main feed",
+        name: "Following",
+        slug: "following",
+        description: "Posts from people you follow",
         panels: [
           {
-            name: "Posts",
-            slug: "posts",
+            name: "New",
+            slug: "new",
             data: {
               type: NookPanelType.UserPosts,
               args: {
                 userFilter: {
-                  type: UserFilterType.Entities,
+                  type: UserFilterType.Following,
                   args: {
-                    entityIds: [entityId],
+                    entityId,
                   },
                 },
                 contentTypes: [ContentType.POST],

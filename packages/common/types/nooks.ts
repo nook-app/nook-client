@@ -109,14 +109,22 @@ export enum NookPanelType {
 
 export enum UserFilterType {
   Entities = "ENTITIES",
+  Following = "FOLLOWING",
 }
 
-export type UserFilter = {
-  type: UserFilterType.Entities;
-  args: {
-    entityIds: string[];
-  };
-};
+export type UserFilter =
+  | {
+      type: UserFilterType.Entities;
+      args: {
+        entityIds: string[];
+      };
+    }
+  | {
+      type: UserFilterType.Following;
+      args: {
+        entityId: string;
+      };
+    };
 
 export enum ChannelFilterType {
   Channels = "CHANNELS",

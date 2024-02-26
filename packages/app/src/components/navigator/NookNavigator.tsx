@@ -5,7 +5,7 @@ import { useDrawerStatus } from "@react-navigation/drawer";
 import { memo, useEffect } from "react";
 import { useAppDispatch } from "@/hooks/useAppDispatch";
 import { setDrawerOpen } from "@/store/slices/navigator";
-import { Avatar, View, useTheme } from "tamagui";
+import { View, useTheme } from "tamagui";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import ContentScreen from "@/screens/ContentScreen";
 import { RootStackParamList } from "@/types";
@@ -18,6 +18,7 @@ import { EntityFollowersScreen } from "@/screens/EntityFollowersScreen";
 import { ContentLikesScreen } from "@/screens/ContentLikesScreen";
 import { ContentRepostsScreen } from "@/screens/ContentRepostsScreen";
 import { ContentQuotesScreen } from "@/screens/ContentQuotesScreen";
+import { Image } from "expo-image";
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -25,10 +26,25 @@ const ActiveNookIcon = memo(() => {
   const { activeNook } = useNooks();
 
   return (
-    <Avatar circular size="$1.5">
-      <Avatar.Image src={activeNook?.image} />
-      <Avatar.Fallback backgroundColor="$backgroundPress" />
-    </Avatar>
+    <View
+      borderRadius="$10"
+      justifyContent="center"
+      alignItems="center"
+      backgroundColor="$backgroundPress"
+      style={{
+        width: 24,
+        height: 24,
+      }}
+    >
+      <Image
+        source={activeNook.image}
+        tintColor="white"
+        style={{
+          width: 16,
+          height: 16,
+        }}
+      />
+    </View>
   );
 });
 

@@ -1,10 +1,11 @@
-import { Separator, View, YStack } from "tamagui";
+import { View, YStack } from "tamagui";
 import { Image } from "expo-image";
-import { useAppSelector } from "@/hooks/useAppSelector";
 import { Nook } from "@nook/common/types";
 import { useNooks } from "@/hooks/useNooks";
 import { useCallback } from "react";
 import { TouchableOpacity } from "react-native-gesture-handler";
+import { useAppSelector } from "@/hooks/useAppSelector";
+import { selectNookById } from "@/store/slices/nook";
 
 const NookButton = ({
   nook,
@@ -35,12 +36,21 @@ const NookButton = ({
           height: 48,
         }}
       >
-        <View borderRadius="$10" overflow="hidden">
+        <View
+          borderRadius="$10"
+          justifyContent="center"
+          alignItems="center"
+          style={{
+            width: 40,
+            height: 40,
+          }}
+        >
           <Image
             source={nook.image}
+            tintColor="white"
             style={{
-              width: 32,
-              height: 32,
+              width: 24,
+              height: 24,
             }}
           />
         </View>
@@ -50,19 +60,8 @@ const NookButton = ({
 };
 
 export const NooksSelector = () => {
+  const homeNook = useAppSelector((state) => selectNookById(state, "home"));
   const { nooks, activeNook, navigateToNook } = useNooks();
-  const entity = useAppSelector((state) => state.user.entity);
-
-  const userNook = nooks.find(
-    ({ nookId }) => nookId === `entity:${entity?._id.toString()}`,
-  );
-  const otherNooks = nooks.filter(
-    ({ nookId }) => nookId !== `entity:${entity?._id.toString()}`,
-  );
-
-  const viewingUnfollowedNook = !nooks.some(
-    ({ nookId }) => nookId === activeNook?.nookId,
-  );
 
   const onPress = useCallback(
     (nook: Nook) => {
@@ -73,20 +72,14 @@ export const NooksSelector = () => {
 
   return (
     <YStack alignItems="center">
-      {userNook && (
+      {homeNook && (
         <NookButton
-          nook={userNook}
+          nook={homeNook}
           onPress={onPress}
-          isActive={activeNook?.nookId === userNook.nookId}
+          isActive={activeNook?.nookId === homeNook.nookId}
         />
       )}
-      <Separator
-        borderWidth="$0.5"
-        alignSelf="stretch"
-        marginHorizontal="$2"
-        marginVertical="$2"
-      />
-      {otherNooks.map((nook) => (
+      {nooks.map((nook) => (
         <NookButton
           nook={nook}
           key={nook.nookId}
@@ -94,15 +87,6 @@ export const NooksSelector = () => {
           isActive={activeNook?.nookId === nook.nookId}
         />
       ))}
-      {viewingUnfollowedNook && activeNook && (
-        <NookButton
-          nook={activeNook}
-          key={activeNook?.nookId}
-          onPress={onPress}
-          isActive
-          isUnfollowed
-        />
-      )}
     </YStack>
   );
 };
