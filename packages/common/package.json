@@ -27,7 +27,7 @@
   "dependencies": {
     "@prisma/client": "5.7.1",
     "bullmq": "^5.1.0",
-    "metascraper": "^5.43.4",
+    "metascraper": "^5.45.0",
     "metascraper-audio": "^5.45.0",
     "metascraper-author": "^5.45.0",
     "metascraper-date": "^5.45.0",
