@@ -3,23 +3,16 @@ import {
   Content,
   ContentData,
   Entity,
-  EventAction,
   Nook,
 } from "@nook/common/types";
 import { User } from "@nook/common/prisma/nook";
-import { EntityActionType } from "../src/utils/action";
 
 export type EntityWithContext = {
   entity: Entity;
-  context: Record<EntityActionType, boolean>;
 };
 
 export type ContentWithContext<T = ContentData> = {
   content: Content<T>;
-  context: {
-    reposted: boolean;
-    liked: boolean;
-  };
 };
 
 export type BaseResponse = {
@@ -35,15 +28,6 @@ export type GetContentFeedResponse = BaseResponse & {
 
 export type GetContentResponse = BaseResponse & {
   data: Content;
-};
-
-export type GetActionFeedResponse = BaseResponse & {
-  data: EventAction[];
-  nextCursor?: string;
-};
-
-export type GetActionResponse = BaseResponse & {
-  data: EventAction;
 };
 
 export type GetEntityFeedResponse = BaseResponse & {

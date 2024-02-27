@@ -14,14 +14,6 @@ export const nookRoutes = async (fastify: FastifyInstance) => {
       },
     );
 
-    fastify.post<{ Body: NookPanelData & { cursor?: string } }>(
-      "/actions/feed",
-      async (request, reply) => {
-        const { id } = (await request.jwtDecode()) as { id: string };
-        return reply.send(await nookService.getActionFeed(id, request.body));
-      },
-    );
-
     fastify.post<{ Body: { contentId: string } }>(
       "/content",
       async (request, reply) => {

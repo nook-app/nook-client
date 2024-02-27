@@ -1,7 +1,6 @@
 import { ObjectId } from "mongodb";
 import { MongoClient, MongoCollection } from "../mongo";
 import { BlockchainAccount, Entity, FarcasterAccount } from "../types/entity";
-import { UsernameType } from "../types";
 
 export const getOrCreateEntitiesForFids = async (
   client: MongoClient,
@@ -32,20 +31,9 @@ export const getOrCreateEntitiesForFids = async (
     if (data) {
       const newEntities = await Promise.all(
         missingFids.map(async (fid, i) => {
-          const usernames = [];
-          const username = data.users[i].farcaster.username;
-          if (username) {
-            usernames.push({
-              type: username.endsWith(".eth")
-                ? UsernameType.ENS
-                : UsernameType.FNAME,
-              username,
-            });
-          }
           const entity = {
             ...data.users[i],
             _id: new ObjectId(),
-            usernames,
             createdAt: new Date(),
             updatedAt: new Date(),
           };

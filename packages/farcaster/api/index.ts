@@ -9,7 +9,6 @@ import {
   BlockchainAccount,
   EventType,
   FarcasterAccount,
-  Protocol,
 } from "@nook/common/types";
 import {
   fromFarcasterURI,
@@ -226,7 +225,6 @@ const run = async () => {
         }
 
         const blockchain: BlockchainAccount[] = verifications.map((v) => ({
-          protocol: v.protocol === 0 ? Protocol.ETHEREUM : Protocol.SOLANA,
           address: v.address,
           isContract: v.verificationType === 1,
         }));

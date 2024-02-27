@@ -2,20 +2,11 @@ import { FastifyInstance } from "fastify";
 import { MongoClient, MongoCollection } from "@nook/common/mongo";
 import { RedisClient } from "@nook/common/cache";
 import {
-  CONTENT_ACTIONS,
-  ContentActionType,
-  ENTITY_ACTIONS,
-  EntityActionType,
-} from "../utils/action";
-import {
   Channel,
   ChannelFilterType,
   Content,
   ContentType,
   Entity,
-  EntityActionData,
-  EventAction,
-  EventActionType,
   NookPanelData,
   NookPanelType,
   PostData,
@@ -27,7 +18,6 @@ import { getOrCreateContent } from "@nook/common/scraper";
 import {
   ContentWithContext,
   EntityWithContext,
-  GetActionFeedResponse,
   GetContentFeedResponse,
   GetContentResponse,
 } from "../../types";
@@ -118,29 +108,6 @@ export class NookService {
               },
             });
           }
-        } else if (args.userFilter.type === UserFilterType.Following) {
-          const following = await this.client
-            .getCollection<EventAction<EntityActionData>>(
-              MongoCollection.Actions,
-            )
-            .find({
-              type: EventActionType.FOLLOW,
-              topics: {
-                type: TopicType.SOURCE_ENTITY,
-                value: args.userFilter.args.entityId,
-              },
-            })
-            .toArray();
-
-          filter.$or = [];
-          for (const event of following) {
-            filter.$or.push({
-              topics: {
-                type: TopicType.SOURCE_ENTITY,
-                value: event.data.targetEntityId,
-              },
-            });
-          }
         }
         return {
           filter,
@@ -171,84 +138,6 @@ export class NookService {
             "data.parentId": args.targetContentId,
           },
           sort: args.sort === "top" ? "enagement.likes" : "timestamp",
-        };
-      }
-      case NookPanelType.PostQuotes: {
-        return {
-          filter: {
-            type: EventActionType.POST,
-            topics: {
-              type: TopicType.SOURCE_EMBED,
-              value: args.targetContentId,
-            },
-          },
-          sort: args.sort === "top" ? "enagement.likes" : "timestamp",
-        };
-      }
-    }
-    throw new Error("Invalid NookPanelType");
-  }
-
-  async getActionFilterAndSort({ type, args }: NookPanelData) {
-    switch (type) {
-      case NookPanelType.UserFollowers: {
-        const filter = { type: EventActionType.FOLLOW } as Filter<EventAction>;
-        if (args.userFilter.type === UserFilterType.Entities) {
-          filter.$or = [];
-          for (const entityId of args.userFilter.args.entityIds) {
-            filter.$or.push({
-              topics: {
-                type: TopicType.TARGET_ENTITY,
-                value: entityId,
-              },
-            });
-          }
-        }
-        return {
-          filter,
-          sort: "timestamp",
-        };
-      }
-      case NookPanelType.UserFollowing: {
-        const filter = { type: EventActionType.FOLLOW } as Filter<EventAction>;
-        if (args.userFilter.type === UserFilterType.Entities) {
-          filter.$or = [];
-          for (const entityId of args.userFilter.args.entityIds) {
-            filter.$or.push({
-              topics: {
-                type: TopicType.SOURCE_ENTITY,
-                value: entityId,
-              },
-            });
-          }
-        }
-        return {
-          filter,
-          sort: "timestamp",
-        };
-      }
-      case NookPanelType.PostLikes: {
-        return {
-          filter: {
-            type: EventActionType.LIKE,
-            topics: {
-              type: TopicType.TARGET_CONTENT,
-              value: args.targetContentId,
-            },
-          },
-          sort: "timestamp",
-        };
-      }
-      case NookPanelType.PostReposts: {
-        return {
-          filter: {
-            type: EventActionType.REPOST,
-            topics: {
-              type: TopicType.TARGET_CONTENT,
-              value: args.targetContentId,
-            },
-          },
-          sort: "timestamp",
         };
       }
     }
@@ -323,46 +212,6 @@ export class NookService {
     };
   }
 
-  async getActionFeed(
-    viewerId: string,
-    data: NookPanelData,
-  ): Promise<GetActionFeedResponse> {
-    const { filter, sort } = await this.getActionFilterAndSort(data);
-    const feed = await this.getFeedRaw<EventAction>(
-      MongoCollection.Actions,
-      filter,
-      sort,
-      data.cursor,
-    );
-
-    const contents = await this.fetchContents(
-      viewerId,
-      feed.flatMap((action) => action.referencedContentIds),
-    );
-
-    const entityIds = contents
-      .flatMap((content) => content.content.referencedEntityIds)
-      .concat(feed.flatMap((action) => action.referencedEntityIds));
-    const entities = await this.fetchEntities(viewerId, entityIds);
-
-    let nextCursor;
-    if (feed.length === PAGE_SIZE) {
-      const timestamp = feed[feed.length - 1].timestamp;
-      const value = getNestedValue(feed[feed.length - 1], sort);
-      nextCursor = Buffer.from(JSON.stringify({ timestamp, value })).toString(
-        "base64",
-      );
-    }
-
-    return {
-      data: feed,
-      nextCursor,
-      referencedEntities: entities,
-      referencedContents: contents,
-      referencedChannels: [],
-    };
-  }
-
   async getFeedRaw<T extends Document>(
     colName: MongoCollection,
     filter: object,
@@ -417,20 +266,10 @@ export class NookService {
     viewerId: string,
     entityIds: string[],
   ): Promise<EntityWithContext[]> {
-    const [entities, following] = await Promise.all([
-      this.fetchEntitiesData(entityIds),
-      ENTITY_ACTIONS[EntityActionType.FOLLOWING].validateActions({
-        client: this.client,
-        viewerId,
-        entityIds,
-      }),
-    ]);
+    const [entities] = await Promise.all([this.fetchEntitiesData(entityIds)]);
 
     return entities.map((entity) => ({
       entity,
-      context: {
-        [EntityActionType.FOLLOWING]: following[entity._id.toString()] ?? false,
-      },
     }));
   }
 
@@ -459,26 +298,10 @@ export class NookService {
     viewerId: string,
     contentIds: string[],
   ): Promise<ContentWithContext[]> {
-    const [contents, liked, reposted] = await Promise.all([
-      this.fetchContentsData(contentIds),
-      CONTENT_ACTIONS[ContentActionType.LIKED].validateActions({
-        client: this.client,
-        viewerId,
-        contentIds,
-      }),
-      CONTENT_ACTIONS[ContentActionType.REPOSTED].validateActions({
-        client: this.client,
-        viewerId,
-        contentIds,
-      }),
-    ]);
+    const [contents] = await Promise.all([this.fetchContentsData(contentIds)]);
 
     return contents.map((content) => ({
       content,
-      context: {
-        [ContentActionType.LIKED]: liked[content.contentId] ?? false,
-        [ContentActionType.REPOSTED]: reposted[content.contentId] ?? false,
-      },
     }));
   }
 

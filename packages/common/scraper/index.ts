@@ -1,7 +1,7 @@
 import { MongoClient } from "../mongo";
 import { getUrlContent } from "./url";
 import { getChainContent } from "./chain";
-import { Content, ContentData } from "../types";
+import { Content } from "../types";
 export { getOrCreateChannel } from "./channel";
 
 export const getOrCreateContent = async (

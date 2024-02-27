@@ -5,22 +5,12 @@ import {
   ObjectId,
   Document,
 } from "mongodb";
-import {
-  Content,
-  EventAction,
-  EntityEvent,
-  EventActionType,
-  Entity,
-  Channel,
-  Nook,
-} from "../types";
-import { publishAction } from "../queues";
+import { Content, EntityEvent, Entity, Channel, Nook } from "../types";
 
 const DB_NAME = "nook";
 
 export enum MongoCollection {
   Events = "events",
-  Actions = "actions",
   Content = "content",
   Entity = "entity",
   Nooks = "nooks",
@@ -105,13 +95,6 @@ export class MongoClient {
     const collection = this.getCollection<Content>(MongoCollection.Content);
     return await collection.findOne({
       contentId,
-    });
-  };
-
-  findAction = async (actionId: string) => {
-    const collection = this.getCollection<EventAction>(MongoCollection.Actions);
-    return await collection.findOne({
-      _id: new ObjectId(actionId),
     });
   };
 
@@ -208,42 +191,6 @@ export class MongoClient {
     }
   };
 
-  upsertAction = async (action: EventAction) => {
-    const collection = this.getCollection<EventAction>(MongoCollection.Actions);
-    const _id = this.generateObjectIdFromDate(action.timestamp);
-    try {
-      await collection.insertOne({ ...action, _id });
-      await publishAction(_id.toHexString(), true);
-      return _id;
-    } catch (error) {
-      if (
-        error instanceof Error &&
-        error.name === "MongoServerError" &&
-        "code" in error &&
-        error.code === 11000
-      ) {
-        const existingAction = await collection.findOneAndUpdate(
-          {
-            eventId: action.eventId,
-            type: action.type,
-          },
-          {
-            $set: {
-              ...action,
-              updatedAt: new Date(),
-            },
-          },
-        );
-        if (!existingAction) {
-          throw new Error("Failed to find existing action");
-        }
-        await publishAction(existingAction._id.toString(), false);
-        return existingAction._id;
-      }
-      throw error;
-    }
-  };
-
   upsertChannel = async (channel: Channel) => {
     const collection = this.getCollection<Channel>(MongoCollection.Channels);
     const existingChannel = await collection.findOne({
@@ -267,13 +214,6 @@ export class MongoClient {
     return await collection.insertOne({
       ...channel,
       _id: this.generateObjectIdFromDate(channel.createdAt),
-    });
-  };
-
-  deleteAction = async (id: string, type: EventActionType) => {
-    this.getCollection(MongoCollection.Actions).deleteOne({
-      "source.id": id,
-      type: type,
     });
   };
 

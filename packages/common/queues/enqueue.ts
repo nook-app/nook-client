@@ -49,17 +49,3 @@ export const publishContent = async (contentId: string) => {
     },
   );
 };
-
-export const publishAction = async (actionId: string, created: boolean) => {
-  const queue = getQueue(QueueName.Actions);
-  await queue.add(
-    actionId,
-    { actionId, created },
-    {
-      jobId: actionId,
-      removeOnComplete: {
-        count: 10000,
-      },
-    },
-  );
-};
