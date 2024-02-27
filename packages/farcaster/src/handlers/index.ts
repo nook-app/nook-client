@@ -10,7 +10,11 @@ import { handleLinkAdd, handleLinkRemove } from "./links";
 import { handleUserDataAdd } from "./users";
 import { Job } from "bullmq";
 import { handleUsernameProofAdd } from "./usernames";
-import { EntityEventData, EventType, RawEvent } from "@nook/common/types";
+import {
+  EntityEventData,
+  FarcasterEventType,
+  EntityEvent,
+} from "@nook/common/types";
 import {
   transformToCastEvent,
   transformToCastReactionEvent,
@@ -20,7 +24,7 @@ import {
   transformToUsernameProofEvent,
   transformToVerificationEvent,
 } from "@nook/common/farcaster";
-import { publishRawEvents } from "@nook/common/queues";
+import { publishEvents } from "@nook/common/queues";
 import { PrismaClient } from "@nook/common/prisma/farcaster";
 
 export const getFarcasterHandler = () => {
@@ -36,20 +40,24 @@ export const getFarcasterHandler = () => {
   return async (job: Job<Message>) => {
     const message = job.data;
 
-    const events: RawEvent<EntityEventData>[] = [];
+    const events: EntityEvent<EntityEventData>[] = [];
 
     switch (message.data?.type) {
       case MessageType.CAST_ADD: {
         const record = await handleCastAdd(prisma, message, client);
         if (record) {
-          events.push(transformToCastEvent(EventType.CAST_ADD, record));
+          events.push(
+            transformToCastEvent(FarcasterEventType.CAST_ADD, record),
+          );
         }
         break;
       }
       case MessageType.CAST_REMOVE: {
         const record = await handleCastRemove(prisma, message);
         if (record) {
-          events.push(transformToCastEvent(EventType.CAST_REMOVE, record));
+          events.push(
+            transformToCastEvent(FarcasterEventType.CAST_REMOVE, record),
+          );
         }
         break;
       }
@@ -57,7 +65,10 @@ export const getFarcasterHandler = () => {
         const record = await handleVerificationAdd(prisma, message);
         if (record) {
           events.push(
-            transformToVerificationEvent(EventType.VERIFICATION_ADD, record),
+            transformToVerificationEvent(
+              FarcasterEventType.VERIFICATION_ADD,
+              record,
+            ),
           );
         }
         break;
@@ -66,7 +77,10 @@ export const getFarcasterHandler = () => {
         const record = await handleVerificationRemove(prisma, message);
         if (record) {
           events.push(
-            transformToVerificationEvent(EventType.VERIFICATION_REMOVE, record),
+            transformToVerificationEvent(
+              FarcasterEventType.VERIFICATION_REMOVE,
+              record,
+            ),
           );
         }
         break;
@@ -76,11 +90,17 @@ export const getFarcasterHandler = () => {
         if (record) {
           if ("targetUrl" in record) {
             events.push(
-              transformToUrlReactionEvent(EventType.URL_REACTION_ADD, record),
+              transformToUrlReactionEvent(
+                FarcasterEventType.URL_REACTION_ADD,
+                record,
+              ),
             );
           } else if ("targetHash" in record) {
             events.push(
-              transformToCastReactionEvent(EventType.CAST_REACTION_ADD, record),
+              transformToCastReactionEvent(
+                FarcasterEventType.CAST_REACTION_ADD,
+                record,
+              ),
             );
           }
         }
@@ -92,14 +112,14 @@ export const getFarcasterHandler = () => {
           if ("targetUrl" in record) {
             events.push(
               transformToUrlReactionEvent(
-                EventType.URL_REACTION_REMOVE,
+                FarcasterEventType.URL_REACTION_REMOVE,
                 record,
               ),
             );
           } else if ("targetHash" in record) {
             events.push(
               transformToCastReactionEvent(
-                EventType.CAST_REACTION_REMOVE,
+                FarcasterEventType.CAST_REACTION_REMOVE,
                 record,
               ),
             );
@@ -110,14 +130,18 @@ export const getFarcasterHandler = () => {
       case MessageType.LINK_ADD: {
         const record = await handleLinkAdd(prisma, message);
         if (record) {
-          events.push(transformToLinkEvent(EventType.LINK_ADD, record));
+          events.push(
+            transformToLinkEvent(FarcasterEventType.LINK_ADD, record),
+          );
         }
         break;
       }
       case MessageType.LINK_REMOVE: {
         const record = await handleLinkRemove(prisma, message);
         if (record) {
-          events.push(transformToLinkEvent(EventType.LINK_REMOVE, record));
+          events.push(
+            transformToLinkEvent(FarcasterEventType.LINK_REMOVE, record),
+          );
         }
         break;
       }
@@ -139,6 +163,6 @@ export const getFarcasterHandler = () => {
         break;
     }
 
-    await publishRawEvents(events);
+    await publishEvents(events);
   };
 };

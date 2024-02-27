@@ -1,6 +1,6 @@
 import fp from "fastify-plugin";
 import { MongoClient } from "@nook/common/mongo";
-import { RedisClient } from "@nook/common/cache";
+import { RedisClient } from "@nook/common/redis";
 import { PrismaClient } from "@nook/common/prisma/nook";
 import { HubRpcClient, getSSLHubRpcClient } from "@farcaster/hub-nodejs";
 

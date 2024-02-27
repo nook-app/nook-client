@@ -31,18 +31,6 @@ export const nookRoutes = async (fastify: FastifyInstance) => {
       },
     );
 
-    fastify.post<{ Body: { entityIds: string[] } }>(
-      "/entities",
-      async (request, reply) => {
-        const { id } = (await request.jwtDecode()) as { id: string };
-        const entities = await nookService.fetchEntities(
-          id,
-          request.body.entityIds,
-        );
-        return reply.send({ data: entities });
-      },
-    );
-
     fastify.post<{ Body: { nookId: string } }>(
       "/nooks",
       async (request, reply) => {

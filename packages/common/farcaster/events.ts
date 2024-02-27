@@ -14,7 +14,7 @@ import {
 import { toJobId } from "@nook/common/queues";
 import {
   EventService,
-  EventType,
+  FarcasterEventType,
   FarcasterCastData,
   FarcasterCastReactionData,
   FarcasterLinkData,
@@ -22,18 +22,17 @@ import {
   FarcasterUserDataAddData,
   FarcasterUsernameProofData,
   FarcasterVerificationData,
-  RawEvent,
+  EntityEvent,
 } from "@nook/common/types";
 
 export const transformToCastEvent = (
-  type: EventType,
+  type: FarcasterEventType,
   cast: FarcasterCast,
-): RawEvent<FarcasterCastData> => {
+): EntityEvent<FarcasterCastData> => {
   const source = {
     service: EventService.FARCASTER,
     type,
     id: cast.hash,
-    entityId: cast.fid.toString(),
   };
 
   const mentions = [];
@@ -69,9 +68,10 @@ export const transformToCastEvent = (
   return {
     eventId: toJobId(source),
     source,
-    timestamp: cast.timestamp.toString(),
+    userId: cast.fid.toString(),
+    timestamp: cast.timestamp.getTime(),
     data: {
-      timestamp: cast.timestamp,
+      timestamp: cast.timestamp.getTime(),
       fid: cast.fid.toString(),
       hash: cast.hash,
       text: cast.text,
@@ -95,19 +95,19 @@ export const transformToCastEvent = (
 };
 
 export const transformToVerificationEvent = (
-  type: EventType,
+  type: FarcasterEventType,
   data: FarcasterVerification,
-): RawEvent<FarcasterVerificationData> => {
+): EntityEvent<FarcasterVerificationData> => {
   const source = {
     service: EventService.FARCASTER,
     type,
     id: data.hash,
-    entityId: data.fid.toString(),
   };
   return {
     eventId: toJobId(source),
     source,
-    timestamp: data.timestamp.toString(),
+    userId: data.fid.toString(),
+    timestamp: data.timestamp.getTime(),
     data: {
       fid: data.fid.toString(),
       address: data.address,
@@ -129,17 +129,17 @@ export const transformToVerificationEvent = (
 
 export const transformToUserDataEvent = (
   data: FarcasterUserData,
-): RawEvent<FarcasterUserDataAddData> => {
+): EntityEvent<FarcasterUserDataAddData> => {
   const source = {
     service: EventService.FARCASTER,
-    type: EventType.USER_DATA_ADD,
+    type: FarcasterEventType.USER_DATA_ADD,
     id: data.hash,
-    entityId: data.fid.toString(),
   };
   return {
     eventId: toJobId(source),
     source,
-    timestamp: data.timestamp.toString(),
+    userId: data.fid.toString(),
+    timestamp: data.timestamp.getTime(),
     data: {
       fid: data.fid.toString(),
       type: data.type,
@@ -157,17 +157,17 @@ export const transformToUserDataEvent = (
 
 export const transformToUsernameProofEvent = (
   data: FarcasterUsernameProof,
-): RawEvent<FarcasterUsernameProofData> => {
+): EntityEvent<FarcasterUsernameProofData> => {
   const source = {
     service: EventService.FARCASTER,
-    type: EventType.USERNAME_PROOF,
+    type: FarcasterEventType.USERNAME_PROOF,
     id: data.signature,
-    entityId: data.fid.toString(),
   };
   return {
     eventId: toJobId(source),
     source,
-    timestamp: data.timestamp.toString(),
+    userId: data.fid.toString(),
+    timestamp: data.timestamp.getTime(),
     data: {
       fid: data.fid.toString(),
       username: data.username,
@@ -179,22 +179,22 @@ export const transformToUsernameProofEvent = (
 };
 
 export const transformToCastReactionEvent = (
-  type: EventType,
+  type: FarcasterEventType,
   reaction: FarcasterCastReaction,
-): RawEvent<FarcasterCastReactionData> => {
+): EntityEvent<FarcasterCastReactionData> => {
   const source = {
     service: EventService.FARCASTER,
     type,
     id: reaction.hash,
-    entityId: reaction.fid.toString(),
   };
 
   return {
     eventId: toJobId(source),
     source,
-    timestamp: reaction.timestamp.toString(),
+    userId: reaction.fid.toString(),
+    timestamp: reaction.timestamp.getTime(),
     data: {
-      timestamp: reaction.timestamp,
+      timestamp: reaction.timestamp.getTime(),
       fid: reaction.fid.toString(),
       reactionType: reaction.reactionType,
       targetFid: reaction.targetFid.toString(),
@@ -211,22 +211,22 @@ export const transformToCastReactionEvent = (
 };
 
 export const transformToUrlReactionEvent = (
-  type: EventType,
+  type: FarcasterEventType,
   reaction: FarcasterUrlReaction,
-): RawEvent<FarcasterUrlReactionData> => {
+): EntityEvent<FarcasterUrlReactionData> => {
   const source = {
     service: EventService.FARCASTER,
     type,
     id: reaction.hash,
-    entityId: reaction.fid.toString(),
   };
 
   return {
     eventId: toJobId(source),
     source,
-    timestamp: reaction.timestamp.toString(),
+    userId: reaction.fid.toString(),
+    timestamp: reaction.timestamp.getTime(),
     data: {
-      timestamp: reaction.timestamp,
+      timestamp: reaction.timestamp.getTime(),
       fid: reaction.fid.toString(),
       reactionType: reaction.reactionType,
       url: reaction.targetUrl,
@@ -242,24 +242,24 @@ export const transformToUrlReactionEvent = (
 };
 
 export const transformToLinkEvent = (
-  type: EventType,
+  type: FarcasterEventType,
   link: FarcasterLink,
-): RawEvent<FarcasterLinkData> => {
+): EntityEvent<FarcasterLinkData> => {
   const source = {
     service: EventService.FARCASTER,
     type,
     id: link.hash,
-    entityId: link.fid.toString(),
   };
   return {
     eventId: toJobId(source),
     source,
-    timestamp: link.timestamp.toString(),
+    userId: link.fid.toString(),
+    timestamp: link.timestamp.getTime(),
     data: {
       fid: link.fid.toString(),
       linkType: link.linkType,
       targetFid: link.targetFid.toString(),
-      timestamp: link.timestamp,
+      timestamp: link.timestamp.getTime(),
       signature: {
         hash: link.hash,
         hashScheme: link.hashScheme,

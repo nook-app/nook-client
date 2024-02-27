@@ -24,7 +24,7 @@ export enum EventService {
   FARCASTER = "FARCASTER",
 }
 
-export enum EventType {
+export enum FarcasterEventType {
   CAST_ADD = "CAST_ADD",
   CAST_REMOVE = "CAST_REMOVE",
   CAST_REACTION_ADD = "CAST_REACTION_ADD",
@@ -39,35 +39,19 @@ export enum EventType {
   USERNAME_PROOF = "USERNAME_PROOF",
 }
 
+export type EventTypeMap = {
+  [EventService.FARCASTER]: FarcasterEventType;
+};
+
 export type EventSource = {
   /** Service the event was made on */
   service: EventService;
 
   /** Type of event */
-  type: EventType;
+  type: EventTypeMap[EventService];
 
   /** ID in the source system */
   id: string;
-
-  /** ID of entity in the source system */
-  entityId: string;
-};
-
-/**
- * Raw event payload sent from any source service
- */
-export type RawEvent<T> = {
-  /** Event ID */
-  eventId: string;
-
-  /** Source data */
-  source: EventSource;
-
-  /** Timestamp for when the event occurred */
-  timestamp: string;
-
-  /** Raw data sent from the source */
-  data: T;
 };
 
 /**
@@ -77,21 +61,15 @@ export type EntityEvent<T> = {
   /** Event ID */
   eventId: string;
 
+  /** ID of user triggering event in the source system */
+  userId: string;
+
   /** Source data */
   source: EventSource;
 
   /** Timestamp for when the event occurred */
-  timestamp: Date;
+  timestamp: number;
 
   /** Raw data sent from the source */
   data: T;
-
-  /** Entity who triggered the event */
-  entityId: string;
-
-  /** Timestamp for when the event was created */
-  createdAt: Date;
-
-  /** Timestamp for when the event was updated */
-  updatedAt: Date;
 };

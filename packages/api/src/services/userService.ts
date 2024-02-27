@@ -10,10 +10,9 @@ import {
   TokenResponse,
   GetUserResponse,
 } from "../../types";
-import { Entity, Nook } from "@nook/common/types";
+import { Nook } from "@nook/common/types";
 import { PrismaClient } from "@nook/common/prisma/nook";
 import { ObjectId } from "mongodb";
-import { getOrCreateEntitiesForFids } from "@nook/common/entity";
 
 export class UserService {
   private client: MongoClient;
@@ -42,19 +41,13 @@ export class UserService {
       throw new Error(verifyResult.error?.message || "Sign in failed");
     }
 
-    const collection = this.client.getCollection<Entity>(
-      MongoCollection.Entity,
-    );
-
     const fid = "3887";
     // const fid = verifyResult.fid.toString();
-    let entity = await collection.findOne({
-      "farcaster.fid": fid,
-    });
+    const entity = { _id: 1 };
 
-    if (!entity) {
-      entity = (await getOrCreateEntitiesForFids(this.client, [fid]))[fid];
-    }
+    // if (!entity) {
+    //   entity = (await getOrCreateEntitiesForFids(this.client, [fid]))[fid];
+    // }
 
     if (!entity) {
       return;
@@ -142,11 +135,6 @@ export class UserService {
       return;
     }
 
-    const entity = await this.client.findEntity(user.id);
-    if (!entity) {
-      return;
-    }
-
     const nooks = await this.client
       .getCollection<Nook>(MongoCollection.Nooks)
       .find({
@@ -158,7 +146,11 @@ export class UserService {
 
     return {
       user,
-      entity,
+      entity: {
+        id: user.id,
+        createdAt: user.signedUpAt,
+        updatedAt: user.signedUpAt,
+      },
       nooks,
     };
   }

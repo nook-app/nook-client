@@ -1,27 +1,8 @@
-import fastify, { FastifyRequest } from "fastify";
+import fastify from "fastify";
 import { PrismaClient } from "@nook/common/prisma/farcaster";
-import {
-  UserDataType,
-  getSSLHubRpcClient,
-  Message,
-} from "@farcaster/hub-nodejs";
-import {
-  BlockchainAccount,
-  EventType,
-  FarcasterAccount,
-} from "@nook/common/types";
-import {
-  fromFarcasterURI,
-  toFarcasterURI,
-  transformToCastEvent,
-} from "@nook/common/farcaster";
-import { hexToBuffer } from "@nook/common/farcaster";
-import { publishRawEvent, publishRawEvents } from "@nook/common/queues";
-import {
-  backfillCastAdd,
-  backfillUserDataAdd,
-  backfillVerificationAdd,
-} from "../backfill";
+import { UserDataType, getSSLHubRpcClient } from "@farcaster/hub-nodejs";
+import { FarcasterEventType, FarcasterUser } from "@nook/common/types";
+import { transformToCastEvent } from "@nook/common/farcaster";
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore: Unreachable code error
@@ -62,183 +43,43 @@ const run = async () => {
       });
 
       if (existingCast) {
-        reply.send(transformToCastEvent(EventType.CAST_ADD, existingCast).data);
+        reply.send(transformToCastEvent(FarcasterEventType.CAST_ADD, existingCast).data);
         return;
       }
 
-      const message = await client.getCast({
-        fid: parseInt(fid),
-        hash: hexToBuffer(hash),
-      });
-
-      if (message.isErr()) {
-        reply.status(404).send({ message: "Cast not found" });
-        return;
-      }
-
-      const casts = await backfillCastAdd(prisma,[message.value], client);
-      const cast = transformToCastEvent(EventType.CAST_ADD, casts[0]);
-      await publishRawEvent(cast);
-
-      reply.send(cast.data);
     },
   );
 
-  server.post<{Body: {ids: string[]}}>(
-    "/casts",
-    async (
-      request,
-      reply,
-    ) => {
-      const { ids } = request.body;
-      const fidHashes = ids.map(fromFarcasterURI)
-      const existingCasts = await prisma.farcasterCast.findMany({
+  server.get<{ Params: { fid: string } }>(
+    "/user/:fid",
+    async (request, reply) => {
+      const userData = await prisma.farcasterUserData.findMany({
         where: {
-          OR: fidHashes.map(({ fid, hash }) => ({
-            fid: Number(fid),
-            hash,
-          })),
+          fid: Number(request.params.fid),
         },
       });
 
-      const existingCastIds = existingCasts.map(({fid, hash}) =>toFarcasterURI({fid: fid.toString(), hash}))
-      const missingCastIds = ids.filter((id) => !existingCastIds.includes(id));
+      if (!userData) {
+        reply.status(404).send();
+        return;
+      }
 
-      const missingCastMessages = (await Promise.all(
-        missingCastIds.map(async (cast) => {
-          const { fid, hash } = fromFarcasterURI(cast);
-         const result =  await client.getCast({
-            fid: parseInt(fid),
-            hash: hexToBuffer(hash),
-          })
-          if (result.isOk()) {
-            return result.value
-          }
-        })
-        )).filter(Boolean) as Message[]
+      const username = userData.find((d) => d.type === UserDataType.USERNAME);
+      const pfp = userData.find((d) => d.type === UserDataType.PFP);
+      const displayName = userData.find((d) => d.type === UserDataType.DISPLAY);
+      const bio = userData.find((d) => d.type === UserDataType.BIO);
+      const url = userData.find((d) => d.type === UserDataType.URL);
 
-      const casts = await backfillCastAdd(prisma, missingCastMessages, client);
-
-      reply.send({
-        casts: existingCasts.concat(casts).map((cast) => transformToCastEvent(EventType.CAST_ADD, cast).data),
-      });
-    },
-  );
-
-  server.post(
-    "/users",
-    {
-      schema: {
-        body: {
-          type: "object",
-          properties: {
-            fids: {
-              type: "array",
-              items: {
-                type: "string",
-              },
-            },
-          },
-        },
-      },
-    },
-    async (
-      request: FastifyRequest<{
-        Body: { fids: string[] };
-      }>,
-      reply,
-    ) => {
-      const getUserData = async (fid: string) => {
-        let userData = await prisma.farcasterUserData.findMany({
-          where: {
-            fid: Number(fid),
-          },
-        });
-
-        let username = userData.find(
-          (d) => d.type === UserDataType.USERNAME,
-        )?.value;
-        let pfp = userData.find((d) => d.type === UserDataType.PFP)?.value;
-        let displayName = userData.find(
-          (d) => d.type === UserDataType.DISPLAY,
-        )?.value;
-        let bio = userData.find((d) => d.type === UserDataType.BIO)?.value;
-        const url = userData.find((d) => d.type === UserDataType.URL)?.value;
-
-        if (!username || !displayName || !pfp || !bio) {
-          const messages = await client.getAllUserDataMessagesByFid({
-            fid: parseInt(fid),
-          });
-
-          if (messages.isOk()) {
-            userData = await backfillUserDataAdd(
-              prisma,
-              messages.value.messages,
-            );
-            if (!username) {
-              username = userData.find(
-                (d) => d.type === UserDataType.USERNAME,
-              )?.value;
-            }
-            if (!pfp) {
-              pfp = userData.find((d) => d.type === UserDataType.PFP)?.value;
-            }
-            if (!displayName) {
-              displayName = userData.find(
-                (d) => d.type === UserDataType.DISPLAY,
-              )?.value;
-            }
-            if (!bio) {
-              bio = userData.find((d) => d.type === UserDataType.BIO)?.value;
-            }
-          }
-        }
-
-        // TODO: get custody address
-
-        const farcaster: FarcasterAccount = {
-          fid,
-          custodyAddress: "",
-          username,
-          pfp,
-          displayName,
-          bio,
-          url,
-        };
-
-        let verifications = await prisma.farcasterVerification.findMany({
-          where: {
-            fid: Number(fid),
-          },
-        });
-
-        if (verifications.length === 0) {
-          const messages = await client.getAllVerificationMessagesByFid({
-            fid: parseInt(fid),
-          });
-          if (messages.isOk()) {
-            verifications = await backfillVerificationAdd(
-              prisma,
-              messages.value.messages,
-            );
-          }
-        }
-
-        const blockchain: BlockchainAccount[] = verifications.map((v) => ({
-          address: v.address,
-          isContract: v.verificationType === 1,
-        }));
-
-        return { farcaster, blockchain };
+      const user: FarcasterUser = {
+        fid: request.params.fid,
+        username: username?.value,
+        pfp: pfp?.value,
+        displayName: displayName?.value,
+        bio: bio?.value,
+        url: url?.value,
       };
 
-      const users = await Promise.all(
-        request.body.fids.map((fid) => getUserData(fid)),
-      );
-
-      reply.send({
-        users: users,
-      });
+      return { user };
     },
   );
 

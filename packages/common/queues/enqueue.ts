@@ -1,22 +1,11 @@
 import { QueueName, getQueue } from ".";
-import { EntityEventData, EventSource, RawEvent } from "../types";
+import { EntityEvent, EntityEventData, EventSource } from "../types";
 
 export const toJobId = (source: EventSource) => {
   return `${source.service}-${source.type}-${source.id}`;
 };
 
-export const publishRawEvent = async (event: RawEvent<EntityEventData>) => {
-  const jobId = toJobId(event.source);
-  const queue = getQueue(QueueName.Events);
-  await queue.add(jobId, event, {
-    jobId,
-    removeOnComplete: {
-      count: 10000,
-    },
-  });
-};
-
-export const publishRawEvents = async (events: RawEvent<EntityEventData>[]) => {
+export const publishEvents = async (events: EntityEvent<EntityEventData>[]) => {
   if (!events.length) return;
   const queue = getQueue(QueueName.Events);
   await queue.addBulk(

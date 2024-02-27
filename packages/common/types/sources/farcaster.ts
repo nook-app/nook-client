@@ -3,6 +3,15 @@ export type FidHash = {
   hash: string;
 };
 
+export type FarcasterUser = {
+  fid: string;
+  username?: string;
+  pfp?: string;
+  displayName?: string;
+  bio?: string;
+  url?: string;
+};
+
 export type Signature = {
   hash: string;
   hashScheme: number;
@@ -12,7 +21,7 @@ export type Signature = {
 };
 
 export type FarcasterCastData = {
-  timestamp: Date;
+  timestamp: number;
   fid: string;
   hash: string;
   text: string;
@@ -31,7 +40,7 @@ export type FarcasterCastData = {
 };
 
 export type FarcasterCastReactionData = {
-  timestamp: Date;
+  timestamp: number;
   fid: string;
   reactionType: number;
   targetFid: string;
@@ -40,7 +49,7 @@ export type FarcasterCastReactionData = {
 };
 
 export type FarcasterUrlReactionData = {
-  timestamp: Date;
+  timestamp: number;
   fid: string;
   reactionType: number;
   url: string;
@@ -48,7 +57,7 @@ export type FarcasterUrlReactionData = {
 };
 
 export type FarcasterLinkData = {
-  timestamp: Date;
+  timestamp: number;
   fid: string;
   linkType: string;
   targetFid: string;

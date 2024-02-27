@@ -1,23 +1,20 @@
 import { FastifyInstance } from "fastify";
 import { MongoClient, MongoCollection } from "@nook/common/mongo";
-import { RedisClient } from "@nook/common/cache";
+import { RedisClient } from "@nook/common/redis";
 import {
   Channel,
   ChannelFilterType,
   Content,
   ContentType,
-  Entity,
   NookPanelData,
   NookPanelType,
   PostData,
-  Topic,
   TopicType,
   UserFilterType,
 } from "@nook/common/types";
 import { getOrCreateContent } from "@nook/common/scraper";
 import {
   ContentWithContext,
-  EntityWithContext,
   GetContentFeedResponse,
   GetContentResponse,
 } from "../../types";
@@ -51,30 +48,30 @@ export class NookService {
       content.content.referencedContentIds,
     );
 
-    const [entities, channels] = await Promise.all([
-      this.getReferencedEntities(viewerId, contents),
-      this.getReferencedChannels(viewerId, contents),
-    ]);
+    // const [entities, channels] = await Promise.all([
+    //   this.getReferencedEntities(viewerId, contents),
+    //   this.getReferencedChannels(viewerId, contents),
+    // ]);
 
     return {
       data: content.content,
-      referencedEntities: entities,
+      referencedEntities: [],
       referencedContents: contents,
-      referencedChannels: channels,
+      referencedChannels: [],
     };
   }
 
-  async getReferencedEntities(
-    viewerId: string,
-    contents: ContentWithContext[],
-  ) {
-    const entityIds = Array.from(
-      new Set(
-        contents.flatMap((content) => content.content.referencedEntityIds),
-      ),
-    );
-    return await this.fetchEntities(viewerId, entityIds);
-  }
+  // async getReferencedEntities(
+  //   viewerId: string,
+  //   contents: ContentWithContext[],
+  // ) {
+  //   const entityIds = Array.from(
+  //     new Set(
+  //       contents.flatMap((content) => content.content.referencedEntityIds),
+  //     ),
+  //   );
+  //   return await this.fetchEntities(viewerId, entityIds);
+  // }
 
   async getReferencedChannels(
     viewerId: string,
@@ -148,56 +145,28 @@ export class NookService {
     viewerId: string,
     data: NookPanelData,
   ): Promise<GetContentFeedResponse> {
-    let feed: Content[];
-    let s;
-    if (
-      data.type === NookPanelType.UserPosts &&
-      data.args.userFilter.type === UserFilterType.Following
-    ) {
-      const feedIds = await this.cache.getFeed(viewerId);
-      if (feedIds.length < 25) {
-        const { filter, sort } = await this.getContentFilterAndSort(data);
-        feed = await this.getFeedRaw<Content>(
-          MongoCollection.Content,
-          filter,
-          sort,
-          data.cursor,
-        );
-        await this.cache.setFeed(
-          viewerId,
-          feed.map((c) => c.contentId),
-        );
-      } else {
-        feed = (await this.fetchContents(viewerId, feedIds)).map(
-          (c) => c.content,
-        );
-      }
-      s = "timestamp";
-    } else {
-      const { filter, sort } = await this.getContentFilterAndSort(data);
-      feed = await this.getFeedRaw<Content>(
-        MongoCollection.Content,
-        filter,
-        sort,
-        data.cursor,
-      );
-      s = sort;
-    }
+    const { filter, sort } = await this.getContentFilterAndSort(data);
+    const feed = await this.getFeedRaw<Content>(
+      MongoCollection.Content,
+      filter,
+      sort,
+      data.cursor,
+    );
 
     const contents = await this.fetchContents(
       viewerId,
       feed.flatMap((content) => content.referencedContentIds),
     );
 
-    const [entities, channels] = await Promise.all([
-      this.getReferencedEntities(viewerId, contents),
-      this.getReferencedChannels(viewerId, contents),
-    ]);
+    // const [entities, channels] = await Promise.all([
+    //   this.getReferencedEntities(viewerId, contents),
+    //   this.getReferencedChannels(viewerId, contents),
+    // ]);
 
     let nextCursor;
     if (feed.length === PAGE_SIZE) {
       const timestamp = feed[feed.length - 1].timestamp;
-      const value = getNestedValue(feed[feed.length - 1], s);
+      const value = getNestedValue(feed[feed.length - 1], sort);
       nextCursor = Buffer.from(JSON.stringify({ timestamp, value })).toString(
         "base64",
       );
@@ -206,9 +175,9 @@ export class NookService {
     return {
       data: feed,
       nextCursor,
-      referencedEntities: entities,
+      referencedEntities: [],
       referencedContents: contents,
-      referencedChannels: channels,
+      referencedChannels: [],
     };
   }
 
@@ -258,34 +227,34 @@ export class NookService {
 
   /** FETCH FUNCTIONS */
 
-  async fetchEntity(viewerId: string, entityId: string) {
-    return (await this.fetchEntities(viewerId, [entityId]))[0];
-  }
+  // async fetchEntity(viewerId: string, entityId: string) {
+  //   return (await this.fetchEntities(viewerId, [entityId]))[0];
+  // }
 
-  async fetchEntities(
-    viewerId: string,
-    entityIds: string[],
-  ): Promise<EntityWithContext[]> {
-    const [entities] = await Promise.all([this.fetchEntitiesData(entityIds)]);
+  // async fetchEntities(
+  //   viewerId: string,
+  //   entityIds: string[],
+  // ): Promise<EntityWithContext[]> {
+  //   const [entities] = await Promise.all([this.fetchEntitiesData(entityIds)]);
 
-    return entities.map((entity) => ({
-      entity,
-    }));
-  }
+  //   return entities.map((entity) => ({
+  //     entity,
+  //   }));
+  // }
 
-  async fetchEntitiesData(entityIds: string[]) {
-    const cachedResponse = await this.cache.getEntities(entityIds);
-    const cachedEntities = cachedResponse.filter(Boolean) as Entity[];
-    const cachedEntityIds = cachedEntities.map((entity) =>
-      entity._id.toString(),
-    );
-    const uncachedEntityIds = entityIds.filter(
-      (id) => !cachedEntityIds.includes(id),
-    );
-    const existingEntities = await this.client.getEntities(uncachedEntityIds);
-    await this.cache.setEntities(existingEntities);
-    return [...cachedEntities, ...existingEntities];
-  }
+  // // async fetchEntitiesData(entityIds: string[]) {
+  // //   const cachedResponse = await this.cache.getEntities(entityIds);
+  // //   const cachedEntities = cachedResponse.filter(Boolean) as Entity[];
+  // //   const cachedEntityIds = cachedEntities.map((entity) =>
+  // //     entity._id.toString(),
+  // //   );
+  // //   const uncachedEntityIds = entityIds.filter(
+  // //     (id) => !cachedEntityIds.includes(id),
+  // //   );
+  // //   const existingEntities = await this.client.getEntities(uncachedEntityIds);
+  // //   await this.cache.setEntities(existingEntities);
+  // //   return [...cachedEntities, ...existingEntities];
+  // // }
 
   async fetchContent(
     viewerId: string,
@@ -306,17 +275,11 @@ export class NookService {
   }
 
   async fetchContentsData(contentIds: string[]) {
-    const cachedResponse = await this.cache.getContents(contentIds);
-    const cachedContents = cachedResponse.filter(Boolean) as Content[];
-    const cachedContentIds = cachedContents.map((content) => content.contentId);
-    const uncachedContentIds = contentIds.filter(
-      (id) => !cachedContentIds.includes(id),
-    );
-    const existingContents = await this.client.getContents(uncachedContentIds);
+    const existingContents = await this.client.getContents(contentIds);
     const existingContentIds = existingContents.map(
       (content) => content.contentId,
     );
-    const missingContentIds = uncachedContentIds.filter(
+    const missingContentIds = contentIds.filter(
       (id) => !existingContentIds.includes(id),
     );
     const missingContents = (
@@ -328,20 +291,11 @@ export class NookService {
         }),
       )
     ).filter(Boolean) as Content[];
-    await this.cache.setContents([...existingContents, ...missingContents]);
-    return [...cachedContents, ...existingContents, ...missingContents];
+    return [...existingContents, ...missingContents];
   }
 
   async fetchChannels(channelIds: string[]) {
-    const cachedResponse = await this.cache.getChannels(channelIds);
-    const cachedChannels = cachedResponse.filter(Boolean) as Channel[];
-    const cachedChannelIds = cachedChannels.map((channel) => channel.contentId);
-    const uncachedChannelIds = channelIds.filter(
-      (id) => !cachedChannelIds.includes(id),
-    );
-    const existingChannels = await this.client.getChannels(uncachedChannelIds);
-    await this.cache.setChannels(existingChannels);
-    return [...cachedChannels, ...existingChannels];
+    return await this.client.getChannels(channelIds);
   }
 
   async getNook(nookId: string) {

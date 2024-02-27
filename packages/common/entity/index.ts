@@ -1,97 +1,132 @@
-import { ObjectId } from "mongodb";
-import { MongoClient, MongoCollection } from "../mongo";
-import { BlockchainAccount, Entity, FarcasterAccount } from "../types/entity";
+import {
+  Entity,
+  EntityBlockchain,
+  EntityFarcaster,
+  EntityUsername,
+  PrismaClient,
+} from "../prisma/entity";
+import { RedisClient } from "../redis";
+import { FarcasterUser } from "../types";
 
-export const getOrCreateEntitiesForFids = async (
-  client: MongoClient,
-  fids: string[],
-) => {
-  const collection = client.getCollection<Entity>(MongoCollection.Entity);
-  const existingEntities = await collection
-    .find({
-      "farcaster.fid": {
-        $in: fids,
-      },
-    })
-    .toArray();
-
-  const entities = existingEntities.reduce(
-    (acc, entity) => {
-      acc[entity.farcaster.fid] = entity;
-      return acc;
-    },
-    {} as Record<string, Entity>,
-  );
-
-  const existingFids = new Set(Object.keys(entities));
-  const missingFids = fids.filter((fid) => !existingFids.has(fid));
-
-  if (missingFids.length > 0) {
-    const data = await getFarcasterUsers(missingFids);
-    if (data) {
-      const newEntities = await Promise.all(
-        missingFids.map(async (fid, i) => {
-          const entity = {
-            ...data.users[i],
-            _id: new ObjectId(),
-            createdAt: new Date(),
-            updatedAt: new Date(),
-          };
-
-          try {
-            await collection.insertOne(entity);
-            return entity;
-          } catch (error) {
-            if (
-              error instanceof Error &&
-              error.name === "MongoServerError" &&
-              "code" in error &&
-              error.code === 11000
-            ) {
-              const existingEntity = await collection.findOne({
-                "farcaster.fid": entity.farcaster.fid,
-              });
-              if (!existingEntity) throw new Error("Entity not found");
-              return existingEntity;
-            }
-            throw error;
-          }
-        }),
-      );
-      for (const entity of newEntities) {
-        entities[entity.farcaster.fid] = entity;
-      }
-    }
-  }
-
-  return entities;
+type EntityWithRelations = Entity & {
+  farcasterAccounts: EntityFarcaster[];
+  blockchainAccounts: EntityBlockchain[];
+  usernames: EntityUsername[];
 };
 
-const getFarcasterUsers = async (fids: string[]) => {
-  if (!fids?.length) return;
+export class EntityClient {
+  private client: PrismaClient;
+  private redis: RedisClient;
 
-  const response = await fetch(`${process.env.FARCASTER_SERVICE_URL}/users`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      fids,
-    }),
-  });
+  ENTITY_CACHE_PREFIX = "entity";
+  FID_CACHE_PREFIX = "fid";
 
-  if (!response.ok) {
-    throw new Error(
-      `Failed getting user with ${
-        response.status
-      } for ${fids} with ${await response.text()}`,
+  constructor() {
+    this.client = new PrismaClient();
+    this.redis = new RedisClient();
+  }
+
+  async connect() {
+    await this.client.$connect();
+    await this.redis.connect();
+  }
+
+  async close() {
+    await this.client.$disconnect();
+    await this.redis.close();
+  }
+
+  async cacheEntity(entity: EntityWithRelations) {
+    await Promise.all([
+      this.redis.setJson(`${this.ENTITY_CACHE_PREFIX}:${entity.id}`, entity),
+      ...entity.farcasterAccounts.map((farcasterAccount) =>
+        this.redis.setJson(
+          `${this.FID_CACHE_PREFIX}:${farcasterAccount}`,
+          entity,
+        ),
+      ),
+    ]);
+  }
+
+  async get(entityId: string) {
+    const cached = await this.redis.getJson(
+      `${this.ENTITY_CACHE_PREFIX}:${entityId}`,
     );
+    if (cached) return cached;
+
+    const entity = await this.client.entity.findUnique({
+      where: {
+        id: entityId,
+      },
+      include: {
+        farcasterAccounts: true,
+        blockchainAccounts: true,
+        usernames: true,
+      },
+    });
+
+    if (entity) {
+      await this.cacheEntity(entity);
+    }
+
+    return entity;
   }
 
-  return (await response.json()) as {
-    users: {
-      farcaster: FarcasterAccount;
-      blockchain: BlockchainAccount[];
-    }[];
-  };
-};
+  async getByFid(fid: string) {
+    const cached = await this.redis.getJson(`${this.FID_CACHE_PREFIX}:${fid}`);
+    if (cached) {
+      console.log({ cached: true });
+      return cached;
+    }
+
+    let entity = await this.client.entity.findFirst({
+      where: {
+        farcasterAccounts: {
+          some: {
+            fid,
+          },
+        },
+      },
+      include: {
+        farcasterAccounts: true,
+        blockchainAccounts: true,
+        usernames: true,
+      },
+    });
+
+    if (!entity) {
+      console.log({ fetched: true });
+      entity = await this.createFarcasterEntity(fid);
+    }
+
+    if (entity) {
+      await this.cacheEntity(entity);
+    }
+
+    return entity;
+  }
+
+  async createFarcasterEntity(fid: string) {
+    const response = await fetch(
+      `${process.env.FARCASTER_SERVICE_URL}/user/${fid}`,
+    );
+    if (!response.ok) return null;
+
+    const { user }: { user: FarcasterUser } = await response.json();
+
+    const entity = await this.client.entity.create({
+      data: {
+        farcasterAccounts: {
+          create: user,
+        },
+      },
+      include: {
+        farcasterAccounts: true,
+        blockchainAccounts: true,
+        usernames: true,
+      },
+    });
+
+    return entity;
+  }
+}

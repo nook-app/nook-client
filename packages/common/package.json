@@ -5,9 +5,13 @@
   "main": "./dist/index.js",
   "scripts": {
     "build": "yarn db:generate && tsc && cp -r prisma/generated dist/prisma",
-    "db:generate": "npx prisma generate --schema ./prisma/schemas/farcaster.prisma && npx prisma generate --schema ./prisma/schemas/nook.prisma",
+    "db:generate": "yarn db:generate:farcaster && yarn db:generate:nook && yarn db:generate:entity",
+    "db:generate:farcaster": "npx prisma generate --schema ./prisma/schemas/farcaster.prisma",
+    "db:generate:nook": "npx prisma generate --schema ./prisma/schemas/nook.prisma",
+    "db:generate:entity": "npx prisma generate --schema ./prisma/schemas/entity.prisma",
     "db:push:farcaster": "npx prisma db push --schema ./prisma/schemas/farcaster.prisma",
-    "db:push:nook": "npx prisma db push --schema ./prisma/schemas/nook.prisma"
+    "db:push:nook": "npx prisma db push --schema ./prisma/schemas/nook.prisma",
+    "db:push:entity": "npx prisma db push --schema ./prisma/schemas/entity.prisma"
   },
   "exports": {
     "./queues": "./dist/queues/index.js",
@@ -18,7 +22,7 @@
     "./mongo": "./dist/mongo/index.js",
     "./farcaster": "./dist/farcaster/index.js",
     "./scraper": "./dist/scraper/index.js",
-    "./cache": "./dist/cache/index.js"
+    "./redis": "./dist/redis/index.js"
   },
   "dependencies": {
     "@prisma/client": "5.7.1",

@@ -1,11 +1,6 @@
-import {
-  Channel,
-  Content,
-  ContentData,
-  Entity,
-  Nook,
-} from "@nook/common/types";
+import { Channel, Content, ContentData, Nook } from "@nook/common/types";
 import { User } from "@nook/common/prisma/nook";
+import { Entity } from "@nook/common/prisma/entity";
 
 export type EntityWithContext = {
   entity: Entity;

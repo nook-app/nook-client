@@ -5,14 +5,12 @@ import {
   ObjectId,
   Document,
 } from "mongodb";
-import { Content, EntityEvent, Entity, Channel, Nook } from "../types";
+import { Content, EntityEvent, Channel, Nook } from "../types";
 
 const DB_NAME = "nook";
 
 export enum MongoCollection {
-  Events = "events",
   Content = "content",
-  Entity = "entity",
   Nooks = "nooks",
   Channels = "channels",
 }
@@ -44,17 +42,6 @@ export class MongoClient {
     return this.getDb().collection<T>(collection);
   }
 
-  getEntities = async (entityIds: string[]) => {
-    const collection = this.getCollection<Entity>(MongoCollection.Entity);
-    return await collection
-      .find({
-        _id: {
-          $in: entityIds.map((id) => new ObjectId(id)),
-        },
-      })
-      .toArray();
-  };
-
   getContents = async (contentIds: string[]) => {
     const collection = this.getCollection<Content>(MongoCollection.Content);
     return await collection
@@ -84,26 +71,10 @@ export class MongoClient {
     });
   };
 
-  findEntity = async (entityId: string) => {
-    const collection = this.getCollection<Entity>(MongoCollection.Entity);
-    return await collection.findOne({
-      _id: new ObjectId(entityId),
-    });
-  };
-
   findContent = async (contentId: string) => {
     const collection = this.getCollection<Content>(MongoCollection.Content);
     return await collection.findOne({
       contentId,
-    });
-  };
-
-  findEvent = async (eventId: string) => {
-    const collection = this.getCollection<EntityEvent<unknown>>(
-      MongoCollection.Events,
-    );
-    return await collection.findOne({
-      eventId,
     });
   };
 
@@ -151,41 +122,6 @@ export class MongoClient {
           throw new Error("Failed to find existing content");
         }
         return existingContent._id;
-      }
-      throw error;
-    }
-  };
-
-  upsertEvent = async <T>(event: EntityEvent<T>) => {
-    const collection = this.getCollection<EntityEvent<T>>(
-      MongoCollection.Events,
-    );
-    const _id = this.generateObjectIdFromDate(event.timestamp);
-    try {
-      await collection.insertOne({ ...event, _id });
-      return _id;
-    } catch (error) {
-      if (
-        error instanceof Error &&
-        error.name === "MongoServerError" &&
-        "code" in error &&
-        error.code === 11000
-      ) {
-        const existingEvent = await collection.findOneAndUpdate(
-          {
-            eventId: event.eventId,
-          },
-          {
-            $set: {
-              ...event,
-              updatedAt: new Date(),
-            },
-          },
-        );
-        if (!existingEvent) {
-          throw new Error("Failed to find existing event");
-        }
-        return existingEvent._id;
       }
       throw error;
     }

@@ -1,6 +1,6 @@
-import { Channel, Entity } from "@nook/common/types";
-import { MongoClient, MongoCollection } from "../mongo";
-import { RedisClient } from "../cache";
+import { Channel } from "@nook/common/types";
+import { MongoClient } from "../mongo";
+import { RedisClient } from "../redis";
 
 type WarpcastChannelData = {
   id: string;
@@ -17,17 +17,6 @@ export const getOrCreateChannel = async (
   redis: RedisClient,
   contentId: string,
 ) => {
-  const cachedChannel = await redis.getChannel(contentId);
-  if (cachedChannel) {
-    return cachedChannel;
-  }
-
-  const existingChannel = await client.findChannel(contentId);
-  if (existingChannel) {
-    await redis.setChannel(existingChannel);
-    return existingChannel;
-  }
-
   const response = await fetch("https://api.warpcast.com/v2/all-channels");
   if (!response.ok) {
     throw new Error("Failed to fetch channels");
@@ -44,28 +33,17 @@ export const getOrCreateChannel = async (
     throw new Error("Channel not found");
   }
 
-  let entity: Entity | undefined;
-  if (channelData.leadFid) {
-    entity = (await client
-      .getCollection<Entity>(MongoCollection.Entity)
-      .findOne({
-        "farcaster.fid": channelData.leadFid.toString(),
-      })) as Entity | undefined;
-  }
-
   const channel: Channel = {
     contentId,
     slug: channelData.id,
     name: channelData.name,
     description: channelData.description,
     imageUrl: channelData.imageUrl,
-    creatorId: entity?._id.toString(),
     createdAt: new Date(channelData.createdAt * 1000),
     updatedAt: new Date(),
   };
 
   await client.upsertChannel(channel);
-  await redis.setChannel(channel);
 
   return channel;
 };
