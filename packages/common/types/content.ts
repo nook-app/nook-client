@@ -74,7 +74,7 @@ export type FrameMetascraperData = {
   frameState?: string;
 } & UnstructuredFrameMetascraperButtonKeys;
 
-export type FrameButtonAction = "post" | "post_redirect" | "mint";
+export type FrameButtonAction = "post" | "post_redirect" | "mint" | "tx";
 
 export type FrameButton = {
   label: string;
