@@ -30,7 +30,7 @@ describe("@nook/content/handlers/url", () => {
       <meta name="fc:frame:fake_idk" content="fake" />
       <meta name="fc:frame:input:text" content="text_input"/>
       <meta name="fc:frame:image:aspect_ratio" content="1:1"/>
-      <meta name="fc:frame:state": content="state"/>
+      <meta name="fc:frame:state" content="state"/>
       </head>
         `,
       headers: {
