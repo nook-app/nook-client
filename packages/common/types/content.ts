@@ -71,6 +71,7 @@ export type FrameMetascraperData = {
   frameIdemKey?: string;
   frameTextInput?: string;
   frameImageAspectRatio?: string;
+  frameState?: string;
 } & UnstructuredFrameMetascraperButtonKeys;
 
 export type FrameButtonAction = "post" | "post_redirect" | "mint";
@@ -91,6 +92,7 @@ export type FrameData = {
   idempotencyKey?: string;
   textInput?: string;
   aspectRatio: "1.91:1" | "1:1";
+  state?: string;
 };
 
 type FrameMetaKey = {

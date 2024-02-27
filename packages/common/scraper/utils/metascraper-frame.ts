@@ -115,6 +115,12 @@ const rules: Rules & {
       'meta[property="fc:frame:image:aspect_ratio"], meta[name="fc:frame:image:aspect_ratio"]',
     ).attr("content");
   },
+
+  frameState: ({ htmlDom: $ }) => {
+    return $(
+      'meta[property="fc:frame:state"], meta[name="fc:frame:state"]',
+    ).attr("content");
+  },
 };
 
 // TODO: cache with TTL?

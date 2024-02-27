@@ -54,6 +54,7 @@ describe("metascraperFrame", () => {
     <meta property="fc:frame:fake_idk" content="fake" />
     <meta property="fc:frame:input:text" content="text_input"/>
     <meta property="fc:frame:image:aspect_ratio" content="1:1"/>
+    <meta property="fc:frame:state" content="state"/>
     </head>
     `;
     const dom = cheerio.load(fullFrameHtml);
@@ -74,10 +75,11 @@ describe("metascraperFrame", () => {
     checkRule(frame, dom, "frameButton4", "button4");
     checkRule(frame, dom, "frameButton4Action", "button4_action");
     checkRule(frame, dom, "frameButton4Target", "button4_target");
-    checkRule(frame, dom, "frameRefreshPeriod", "refresh_period");
     checkRule(frame, dom, "frameIdemKey", "idem_key");
     checkRule(frame, dom, "frameTextInput", "text_input");
     checkRule(frame, dom, "frameImageAspectRatio", "1:1");
+    checkRule(frame, dom, "frameRefreshPeriod", "refresh_period");
+    checkRule(frame, dom, "frameState", "state");
   });
 
   test("test nonstandard 'name' attribute", () => {
@@ -98,11 +100,12 @@ describe("metascraperFrame", () => {
     <meta name="fc:frame:button:4" content="button4" />
     <meta name="fc:frame:button:4:action" content="button4_action" />
     <meta name="fc:frame:button:4:target" content="button4_target" />
-    <meta name="fc:frame:refresh_period" content="refresh_period" />
+    <meta name="fc:frame:refresh_period" content="69" />
     <meta name="fc:frame:idem_key" content="idem_key" />
     <meta name="fc:frame:fake_idk" content="fake" />
     <meta name="fc:frame:input:text" content="text_input"/>
     <meta name="fc:frame:image:aspect_ratio" content="1:1"/>
+    <meta name="fc:frame:state" content="state"/>
     </head>
     `;
     const dom = cheerio.load(fullFrameHtml);
@@ -123,10 +126,11 @@ describe("metascraperFrame", () => {
     checkRule(frame, dom, "frameButton4", "button4");
     checkRule(frame, dom, "frameButton4Action", "button4_action");
     checkRule(frame, dom, "frameButton4Target", "button4_target");
-    checkRule(frame, dom, "frameRefreshPeriod", "refresh_period");
+    checkRule(frame, dom, "frameRefreshPeriod", "69");
     checkRule(frame, dom, "frameIdemKey", "idem_key");
     checkRule(frame, dom, "frameTextInput", "text_input");
     checkRule(frame, dom, "frameImageAspectRatio", "1:1");
+    checkRule(frame, dom, "frameState", "state");
   });
 });
 
