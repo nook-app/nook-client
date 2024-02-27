@@ -1,4 +1,5 @@
 import * as farcaster from "./farcaster";
 import * as nook from "./nook";
 import * as entity from "./entity";
-export { farcaster, nook, entity };
+import * as feed from "./feed";
+export { farcaster, nook, entity, feed };

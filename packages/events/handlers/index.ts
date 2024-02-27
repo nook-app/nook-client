@@ -1,19 +1,25 @@
-import { EntityEvent, EntityEventData } from "@nook/common/types";
-import { EntityClient } from "@nook/common/entity";
+import { EntityEvent, EntityEventData, EventService } from "@nook/common/types";
 import { Job } from "bullmq";
+import { FarcasterProcessor } from "./farcaster";
 
 export const getEventsHandler = async () => {
-  const entityClient = new EntityClient();
-  await entityClient.connect();
+  const farcasterProcessor = new FarcasterProcessor();
 
   return async (job: Job<EntityEvent<EntityEventData>>) => {
     const event = job.data;
 
-    const entity = await entityClient.getByFid(event.userId);
-    console.log(entity);
+    switch (event.source.service) {
+      case EventService.FARCASTER: {
+        farcasterProcessor.process(event);
+        break;
+      }
+      default:
+        console.error(`Unknown service: ${event.source.service}`);
+        return;
+    }
 
     console.log(
-      `[${event.source.service}] [${event.source.type}] processed ${event.source.id} by ${event.userId}`,
+      `[${event.source.service}] [${event.source.type}] processed ${event.source.id}}`,
     );
   };
 };

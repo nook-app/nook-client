@@ -1,21 +1,21 @@
 import {
-  FarcasterCastData,
-  FarcasterCastReactionData,
-  FarcasterLinkData,
-  FarcasterUrlReactionData,
-  FarcasterUserDataAddData,
-  FarcasterUsernameProofData,
-  FarcasterVerificationData,
-} from "./sources/farcaster";
+  FarcasterCast,
+  FarcasterCastReaction,
+  FarcasterLink,
+  FarcasterUrlReaction,
+  FarcasterUserData,
+  FarcasterUsernameProof,
+  FarcasterVerification,
+} from "../prisma/farcaster";
 
 export type EntityEventData =
-  | FarcasterCastData
-  | FarcasterCastReactionData
-  | FarcasterLinkData
-  | FarcasterUrlReactionData
-  | FarcasterUserDataAddData
-  | FarcasterVerificationData
-  | FarcasterUsernameProofData;
+  | FarcasterCast
+  | FarcasterCastReaction
+  | FarcasterUrlReaction
+  | FarcasterVerification
+  | FarcasterUserData
+  | FarcasterUsernameProof
+  | FarcasterLink;
 
 /**
  * Supported event services
@@ -57,18 +57,12 @@ export type EventSource = {
 /**
  * Event object after being processed by the event service
  */
-export type EntityEvent<T> = {
+export type EntityEvent<T = EntityEventData> = {
   /** Event ID */
   eventId: string;
 
-  /** ID of user triggering event in the source system */
-  userId: string;
-
   /** Source data */
   source: EventSource;
-
-  /** Timestamp for when the event occurred */
-  timestamp: number;
 
   /** Raw data sent from the source */
   data: T;

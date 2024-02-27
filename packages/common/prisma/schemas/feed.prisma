@@ -1,0 +1,34 @@
+generator client {
+    provider = "prisma-client-js"
+    output   = "../generated/feed"
+}
+
+datasource db {
+    provider = "postgresql"
+    url      = env("FEED_DATABASE_URL")
+}
+
+model Feed {
+    id String @id @default(uuid())
+
+    name        String
+    description String
+    entityId    String
+
+    filter Json
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    topics FeedTopic[]
+}
+
+model FeedTopic {
+    feedId String
+    topic  String
+
+    feed Feed @relation(fields: [feedId], references: [id])
+
+    @@id([feedId, topic])
+    @@index([topic])
+}

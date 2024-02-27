@@ -3,10 +3,11 @@ import {
   EntityBlockchain,
   EntityFarcaster,
   EntityUsername,
+  Prisma,
   PrismaClient,
-} from "../prisma/entity";
-import { RedisClient } from "../redis";
-import { FarcasterUser } from "../types";
+} from "../../prisma/entity";
+import { RedisClient } from "../../redis";
+import { FarcasterUser } from "../../types";
 
 type EntityWithRelations = Entity & {
   farcasterAccounts: EntityFarcaster[];
@@ -48,7 +49,7 @@ export class EntityClient {
     ]);
   }
 
-  async get(entityId: string) {
+  async getEntity(entityId: string) {
     const cached = await this.redis.getJson(
       `${this.ENTITY_CACHE_PREFIX}:${entityId}`,
     );
@@ -72,14 +73,31 @@ export class EntityClient {
     return entity;
   }
 
-  async getByFid(fid: string) {
+  async getEntitiesByFid(fids: bigint[]) {
+    return await Promise.all(fids.map(async (fid) => this.getEntityByFid(fid)));
+  }
+
+  async getEntityByFid(fid: bigint) {
     const cached = await this.redis.getJson(`${this.FID_CACHE_PREFIX}:${fid}`);
     if (cached) {
-      console.log({ cached: true });
       return cached;
     }
 
-    let entity = await this.client.entity.findFirst({
+    let entity = await this.fetchEntityByFid(fid);
+
+    if (!entity) {
+      entity = await this.createEntityByFid(fid);
+    }
+
+    if (entity) {
+      await this.cacheEntity(entity);
+    }
+
+    return entity;
+  }
+
+  async fetchEntityByFid(fid: bigint) {
+    return await this.client.entity.findFirst({
       where: {
         farcasterAccounts: {
           some: {
@@ -93,20 +111,9 @@ export class EntityClient {
         usernames: true,
       },
     });
-
-    if (!entity) {
-      console.log({ fetched: true });
-      entity = await this.createFarcasterEntity(fid);
-    }
-
-    if (entity) {
-      await this.cacheEntity(entity);
-    }
-
-    return entity;
   }
 
-  async createFarcasterEntity(fid: string) {
+  async createEntityByFid(fid: bigint) {
     const response = await fetch(
       `${process.env.FARCASTER_SERVICE_URL}/user/${fid}`,
     );
@@ -114,19 +121,26 @@ export class EntityClient {
 
     const { user }: { user: FarcasterUser } = await response.json();
 
-    const entity = await this.client.entity.create({
-      data: {
-        farcasterAccounts: {
-          create: user,
+    try {
+      return await this.client.entity.create({
+        data: {
+          farcasterAccounts: {
+            create: user,
+          },
         },
-      },
-      include: {
-        farcasterAccounts: true,
-        blockchainAccounts: true,
-        usernames: true,
-      },
-    });
-
-    return entity;
+        include: {
+          farcasterAccounts: true,
+          blockchainAccounts: true,
+          usernames: true,
+        },
+      });
+    } catch (e) {
+      if (e instanceof Prisma.PrismaClientKnownRequestError) {
+        if (e.code === "P2002") {
+          return await this.fetchEntityByFid(fid);
+        }
+      }
+      throw e;
+    }
   }
 }

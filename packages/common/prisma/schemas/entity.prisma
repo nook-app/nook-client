@@ -20,7 +20,7 @@ model Entity {
 }
 
 model EntityFarcaster {
-    fid         String  @id
+    fid         BigInt  @id
     entityId    String
     username    String?
     bio         String?

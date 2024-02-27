@@ -71,7 +71,7 @@ const run = async () => {
       const url = userData.find((d) => d.type === UserDataType.URL);
 
       const user: FarcasterUser = {
-        fid: request.params.fid,
+        fid: BigInt(request.params.fid),
         username: username?.value,
         pfp: pfp?.value,
         displayName: displayName?.value,

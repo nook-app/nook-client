@@ -19,6 +19,15 @@ const reviver = (k: string, v: any): any => {
   return v;
 };
 
+// biome-ignore lint/suspicious/noExplicitAny: generic replacer
+const replacer = (key: string, value: any) => {
+  if (typeof value === "bigint") {
+    // Check if the value is a BigInt
+    return value.toString(); // Convert BigInt to string
+  }
+  return value; // Return the value unchanged if not a BigInt
+};
+
 export class RedisClient {
   redis: Redis;
 
@@ -61,6 +70,10 @@ export class RedisClient {
 
   // biome-ignore lint/suspicious/noExplicitAny: generic setter
   async setJson(key: string, value: any) {
-    await this.redis.set(key, JSON.stringify(value));
+    await this.redis.set(key, JSON.stringify(value, replacer));
+  }
+
+  async push(key: string, value: string) {
+    await this.redis.multi().lpush(key, value).ltrim(key, 0, 999).exec();
   }
 }

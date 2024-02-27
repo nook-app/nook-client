@@ -5,18 +5,20 @@
   "main": "./dist/index.js",
   "scripts": {
     "build": "yarn db:generate && tsc && cp -r prisma/generated dist/prisma",
-    "db:generate": "yarn db:generate:farcaster && yarn db:generate:nook && yarn db:generate:entity",
+    "db:generate": "yarn db:generate:farcaster && yarn db:generate:nook && yarn db:generate:entity && yarn db:generate:feed",
     "db:generate:farcaster": "npx prisma generate --schema ./prisma/schemas/farcaster.prisma",
     "db:generate:nook": "npx prisma generate --schema ./prisma/schemas/nook.prisma",
     "db:generate:entity": "npx prisma generate --schema ./prisma/schemas/entity.prisma",
+    "db:generate:feed": "npx prisma generate --schema ./prisma/schemas/feed.prisma",
     "db:push:farcaster": "npx prisma db push --schema ./prisma/schemas/farcaster.prisma",
     "db:push:nook": "npx prisma db push --schema ./prisma/schemas/nook.prisma",
-    "db:push:entity": "npx prisma db push --schema ./prisma/schemas/entity.prisma"
+    "db:push:entity": "npx prisma db push --schema ./prisma/schemas/entity.prisma",
+    "db:push:feed": "npx prisma db push --schema ./prisma/schemas/feed.prisma"
   },
   "exports": {
     "./queues": "./dist/queues/index.js",
     "./types": "./dist/types/index.js",
-    "./entity": "./dist/entity/index.js",
+    "./clients": "./dist/clients/index.js",
     "./prisma/farcaster": "./dist/prisma/farcaster.js",
     "./prisma/nook": "./dist/prisma/nook.js",
     "./mongo": "./dist/mongo/index.js",
