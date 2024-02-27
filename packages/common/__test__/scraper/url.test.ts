@@ -30,6 +30,7 @@ describe("@nook/content/handlers/url", () => {
       <meta name="fc:frame:fake_idk" content="fake" />
       <meta name="fc:frame:input:text" content="text_input"/>
       <meta name="fc:frame:image:aspect_ratio" content="1:1"/>
+      <meta name="fc:frame:state" content="state"/>
       </head>
         `,
       headers: {
@@ -79,10 +80,12 @@ describe("@nook/content/handlers/url", () => {
           index: 4,
         },
       ],
+      // invalid refreshPeriod
       refreshPeriod: undefined,
       idempotencyKey: "idem_key",
       textInput: "text_input",
       aspectRatio: "1:1",
+      state: "state",
     });
   });
 
@@ -100,11 +103,12 @@ describe("@nook/content/handlers/url", () => {
       <meta name="fc:frame:button:2" content="button2" />
       <meta name="fc:frame:button:2:action" content="button2_action" />
       <meta name="fc:frame:button:2:target" content="button2_target" />
-      <meta name="fc:frame:refresh_period" content="refresh_period" />
+      <meta name="fc:frame:refresh_period" content="69" />
       <meta name="fc:frame:idem_key" content="idem_key" />
       <meta name="fc:frame:fake_idk" content="fake" />
       <meta name="fc:frame:input:text" content="text_input"/>
       <meta name="fc:frame:image:aspect_ratio" content="1:1"/>
+      <meta name="fc:frame:state" content="state"/>
       </head>
         `,
       headers: {
@@ -145,6 +149,8 @@ describe("@nook/content/handlers/url", () => {
       idempotencyKey: "idem_key",
       textInput: "text_input",
       aspectRatio: "1:1",
+      refreshPeriod: 69,
+      state: "state",
     });
   });
 });

@@ -59,6 +59,7 @@ const ENUMERATED_FRAME_KEYS: FrameDataTypesafeMapping<
   frameIdemKey: "idempotencyKey",
   frameTextInput: "textInput",
   frameImageAspectRatio: "aspectRatio",
+  frameState: "state",
 };
 
 const USER_AGENT_OVERRIDES: { [key: string]: string } = {
@@ -205,10 +206,11 @@ function parseFrameMetadata(urlMetadata: UrlMetadata) {
     }
     if (key === "frameRefreshPeriod") {
       // convert to number
-      frameData.refreshPeriod =
-        (parseInt(
-          urlMetadata.metadata[key as keyof FrameMetascraperData] as string,
-        ) as number) || undefined;
+      let parsed: number | undefined = parseInt(readValue || "") as number;
+      if (Number.isNaN(parsed)) {
+        parsed = undefined;
+      }
+      frameData.refreshPeriod = parsed;
       continue;
     }
     frameData[value as keyof FrameData] = readValue as string &
