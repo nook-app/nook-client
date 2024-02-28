@@ -1,0 +1,42 @@
+generator client {
+    provider = "prisma-client-js"
+    output   = "../generated/content"
+}
+
+datasource db {
+    provider = "postgresql"
+    url      = env("CONTENT_DATABASE_URL")
+}
+
+model FarcasterContentReference {
+    fid  BigInt
+    hash String
+    uri  String
+    type String // embed, reply, quote
+
+    timestamp DateTime
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    content UrlContent? @relation(fields: [uri], references: [uri])
+
+    @@id([uri, fid, hash, type])
+}
+
+model UrlContent {
+    uri      String  @id
+    host     String?
+    path     String?
+    query    String?
+    fragment String?
+    type     String?
+    length   Int?
+    metadata Json?
+    frame    Json?
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    references FarcasterContentReference[]
+}

@@ -1,32 +1,3 @@
-import { Metadata } from "metascraper";
-import { NFT } from "./providers/simplehash/nft";
-import { NFTCollection } from "./providers/simplehash/contract";
-
-export type ContentData = UrlMetadata | NFT | NFTCollection;
-
-export enum ContentType {
-  URL = "URL",
-  NFT = "NFT",
-  NFT_CONTRACT = "NFT_CONTRACT",
-}
-
-export type ContentBase = {
-  /** ID for the content in URI format */
-  contentId: string;
-
-  /** Entity who created the content */
-  creatorId?: string;
-
-  /** Timestamp content was created at */
-  timestamp: Date;
-
-  /** Date record was created at */
-  createdAt: Date;
-
-  /** Date record was updated at */
-  updatedAt: Date;
-};
-
 export type UnstructuredFrameMetascraperButtonKeys = {
   frameButton1?: string;
   frameButton1Action?: string;
@@ -72,19 +43,4 @@ export type FrameData = {
   textInput?: string;
   aspectRatio: "1.91:1" | "1:1";
   state?: string;
-};
-
-type FrameMetaKey = {
-  frame?: FrameData;
-};
-
-export type UrlMetadata = {
-  metadata?: Metadata & FrameMetaKey;
-  contentType?: string;
-  contentLength?: number;
-};
-
-export type Content<T = ContentData> = ContentBase & {
-  type: ContentType;
-  data: T;
 };

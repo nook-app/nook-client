@@ -1,5 +1,4 @@
-import { Content, ContentType } from "@nook/common/types";
-import metascraper, { MetascraperOptions } from "metascraper";
+import metascraper, { Metadata, MetascraperOptions } from "metascraper";
 import metascraperTitle from "metascraper-title";
 import metascraperAudio from "metascraper-audio";
 import metascraperAuthor from "metascraper-author";
@@ -18,13 +17,20 @@ import metascraperUrl from "metascraper-url";
 import metascraperVideo from "metascraper-video";
 import { metascraperFrame } from "./utils/metascraper-frame";
 import {
-  UrlMetadata,
   FrameMetascraperData,
   FrameData,
   FrameButton,
   FrameButtonAction,
   UnstructuredFrameMetascraperButtonKeys,
 } from "@nook/common/types";
+import { Prisma } from "../prisma/content";
+
+export type UrlMetadata = {
+  metadata?: Metadata;
+  frame?: FrameData;
+  contentType?: string;
+  contentLength?: number;
+};
 
 // Require that a key in T maps to a key of FrameData
 type FrameDataTypesafeMapping<T> = {
@@ -74,20 +80,23 @@ const USER_AGENT_OVERRIDES: { [key: string]: string } = {
  * @param request
  * @returns
  */
-export const getUrlContent = async (
-  contentId: string,
-): Promise<Content<UrlMetadata>> => {
-  const timestamp = new Date();
-  const content = {
-    contentId: contentId,
-    timestamp,
-    entityIds: [],
-    createdAt: timestamp,
-    updatedAt: timestamp,
-    type: ContentType.URL,
-    data: await fetchUrlMetadata(contentId),
+export const getUrlContent = async (uri: string) => {
+  const date = new Date();
+  const url = new URL(uri);
+  const metadata = await fetchUrlMetadata(uri);
+  return {
+    uri,
+    host: url.host,
+    path: url.pathname,
+    query: url.search,
+    fragment: url.hash,
+    type: metadata.contentType || null,
+    length: metadata.contentLength || null,
+    metadata: (metadata.metadata || Prisma.DbNull) as Prisma.InputJsonValue,
+    frame: (metadata.frame || Prisma.DbNull) as Prisma.InputJsonValue,
+    createdAt: date,
+    updatedAt: date,
   };
-  return content;
 };
 
 const scrapeMetadata = async (options: MetascraperOptions) => {
@@ -135,7 +144,7 @@ export const fetchUrlMetadata = async (url: string) => {
   if (contentType?.startsWith("text/html")) {
     const scrapedMetadata = await scrapeMetadata({ html, url });
     urlMetadata.metadata = scrapedMetadata;
-    parseFrameMetadata(urlMetadata);
+    urlMetadata.frame = parseFrameMetadata(urlMetadata);
   }
 
   return urlMetadata;
@@ -208,6 +217,6 @@ function parseFrameMetadata(urlMetadata: UrlMetadata) {
       number;
   }
   if (frameData.version) {
-    urlMetadata.metadata.frame = frameData;
+    return frameData;
   }
 }

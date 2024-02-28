@@ -54,8 +54,11 @@ export class FarcasterProcessor {
   }
 
   async processCastAdd(data: FarcasterCast) {
+    const cast = await this.farcasterClient.getCast(data.hash);
+    if (!cast) return;
+
     const promises = [];
-    promises.push(this.farcasterClient.getCast(data.hash));
+    promises.push(this.farcasterClient.addContentReferences(cast));
 
     if (data.parentUrl) {
       promises.push(
@@ -100,7 +103,11 @@ export class FarcasterProcessor {
   }
 
   async processCastRemove(data: FarcasterCast) {
+    const cast = await this.farcasterClient.getCast(data.hash);
+    if (!cast) return;
+
     const promises = [];
+    promises.push(this.farcasterClient.removeContentReferences(cast));
 
     if (data.parentUrl) {
       promises.push(
