@@ -40,7 +40,7 @@ export const FarcasterCastReplies = ({ hash }: { hash: string }) => {
   return (
     <View paddingBottom={insets.bottom}>
       {accumulatedData.map((cast) => (
-        <FarcasterFeedItem key={cast.hash} cast={cast} />
+        <FarcasterFeedItem key={cast.hash} cast={cast} isReply />
       ))}
     </View>
   );

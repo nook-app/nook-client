@@ -73,18 +73,16 @@ export class RedisClient {
     await this.redis.set(key, value, "EX", 3600);
   }
 
+  async exists(key: string) {
+    return await this.redis.exists(key);
+  }
+
   async increment(key: string) {
-    const exists = await this.redis.exists(key);
-    if (exists) {
-      await this.redis.incr(key);
-    }
+    await this.redis.incr(key);
   }
 
   async decrement(key: string) {
-    const exists = await this.redis.exists(key);
-    if (exists) {
-      await this.redis.decr(key);
-    }
+    await this.redis.decr(key);
   }
 
   async getJson(key: string) {

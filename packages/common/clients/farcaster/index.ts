@@ -253,7 +253,10 @@ export class FarcasterClient {
       `${this.ENGAGEMENT_CACHE_PREFIX}:likes:${hash}`,
     );
     if (cached) return cached;
+    return await this.updateLikes(hash);
+  }
 
+  async updateLikes(hash: string) {
     const likes = await this.client.farcasterCastReaction.count({
       where: {
         reactionType: 1,
@@ -274,7 +277,10 @@ export class FarcasterClient {
       `${this.ENGAGEMENT_CACHE_PREFIX}:recasts:${hash}`,
     );
     if (cached) return cached;
+    return await this.updateRecasts(hash);
+  }
 
+  async updateRecasts(hash: string) {
     const recasts = await this.client.farcasterCastReaction.count({
       where: {
         reactionType: 2,
@@ -295,7 +301,10 @@ export class FarcasterClient {
       `${this.ENGAGEMENT_CACHE_PREFIX}:replies:${hash}`,
     );
     if (cached) return cached;
+    return await this.updateReplies(hash);
+  }
 
+  async updateReplies(hash: string) {
     const replies = await this.client.farcasterCast.count({
       where: {
         parentHash: hash,
@@ -315,7 +324,10 @@ export class FarcasterClient {
       `${this.ENGAGEMENT_CACHE_PREFIX}:quotes:${hash}`,
     );
     if (cached) return cached;
+    return await this.updateQuotes(hash);
+  }
 
+  async updateQuotes(hash: string) {
     const quotes = await this.client.farcasterCastEmbedCast.count({
       where: {
         embedHash: hash,
@@ -334,18 +346,50 @@ export class FarcasterClient {
     hash: string,
     type: "likes" | "recasts" | "replies" | "quotes",
   ) {
-    await this.redis.increment(
-      `${this.ENGAGEMENT_CACHE_PREFIX}:${type}:${hash}`,
-    );
+    const key = `${this.ENGAGEMENT_CACHE_PREFIX}:${type}:${hash}`;
+    if (await this.redis.exists(key)) {
+      await this.redis.increment(key);
+    } else {
+      switch (type) {
+        case "likes":
+          await this.updateLikes(hash);
+          break;
+        case "recasts":
+          await this.updateRecasts(hash);
+          break;
+        case "replies":
+          await this.updateReplies(hash);
+          break;
+        case "quotes":
+          await this.updateQuotes(hash);
+          break;
+      }
+    }
   }
 
   async decrementEngagement(
     hash: string,
     type: "likes" | "recasts" | "replies" | "quotes",
   ) {
-    await this.redis.decrement(
-      `${this.ENGAGEMENT_CACHE_PREFIX}:${type}:${hash}`,
-    );
+    const key = `${this.ENGAGEMENT_CACHE_PREFIX}:${type}:${hash}`;
+    if (await this.redis.exists(key)) {
+      await this.redis.decrement(key);
+    } else {
+      switch (type) {
+        case "likes":
+          await this.updateLikes(hash);
+          break;
+        case "recasts":
+          await this.updateRecasts(hash);
+          break;
+        case "replies":
+          await this.updateReplies(hash);
+          break;
+        case "quotes":
+          await this.updateQuotes(hash);
+          break;
+      }
+    }
   }
 
   async getUsernameProof(name: string) {
