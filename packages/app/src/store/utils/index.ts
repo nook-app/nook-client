@@ -19,11 +19,11 @@ export const generateHomeNook = (entityId: string): NookResponse => {
     id: "home",
     creator: {
       id: "nook",
-      createdAt: new Date(),
-      updatedAt: new Date(),
+      farcaster: {
+        fid: "0",
+      },
+      blockchain: [],
       usernames: [],
-      farcasterAccounts: [],
-      blockchainAccounts: [],
     },
     name: "Home",
     description: "Your personally-curated nook",
@@ -43,7 +43,7 @@ export const generateHomeNook = (entityId: string): NookResponse => {
               data: {
                 type: NookPanelType.FarcasterFeed,
                 args: {
-                  feedId: "https://farcaster.group/founders",
+                  feedId: "channel:https://farcaster.group/founders",
                 },
               },
             },

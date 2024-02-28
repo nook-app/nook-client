@@ -1,10 +1,7 @@
 import { createApi } from "@reduxjs/toolkit/query/react";
 import { baseQuery } from "@/store/utils";
-import {
-  FarcasterCastResponse,
-  FarcasterFeedResponse,
-  SignerPublicData,
-} from "@nook/api/types";
+import { FarcasterFeedResponse, SignerPublicData } from "@nook/api/types";
+import { FarcasterCastResponse } from "@nook/common/types";
 
 export const farcasterApi = createApi({
   reducerPath: "farcasterApi",

@@ -31,6 +31,7 @@ const entitySlice = createSlice({
     builder.addMatcher(
       farcasterApi.endpoints.getFeed.matchFulfilled,
       (state, action) => {
+        console.log(action.payload.data.map((cast) => cast));
         const entities = action.payload.data.map((cast) => cast.entity);
         entityAdapter.addMany(state, entities);
       },

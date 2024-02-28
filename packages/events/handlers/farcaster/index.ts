@@ -4,7 +4,10 @@ import {
   FeedClient,
   NookClient,
 } from "@nook/common/clients";
-import { FarcasterCast } from "@nook/common/prisma/farcaster";
+import {
+  FarcasterCast,
+  FarcasterCastReaction,
+} from "@nook/common/prisma/farcaster";
 import {
   EntityEvent,
   EntityResponse,
@@ -36,32 +39,103 @@ export class FarcasterProcessor {
     }
   }
 
+  async processCastReactionAdd(data: FarcasterCastReaction) {
+    await this.farcasterClient.incrementEngagement(
+      data.hash,
+      data.reactionType === 1 ? "likes" : "recasts",
+    );
+  }
+
+  async processCastReactionRemove(data: FarcasterCastReaction) {
+    await this.farcasterClient.decrementEngagement(
+      data.hash,
+      data.reactionType === 1 ? "likes" : "recasts",
+    );
+  }
+
   async processCastAdd(data: FarcasterCast) {
-    const cast = await this.farcasterClient.getCast(data.hash);
-    const fids = this.farcasterClient.getFidsFromCast(cast);
-    await this.entityClient.getEntitiesByFid(fids);
+    const promises = [];
 
     if (data.parentUrl) {
-      await this.nookClient.getChannel(data.parentUrl);
-      await this.feedClient.addToFeed(`channel:${data.parentUrl}`, cast.hash);
+      promises.push(
+        this.feedClient.addToFeed(`channel:${data.parentUrl}`, data.hash),
+      );
     }
 
     if (data.parentHash) {
-      await this.feedClient.addToFeed(
-        `user:replies:${data.fid.toString()}`,
-        cast.hash,
+      promises.push(
+        this.feedClient.addToFeed(
+          `user:replies:${data.fid.toString()}`,
+          data.hash,
+        ),
+      );
+      promises.push(
+        this.farcasterClient.incrementEngagement(data.parentHash, "replies"),
       );
     } else {
-      await this.feedClient.addToFeed(
-        `user:casts:${data.fid.toString()}`,
-        cast.hash,
+      promises.push(
+        this.feedClient.addToFeed(
+          `user:casts:${data.fid.toString()}`,
+          data.hash,
+        ),
       );
     }
+
+    for (const embed of this.farcasterClient.getCastEmbeds(data)) {
+      promises.push(
+        this.farcasterClient.incrementEngagement(embed.hash, "quotes"),
+      );
+    }
+
+    await Promise.all(promises);
 
     const followers = await this.farcasterClient.getFollowers(data.fid);
     await this.feedClient.addToFeeds(
       followers.map(({ fid }) => `user:following:${fid.toString()}`),
-      cast.hash,
+      data.hash,
+    );
+  }
+
+  async processCastRemove(data: FarcasterCast) {
+    const promises = [];
+
+    if (data.parentUrl) {
+      promises.push(
+        this.feedClient.removeFromFeed(`channel:${data.parentUrl}`, data.hash),
+      );
+    }
+
+    if (data.parentHash) {
+      promises.push(
+        this.feedClient.removeFromFeed(
+          `user:replies:${data.fid.toString()}`,
+          data.hash,
+        ),
+      );
+      promises.push(
+        this.farcasterClient.decrementEngagement(data.parentHash, "replies"),
+      );
+    } else {
+      promises.push(
+        this.feedClient.removeFromFeed(
+          `user:casts:${data.fid.toString()}`,
+          data.hash,
+        ),
+      );
+    }
+
+    for (const embed of this.farcasterClient.getCastEmbeds(data)) {
+      promises.push(
+        this.farcasterClient.decrementEngagement(embed.hash, "quotes"),
+      );
+    }
+
+    await Promise.all(promises);
+
+    const followers = await this.farcasterClient.getFollowers(data.fid);
+    await this.feedClient.removeFromFeeds(
+      followers.map(({ fid }) => `user:following:${fid.toString()}`),
+      data.hash,
     );
   }
 }

@@ -1,5 +1,9 @@
 import { User, Channel } from "@nook/common/prisma/nook";
-import { EntityResponse, NookResponse } from "@nook/common/types";
+import {
+  EntityResponse,
+  FarcasterCastResponse,
+  NookResponse,
+} from "@nook/common/types";
 
 export type SignInWithFarcasterRequest = {
   message: string;
@@ -24,22 +28,6 @@ export type GetUserResponse = {
   user: User;
   entity: EntityResponse;
   nooks: NookResponse[];
-};
-
-export type FarcasterCastResponse = {
-  hash: string;
-  timestamp: number;
-  entity: EntityResponse;
-  text: string;
-  mentions: {
-    entity: EntityResponse;
-    position: bigint;
-  }[];
-  castEmbeds: FarcasterCastResponse[];
-  urlEmbeds: string[];
-  parent?: FarcasterCastResponse;
-  rootParent?: FarcasterCastResponse;
-  channel?: Channel;
 };
 
 export type FarcasterFeedRequest = {

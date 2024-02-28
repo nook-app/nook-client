@@ -1,10 +1,10 @@
-import { FarcasterCastResponse } from "@nook/api/types";
 import { View } from "tamagui";
 import { NavigationProp, useNavigation } from "@react-navigation/native";
 import { RootStackParamList } from "@/types";
 import { TouchableWithoutFeedback } from "react-native-gesture-handler";
 import { memo } from "react";
 import { FarcasterCastCompact } from "./FarcasterCastCompact";
+import { FarcasterCastResponse } from "@nook/common/types";
 
 export const FarcasterFeedItem = memo(
   ({ cast, isReply }: { cast: FarcasterCastResponse; isReply?: boolean }) => {

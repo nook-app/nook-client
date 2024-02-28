@@ -1,9 +1,9 @@
 import { Spinner, Text, View } from "tamagui";
 import { useEffect, useState } from "react";
 import { farcasterApi } from "@/store/apis/farcasterApi";
-import { FarcasterCastResponse } from "@nook/api/types";
 import { FarcasterFeedItem } from "../farcaster/FarcasterFeedItem";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { FarcasterCastResponse } from "@nook/common/types";
 
 export const FarcasterCastReplies = ({ hash }: { hash: string }) => {
   const insets = useSafeAreaInsets();

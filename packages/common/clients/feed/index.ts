@@ -26,8 +26,19 @@ export class FeedClient {
     await this.redis.push(`${this.FEED_CACHE_PREFIX}:${feedId}`, value);
   }
 
+  async removeFromFeed(feedId: string, value: string) {
+    await this.redis.remove(`${this.FEED_CACHE_PREFIX}:${feedId}`, value);
+  }
+
   async addToFeeds(feedIds: string[], value: string) {
     await this.redis.batchPush(
+      feedIds.map((feedId) => `${this.FEED_CACHE_PREFIX}:${feedId}`),
+      value,
+    );
+  }
+
+  async removeFromFeeds(feedIds: string[], value: string) {
+    await this.redis.batchRemove(
       feedIds.map((feedId) => `${this.FEED_CACHE_PREFIX}:${feedId}`),
       value,
     );

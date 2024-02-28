@@ -58,6 +58,35 @@ export class RedisClient {
     await this.redis.quit();
   }
 
+  async getNumber(key: string) {
+    const value = await this.redis.get(key);
+    if (value) {
+      const num = Number(value);
+      if (Number.isNaN(num)) {
+        throw new Error(`Value for ${key} is not a number`);
+      }
+      return num;
+    }
+  }
+
+  async setNumber(key: string, value: number) {
+    await this.redis.set(key, value, "EX", 3600);
+  }
+
+  async increment(key: string) {
+    const exists = await this.redis.exists(key);
+    if (exists) {
+      await this.redis.incr(key);
+    }
+  }
+
+  async decrement(key: string) {
+    const exists = await this.redis.exists(key);
+    if (exists) {
+      await this.redis.decr(key);
+    }
+  }
+
   async getJson(key: string) {
     try {
       const json = await this.redis.get(key);
@@ -70,17 +99,29 @@ export class RedisClient {
 
   // biome-ignore lint/suspicious/noExplicitAny: generic setter
   async setJson(key: string, value: any) {
-    await this.redis.set(key, JSON.stringify(value, replacer));
+    await this.redis.set(key, JSON.stringify(value, replacer), "EX", 3600);
   }
 
   async push(key: string, value: string) {
     await this.redis.multi().lpush(key, value).ltrim(key, 0, 999).exec();
   }
 
+  async remove(key: string, value: string) {
+    await this.redis.lrem(key, 0, value);
+  }
+
   async batchPush(keys: string[], value: string) {
     const pipeline = this.redis.pipeline();
     for (const key of keys) {
       pipeline.lpush(key, value).ltrim(key, 0, 999);
+    }
+    await pipeline.exec();
+  }
+
+  async batchRemove(keys: string[], value: string) {
+    const pipeline = this.redis.pipeline();
+    for (const key of keys) {
+      pipeline.lrem(key, 1, value);
     }
     await pipeline.exec();
   }

@@ -7,7 +7,7 @@ import { isWarpcastUrl } from "@/utils";
 import { TouchableOpacity } from "react-native-gesture-handler";
 import { NavigationProp, useNavigation } from "@react-navigation/native";
 import { RootStackParamList } from "@/types";
-import { FarcasterCastResponse } from "@nook/api/types";
+import { FarcasterCastResponse } from "@nook/common/types";
 
 export const FarcasterCastText = ({
   cast,
@@ -68,7 +68,7 @@ export const FarcasterCastText = ({
   );
   for (const mention of sortedMentions) {
     const mentionedEntity = selectEntityById(state, mention.entity.id);
-    const farcaster = mentionedEntity?.farcasterAccounts?.[0];
+    const farcaster = mentionedEntity?.farcaster;
     const label = `@${
       farcaster?.username || farcaster?.fid || mention.entity.id
     }`;

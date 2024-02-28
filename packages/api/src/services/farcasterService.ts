@@ -1,31 +1,21 @@
 import { FastifyInstance } from "fastify";
-import { FarcasterCastResponse, SignerPublicData } from "../../types";
+import { SignerPublicData } from "../../types";
 import {
   CastId,
   FarcasterNetwork,
   NobleEd25519Signer,
   makeCastAdd,
 } from "@farcaster/hub-nodejs";
-import {
-  EntityClient,
-  FarcasterClient,
-  FeedClient,
-  NookClient,
-} from "@nook/common/clients";
-import { FarcasterCast } from "@nook/common/prisma/farcaster";
-import { Channel } from "@nook/common/prisma/nook";
-import { EntityResponse } from "@nook/common/types";
+import { FarcasterClient, FeedClient, NookClient } from "@nook/common/clients";
 
 export class FarcasterService {
   private nookClient: NookClient;
   private feedClient: FeedClient;
   private farcasterClient: FarcasterClient;
-  private entityClient: EntityClient;
 
   constructor(fastify: FastifyInstance) {
     this.nookClient = fastify.nook.client;
     this.farcasterClient = fastify.farcaster.client;
-    this.entityClient = fastify.entity.client;
     this.feedClient = fastify.feed.client;
   }
 
@@ -132,131 +122,15 @@ export class FarcasterService {
   }
 
   async getCast(hash: string) {
-    const casts = await this.getCasts([hash]);
-    return casts[0];
+    return await this.farcasterClient.getCast(hash);
   }
 
   async getCastReplies(hash: string) {
-    const casts = await this.farcasterClient.getCastReplies(hash);
-    return this.formatCasts(casts);
+    return await this.farcasterClient.getCastReplies(hash);
   }
 
   async getCasts(hashes: string[]) {
-    const casts = await this.farcasterClient.getCasts(hashes);
-    return this.formatCasts(casts);
-  }
-
-  async formatCasts(casts: FarcasterCast[]) {
-    const relatedCasts = await this.getRelatedCasts(casts);
-    const allCasts = casts.concat(relatedCasts);
-
-    const entityMap = await this.getRelatedEntities(allCasts);
-    const channelMap = await this.getRelatedChannels(allCasts);
-    const castMap = allCasts.reduce(
-      (acc, cast) => {
-        acc[cast.hash] = cast;
-        return acc;
-      },
-      {} as Record<string, FarcasterCast>,
-    );
-
-    return casts.map((cast) =>
-      this.formatCast(cast.hash, entityMap, castMap, channelMap),
-    );
-  }
-
-  async getRelatedEntities(casts: FarcasterCast[]) {
-    const fids = casts.flatMap((cast) =>
-      this.farcasterClient.getFidsFromCast(cast),
-    );
-    const entities = await this.entityClient.getEntitiesByFid(fids);
-    return entities.reduce(
-      (acc, entity) => {
-        acc[entity.farcaster.fid] = entity;
-        return acc;
-      },
-      {} as Record<string, EntityResponse>,
-    );
-  }
-
-  async getRelatedCasts(casts: FarcasterCast[]) {
-    const relatedHashes = new Set<string>();
-    for (const cast of casts) {
-      if (cast.parentHash) {
-        relatedHashes.add(cast.parentHash);
-      }
-      if (cast.rootParentHash !== cast.hash) {
-        relatedHashes.add(cast.rootParentHash);
-      }
-    }
-
-    return await this.farcasterClient.getCasts(Array.from(relatedHashes));
-  }
-
-  async getRelatedChannels(casts: FarcasterCast[]) {
-    const channelIds = casts
-      .map((c) => c.parentUrl)
-      .filter(Boolean) as string[];
-
-    const channels = await this.nookClient.getChannels(channelIds);
-
-    return channels.reduce(
-      (acc, channel) => {
-        acc[channel.id] = channel;
-        return acc;
-      },
-      {} as Record<string, Channel>,
-    );
-  }
-
-  formatCast(
-    hash: string,
-    entityMap: Record<string, EntityResponse>,
-    castMap: Record<string, FarcasterCast>,
-    channelMap: Record<string, Channel>,
-  ): FarcasterCastResponse | undefined {
-    const cast = castMap[hash];
-    if (!cast) return;
-
-    let parent: FarcasterCastResponse | undefined;
-    if (cast.parentHash) {
-      parent = this.formatCast(cast.parentHash, entityMap, castMap, channelMap);
-    }
-
-    let rootParent: FarcasterCastResponse | undefined;
-    if (cast.rootParentHash !== cast.hash) {
-      rootParent = this.formatCast(
-        cast.rootParentHash,
-        entityMap,
-        castMap,
-        channelMap,
-      );
-    }
-
-    const mentions = this.farcasterClient.getMentions(cast);
-    const urlEmbeds = this.farcasterClient.getUrlEmbeds(cast);
-
-    const castEmbeds: FarcasterCastResponse[] = [];
-    for (const { hash } of this.farcasterClient.getCastEmbeds(cast)) {
-      const castEmbed = this.formatCast(hash, entityMap, castMap, channelMap);
-      if (castEmbed) castEmbeds.push();
-    }
-
-    return {
-      hash: cast.hash,
-      timestamp: cast.timestamp.getTime(),
-      entity: entityMap[cast.fid.toString()],
-      text: cast.text,
-      mentions: mentions.map((mention) => ({
-        entity: entityMap[mention.mention.toString()],
-        position: mention.mentionPosition,
-      })),
-      castEmbeds,
-      urlEmbeds,
-      parent,
-      rootParent,
-      channel: cast.parentUrl ? channelMap[cast.parentUrl] : undefined,
-    };
+    return await this.farcasterClient.getCasts(hashes);
   }
 
   async getFeed(feedId: string) {

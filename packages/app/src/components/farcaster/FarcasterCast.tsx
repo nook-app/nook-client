@@ -8,12 +8,12 @@ import {
 } from "react-native-gesture-handler";
 import { NavigationProp, useNavigation } from "@react-navigation/native";
 import { RootStackParamList } from "@/types";
-import { FarcasterCastResponse } from "@nook/api/types";
 import { ChannelDisplay } from "../channel/ChannelDisplay";
 import { useEffect, useRef } from "react";
 import { ScrollView as RNScrollView, View as RNView } from "react-native";
 import { FarcasterCastCompact } from "./FarcasterCastCompact";
 import { FarcasterCastReplies } from "./FarcasterCastReplies";
+import { FarcasterCastResponse } from "@nook/common/types";
 
 export const FarcasterCast = ({ cast }: { cast: FarcasterCastResponse }) => {
   if (cast.parent) {
@@ -114,7 +114,7 @@ const FarcasterCastContent = ({ cast }: { cast: FarcasterCastResponse }) => {
       </XStack>
       <XStack gap="$2">
         <View flexDirection="row" alignItems="center" gap="$1">
-          <Text fontWeight="700">0</Text>
+          <Text fontWeight="700">{cast.engagement.replies}</Text>
           <Text color="$gray11">Replies</Text>
         </View>
         <TouchableOpacity
@@ -125,8 +125,8 @@ const FarcasterCastContent = ({ cast }: { cast: FarcasterCastResponse }) => {
           }
         >
           <View flexDirection="row" alignItems="center" gap="$1">
-            <Text fontWeight="700">0</Text>
-            <Text color="$gray11">Reposts</Text>
+            <Text fontWeight="700">{cast.engagement.recasts}</Text>
+            <Text color="$gray11">Recasts</Text>
           </View>
         </TouchableOpacity>
         <TouchableOpacity
@@ -137,7 +137,7 @@ const FarcasterCastContent = ({ cast }: { cast: FarcasterCastResponse }) => {
           }
         >
           <View flexDirection="row" alignItems="center" gap="$1">
-            <Text fontWeight="700">0</Text>
+            <Text fontWeight="700">{cast.engagement.quotes}</Text>
             <Text color="$gray11">Quotes</Text>
           </View>
         </TouchableOpacity>
@@ -149,7 +149,7 @@ const FarcasterCastContent = ({ cast }: { cast: FarcasterCastResponse }) => {
           }
         >
           <View flexDirection="row" alignItems="center" gap="$1">
-            <Text fontWeight="700">0</Text>
+            <Text fontWeight="700">{cast.engagement.likes}</Text>
             <Text color="$gray11">Likes</Text>
           </View>
         </TouchableOpacity>

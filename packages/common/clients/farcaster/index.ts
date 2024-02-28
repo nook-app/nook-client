@@ -11,18 +11,25 @@ import {
   getSSLHubRpcClient,
   Message as HubMessage,
 } from "@farcaster/hub-nodejs";
-import { FidHash } from "../../types";
+import { EntityResponse, FarcasterCastResponse, FidHash } from "../../types";
+import { NookClient } from "../nook";
+import { EntityClient } from "../entity";
 
 export class FarcasterClient {
   private client: PrismaClient;
   private redis: RedisClient;
+  private nookClient: NookClient;
+  private entityClient: EntityClient;
   private hub: HubRpcClient;
 
   CAST_CACHE_PREFIX = "cast";
+  ENGAGEMENT_CACHE_PREFIX = "engagement";
 
   constructor() {
     this.client = new PrismaClient();
     this.redis = new RedisClient();
+    this.nookClient = new NookClient();
+    this.entityClient = new EntityClient();
     this.hub = getSSLHubRpcClient(process.env.HUB_RPC_ENDPOINT as string);
   }
 
@@ -37,63 +44,122 @@ export class FarcasterClient {
   }
 
   async getCastReplies(hash: string) {
-    return await this.client.farcasterCast.findMany({
+    const casts = await this.client.farcasterCast.findMany({
       where: {
         parentHash: hash,
       },
     });
+    return await Promise.all(
+      casts.map((cast) => this.getCast(cast.hash, cast)),
+    );
   }
 
   async getCasts(hashes: string[]) {
     return await Promise.all(hashes.map((hash) => this.getCast(hash)));
   }
 
-  async getCast(hash: string, data?: FarcasterCast): Promise<FarcasterCast> {
+  async getCast(
+    hash: string,
+    data?: FarcasterCast,
+  ): Promise<FarcasterCastResponse> {
     const cached = await this.redis.getJson(
       `${this.CAST_CACHE_PREFIX}:${hash}`,
     );
     if (cached) return cached;
 
-    if (data) {
-      await this.redis.setJson(`${this.CAST_CACHE_PREFIX}:${hash}`, data);
-      return data;
-    }
-
-    return this.fetchCast(hash);
-  }
-
-  async fetchCast(hash: string) {
-    const cast = await this.client.farcasterCast.findUnique({
-      where: {
-        hash,
-      },
-    });
-
-    if (cast) {
-      await this.redis.setJson(`${this.CAST_CACHE_PREFIX}:${hash}`, cast);
-    }
+    const cast =
+      data ||
+      (await this.client.farcasterCast.findUnique({
+        where: {
+          hash,
+        },
+      }));
 
     if (!cast) {
       throw new Error(`Cast not found: ${hash}`);
     }
 
-    return cast;
-  }
+    const [relatedCasts, entityMap, channel, engagement] = await Promise.all([
+      this.getRelatedCasts(cast),
+      this.getRelatedEntities(cast),
+      this.getRelatedChannel(cast),
+      this.getEngagement(cast.hash),
+    ]);
 
-  async getUsernameProof(name: string) {
-    const proof = await this.hub.getUsernameProof({
-      name: new Uint8Array(Buffer.from(name)),
-    });
-    if (proof.isErr()) return;
-    return proof.value.fid;
-  }
-
-  async submitMessage(message: HubMessage): Promise<HubMessage> {
-    const result = await this.hub.submitMessage(message);
-    if (result.isErr()) {
-      throw new Error(result.error.message);
+    const mentions = this.getMentions(cast);
+    const urlEmbeds = this.getUrlEmbeds(cast);
+    const castEmbeds: FarcasterCastResponse[] = [];
+    for (const { hash } of this.getCastEmbeds(cast)) {
+      castEmbeds.push(relatedCasts[hash]);
     }
-    return result.value;
+
+    const response: FarcasterCastResponse = {
+      hash: cast.hash,
+      timestamp: cast.timestamp.getTime(),
+      entity: entityMap[cast.fid.toString()],
+      text: cast.text,
+      mentions: mentions.map((mention) => ({
+        entity: entityMap[mention.mention.toString()],
+        position: mention.mentionPosition,
+      })),
+      castEmbeds,
+      urlEmbeds,
+      parent: cast.parentHash ? relatedCasts[cast.parentHash] : undefined,
+      rootParent:
+        cast.rootParentHash !== cast.hash
+          ? relatedCasts[cast.rootParentHash]
+          : undefined,
+      channel,
+      engagement,
+    };
+
+    await this.redis.setJson(`${this.CAST_CACHE_PREFIX}:${hash}`, response);
+
+    return response;
+  }
+
+  async getRelatedCasts(cast: FarcasterCast) {
+    const relatedHashes = [];
+    if (cast.parentHash) {
+      relatedHashes.push(cast.parentHash);
+    }
+    if (
+      cast.rootParentHash !== cast.hash &&
+      cast.rootParentHash !== cast.parentHash
+    ) {
+      relatedHashes.push(cast.rootParentHash);
+    }
+
+    for (const { hash } of this.getCastEmbeds(cast)) {
+      relatedHashes.push(hash);
+    }
+
+    const relatedCasts = await this.getCasts(relatedHashes);
+    return relatedCasts.reduce(
+      (acc, cast) => {
+        acc[cast.hash] = cast;
+        return acc;
+      },
+      {} as Record<string, FarcasterCastResponse>,
+    );
+  }
+
+  async getRelatedEntities(cast: FarcasterCast) {
+    const entities = await this.entityClient.getEntitiesByFid(
+      this.getFidsFromCast(cast),
+    );
+    return entities.reduce(
+      (acc, entity) => {
+        acc[entity.farcaster.fid] = entity;
+        return acc;
+      },
+      {} as Record<string, EntityResponse>,
+    );
+  }
+
+  async getRelatedChannel(cast: FarcasterCast) {
+    if (!cast.parentUrl) return;
+    return await this.nookClient.getChannel(cast.parentUrl);
   }
 
   getFidsFromCast(cast: FarcasterCast) {
@@ -164,5 +230,137 @@ export class FarcasterClient {
         targetFid: fid,
       },
     });
+  }
+
+  async getEngagement(hash: string) {
+    const [likes, recasts, replies, quotes] = await Promise.all([
+      this.getLikes(hash),
+      this.getRecasts(hash),
+      this.getReplies(hash),
+      this.getQuotes(hash),
+    ]);
+
+    return {
+      likes,
+      recasts,
+      replies,
+      quotes,
+    };
+  }
+
+  async getLikes(hash: string): Promise<number> {
+    const cached = await this.redis.getNumber(
+      `${this.ENGAGEMENT_CACHE_PREFIX}:likes:${hash}`,
+    );
+    if (cached) return cached;
+
+    const likes = await this.client.farcasterCastReaction.count({
+      where: {
+        reactionType: 1,
+        targetHash: hash,
+      },
+    });
+
+    await this.redis.setNumber(
+      `${this.ENGAGEMENT_CACHE_PREFIX}:${hash}`,
+      likes,
+    );
+
+    return likes;
+  }
+
+  async getRecasts(hash: string): Promise<number> {
+    const cached = await this.redis.getNumber(
+      `${this.ENGAGEMENT_CACHE_PREFIX}:recasts:${hash}`,
+    );
+    if (cached) return cached;
+
+    const recasts = await this.client.farcasterCastReaction.count({
+      where: {
+        reactionType: 2,
+        targetHash: hash,
+      },
+    });
+
+    await this.redis.setNumber(
+      `${this.ENGAGEMENT_CACHE_PREFIX}:${hash}`,
+      recasts,
+    );
+
+    return recasts;
+  }
+
+  async getReplies(hash: string): Promise<number> {
+    const cached = await this.redis.getNumber(
+      `${this.ENGAGEMENT_CACHE_PREFIX}:replies:${hash}`,
+    );
+    if (cached) return cached;
+
+    const replies = await this.client.farcasterCast.count({
+      where: {
+        parentHash: hash,
+      },
+    });
+
+    await this.redis.setNumber(
+      `${this.ENGAGEMENT_CACHE_PREFIX}:${hash}`,
+      replies,
+    );
+
+    return replies;
+  }
+
+  async getQuotes(hash: string): Promise<number> {
+    const cached = await this.redis.getNumber(
+      `${this.ENGAGEMENT_CACHE_PREFIX}:quotes:${hash}`,
+    );
+    if (cached) return cached;
+
+    const quotes = await this.client.farcasterCastEmbedCast.count({
+      where: {
+        embedHash: hash,
+      },
+    });
+
+    await this.redis.setNumber(
+      `${this.ENGAGEMENT_CACHE_PREFIX}:${hash}`,
+      quotes,
+    );
+
+    return quotes;
+  }
+
+  async incrementEngagement(
+    hash: string,
+    type: "likes" | "recasts" | "replies" | "quotes",
+  ) {
+    await this.redis.increment(
+      `${this.ENGAGEMENT_CACHE_PREFIX}:${type}:${hash}`,
+    );
+  }
+
+  async decrementEngagement(
+    hash: string,
+    type: "likes" | "recasts" | "replies" | "quotes",
+  ) {
+    await this.redis.decrement(
+      `${this.ENGAGEMENT_CACHE_PREFIX}:${type}:${hash}`,
+    );
+  }
+
+  async getUsernameProof(name: string) {
+    const proof = await this.hub.getUsernameProof({
+      name: new Uint8Array(Buffer.from(name)),
+    });
+    if (proof.isErr()) return;
+    return proof.value.fid;
+  }
+
+  async submitMessage(message: HubMessage): Promise<HubMessage> {
+    const result = await this.hub.submitMessage(message);
+    if (result.isErr()) {
+      throw new Error(result.error.message);
+    }
+    return result.value;
   }
 }

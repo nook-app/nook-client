@@ -1,4 +1,3 @@
-import { FarcasterCastResponse } from "@nook/api/types";
 import { Separator, Text, View, XStack, YStack, useTheme } from "tamagui";
 import { EntityAvatar } from "@/components/entity/EntityAvatar";
 import { FarcasterCastText } from "@/components/farcaster/FarcasterCastText";
@@ -6,6 +5,7 @@ import { EntityDisplay } from "../entity/EntityDisplay";
 import { Heart, MessageSquare, RefreshCw } from "@tamagui/lucide-icons";
 import { formatTimeAgo } from "@/utils";
 import { ChannelDisplay } from "../channel/ChannelDisplay";
+import { FarcasterCastResponse } from "@nook/common/types";
 
 export const FarcasterCastCompact = ({
   cast,
@@ -48,7 +48,7 @@ export const FarcasterCastCompact = ({
           <View flexDirection="row" alignItems="center" gap="$1.5" width="$3">
             <MessageSquare size={16} color="$gray10" />
             <Text color="$gray10" fontSize="$4">
-              0
+              {cast.engagement.replies}
             </Text>
           </View>
           <View flexDirection="row" alignItems="center" gap="$1.5" width="$3">
@@ -58,7 +58,7 @@ export const FarcasterCastCompact = ({
               fill={isTrue ? theme.$green9.val : theme.$background.val}
             />
             <Text color="$gray10" fontSize="$4">
-              0
+              {cast.engagement.recasts}
             </Text>
           </View>
           <View flexDirection="row" alignItems="center" gap="$1.5" width="$3">
@@ -68,7 +68,7 @@ export const FarcasterCastCompact = ({
               fill={isTrue ? theme.$red9.val : theme.$background.val}
             />
             <Text color="$gray10" fontSize="$4">
-              0
+              {cast.engagement.likes}
             </Text>
           </View>
         </XStack>

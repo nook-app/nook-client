@@ -128,6 +128,7 @@ model FarcasterCastEmbedCast {
 
     @@id([hash, embedHash])
     @@index([fid])
+    @@index([embedHash])
 }
 
 model FarcasterCastEmbedUrl {
