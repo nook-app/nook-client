@@ -12,8 +12,7 @@
   },
   "dependencies": {
     "@nook/common": "*",
-    "bullmq": "^5.1.0",
-    "mongodb": "^6.3.0"
+    "bullmq": "^5.1.0"
   },
   "devDependencies": {
     "@types/jest": "^29.5.11",

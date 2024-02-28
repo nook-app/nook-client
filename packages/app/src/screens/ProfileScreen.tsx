@@ -1,8 +1,6 @@
 import { Button, Text, View, XStack, YStack } from "tamagui";
 import { useAuth } from "@/context/auth";
-import { Image } from "tamagui";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
 import { useAppSelector } from "@/hooks/useAppSelector";
 import { EntityAvatar } from "@/components/entity/EntityAvatar";
 import { EntityDisplay } from "@/components/entity/EntityDisplay";
@@ -83,11 +81,8 @@ export const ProfileScreen = () => {
       >
         <YStack gap="$4">
           <XStack gap="$2" alignItems="center">
-            <EntityAvatar entityId={entity._id.toString()} size="$5" />
-            <EntityDisplay
-              entityId={entity._id.toString()}
-              orientation="vertical"
-            />
+            <EntityAvatar entityId={entity.id} size="$5" />
+            <EntityDisplay entityId={entity.id} orientation="vertical" />
           </XStack>
           <ThemeSelector />
         </YStack>

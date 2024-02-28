@@ -1,17 +1,8 @@
-import { MongoClient } from "../mongo";
 import { getUrlContent } from "./url";
 import { getChainContent } from "./chain";
 import { Content } from "../types";
 
-export const getOrCreateContent = async (
-  client: MongoClient,
-  contentId: string,
-) => {
-  const existingContent = await client.findContent(contentId);
-  if (existingContent) {
-    return existingContent;
-  }
-
+export const getOrCreateContent = async (contentId: string) => {
   let content: Content | undefined;
 
   if (contentId.startsWith("http://") || contentId.startsWith("https://")) {
@@ -25,6 +16,5 @@ export const getOrCreateContent = async (
     return;
   }
 
-  await client.upsertContent(content);
   return content;
 };

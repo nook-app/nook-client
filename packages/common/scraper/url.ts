@@ -1,5 +1,4 @@
 import { Content, ContentType } from "@nook/common/types";
-import { ObjectId } from "mongodb";
 import metascraper, { MetascraperOptions } from "metascraper";
 import metascraperTitle from "metascraper-title";
 import metascraperAudio from "metascraper-audio";
@@ -80,7 +79,6 @@ export const getUrlContent = async (
 ): Promise<Content<UrlMetadata>> => {
   const timestamp = new Date();
   const content = {
-    _id: ObjectId.createFromTime(timestamp.getTime() / 1000),
     contentId: contentId,
     timestamp,
     entityIds: [],

@@ -15,7 +15,7 @@ export const EntityAvatar = ({
       onPress={() => navigation.navigate("Entity", { entityId })}
     >
       <Avatar circular size={size}>
-        <Avatar.Image src={pfp || ""} />
+        <Avatar.Image src={pfp} />
         <Avatar.Fallback backgroundColor="$backgroundPress" />
       </Avatar>
     </TouchableOpacity>

@@ -1,9 +1,6 @@
 import { RouteProp, useNavigation, useRoute } from "@react-navigation/native";
 import { RootStackParamList } from "@/types";
-import { selectNookById } from "@/store/slices/nook";
 import { useEffect } from "react";
-import { store } from "@/store";
-import { nookApi } from "@/store/apis/nookApi";
 import { Spinner, View } from "tamagui";
 import { Panels } from "@/components/panels/Panels";
 import { useNook } from "@/hooks/useNooks";

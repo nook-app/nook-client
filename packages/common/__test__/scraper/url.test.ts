@@ -1,6 +1,5 @@
 import { fetchUrlMetadata } from "@nook/common/scraper/url";
 
-jest.mock("@nook/common/mongo");
 jest.mock("metascraper-media-provider", () => () => {
   return {};
 });

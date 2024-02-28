@@ -41,3 +41,15 @@ export function formatTimeAgo(timestamp: number) {
 
   return `${Math.floor(seconds)}s ago`; // Seconds
 }
+
+export const formatToWarpcastCDN = (url?: string, width?: number) => {
+  if (!url) return;
+  const params = ["c_fill", "f_jpg"];
+
+  if (width) {
+    params.push(`w_${width}`);
+  }
+  return `https://res.cloudinary.com/merkle-manufactory/image/fetch/${params.join(
+    ",",
+  )}/${url}`;
+};
