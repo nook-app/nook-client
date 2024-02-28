@@ -15,8 +15,13 @@ model User {
     signerEnabled Boolean
     refreshToken  String
 
-    nookMemberships NookMembership[]
-    signers         Signer[]
+    createdAt DateTime @default(now())
+    updatedAt DateTime @default(now()) @updatedAt
+
+    signers      Signer[]
+    createdNooks Nook[]
+    nooks        NookMembership[]
+    Channel      Channel[]
 }
 
 model Signer {
@@ -28,18 +33,52 @@ model Signer {
     state       String
     fid         String?
 
+    createdAt DateTime @default(now())
+    updatedAt DateTime @default(now()) @updatedAt
+
     user User @relation(fields: [userId], references: [id])
 
     @@id([userId, publicKey])
 }
 
 model NookMembership {
-    userId    String
-    nookId    String
+    userId String
+    nookId String
+
     createdAt DateTime @default(now())
     updatedAt DateTime @default(now()) @updatedAt
 
     user User @relation(fields: [userId], references: [id])
+    nook Nook @relation(fields: [nookId], references: [id])
 
     @@id([userId, nookId])
+}
+
+model Nook {
+    id          String  @id @default(uuid())
+    creatorId   String
+    name        String
+    description String?
+    imageUrl    String?
+    metadata    Json
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @default(now()) @updatedAt
+
+    creator User             @relation(fields: [creatorId], references: [id])
+    members NookMembership[]
+}
+
+model Channel {
+    id          String  @id
+    name        String
+    description String
+    imageUrl    String
+    channelId   String
+    creatorId   String?
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @default(now()) @updatedAt
+
+    creator User? @relation(fields: [creatorId], references: [id])
 }

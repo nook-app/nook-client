@@ -1,57 +1,60 @@
 import fp from "fastify-plugin";
-import { MongoClient } from "@nook/common/mongo";
-import { RedisClient } from "@nook/common/redis";
-import { PrismaClient } from "@nook/common/prisma/nook";
-import { HubRpcClient, getSSLHubRpcClient } from "@farcaster/hub-nodejs";
+import {
+  EntityClient,
+  FarcasterClient,
+  FeedClient,
+  NookClient,
+} from "@nook/common/clients";
 
 declare module "fastify" {
   interface FastifyInstance {
-    mongo: {
-      client: MongoClient;
+    entity: {
+      client: EntityClient;
+    };
+    farcaster: {
+      client: FarcasterClient;
+    };
+    feed: {
+      client: FeedClient;
     };
     nook: {
-      client: PrismaClient;
-    };
-    farcasterHub: {
-      client: HubRpcClient;
-    };
-    cache: {
-      client: RedisClient;
+      client: NookClient;
     };
   }
 }
 
-export const mongoPlugin = fp(async (fastify, opts) => {
-  const client = new MongoClient();
+export const entityPlugin = fp(async (fastify, opts) => {
+  const client = new EntityClient();
   await client.connect();
-  fastify.decorate("mongo", { client });
+  fastify.decorate("entity", { client });
   fastify.addHook("onClose", async (fastify) => {
-    await fastify.mongo.client.close();
+    await fastify.entity.client.close();
+  });
+});
+
+export const farcasterPlugin = fp(async (fastify, opts) => {
+  const client = new FarcasterClient();
+  await client.connect();
+  fastify.decorate("farcaster", { client });
+  fastify.addHook("onClose", async (fastify) => {
+    await fastify.farcaster.client.close();
+  });
+});
+
+export const feedPlugin = fp(async (fastify, opts) => {
+  const client = new FeedClient();
+  await client.connect();
+  fastify.decorate("feed", { client });
+  fastify.addHook("onClose", async (fastify) => {
+    await fastify.feed.client.close();
   });
 });
 
 export const nookPlugin = fp(async (fastify, opts) => {
-  const client = new PrismaClient();
-  await client.$connect();
+  const client = new NookClient();
+  await client.connect();
   fastify.decorate("nook", { client });
   fastify.addHook("onClose", async (fastify) => {
-    await fastify.nook.client.$disconnect();
-  });
-});
-
-export const farcasterHubPlugin = fp(async (fastify, opts) => {
-  const client = getSSLHubRpcClient(process.env.HUB_RPC_ENDPOINT as string);
-  fastify.decorate("farcasterHub", { client });
-  fastify.addHook("onClose", async (fastify) => {
-    fastify.farcasterHub.client.close();
-  });
-});
-
-export const cachePlugin = fp(async (fastify, opts) => {
-  const client = new RedisClient();
-  await client.connect();
-  fastify.decorate("cache", { client });
-  fastify.addHook("onClose", async (fastify) => {
-    await fastify.cache.client.close();
+    await fastify.nook.client.close();
   });
 });

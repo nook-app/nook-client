@@ -1,49 +1,28 @@
 import { FastifyInstance } from "fastify";
 import { NookService } from "../../services/nookService";
-import { NookPanelData } from "@nook/common/types";
 
 export const nookRoutes = async (fastify: FastifyInstance) => {
   fastify.register(async (fastify: FastifyInstance) => {
     const nookService = new NookService(fastify);
 
-    fastify.post<{ Body: NookPanelData & { cursor?: string } }>(
-      "/content/feed",
+    fastify.post<{ Params: { nookId: string } }>(
+      "/nooks/:nookId",
       async (request, reply) => {
-        const { id } = (await request.jwtDecode()) as { id: string };
-        return reply.send(await nookService.getContentFeed(id, request.body));
-      },
-    );
-
-    fastify.post<{ Body: { contentId: string } }>(
-      "/content",
-      async (request, reply) => {
-        const { id } = (await request.jwtDecode()) as { id: string };
-        const content = await nookService.getContent(
-          id,
-          request.body.contentId,
-        );
-        if (!content) {
-          return reply
-            .status(404)
-            .send({ status: 404, message: "Content not found" });
-        }
-        return reply.send(content);
-      },
-    );
-
-    fastify.post<{ Body: { nookId: string } }>(
-      "/nooks",
-      async (request, reply) => {
-        const nook = await nookService.getNook(request.body.nookId);
+        const nook = await nookService.getNook(request.params.nookId);
         return reply.send(nook);
       },
     );
 
-    fastify.post<{ Querystring: { search: string } }>(
-      "/channels",
+    fastify.get("/channels", async (request, reply) => {
+      const channels = await nookService.getChannels();
+      return reply.send({ data: channels });
+    });
+
+    fastify.get<{ Params: { channelId: string } }>(
+      "/channels/:channelId",
       async (request, reply) => {
-        const channels = await nookService.searchChannels(request.query.search);
-        return reply.send({ data: channels });
+        const channel = await nookService.getChannel(request.params.channelId);
+        return reply.send(channel);
       },
     );
   });

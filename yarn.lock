@@ -3642,6 +3642,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@nook/common@workspace:packages/common"
   dependencies:
+    "@farcaster/hub-nodejs": "npm:^0.11.3"
     "@prisma/client": "npm:5.7.1"
     "@types/jest": "npm:^29.5.11"
     "@types/node": "npm:^20.10.5"

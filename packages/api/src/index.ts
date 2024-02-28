@@ -1,8 +1,8 @@
 import fastify from "fastify";
 import {
-  cachePlugin,
-  farcasterHubPlugin,
-  mongoPlugin,
+  entityPlugin,
+  farcasterPlugin,
+  feedPlugin,
   nookPlugin,
 } from "./plugins";
 import { nookRoutes } from "./routes/nook";
@@ -30,10 +30,10 @@ const buildApp = () => {
     secret: process.env.JWT_SECRET as string,
   });
 
-  app.register(mongoPlugin);
+  app.register(entityPlugin);
+  app.register(farcasterPlugin);
+  app.register(feedPlugin);
   app.register(nookPlugin);
-  app.register(farcasterHubPlugin);
-  app.register(cachePlugin);
 
   app.register(nookRoutes);
   app.register(userRoutes);

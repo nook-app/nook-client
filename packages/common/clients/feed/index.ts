@@ -25,4 +25,8 @@ export class FeedClient {
   async addToFeed(feedId: string, value: string) {
     await this.redis.push(`${this.FEED_CACHE_PREFIX}:${feedId}`, value);
   }
+
+  async getFeed(feedId: string) {
+    return await this.redis.getList(`${this.FEED_CACHE_PREFIX}:${feedId}`);
+  }
 }

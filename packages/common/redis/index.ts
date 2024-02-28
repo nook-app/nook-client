@@ -76,4 +76,8 @@ export class RedisClient {
   async push(key: string, value: string) {
     await this.redis.multi().lpush(key, value).ltrim(key, 0, 999).exec();
   }
+
+  async getList(key: string) {
+    return await this.redis.lrange(key, 0, 100);
+  }
 }

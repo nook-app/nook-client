@@ -5,14 +5,12 @@ import {
   ObjectId,
   Document,
 } from "mongodb";
-import { Content, EntityEvent, Channel, Nook } from "../types";
+import { Content } from "../types";
 
 const DB_NAME = "nook";
 
 export enum MongoCollection {
   Content = "content",
-  Nooks = "nooks",
-  Channels = "channels",
 }
 
 export class MongoClient {
@@ -53,35 +51,10 @@ export class MongoClient {
       .toArray();
   };
 
-  getChannels = async (channelIds: string[]) => {
-    const collection = this.getCollection<Channel>(MongoCollection.Channels);
-    return await collection
-      .find({
-        contentId: {
-          $in: channelIds,
-        },
-      })
-      .toArray();
-  };
-
-  getNook = async (nookId: string) => {
-    const collection = this.getCollection<Nook>(MongoCollection.Nooks);
-    return await collection.findOne({
-      nookId,
-    });
-  };
-
   findContent = async (contentId: string) => {
     const collection = this.getCollection<Content>(MongoCollection.Content);
     return await collection.findOne({
       contentId,
-    });
-  };
-
-  findChannel = async (channelId: string) => {
-    const collection = this.getCollection<Channel>(MongoCollection.Channels);
-    return await collection.findOne({
-      contentId: channelId,
     });
   };
 
@@ -127,66 +100,9 @@ export class MongoClient {
     }
   };
 
-  upsertChannel = async (channel: Channel) => {
-    const collection = this.getCollection<Channel>(MongoCollection.Channels);
-    const existingChannel = await collection.findOne({
-      contentId: channel.contentId,
-    });
-    if (existingChannel) {
-      return await collection.updateOne(
-        {
-          contentId: channel.contentId,
-        },
-        {
-          $set: {
-            ...channel,
-            _id: existingChannel._id,
-            updatedAt: new Date(),
-          },
-        },
-      );
-    }
-
-    return await collection.insertOne({
-      ...channel,
-      _id: this.generateObjectIdFromDate(channel.createdAt),
-    });
-  };
-
   deleteContent = async (contentId: string) => {
     this.getCollection(MongoCollection.Content).deleteOne({
       contentId,
     });
-  };
-
-  incrementEngagement = async (
-    contentId: string,
-    type: string,
-    decrement = false,
-  ) => {
-    this.getCollection(MongoCollection.Content).updateOne(
-      {
-        contentId,
-      },
-      {
-        $inc: {
-          [`engagement.${type}`]: decrement ? -1 : 1,
-        },
-        $set: {
-          updatedAt: new Date(),
-        },
-      },
-    );
-  };
-
-  searchChannels = async (query: string) => {
-    const collection = this.getCollection<Channel>(MongoCollection.Channels);
-    return await collection
-      .find({
-        $text: {
-          $search: query,
-        },
-      })
-      .toArray();
   };
 }

@@ -10,23 +10,22 @@ import {
   TokenResponse,
   GetUserResponse,
 } from "../../types";
-import { Nook } from "@nook/common/types";
-import { PrismaClient } from "@nook/common/prisma/nook";
 import { ObjectId } from "mongodb";
+import { EntityClient, NookClient } from "@nook/common/clients";
 
 export class UserService {
-  private client: MongoClient;
   private farcasterAuthClient: FarcasterAuthClient;
-  private nookClient: PrismaClient;
   private jwt: FastifyInstance["jwt"];
+  private entityClient: EntityClient;
+  private nookClient: NookClient;
 
   constructor(fastify: FastifyInstance) {
-    this.client = fastify.mongo.client;
-    this.nookClient = fastify.nook.client;
     this.jwt = fastify.jwt;
     this.farcasterAuthClient = createAppClient({
       ethereum: viemConnector(),
     });
+    this.entityClient = fastify.entity.client;
+    this.nookClient = fastify.nook.client;
   }
 
   async signInWithFarcaster(
@@ -43,45 +42,29 @@ export class UserService {
 
     const fid = "3887";
     // const fid = verifyResult.fid.toString();
-    const entity = { _id: 1 };
 
-    // if (!entity) {
-    //   entity = (await getOrCreateEntitiesForFids(this.client, [fid]))[fid];
-    // }
-
+    const entity = await this.entityClient.fetchEntityByFid(BigInt(fid));
     if (!entity) {
       return;
     }
 
     const refreshToken = this.jwt.sign({
-      id: entity._id.toString(),
+      id: entity.id,
     });
 
-    let user = await this.nookClient.user.findUnique({
-      where: {
-        id: entity._id.toString(),
-      },
-    });
-
+    let user = await this.nookClient.getUser(entity.id);
     if (!user) {
-      user = await this.nookClient.user.create({
-        data: {
-          id: entity._id.toString(),
-          signedUpAt: new Date(),
-          loggedInAt: new Date(),
-          signerEnabled: false,
-          refreshToken,
-        },
-      });
+      user = await this.nookClient.createUser(entity.id, refreshToken);
     }
-
-    const jwtPayload = {
-      id: user.id,
-    };
 
     const expiresIn = 60 * 60 * 24 * 7;
     const expiresAt = Math.floor(new Date().getTime() / 1000) + expiresIn;
-    const token = this.jwt.sign(jwtPayload, { expiresIn });
+    const token = this.jwt.sign(
+      {
+        id: user.id,
+      },
+      { expiresIn },
+    );
 
     return {
       token,
@@ -92,12 +75,7 @@ export class UserService {
 
   async getToken(refreshToken: string): Promise<TokenResponse | undefined> {
     const decoded = this.jwt.verify(refreshToken) as { id: string };
-    const user = await this.nookClient.user.findUnique({
-      where: {
-        id: decoded.id,
-      },
-    });
-
+    const user = await this.nookClient.getUser(decoded.id);
     if (!user) {
       return;
     }
@@ -106,13 +84,14 @@ export class UserService {
       throw new Error("Invalid refresh token");
     }
 
-    const jwtPayload = {
-      id: user.id,
-    };
-
     const expiresIn = 60 * 60 * 24 * 7;
     const expiresAt = Math.floor(new Date().getTime() / 1000) + expiresIn;
-    const token = this.jwt.sign(jwtPayload, { expiresIn });
+    const token = this.jwt.sign(
+      {
+        id: user.id,
+      },
+      { expiresIn },
+    );
 
     return {
       refreshToken,
@@ -121,28 +100,13 @@ export class UserService {
     };
   }
 
-  async getUser(userId: string): Promise<GetUserResponse | undefined> {
-    const user = await this.nookClient.user.findUnique({
-      where: {
-        id: userId,
-      },
-      include: {
-        nookMemberships: true,
-      },
-    });
-
+  async getUser(id: string): Promise<GetUserResponse | undefined> {
+    const user = await this.nookClient.getUser(id);
     if (!user) {
       return;
     }
 
-    const nooks = await this.client
-      .getCollection<Nook>(MongoCollection.Nooks)
-      .find({
-        _id: {
-          $in: user.nookMemberships.map((nook) => new ObjectId(nook.nookId)),
-        },
-      })
-      .toArray();
+    const nooks = await this.nookClient.getNooksByUser(id);
 
     return {
       user,
@@ -151,7 +115,7 @@ export class UserService {
         createdAt: user.signedUpAt,
         updatedAt: user.signedUpAt,
       },
-      nooks,
+      nooks: nooks.map((nook) => nook.nook),
     };
   }
 }
