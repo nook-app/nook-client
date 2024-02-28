@@ -188,7 +188,11 @@ export class FarcasterClient {
   getMentions(data: FarcasterCast) {
     const mentions = [];
     // @ts-ignore
-    if (data.rawMentions && data.rawMentions !== Prisma.DbNull) {
+    if (
+      data.rawMentions &&
+      (data.rawMentions as unknown) !== Prisma.DbNull &&
+      Array.isArray(data.rawMentions)
+    ) {
       for (const mention of data.rawMentions as unknown as FarcasterCastMention[]) {
         mentions.push({
           mention: mention.mention,
@@ -202,7 +206,11 @@ export class FarcasterClient {
   getUrlEmbeds(data: FarcasterCast) {
     const embeds: string[] = [];
     // @ts-ignore
-    if (data.rawUrlEmbeds && data.rawUrlEmbeds !== Prisma.DbNull) {
+    if (
+      data.rawUrlEmbeds &&
+      (data.rawUrlEmbeds as unknown) !== Prisma.DbNull &&
+      Array.isArray(data.rawUrlEmbeds)
+    ) {
       for (const url of data.rawUrlEmbeds as string[]) {
         embeds.push(url);
       }
@@ -214,7 +222,8 @@ export class FarcasterClient {
     const embeds: FidHash[] = [];
     if (
       data.rawCastEmbeds &&
-      (data.rawCastEmbeds as unknown) !== Prisma.DbNull
+      (data.rawCastEmbeds as unknown) !== Prisma.DbNull &&
+      Array.isArray(data.rawCastEmbeds)
     ) {
       for (const embed of data.rawCastEmbeds as unknown as FarcasterCastEmbedCast[]) {
         embeds.push({ fid: embed.fid, hash: embed.embedHash });
