@@ -56,7 +56,7 @@ export const ChannelScreen = () => {
           data: {
             type: NookPanelType.FarcasterFeed,
             args: {
-              feedId: channel.id,
+              feedId: `channel:${channelId}`,
             },
           },
         },

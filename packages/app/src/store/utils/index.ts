@@ -43,7 +43,8 @@ export const generateHomeNook = (entityId: string): NookResponse => {
               data: {
                 type: NookPanelType.FarcasterFeed,
                 args: {
-                  feedId: "channel:https://farcaster.group/founders",
+                  feedId:
+                    "channel:chain://eip155:1/erc721:0xca21d4228cdcc68d4e23807e5e370c07577dd152",
                 },
               },
             },
