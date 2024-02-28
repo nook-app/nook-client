@@ -1,5 +1,5 @@
 import { privateKeyToAccount } from "viem/accounts";
-import * as ed from "@nook/api/src/utils/ed25519";
+import * as ed from "./ed25519";
 
 type WarpcastSignerResponse = {
   result: {

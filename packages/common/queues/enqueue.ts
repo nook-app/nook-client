@@ -11,7 +11,6 @@ export const publishEvents = async (events: EntityEvent<EntityEventData>[]) => {
   await queue.addBulk(
     events.map((event) => {
       const jobId = toJobId(event.source);
-      // Convert event data containing BigInt to strings
       const eventData = JSON.parse(
         JSON.stringify(event, (_, v) =>
           typeof v === "bigint" ? v.toString() : v,
@@ -19,7 +18,7 @@ export const publishEvents = async (events: EntityEvent<EntityEventData>[]) => {
       );
       return {
         name: jobId,
-        data: eventData, // Use the converted event data
+        data: eventData,
         opts: {
           jobId,
           removeOnComplete: {
