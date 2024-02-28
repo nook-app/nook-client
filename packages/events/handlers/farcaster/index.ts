@@ -55,6 +55,7 @@ export class FarcasterProcessor {
 
   async processCastAdd(data: FarcasterCast) {
     const promises = [];
+    promises.push(this.farcasterClient.getCast(data.hash));
 
     if (data.parentUrl) {
       promises.push(

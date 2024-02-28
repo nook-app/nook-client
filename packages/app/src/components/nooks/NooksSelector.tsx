@@ -1,11 +1,11 @@
 import { View, YStack } from "tamagui";
 import { Image } from "expo-image";
-import { Nook } from "@nook/common/types";
 import { useNooks } from "@/hooks/useNooks";
 import { useCallback } from "react";
 import { TouchableOpacity } from "react-native-gesture-handler";
 import { useAppSelector } from "@/hooks/useAppSelector";
 import { selectNookById } from "@/store/slices/nook";
+import { NookResponse } from "@nook/common/types";
 
 const NookButton = ({
   nook,
@@ -13,15 +13,15 @@ const NookButton = ({
   isActive,
   onPress,
 }: {
-  nook: Nook;
-  onPress: (nook: Nook) => void;
+  nook: NookResponse;
+  onPress: (nook: NookResponse) => void;
   isActive?: boolean;
   isUnfollowed?: boolean;
 }) => {
   return (
     <TouchableOpacity onPress={() => onPress(nook)}>
       <View
-        key={nook.nookId}
+        key={nook.id}
         justifyContent="center"
         alignItems="center"
         borderRadius="$4"
@@ -46,7 +46,7 @@ const NookButton = ({
           }}
         >
           <Image
-            source={nook.image}
+            source={nook.imageUrl}
             tintColor="white"
             style={{
               width: 24,
@@ -64,8 +64,8 @@ export const NooksSelector = () => {
   const { nooks, activeNook, navigateToNook } = useNooks();
 
   const onPress = useCallback(
-    (nook: Nook) => {
-      navigateToNook(nook.nookId);
+    (nook: NookResponse) => {
+      navigateToNook(nook.id);
     },
     [navigateToNook],
   );
@@ -76,15 +76,15 @@ export const NooksSelector = () => {
         <NookButton
           nook={homeNook}
           onPress={onPress}
-          isActive={activeNook?.nookId === homeNook.nookId}
+          isActive={activeNook?.id === homeNook.id}
         />
       )}
       {nooks.map((nook) => (
         <NookButton
           nook={nook}
-          key={nook.nookId}
+          key={nook.id}
           onPress={onPress}
-          isActive={activeNook?.nookId === nook.nookId}
+          isActive={activeNook?.id === nook.id}
         />
       ))}
     </YStack>

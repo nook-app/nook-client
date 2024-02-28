@@ -22,7 +22,7 @@ export type FarcasterCastEngagement = {
   quotes: number;
 };
 
-export type FarcasterCastResponse = {
+export type BaseFarcasterCastResponse = {
   hash: string;
   timestamp: number;
   entity: EntityResponse;
@@ -36,5 +36,8 @@ export type FarcasterCastResponse = {
   parent?: FarcasterCastResponse;
   rootParent?: FarcasterCastResponse;
   channel?: Channel;
+};
+
+export type FarcasterCastResponse = BaseFarcasterCastResponse & {
   engagement: FarcasterCastEngagement;
 };

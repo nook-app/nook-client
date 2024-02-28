@@ -14,7 +14,7 @@ export const baseQuery = fetchBaseQuery({
   },
 });
 
-export const generateHomeNook = (entityId: string): NookResponse => {
+export const generateHomeNook = (fid: string): NookResponse => {
   return {
     id: "home",
     creator: {
@@ -32,19 +32,18 @@ export const generateHomeNook = (entityId: string): NookResponse => {
     metadata: {
       shelves: [
         {
-          id: "founders",
-          name: "Founders",
-          description: "For founders",
+          id: "following",
+          name: "Following",
+          description: "Posts from people you follow",
           panels: [
             {
               id: "new",
               name: "New",
-              description: "New posts from founders",
+              description: "New posts from people you follow",
               data: {
                 type: NookPanelType.FarcasterFeed,
                 args: {
-                  feedId:
-                    "channel:chain://eip155:1/erc721:0xca21d4228cdcc68d4e23807e5e370c07577dd152",
+                  feedId: `user:following:${fid}`,
                 },
               },
             },

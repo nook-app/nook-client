@@ -89,6 +89,35 @@ export const EntityScreen = () => {
   const {
     params: { entityId },
   } = useRoute<RouteProp<RootStackParamList, "Entity">>();
+  const { farcaster } = useEntity(entityId);
 
-  return <Panels renderHeader={EntityHeader} panels={[]} />;
+  if (!farcaster) return null;
+
+  return (
+    <Panels
+      renderHeader={EntityHeader}
+      panels={[
+        {
+          id: "posts",
+          name: "Posts",
+          data: {
+            type: NookPanelType.FarcasterFeed,
+            args: {
+              feedId: `user:casts:${farcaster.fid}`,
+            },
+          },
+        },
+        {
+          id: "replies",
+          name: "Replies",
+          data: {
+            type: NookPanelType.FarcasterFeed,
+            args: {
+              feedId: `user:replies:${farcaster.fid}`,
+            },
+          },
+        },
+      ]}
+    />
+  );
 };

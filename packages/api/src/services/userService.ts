@@ -38,10 +38,10 @@ export class UserService {
       throw new Error(verifyResult.error?.message || "Sign in failed");
     }
 
-    const fid = "3";
+    const fid = "3887";
     // const fid = verifyResult.fid.toString();
 
-    const entity = await this.entityClient.fetchEntityByFid(BigInt(fid));
+    const entity = await this.entityClient.getEntityByFid(BigInt(fid));
     if (!entity) {
       return;
     }

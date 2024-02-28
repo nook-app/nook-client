@@ -11,7 +11,12 @@ import {
   getSSLHubRpcClient,
   Message as HubMessage,
 } from "@farcaster/hub-nodejs";
-import { EntityResponse, FarcasterCastResponse, FidHash } from "../../types";
+import {
+  BaseFarcasterCastResponse,
+  EntityResponse,
+  FarcasterCastResponse,
+  FidHash,
+} from "../../types";
 import { NookClient } from "../nook";
 import { EntityClient } from "../entity";
 
@@ -55,13 +60,34 @@ export class FarcasterClient {
   }
 
   async getCasts(hashes: string[]) {
-    return await Promise.all(hashes.map((hash) => this.getCast(hash)));
+    return (await Promise.all(hashes.map((hash) => this.getCast(hash)))).filter(
+      Boolean,
+    ) as FarcasterCastResponse[];
   }
 
   async getCast(
     hash: string,
     data?: FarcasterCast,
-  ): Promise<FarcasterCastResponse> {
+  ): Promise<FarcasterCastResponse | undefined> {
+    const [cast, engagement] = await Promise.all([
+      this.getCastData(hash, data),
+      this.getEngagement(hash),
+    ]);
+
+    if (!cast) {
+      return;
+    }
+
+    return {
+      ...cast,
+      engagement,
+    };
+  }
+
+  async getCastData(
+    hash: string,
+    data?: FarcasterCast,
+  ): Promise<BaseFarcasterCastResponse | undefined> {
     const cached = await this.redis.getJson(
       `${this.CAST_CACHE_PREFIX}:${hash}`,
     );
@@ -76,14 +102,13 @@ export class FarcasterClient {
       }));
 
     if (!cast) {
-      throw new Error(`Cast not found: ${hash}`);
+      return;
     }
 
-    const [relatedCasts, entityMap, channel, engagement] = await Promise.all([
+    const [relatedCasts, entityMap, channel] = await Promise.all([
       this.getRelatedCasts(cast),
       this.getRelatedEntities(cast),
       this.getRelatedChannel(cast),
-      this.getEngagement(cast.hash),
     ]);
 
     const mentions = this.getMentions(cast);
@@ -93,7 +118,7 @@ export class FarcasterClient {
       castEmbeds.push(relatedCasts[hash]);
     }
 
-    const response: FarcasterCastResponse = {
+    const response: BaseFarcasterCastResponse = {
       hash: cast.hash,
       timestamp: cast.timestamp.getTime(),
       entity: entityMap[cast.fid.toString()],
@@ -110,7 +135,6 @@ export class FarcasterClient {
           ? relatedCasts[cast.rootParentHash]
           : undefined,
       channel,
-      engagement,
     };
 
     await this.redis.setJson(`${this.CAST_CACHE_PREFIX}:${hash}`, response);

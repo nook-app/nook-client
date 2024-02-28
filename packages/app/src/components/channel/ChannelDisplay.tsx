@@ -17,7 +17,7 @@ export const ChannelDisplay = ({ channel }: { channel: Channel }) => {
       <XStack gap="$1" alignItems="center">
         <View borderRadius="$10" overflow="hidden">
           <Image
-            source={{ uri: channel.imageUrl }}
+            source={{ uri: channel.imageUrl || undefined }}
             style={{ width: 16, height: 16 }}
           />
         </View>
