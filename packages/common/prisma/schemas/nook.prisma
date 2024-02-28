@@ -21,7 +21,6 @@ model User {
     signers      Signer[]
     createdNooks Nook[]
     nooks        NookMembership[]
-    Channel      Channel[]
 }
 
 model Signer {
@@ -79,6 +78,4 @@ model Channel {
 
     createdAt DateTime @default(now())
     updatedAt DateTime @default(now()) @updatedAt
-
-    creator User? @relation(fields: [creatorId], references: [id])
 }

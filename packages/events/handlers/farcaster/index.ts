@@ -39,14 +39,7 @@ export class FarcasterProcessor {
   async processCastAdd(data: FarcasterCast) {
     const cast = await this.farcasterClient.getCast(data.hash);
     const fids = this.farcasterClient.getFidsFromCast(cast);
-    const entities = await this.entityClient.getEntitiesByFid(fids);
-    const entityMap = entities.reduce(
-      (acc, entity) => {
-        acc[entity.farcaster.fid] = entity;
-        return acc;
-      },
-      {} as Record<string, EntityResponse>,
-    );
+    await this.entityClient.getEntitiesByFid(fids);
 
     if (data.parentUrl) {
       await this.nookClient.getChannel(data.parentUrl);
@@ -55,19 +48,19 @@ export class FarcasterProcessor {
 
     if (data.parentHash) {
       await this.feedClient.addToFeed(
-        `entity:replies:${entityMap[data.fid.toString()].id}`,
+        `user:replies:${data.fid.toString()}`,
         cast.hash,
       );
     } else {
       await this.feedClient.addToFeed(
-        `entity:casts:${entityMap[data.fid.toString()].id}`,
+        `user:casts:${data.fid.toString()}`,
         cast.hash,
       );
     }
 
     const followers = await this.farcasterClient.getFollowers(data.fid);
     await this.feedClient.addToFeeds(
-      followers.map((fid) => `entity:following:${fid}`),
+      followers.map(({ fid }) => `user:following:${fid.toString()}`),
       cast.hash,
     );
   }

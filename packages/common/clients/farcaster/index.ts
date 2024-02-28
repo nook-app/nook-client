@@ -158,14 +158,11 @@ export class FarcasterClient {
   }
 
   async getFollowers(fid: bigint) {
-    console.time("getFollowers");
-    const x = await this.client.farcasterLink.findMany({
+    return await this.client.farcasterLink.findMany({
       where: {
         linkType: "follow",
         targetFid: fid,
       },
     });
-    console.timeEnd("getFollowers");
-    return x;
   }
 }
