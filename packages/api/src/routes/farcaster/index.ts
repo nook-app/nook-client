@@ -95,5 +95,18 @@ export const farcasterRoutes = async (fastify: FastifyInstance) => {
         }
       },
     );
+
+    fastify.get<{ Params: { fid: string } }>(
+      "/farcaster/users/:fid/followers",
+      async (request, reply) => {
+        try {
+          const data = await farcasterService.getFollowers(request.params.fid);
+          return reply.send({ data });
+        } catch (e) {
+          console.error("/farcaster/username/:fid", e);
+          return reply.code(500).send({ message: (e as Error).message });
+        }
+      },
+    );
   });
 };

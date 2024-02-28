@@ -2,10 +2,10 @@ import { createEntityAdapter, createSlice } from "@reduxjs/toolkit";
 import { RootState } from "..";
 import { userApi } from "../apis/userApi";
 import { farcasterApi } from "../apis/farcasterApi";
-import { EntityWithRelations } from "@nook/common/types";
+import { EntityResponse } from "@nook/common/types";
 
 const entityAdapter = createEntityAdapter({
-  selectId: (entity: EntityWithRelations) => entity.id,
+  selectId: (entity: EntityResponse) => entity.id,
 });
 
 const entitySlice = createSlice({

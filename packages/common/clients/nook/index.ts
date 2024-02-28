@@ -1,4 +1,3 @@
-import { Entity } from "../../prisma/entity";
 import { Channel, PrismaClient } from "../../prisma/nook";
 import { RedisClient } from "../../redis";
 import {
@@ -6,7 +5,7 @@ import {
   getWarpcastDeeplink,
   validateWarpcastSigner,
 } from "../../signer";
-import { NookMetadata, NookResponse } from "../../types";
+import { EntityResponse, NookMetadata, NookResponse } from "../../types";
 import { EntityClient } from "../entity";
 
 export class NookClient {
@@ -238,7 +237,7 @@ export class NookClient {
       throw new Error("Channel not found");
     }
 
-    let creator: Entity | undefined;
+    let creator: EntityResponse | undefined;
     if (channelData.leadFid) {
       creator = await this.entityClient.getEntityByFid(
         BigInt(channelData.leadFid),

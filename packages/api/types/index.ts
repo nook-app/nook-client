@@ -1,5 +1,5 @@
 import { User, Channel } from "@nook/common/prisma/nook";
-import { EntityWithRelations, NookResponse } from "@nook/common/types";
+import { EntityResponse, NookResponse } from "@nook/common/types";
 
 export type SignInWithFarcasterRequest = {
   message: string;
@@ -22,17 +22,17 @@ export type SignerPublicData = {
 
 export type GetUserResponse = {
   user: User;
-  entity: EntityWithRelations;
+  entity: EntityResponse;
   nooks: NookResponse[];
 };
 
 export type FarcasterCastResponse = {
   hash: string;
   timestamp: number;
-  entity: EntityWithRelations;
+  entity: EntityResponse;
   text: string;
   mentions: {
-    entity: EntityWithRelations;
+    entity: EntityResponse;
     position: bigint;
   }[];
   castEmbeds: FarcasterCastResponse[];

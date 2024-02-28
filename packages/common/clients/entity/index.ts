@@ -1,6 +1,19 @@
-import { Prisma, PrismaClient } from "../../prisma/entity";
+import {
+  Entity,
+  EntityBlockchain,
+  EntityFarcaster,
+  EntityUsername,
+  Prisma,
+  PrismaClient,
+} from "../../prisma/entity";
 import { RedisClient } from "../../redis";
-import { EntityWithRelations, FarcasterUser } from "../../types";
+import { EntityResponse, FarcasterUser } from "../../types";
+
+type EntityWithRelations = Entity & {
+  farcasterAccounts: EntityFarcaster[];
+  blockchainAccounts: EntityBlockchain[];
+  usernames: EntityUsername[];
+};
 
 export class EntityClient {
   private client: PrismaClient;
@@ -24,14 +37,12 @@ export class EntityClient {
     await this.redis.close();
   }
 
-  async cacheEntity(entity: EntityWithRelations) {
+  async cacheEntity(entity: EntityResponse) {
     await Promise.all([
       this.redis.setJson(`${this.ENTITY_CACHE_PREFIX}:${entity.id}`, entity),
-      ...entity.farcasterAccounts.map((farcasterAccount) =>
-        this.redis.setJson(
-          `${this.FID_CACHE_PREFIX}:${farcasterAccount}`,
-          entity,
-        ),
+      this.redis.setJson(
+        `${this.FID_CACHE_PREFIX}:${entity.farcaster.fid}`,
+        entity,
       ),
     ]);
   }
@@ -53,18 +64,20 @@ export class EntityClient {
       },
     });
 
-    if (entity) {
-      await this.cacheEntity(entity);
+    if (!entity) {
+      throw new Error(`Could not find entity with id ${entityId}`);
     }
 
-    return entity;
+    const response = this.formatEntity(entity);
+    await this.cacheEntity(response);
+    return response;
   }
 
   async getEntitiesByFid(fids: bigint[]) {
     return await Promise.all(fids.map(async (fid) => this.getEntityByFid(fid)));
   }
 
-  async getEntityByFid(fid: bigint): Promise<EntityWithRelations> {
+  async getEntityByFid(fid: bigint): Promise<EntityResponse> {
     const cached = await this.redis.getJson(`${this.FID_CACHE_PREFIX}:${fid}`);
     if (cached) {
       return cached;
@@ -76,11 +89,36 @@ export class EntityClient {
       entity = await this.createEntityByFid(fid);
     }
 
-    if (entity) {
-      await this.cacheEntity(entity);
+    if (!entity) {
+      throw new Error(`Could not find or create entity for fid ${fid}`);
     }
 
-    return entity;
+    const response = this.formatEntity(entity);
+    await this.cacheEntity(response);
+    return response;
+  }
+
+  formatEntity(entity: EntityWithRelations): EntityResponse {
+    return {
+      id: entity.id,
+      farcaster: {
+        fid: entity.farcasterAccounts[0].fid.toString(),
+        username: entity.farcasterAccounts[0].username || undefined,
+        displayName: entity.farcasterAccounts[0].displayName || undefined,
+        bio: entity.farcasterAccounts[0].bio || undefined,
+        url: entity.farcasterAccounts[0].url || undefined,
+        pfp: entity.farcasterAccounts[0].pfp || undefined,
+      },
+      blockchain: entity.blockchainAccounts.map((account) => ({
+        protocol: account.protocol,
+        address: account.address,
+        isContract: account.isContract,
+      })),
+      usernames: entity.usernames.map((username) => ({
+        service: username.service,
+        username: username.username,
+      })),
+    };
   }
 
   async fetchEntityByFid(fid: bigint) {

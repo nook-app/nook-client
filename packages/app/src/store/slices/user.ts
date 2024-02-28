@@ -1,11 +1,11 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { User } from "@nook/common/prisma/nook";
 import { userApi } from "../apis/userApi";
-import { EntityWithRelations, NookResponse } from "@nook/common/types";
+import { EntityResponse, NookResponse } from "@nook/common/types";
 
 interface UserState {
   user?: User;
-  entity?: EntityWithRelations;
+  entity?: EntityResponse;
   nooks: NookResponse[];
   theme: string;
   activeNook?: string;

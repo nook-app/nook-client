@@ -5,7 +5,11 @@ import {
   NookClient,
 } from "@nook/common/clients";
 import { FarcasterCast } from "@nook/common/prisma/farcaster";
-import { EntityEvent, FarcasterEventType } from "@nook/common/types";
+import {
+  EntityEvent,
+  EntityResponse,
+  FarcasterEventType,
+} from "@nook/common/types";
 
 export class FarcasterProcessor {
   private nookClient: NookClient;
@@ -35,10 +39,36 @@ export class FarcasterProcessor {
   async processCastAdd(data: FarcasterCast) {
     const cast = await this.farcasterClient.getCast(data.hash);
     const fids = this.farcasterClient.getFidsFromCast(cast);
-    await this.entityClient.getEntitiesByFid(fids);
+    const entities = await this.entityClient.getEntitiesByFid(fids);
+    const entityMap = entities.reduce(
+      (acc, entity) => {
+        acc[entity.farcaster.fid] = entity;
+        return acc;
+      },
+      {} as Record<string, EntityResponse>,
+    );
+
     if (data.parentUrl) {
       await this.nookClient.getChannel(data.parentUrl);
-      await this.feedClient.addToFeed(data.parentUrl, cast.hash);
+      await this.feedClient.addToFeed(`channel:${data.parentUrl}`, cast.hash);
     }
+
+    if (data.parentHash) {
+      await this.feedClient.addToFeed(
+        `entity:replies:${entityMap[data.fid.toString()].id}`,
+        cast.hash,
+      );
+    } else {
+      await this.feedClient.addToFeed(
+        `entity:casts:${entityMap[data.fid.toString()].id}`,
+        cast.hash,
+      );
+    }
+
+    const followers = await this.farcasterClient.getFollowers(data.fid);
+    await this.feedClient.addToFeeds(
+      followers.map((fid) => `entity:following:${fid}`),
+      cast.hash,
+    );
   }
 }

@@ -77,6 +77,14 @@ export class RedisClient {
     await this.redis.multi().lpush(key, value).ltrim(key, 0, 999).exec();
   }
 
+  async batchPush(keys: string[], value: string) {
+    const pipeline = this.redis.pipeline();
+    for (const key of keys) {
+      pipeline.lpush(key, value).ltrim(key, 0, 999);
+    }
+    await pipeline.exec();
+  }
+
   async getList(key: string) {
     return await this.redis.lrange(key, 0, 100);
   }

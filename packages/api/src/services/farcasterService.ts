@@ -14,7 +14,7 @@ import {
 } from "@nook/common/clients";
 import { FarcasterCast } from "@nook/common/prisma/farcaster";
 import { Channel } from "@nook/common/prisma/nook";
-import { EntityWithRelations } from "@nook/common/types";
+import { EntityResponse } from "@nook/common/types";
 
 export class FarcasterService {
   private nookClient: NookClient;
@@ -172,11 +172,10 @@ export class FarcasterService {
     const entities = await this.entityClient.getEntitiesByFid(fids);
     return entities.reduce(
       (acc, entity) => {
-        const fid = entity.farcasterAccounts[0].fid.toString();
-        acc[fid] = entity;
+        acc[entity.farcaster.fid] = entity;
         return acc;
       },
-      {} as Record<string, EntityWithRelations>,
+      {} as Record<string, EntityResponse>,
     );
   }
 
@@ -212,7 +211,7 @@ export class FarcasterService {
 
   formatCast(
     hash: string,
-    entityMap: Record<string, EntityWithRelations>,
+    entityMap: Record<string, EntityResponse>,
     castMap: Record<string, FarcasterCast>,
     channelMap: Record<string, Channel>,
   ): FarcasterCastResponse | undefined {
@@ -268,5 +267,9 @@ export class FarcasterService {
 
     const casts = await this.getCasts(feed);
     return casts;
+  }
+
+  async getFollowers(fid: string) {
+    return await this.farcasterClient.getFollowers(BigInt(fid));
   }
 }
