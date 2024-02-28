@@ -1,12 +1,6 @@
 import { CONFIG } from "@/constants/index";
 import { getSession } from "@/utils/session";
-import {
-  ContentType,
-  Nook,
-  NookPanelType,
-  NookType,
-  UserFilterType,
-} from "@nook/common/types";
+import { NookPanelType, NookResponse } from "@nook/common/types";
 import { fetchBaseQuery } from "@reduxjs/toolkit/query";
 
 export const baseQuery = fetchBaseQuery({
@@ -20,42 +14,44 @@ export const baseQuery = fetchBaseQuery({
   },
 });
 
-export const generateHomeNook = (entityId: string): Nook => {
+export const generateHomeNook = (entityId: string): NookResponse => {
   return {
-    _id: "home",
-    nookId: "home",
-    image: "https://upload.wikimedia.org/wikipedia/commons/3/34/Home-icon.svg",
+    id: "home",
+    creator: {
+      id: "nook",
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      usernames: [],
+      farcasterAccounts: [],
+      blockchainAccounts: [],
+    },
     name: "Home",
     description: "Your personally-curated nook",
-    slug: "home",
-    type: NookType.Default,
-    shelves: [
-      {
-        name: "Following",
-        slug: "following",
-        description: "Posts from people you follow",
-        panels: [
-          {
-            name: "New",
-            slug: "new",
-            data: {
-              type: NookPanelType.UserPosts,
-              args: {
-                userFilter: {
-                  type: UserFilterType.Following,
-                  args: {
-                    entityId,
-                  },
+    imageUrl:
+      "https://upload.wikimedia.org/wikipedia/commons/3/34/Home-icon.svg",
+    metadata: {
+      shelves: [
+        {
+          id: "founders",
+          name: "Founders",
+          description: "For founders",
+          panels: [
+            {
+              id: "new",
+              name: "New",
+              description: "New posts from founders",
+              data: {
+                type: NookPanelType.FarcasterFeed,
+                args: {
+                  feedId: "https://farcaster.group/founders",
                 },
-                contentTypes: [ContentType.POST],
               },
             },
-          },
-        ],
-      },
-    ],
-    creatorId: "system",
-    createdAt: new Date(),
-    updatedAt: new Date(),
+          ],
+        },
+      ],
+    },
+    createdAt: new Date().getTime(),
+    updatedAt: new Date().getTime(),
   };
 };

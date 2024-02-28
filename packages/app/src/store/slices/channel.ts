@@ -1,10 +1,10 @@
 import { createEntityAdapter, createSlice } from "@reduxjs/toolkit";
-import { nookApi } from "../apis/nookApi";
 import { RootState } from "..";
-import { Channel } from "@nook/common/types";
+import { farcasterApi } from "../apis/farcasterApi";
+import { Channel } from "@nook/common/prisma/nook";
 
 const channelAdapter = createEntityAdapter({
-  selectId: (channel: Channel) => channel.contentId,
+  selectId: (channel: Channel) => channel.id,
 });
 
 const channelSlice = createSlice({
@@ -13,21 +13,20 @@ const channelSlice = createSlice({
   reducers: {},
   extraReducers: (builder) => {
     builder.addMatcher(
-      nookApi.endpoints.getContentFeed.matchFulfilled,
+      farcasterApi.endpoints.getCast.matchFulfilled,
       (state, action) => {
-        channelAdapter.addMany(state, action.payload.referencedChannels);
+        if (action.payload.channel) {
+          channelAdapter.addOne(state, action.payload.channel);
+        }
       },
     );
     builder.addMatcher(
-      nookApi.endpoints.getContent.matchFulfilled,
+      farcasterApi.endpoints.getFeed.matchFulfilled,
       (state, action) => {
-        channelAdapter.addMany(state, action.payload.referencedChannels);
-      },
-    );
-    builder.addMatcher(
-      nookApi.endpoints.searchChannels.matchFulfilled,
-      (state, action) => {
-        channelAdapter.addMany(state, action.payload);
+        const channels = action.payload.data
+          .map((cast) => cast.channel)
+          .filter(Boolean) as Channel[];
+        channelAdapter.addMany(state, channels);
       },
     );
   },

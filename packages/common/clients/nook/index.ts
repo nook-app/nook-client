@@ -6,6 +6,7 @@ import {
   getWarpcastDeeplink,
   validateWarpcastSigner,
 } from "../../signer";
+import { NookMetadata, NookResponse } from "../../types";
 import { EntityClient } from "../entity";
 
 export class NookClient {
@@ -13,8 +14,9 @@ export class NookClient {
   private redis: RedisClient;
   private entityClient: EntityClient;
 
-  FEED_CACHE_PREFIX = "nook";
+  FEED_CACHE_PREFIX = "feed";
   CHANNEL_CACHE_PREFIX = "channel";
+  NOOK_CACHE_PREFIX = "nook";
 
   constructor() {
     this.client = new PrismaClient();
@@ -54,14 +56,15 @@ export class NookClient {
   }
 
   async getNooksByUser(id: string) {
-    return await this.client.nookMembership.findMany({
+    const memberships = await this.client.nookMembership.findMany({
       where: {
         userId: id,
       },
-      include: {
-        nook: true,
-      },
     });
+
+    return await Promise.all(
+      memberships.map((membership) => this.getNook(membership.nookId)),
+    );
   }
 
   async getSigner(id: string, active?: boolean) {
@@ -125,12 +128,45 @@ export class NookClient {
     return state;
   }
 
-  async getNook(id: string) {
+  async getNook(id: string): Promise<NookResponse> {
+    const cached = await this.redis.getJson(`${this.NOOK_CACHE_PREFIX}:${id}`);
+    if (cached) {
+      return cached;
+    }
+
+    const nook = await this.fetchNook(id);
+    if (!nook) {
+      throw new Error(`Nook not found ${id}`);
+    }
+
+    const creator = await this.entityClient.getEntity(nook.creatorId);
+
+    const nookResponse: NookResponse = {
+      id: nook.id,
+      name: nook.name,
+      description: nook.description || undefined,
+      imageUrl: nook.imageUrl || undefined,
+      creator: creator,
+      metadata: nook.metadata as NookMetadata,
+      createdAt: nook.createdAt.getTime(),
+      updatedAt: nook.updatedAt.getTime(),
+    };
+
+    await this.redis.setJson(`${this.NOOK_CACHE_PREFIX}:${id}`, nookResponse);
+
+    return nookResponse;
+  }
+
+  async fetchNook(id: string) {
     return await this.client.nook.findUnique({
       where: {
         id,
       },
     });
+  }
+
+  async getChannels(ids: string[]) {
+    return await Promise.all(ids.map((id) => this.getChannel(id)));
   }
 
   async getChannel(id: string) {
@@ -223,7 +259,7 @@ export class NookClient {
     return channel;
   }
 
-  async getChannels() {
+  async getAllChannels() {
     return await this.client.channel.findMany({
       take: 25,
     });

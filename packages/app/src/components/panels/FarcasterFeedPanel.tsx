@@ -1,59 +1,29 @@
 import { Spinner, Text, View, useTheme } from "tamagui";
 import { FlatList, ViewToken } from "react-native";
-import { memo, useCallback, useEffect, useState } from "react";
-import { nookApi } from "@/store/apis/nookApi";
+import { useCallback, useEffect, useState } from "react";
 import { RefreshControl } from "react-native-gesture-handler";
-import { ContentPostCompact } from "../content/ContentPostCompact";
-import {
-  Content,
-  ContentType,
-  NookPanelData,
-  PostData,
-} from "@nook/common/types";
-import { ContentReplyCompact } from "../content/ContentReplyCompact";
+import { FarcasterFeedArgs } from "@nook/common/types";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Tabs } from "react-native-collapsible-tab-view";
+import { farcasterApi } from "@/store/apis/farcasterApi";
+import { FarcasterCastResponse } from "@nook/api/types";
+import { FarcasterFeedItem } from "../farcaster/FarcasterFeedItem";
 
-export const ContentFeedEntry = memo(
-  ({
-    item,
-    replyAsPost,
-  }: { item: Content<PostData>; replyAsPost?: boolean }) => {
-    if (
-      item.type === ContentType.POST ||
-      (item.type === ContentType.REPLY && replyAsPost)
-    ) {
-      return (
-        <ContentPostCompact key={item.contentId} contentId={item.contentId} />
-      );
-    }
-
-    if (item.type === ContentType.REPLY) {
-      return (
-        <ContentReplyCompact key={item.contentId} contentId={item.contentId} />
-      );
-    }
-
-    return <></>;
-  },
-);
-
-export const ContentFeedPanel = ({
-  panel,
+export const FarcasterFeedPanel = ({
+  args,
   asList,
   asTabs,
-}: { panel: NookPanelData; asList?: boolean; asTabs?: boolean }) => {
+}: { args: FarcasterFeedArgs; asList?: boolean; asTabs?: boolean }) => {
   const insets = useSafeAreaInsets();
   const [cursor, setCursor] = useState<string | undefined>(undefined);
-  const [accumulatedData, setAccumulatedData] = useState<Content[]>([]);
+  const [accumulatedData, setAccumulatedData] = useState<
+    FarcasterCastResponse[]
+  >([]);
   const [refreshing, setRefreshing] = useState(false);
   const theme = useTheme();
 
   const { data, error, isLoading, isFetching, refetch } =
-    nookApi.useGetContentFeedQuery({
-      ...panel,
-      cursor,
-    });
+    farcasterApi.useGetFeedQuery(args);
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: don't need to depend on cursor
   useEffect(() => {
@@ -91,9 +61,10 @@ export const ContentFeedPanel = ({
           lastVisibleItemIndex >= accumulatedData.length - 4
         ) {
           // When the last visible item is among the last 4 items
-          if (data.nextCursor && data.nextCursor !== cursor) {
-            setCursor(data.nextCursor);
-          }
+          // if (data.nextCursor && data.nextCursor !== cursor) {
+          //   setCursor(data.nextCursor);
+          // }
+          cursor;
         }
       }
     },
@@ -118,12 +89,8 @@ export const ContentFeedPanel = ({
   if (asList) {
     return (
       <View paddingBottom={insets.bottom}>
-        {accumulatedData.map((item) => (
-          <ContentFeedEntry
-            key={item.contentId}
-            item={item as Content<PostData>}
-            replyAsPost
-          />
+        {accumulatedData.map((cast) => (
+          <FarcasterFeedItem key={cast.hash} cast={cast} />
         ))}
       </View>
     );
@@ -136,9 +103,9 @@ export const ContentFeedPanel = ({
       nestedScrollEnabled
       data={accumulatedData}
       renderItem={({ item }) => (
-        <ContentFeedEntry item={item as Content<PostData>} />
+        <FarcasterFeedItem key={item.hash} cast={item} />
       )}
-      keyExtractor={(item) => item.contentId}
+      keyExtractor={(item) => item.hash}
       onViewableItemsChanged={onViewableItemsChanged}
       viewabilityConfig={viewabilityConfig}
       ListFooterComponent={() =>

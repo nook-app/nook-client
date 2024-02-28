@@ -4,10 +4,9 @@ import {
   TabBarProps,
   Tabs,
 } from "react-native-collapsible-tab-view";
-import { ContentFeedPanel } from "./ContentFeedPanel";
+import { FarcasterFeedPanel } from "./FarcasterFeedPanel";
 import { useTheme } from "tamagui";
 import { useCallback } from "react";
-import { EntityListPanel } from "./EntityListPanel";
 
 export const Panels = ({
   panels,
@@ -66,7 +65,7 @@ export const Panels = ({
     >
       {panels.map(({ name, data }) => (
         <Tabs.Tab key={name} name={name}>
-          <Panel panel={data} asTabs />
+          <Panel data={data} asTabs />
         </Tabs.Tab>
       ))}
     </Tabs.Container>
@@ -74,29 +73,11 @@ export const Panels = ({
 };
 
 export const Panel = ({
-  panel,
+  data,
   asTabs,
-}: { panel: NookPanelData; asTabs?: boolean }) => {
-  if (
-    [
-      NookPanelType.UserPosts,
-      NookPanelType.ChannelPosts,
-      NookPanelType.PostReplies,
-      NookPanelType.PostQuotes,
-    ].includes(panel.type)
-  ) {
-    return <ContentFeedPanel asTabs={asTabs} panel={panel} />;
-  }
-
-  if (
-    [
-      NookPanelType.UserFollowers,
-      NookPanelType.UserFollowing,
-      NookPanelType.PostLikes,
-      NookPanelType.PostReposts,
-    ].includes(panel.type)
-  ) {
-    return <EntityListPanel asTabs={asTabs} panel={panel} />;
+}: { data: NookPanelData; asTabs?: boolean }) => {
+  if (data.type === NookPanelType.FarcasterFeed) {
+    return <FarcasterFeedPanel asTabs={asTabs} args={data.args} />;
   }
 
   return null;

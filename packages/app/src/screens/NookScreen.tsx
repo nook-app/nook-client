@@ -6,37 +6,20 @@ import { store } from "@/store";
 import { nookApi } from "@/store/apis/nookApi";
 import { Spinner, View } from "tamagui";
 import { Panels } from "@/components/panels/Panels";
+import { useNook } from "@/hooks/useNooks";
 
 export const NookScreen = () => {
   const { params } = useRoute<RouteProp<RootStackParamList, "Nook">>();
   const navigation = useNavigation();
-
-  const nookId = params?.nookId || "home";
-  const shelfId = params?.shelfId;
-
-  const storedNook = nookId
-    ? selectNookById(store.getState(), nookId)
-    : undefined;
-
-  const { data: fetchedNook } = nookApi.useGetNookQuery(
-    { nookId },
-    {
-      skip: !!storedNook,
-    },
-  );
-  const activeNook = storedNook || fetchedNook;
-
-  const activeShelf =
-    activeNook?.shelves.find((shelf) => shelf.slug === shelfId) ||
-    activeNook?.shelves[0];
+  const { nook, shelf } = useNook(params.nookId, params.shelfId);
 
   useEffect(() => {
     navigation.setOptions({
-      title: activeShelf?.name || "",
+      title: shelf?.name || "",
     });
-  }, [activeShelf, navigation]);
+  }, [shelf, navigation]);
 
-  if (!activeShelf || !activeNook) {
+  if (!nook || !shelf) {
     return (
       <View
         padding="$3"
@@ -52,7 +35,7 @@ export const NookScreen = () => {
 
   return (
     <View backgroundColor="$background" height="100%">
-      <Panels panels={activeShelf.panels} />
+      <Panels panels={shelf.panels} />
     </View>
   );
 };

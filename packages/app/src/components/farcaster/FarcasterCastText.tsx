@@ -1,4 +1,3 @@
-import { PostData } from "@nook/common/types";
 import { Linking } from "react-native";
 import { Text, View } from "tamagui";
 import { Buffer } from "buffer";
@@ -8,18 +7,19 @@ import { isWarpcastUrl } from "@/utils";
 import { TouchableOpacity } from "react-native-gesture-handler";
 import { NavigationProp, useNavigation } from "@react-navigation/native";
 import { RootStackParamList } from "@/types";
+import { FarcasterCastResponse } from "@nook/api/types";
 
-export const ContentPostText = ({
-  data,
+export const FarcasterCastText = ({
+  cast,
 }: {
-  data: PostData;
+  cast: FarcasterCastResponse;
 }) => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const state = store.getState();
 
   const textParts = [];
 
-  const textBuffer = Buffer.from(data.text.replaceAll(/\uFFFC/g, ""), "utf-8");
+  const textBuffer = Buffer.from(cast.text.replaceAll(/\uFFFC/g, ""), "utf-8");
 
   const splitLinkParts = (text: string, index: number) => {
     const splitParts: React.JSX.Element[] = [];
@@ -33,7 +33,7 @@ export const ContentPostText = ({
       let part = parts[i];
       if (!part) continue;
 
-      if (data.embeds.includes(part) || isWarpcastUrl(part)) {
+      if (cast.urlEmbeds.includes(part) || isWarpcastUrl(part)) {
         skippedEmbed = true;
         continue;
       }
@@ -46,7 +46,7 @@ export const ContentPostText = ({
       if (/https?:\/\/[^\s]+/.test(part)) {
         splitParts.push(
           <Text
-            key={`${data.contentId}-${index}-${i}-${part}`}
+            key={`${cast.hash}-${index}-${i}-${part}`}
             color="$color10"
             onPress={() => Linking.openURL(part)}
           >
@@ -55,7 +55,7 @@ export const ContentPostText = ({
         );
       } else {
         splitParts.push(
-          <Text key={`${data.contentId}-${index}-${i}-${part}`}>{part}</Text>,
+          <Text key={`${cast.hash}-${index}-${i}-${part}`}>{part}</Text>,
         );
       }
     }
@@ -63,28 +63,27 @@ export const ContentPostText = ({
   };
 
   let index = textBuffer.length;
-  const sortedMentions = [...data.mentions].sort(
-    (a, b) => b.position - a.position,
+  const sortedMentions = [...cast.mentions].sort(
+    (a, b) => Number(b.position) - Number(a.position),
   );
   for (const mention of sortedMentions) {
-    const mentionedEntity = selectEntityById(state, mention.entityId);
+    const mentionedEntity = selectEntityById(state, mention.entity.id);
+    const farcaster = mentionedEntity?.farcasterAccounts?.[0];
     const label = `@${
-      mentionedEntity?.entity?.farcaster?.username ||
-      mentionedEntity?.entity?.farcaster?.fid ||
-      mention.entityId
+      farcaster?.username || farcaster?.fid || mention.entity.id
     }`;
 
     textParts.push(
       ...splitLinkParts(
-        textBuffer.slice(mention.position, index).toString("utf-8"),
+        textBuffer.slice(Number(mention.position), index).toString("utf-8"),
         index,
       ),
     );
     textParts.push(
       <TouchableOpacity
-        key={`${data.contentId}-${mention.position}-${label}`}
+        key={`${cast.hash}-${mention.position}-${label}`}
         onPress={() =>
-          navigation.navigate("Entity", { entityId: mention.entityId })
+          navigation.navigate("Entity", { entityId: mention.entity.id })
         }
       >
         <View
@@ -98,7 +97,7 @@ export const ContentPostText = ({
         </View>
       </TouchableOpacity>,
     );
-    index = mention.position;
+    index = Number(mention.position);
   }
 
   if (index > 0) {

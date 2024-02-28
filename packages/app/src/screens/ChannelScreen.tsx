@@ -1,10 +1,5 @@
 import { Avatar, Text, XStack, YStack } from "tamagui";
-import {
-  ChannelFilterType,
-  ContentType,
-  NookPanelType,
-  TopicType,
-} from "@nook/common/types";
+import { NookPanelType } from "@nook/common/types";
 import { RouteProp, useNavigation, useRoute } from "@react-navigation/native";
 import { RootStackParamList } from "@/types";
 import { Panels } from "@/components/panels/Panels";
@@ -14,7 +9,7 @@ import { useEffect } from "react";
 const ChannelHeader = () => {
   const {
     params: { channelId },
-  } = useRoute<RouteProp<RootStackParamList, "Channel">>();
+  } = useRoute<RouteProp<RootStackParamList, "FarcasterChannel">>();
   const { channel } = useChannel(channelId);
 
   return (
@@ -29,7 +24,7 @@ const ChannelHeader = () => {
             {channel.name}
           </Text>
           <Text color="$gray11" fontSize="$4">
-            {`/${channel.slug}`}
+            {`/${channel.channelId}`}
           </Text>
         </YStack>
       </XStack>
@@ -41,7 +36,7 @@ const ChannelHeader = () => {
 export const ChannelScreen = () => {
   const {
     params: { channelId },
-  } = useRoute<RouteProp<RootStackParamList, "Channel">>();
+  } = useRoute<RouteProp<RootStackParamList, "FarcasterChannel">>();
   const { channel } = useChannel(channelId);
   const navigation = useNavigation();
 
@@ -56,35 +51,12 @@ export const ChannelScreen = () => {
       renderHeader={ChannelHeader}
       panels={[
         {
+          id: "new",
           name: "New",
-          slug: "new",
           data: {
-            type: NookPanelType.ChannelPosts,
+            type: NookPanelType.FarcasterFeed,
             args: {
-              channelFilter: {
-                type: ChannelFilterType.Channels,
-                args: {
-                  channelIds: [channelId],
-                },
-              },
-              contentTypes: [ContentType.POST],
-            },
-          },
-        },
-        {
-          name: "Top",
-          slug: "top",
-          data: {
-            type: NookPanelType.ChannelPosts,
-            args: {
-              channelFilter: {
-                type: ChannelFilterType.Channels,
-                args: {
-                  channelIds: [channelId],
-                },
-              },
-              contentTypes: [ContentType.POST, ContentType.REPLY],
-              sort: "top",
+              feedId: channel.id,
             },
           },
         },

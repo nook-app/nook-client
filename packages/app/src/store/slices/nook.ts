@@ -1,12 +1,12 @@
 import { createEntityAdapter, createSlice } from "@reduxjs/toolkit";
 import { RootState } from "..";
-import { Nook } from "@nook/common/types";
 import { userApi } from "../apis/userApi";
 import { nookApi } from "../apis/nookApi";
 import { generateHomeNook } from "../utils";
+import { NookResponse } from "@nook/common/types";
 
 const nookAdapter = createEntityAdapter({
-  selectId: (nook: Nook) => nook.nookId,
+  selectId: (nook: NookResponse) => nook.id,
 });
 
 const nookSlice = createSlice({
@@ -17,10 +17,7 @@ const nookSlice = createSlice({
     builder.addMatcher(
       userApi.endpoints.getUser.matchFulfilled,
       (state, action) => {
-        nookAdapter.addOne(
-          state,
-          generateHomeNook(action.payload.entity._id.toString()),
-        );
+        nookAdapter.addOne(state, generateHomeNook(action.payload.entity.id));
         nookAdapter.addMany(state, action.payload.nooks);
       },
     );

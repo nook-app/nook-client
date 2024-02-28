@@ -1,14 +1,10 @@
-import { PostData } from "./contentTypes/post";
 import { Metadata } from "metascraper";
-import { Topic } from "./topics";
 import { NFT } from "./providers/simplehash/nft";
 import { NFTCollection } from "./providers/simplehash/contract";
 
-export type ContentData = PostData | UrlMetadata | NFT | NFTCollection;
+export type ContentData = UrlMetadata | NFT | NFTCollection;
 
 export enum ContentType {
-  POST = "POST",
-  REPLY = "REPLY",
   URL = "URL",
   NFT = "NFT",
   NFT_CONTRACT = "NFT_CONTRACT",
@@ -29,23 +25,6 @@ export type ContentBase = {
 
   /** Date record was updated at */
   updatedAt: Date;
-
-  /** Engagement for the content */
-  engagement: {
-    likes: number;
-    reposts: number;
-    replies: number;
-    embeds: number;
-  };
-
-  /** Topics for the content */
-  topics: Topic[];
-
-  /** References content IDs */
-  referencedContentIds: string[];
-
-  /** References entity IDs */
-  referencedEntityIds: string[];
 };
 
 export type UnstructuredFrameMetascraperButtonKeys = {

@@ -1,35 +1,32 @@
 import { selectEntityById } from "@/store/slices/entity";
 import { useAppSelector } from "./useAppSelector";
-import { Entity } from "@nook/common/types";
+import { EntityWithRelations } from "@nook/common/types";
+import { EntityFarcaster } from "@nook/common/prisma/entity";
 
-const getDisplayName = (entity?: Entity) => {
-  if (!entity) return "Unknown";
-  if (entity.farcaster?.displayName) {
-    return entity.farcaster.displayName;
-  }
-  return entity.farcaster?.fid ? `fid:${entity.farcaster.fid}` : "Unknown";
+const getDisplayName = (farcaster: EntityFarcaster) => {
+  return farcaster.displayName || `fid:${farcaster.fid}`;
 };
 
-const getUsername = (entity?: Entity) => {
-  if (!entity) return "@unknown";
-  if (entity.farcaster?.username) {
-    return `@${entity.farcaster.username}`;
-  }
-  return entity.farcaster?.fid ? `fid:${entity.farcaster.fid}` : "@unknown";
+const getUsername = (farcaster: EntityFarcaster) => {
+  return farcaster.username ? `@${farcaster.username}` : `fid:${farcaster.fid}`;
 };
 
-export const useEntity = (entityId?: string) => {
-  const entity = useAppSelector((state) =>
-    entityId ? selectEntityById(state, entityId) : undefined,
-  );
+export const useEntity = (entityId: string) => {
+  const entity = useAppSelector((state) => selectEntityById(state, entityId));
+
+  const farcaster = entity?.farcasterAccounts?.[0];
+  const displayName = farcaster ? getDisplayName(farcaster) : "Unknown";
+  const username = farcaster ? getUsername(farcaster) : "@unknown";
 
   return {
-    entity: entity?.entity,
-    context: entity?.context,
-    displayName: getDisplayName(entity?.entity),
-    username: getUsername(entity?.entity),
-    bio: entity?.entity?.farcaster?.bio,
-    following: entity?.entity?.farcaster?.following || 0,
-    followers: entity?.entity?.farcaster?.followers || 0,
+    entity,
+    displayName,
+    username,
+    bio: farcaster?.bio,
+    url: farcaster?.url,
+    pfp: farcaster?.pfp,
+    farcaster,
+    following: 0,
+    followers: 0,
   };
 };

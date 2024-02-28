@@ -9,13 +9,13 @@ export const EntityAvatar = ({
   size = "$3.5",
 }: { entityId: string; size?: string }) => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
-  const { entity } = useEntity(entityId);
+  const { pfp } = useEntity(entityId);
   return (
     <TouchableOpacity
       onPress={() => navigation.navigate("Entity", { entityId })}
     >
       <Avatar circular size={size}>
-        <Avatar.Image src={entity?.farcaster.pfp} />
+        <Avatar.Image src={pfp || ""} />
         <Avatar.Fallback backgroundColor="$backgroundPress" />
       </Avatar>
     </TouchableOpacity>

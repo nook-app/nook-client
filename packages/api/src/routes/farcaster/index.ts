@@ -71,10 +71,9 @@ export const farcasterRoutes = async (fastify: FastifyInstance) => {
     fastify.post<{ Body: FarcasterFeedRequest }>(
       "/farcaster/feed",
       async (request, reply) => {
-        const { id } = (await request.jwtDecode()) as { id: string };
         try {
           const data = await farcasterService.getFeed(request.body.feedId);
-          return reply.send(data);
+          return reply.send({ data });
         } catch (e) {
           console.error("/farcaster/feed", e);
           return reply.code(500).send({ message: (e as Error).message });

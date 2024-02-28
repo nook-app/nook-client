@@ -1,17 +1,17 @@
-import { Channel } from "@nook/common/types";
 import { Text } from "tamagui";
 import { Image } from "tamagui";
 import { View, XStack } from "tamagui";
 import { NavigationProp, useNavigation } from "@react-navigation/native";
 import { RootStackParamList } from "@/types";
 import { TouchableOpacity } from "react-native-gesture-handler";
+import { Channel } from "@nook/common/prisma/nook";
 
 export const ChannelDisplay = ({ channel }: { channel: Channel }) => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   return (
     <TouchableOpacity
       onPress={() =>
-        navigation.navigate("Channel", { channelId: channel.contentId })
+        navigation.navigate("FarcasterChannel", { channelId: channel.id })
       }
     >
       <XStack gap="$1" alignItems="center">

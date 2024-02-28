@@ -1,11 +1,11 @@
 import { createEntityAdapter, createSlice } from "@reduxjs/toolkit";
-import { nookApi } from "../apis/nookApi";
 import { RootState } from "..";
 import { userApi } from "../apis/userApi";
-import { EntityWithContext } from "@nook/api/types";
+import { farcasterApi } from "../apis/farcasterApi";
+import { EntityWithRelations } from "@nook/common/types";
 
 const entityAdapter = createEntityAdapter({
-  selectId: (entity: EntityWithContext) => entity.entity._id.toString(),
+  selectId: (entity: EntityWithRelations) => entity.id,
 });
 
 const entitySlice = createSlice({
@@ -14,38 +14,22 @@ const entitySlice = createSlice({
   reducers: {},
   extraReducers: (builder) => {
     builder.addMatcher(
-      nookApi.endpoints.getActionsFeed.matchFulfilled,
+      farcasterApi.endpoints.getCast.matchFulfilled,
       (state, action) => {
-        entityAdapter.addMany(state, action.payload.referencedEntities);
+        entityAdapter.addOne(state, action.payload.entity);
       },
     );
     builder.addMatcher(
-      nookApi.endpoints.getContentFeed.matchFulfilled,
+      farcasterApi.endpoints.getFeed.matchFulfilled,
       (state, action) => {
-        entityAdapter.addMany(state, action.payload.referencedEntities);
-      },
-    );
-    builder.addMatcher(
-      nookApi.endpoints.getContent.matchFulfilled,
-      (state, action) => {
-        entityAdapter.addMany(state, action.payload.referencedEntities);
-      },
-    );
-    builder.addMatcher(
-      nookApi.endpoints.getEntities.matchFulfilled,
-      (state, action) => {
-        entityAdapter.addMany(state, action.payload);
+        const entities = action.payload.data.map((cast) => cast.entity);
+        entityAdapter.addMany(state, entities);
       },
     );
     builder.addMatcher(
       userApi.endpoints.getUser.matchFulfilled,
       (state, action) => {
-        entityAdapter.addOne(state, {
-          entity: action.payload.entity,
-          context: {
-            following: false,
-          },
-        });
+        entityAdapter.addOne(state, action.payload.entity);
       },
     );
   },

@@ -1,19 +1,6 @@
-import {
-  Entity,
-  EntityBlockchain,
-  EntityFarcaster,
-  EntityUsername,
-  Prisma,
-  PrismaClient,
-} from "../../prisma/entity";
+import { Prisma, PrismaClient } from "../../prisma/entity";
 import { RedisClient } from "../../redis";
-import { FarcasterUser } from "../../types";
-
-type EntityWithRelations = Entity & {
-  farcasterAccounts: EntityFarcaster[];
-  blockchainAccounts: EntityBlockchain[];
-  usernames: EntityUsername[];
-};
+import { EntityWithRelations, FarcasterUser } from "../../types";
 
 export class EntityClient {
   private client: PrismaClient;
@@ -77,7 +64,7 @@ export class EntityClient {
     return await Promise.all(fids.map(async (fid) => this.getEntityByFid(fid)));
   }
 
-  async getEntityByFid(fid: bigint) {
+  async getEntityByFid(fid: bigint): Promise<EntityWithRelations> {
     const cached = await this.redis.getJson(`${this.FID_CACHE_PREFIX}:${fid}`);
     if (cached) {
       return cached;
@@ -117,7 +104,9 @@ export class EntityClient {
     const response = await fetch(
       `${process.env.FARCASTER_SERVICE_URL}/user/${fid}`,
     );
-    if (!response.ok) return null;
+    if (!response.ok) {
+      throw new Error(`Could not find fid ${fid} in farcaster service`);
+    }
 
     const { user }: { user: FarcasterUser } = await response.json();
 
@@ -137,7 +126,7 @@ export class EntityClient {
     } catch (e) {
       if (e instanceof Prisma.PrismaClientKnownRequestError) {
         if (e.code === "P2002") {
-          return await this.fetchEntityByFid(fid);
+          return (await this.fetchEntityByFid(fid)) as EntityWithRelations;
         }
       }
       throw e;

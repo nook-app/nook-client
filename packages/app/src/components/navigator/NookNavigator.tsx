@@ -7,7 +7,7 @@ import { useAppDispatch } from "@/hooks/useAppDispatch";
 import { setDrawerOpen } from "@/store/slices/navigator";
 import { View, useTheme } from "tamagui";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import ContentScreen from "@/screens/ContentScreen";
+import ContentScreen from "@/screens/FarcasterCastScreen";
 import { RootStackParamList } from "@/types";
 import { Text } from "tamagui";
 import { useNooks } from "@/hooks/useNooks";
@@ -15,9 +15,9 @@ import { EntityScreen } from "@/screens/EntityScreen";
 import { NookScreen } from "@/screens/NookScreen";
 import { ChannelScreen } from "@/screens/ChannelScreen";
 import { EntityFollowersScreen } from "@/screens/EntityFollowersScreen";
-import { ContentLikesScreen } from "@/screens/ContentLikesScreen";
-import { ContentRepostsScreen } from "@/screens/ContentRepostsScreen";
-import { ContentQuotesScreen } from "@/screens/ContentQuotesScreen";
+import { ContentLikesScreen } from "@/screens/FarcasterCastLikesScreen";
+import { ContentRepostsScreen } from "@/screens/FarcasterCastRepostsScreen";
+import { ContentQuotesScreen } from "@/screens/FarcasterCastQuotesScreen";
 import { Image } from "expo-image";
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -37,7 +37,7 @@ const ActiveNookIcon = memo(() => {
       }}
     >
       <Image
-        source={activeNook.image}
+        source={activeNook.imageUrl}
         tintColor="white"
         style={{
           width: 16,
@@ -84,6 +84,7 @@ export function NookNavigator() {
       <Stack.Screen
         name="Nook"
         component={NookScreen}
+        initialParams={{}}
         options={{
           headerLeft: () => <DrawerToggleButton />,
           headerStyle: {
@@ -96,7 +97,7 @@ export function NookNavigator() {
         }}
       />
       <Stack.Screen
-        name="Channel"
+        name="FarcasterChannel"
         component={ChannelScreen}
         options={{
           headerBackTitleVisible: false,
@@ -137,7 +138,7 @@ export function NookNavigator() {
         }}
       />
       <Stack.Screen
-        name="Content"
+        name="FarcasterCast"
         component={ContentScreen}
         options={{
           headerBackTitleVisible: false,
@@ -148,10 +149,10 @@ export function NookNavigator() {
           gestureEnabled: true,
           fullScreenGestureEnabled: true,
         }}
-        getId={({ params }) => params.contentId}
+        getId={({ params }) => params.hash}
       />
       <Stack.Screen
-        name="ContentLikes"
+        name="FarcasterCastLikes"
         component={ContentLikesScreen}
         options={{
           title: "Likes",
@@ -163,10 +164,10 @@ export function NookNavigator() {
           gestureEnabled: true,
           fullScreenGestureEnabled: true,
         }}
-        getId={({ params }) => params.contentId}
+        getId={({ params }) => params.hash}
       />
       <Stack.Screen
-        name="ContentReposts"
+        name="FarcasterCastReposts"
         component={ContentRepostsScreen}
         options={{
           title: "Reposts",
@@ -178,10 +179,10 @@ export function NookNavigator() {
           gestureEnabled: true,
           fullScreenGestureEnabled: true,
         }}
-        getId={({ params }) => params.contentId}
+        getId={({ params }) => params.hash}
       />
       <Stack.Screen
-        name="ContentQuotes"
+        name="FarcasterCastQuotes"
         component={ContentQuotesScreen}
         options={{
           title: "Quotes",
@@ -193,7 +194,7 @@ export function NookNavigator() {
           gestureEnabled: true,
           fullScreenGestureEnabled: true,
         }}
-        getId={({ params }) => params.contentId}
+        getId={({ params }) => params.hash}
       />
     </Stack.Navigator>
   );

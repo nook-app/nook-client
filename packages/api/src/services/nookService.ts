@@ -13,7 +13,7 @@ export class NookService {
   }
 
   async getChannels() {
-    return await this.nookClient.getChannels();
+    return await this.nookClient.getAllChannels();
   }
 
   async getChannel(id: string) {

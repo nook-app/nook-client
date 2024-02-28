@@ -12,8 +12,9 @@ import {
   FeedClient,
   NookClient,
 } from "@nook/common/clients";
-import { Entity } from "@nook/common/prisma/entity";
 import { FarcasterCast } from "@nook/common/prisma/farcaster";
+import { Channel } from "@nook/common/prisma/nook";
+import { EntityWithRelations } from "@nook/common/types";
 
 export class FarcasterService {
   private nookClient: NookClient;
@@ -143,10 +144,11 @@ export class FarcasterService {
     const entities = await this.entityClient.getEntitiesByFid(fids);
     const entityMap = entities.reduce(
       (acc, entity) => {
-        acc[entity.fid.toString()] = entity;
+        const fid = entity.farcasterAccounts[0].fid.toString();
+        acc[fid] = entity;
         return acc;
       },
-      {} as Record<string, Entity>,
+      {} as Record<string, EntityWithRelations>,
     );
 
     const relatedHashes = new Set<string>();
@@ -163,7 +165,9 @@ export class FarcasterService {
       Array.from(relatedHashes),
     );
 
-    const castMap = casts.concat(relatedCasts).reduce(
+    const allCasts = casts.concat(relatedCasts);
+
+    const castMap = allCasts.reduce(
       (acc, cast) => {
         acc[cast.hash] = cast;
         return acc;
@@ -171,25 +175,47 @@ export class FarcasterService {
       {} as Record<string, FarcasterCast>,
     );
 
-    return hashes.map((hash) => this.formatCast(hash, entityMap, castMap));
+    const channelIds = allCasts
+      .map((c) => c.parentUrl)
+      .filter(Boolean) as string[];
+
+    const channels = await this.nookClient.getChannels(channelIds);
+
+    const channelMap = channels.reduce(
+      (acc, channel) => {
+        acc[channel.id] = channel;
+        return acc;
+      },
+      {} as Record<string, Channel>,
+    );
+
+    return hashes.map((hash) =>
+      this.formatCast(hash, entityMap, castMap, channelMap),
+    );
   }
 
   formatCast(
     hash: string,
-    entityMap: Record<string, Entity>,
+    entityMap: Record<string, EntityWithRelations>,
     castMap: Record<string, FarcasterCast>,
+    channelMap: Record<string, Channel>,
   ): FarcasterCastResponse | undefined {
     const cast = castMap[hash];
     if (!cast) return;
 
     let parent: FarcasterCastResponse | undefined;
     if (cast.parentHash) {
-      parent = this.formatCast(cast.parentHash, entityMap, castMap);
+      parent = this.formatCast(cast.parentHash, entityMap, castMap, channelMap);
     }
 
     let rootParent: FarcasterCastResponse | undefined;
     if (cast.rootParentHash !== cast.hash) {
-      rootParent = this.formatCast(cast.rootParentHash, entityMap, castMap);
+      rootParent = this.formatCast(
+        cast.rootParentHash,
+        entityMap,
+        castMap,
+        channelMap,
+      );
     }
 
     const mentions = this.farcasterClient.getMentions(cast);
@@ -197,7 +223,7 @@ export class FarcasterService {
 
     const castEmbeds: FarcasterCastResponse[] = [];
     for (const { hash } of this.farcasterClient.getCastEmbeds(cast)) {
-      const castEmbed = this.formatCast(hash, entityMap, castMap);
+      const castEmbed = this.formatCast(hash, entityMap, castMap, channelMap);
       if (castEmbed) castEmbeds.push();
     }
 
@@ -214,6 +240,7 @@ export class FarcasterService {
       urlEmbeds,
       parent,
       rootParent,
+      channel: cast.parentUrl ? channelMap[cast.parentUrl] : undefined,
     };
   }
 

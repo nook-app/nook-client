@@ -1,4 +1,4 @@
-import { Content, ContentData, ContentType } from "../types";
+import { Content, ContentType } from "../types";
 import {
   NFTCollection,
   NFTCollectionByContractResponse,
@@ -142,15 +142,6 @@ const handleNftContract = async (
       : new Date(),
     createdAt: new Date(),
     updatedAt: new Date(),
-    engagement: {
-      likes: 0,
-      reposts: 0,
-      replies: 0,
-      embeds: 0,
-    },
-    topics: [],
-    referencedEntityIds: [],
-    referencedContentIds: [],
     type: ContentType.NFT_CONTRACT,
     data: collection,
   };
@@ -177,15 +168,6 @@ const handleNftToken = async (
     timestamp: new Date(nft.created_date),
     createdAt: new Date(),
     updatedAt: new Date(),
-    engagement: {
-      likes: 0,
-      reposts: 0,
-      replies: 0,
-      embeds: 0,
-    },
-    topics: [],
-    referencedEntityIds: [],
-    referencedContentIds: [],
     type: ContentType.NFT,
     data: nft,
   };

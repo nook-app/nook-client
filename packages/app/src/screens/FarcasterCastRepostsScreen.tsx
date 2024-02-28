@@ -2,12 +2,13 @@ import { RouteProp, useRoute } from "@react-navigation/native";
 import { RootStackParamList } from "@/types";
 import { Text, View } from "tamagui";
 
-export const EntityFollowersScreen = () => {
-  const route = useRoute<RouteProp<RootStackParamList, "EntityFollowers">>();
+export const ContentRepostsScreen = () => {
+  const route =
+    useRoute<RouteProp<RootStackParamList, "FarcasterCastReposts">>();
 
   return (
     <View backgroundColor="$background" height="100%">
-      <Text>Followers</Text>
+      <Text>Reposts</Text>
     </View>
   );
 };

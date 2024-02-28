@@ -3,7 +3,7 @@ import { userApi } from "./apis/userApi";
 import { nookApi } from "./apis/nookApi";
 import { farcasterApi } from "./apis/farcasterApi";
 import navigatorReducer from "./slices/navigator";
-import contentReducer from "./slices/content";
+import contentReducer from "./slices/cast";
 import userReducer from "./slices/user";
 import entityReducer from "./slices/entity";
 import nookReducer from "./slices/nook";

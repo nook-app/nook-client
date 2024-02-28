@@ -41,15 +41,12 @@ export const ActiveNook = () => {
           )}
         </View>
         <View gap="$2">
-          {activeNook?.shelves.map((shelf, i) => (
-            <TouchableOpacity
-              key={shelf.slug}
-              onPress={() => onPress(shelf.slug)}
-            >
+          {activeNook?.metadata.shelves.map((shelf, i) => (
+            <TouchableOpacity key={shelf.id} onPress={() => onPress(shelf.id)}>
               <View
                 padding="$2"
                 backgroundColor={
-                  activeShelf?.slug === shelf.slug || (!activeShelf && i === 0)
+                  activeShelf?.id === shelf.id || (!activeShelf && i === 0)
                     ? "$backgroundPress"
                     : "$backgroundStrong"
                 }
@@ -57,8 +54,7 @@ export const ActiveNook = () => {
               >
                 <Text
                   fontWeight={
-                    activeShelf?.slug === shelf.slug ||
-                    (!activeShelf && i === 0)
+                    activeShelf?.id === shelf.id || (!activeShelf && i === 0)
                       ? "700"
                       : "500"
                   }

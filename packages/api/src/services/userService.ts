@@ -1,5 +1,4 @@
 import { FastifyInstance } from "fastify";
-import { MongoClient, MongoCollection } from "@nook/common/mongo";
 import {
   AppClient as FarcasterAuthClient,
   createAppClient,
@@ -10,7 +9,6 @@ import {
   TokenResponse,
   GetUserResponse,
 } from "../../types";
-import { ObjectId } from "mongodb";
 import { EntityClient, NookClient } from "@nook/common/clients";
 
 export class UserService {
@@ -40,7 +38,7 @@ export class UserService {
       throw new Error(verifyResult.error?.message || "Sign in failed");
     }
 
-    const fid = "3887";
+    const fid = "3";
     // const fid = verifyResult.fid.toString();
 
     const entity = await this.entityClient.fetchEntityByFid(BigInt(fid));
@@ -107,15 +105,12 @@ export class UserService {
     }
 
     const nooks = await this.nookClient.getNooksByUser(id);
+    const entity = await this.entityClient.getEntity(user.id);
 
     return {
       user,
-      entity: {
-        id: user.id,
-        createdAt: user.signedUpAt,
-        updatedAt: user.signedUpAt,
-      },
-      nooks: nooks.map((nook) => nook.nook),
+      entity,
+      nooks,
     };
   }
 }

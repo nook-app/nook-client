@@ -4,9 +4,6 @@ export type RootStackParamList = {
     nookId: string;
     shelfId?: string;
   };
-  Channel: {
-    channelId: string;
-  };
   Entity: {
     entityId: string;
   };
@@ -14,16 +11,19 @@ export type RootStackParamList = {
     entityId: string;
     defaultTab?: "Followers" | "Following";
   };
-  Content: {
-    contentId: string;
+  FarcasterCast: {
+    hash: string;
   };
-  ContentLikes: {
-    contentId: string;
+  FarcasterCastLikes: {
+    hash: string;
   };
-  ContentReposts: {
-    contentId: string;
+  FarcasterCastReposts: {
+    hash: string;
   };
-  ContentQuotes: {
-    contentId: string;
+  FarcasterCastQuotes: {
+    hash: string;
+  };
+  FarcasterChannel: {
+    channelId: string;
   };
 };

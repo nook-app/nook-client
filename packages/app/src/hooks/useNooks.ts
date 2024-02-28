@@ -16,10 +16,11 @@ export const useNooks = () => {
   const activeNook = useAppSelector((state) =>
     storedActiveNookId ? selectNookById(state, storedActiveNookId) : nooks[0],
   );
-  const activeNookId = activeNook?.nookId;
+  const activeNookId = activeNook?.id;
   const activeShelf =
-    activeNook?.shelves.find((s) => s.slug === activeShelves[activeNookId]) ||
-    activeNook?.shelves[0];
+    activeNook?.metadata.shelves.find(
+      (s) => s.id === activeShelves[activeNookId],
+    ) || activeNook?.metadata.shelves[0];
 
   const navigateToNook = useCallback(
     (nookId: string) => {
@@ -43,5 +44,19 @@ export const useNooks = () => {
     navigateToShelf,
     activeNook,
     activeShelf,
+  };
+};
+
+export const useNook = (nookId?: string, shelfId?: string) => {
+  const { nooks, activeNook } = useNooks();
+
+  const nook = nooks.find((n) => n.id === nookId) || activeNook;
+  const shelf =
+    nook?.metadata.shelves.find((s) => s.id === shelfId) ||
+    nook?.metadata.shelves[0];
+
+  return {
+    nook,
+    shelf,
   };
 };

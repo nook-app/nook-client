@@ -2,12 +2,7 @@ import { Button, Text, View, XStack, YStack } from "tamagui";
 import { EntityAvatar } from "@/components/entity/EntityAvatar";
 import { useEntity } from "@/hooks/useEntity";
 import { formatNumber } from "@/utils";
-import {
-  ContentType,
-  NookPanelType,
-  TopicType,
-  UserFilterType,
-} from "@nook/common/types";
+import { ContentType, NookPanelType } from "@nook/common/types";
 import {
   NavigationProp,
   RouteProp,
@@ -24,7 +19,7 @@ const EntityHeader = () => {
   const {
     params: { entityId },
   } = useRoute<RouteProp<RootStackParamList, "Entity">>();
-  const { entity, displayName, username, bio, following, followers, context } =
+  const { entity, displayName, username, bio, following, followers } =
     useEntity(entityId);
 
   useEffect(() => {
@@ -49,13 +44,13 @@ const EntityHeader = () => {
             </Text>
           </YStack>
         </XStack>
-        {context?.following ? (
+        {/* {context?.following ? (
           <Button size="$3" variant="outlined" borderColor="$backgroundHover">
             Unfollow
           </Button>
         ) : (
           <Button size="$3">Follow</Button>
-        )}
+        )} */}
       </View>
       {bio && <Text>{bio}</Text>}
       <XStack gap="$2">
@@ -95,43 +90,5 @@ export const EntityScreen = () => {
     params: { entityId },
   } = useRoute<RouteProp<RootStackParamList, "Entity">>();
 
-  return (
-    <Panels
-      renderHeader={EntityHeader}
-      panels={[
-        {
-          name: "Posts",
-          slug: "posts",
-          data: {
-            type: NookPanelType.UserPosts,
-            args: {
-              contentTypes: [ContentType.POST],
-              userFilter: {
-                type: UserFilterType.Entities,
-                args: {
-                  entityIds: [entityId],
-                },
-              },
-            },
-          },
-        },
-        {
-          name: "Replies",
-          slug: "replies",
-          data: {
-            type: NookPanelType.UserPosts,
-            args: {
-              contentTypes: [ContentType.REPLY],
-              userFilter: {
-                type: UserFilterType.Entities,
-                args: {
-                  entityIds: [entityId],
-                },
-              },
-            },
-          },
-        },
-      ]}
-    />
-  );
+  return <Panels renderHeader={EntityHeader} panels={[]} />;
 };

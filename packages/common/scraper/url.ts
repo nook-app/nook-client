@@ -88,15 +88,6 @@ export const getUrlContent = async (
     updatedAt: timestamp,
     type: ContentType.URL,
     data: await fetchUrlMetadata(contentId),
-    engagement: {
-      likes: 0,
-      reposts: 0,
-      replies: 0,
-      embeds: 0,
-    },
-    topics: [],
-    referencedEntityIds: [],
-    referencedContentIds: [],
   };
   return content;
 };

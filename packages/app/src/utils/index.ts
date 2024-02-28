@@ -15,14 +15,14 @@ export const isWarpcastUrl = (url: string) => {
   );
 };
 
-export function formatTimeAgo(date: string) {
+export function formatTimeAgo(timestamp: number) {
   const seconds = Math.floor(
-    (new Date().getTime() - new Date(date).getTime()) / 1000,
+    (new Date().getTime() - new Date(timestamp).getTime()) / 1000,
   );
   let interval = seconds / 86400; // Days
 
   if (interval > 30) {
-    const dateObj = new Date(date);
+    const dateObj = new Date(timestamp);
     return `${dateObj.toLocaleString("default", {
       month: "short",
     })} ${dateObj.getDate()}`;
