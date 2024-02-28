@@ -20,6 +20,12 @@ const contentSlice = createSlice({
       },
     );
     builder.addMatcher(
+      farcasterApi.endpoints.getCastReplies.matchFulfilled,
+      (state, action) => {
+        castAdapter.addMany(state, action.payload.data);
+      },
+    );
+    builder.addMatcher(
       farcasterApi.endpoints.getFeed.matchFulfilled,
       (state, action) => {
         castAdapter.addMany(state, action.payload.data);

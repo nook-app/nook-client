@@ -21,13 +21,16 @@ export const farcasterApi = createApi({
       { message: string; channel?: string }
     >({
       query: ({ message, channel }) => ({
-        url: "/farcaster/cast",
+        url: "/farcaster/casts",
         method: "POST",
         body: { message, channel },
       }),
     }),
     getCast: builder.query<FarcasterCastResponse, string>({
-      query: (hash) => `/farcaster/cast/${hash}`,
+      query: (hash) => `/farcaster/casts/${hash}`,
+    }),
+    getCastReplies: builder.query<FarcasterFeedResponse, string>({
+      query: (hash) => `/farcaster/casts/${hash}/replies`,
     }),
     getFeed: builder.query<FarcasterFeedResponse, { feedId: string }>({
       query: (body) => ({

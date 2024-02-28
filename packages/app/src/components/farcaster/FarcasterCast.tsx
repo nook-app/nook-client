@@ -13,6 +13,7 @@ import { ChannelDisplay } from "../channel/ChannelDisplay";
 import { useEffect, useRef } from "react";
 import { ScrollView as RNScrollView, View as RNView } from "react-native";
 import { FarcasterCastCompact } from "./FarcasterCastCompact";
+import { FarcasterCastReplies } from "./FarcasterCastReplies";
 
 export const FarcasterCast = ({ cast }: { cast: FarcasterCastResponse }) => {
   if (cast.parent) {
@@ -22,15 +23,7 @@ export const FarcasterCast = ({ cast }: { cast: FarcasterCastResponse }) => {
   return (
     <ScrollView>
       <FarcasterCastContent cast={cast} />
-      {/* <ContentFeedPanel
-        panel={{
-          type: NookPanelType.PostReplies,
-          args: {
-            targetContentId: content.data.contentId,
-          },
-        }}
-        asList
-      /> */}
+      <FarcasterCastReplies hash={cast.hash} />
     </ScrollView>
   );
 };
@@ -81,15 +74,7 @@ const FarcasterCastReply = ({ cast }: { cast: FarcasterCastResponse }) => {
         </TouchableWithoutFeedback>
         <FarcasterCastContent cast={cast} />
       </View>
-      {/* <ContentFeedPanel
-        panel={{
-          type: NookPanelType.PostReplies,
-          args: {
-            targetContentId: content.contentId,
-          },
-        }}
-        asList
-      /> */}
+      <FarcasterCastReplies hash={cast.hash} />
     </ScrollView>
   );
 };

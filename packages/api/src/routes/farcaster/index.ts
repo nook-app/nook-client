@@ -34,7 +34,7 @@ export const farcasterRoutes = async (fastify: FastifyInstance) => {
     );
 
     fastify.post<{ Body: { message: string; channel?: string } }>(
-      "/farcaster/cast",
+      "/farcaster/casts",
       async (request, reply) => {
         const { id } = (await request.jwtDecode()) as { id: string };
         try {
@@ -56,11 +56,26 @@ export const farcasterRoutes = async (fastify: FastifyInstance) => {
     );
 
     fastify.get<{ Params: { hash: string } }>(
-      "/farcaster/cast/:hash",
+      "/farcaster/casts/:hash",
       async (request, reply) => {
         try {
           const data = await farcasterService.getCast(request.params.hash);
           return reply.send(data);
+        } catch (e) {
+          console.error("/farcaster/cast/:hash", e);
+          return reply.code(500).send({ message: (e as Error).message });
+        }
+      },
+    );
+
+    fastify.get<{ Params: { hash: string } }>(
+      "/farcaster/casts/:hash/replies",
+      async (request, reply) => {
+        try {
+          const data = await farcasterService.getCastReplies(
+            request.params.hash,
+          );
+          return reply.send({ data });
         } catch (e) {
           console.error("/farcaster/cast/:hash", e);
           return reply.code(500).send({ message: (e as Error).message });

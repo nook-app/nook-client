@@ -94,6 +94,8 @@ model FarcasterCast {
 
     @@id([hash])
     @@index([fid, hash])
+    @@index([parentHash])
+    @@index([rootParentHash])
 }
 
 model FarcasterCastMention {

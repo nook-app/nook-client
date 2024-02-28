@@ -36,6 +36,14 @@ export class FarcasterClient {
     await this.redis.close();
   }
 
+  async getCastReplies(hash: string) {
+    return await this.client.farcasterCast.findMany({
+      where: {
+        parentHash: hash,
+      },
+    });
+  }
+
   async getCasts(hashes: string[]) {
     return await Promise.all(hashes.map((hash) => this.getCast(hash)));
   }

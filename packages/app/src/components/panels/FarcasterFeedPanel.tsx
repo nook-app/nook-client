@@ -1,20 +1,14 @@
 import { Spinner, Text, View, useTheme } from "tamagui";
-import { FlatList, ViewToken } from "react-native";
+import { ViewToken } from "react-native";
 import { useCallback, useEffect, useState } from "react";
 import { RefreshControl } from "react-native-gesture-handler";
 import { FarcasterFeedArgs } from "@nook/common/types";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Tabs } from "react-native-collapsible-tab-view";
 import { farcasterApi } from "@/store/apis/farcasterApi";
 import { FarcasterCastResponse } from "@nook/api/types";
 import { FarcasterFeedItem } from "../farcaster/FarcasterFeedItem";
 
-export const FarcasterFeedPanel = ({
-  args,
-  asList,
-  asTabs,
-}: { args: FarcasterFeedArgs; asList?: boolean; asTabs?: boolean }) => {
-  const insets = useSafeAreaInsets();
+export const FarcasterFeedPanel = ({ args }: { args: FarcasterFeedArgs }) => {
   const [cursor, setCursor] = useState<string | undefined>(undefined);
   const [accumulatedData, setAccumulatedData] = useState<
     FarcasterCastResponse[]
@@ -72,9 +66,8 @@ export const FarcasterFeedPanel = ({
   );
 
   if (isLoading || error || !data) {
-    const Wrapper = asTabs ? Tabs.ScrollView : View;
     return (
-      <Wrapper>
+      <Tabs.ScrollView>
         <View padding="$5" alignItems="center" backgroundColor="$background">
           {isLoading ? (
             <Spinner size="large" color="$color11" />
@@ -82,24 +75,12 @@ export const FarcasterFeedPanel = ({
             <Text>No data found.</Text>
           )}
         </View>
-      </Wrapper>
+      </Tabs.ScrollView>
     );
   }
-
-  if (asList) {
-    return (
-      <View paddingBottom={insets.bottom}>
-        {accumulatedData.map((cast) => (
-          <FarcasterFeedItem key={cast.hash} cast={cast} />
-        ))}
-      </View>
-    );
-  }
-
-  const FlatListCompnent = asTabs ? Tabs.FlatList : FlatList;
 
   return (
-    <FlatListCompnent
+    <Tabs.FlatList
       nestedScrollEnabled
       data={accumulatedData}
       renderItem={({ item }) => (

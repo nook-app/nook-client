@@ -136,13 +136,41 @@ export class FarcasterService {
     return casts[0];
   }
 
+  async getCastReplies(hash: string) {
+    const casts = await this.farcasterClient.getCastReplies(hash);
+    return this.formatCasts(casts);
+  }
+
   async getCasts(hashes: string[]) {
     const casts = await this.farcasterClient.getCasts(hashes);
+    return this.formatCasts(casts);
+  }
+
+  async formatCasts(casts: FarcasterCast[]) {
+    const relatedCasts = await this.getRelatedCasts(casts);
+    const allCasts = casts.concat(relatedCasts);
+
+    const entityMap = await this.getRelatedEntities(allCasts);
+    const channelMap = await this.getRelatedChannels(allCasts);
+    const castMap = allCasts.reduce(
+      (acc, cast) => {
+        acc[cast.hash] = cast;
+        return acc;
+      },
+      {} as Record<string, FarcasterCast>,
+    );
+
+    return casts.map((cast) =>
+      this.formatCast(cast.hash, entityMap, castMap, channelMap),
+    );
+  }
+
+  async getRelatedEntities(casts: FarcasterCast[]) {
     const fids = casts.flatMap((cast) =>
       this.farcasterClient.getFidsFromCast(cast),
     );
     const entities = await this.entityClient.getEntitiesByFid(fids);
-    const entityMap = entities.reduce(
+    return entities.reduce(
       (acc, entity) => {
         const fid = entity.farcasterAccounts[0].fid.toString();
         acc[fid] = entity;
@@ -150,7 +178,9 @@ export class FarcasterService {
       },
       {} as Record<string, EntityWithRelations>,
     );
+  }
 
+  async getRelatedCasts(casts: FarcasterCast[]) {
     const relatedHashes = new Set<string>();
     for (const cast of casts) {
       if (cast.parentHash) {
@@ -161,36 +191,22 @@ export class FarcasterService {
       }
     }
 
-    const relatedCasts = await this.farcasterClient.getCasts(
-      Array.from(relatedHashes),
-    );
+    return await this.farcasterClient.getCasts(Array.from(relatedHashes));
+  }
 
-    const allCasts = casts.concat(relatedCasts);
-
-    const castMap = allCasts.reduce(
-      (acc, cast) => {
-        acc[cast.hash] = cast;
-        return acc;
-      },
-      {} as Record<string, FarcasterCast>,
-    );
-
-    const channelIds = allCasts
+  async getRelatedChannels(casts: FarcasterCast[]) {
+    const channelIds = casts
       .map((c) => c.parentUrl)
       .filter(Boolean) as string[];
 
     const channels = await this.nookClient.getChannels(channelIds);
 
-    const channelMap = channels.reduce(
+    return channels.reduce(
       (acc, channel) => {
         acc[channel.id] = channel;
         return acc;
       },
       {} as Record<string, Channel>,
-    );
-
-    return hashes.map((hash) =>
-      this.formatCast(hash, entityMap, castMap, channelMap),
     );
   }
 

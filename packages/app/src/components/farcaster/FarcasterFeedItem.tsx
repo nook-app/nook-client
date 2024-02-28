@@ -7,10 +7,10 @@ import { memo } from "react";
 import { FarcasterCastCompact } from "./FarcasterCastCompact";
 
 export const FarcasterFeedItem = memo(
-  ({ cast }: { cast: FarcasterCastResponse }) => {
+  ({ cast, isReply }: { cast: FarcasterCastResponse; isReply?: boolean }) => {
     const navigation = useNavigation<NavigationProp<RootStackParamList>>();
 
-    if (cast.parent) {
+    if (cast.parent && !isReply) {
       return (
         <View
           borderBottomWidth="$0.25"
@@ -34,7 +34,7 @@ export const FarcasterFeedItem = memo(
               })
             }
           >
-            <FarcasterCastCompact cast={cast.parent} />
+            <FarcasterCastCompact cast={cast} />
           </TouchableWithoutFeedback>
         </View>
       );
