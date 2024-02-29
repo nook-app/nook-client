@@ -51,7 +51,12 @@ export class ContentClient {
       references.map((reference) =>
         this.client.farcasterContentReference.delete({
           where: {
-            uri_fid_hash_type: reference,
+            uri_fid_hash_type: {
+              fid: reference.fid,
+              hash: reference.hash,
+              type: reference.type,
+              uri: reference.uri,
+            },
           },
         }),
       ),
@@ -87,7 +92,12 @@ export class ContentClient {
 
     await this.client.farcasterContentReference.upsert({
       where: {
-        uri_fid_hash_type: reference,
+        uri_fid_hash_type: {
+          fid: reference.fid,
+          hash: reference.hash,
+          type: reference.type,
+          uri: reference.uri,
+        },
       },
       create: reference,
       update: reference,
