@@ -1,7 +1,7 @@
-import { User, Channel } from "@nook/common/prisma/nook";
+import { User } from "@nook/common/prisma/nook";
 import {
   EntityResponse,
-  FarcasterCastResponse,
+  FarcasterCastResponseWithContext,
   NookResponse,
 } from "@nook/common/types";
 
@@ -35,5 +35,5 @@ export type FarcasterFeedRequest = {
 };
 
 export type FarcasterFeedResponse = {
-  data: FarcasterCastResponse[];
+  data: FarcasterCastResponseWithContext[];
 };

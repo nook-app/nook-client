@@ -1,7 +1,7 @@
 import { createApi } from "@reduxjs/toolkit/query/react";
 import { baseQuery } from "@/store/utils";
 import { FarcasterFeedResponse, SignerPublicData } from "@nook/api/types";
-import { FarcasterCastResponse } from "@nook/common/types";
+import { FarcasterCastResponseWithContext } from "@nook/common/types";
 
 export const farcasterApi = createApi({
   reducerPath: "farcasterApi",
@@ -23,7 +23,7 @@ export const farcasterApi = createApi({
         body: { message, channel },
       }),
     }),
-    getCast: builder.query<FarcasterCastResponse, string>({
+    getCast: builder.query<FarcasterCastResponseWithContext, string>({
       query: (hash) => `/farcaster/casts/${hash}`,
     }),
     getCastReplies: builder.query<FarcasterFeedResponse, string>({

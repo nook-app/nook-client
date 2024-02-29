@@ -44,6 +44,9 @@ export type FarcasterCastResponse = BaseFarcasterCast & {
   rootParent?: FarcasterCastResponse;
 };
 
-export type FarcasterCastResponseWithContext = FarcasterCastResponse & {
+export type FarcasterCastResponseWithContext = BaseFarcasterCast & {
+  castEmbeds: FarcasterCastResponseWithContext[];
+  parent?: FarcasterCastResponseWithContext;
+  rootParent?: FarcasterCastResponseWithContext;
   engagement: FarcasterCastEngagement;
 };

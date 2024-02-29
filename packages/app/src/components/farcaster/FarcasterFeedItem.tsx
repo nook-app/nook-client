@@ -4,10 +4,13 @@ import { RootStackParamList } from "@/types";
 import { TouchableWithoutFeedback } from "react-native-gesture-handler";
 import { memo } from "react";
 import { FarcasterCastCompact } from "./FarcasterCastCompact";
-import { FarcasterCastResponse } from "@nook/common/types";
+import { FarcasterCastResponseWithContext } from "@nook/common/types";
 
 export const FarcasterFeedItem = memo(
-  ({ cast, isReply }: { cast: FarcasterCastResponse; isReply?: boolean }) => {
+  ({
+    cast,
+    isReply,
+  }: { cast: FarcasterCastResponseWithContext; isReply?: boolean }) => {
     const navigation = useNavigation<NavigationProp<RootStackParamList>>();
 
     if (cast.parent && !isReply) {

@@ -75,8 +75,34 @@ export class FarcasterClient {
 
     if (!cast) return;
 
+    const relatedCastHashes = cast.castEmbedHashes;
+    if (cast.parentHash && !relatedCastHashes.includes(cast.parentHash)) {
+      relatedCastHashes.push(cast.parentHash);
+    }
+    if (
+      cast.rootParentHash &&
+      cast.rootParentHash !== cast.hash &&
+      !relatedCastHashes.includes(cast.rootParentHash)
+    ) {
+      relatedCastHashes.push(cast.rootParentHash);
+    }
+
+    const relatedCasts = await this.getCastsWithContext(relatedCastHashes);
+    const relatedCastMap = relatedCasts.reduce(
+      (acc, cur) => {
+        acc[cur.hash] = cur;
+        return acc;
+      },
+      {} as Record<string, FarcasterCastResponseWithContext>,
+    );
+
     return {
       ...cast,
+      castEmbeds: cast.castEmbedHashes.map((c) => relatedCastMap[c]),
+      parent: cast.parentHash ? relatedCastMap[cast.parentHash] : undefined,
+      rootParent: cast.rootParentHash
+        ? relatedCastMap[cast.rootParentHash]
+        : undefined,
       engagement,
     };
   }
@@ -96,11 +122,15 @@ export class FarcasterClient {
     if (!cast) return;
 
     const relatedCastHashes = cast.castEmbedHashes;
-    if (cast.parentHash) {
+    if (cast.parentHash && !relatedCastHashes.includes(cast.parentHash)) {
       relatedCastHashes.push(cast.parentHash);
     }
-    if (cast.rootParentHash !== cast.hash) {
-      relatedCastHashes.push(cast.hash);
+    if (
+      cast.rootParentHash &&
+      cast.rootParentHash !== cast.hash &&
+      !relatedCastHashes.includes(cast.rootParentHash)
+    ) {
+      relatedCastHashes.push(cast.rootParentHash);
     }
 
     const relatedCasts = await this.getCasts(relatedCastHashes);

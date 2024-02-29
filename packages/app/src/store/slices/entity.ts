@@ -2,7 +2,22 @@ import { createEntityAdapter, createSlice } from "@reduxjs/toolkit";
 import { RootState } from "..";
 import { userApi } from "../apis/userApi";
 import { farcasterApi } from "../apis/farcasterApi";
-import { EntityResponse } from "@nook/common/types";
+import {
+  EntityResponse,
+  FarcasterCastResponseWithContext,
+} from "@nook/common/types";
+
+const getEntities = (cast: FarcasterCastResponseWithContext) => {
+  const entities = [];
+  entities.push(cast.entity);
+  for (const mention of cast.mentions) {
+    entities.push(mention.entity);
+  }
+  if (cast.parent) {
+    entities.push(cast.parent.entity);
+  }
+  return entities;
+};
 
 const entityAdapter = createEntityAdapter({
   selectId: (entity: EntityResponse) => entity.id,
@@ -16,7 +31,7 @@ const entitySlice = createSlice({
     builder.addMatcher(
       farcasterApi.endpoints.getCast.matchFulfilled,
       (state, action) => {
-        entityAdapter.addOne(state, action.payload.entity);
+        entityAdapter.addMany(state, getEntities(action.payload));
       },
     );
     builder.addMatcher(
@@ -24,15 +39,17 @@ const entitySlice = createSlice({
       (state, action) => {
         entityAdapter.addMany(
           state,
-          action.payload.data.map((cast) => cast.entity),
+          action.payload.data.flatMap((c) => getEntities(c)),
         );
       },
     );
     builder.addMatcher(
       farcasterApi.endpoints.getFeed.matchFulfilled,
       (state, action) => {
-        const entities = action.payload.data.map((cast) => cast.entity);
-        entityAdapter.addMany(state, entities);
+        entityAdapter.addMany(
+          state,
+          action.payload.data.flatMap((c) => getEntities(c)),
+        );
       },
     );
     builder.addMatcher(

@@ -3,13 +3,13 @@ import { useEffect, useState } from "react";
 import { farcasterApi } from "@/store/apis/farcasterApi";
 import { FarcasterFeedItem } from "../farcaster/FarcasterFeedItem";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { FarcasterCastResponse } from "@nook/common/types";
+import { FarcasterCastResponseWithContext } from "@nook/common/types";
 
 export const FarcasterCastReplies = ({ hash }: { hash: string }) => {
   const insets = useSafeAreaInsets();
   const [cursor, setCursor] = useState<string | undefined>(undefined);
   const [accumulatedData, setAccumulatedData] = useState<
-    FarcasterCastResponse[]
+    FarcasterCastResponseWithContext[]
   >([]);
 
   const { data, error, isLoading } = farcasterApi.useGetCastRepliesQuery(hash);

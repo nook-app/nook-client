@@ -1,10 +1,10 @@
 import { createEntityAdapter, createSlice } from "@reduxjs/toolkit";
 import { RootState } from "..";
 import { farcasterApi } from "../apis/farcasterApi";
-import { FarcasterCastResponse } from "@nook/common/types";
+import { FarcasterCastResponseWithContext } from "@nook/common/types";
 
 const castAdapter = createEntityAdapter({
-  selectId: (content: FarcasterCastResponse) => content.hash,
+  selectId: (content: FarcasterCastResponseWithContext) => content.hash,
 });
 
 const contentSlice = createSlice({

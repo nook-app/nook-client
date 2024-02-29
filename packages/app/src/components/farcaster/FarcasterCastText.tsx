@@ -7,12 +7,12 @@ import { isWarpcastUrl } from "@/utils";
 import { TouchableOpacity } from "react-native-gesture-handler";
 import { NavigationProp, useNavigation } from "@react-navigation/native";
 import { RootStackParamList } from "@/types";
-import { FarcasterCastResponse } from "@nook/common/types";
+import { FarcasterCastResponseWithContext } from "@nook/common/types";
 
 export const FarcasterCastText = ({
   cast,
 }: {
-  cast: FarcasterCastResponse;
+  cast: FarcasterCastResponseWithContext;
 }) => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const state = store.getState();

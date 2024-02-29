@@ -13,9 +13,11 @@ import { useEffect, useRef } from "react";
 import { ScrollView as RNScrollView, View as RNView } from "react-native";
 import { FarcasterCastCompact } from "./FarcasterCastCompact";
 import { FarcasterCastReplies } from "./FarcasterCastReplies";
-import { FarcasterCastResponse } from "@nook/common/types";
+import { FarcasterCastResponseWithContext } from "@nook/common/types";
 
-export const FarcasterCast = ({ cast }: { cast: FarcasterCastResponse }) => {
+export const FarcasterCast = ({
+  cast,
+}: { cast: FarcasterCastResponseWithContext }) => {
   if (cast.parent) {
     return <FarcasterCastReply cast={cast} />;
   }
@@ -28,7 +30,9 @@ export const FarcasterCast = ({ cast }: { cast: FarcasterCastResponse }) => {
   );
 };
 
-const FarcasterCastReply = ({ cast }: { cast: FarcasterCastResponse }) => {
+const FarcasterCastReply = ({
+  cast,
+}: { cast: FarcasterCastResponseWithContext }) => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const scrollViewRef = useRef<RNScrollView>(null);
   const scrollTargetRef = useRef<RNView>(null);
@@ -79,7 +83,9 @@ const FarcasterCastReply = ({ cast }: { cast: FarcasterCastResponse }) => {
   );
 };
 
-const FarcasterCastContent = ({ cast }: { cast: FarcasterCastResponse }) => {
+const FarcasterCastContent = ({
+  cast,
+}: { cast: FarcasterCastResponseWithContext }) => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
 
   return (

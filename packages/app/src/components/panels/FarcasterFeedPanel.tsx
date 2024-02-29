@@ -2,7 +2,10 @@ import { Spinner, Text, View, useTheme } from "tamagui";
 import { ViewToken } from "react-native";
 import { useCallback, useEffect, useState } from "react";
 import { RefreshControl } from "react-native-gesture-handler";
-import { FarcasterCastResponse, FarcasterFeedArgs } from "@nook/common/types";
+import {
+  FarcasterCastResponseWithContext,
+  FarcasterFeedArgs,
+} from "@nook/common/types";
 import { Tabs } from "react-native-collapsible-tab-view";
 import { farcasterApi } from "@/store/apis/farcasterApi";
 import { FarcasterFeedItem } from "../farcaster/FarcasterFeedItem";
@@ -10,7 +13,7 @@ import { FarcasterFeedItem } from "../farcaster/FarcasterFeedItem";
 export const FarcasterFeedPanel = ({ args }: { args: FarcasterFeedArgs }) => {
   const [cursor, setCursor] = useState<string | undefined>(undefined);
   const [accumulatedData, setAccumulatedData] = useState<
-    FarcasterCastResponse[]
+    FarcasterCastResponseWithContext[]
   >([]);
   const [refreshing, setRefreshing] = useState(false);
   const theme = useTheme();
