@@ -87,8 +87,11 @@ export const farcasterRoutes = async (fastify: FastifyInstance) => {
       "/farcaster/feed",
       async (request, reply) => {
         try {
-          const data = await farcasterService.getFeed(request.body.feedId);
-          return reply.send({ data });
+          const data = await farcasterService.getFeed(
+            request.body.feedId,
+            request.body.cursor,
+          );
+          return reply.send(data);
         } catch (e) {
           console.error("/farcaster/feed", e);
           return reply.code(500).send({ message: (e as Error).message });

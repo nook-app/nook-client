@@ -55,7 +55,11 @@ export class FarcasterProcessor {
 
     if (data.parentUrl) {
       promises.push(
-        this.feedClient.addToFeed(`channel:${data.parentUrl}`, data.hash),
+        this.feedClient.addToFeed(
+          `channel:${data.parentUrl}`,
+          data.hash,
+          cast.timestamp,
+        ),
       );
     }
 
@@ -64,6 +68,7 @@ export class FarcasterProcessor {
         this.feedClient.addToFeed(
           `user:replies:${data.fid.toString()}`,
           data.hash,
+          cast.timestamp,
         ),
       );
       promises.push(
@@ -74,6 +79,7 @@ export class FarcasterProcessor {
         this.feedClient.addToFeed(
           `user:casts:${data.fid.toString()}`,
           data.hash,
+          cast.timestamp,
         ),
       );
     }
@@ -91,6 +97,7 @@ export class FarcasterProcessor {
       await this.feedClient.addToFeeds(
         followers.map(({ fid }) => `user:following:${fid.toString()}`),
         data.hash,
+        cast.timestamp,
       );
     }
   }
@@ -104,7 +111,10 @@ export class FarcasterProcessor {
 
     if (data.parentUrl) {
       promises.push(
-        this.feedClient.removeFromFeed(`channel:${data.parentUrl}`, data.hash),
+        this.feedClient.removeFromFeed(
+          `channel:casts:${data.parentUrl}`,
+          data.hash,
+        ),
       );
     }
 

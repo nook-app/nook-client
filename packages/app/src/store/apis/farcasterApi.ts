@@ -1,6 +1,10 @@
 import { createApi } from "@reduxjs/toolkit/query/react";
 import { baseQuery } from "@/store/utils";
-import { FarcasterFeedResponse, SignerPublicData } from "@nook/api/types";
+import {
+  FarcasterFeedRequest,
+  FarcasterFeedResponse,
+  SignerPublicData,
+} from "@nook/api/types";
 import { FarcasterCastResponseWithContext } from "@nook/common/types";
 
 export const farcasterApi = createApi({
@@ -29,7 +33,7 @@ export const farcasterApi = createApi({
     getCastReplies: builder.query<FarcasterFeedResponse, string>({
       query: (hash) => `/farcaster/casts/${hash}/replies`,
     }),
-    getFeed: builder.query<FarcasterFeedResponse, { feedId: string }>({
+    getFeed: builder.query<FarcasterFeedResponse, FarcasterFeedRequest>({
       query: (body) => ({
         url: "/farcaster/feed",
         method: "POST",

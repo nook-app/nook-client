@@ -57,6 +57,61 @@ export class FarcasterClient {
     });
   }
 
+  async getCastsFromFollowing(fid: bigint, cursor?: number, take?: number) {
+    const followers = await this.getFollowing(fid);
+    const followerFids = followers.map((follower) => follower.fid);
+    return await this.client.farcasterCast.findMany({
+      where: {
+        fid: {
+          in: followerFids,
+        },
+        timestamp: {
+          lt: cursor ? new Date(cursor) : new Date(),
+        },
+      },
+      orderBy: {
+        timestamp: "desc",
+      },
+      take,
+    });
+  }
+
+  async getCastsFromFid(
+    fid: bigint,
+    replies?: boolean,
+    cursor?: number,
+    take?: number,
+  ) {
+    return await this.client.farcasterCast.findMany({
+      where: {
+        fid,
+        parentHash: replies ? undefined : null,
+        timestamp: {
+          lt: cursor ? new Date(cursor) : new Date(),
+        },
+      },
+      orderBy: {
+        timestamp: "desc",
+      },
+      take,
+    });
+  }
+
+  async getCastsFromChannel(parentUrl: string, cursor?: number, take?: number) {
+    return await this.client.farcasterCast.findMany({
+      where: {
+        parentUrl,
+        timestamp: {
+          lt: cursor ? new Date(cursor) : new Date(),
+        },
+      },
+      orderBy: {
+        timestamp: "desc",
+      },
+      take,
+    });
+  }
+
   async getCastsWithContext(hashes: string[]) {
     const casts = await Promise.all(
       hashes.map((hash) => this.getCastWithContext(hash)),
@@ -329,6 +384,15 @@ export class FarcasterClient {
       where: {
         linkType: "follow",
         targetFid: fid,
+      },
+    });
+  }
+
+  async getFollowing(fid: bigint) {
+    return await this.client.farcasterLink.findMany({
+      where: {
+        linkType: "follow",
+        fid,
       },
     });
   }

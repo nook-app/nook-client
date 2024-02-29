@@ -11,7 +11,7 @@ import { farcasterApi } from "@/store/apis/farcasterApi";
 import { FarcasterFeedItem } from "../farcaster/FarcasterFeedItem";
 
 export const FarcasterFeedPanel = ({ args }: { args: FarcasterFeedArgs }) => {
-  const [cursor, setCursor] = useState<string | undefined>(undefined);
+  const [cursor, setCursor] = useState<number | undefined>(undefined);
   const [accumulatedData, setAccumulatedData] = useState<
     FarcasterCastResponseWithContext[]
   >([]);
@@ -19,7 +19,7 @@ export const FarcasterFeedPanel = ({ args }: { args: FarcasterFeedArgs }) => {
   const theme = useTheme();
 
   const { data, error, isLoading, isFetching, refetch } =
-    farcasterApi.useGetFeedQuery(args);
+    farcasterApi.useGetFeedQuery({ ...args, cursor });
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: don't need to depend on cursor
   useEffect(() => {
@@ -56,10 +56,9 @@ export const FarcasterFeedPanel = ({ args }: { args: FarcasterFeedArgs }) => {
           lastVisibleItemIndex &&
           lastVisibleItemIndex >= accumulatedData.length - 4
         ) {
-          // When the last visible item is among the last 4 items
-          // if (data.nextCursor && data.nextCursor !== cursor) {
-          //   setCursor(data.nextCursor);
-          // }
+          if (data.nextCursor && data.nextCursor !== cursor) {
+            setCursor(data.nextCursor);
+          }
           cursor;
         }
       }

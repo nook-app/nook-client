@@ -32,8 +32,10 @@ export type GetUserResponse = {
 
 export type FarcasterFeedRequest = {
   feedId: string;
+  cursor?: number;
 };
 
 export type FarcasterFeedResponse = {
   data: FarcasterCastResponseWithContext[];
+  nextCursor?: number;
 };

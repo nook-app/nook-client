@@ -105,31 +105,57 @@ export class RedisClient {
     );
   }
 
-  async push(key: string, value: string) {
-    await this.redis.multi().lpush(key, value).ltrim(key, 0, 999).exec();
-  }
-
-  async remove(key: string, value: string) {
-    await this.redis.lrem(key, 0, value);
-  }
-
-  async batchPush(keys: string[], value: string) {
+  async addToSet(key: string, value: string, timestamp: number) {
     const pipeline = this.redis.pipeline();
-    for (const key of keys) {
-      pipeline.lpush(key, value).ltrim(key, 0, 999);
+    pipeline.zadd(key, timestamp, value);
+    pipeline.zremrangebyrank(key, 0, -1000);
+    await pipeline.exec();
+  }
+
+  async batchAddToSet(
+    key: string,
+    values: { value: string; timestamp: number }[],
+  ) {
+    const pipeline = this.redis.pipeline();
+    for (const value of values) {
+      pipeline.zadd(key, value.timestamp, value.value);
+      pipeline.zremrangebyrank(key, 0, -1000);
     }
     await pipeline.exec();
   }
 
-  async batchRemove(keys: string[], value: string) {
+  async addToSets(keys: string[], value: string, timestamp: number) {
     const pipeline = this.redis.pipeline();
     for (const key of keys) {
-      pipeline.lrem(key, 1, value);
+      pipeline.zadd(key, timestamp, value);
+      pipeline.zremrangebyrank(key, 0, -1000);
     }
     await pipeline.exec();
   }
 
-  async getList(key: string) {
-    return await this.redis.lrange(key, 0, 100);
+  async removeFromSet(key: string, value: string) {
+    await this.redis.zrem(key, value);
+  }
+
+  async removeFromSets(keys: string[], value: string) {
+    const pipeline = this.redis.pipeline();
+    for (const key of keys) {
+      pipeline.zrem(key, value);
+    }
+    await pipeline.exec();
+  }
+
+  async getSet(key: string, cursor?: number) {
+    if (cursor) {
+      return await this.redis.zrevrangebyscore(
+        key,
+        cursor,
+        "-inf",
+        "LIMIT",
+        0,
+        25,
+      );
+    }
+    return await this.redis.zrange(key, 0, 25);
   }
 }

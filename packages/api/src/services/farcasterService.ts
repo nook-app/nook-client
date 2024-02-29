@@ -7,7 +7,7 @@ import {
   makeCastAdd,
 } from "@farcaster/hub-nodejs";
 import { FarcasterClient, FeedClient, NookClient } from "@nook/common/clients";
-import { FarcasterCastResponse } from "@nook/common/types";
+import { FarcasterCastResponseWithContext } from "@nook/common/types";
 import { FarcasterCast } from "@nook/common/prisma/farcaster";
 
 export class FarcasterService {
@@ -140,14 +140,58 @@ export class FarcasterService {
     );
   }
 
-  async getFeed(feedId: string) {
-    const feed = await this.feedClient.getFeed(feedId);
-    if (feed.length === 0) {
-      throw new Error("Feed not found");
+  async getFeed(feedId: string, cursor?: number) {
+    const feed = await this.feedClient.getFeed(feedId, cursor);
+    const feedCasts = await this.farcasterClient.getCastsWithContext(feed);
+
+    if (feedCasts.length < 25) {
+      const take = 25 - feedCasts.length;
+      const [type, subtype, id] = feedId.split(":");
+
+      let rawCasts: FarcasterCast[] = [];
+      if (type === "channel") {
+        rawCasts = await this.farcasterClient.getCastsFromChannel(
+          id,
+          cursor,
+          take,
+        );
+      } else if (type === "user") {
+        if (subtype === "following") {
+          rawCasts = await this.farcasterClient.getCastsFromFollowing(
+            BigInt(id),
+            cursor,
+            take,
+          );
+        } else {
+          rawCasts = await this.farcasterClient.getCastsFromFid(
+            BigInt(id),
+            subtype === "replies",
+            cursor,
+            take,
+          );
+        }
+      }
+      const casts = (
+        await Promise.all(
+          rawCasts.map((cast) =>
+            this.farcasterClient.getCastWithContext(cast.hash, cast),
+          ),
+        )
+      ).filter(Boolean) as FarcasterCastResponseWithContext[];
+      feedCasts.concat(casts);
+      await this.feedClient.batchAddToFeed(
+        feedId,
+        casts.map(({ hash, timestamp }) => ({
+          value: hash,
+          timestamp,
+        })),
+      );
     }
 
-    const casts = await this.farcasterClient.getCastsWithContext(feed);
-    return casts;
+    return {
+      data: feedCasts,
+      nextCursor: feedCasts[feedCasts.length - 1]?.timestamp,
+    };
   }
 
   async getFollowers(fid: string) {
