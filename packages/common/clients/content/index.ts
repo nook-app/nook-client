@@ -63,17 +63,23 @@ export class ContentClient {
     );
   }
 
-  async upsertReferencedContent(reference: ContentReference) {
-    const existingContent = await this.client.urlContent.findUnique({
+  async getContent(uri: string) {
+    const cached = await this.redis.getJson(
+      `${this.CONTENT_CACHE_PREFIX}:${uri}`,
+    );
+    if (cached) return cached;
+
+    let content = await this.client.urlContent.findUnique({
       where: {
-        uri: reference.uri,
+        uri,
       },
     });
-    if (!existingContent) {
-      const content = await getUrlContent(reference.uri);
+
+    if (!content) {
+      content = await getUrlContent(uri);
       await this.client.urlContent.upsert({
         where: {
-          uri: reference.uri,
+          uri,
         },
         create: {
           ...content,
@@ -89,6 +95,13 @@ export class ContentClient {
         },
       });
     }
+
+    await this.redis.setJson(`${this.CONTENT_CACHE_PREFIX}:${uri}`, content);
+    return content;
+  }
+
+  async upsertReferencedContent(reference: ContentReference) {
+    await this.getContent(reference.uri);
 
     await this.client.farcasterContentReference.upsert({
       where: {

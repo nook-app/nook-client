@@ -83,38 +83,32 @@ const USER_AGENT_OVERRIDES: { [key: string]: string } = {
 export const getUrlContent = async (uri: string): Promise<UrlContent> => {
   const date = new Date();
   const url = new URL(uri);
-  if (!uri.startsWith("http://") && !uri.startsWith("https://")) {
-    return {
-      uri,
-      protocol: url.protocol,
-      host: url.host,
-      path: url.pathname,
-      query: url.search,
-      fragment: url.hash,
-      type: null,
-      length: null,
-      metadata: null,
-      frame: null,
-      createdAt: date,
-      updatedAt: date,
-    };
-  }
-
-  const metadata = await fetchUrlMetadata(uri);
-  return {
+  const content: UrlContent = {
     uri,
     protocol: url.protocol,
     host: url.host,
     path: url.pathname,
     query: url.search,
     fragment: url.hash,
-    type: metadata.contentType || null,
-    length: metadata.contentLength || null,
-    metadata: metadata.metadata || null,
-    frame: metadata.frame || null,
+    type: null,
+    length: null,
+    metadata: null,
+    frame: null,
     createdAt: date,
     updatedAt: date,
   };
+
+  try {
+    if (uri.startsWith("http://") || uri.startsWith("https://")) {
+      const metadata = await fetchUrlMetadata(uri);
+      content.type = metadata.contentType || null;
+      content.length = metadata.contentLength || null;
+      content.metadata = metadata.metadata || null;
+      content.frame = metadata.frame || null;
+    }
+  } catch (e) {}
+
+  return content;
 };
 
 const scrapeMetadata = async (options: MetascraperOptions) => {

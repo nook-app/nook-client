@@ -22,7 +22,7 @@ export type FarcasterCastEngagement = {
   quotes: number;
 };
 
-export type BaseFarcasterCastResponse = {
+export type BaseFarcasterCast = {
   hash: string;
   timestamp: number;
   entity: EntityResponse;
@@ -31,13 +31,19 @@ export type BaseFarcasterCastResponse = {
     entity: EntityResponse;
     position: bigint;
   }[];
-  castEmbeds: FarcasterCastResponse[];
+  castEmbedHashes: string[];
   urlEmbeds: string[];
-  parent?: FarcasterCastResponse;
-  rootParent?: FarcasterCastResponse;
+  parentHash?: string;
+  rootParentHash?: string;
   channel?: Channel;
 };
 
-export type FarcasterCastResponse = BaseFarcasterCastResponse & {
+export type FarcasterCastResponse = BaseFarcasterCast & {
+  castEmbeds: FarcasterCastResponse[];
+  parent?: FarcasterCastResponse;
+  rootParent?: FarcasterCastResponse;
+};
+
+export type FarcasterCastResponseWithContext = FarcasterCastResponse & {
   engagement: FarcasterCastEngagement;
 };

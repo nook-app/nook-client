@@ -7,6 +7,8 @@ import {
   makeCastAdd,
 } from "@farcaster/hub-nodejs";
 import { FarcasterClient, FeedClient, NookClient } from "@nook/common/clients";
+import { FarcasterCastResponse } from "@nook/common/types";
+import { FarcasterCast } from "@nook/common/prisma/farcaster";
 
 export class FarcasterService {
   private nookClient: NookClient;
@@ -122,15 +124,20 @@ export class FarcasterService {
   }
 
   async getCast(hash: string) {
-    return await this.farcasterClient.getCast(hash);
-  }
-
-  async getCastReplies(hash: string) {
-    return await this.farcasterClient.getCastReplies(hash);
+    return this.farcasterClient.getCastWithContext(hash);
   }
 
   async getCasts(hashes: string[]) {
-    return await this.farcasterClient.getCasts(hashes);
+    return this.farcasterClient.getCastsWithContext(hashes);
+  }
+
+  async getCastReplies(hash: string) {
+    const casts = await this.farcasterClient.getCastReplies(hash);
+    return await Promise.all(
+      casts.map((cast) =>
+        this.farcasterClient.getCastWithContext(cast.hash, cast),
+      ),
+    );
   }
 
   async getFeed(feedId: string) {
@@ -139,7 +146,7 @@ export class FarcasterService {
       throw new Error("Feed not found");
     }
 
-    const casts = await this.getCasts(feed);
+    const casts = await this.farcasterClient.getCastsWithContext(feed);
     return casts;
   }
 

@@ -12,25 +12,20 @@ import {
   Message as HubMessage,
 } from "@farcaster/hub-nodejs";
 import {
-  BaseFarcasterCastResponse,
+  BaseFarcasterCast,
   EntityResponse,
-  FarcasterCastResponse,
   FidHash,
+  FarcasterCastResponse,
+  FarcasterCastResponseWithContext,
 } from "../../types";
 import { NookClient } from "../nook";
 import { EntityClient } from "../entity";
-import { getUrlContent } from "../../content";
-import {
-  PrismaClient as ContentPrismaClient,
-  UrlContent,
-} from "../../prisma/content";
 
 export class FarcasterClient {
   private client: PrismaClient;
   private redis: RedisClient;
   private nookClient: NookClient;
   private entityClient: EntityClient;
-  private contentClient: ContentPrismaClient;
   private hub: HubRpcClient;
 
   CAST_CACHE_PREFIX = "cast";
@@ -41,7 +36,6 @@ export class FarcasterClient {
     this.redis = new RedisClient();
     this.nookClient = new NookClient();
     this.entityClient = new EntityClient();
-    this.contentClient = new ContentPrismaClient();
     this.hub = getSSLHubRpcClient(process.env.HUB_RPC_ENDPOINT as string);
   }
 
@@ -56,39 +50,83 @@ export class FarcasterClient {
   }
 
   async getCastReplies(hash: string) {
-    const casts = await this.client.farcasterCast.findMany({
+    return await this.client.farcasterCast.findMany({
       where: {
         parentHash: hash,
       },
     });
-    return await Promise.all(
-      casts.map((cast) => this.getCast(cast.hash, cast)),
+  }
+
+  async getCastsWithContext(hashes: string[]) {
+    const casts = await Promise.all(
+      hashes.map((hash) => this.getCastWithContext(hash)),
     );
+    return casts.filter(Boolean) as FarcasterCastResponseWithContext[];
+  }
+
+  async getCastWithContext(
+    hash: string,
+    data?: FarcasterCast,
+  ): Promise<FarcasterCastResponseWithContext | undefined> {
+    const [cast, engagement] = await Promise.all([
+      this.getCast(hash, data),
+      this.getEngagement(hash),
+    ]);
+
+    if (!cast) return;
+
+    return {
+      ...cast,
+      engagement,
+    };
   }
 
   async getCasts(hashes: string[]) {
-    return (await Promise.all(hashes.map((hash) => this.getCast(hash)))).filter(
-      Boolean,
-    ) as FarcasterCastResponse[];
+    const casts = await Promise.all(
+      hashes.map((hash) => this.getBaseCast(hash)),
+    );
+    return casts.filter(Boolean) as FarcasterCastResponse[];
   }
 
   async getCast(
     hash: string,
     data?: FarcasterCast,
   ): Promise<FarcasterCastResponse | undefined> {
-    const [cast, engagement] = await Promise.all([
-      this.getCastData(hash, data),
-      this.getEngagement(hash),
-    ]);
+    const cast = await this.getBaseCast(hash, data);
+    if (!cast) return;
 
-    if (!cast) {
-      return;
+    const relatedCastHashes = cast.castEmbedHashes;
+    if (cast.parentHash) {
+      relatedCastHashes.push(cast.parentHash);
     }
+    if (cast.rootParentHash !== cast.hash) {
+      relatedCastHashes.push(cast.hash);
+    }
+
+    const relatedCasts = await this.getCasts(relatedCastHashes);
+    const relatedCastMap = relatedCasts.reduce(
+      (acc, cur) => {
+        acc[cur.hash] = cur;
+        return acc;
+      },
+      {} as Record<string, FarcasterCastResponse>,
+    );
 
     return {
       ...cast,
-      engagement,
+      castEmbeds: cast.castEmbedHashes.map((c) => relatedCastMap[c]),
+      parent: cast.parentHash ? relatedCastMap[cast.parentHash] : undefined,
+      rootParent: cast.rootParentHash
+        ? relatedCastMap[cast.rootParentHash]
+        : undefined,
     };
+  }
+
+  async getBaseCasts(hashes: string[]) {
+    const casts = await Promise.all(
+      hashes.map((hash) => this.getBaseCast(hash)),
+    );
+    return casts.filter(Boolean) as BaseFarcasterCast[];
   }
 
   async fetchCast(hash: string) {
@@ -99,10 +137,10 @@ export class FarcasterClient {
     });
   }
 
-  async getCastData(
+  async getBaseCast(
     hash: string,
     data?: FarcasterCast,
-  ): Promise<BaseFarcasterCastResponse | undefined> {
+  ): Promise<BaseFarcasterCast | undefined> {
     const cached = await this.redis.getJson(
       `${this.CAST_CACHE_PREFIX}:${hash}`,
     );
@@ -113,20 +151,15 @@ export class FarcasterClient {
       return;
     }
 
-    const [relatedCasts, entityMap, channel] = await Promise.all([
-      this.getRelatedCasts(cast),
+    const [entityMap, channel] = await Promise.all([
       this.getRelatedEntities(cast),
       this.getRelatedChannel(cast),
     ]);
 
     const mentions = this.getMentions(cast);
     const urlEmbeds = this.getUrlEmbeds(cast);
-    const castEmbeds: FarcasterCastResponse[] = [];
-    for (const { hash } of this.getCastEmbeds(cast)) {
-      castEmbeds.push(relatedCasts[hash]);
-    }
 
-    const response: BaseFarcasterCastResponse = {
+    const response: BaseFarcasterCast = {
       hash: cast.hash,
       timestamp: cast.timestamp.getTime(),
       entity: entityMap[cast.fid.toString()],
@@ -135,13 +168,10 @@ export class FarcasterClient {
         entity: entityMap[mention.mention.toString()],
         position: mention.mentionPosition,
       })),
-      castEmbeds,
+      castEmbedHashes: this.getCastEmbeds(cast).map(({ hash }) => hash),
       urlEmbeds,
-      parent: cast.parentHash ? relatedCasts[cast.parentHash] : undefined,
-      rootParent:
-        cast.rootParentHash !== cast.hash
-          ? relatedCasts[cast.rootParentHash]
-          : undefined,
+      parentHash: cast.parentHash || undefined,
+      rootParentHash: cast.rootParentHash,
       channel,
     };
 
@@ -166,13 +196,13 @@ export class FarcasterClient {
       relatedHashes.push(hash);
     }
 
-    const relatedCasts = await this.getCasts(relatedHashes);
+    const relatedCasts = await this.getBaseCasts(relatedHashes);
     return relatedCasts.reduce(
       (acc, cast) => {
         acc[cast.hash] = cast;
         return acc;
       },
-      {} as Record<string, FarcasterCastResponse>,
+      {} as Record<string, BaseFarcasterCast>,
     );
   }
 
