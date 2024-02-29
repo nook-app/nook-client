@@ -1,4 +1,4 @@
-import { fetchUrlMetadata } from "@nook/common/scraper/url";
+import { fetchUrlMetadata } from "../../content";
 
 jest.mock("metascraper-media-provider", () => () => {
   return {};

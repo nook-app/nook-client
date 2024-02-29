@@ -1,6 +1,6 @@
 import * as cheerio from "cheerio";
 import { RulesOptions, Rules, RulesTestOptions } from "metascraper";
-import { metascraperFrame } from "@nook/common/scraper/utils/metascraper-frame";
+import { metascraperFrame } from "../../../content/utils/metascraper-frame";
 
 type Testable = {
   test: (args: RulesTestOptions) => boolean;

@@ -1,4 +1,3 @@
-import { Content, ContentType } from "../types";
 import {
   NFTCollection,
   NFTCollectionByContractResponse,
@@ -75,16 +74,9 @@ const CHAIN_ID_TO_NAME: Record<string, string> = {
 export const getChainContent = async (contentId: string) => {
   const asset = parseChainUri(contentId);
 
-  let content: Content | undefined;
   if (asset.spec === "erc721" || asset.spec === "erc1155") {
-    content = await handleNftContent(asset);
+    return await handleNftContent(asset);
   }
-
-  if (!content) {
-    throw new Error("Unsupported chain content");
-  }
-
-  return content;
 };
 
 const parseChainUri = (uri: string) => {
@@ -113,7 +105,7 @@ const handleNftContent = async (asset: Asset) => {
 
 const handleNftContract = async (
   asset: Asset,
-): Promise<Content<NFTCollection> | undefined> => {
+): Promise<NFTCollection | undefined> => {
   const response = await fetch(
     `${SIMPLEHASH_API_URL}/collections/${asset.chainId}/${asset.contractAddress}?include_top_contract_details=1`,
     {
@@ -135,21 +127,10 @@ const handleNftContract = async (
       contract_address.toLowerCase() === asset.contractAddress.toLowerCase(),
   );
 
-  return {
-    contentId: asset.contentId,
-    timestamp: contract?.deployed_via_contract
-      ? new Date(contract?.deployed_via_contract)
-      : new Date(),
-    createdAt: new Date(),
-    updatedAt: new Date(),
-    type: ContentType.NFT_CONTRACT,
-    data: collection,
-  };
+  return collection;
 };
 
-const handleNftToken = async (
-  asset: Asset,
-): Promise<Content<NFT> | undefined> => {
+const handleNftToken = async (asset: Asset): Promise<NFT | undefined> => {
   const response = await fetch(
     `${SIMPLEHASH_API_URL}/${asset.chainId}/${asset.contractAddress}/${asset.tokenId}`,
     {
@@ -163,12 +144,5 @@ const handleNftToken = async (
 
   const nft: NFT = await response.json();
 
-  return {
-    contentId: asset.contentId,
-    timestamp: new Date(nft.created_date),
-    createdAt: new Date(),
-    updatedAt: new Date(),
-    type: ContentType.NFT,
-    data: nft,
-  };
+  return nft;
 };
