@@ -563,15 +563,13 @@ export class FarcasterClient {
       if (existingContent) return existingContent;
 
       const content = await getUrlContent(uri);
-      if (content.metadata) {
-        await this.contentClient.urlContent.upsert({
-          where: {
-            uri,
-          },
-          create: content,
-          update: content,
-        });
-      }
+      await this.contentClient.urlContent.upsert({
+        where: {
+          uri,
+        },
+        create: content,
+        update: content,
+      });
       return content;
     }
   }
