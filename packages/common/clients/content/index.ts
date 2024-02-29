@@ -120,7 +120,7 @@ export class ContentClient {
   parseReferencedContent(cast: FarcasterCastResponse) {
     const timestamp = new Date(cast.timestamp);
     const references: ContentReference[] = [];
-    for (const url of cast.urlEmbeds) {
+    for (const url of cast.embedUrls) {
       references.push({
         fid: BigInt(cast.entity.farcaster.fid),
         hash: cast.hash,
@@ -131,7 +131,7 @@ export class ContentClient {
     }
 
     for (const castEmbed of cast.castEmbeds) {
-      for (const url of castEmbed.urlEmbeds) {
+      for (const url of castEmbed.embedUrls) {
         references.push({
           fid: BigInt(cast.entity.farcaster.fid),
           hash: cast.hash,
@@ -143,7 +143,7 @@ export class ContentClient {
     }
 
     if (cast.parent) {
-      for (const url of cast.parent.urlEmbeds) {
+      for (const url of cast.parent.embedUrls) {
         references.push({
           fid: BigInt(cast.entity.farcaster.fid),
           hash: cast.hash,

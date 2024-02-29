@@ -142,56 +142,66 @@ export class FarcasterService {
 
   async getFeed(feedId: string, cursor?: number) {
     const feed = await this.feedClient.getFeed(feedId, cursor);
-    const feedCasts = await this.farcasterClient.getCastsWithContext(feed);
 
-    if (feedCasts.length < 25) {
-      const take = 25 - feedCasts.length;
-      const [type, subtype, id] = feedId.split(":");
+    const promises = [];
+    promises.push(this.farcasterClient.getCastsWithContext(feed));
 
-      let rawCasts: FarcasterCast[] = [];
-      if (type === "channel") {
-        rawCasts = await this.farcasterClient.getCastsFromChannel(
-          id,
+    if (feed.length < 25) {
+      promises.push(this.backfillFeed(feedId, cursor, 25 - feed.length));
+    }
+
+    const casts = (await Promise.all(promises)).flat();
+
+    return {
+      data: casts,
+      nextCursor: casts[casts.length - 1]?.timestamp,
+    };
+  }
+
+  async backfillFeed(feedId: string, cursor?: number, take?: number) {
+    const [type, subtype, id] = feedId.split(":");
+
+    let rawCasts: FarcasterCast[] = [];
+    if (type === "channel") {
+      rawCasts = await this.farcasterClient.getCastsFromChannel(
+        id,
+        cursor,
+        take,
+      );
+    } else if (type === "user") {
+      if (subtype === "following") {
+        rawCasts = await this.farcasterClient.getCastsFromFollowing(
+          BigInt(id),
           cursor,
           take,
         );
-      } else if (type === "user") {
-        if (subtype === "following") {
-          rawCasts = await this.farcasterClient.getCastsFromFollowing(
-            BigInt(id),
-            cursor,
-            take,
-          );
-        } else {
-          rawCasts = await this.farcasterClient.getCastsFromFid(
-            BigInt(id),
-            subtype === "replies",
-            cursor,
-            take,
-          );
-        }
+      } else {
+        rawCasts = await this.farcasterClient.getCastsFromFid(
+          BigInt(id),
+          subtype === "replies",
+          cursor,
+          take,
+        );
       }
-      const casts = (
-        await Promise.all(
-          rawCasts.map((cast) =>
-            this.farcasterClient.getCastWithContext(cast.hash, cast),
-          ),
-        )
-      ).filter(Boolean) as FarcasterCastResponseWithContext[];
-      feedCasts.concat(casts);
-      await this.feedClient.batchAddToFeed(
-        feedId,
-        casts.map(({ hash, timestamp }) => ({
-          value: hash,
-          timestamp,
-        })),
-      );
     }
 
-    return {
-      data: feedCasts,
-      nextCursor: feedCasts[feedCasts.length - 1]?.timestamp,
-    };
+    const casts = (
+      await Promise.all(
+        rawCasts.map((cast) =>
+          this.farcasterClient.getCastWithContext(cast.hash, cast),
+        ),
+      )
+    ).filter(Boolean) as FarcasterCastResponseWithContext[];
+
+    await this.feedClient.batchAddToFeed(
+      feedId,
+      casts.map(({ hash, timestamp }) => ({
+        value: hash,
+        timestamp,
+      })),
+    );
+
+    return casts;
   }
 
   async getFollowers(fid: string) {

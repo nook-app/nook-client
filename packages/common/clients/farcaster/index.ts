@@ -20,22 +20,26 @@ import {
 } from "../../types";
 import { NookClient } from "../nook";
 import { EntityClient } from "../entity";
+import { ContentClient } from "../content";
 
 export class FarcasterClient {
   private client: PrismaClient;
   private redis: RedisClient;
   private nookClient: NookClient;
   private entityClient: EntityClient;
+  private contentClient: ContentClient;
   private hub: HubRpcClient;
 
   CAST_CACHE_PREFIX = "cast";
   ENGAGEMENT_CACHE_PREFIX = "engagement";
+  CONTENT_CACHE_PREFIX = "content";
 
   constructor() {
     this.client = new PrismaClient();
     this.redis = new RedisClient();
     this.nookClient = new NookClient();
     this.entityClient = new EntityClient();
+    this.contentClient = new ContentClient();
     this.hub = getSSLHubRpcClient(process.env.HUB_RPC_ENDPOINT as string);
   }
 
@@ -59,12 +63,13 @@ export class FarcasterClient {
 
   async getCastsFromFollowing(fid: bigint, cursor?: number, take?: number) {
     const followers = await this.getFollowing(fid);
-    const followerFids = followers.map((follower) => follower.fid);
+    const followerFids = followers.map((follower) => follower.targetFid);
     return await this.client.farcasterCast.findMany({
       where: {
         fid: {
           in: followerFids,
         },
+        parentHash: null,
         timestamp: {
           lt: cursor ? new Date(cursor) : new Date(),
         },
@@ -130,7 +135,7 @@ export class FarcasterClient {
 
     if (!cast) return;
 
-    const relatedCastHashes = cast.castEmbedHashes;
+    const relatedCastHashes = cast.embedHashes;
     if (cast.parentHash && !relatedCastHashes.includes(cast.parentHash)) {
       relatedCastHashes.push(cast.parentHash);
     }
@@ -142,7 +147,11 @@ export class FarcasterClient {
       relatedCastHashes.push(cast.rootParentHash);
     }
 
-    const relatedCasts = await this.getCastsWithContext(relatedCastHashes);
+    const [relatedCasts, urlEmbeds] = await Promise.all([
+      this.getCastsWithContext(relatedCastHashes),
+      this.getUrlEmbeds(cast.embedUrls),
+    ]);
+
     const relatedCastMap = relatedCasts.reduce(
       (acc, cur) => {
         acc[cur.hash] = cur;
@@ -153,12 +162,13 @@ export class FarcasterClient {
 
     return {
       ...cast,
-      castEmbeds: cast.castEmbedHashes.map((c) => relatedCastMap[c]),
+      castEmbeds: cast.embedHashes.map((c) => relatedCastMap[c]),
       parent: cast.parentHash ? relatedCastMap[cast.parentHash] : undefined,
       rootParent: cast.rootParentHash
         ? relatedCastMap[cast.rootParentHash]
         : undefined,
       engagement,
+      urlEmbeds,
     };
   }
 
@@ -176,7 +186,7 @@ export class FarcasterClient {
     const cast = await this.getBaseCast(hash, data);
     if (!cast) return;
 
-    const relatedCastHashes = cast.castEmbedHashes;
+    const relatedCastHashes = cast.embedHashes;
     if (cast.parentHash && !relatedCastHashes.includes(cast.parentHash)) {
       relatedCastHashes.push(cast.parentHash);
     }
@@ -188,7 +198,10 @@ export class FarcasterClient {
       relatedCastHashes.push(cast.rootParentHash);
     }
 
-    const relatedCasts = await this.getCasts(relatedCastHashes);
+    const [relatedCasts, urlEmbeds] = await Promise.all([
+      this.getCasts(relatedCastHashes),
+      this.getUrlEmbeds(cast.embedUrls),
+    ]);
     const relatedCastMap = relatedCasts.reduce(
       (acc, cur) => {
         acc[cur.hash] = cur;
@@ -199,11 +212,12 @@ export class FarcasterClient {
 
     return {
       ...cast,
-      castEmbeds: cast.castEmbedHashes.map((c) => relatedCastMap[c]),
+      castEmbeds: cast.embedHashes.map((c) => relatedCastMap[c]),
       parent: cast.parentHash ? relatedCastMap[cast.parentHash] : undefined,
       rootParent: cast.rootParentHash
         ? relatedCastMap[cast.rootParentHash]
         : undefined,
+      urlEmbeds,
     };
   }
 
@@ -242,7 +256,7 @@ export class FarcasterClient {
     ]);
 
     const mentions = this.getMentions(cast);
-    const urlEmbeds = this.getUrlEmbeds(cast);
+    const embedUrls = this.getEmbedUrls(cast);
 
     const response: BaseFarcasterCast = {
       hash: cast.hash,
@@ -253,8 +267,8 @@ export class FarcasterClient {
         entity: entityMap[mention.mention.toString()],
         position: mention.mentionPosition,
       })),
-      castEmbedHashes: this.getCastEmbeds(cast).map(({ hash }) => hash),
-      urlEmbeds,
+      embedHashes: this.getCastEmbeds(cast).map(({ hash }) => hash),
+      embedUrls,
       parentHash: cast.parentHash || undefined,
       rootParentHash: cast.rootParentHash,
       channel,
@@ -350,7 +364,13 @@ export class FarcasterClient {
     return mentions;
   }
 
-  getUrlEmbeds(data: FarcasterCast) {
+  async getUrlEmbeds(urls: string[]) {
+    return await Promise.all(
+      urls.map((url) => this.contentClient.getContent(url)),
+    );
+  }
+
+  getEmbedUrls(data: FarcasterCast) {
     const embeds: string[] = [];
     // @ts-ignore
     if (

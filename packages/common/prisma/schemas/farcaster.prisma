@@ -96,6 +96,10 @@ model FarcasterCast {
     @@index([fid, hash])
     @@index([parentHash])
     @@index([rootParentHash])
+    @@index([fid, timestamp])
+    @@index([fid, timestamp, parentHash])
+    @@index([parentUrl, timestamp])
+    @@index([parentUrl, timestamp, parentHash])
 }
 
 model FarcasterCastMention {

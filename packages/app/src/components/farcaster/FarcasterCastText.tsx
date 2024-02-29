@@ -33,7 +33,7 @@ export const FarcasterCastText = ({
       let part = parts[i];
       if (!part) continue;
 
-      if (cast.urlEmbeds.includes(part) || isWarpcastUrl(part)) {
+      if (cast.embedUrls.includes(part) || isWarpcastUrl(part)) {
         skippedEmbed = true;
         continue;
       }

@@ -146,16 +146,13 @@ export class RedisClient {
   }
 
   async getSet(key: string, cursor?: number) {
-    if (cursor) {
-      return await this.redis.zrevrangebyscore(
-        key,
-        cursor,
-        "-inf",
-        "LIMIT",
-        0,
-        25,
-      );
-    }
-    return await this.redis.zrange(key, 0, 25);
+    return await this.redis.zrevrangebyscore(
+      key,
+      cursor ? cursor - 1 : "+inf",
+      "-inf",
+      "LIMIT",
+      0,
+      25,
+    );
   }
 }
