@@ -1,30 +1,23 @@
 import {
-  EntityClient,
+  ContentClient,
   FarcasterClient,
   FeedClient,
-  NookClient,
 } from "@nook/common/clients";
 import {
   FarcasterCast,
   FarcasterCastReaction,
 } from "@nook/common/prisma/farcaster";
-import {
-  EntityEvent,
-  EntityResponse,
-  FarcasterEventType,
-} from "@nook/common/types";
+import { EntityEvent, FarcasterEventType } from "@nook/common/types";
 
 export class FarcasterProcessor {
-  private nookClient: NookClient;
-  private entityClient: EntityClient;
   private farcasterClient: FarcasterClient;
   private feedClient: FeedClient;
+  private contentClient: ContentClient;
 
   constructor() {
-    this.entityClient = new EntityClient();
     this.farcasterClient = new FarcasterClient();
     this.feedClient = new FeedClient();
-    this.nookClient = new NookClient();
+    this.contentClient = new ContentClient();
   }
 
   async process(event: EntityEvent) {
@@ -58,7 +51,7 @@ export class FarcasterProcessor {
     if (!cast) return;
 
     const promises = [];
-    promises.push(this.farcasterClient.addContentReferences(cast));
+    promises.push(this.contentClient.addReferencedContent(cast));
 
     if (data.parentUrl) {
       promises.push(
@@ -107,7 +100,7 @@ export class FarcasterProcessor {
     if (!cast) return;
 
     const promises = [];
-    promises.push(this.farcasterClient.removeContentReferences(cast));
+    promises.push(this.contentClient.removeReferencedContent(cast));
 
     if (data.parentUrl) {
       promises.push(

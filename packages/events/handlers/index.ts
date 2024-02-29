@@ -10,7 +10,7 @@ export const getEventsHandler = async () => {
 
     switch (event.source.service) {
       case EventService.FARCASTER: {
-        farcasterProcessor.process(event);
+        await farcasterProcessor.process(event);
         break;
       }
       default:

@@ -20,7 +20,10 @@ import {
 import { NookClient } from "../nook";
 import { EntityClient } from "../entity";
 import { getUrlContent } from "../../content";
-import { PrismaClient as ContentPrismaClient } from "../../prisma/content";
+import {
+  PrismaClient as ContentPrismaClient,
+  UrlContent,
+} from "../../prisma/content";
 
 export class FarcasterClient {
   private client: PrismaClient;
@@ -88,6 +91,14 @@ export class FarcasterClient {
     };
   }
 
+  async fetchCast(hash: string) {
+    return await this.client.farcasterCast.findUnique({
+      where: {
+        hash,
+      },
+    });
+  }
+
   async getCastData(
     hash: string,
     data?: FarcasterCast,
@@ -97,14 +108,7 @@ export class FarcasterClient {
     );
     if (cached) return cached;
 
-    const cast =
-      data ||
-      (await this.client.farcasterCast.findUnique({
-        where: {
-          hash,
-        },
-      }));
-
+    const cast = data || (await this.fetchCast(hash));
     if (!cast) {
       return;
     }
@@ -426,151 +430,6 @@ export class FarcasterClient {
           await this.updateQuotes(hash);
           break;
       }
-    }
-  }
-
-  async removeContentReferences(cast: FarcasterCastResponse) {
-    const promises = [];
-
-    for (const url of cast.urlEmbeds) {
-      promises.push(
-        this.removeContentReference({
-          fid: BigInt(cast.entity.farcaster.fid),
-          hash: cast.hash,
-          uri: url,
-          type: "embed",
-        }),
-      );
-    }
-
-    if (cast.parent) {
-      for (const url of cast.parent.urlEmbeds) {
-        promises.push(
-          this.removeContentReference({
-            fid: BigInt(cast.entity.farcaster.fid),
-            hash: cast.hash,
-            uri: url,
-            type: "reply",
-          }),
-        );
-      }
-    }
-
-    for (const castEmbed of cast.castEmbeds) {
-      for (const url of castEmbed.urlEmbeds) {
-        promises.push(
-          this.removeContentReference({
-            fid: BigInt(cast.entity.farcaster.fid),
-            hash: cast.hash,
-            uri: url,
-            type: "quote",
-          }),
-        );
-      }
-    }
-
-    await Promise.all(promises);
-  }
-
-  async removeContentReference(data: {
-    fid: bigint;
-    hash: string;
-    uri: string;
-    type: "embed" | "reply" | "quote";
-  }) {
-    await this.contentClient.farcasterContentReference.delete({
-      where: {
-        uri_fid_hash_type: data,
-      },
-    });
-  }
-
-  async addContentReferences(cast: FarcasterCastResponse) {
-    const contentPromises = [];
-    const referencePromises = [];
-    for (const url of cast.urlEmbeds) {
-      contentPromises.push(this.getContent(url));
-      referencePromises.push(
-        this.addContentReference({
-          fid: BigInt(cast.entity.farcaster.fid),
-          hash: cast.hash,
-          uri: url,
-          type: "embed",
-        }),
-      );
-    }
-
-    if (cast.parent) {
-      for (const url of cast.parent.urlEmbeds) {
-        contentPromises.push(this.getContent(url));
-        referencePromises.push(
-          this.addContentReference({
-            fid: BigInt(cast.entity.farcaster.fid),
-            hash: cast.hash,
-            uri: url,
-            type: "reply",
-          }),
-        );
-      }
-    }
-
-    for (const castEmbed of cast.castEmbeds) {
-      for (const url of castEmbed.urlEmbeds) {
-        contentPromises.push(this.getContent(url));
-        referencePromises.push(
-          this.addContentReference({
-            fid: BigInt(cast.entity.farcaster.fid),
-            hash: cast.hash,
-            uri: url,
-            type: "quote",
-          }),
-        );
-      }
-    }
-
-    await Promise.all(contentPromises);
-    await Promise.all(referencePromises);
-  }
-
-  async addContentReference(data: {
-    fid: bigint;
-    hash: string;
-    uri: string;
-    type: "embed" | "reply" | "quote";
-  }) {
-    await this.contentClient.farcasterContentReference.upsert({
-      where: {
-        uri_fid_hash_type: data,
-      },
-      create: {
-        ...data,
-        timestamp: new Date(),
-      },
-      update: {
-        ...data,
-        timestamp: new Date(),
-      },
-    });
-  }
-
-  async getContent(uri: string) {
-    if (uri.startsWith("http://") || uri.startsWith("https://")) {
-      const existingContent = await this.contentClient.urlContent.findUnique({
-        where: {
-          uri,
-        },
-      });
-      if (existingContent) return existingContent;
-
-      const content = await getUrlContent(uri);
-      await this.contentClient.urlContent.upsert({
-        where: {
-          uri,
-        },
-        create: content,
-        update: content,
-      });
-      return content;
     }
   }
 

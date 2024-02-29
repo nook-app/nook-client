@@ -26,6 +26,7 @@ model FarcasterContentReference {
 
 model UrlContent {
     uri      String  @id
+    protocol String?
     host     String?
     path     String?
     query    String?

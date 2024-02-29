@@ -23,7 +23,7 @@ import {
   FrameButtonAction,
   UnstructuredFrameMetascraperButtonKeys,
 } from "@nook/common/types";
-import { Prisma } from "../prisma/content";
+import { UrlContent } from "../prisma/content";
 
 export type UrlMetadata = {
   metadata?: Metadata;
@@ -80,20 +80,38 @@ const USER_AGENT_OVERRIDES: { [key: string]: string } = {
  * @param request
  * @returns
  */
-export const getUrlContent = async (uri: string) => {
+export const getUrlContent = async (uri: string): Promise<UrlContent> => {
   const date = new Date();
   const url = new URL(uri);
+  if (!uri.startsWith("http://") && !uri.startsWith("https://")) {
+    return {
+      uri,
+      protocol: url.protocol,
+      host: url.host,
+      path: url.pathname,
+      query: url.search,
+      fragment: url.hash,
+      type: null,
+      length: null,
+      metadata: null,
+      frame: null,
+      createdAt: date,
+      updatedAt: date,
+    };
+  }
+
   const metadata = await fetchUrlMetadata(uri);
   return {
     uri,
+    protocol: url.protocol,
     host: url.host,
     path: url.pathname,
     query: url.search,
     fragment: url.hash,
     type: metadata.contentType || null,
     length: metadata.contentLength || null,
-    metadata: (metadata.metadata || Prisma.DbNull) as Prisma.InputJsonValue,
-    frame: (metadata.frame || Prisma.DbNull) as Prisma.InputJsonValue,
+    metadata: metadata.metadata || null,
+    frame: metadata.frame || null,
     createdAt: date,
     updatedAt: date,
   };
