@@ -9,6 +9,7 @@ import {
 import { FarcasterClient, FeedClient, NookClient } from "@nook/common/clients";
 import { FarcasterCastResponseWithContext } from "@nook/common/types";
 import { FarcasterCast } from "@nook/common/prisma/farcaster";
+import { FARCASTER_OG_FIDS } from "@nook/common/farcaster";
 
 export class FarcasterService {
   private nookClient: NookClient;
@@ -117,10 +118,7 @@ export class FarcasterService {
       castAddMessage.value,
     );
 
-    return {
-      fid: parseInt(signer.fid, 10),
-      hash: result.hash,
-    };
+    return result.hash;
   }
 
   async getCast(hash: string) {
@@ -179,6 +177,14 @@ export class FarcasterService {
         rawCasts = await this.farcasterClient.getCastsFromFid(
           BigInt(id),
           subtype === "replies",
+          cursor,
+          take,
+        );
+      }
+    } else if (type === "custom") {
+      if (subtype === "farcaster-og") {
+        rawCasts = await this.farcasterClient.getCastsFromFids(
+          FARCASTER_OG_FIDS.map((fid) => BigInt(fid)),
           cursor,
           take,
         );

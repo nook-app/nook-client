@@ -64,10 +64,14 @@ export class FarcasterClient {
   async getCastsFromFollowing(fid: bigint, cursor?: number, take?: number) {
     const followers = await this.getFollowing(fid);
     const followerFids = followers.map((follower) => follower.targetFid);
+    return this.getCastsFromFids(followerFids, cursor, take);
+  }
+
+  async getCastsFromFids(fids: bigint[], cursor?: number, take?: number) {
     return await this.client.farcasterCast.findMany({
       where: {
         fid: {
-          in: followerFids,
+          in: fids,
         },
         parentHash: null,
         timestamp: {
@@ -147,10 +151,7 @@ export class FarcasterClient {
       relatedCastHashes.push(cast.rootParentHash);
     }
 
-    const [relatedCasts, urlEmbeds] = await Promise.all([
-      this.getCastsWithContext(relatedCastHashes),
-      this.getUrlEmbeds(cast.embedUrls),
-    ]);
+    const relatedCasts = await this.getCastsWithContext(relatedCastHashes);
 
     const relatedCastMap = relatedCasts.reduce(
       (acc, cur) => {
@@ -168,7 +169,6 @@ export class FarcasterClient {
         ? relatedCastMap[cast.rootParentHash]
         : undefined,
       engagement,
-      urlEmbeds,
     };
   }
 

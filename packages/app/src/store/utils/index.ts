@@ -49,6 +49,24 @@ export const generateHomeNook = (fid: string): NookResponse => {
             },
           ],
         },
+        {
+          id: "ogs",
+          name: "Farcaster OGs",
+          description: "Posts from Farcaster OGs",
+          panels: [
+            {
+              id: "new",
+              name: "New",
+              description: "New posts from Farcaster OGs",
+              data: {
+                type: NookPanelType.FarcasterFeed,
+                args: {
+                  feedId: "custom:farcaster-og",
+                },
+              },
+            },
+          ],
+        },
       ],
     },
     createdAt: new Date().getTime(),

@@ -3,6 +3,7 @@ import {
   FarcasterClient,
   FeedClient,
 } from "@nook/common/clients";
+import { FARCASTER_OG_FIDS } from "@nook/common/farcaster";
 import {
   FarcasterCast,
   FarcasterCastReaction,
@@ -90,6 +91,16 @@ export class FarcasterProcessor {
       );
     }
 
+    if (FARCASTER_OG_FIDS.includes(data.fid.toString())) {
+      promises.push(
+        this.feedClient.addToFeed(
+          "custom:farcaster-og",
+          data.hash,
+          cast.timestamp,
+        ),
+      );
+    }
+
     await Promise.all(promises);
 
     if (!data.parentHash) {
@@ -140,6 +151,12 @@ export class FarcasterProcessor {
     for (const embed of this.farcasterClient.getCastEmbeds(data)) {
       promises.push(
         this.farcasterClient.decrementEngagement(embed.hash, "quotes"),
+      );
+    }
+
+    if (FARCASTER_OG_FIDS.includes(data.fid.toString())) {
+      promises.push(
+        this.feedClient.removeFromFeed("custom:farcaster-og", data.hash),
       );
     }
 

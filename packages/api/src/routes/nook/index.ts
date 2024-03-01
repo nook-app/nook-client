@@ -13,10 +13,20 @@ export const nookRoutes = async (fastify: FastifyInstance) => {
       },
     );
 
-    fastify.get("/channels", async (request, reply) => {
-      const channels = await nookService.getChannels();
-      return reply.send({ data: channels });
-    });
+    fastify.get<{ Querystring: { search: string } }>(
+      "/channels",
+      async (request, reply) => {
+        if (request.query.search) {
+          const channels = await nookService.searchChannels(
+            request.query.search,
+          );
+          return reply.send({ data: channels });
+        }
+
+        const channels = await nookService.getChannels();
+        return reply.send({ data: channels });
+      },
+    );
 
     fastify.get<{ Params: { channelId: string } }>(
       "/channels/:channelId",

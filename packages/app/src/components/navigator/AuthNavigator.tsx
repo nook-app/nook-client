@@ -1,14 +1,23 @@
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { Avatar, Text, View, useTheme } from "tamagui";
 import { ElementType, memo } from "react";
-import { Bell, LayoutGrid, Search } from "@tamagui/lucide-icons";
+import {
+  Bell,
+  LayoutGrid,
+  Plus,
+  PlusCircle,
+  Search,
+} from "@tamagui/lucide-icons";
 import { useAppSelector } from "@/hooks/useAppSelector";
 import { NooksNavigator } from "./NooksNavigator";
 import { ProfileScreen } from "@/screens/ProfileScreen";
+import { useModal } from "@/hooks/useModal";
+import { ModalName } from "@/modals/types";
 
 const Tabs = createBottomTabNavigator();
 
 export const AuthNavigator = () => {
+  const { open } = useModal(ModalName.CreatePost);
   return (
     <Tabs.Navigator
       screenOptions={{
@@ -52,6 +61,28 @@ export const AuthNavigator = () => {
           ),
           tabBarShowLabel: false,
         }}
+      />
+      <Tabs.Screen
+        name="Create"
+        component={TempSearchScreen}
+        options={{
+          title: "Nooks",
+          tabBarIcon: ({ focused }) => (
+            <TabBarIcon
+              focused={focused}
+              icon={Plus}
+              focusType="stroke"
+              invert
+            />
+          ),
+          tabBarShowLabel: false,
+        }}
+        listeners={({ navigation }) => ({
+          tabPress: (event) => {
+            event.preventDefault();
+            open();
+          },
+        })}
       />
       <Tabs.Screen
         name="Notifications"
@@ -108,19 +139,32 @@ const TabBarIcon = memo(
     focused,
     icon: Icon,
     focusType,
-  }: { focused: boolean; icon: ElementType; focusType: "stroke" | "fill" }) => {
+    invert,
+  }: {
+    focused: boolean;
+    icon: ElementType;
+    focusType: "stroke" | "fill";
+    invert?: boolean;
+  }) => {
     const theme = useTheme();
     return (
-      <Icon
-        size={20}
-        color={focused ? "white" : "$gray11"}
-        strokeWidth={focused && focusType === "stroke" ? 3 : 2}
-        fill={
-          focused && focusType === "fill"
-            ? "white"
-            : theme.$backgroundStrong.val
-        }
-      />
+      <View
+        themeInverse={!!invert}
+        backgroundColor="$backgroundStrong"
+        borderRadius="$10"
+        padding="$2"
+      >
+        <Icon
+          size={20}
+          color={focused && !invert ? "white" : invert ? "$color12" : "$gray11"}
+          strokeWidth={focused && focusType === "stroke" && !invert ? 3 : 2}
+          fill={
+            focused && focusType === "fill" && !invert
+              ? "white"
+              : theme.$backgroundStrong.val
+          }
+        />
+      </View>
     );
   },
 );

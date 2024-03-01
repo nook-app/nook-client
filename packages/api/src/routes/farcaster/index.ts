@@ -38,16 +38,12 @@ export const farcasterRoutes = async (fastify: FastifyInstance) => {
       async (request, reply) => {
         const { id } = (await request.jwtDecode()) as { id: string };
         try {
-          const { fid, hash } = await farcasterService.createCast(
+          const hash = await farcasterService.createCast(
             id,
             request.body.message,
             request.body.channel,
           );
-          const contentId = `farcaster://cast/${fid}/${`0x${Buffer.from(hash)
-            .toString("hex")
-            .toLowerCase()}`}`;
-
-          return reply.send({ contentId });
+          return reply.send({ hash });
         } catch (e) {
           console.error("/farcaster/post", e);
           return reply.code(500).send({ message: (e as Error).message });

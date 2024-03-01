@@ -1,6 +1,5 @@
 import metascraper, { Metadata, MetascraperOptions } from "metascraper";
 import metascraperTitle from "metascraper-title";
-import metascraperAudio from "metascraper-audio";
 import metascraperAuthor from "metascraper-author";
 import metascraperDate from "metascraper-date";
 import metascraperDescription from "metascraper-description";
@@ -10,11 +9,9 @@ import metascraperIframe from "metascraper-iframe";
 import metascraperLang from "metascraper-lang";
 import metascraperLogo from "metascraper-logo";
 import metascraperLogoFavicon from "metascraper-logo-favicon";
-import metascraperMediaProvider from "metascraper-media-provider";
 import metascraperPublisher from "metascraper-publisher";
 import metascraperReadability from "metascraper-readability";
 import metascraperUrl from "metascraper-url";
-import metascraperVideo from "metascraper-video";
 import { metascraperFrame } from "./utils/metascraper-frame";
 import {
   FrameMetascraperData,
@@ -82,7 +79,14 @@ const USER_AGENT_OVERRIDES: { [key: string]: string } = {
  */
 export const getUrlContent = async (uri: string): Promise<UrlContent> => {
   const date = new Date();
-  const url = new URL(uri);
+
+  let url: URL;
+  try {
+    url = new URL(uri);
+  } catch (e) {
+    url = new URL(`https://${uri}`);
+  }
+
   const content: UrlContent = {
     uri,
     protocol: url.protocol,
@@ -114,7 +118,6 @@ export const getUrlContent = async (uri: string): Promise<UrlContent> => {
 const scrapeMetadata = async (options: MetascraperOptions) => {
   const scraper = metascraper([
     metascraperTitle(),
-    metascraperAudio(),
     metascraperAuthor(),
     metascraperDate(),
     metascraperDescription(),
@@ -124,11 +127,9 @@ const scrapeMetadata = async (options: MetascraperOptions) => {
     metascraperLang(),
     metascraperLogo(),
     metascraperLogoFavicon(),
-    metascraperMediaProvider(),
     metascraperPublisher(),
     metascraperReadability(),
     metascraperUrl(),
-    metascraperVideo(),
     metascraperFrame(),
   ]);
   return await scraper(options);

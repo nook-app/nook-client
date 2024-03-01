@@ -14,14 +14,17 @@ const Drawer = createDrawerNavigator();
 export const NooksNavigator = () => {
   return (
     <Drawer.Navigator
-      screenOptions={({ route }) => ({
-        headerShown: false,
-        swipeEdgeWidth: 200,
-        drawerStyle: {
-          width: 300,
-        },
-        swipeEnabled: getFocusedRouteNameFromRoute(route) === "Nook",
-      })}
+      screenOptions={({ route }) => {
+        const focusedRoute = getFocusedRouteNameFromRoute(route);
+        return {
+          headerShown: false,
+          swipeEdgeWidth: 300,
+          drawerStyle: {
+            width: 300,
+          },
+          swipeEnabled: !focusedRoute || focusedRoute === "Nook",
+        };
+      }}
       drawerContent={(props) => (
         <XStack height="100%" flexDirection="row">
           <View

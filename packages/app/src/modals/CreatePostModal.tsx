@@ -12,13 +12,12 @@ import {
   Platform,
   TextInput,
 } from "react-native";
-import { nookApi } from "@/store/apis/nookApi";
 import { farcasterApi } from "@/store/apis/farcasterApi";
-import { Channel } from "@nook/common/types";
 import { ModalName } from "./types";
 import { BottomSheetModal } from "@/components/modals/BottomSheetModal";
 import { BottomSheetScrollView } from "@gorhom/bottom-sheet";
 import { useModal } from "@/hooks/useModal";
+import { Channel } from "@nook/common/prisma/nook";
 
 export const CreatePostModal = () => {
   const [selectChannelModalOpen, setSelectChannelModalOpen] = useState(false);
@@ -32,8 +31,8 @@ export const CreatePostModal = () => {
   const [message, setMessage] = useState("");
   const [isPosting, setIsPosting] = useState(false);
   const [error, setError] = useState<Error | null>(null);
-  const [fetchContent] = nookApi.useLazyGetContentQuery();
-  const [createPost] = farcasterApi.useCreatePostMutation();
+  const [fetchCast] = farcasterApi.useLazyGetCastQuery();
+  const [createPost] = farcasterApi.useCreateCastMutation();
   const { open } = useModal(ModalName.EnableSigner);
   const { close } = useModal(ModalName.CreatePost);
 
@@ -56,7 +55,7 @@ export const CreatePostModal = () => {
 
   const handleCreatePost = async () => {
     setIsPosting(true);
-    const response = await createPost({ message, channel: channel?.contentId });
+    const response = await createPost({ message, channel: channel?.id });
     if ("error" in response) {
       let errorMessage = "An unknown error occurred";
       if (typeof response.error === "object" && "status" in response.error) {
@@ -76,18 +75,18 @@ export const CreatePostModal = () => {
       return;
     }
 
-    const { contentId } = response.data;
+    const { hash } = response.data;
 
     let attempts = 0;
 
     const executePoll = async () => {
       if (attempts < 30) {
         try {
-          const { data } = await fetchContent(contentId);
+          const { data } = await fetchCast(hash);
           if (data) {
             navigation.goBack();
-            navigation.navigate("Content", {
-              contentId,
+            navigation.navigate("FarcasterCast", {
+              hash,
             });
             return;
           }
@@ -130,9 +129,7 @@ export const CreatePostModal = () => {
                   justifyContent="center"
                   alignItems="center"
                 >
-                  {entity && (
-                    <EntityAvatar entityId={entity._id.toString()} size="$4" />
-                  )}
+                  {entity && <EntityAvatar entityId={entity.id} size="$4" />}
                 </View>
                 <Button
                   onPress={() => setSelectChannelModalOpen(true)}

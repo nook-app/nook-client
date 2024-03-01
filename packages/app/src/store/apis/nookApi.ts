@@ -10,8 +10,8 @@ export const nookApi = createApi({
     getNook: builder.query<NookResponse, string>({
       query: (nookId) => `/nooks/${nookId}`,
     }),
-    getChannels: builder.query<Channel[], null>({
-      query: () => "/channels",
+    getChannels: builder.query<Channel[], { search?: string }>({
+      query: (search) => `/channels?search=${search}`,
     }),
     getChannel: builder.query<Channel, string>({
       query: (channelId) => `/channels/${channelId}`,

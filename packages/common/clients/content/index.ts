@@ -1,7 +1,12 @@
+import { Metadata } from "metascraper";
 import { getUrlContent } from "../../content";
 import { Prisma, PrismaClient } from "../../prisma/content";
 import { RedisClient } from "../../redis";
-import { FarcasterCastResponse } from "../../types";
+import {
+  FarcasterCastResponse,
+  FrameData,
+  UrlContentResponse,
+} from "../../types";
 
 enum ContentReferenceType {
   Embed = "EMBED",
@@ -63,7 +68,7 @@ export class ContentClient {
     );
   }
 
-  async getContent(uri: string) {
+  async getContent(uri: string): Promise<UrlContentResponse> {
     const cached = await this.redis.getJson(
       `${this.CONTENT_CACHE_PREFIX}:${uri}`,
     );
@@ -97,7 +102,11 @@ export class ContentClient {
     }
 
     await this.redis.setJson(`${this.CONTENT_CACHE_PREFIX}:${uri}`, content);
-    return content;
+    return {
+      ...content,
+      metadata: content.metadata as Metadata,
+      frame: content.frame as FrameData,
+    } as UrlContentResponse;
   }
 
   async upsertReferencedContent(reference: ContentReference) {

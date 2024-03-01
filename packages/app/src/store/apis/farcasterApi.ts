@@ -18,7 +18,7 @@ export const farcasterApi = createApi({
       query: (token) => `/farcaster/signer/validate?token=${token}`,
     }),
     createCast: builder.mutation<
-      { contentId: string },
+      { hash: string },
       { message: string; channel?: string }
     >({
       query: ({ message, channel }) => ({

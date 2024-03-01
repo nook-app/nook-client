@@ -48,7 +48,7 @@ export const ActiveNook = () => {
                 backgroundColor={
                   activeShelf?.id === shelf.id || (!activeShelf && i === 0)
                     ? "$backgroundPress"
-                    : "$backgroundStrong"
+                    : undefined
                 }
                 borderRadius="$4"
               >

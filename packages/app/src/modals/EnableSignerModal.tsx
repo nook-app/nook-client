@@ -1,10 +1,7 @@
 import { Button, Spinner, Text, View, YStack } from "tamagui";
 import { useAuth } from "@/context/auth";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useCallback, useState } from "react";
 import { Linking } from "react-native";
-import { NavigationProp, useNavigation } from "@react-navigation/native";
-import { RootStackParamList } from "@/types";
 import { useAppDispatch } from "@/hooks/useAppDispatch";
 import { setSignerEnabled } from "@/store/slices/user";
 import { farcasterApi } from "@/store/apis/farcasterApi";

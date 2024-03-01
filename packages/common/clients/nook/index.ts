@@ -263,4 +263,15 @@ export class NookClient {
       take: 25,
     });
   }
+
+  async searchChannels(search: string) {
+    return await this.client.channel.findMany({
+      where: {
+        name: {
+          contains: search,
+          mode: "insensitive",
+        },
+      },
+    });
+  }
 }

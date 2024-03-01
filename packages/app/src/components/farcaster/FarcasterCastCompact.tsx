@@ -6,6 +6,8 @@ import { Heart, MessageSquare, RefreshCw } from "@tamagui/lucide-icons";
 import { formatTimeAgo } from "@/utils";
 import { ChannelDisplay } from "../channel/ChannelDisplay";
 import { FarcasterCastResponseWithContext } from "@nook/common/types";
+import { Embed } from "../embeds/Embed";
+import { EmbedCast } from "../embeds/EmbedCast";
 
 export const FarcasterCastCompact = ({
   cast,
@@ -44,6 +46,16 @@ export const FarcasterCastCompact = ({
           <View paddingVertical="$1.5">
             <FarcasterCastText cast={cast} />
           </View>
+        )}
+        {(cast.urlEmbeds.length > 0 || cast.castEmbeds.length > 0) && (
+          <YStack gap="$2">
+            {cast.urlEmbeds.map((content) => (
+              <Embed key={content.uri} content={content} />
+            ))}
+            {cast.castEmbeds.map((cast) => (
+              <EmbedCast key={cast.hash} cast={cast} />
+            ))}
+          </YStack>
         )}
         {cast.engagement && (
           <XStack justifyContent="space-between" width="$15" paddingTop="$1">

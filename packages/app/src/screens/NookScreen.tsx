@@ -32,7 +32,7 @@ export const NookScreen = () => {
 
   return (
     <View backgroundColor="$background" height="100%">
-      <Panels panels={shelf.panels} />
+      <Panels panels={shelf.panels} key={`${nook.id}-${shelf.id}`} />
     </View>
   );
 };

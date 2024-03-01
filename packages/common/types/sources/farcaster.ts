@@ -1,5 +1,6 @@
 import { UrlContent } from "../../prisma/content";
 import { Channel } from "../../prisma/nook";
+import { UrlContentResponse } from "../content";
 import { EntityResponse } from "../entity";
 
 export type FidHash = {
@@ -43,7 +44,7 @@ export type FarcasterCastResponse = BaseFarcasterCast & {
   castEmbeds: FarcasterCastResponse[];
   parent?: FarcasterCastResponse;
   rootParent?: FarcasterCastResponse;
-  urlEmbeds: UrlContent[];
+  urlEmbeds: UrlContentResponse[];
 };
 
 export type FarcasterCastResponseWithContext = BaseFarcasterCast & {
@@ -51,5 +52,5 @@ export type FarcasterCastResponseWithContext = BaseFarcasterCast & {
   parent?: FarcasterCastResponseWithContext;
   rootParent?: FarcasterCastResponseWithContext;
   engagement: FarcasterCastEngagement;
-  urlEmbeds: UrlContent[];
+  urlEmbeds: UrlContentResponse[];
 };

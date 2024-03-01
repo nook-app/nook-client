@@ -19,4 +19,8 @@ export class NookService {
   async getChannel(id: string) {
     return await this.nookClient.getChannel(id);
   }
+
+  async searchChannels(search: string) {
+    return await this.nookClient.searchChannels(search);
+  }
 }

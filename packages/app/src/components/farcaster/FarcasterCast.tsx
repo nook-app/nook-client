@@ -14,6 +14,8 @@ import { ScrollView as RNScrollView, View as RNView } from "react-native";
 import { FarcasterCastCompact } from "./FarcasterCastCompact";
 import { FarcasterCastReplies } from "./FarcasterCastReplies";
 import { FarcasterCastResponseWithContext } from "@nook/common/types";
+import { Embed } from "../embeds/Embed";
+import { EmbedCast } from "../embeds/EmbedCast";
 
 export const FarcasterCast = ({
   cast,
@@ -100,6 +102,16 @@ const FarcasterCastContent = ({
         <EntityDisplay entityId={cast.entity.id} orientation="vertical" />
       </XStack>
       <FarcasterCastText cast={cast} />
+      {(cast.urlEmbeds.length > 0 || cast.castEmbeds.length > 0) && (
+        <YStack gap="$2">
+          {cast.urlEmbeds.map((content) => (
+            <Embed key={content.uri} content={content} />
+          ))}
+          {cast.castEmbeds.map((cast) => (
+            <EmbedCast key={cast.hash} cast={cast} />
+          ))}
+        </YStack>
+      )}
       <XStack gap="$1.5" alignItems="center">
         <Text color="$gray11">
           {new Date(cast.timestamp).toLocaleTimeString([], {

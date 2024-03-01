@@ -1,3 +1,5 @@
+import { Metadata } from "metascraper";
+
 export type UnstructuredFrameMetascraperButtonKeys = {
   frameButton1?: string;
   frameButton1Action?: string;
@@ -43,4 +45,17 @@ export type FrameData = {
   textInput?: string;
   aspectRatio: "1.91:1" | "1:1";
   state?: string;
+};
+
+export type UrlContentResponse = {
+  uri: string;
+  protocol?: string;
+  host?: string;
+  path?: string;
+  query?: string;
+  fragment?: string;
+  type?: string;
+  length?: number;
+  metadata?: Metadata;
+  frame?: FrameData;
 };

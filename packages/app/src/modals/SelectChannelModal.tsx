@@ -1,10 +1,10 @@
-import { Avatar, Input, Text, View, XStack, YStack } from "tamagui";
+import { Avatar, Input, Text, XStack, YStack } from "tamagui";
 import { memo, useCallback, useState } from "react";
 import { FlatList } from "react-native";
-import { Channel } from "@nook/common/types";
 import { nookApi } from "@/store/apis/nookApi";
 import { useAppSelector } from "@/hooks/useAppSelector";
 import { BottomSheetModal } from "@/components/modals/BottomSheetModal";
+import { Channel } from "@nook/common/prisma/nook";
 
 const ChannelItem = memo(
   ({
@@ -52,7 +52,7 @@ export const SelectChannelModal = ({
   const [input, setInput] = useState("");
   const [channels, setChannels] = useState<Channel[]>([]);
 
-  const [getSearchResults] = nookApi.useLazySearchChannelsQuery();
+  const [getSearchResults] = nookApi.useLazyGetChannelsQuery();
 
   const handleSearch = async (input: string) => {
     setInput(input);
@@ -94,12 +94,12 @@ export const SelectChannelModal = ({
         <FlatList
           showsVerticalScrollIndicator={false}
           data={channels}
-          keyExtractor={(item) => item.contentId}
+          keyExtractor={(item) => item.id}
           renderItem={({ item }) => (
             <ChannelItem
-              key={item.contentId}
+              key={item.id}
               item={item}
-              isActive={channel?.contentId === item.contentId}
+              isActive={channel?.id === item.id}
               onPress={onPress}
             />
           )}
