@@ -18,6 +18,7 @@ import {
   FarcasterVerification,
   Prisma,
 } from "@nook/common/prisma/farcaster";
+import { FidHash } from "@nook/common/types";
 
 export const messageToCast = (message: Message): FarcasterCast | undefined => {
   if (!message.data?.castAddBody) return;
@@ -321,4 +322,49 @@ export const findRootParent = async (
     rootParentHash: bufferToHex(hash),
     rootParentUrl: url,
   };
+};
+
+export const getMentions = (data: FarcasterCast) => {
+  const mentions = [];
+  if (
+    data.rawMentions &&
+    (data.rawMentions as unknown) !== Prisma.DbNull &&
+    Array.isArray(data.rawMentions)
+  ) {
+    for (const mention of data.rawMentions as unknown as FarcasterCastMention[]) {
+      mentions.push({
+        fid: mention.mention.toString(),
+        position: mention.mentionPosition.toString(),
+      });
+    }
+  }
+  return mentions;
+};
+
+export const getEmbedUrls = (data: FarcasterCast) => {
+  const embeds: string[] = [];
+  if (
+    data.rawUrlEmbeds &&
+    (data.rawUrlEmbeds as unknown) !== Prisma.DbNull &&
+    Array.isArray(data.rawUrlEmbeds)
+  ) {
+    for (const url of data.rawUrlEmbeds as string[]) {
+      embeds.push(url);
+    }
+  }
+  return embeds;
+};
+
+export const getCastEmbeds = (data: FarcasterCast) => {
+  const embeds: FidHash[] = [];
+  if (
+    data.rawCastEmbeds &&
+    (data.rawCastEmbeds as unknown) !== Prisma.DbNull &&
+    Array.isArray(data.rawCastEmbeds)
+  ) {
+    for (const embed of data.rawCastEmbeds as unknown as FarcasterCastEmbedCast[]) {
+      embeds.push({ fid: embed.fid, hash: embed.embedHash });
+    }
+  }
+  return embeds;
 };

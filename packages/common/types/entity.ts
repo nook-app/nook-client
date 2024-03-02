@@ -1,6 +1,6 @@
-import { FarcasterUser } from "./sources";
+import { BaseFarcasterUser } from "./farcaster";
 
 export type EntityResponse = {
   id: string;
-  farcaster: FarcasterUser;
+  farcaster: BaseFarcasterUser;
 };

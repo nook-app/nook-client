@@ -41,7 +41,7 @@ export class UserService {
     const fid = "3887";
     // const fid = verifyResult.fid.toString();
 
-    const entity = await this.entityClient.getEntityByFid(BigInt(fid));
+    const entity = await this.entityClient.getEntityByFid(fid);
     if (!entity) {
       return;
     }

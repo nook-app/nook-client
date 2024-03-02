@@ -240,7 +240,7 @@ export class NookClient {
     let creator: EntityResponse | undefined;
     if (channelData.leadFid) {
       creator = await this.entityClient.getEntityByFid(
-        BigInt(channelData.leadFid),
+        channelData.leadFid.toString(),
       );
     }
 

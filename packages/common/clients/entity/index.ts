@@ -1,13 +1,12 @@
-import { UserDataType } from "@farcaster/hub-nodejs";
 import { Entity, Prisma, PrismaClient } from "../../prisma/entity";
 import { RedisClient } from "../../redis";
-import { EntityResponse, FarcasterUser } from "../../types";
-import { PrismaClient as FarcasterPrismaClient } from "../../prisma/farcaster";
+import { EntityResponse } from "../../types";
+import { FarcasterClient } from "../farcaster";
 
 export class EntityClient {
   private client: PrismaClient;
   private redis: RedisClient;
-  private farcasterClient: FarcasterPrismaClient;
+  private farcasterClient: FarcasterClient;
 
   ENTITY_CACHE_PREFIX = "entity";
   FID_CACHE_PREFIX = "fid";
@@ -15,7 +14,7 @@ export class EntityClient {
   constructor() {
     this.client = new PrismaClient();
     this.redis = new RedisClient();
-    this.farcasterClient = new FarcasterPrismaClient();
+    this.farcasterClient = new FarcasterClient();
   }
 
   async connect() {
@@ -54,7 +53,7 @@ export class EntityClient {
       throw new Error(`Could not find entity with id ${entityId}`);
     }
 
-    const farcaster = await this.getFarcasterUser(entity.fid);
+    const farcaster = await this.farcasterClient.getUser(entity.fid.toString());
 
     const response: EntityResponse = {
       id: entity.id,
@@ -65,12 +64,13 @@ export class EntityClient {
     return response;
   }
 
-  async getEntitiesByFid(fids: bigint[]) {
+  async getEntitiesByFid(fids: string[]) {
     return await Promise.all(fids.map(async (fid) => this.getEntityByFid(fid)));
   }
 
-  async getEntityByFid(fid: bigint): Promise<EntityResponse> {
+  async getEntityByFid(fid: string): Promise<EntityResponse> {
     const cached = await this.redis.getJson(`${this.FID_CACHE_PREFIX}:${fid}`);
+
     if (cached) {
       return cached;
     }
@@ -81,7 +81,7 @@ export class EntityClient {
       entity = await this.createEntityByFid(fid);
     }
 
-    const farcaster = await this.getFarcasterUser(fid);
+    const farcaster = await this.farcasterClient.getUser(fid);
 
     const response: EntityResponse = {
       id: entity.id,
@@ -92,17 +92,17 @@ export class EntityClient {
     return response;
   }
 
-  async fetchEntityByFid(fid: bigint) {
+  async fetchEntityByFid(fid: string) {
     return await this.client.entity.findFirst({
-      where: { fid },
+      where: { fid: BigInt(fid) },
     });
   }
 
-  async createEntityByFid(fid: bigint) {
+  async createEntityByFid(fid: string) {
     try {
       return await this.client.entity.create({
         data: {
-          fid,
+          fid: BigInt(fid),
         },
       });
     } catch (e) {
@@ -113,53 +113,5 @@ export class EntityClient {
       }
       throw e;
     }
-  }
-
-  async getFarcasterUser(fid: bigint): Promise<FarcasterUser> {
-    const [userData, followers, following] = await Promise.all([
-      this.farcasterClient.farcasterUserData.findMany({
-        where: { fid },
-      }),
-      this.getFollowers(fid),
-      this.getFollowing(fid),
-    ]);
-    if (!userData) {
-      throw new Error(`Could not find user data for fid ${fid}`);
-    }
-
-    const username = userData.find((d) => d.type === UserDataType.USERNAME);
-    const pfp = userData.find((d) => d.type === UserDataType.PFP);
-    const displayName = userData.find((d) => d.type === UserDataType.DISPLAY);
-    const bio = userData.find((d) => d.type === UserDataType.BIO);
-    const url = userData.find((d) => d.type === UserDataType.URL);
-
-    return {
-      fid,
-      username: username?.value,
-      pfp: pfp?.value,
-      displayName: displayName?.value,
-      bio: bio?.value,
-      url: url?.value,
-      followers,
-      following,
-    };
-  }
-
-  async getFollowing(fid: bigint): Promise<number> {
-    return await this.farcasterClient.farcasterLink.count({
-      where: {
-        fid,
-        linkType: "follow",
-      },
-    });
-  }
-
-  async getFollowers(fid: bigint): Promise<number> {
-    return await this.farcasterClient.farcasterLink.count({
-      where: {
-        linkType: "follow",
-        targetFid: fid,
-      },
-    });
   }
 }

@@ -6,20 +6,26 @@ import {
   NobleEd25519Signer,
   makeCastAdd,
 } from "@farcaster/hub-nodejs";
-import { FarcasterClient, FeedClient, NookClient } from "@nook/common/clients";
-import { FarcasterCastResponseWithContext } from "@nook/common/types";
-import { FarcasterCast } from "@nook/common/prisma/farcaster";
+import {
+  EntityClient,
+  FarcasterClient,
+  FeedClient,
+  NookClient,
+} from "@nook/common/clients";
 import { FARCASTER_OG_FIDS } from "@nook/common/farcaster";
+import { BaseFarcasterCast } from "@nook/common/types";
 
 export class FarcasterService {
   private nookClient: NookClient;
   private feedClient: FeedClient;
   private farcasterClient: FarcasterClient;
+  private entityClient: EntityClient;
 
   constructor(fastify: FastifyInstance) {
     this.nookClient = fastify.nook.client;
     this.farcasterClient = fastify.farcaster.client;
     this.feedClient = fastify.feed.client;
+    this.entityClient = fastify.entity.client;
   }
 
   async getSigner(userId: string): Promise<SignerPublicData> {
@@ -122,27 +128,20 @@ export class FarcasterService {
   }
 
   async getCast(hash: string) {
-    return this.farcasterClient.getCastWithContext(hash);
-  }
-
-  async getCasts(hashes: string[]) {
-    return this.farcasterClient.getCastsWithContext(hashes);
+    return this.farcasterClient.getCast(hash);
   }
 
   async getCastReplies(hash: string) {
-    const casts = await this.farcasterClient.getCastReplies(hash);
-    return await Promise.all(
-      casts.map((cast) =>
-        this.farcasterClient.getCastWithContext(cast.hash, cast),
-      ),
-    );
+    return this.farcasterClient.getCastReplies(hash);
   }
 
   async getFeed(feedId: string, cursor?: number) {
     const feed = await this.feedClient.getFeed(feedId, cursor);
 
     const promises = [];
-    promises.push(this.farcasterClient.getCastsWithContext(feed));
+    promises.push(
+      this.farcasterClient.getCasts(feed).then((response) => response.data),
+    );
 
     if (feed.length < 25) {
       promises.push(this.backfillFeed(feedId, cursor, 25 - feed.length));
@@ -159,58 +158,51 @@ export class FarcasterService {
   async backfillFeed(feedId: string, cursor?: number, take?: number) {
     const [type, subtype, id] = feedId.split(":");
 
-    let rawCasts: FarcasterCast[] = [];
+    let rawCasts: BaseFarcasterCast[] = [];
     if (type === "channel") {
-      rawCasts = await this.farcasterClient.getCastsFromChannel(
+      const response = await this.farcasterClient.getCastsByParentUrl(
         id,
         cursor,
         take,
       );
+      rawCasts = response.data;
     } else if (type === "user") {
       if (subtype === "following") {
-        rawCasts = await this.farcasterClient.getCastsFromFollowing(
-          BigInt(id),
+        const response = await this.farcasterClient.getCastsFromFollowing(
+          id,
           cursor,
           take,
         );
+        rawCasts = response.data;
       } else {
-        rawCasts = await this.farcasterClient.getCastsFromFid(
-          BigInt(id),
+        const response = await this.farcasterClient.getCastsByFid(
+          id,
           subtype === "replies",
           cursor,
           take,
         );
+        rawCasts = response.data;
       }
     } else if (type === "custom") {
       if (subtype === "farcaster-og") {
-        rawCasts = await this.farcasterClient.getCastsFromFids(
-          FARCASTER_OG_FIDS.map((fid) => BigInt(fid)),
+        const response = await this.farcasterClient.getCastsFromFids(
+          FARCASTER_OG_FIDS,
+          false,
           cursor,
           take,
         );
+        rawCasts = response.data;
       }
     }
 
-    const casts = (
-      await Promise.all(
-        rawCasts.map((cast) =>
-          this.farcasterClient.getCastWithContext(cast.hash, cast),
-        ),
-      )
-    ).filter(Boolean) as FarcasterCastResponseWithContext[];
-
     await this.feedClient.batchAddToFeed(
       feedId,
-      casts.map(({ hash, timestamp }) => ({
+      rawCasts.map(({ hash, timestamp }) => ({
         value: hash,
         timestamp,
       })),
     );
 
-    return casts;
-  }
-
-  async getFollowers(fid: string) {
-    return await this.farcasterClient.getFollowers(BigInt(fid));
+    return rawCasts;
   }
 }

@@ -70,7 +70,7 @@ export class RedisClient {
   }
 
   async setNumber(key: string, value: number) {
-    await this.redis.set(key, value, "EX", 60 * 60 * 3);
+    await this.redis.set(key, value);
   }
 
   async exists(key: string) {

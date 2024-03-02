@@ -1,8 +1,11 @@
 import { QueueName, getWorker } from "@nook/common/queues";
-import { getFarcasterHandler } from "./handlers";
+import { FarcasterEventProcessor } from "./processor";
 
 const run = async () => {
-  const worker = getWorker(QueueName.Farcaster, getFarcasterHandler());
+  const processor = new FarcasterEventProcessor();
+  const worker = getWorker(QueueName.Farcaster, async (job) => {
+    processor.process(job.data);
+  });
 
   worker.on("failed", (job, err) => {
     if (job) {

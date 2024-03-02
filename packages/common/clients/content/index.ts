@@ -2,11 +2,7 @@ import { Metadata } from "metascraper";
 import { getUrlContent } from "../../content";
 import { Prisma, PrismaClient } from "../../prisma/content";
 import { RedisClient } from "../../redis";
-import {
-  FarcasterCastResponse,
-  FrameData,
-  UrlContentResponse,
-} from "../../types";
+import { BaseFarcasterCast, FrameData, UrlContentResponse } from "../../types";
 
 enum ContentReferenceType {
   Embed = "EMBED",
@@ -43,14 +39,14 @@ export class ContentClient {
     await this.redis.close();
   }
 
-  async addReferencedContent(cast: FarcasterCastResponse) {
+  async addReferencedContent(cast: BaseFarcasterCast) {
     const references = this.parseReferencedContent(cast);
     await Promise.all(
       references.map((reference) => this.upsertReferencedContent(reference)),
     );
   }
 
-  async removeReferencedContent(cast: FarcasterCastResponse) {
+  async removeReferencedContent(cast: BaseFarcasterCast) {
     const references = this.parseReferencedContent(cast);
     await Promise.all(
       references.map((reference) =>
@@ -126,12 +122,12 @@ export class ContentClient {
     });
   }
 
-  parseReferencedContent(cast: FarcasterCastResponse) {
+  parseReferencedContent(cast: BaseFarcasterCast) {
     const timestamp = new Date(cast.timestamp);
     const references: ContentReference[] = [];
     for (const url of cast.embedUrls) {
       references.push({
-        fid: BigInt(cast.entity.farcaster.fid),
+        fid: BigInt(cast.fid),
         hash: cast.hash,
         uri: url,
         type: ContentReferenceType.Embed,
@@ -139,29 +135,29 @@ export class ContentClient {
       });
     }
 
-    for (const castEmbed of cast.castEmbeds) {
-      for (const url of castEmbed.embedUrls) {
-        references.push({
-          fid: BigInt(cast.entity.farcaster.fid),
-          hash: cast.hash,
-          uri: url,
-          type: ContentReferenceType.Reply,
-          timestamp,
-        });
-      }
-    }
+    // for (const castEmbed of cast.embedHashes) {
+    //   for (const url of castEmbed.embedUrls) {
+    //     references.push({
+    //       fid: BigInt(cast.fid),
+    //       hash: cast.hash,
+    //       uri: url,
+    //       type: ContentReferenceType.Reply,
+    //       timestamp,
+    //     });
+    //   }
+    // }
 
-    if (cast.parent) {
-      for (const url of cast.parent.embedUrls) {
-        references.push({
-          fid: BigInt(cast.entity.farcaster.fid),
-          hash: cast.hash,
-          uri: url,
-          type: ContentReferenceType.Quote,
-          timestamp,
-        });
-      }
-    }
+    // if (cast.parentHash) {
+    //   for (const url of cast.parent.embedUrls) {
+    //     references.push({
+    //       fid: BigInt(cast.fid),
+    //       hash: cast.hash,
+    //       uri: url,
+    //       type: ContentReferenceType.Quote,
+    //       timestamp,
+    //     });
+    //   }
+    // }
 
     return references;
   }

@@ -1,6 +1,6 @@
 export * from "./content";
 export * from "./events";
-export * from "./sources";
+export * from "./farcaster";
 export * from "./topics";
 export * from "./nook";
 export * from "./entity";
