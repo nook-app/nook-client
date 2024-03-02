@@ -9,42 +9,13 @@ datasource db {
 }
 
 model Entity {
-    id String @id @default(uuid())
+    id  String @id @default(uuid())
+    fid BigInt
 
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
 
-    usernames          EntityUsername[]
-    farcasterAccounts  EntityFarcaster[]
     blockchainAccounts EntityBlockchain[]
-}
-
-model EntityFarcaster {
-    fid         BigInt  @id
-    entityId    String
-    username    String?
-    bio         String?
-    pfp         String?
-    displayName String?
-    url         String?
-
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
-
-    entity Entity @relation(fields: [entityId], references: [id])
-}
-
-model EntityUsername {
-    username String
-    service  String
-    entityId String
-
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
-
-    entity Entity @relation(fields: [entityId], references: [id])
-
-    @@id([username, service])
 }
 
 model EntityBlockchain {
@@ -52,6 +23,7 @@ model EntityBlockchain {
     address    String
     isContract Boolean
     entityId   String
+    source     String
 
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt

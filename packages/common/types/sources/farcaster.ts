@@ -15,6 +15,8 @@ export type FarcasterUser = {
   displayName?: string;
   bio?: string;
   url?: string;
+  followers: number;
+  following: number;
 };
 
 export type FarcasterCastEngagement = {

@@ -1,8 +1,8 @@
-import { Button, Text, View, XStack, YStack } from "tamagui";
+import { Text, View, XStack, YStack } from "tamagui";
 import { EntityAvatar } from "@/components/entity/EntityAvatar";
 import { useEntity } from "@/hooks/useEntity";
 import { formatNumber } from "@/utils";
-import { ContentType, NookPanelType } from "@nook/common/types";
+import { NookPanelType } from "@nook/common/types";
 import {
   NavigationProp,
   RouteProp,

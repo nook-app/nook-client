@@ -1,5 +1,7 @@
+import { UserDataType } from "@farcaster/hub-nodejs";
 import {
   ContentClient,
+  EntityClient,
   FarcasterClient,
   FeedClient,
 } from "@nook/common/clients";
@@ -7,6 +9,10 @@ import { FARCASTER_OG_FIDS } from "@nook/common/farcaster";
 import {
   FarcasterCast,
   FarcasterCastReaction,
+  FarcasterLink,
+  FarcasterUserData,
+  FarcasterUsernameProof,
+  FarcasterVerification,
 } from "@nook/common/prisma/farcaster";
 import { EntityEvent, FarcasterEventType } from "@nook/common/types";
 
@@ -14,11 +20,13 @@ export class FarcasterProcessor {
   private farcasterClient: FarcasterClient;
   private feedClient: FeedClient;
   private contentClient: ContentClient;
+  private entityClient: EntityClient;
 
   constructor() {
     this.farcasterClient = new FarcasterClient();
     this.feedClient = new FeedClient();
     this.contentClient = new ContentClient();
+    this.entityClient = new EntityClient();
   }
 
   async process(event: EntityEvent) {
@@ -27,10 +35,111 @@ export class FarcasterProcessor {
         await this.processCastAdd(event.data as FarcasterCast);
         break;
       }
-      default:
-        // console.error(`Unknown event type: ${event.source.type}`);
-        return;
+      case FarcasterEventType.CAST_REACTION_ADD: {
+        await this.processCastReactionAdd(event.data as FarcasterCastReaction);
+        break;
+      }
+      case FarcasterEventType.CAST_REACTION_REMOVE: {
+        await this.processCastReactionRemove(
+          event.data as FarcasterCastReaction,
+        );
+        break;
+      }
+      case FarcasterEventType.LINK_ADD: {
+        await this.processLinkAdd(event.data as FarcasterLink);
+        break;
+      }
+      case FarcasterEventType.LINK_REMOVE: {
+        await this.processLinkRemove(event.data as FarcasterLink);
+        break;
+      }
+      case FarcasterEventType.USER_DATA_ADD: {
+        await this.processUserData(event.data as FarcasterUserData);
+        break;
+      }
+      case FarcasterEventType.VERIFICATION_ADD: {
+        await this.processVerificationAdd(event.data as FarcasterVerification);
+        break;
+      }
+      case FarcasterEventType.VERIFICATION_REMOVE: {
+        await this.processVerificationRemove(
+          event.data as FarcasterVerification,
+        );
+        break;
+      }
+      case FarcasterEventType.USERNAME_PROOF: {
+        await this.processUsernameProof(event.data as FarcasterUsernameProof);
+        break;
+      }
+      default: {
+        throw new Error(`Unknown event type: ${event.source.type}`);
+      }
     }
+  }
+
+  async processUsernameProof(data: FarcasterUsernameProof) {
+    return;
+  }
+
+  async processVerificationAdd(data: FarcasterVerification) {
+    return;
+  }
+
+  async processVerificationRemove(data: FarcasterVerification) {
+    return;
+  }
+
+  async processUserData(data: FarcasterUserData) {
+    const entity = await this.entityClient.getEntityByFid(data.fid);
+    switch (data.type) {
+      case UserDataType.USERNAME:
+        entity.farcaster.username = data.value;
+        break;
+      case UserDataType.DISPLAY:
+        entity.farcaster.displayName = data.value;
+        break;
+      case UserDataType.BIO:
+        entity.farcaster.bio = data.value;
+        break;
+      case UserDataType.URL:
+        entity.farcaster.url = data.value;
+        break;
+      case UserDataType.PFP:
+        entity.farcaster.pfp = data.value;
+        break;
+    }
+
+    await this.entityClient.cacheEntity(entity);
+  }
+
+  async processLinkAdd(data: FarcasterLink) {
+    const [entity, targetEntity] = await this.entityClient.getEntitiesByFid([
+      data.fid,
+      data.targetFid,
+    ]);
+
+    entity.farcaster.following += 1;
+    targetEntity.farcaster.followers += 1;
+
+    await Promise.all([
+      this.entityClient.cacheEntity(entity),
+      this.entityClient.cacheEntity(targetEntity),
+    ]);
+  }
+
+  async processLinkRemove(data: FarcasterLink) {
+    const [entity, targetEntity] = await this.entityClient.getEntitiesByFid([
+      data.fid,
+      data.targetFid,
+    ]);
+
+    entity.farcaster.following -= 1;
+    targetEntity.farcaster.followers -= 1;
+
+    await Promise.all([
+      this.entityClient.cacheEntity(entity),
+      this.entityClient.cacheEntity(targetEntity),
+    ]);
   }
 
   async processCastReactionAdd(data: FarcasterCastReaction) {

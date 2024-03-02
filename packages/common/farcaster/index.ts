@@ -20,6 +20,26 @@ export const hexToBuffer = (hex: string) => {
   return new Uint8Array(Buffer.from(hex.slice(2), "hex"));
 };
 
+export const getProtocolString = (protocol: number) => {
+  if (protocol === 0) {
+    return "ETHEREUM";
+  }
+  if (protocol === 1) {
+    return "SOLANA";
+  }
+  throw new Error(`Unknown protocol: ${protocol}`);
+};
+
+export const getUsernameTypeString = (type: number) => {
+  if (type === 1) {
+    return "FNAME";
+  }
+  if (type === 2) {
+    return "ENS";
+  }
+  throw new Error(`Unknown username type: ${type}`);
+};
+
 export const FARCASTER_OG_FIDS = [
   "2",
   "3",

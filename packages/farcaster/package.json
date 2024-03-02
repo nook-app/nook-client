@@ -7,7 +7,6 @@
     "start:consumer": "node dist/src/consumer.js",
     "start:manual": "tsc && node dist/src/manual.js",
     "start:publisher": "node dist/src/publisher.js",
-    "start:api": "node dist/api/index.js",
     "start:test": "tsc && node dist/test.js"
   },
   "exports": {

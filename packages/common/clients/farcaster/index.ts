@@ -311,7 +311,7 @@ export class FarcasterClient {
     );
     return entities.reduce(
       (acc, entity) => {
-        acc[entity.farcaster.fid] = entity;
+        acc[entity.farcaster.fid.toString()] = entity;
         return acc;
       },
       {} as Record<string, EntityResponse>,
