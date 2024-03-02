@@ -450,7 +450,7 @@ export class FarcasterClient {
     });
 
     await this.redis.setNumber(
-      `${this.ENGAGEMENT_CACHE_PREFIX}:${hash}`,
+      `${this.ENGAGEMENT_CACHE_PREFIX}:likes:${hash}`,
       likes,
     );
 
@@ -474,7 +474,7 @@ export class FarcasterClient {
     });
 
     await this.redis.setNumber(
-      `${this.ENGAGEMENT_CACHE_PREFIX}:${hash}`,
+      `${this.ENGAGEMENT_CACHE_PREFIX}:recasts:${hash}`,
       recasts,
     );
 
@@ -497,7 +497,7 @@ export class FarcasterClient {
     });
 
     await this.redis.setNumber(
-      `${this.ENGAGEMENT_CACHE_PREFIX}:${hash}`,
+      `${this.ENGAGEMENT_CACHE_PREFIX}:replies:${hash}`,
       replies,
     );
 
@@ -520,7 +520,7 @@ export class FarcasterClient {
     });
 
     await this.redis.setNumber(
-      `${this.ENGAGEMENT_CACHE_PREFIX}:${hash}`,
+      `${this.ENGAGEMENT_CACHE_PREFIX}:quotes:${hash}`,
       quotes,
     );
 
