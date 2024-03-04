@@ -37,7 +37,7 @@ import { publishEvent } from "@nook/common/queues";
 import { RedisClient } from "@nook/common/redis";
 import { CastService } from "../../service/cast";
 import { UserService } from "../../service/user";
-import { EntityClient } from "@nook/common/clients/entity";
+import { EntityClient } from "@nook/common/clients";
 
 export class FarcasterEventProcessor {
   private client: PrismaClient;

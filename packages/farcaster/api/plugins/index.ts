@@ -1,7 +1,7 @@
 import fp from "fastify-plugin";
 import { PrismaClient } from "@nook/common/prisma/farcaster";
 import { RedisClient } from "@nook/common/redis";
-import { EntityClient } from "@nook/common/clients/entity";
+import { EntityClient } from "@nook/common/clients";
 
 declare module "fastify" {
   interface FastifyInstance {

@@ -2,7 +2,7 @@ import { PrismaClient } from "@nook/common/prisma/farcaster";
 import { RedisClient } from "@nook/common/redis";
 import { BaseFarcasterUser, EntityResponse } from "@nook/common/types";
 import { UserDataType } from "@farcaster/hub-nodejs";
-import { EntityClient } from "@nook/common/clients/entity";
+import { EntityClient } from "@nook/common/clients";
 
 export const MAX_PAGE_SIZE = 25;
 
