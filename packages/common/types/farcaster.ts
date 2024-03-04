@@ -1,3 +1,6 @@
+import { Channel } from "../prisma/nook";
+import { UrlContentResponse } from "./content";
+
 export type FidHash = {
   fid: bigint;
   hash: string;
@@ -65,12 +68,17 @@ export type FarcasterCastResponse = {
   embedHashes: string[];
   embedCasts: FarcasterCastResponse[];
   embedUrls: string[];
+  embeds: UrlContentResponse[];
   parentHash?: string;
   parent?: FarcasterCastResponse;
   rootParentHash?: string;
   rootParent?: FarcasterCastResponse;
   parentUrl?: string;
+  engagement: FarcasterCastEngagement;
+  channel?: Channel;
 };
+
+export type FarcasterCastResponseWithContext = FarcasterCastResponse;
 
 export type GetFarcasterCastRequest = {
   hash: string;

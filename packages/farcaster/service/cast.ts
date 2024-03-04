@@ -44,7 +44,7 @@ export class CastService {
       where: { parentHash: hash },
     });
 
-    return this.getCastsByData(replies);
+    return await this.getCastsByData(replies);
   }
 
   async getCast(

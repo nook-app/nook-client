@@ -115,6 +115,10 @@ export class UserService {
       };
     }
 
+    return await this.createStatsRecords(fid);
+  }
+
+  async createStatsRecords(fid: string) {
     const [following, followers] = await Promise.all([
       this.client.farcasterLink.count({
         where: { linkType: "follow", fid: BigInt(fid) },
@@ -155,10 +159,14 @@ export class UserService {
   }
 
   async incrementFollowing(fid: string) {
-    await this.client.farcasterUserStats.update({
-      where: { fid: BigInt(fid) },
-      data: { following: { increment: 1 } },
-    });
+    try {
+      await this.client.farcasterUserStats.update({
+        where: { fid: BigInt(fid) },
+        data: { following: { increment: 1 } },
+      });
+    } catch (e) {
+      await this.createStatsRecords(fid);
+    }
     const key = `${this.USER_CACHE_PREFIX}:${fid}:following`;
     if (await this.redis.exists(key)) {
       await this.redis.increment(key);
@@ -166,10 +174,14 @@ export class UserService {
   }
 
   async incrementFollowers(fid: string) {
-    await this.client.farcasterUserStats.update({
-      where: { fid: BigInt(fid) },
-      data: { followers: { increment: 1 } },
-    });
+    try {
+      await this.client.farcasterUserStats.update({
+        where: { fid: BigInt(fid) },
+        data: { followers: { increment: 1 } },
+      });
+    } catch (e) {
+      await this.createStatsRecords(fid);
+    }
     const key = `${this.USER_CACHE_PREFIX}:${fid}:followers`;
     if (await this.redis.exists(key)) {
       await this.redis.increment(key);
@@ -177,10 +189,14 @@ export class UserService {
   }
 
   async decrementFollowing(fid: string) {
-    await this.client.farcasterUserStats.update({
-      where: { fid: BigInt(fid) },
-      data: { following: { decrement: 1 } },
-    });
+    try {
+      await this.client.farcasterUserStats.update({
+        where: { fid: BigInt(fid) },
+        data: { following: { decrement: 1 } },
+      });
+    } catch (e) {
+      await this.createStatsRecords(fid);
+    }
     const key = `${this.USER_CACHE_PREFIX}:${fid}:following`;
     if (await this.redis.exists(key)) {
       await this.redis.decrement(key);
@@ -188,10 +204,14 @@ export class UserService {
   }
 
   async decrementFollowers(fid: string) {
-    await this.client.farcasterUserStats.update({
-      where: { fid: BigInt(fid) },
-      data: { followers: { decrement: 1 } },
-    });
+    try {
+      await this.client.farcasterUserStats.update({
+        where: { fid: BigInt(fid) },
+        data: { followers: { decrement: 1 } },
+      });
+    } catch (e) {
+      await this.createStatsRecords(fid);
+    }
     const key = `${this.USER_CACHE_PREFIX}:${fid}:followers`;
     if (await this.redis.exists(key)) {
       await this.redis.decrement(key);

@@ -35,7 +35,7 @@ export const EmbedCast = ({
           <EntityDisplay entityId={cast.entity.id} />
         </XStack>
         <FarcasterCastText cast={cast} />
-        {cast.urlEmbeds.map((content) => (
+        {cast.embeds.map((content) => (
           <Embed key={content.uri} content={content} />
         ))}
       </YStack>

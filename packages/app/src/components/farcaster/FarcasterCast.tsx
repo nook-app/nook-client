@@ -102,12 +102,12 @@ const FarcasterCastContent = ({
         <EntityDisplay entityId={cast.entity.id} orientation="vertical" />
       </XStack>
       <FarcasterCastText cast={cast} />
-      {(cast.urlEmbeds.length > 0 || cast.castEmbeds.length > 0) && (
+      {(cast.embeds.length > 0 || cast.embeds.length > 0) && (
         <YStack gap="$2">
-          {cast.urlEmbeds.map((content) => (
+          {cast.embeds.map((content) => (
             <Embed key={content.uri} content={content} />
           ))}
-          {cast.castEmbeds.map((cast) => (
+          {cast.embedCasts.map((cast) => (
             <EmbedCast key={cast.hash} cast={cast} />
           ))}
         </YStack>

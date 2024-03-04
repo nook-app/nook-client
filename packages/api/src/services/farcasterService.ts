@@ -6,23 +6,34 @@ import {
   NobleEd25519Signer,
   makeCastAdd,
 } from "@farcaster/hub-nodejs";
-import { FarcasterClient, FeedClient, NookClient } from "@nook/common/clients";
+import {
+  ContentClient,
+  EntityClient,
+  FarcasterClient,
+  FeedClient,
+  NookClient,
+} from "@nook/common/clients";
 import { FARCASTER_OG_FIDS } from "@nook/common/farcaster";
 import {
   BaseFarcasterCastWithContext,
   EntityResponse,
   FarcasterCastResponse,
+  UrlContentResponse,
 } from "@nook/common/types";
 
 export class FarcasterService {
   private nookClient: NookClient;
   private feedClient: FeedClient;
   private farcasterClient: FarcasterClient;
+  private entityClient: EntityClient;
+  private contentClient: ContentClient;
 
   constructor(fastify: FastifyInstance) {
     this.nookClient = fastify.nook.client;
     this.farcasterClient = fastify.farcaster.client;
     this.feedClient = fastify.feed.client;
+    this.entityClient = fastify.entity.client;
+    this.contentClient = fastify.content.client;
   }
 
   async getSigner(userId: string): Promise<SignerPublicData> {
@@ -133,6 +144,18 @@ export class FarcasterService {
   async getCasts(
     casts: BaseFarcasterCastWithContext[],
   ): Promise<FarcasterCastResponse[]> {
+    const castMap = await this.getCastMap(casts);
+    const [entityMap, contentMap] = await Promise.all([
+      this.getEntityMap(Object.values(castMap)),
+      this.getContentMap(Object.values(castMap)),
+    ]);
+
+    return casts
+      .map(({ hash }) => this.formatCast(hash, castMap, entityMap, contentMap))
+      .filter(Boolean) as FarcasterCastResponse[];
+  }
+
+  async getCastMap(casts: BaseFarcasterCastWithContext[]) {
     const castMap = casts.reduce(
       (acc, cast) => {
         acc[cast.hash] = cast;
@@ -140,7 +163,6 @@ export class FarcasterService {
       },
       {} as Record<string, BaseFarcasterCastWithContext>,
     );
-
     const relatedCastHashes = new Set<string>();
     for (const cast of casts) {
       if (cast.parentHash) {
@@ -153,42 +175,57 @@ export class FarcasterService {
         relatedCastHashes.add(hash);
       }
     }
-
     const relatedCasts = await this.farcasterClient.fetchCasts(
       Array.from(relatedCastHashes),
     );
     for (const cast of relatedCasts.data) {
       castMap[cast.hash] = cast;
     }
+    return castMap;
+  }
 
-    const relatedFids = new Set<string>();
-    for (const cast of Object.values(castMap)) {
-      relatedFids.add(cast.fid);
+  async getEntityMap(casts: BaseFarcasterCastWithContext[]) {
+    const fids = new Set<string>();
+    for (const cast of casts) {
+      fids.add(cast.fid);
       for (const { fid } of cast.mentions) {
-        relatedFids.add(fid);
+        fids.add(fid);
       }
     }
-
-    const relatedEntities = await this.farcasterClient.fetchUsers(
-      Array.from(relatedFids),
+    const relatedEntities = await this.entityClient.getEntitiesForFids(
+      Array.from(fids),
     );
-    const entityMap = relatedEntities.data.reduce(
+    return relatedEntities.reduce(
       (acc, entity) => {
         acc[entity.farcaster.fid] = entity;
         return acc;
       },
       {} as Record<string, EntityResponse>,
     );
+  }
 
-    return casts
-      .map(({ hash }) => this.formatCast(hash, castMap, entityMap))
-      .filter(Boolean) as FarcasterCastResponse[];
+  async getContentMap(casts: BaseFarcasterCastWithContext[]) {
+    const embedUrls = new Set<string>();
+    for (const cast of casts) {
+      for (const url of cast.embedUrls) {
+        embedUrls.add(url);
+      }
+    }
+    const content = await this.contentClient.getContents(Array.from(embedUrls));
+    return content.reduce(
+      (acc, content) => {
+        acc[content.uri] = content;
+        return acc;
+      },
+      {} as Record<string, UrlContentResponse>,
+    );
   }
 
   formatCast(
     hash: string,
     castMap: Record<string, BaseFarcasterCastWithContext>,
     entityMap: Record<string, EntityResponse>,
+    contentMap: Record<string, UrlContentResponse>,
   ): FarcasterCastResponse | undefined {
     const cast = castMap[hash];
     if (!cast) return;
@@ -200,14 +237,15 @@ export class FarcasterService {
         position: mention.position,
       })),
       embedCasts: cast.embedHashes
-        .map((hash) => this.formatCast(hash, castMap, entityMap))
+        .map((hash) => this.formatCast(hash, castMap, entityMap, contentMap))
         .filter(Boolean) as FarcasterCastResponse[],
       parent: cast.parentHash
-        ? this.formatCast(cast.parentHash, castMap, entityMap)
+        ? this.formatCast(cast.parentHash, castMap, entityMap, contentMap)
         : undefined,
       rootParent: cast.rootParentHash
-        ? this.formatCast(cast.rootParentHash, castMap, entityMap)
+        ? this.formatCast(cast.rootParentHash, castMap, entityMap, contentMap)
         : undefined,
+      embeds: cast.embedUrls.map((url) => contentMap[url]),
     };
   }
 

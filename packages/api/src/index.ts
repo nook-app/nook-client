@@ -1,5 +1,6 @@
 import fastify from "fastify";
 import {
+  contentPlugin,
   entityPlugin,
   farcasterPlugin,
   feedPlugin,
@@ -34,6 +35,7 @@ const buildApp = () => {
   app.register(farcasterPlugin);
   app.register(feedPlugin);
   app.register(nookPlugin);
+  app.register(contentPlugin);
 
   app.register(nookRoutes);
   app.register(userRoutes);

@@ -60,6 +60,10 @@ export class ContentClient {
     });
   }
 
+  async getContents(uris: string[]): Promise<UrlContentResponse[]> {
+    return Promise.all(uris.map((uri) => this.getContent(uri)));
+  }
+
   async getContent(uri: string): Promise<UrlContentResponse> {
     const cached = await this.redis.getJson(
       `${this.CONTENT_CACHE_PREFIX}:${uri}`,

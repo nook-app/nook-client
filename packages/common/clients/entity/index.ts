@@ -27,6 +27,13 @@ export class EntityClient {
     await this.redis.close();
   }
 
+  async getEntitiesForFids(fids: string[]): Promise<EntityResponse[]> {
+    const entities = await Promise.all(
+      fids.map((fid) => this.getEntityForFid(fid)),
+    );
+    return entities.filter(Boolean) as EntityResponse[];
+  }
+
   async getEntity(id: string): Promise<EntityResponse> {
     let fid = await this.redis.getJson(`${this.ENTITY_CACHE_PREFIX}:${id}`);
 
