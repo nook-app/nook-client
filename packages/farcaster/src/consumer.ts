@@ -4,7 +4,7 @@ import { FarcasterEventProcessor } from "./processor";
 const run = async () => {
   const processor = new FarcasterEventProcessor();
   const worker = getWorker(QueueName.Farcaster, async (job) => {
-    processor.process(job.data);
+    await processor.process(job.data);
   });
 
   worker.on("failed", (job, err) => {
