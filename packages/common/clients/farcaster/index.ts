@@ -211,7 +211,7 @@ export class FarcasterClient {
       `${process.env.FARCASTER_API_ENDPOINT}/users/${fid}/followers/fids`,
     );
     if (!response.ok) {
-      throw new Error("Failed to fetch followers");
+      throw new Error(`Failed to fetch followers for ${fid}`);
     }
     return await response.json();
   }

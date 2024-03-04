@@ -10,7 +10,6 @@ export const userRoutes = async (fastify: FastifyInstance) => {
     const userService = new UserService(
       fastify.farcaster.client,
       fastify.redis.client,
-      fastify.entity.client,
     );
 
     fastify.post<{ Body: GetFarcasterUsersRequest }>(

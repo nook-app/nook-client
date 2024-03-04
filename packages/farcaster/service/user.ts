@@ -1,36 +1,33 @@
 import { PrismaClient } from "@nook/common/prisma/farcaster";
 import { RedisClient } from "@nook/common/redis";
-import { BaseFarcasterUser, EntityResponse } from "@nook/common/types";
+import {
+  BaseFarcasterUser,
+  BaseFarcasterUserWithEngagement,
+} from "@nook/common/types";
 import { UserDataType } from "@farcaster/hub-nodejs";
-import { EntityClient } from "@nook/common/clients";
 
 export const MAX_PAGE_SIZE = 25;
 
 export class UserService {
   private client: PrismaClient;
   private redis: RedisClient;
-  private entityClient: EntityClient;
 
   USER_CACHE_PREFIX = "farcaster:user";
 
-  constructor(
-    client: PrismaClient,
-    redis: RedisClient,
-    entityClient: EntityClient,
-  ) {
+  constructor(client: PrismaClient, redis: RedisClient) {
     this.client = client;
     this.redis = redis;
-    this.entityClient = entityClient;
   }
 
-  async getUsers(fids: string[]): Promise<EntityResponse[]> {
+  async getUsers(fids: string[]): Promise<BaseFarcasterUserWithEngagement[]> {
     const users = await Promise.all(fids.map((fid) => this.getUser(fid)));
-    return users.filter(Boolean) as EntityResponse[];
+    return users.filter(Boolean) as BaseFarcasterUserWithEngagement[];
   }
 
-  async getUser(fid: string): Promise<EntityResponse | undefined> {
-    const [entity, user, following, followers] = await Promise.all([
-      this.entityClient.getEntityIdForFid(fid),
+  async getUser(
+    fid: string,
+  ): Promise<BaseFarcasterUserWithEngagement | undefined> {
+    const [user, following, followers] = await Promise.all([
       this.getUserData(fid),
       this.getFollowingCount(fid),
       this.getFollowersCount(fid),
@@ -39,13 +36,10 @@ export class UserService {
     if (!user) return;
 
     return {
-      id: entity,
-      farcaster: {
-        ...user,
-        engagement: {
-          following,
-          followers,
-        },
+      ...user,
+      engagement: {
+        following,
+        followers,
       },
     };
   }

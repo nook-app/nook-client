@@ -37,7 +37,6 @@ import { publishEvent } from "@nook/common/queues";
 import { RedisClient } from "@nook/common/redis";
 import { CastService } from "../../service/cast";
 import { UserService } from "../../service/user";
-import { EntityClient } from "@nook/common/clients";
 
 export class FarcasterEventProcessor {
   private client: PrismaClient;
@@ -45,7 +44,6 @@ export class FarcasterEventProcessor {
   private redis: RedisClient;
   private castService: CastService;
   private userService: UserService;
-  private entityClient: EntityClient;
 
   CAST_CACHE_PREFIX = "farcaster:cast";
   USER_CACHE_PREFIX = "farcaster:user";
@@ -53,14 +51,9 @@ export class FarcasterEventProcessor {
   constructor() {
     this.client = new PrismaClient();
     this.redis = new RedisClient();
-    this.entityClient = new EntityClient();
     this.hub = getSSLHubRpcClient(process.env.HUB_RPC_ENDPOINT as string);
     this.castService = new CastService(this.client, this.redis);
-    this.userService = new UserService(
-      this.client,
-      this.redis,
-      this.entityClient,
-    );
+    this.userService = new UserService(this.client, this.redis);
   }
 
   async process(message: Message) {
@@ -179,19 +172,19 @@ export class FarcasterEventProcessor {
           if (!user) break;
           switch (userData.type) {
             case UserDataType.USERNAME:
-              user.farcaster.username = userData.value;
+              user.username = userData.value;
               break;
             case UserDataType.PFP:
-              user.farcaster.pfp = userData.value;
+              user.pfp = userData.value;
               break;
             case UserDataType.DISPLAY:
-              user.farcaster.displayName = userData.value;
+              user.displayName = userData.value;
               break;
             case UserDataType.BIO:
-              user.farcaster.bio = userData.value;
+              user.bio = userData.value;
               break;
             case UserDataType.URL:
-              user.farcaster.url = userData.value;
+              user.url = userData.value;
               break;
             default:
               break;

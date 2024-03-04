@@ -9,7 +9,6 @@ import {
 import { FarcasterClient, FeedClient, NookClient } from "@nook/common/clients";
 import { FARCASTER_OG_FIDS } from "@nook/common/farcaster";
 import {
-  BaseFarcasterCast,
   BaseFarcasterCastWithContext,
   EntityResponse,
   FarcasterCastResponse,
@@ -147,13 +146,14 @@ export class FarcasterService {
       if (cast.parentHash) {
         relatedCastHashes.add(cast.parentHash);
       }
-      if (cast.rootParentHash) {
+      if (cast.rootParentHash && cast.rootParentHash !== cast.hash) {
         relatedCastHashes.add(cast.rootParentHash);
       }
       for (const hash of cast.embedHashes) {
         relatedCastHashes.add(hash);
       }
     }
+
     const relatedCasts = await this.farcasterClient.fetchCasts(
       Array.from(relatedCastHashes),
     );
@@ -168,6 +168,7 @@ export class FarcasterService {
         relatedFids.add(fid);
       }
     }
+
     const relatedEntities = await this.farcasterClient.fetchUsers(
       Array.from(relatedFids),
     );
@@ -179,15 +180,18 @@ export class FarcasterService {
       {} as Record<string, EntityResponse>,
     );
 
-    return casts.map(({ hash }) => this.formatCast(hash, castMap, entityMap));
+    return casts
+      .map(({ hash }) => this.formatCast(hash, castMap, entityMap))
+      .filter(Boolean) as FarcasterCastResponse[];
   }
 
   formatCast(
     hash: string,
     castMap: Record<string, BaseFarcasterCastWithContext>,
     entityMap: Record<string, EntityResponse>,
-  ): FarcasterCastResponse {
+  ): FarcasterCastResponse | undefined {
     const cast = castMap[hash];
+    if (!cast) return;
     return {
       ...cast,
       entity: entityMap[cast.fid],
@@ -195,9 +199,9 @@ export class FarcasterService {
         entity: entityMap[mention.fid],
         position: mention.position,
       })),
-      embedCasts: cast.embedHashes.map((hash) =>
-        this.formatCast(hash, castMap, entityMap),
-      ),
+      embedCasts: cast.embedHashes
+        .map((hash) => this.formatCast(hash, castMap, entityMap))
+        .filter(Boolean) as FarcasterCastResponse[],
       parent: cast.parentHash
         ? this.formatCast(cast.parentHash, castMap, entityMap)
         : undefined,

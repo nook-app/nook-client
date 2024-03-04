@@ -51,10 +51,11 @@ export class CastService {
     hash: string,
     data?: FarcasterCast,
   ): Promise<BaseFarcasterCastWithContext | undefined> {
-    const cast = await this.getCastData(hash, data);
+    const [cast, engagement] = await Promise.all([
+      this.getCastData(hash, data),
+      this.getCastEngagement(hash),
+    ]);
     if (!cast) return;
-
-    const [engagement] = await Promise.all([this.getCastEngagement(hash)]);
 
     return {
       ...cast,
@@ -244,6 +245,8 @@ export class CastService {
         timestamp: {
           lt: timestamp,
         },
+        parentHash: null,
+        deletedAt: null,
       },
       orderBy: {
         timestamp: "desc",
@@ -251,7 +254,7 @@ export class CastService {
       take: request.limit || MAX_PAGE_SIZE,
     });
 
-    return this.getCastsByData(casts);
+    return await this.getCastsByData(casts);
   }
 
   async incrementEngagement(hash: string, type: CastEngagementType) {
