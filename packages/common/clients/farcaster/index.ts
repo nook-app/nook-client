@@ -8,8 +8,9 @@ import {
   GetFarcasterCastsResponse,
   GetFarcasterCastsByParentUrlRequest,
   GetFarcasterCastsByFollowingRequest,
-  BaseFarcasterCast,
   GetFollowerFidsResponse,
+  BaseFarcasterCastWithContext,
+  GetFarcasterUsersResponse,
 } from "../../types";
 
 export class FarcasterClient {
@@ -29,7 +30,7 @@ export class FarcasterClient {
     this.hub.close();
   }
 
-  async getUser(fid: string) {
+  async fetchUser(fid: string) {
     const response = await fetch(
       `${process.env.FARCASTER_API_ENDPOINT}/users/${fid}`,
     );
@@ -39,7 +40,7 @@ export class FarcasterClient {
     return await response.json();
   }
 
-  async getUsers(fids: string[]) {
+  async fetchUsers(fids: string[]): Promise<GetFarcasterUsersResponse> {
     const response = await fetch(
       `${process.env.FARCASTER_API_ENDPOINT}/users`,
       {
@@ -56,7 +57,7 @@ export class FarcasterClient {
     return await response.json();
   }
 
-  async getCast(hash: string): Promise<BaseFarcasterCast> {
+  async fetchCast(hash: string): Promise<BaseFarcasterCastWithContext> {
     const response = await fetch(
       `${process.env.FARCASTER_API_ENDPOINT}/casts/${hash}`,
     );
@@ -66,7 +67,7 @@ export class FarcasterClient {
     return await response.json();
   }
 
-  async getCasts(hashes: string[]): Promise<GetFarcasterCastsResponse> {
+  async fetchCasts(hashes: string[]): Promise<GetFarcasterCastsResponse> {
     const response = await fetch(
       `${process.env.FARCASTER_API_ENDPOINT}/casts`,
       {
@@ -83,7 +84,7 @@ export class FarcasterClient {
     return await response.json();
   }
 
-  async getCastReplies(hash: string): Promise<GetFarcasterCastsResponse> {
+  async fetchCastReplies(hash: string): Promise<GetFarcasterCastsResponse> {
     const response = await fetch(
       `${process.env.FARCASTER_API_ENDPOINT}/casts/${hash}/replies`,
     );
@@ -93,7 +94,7 @@ export class FarcasterClient {
     return await response.json();
   }
 
-  async getCastsFromFollowing(
+  async fetchCastsFromFollowing(
     fid: string,
     cursor?: number,
     limit?: number,
@@ -120,7 +121,7 @@ export class FarcasterClient {
     return await response.json();
   }
 
-  async getCastsFromFids(
+  async fetchCastsFromFids(
     fids: string[],
     replies?: boolean,
     cursor?: number,
@@ -149,7 +150,7 @@ export class FarcasterClient {
     return await response.json();
   }
 
-  async getCastsByFid(
+  async fetchCastsByFid(
     fid: string,
     replies?: boolean,
     cursor?: number,
@@ -178,7 +179,7 @@ export class FarcasterClient {
     return await response.json();
   }
 
-  async getCastsByParentUrl(
+  async fetchCastsByParentUrl(
     parentUrl: string,
     cursor?: number,
     limit?: number,
@@ -203,17 +204,6 @@ export class FarcasterClient {
     }
 
     return await response.json();
-  }
-
-  getFidsFromCast(cast: BaseFarcasterCast) {
-    const fids = new Set<string>();
-    fids.add(cast.fid);
-
-    for (const mention of cast.mentions) {
-      fids.add(mention.fid);
-    }
-
-    return Array.from(fids);
   }
 
   async getFollowerFids(fid: string): Promise<GetFollowerFidsResponse> {

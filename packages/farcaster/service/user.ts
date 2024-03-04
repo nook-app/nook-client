@@ -1,29 +1,37 @@
 import { PrismaClient } from "@nook/common/prisma/farcaster";
 import { RedisClient } from "@nook/common/redis";
-import { BaseFarcasterUser } from "@nook/common/types";
+import { BaseFarcasterUser, EntityResponse } from "@nook/common/types";
 import { UserDataType } from "@farcaster/hub-nodejs";
+import { EntityClient } from "@nook/common/clients/entity";
 
 export const MAX_PAGE_SIZE = 25;
 
 export class UserService {
   private client: PrismaClient;
   private redis: RedisClient;
+  private entityClient: EntityClient;
 
   USER_CACHE_PREFIX = "farcaster:user";
 
-  constructor(client: PrismaClient, redis: RedisClient) {
+  constructor(
+    client: PrismaClient,
+    redis: RedisClient,
+    entityClient: EntityClient,
+  ) {
     this.client = client;
     this.redis = redis;
+    this.entityClient = entityClient;
   }
 
-  async getUsers(fids: string[]): Promise<BaseFarcasterUser[]> {
+  async getUsers(fids: string[]): Promise<EntityResponse[]> {
     const users = await Promise.all(fids.map((fid) => this.getUser(fid)));
-    return users.filter(Boolean) as BaseFarcasterUser[];
+    return users.filter(Boolean) as EntityResponse[];
   }
 
-  async getUser(fid: string): Promise<BaseFarcasterUser | undefined> {
-    const [user, following, followers] = await Promise.all([
-      this.fetchUser(fid),
+  async getUser(fid: string): Promise<EntityResponse | undefined> {
+    const [entity, user, following, followers] = await Promise.all([
+      this.entityClient.getEntityIdForFid(fid),
+      this.getUserData(fid),
       this.getFollowingCount(fid),
       this.getFollowersCount(fid),
     ]);
@@ -31,15 +39,18 @@ export class UserService {
     if (!user) return;
 
     return {
-      ...user,
-      engagement: {
-        following,
-        followers,
+      id: entity,
+      farcaster: {
+        ...user,
+        engagement: {
+          following,
+          followers,
+        },
       },
     };
   }
 
-  async fetchUser(fid: string) {
+  async getUserData(fid: string): Promise<BaseFarcasterUser> {
     const cached = await this.getCachedUser(fid);
     if (cached) return cached;
 
@@ -56,7 +67,7 @@ export class UserService {
     const bio = userData.find((d) => d.type === UserDataType.BIO);
     const url = userData.find((d) => d.type === UserDataType.URL);
 
-    return {
+    const baseUser: BaseFarcasterUser = {
       fid,
       username: username?.value,
       pfp: pfp?.value,
@@ -64,6 +75,9 @@ export class UserService {
       bio: bio?.value,
       url: url?.value,
     };
+
+    await this.setCachedUser(fid, baseUser);
+    return baseUser;
   }
 
   async setCachedUser(fid: string, user: BaseFarcasterUser) {

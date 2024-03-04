@@ -1,8 +1,8 @@
-import { EntityResponse } from "./entity";
+import { EntityResponse } from "./farcaster";
 
 export type NookResponse = {
   id: string;
-  creator: EntityResponse;
+  creator?: EntityResponse;
   name: string;
   description?: string;
   metadata: NookMetadata;

@@ -2,6 +2,7 @@ import { User } from "@nook/common/prisma/nook";
 import {
   BaseFarcasterCast,
   EntityResponse,
+  FarcasterCastResponse,
   NookResponse,
 } from "@nook/common/types";
 
@@ -36,6 +37,6 @@ export type FarcasterFeedRequest = {
 };
 
 export type FarcasterFeedResponse = {
-  data: BaseFarcasterCast[];
+  data: FarcasterCastResponse[];
   nextCursor?: number;
 };

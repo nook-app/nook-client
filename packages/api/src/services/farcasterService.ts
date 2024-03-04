@@ -6,26 +6,24 @@ import {
   NobleEd25519Signer,
   makeCastAdd,
 } from "@farcaster/hub-nodejs";
-import {
-  EntityClient,
-  FarcasterClient,
-  FeedClient,
-  NookClient,
-} from "@nook/common/clients";
+import { FarcasterClient, FeedClient, NookClient } from "@nook/common/clients";
 import { FARCASTER_OG_FIDS } from "@nook/common/farcaster";
-import { BaseFarcasterCast } from "@nook/common/types";
+import {
+  BaseFarcasterCast,
+  BaseFarcasterCastWithContext,
+  EntityResponse,
+  FarcasterCastResponse,
+} from "@nook/common/types";
 
 export class FarcasterService {
   private nookClient: NookClient;
   private feedClient: FeedClient;
   private farcasterClient: FarcasterClient;
-  private entityClient: EntityClient;
 
   constructor(fastify: FastifyInstance) {
     this.nookClient = fastify.nook.client;
     this.farcasterClient = fastify.farcaster.client;
     this.feedClient = fastify.feed.client;
-    this.entityClient = fastify.entity.client;
   }
 
   async getSigner(userId: string): Promise<SignerPublicData> {
@@ -127,12 +125,92 @@ export class FarcasterService {
     return result.hash;
   }
 
-  async getCast(hash: string) {
-    return this.farcasterClient.getCast(hash);
+  async getCast(hash: string): Promise<FarcasterCastResponse> {
+    const cast = await this.farcasterClient.fetchCast(hash);
+    const casts = await this.getCasts([cast]);
+    return casts[0];
+  }
+
+  async getCasts(
+    casts: BaseFarcasterCastWithContext[],
+  ): Promise<FarcasterCastResponse[]> {
+    const castMap = casts.reduce(
+      (acc, cast) => {
+        acc[cast.hash] = cast;
+        return acc;
+      },
+      {} as Record<string, BaseFarcasterCastWithContext>,
+    );
+
+    const relatedCastHashes = new Set<string>();
+    for (const cast of casts) {
+      if (cast.parentHash) {
+        relatedCastHashes.add(cast.parentHash);
+      }
+      if (cast.rootParentHash) {
+        relatedCastHashes.add(cast.rootParentHash);
+      }
+      for (const hash of cast.embedHashes) {
+        relatedCastHashes.add(hash);
+      }
+    }
+    const relatedCasts = await this.farcasterClient.fetchCasts(
+      Array.from(relatedCastHashes),
+    );
+    for (const cast of relatedCasts.data) {
+      castMap[cast.hash] = cast;
+    }
+
+    const relatedFids = new Set<string>();
+    for (const cast of Object.values(castMap)) {
+      relatedFids.add(cast.fid);
+      for (const { fid } of cast.mentions) {
+        relatedFids.add(fid);
+      }
+    }
+    const relatedEntities = await this.farcasterClient.fetchUsers(
+      Array.from(relatedFids),
+    );
+    const entityMap = relatedEntities.data.reduce(
+      (acc, entity) => {
+        acc[entity.farcaster.fid] = entity;
+        return acc;
+      },
+      {} as Record<string, EntityResponse>,
+    );
+
+    return casts.map(({ hash }) => this.formatCast(hash, castMap, entityMap));
+  }
+
+  formatCast(
+    hash: string,
+    castMap: Record<string, BaseFarcasterCastWithContext>,
+    entityMap: Record<string, EntityResponse>,
+  ): FarcasterCastResponse {
+    const cast = castMap[hash];
+    return {
+      ...cast,
+      entity: entityMap[cast.fid],
+      mentions: cast.mentions.map((mention) => ({
+        entity: entityMap[mention.fid],
+        position: mention.position,
+      })),
+      embedCasts: cast.embedHashes.map((hash) =>
+        this.formatCast(hash, castMap, entityMap),
+      ),
+      parent: cast.parentHash
+        ? this.formatCast(cast.parentHash, castMap, entityMap)
+        : undefined,
+      rootParent: cast.rootParentHash
+        ? this.formatCast(cast.rootParentHash, castMap, entityMap)
+        : undefined,
+    };
   }
 
   async getCastReplies(hash: string) {
-    return this.farcasterClient.getCastReplies(hash);
+    const replies = await this.farcasterClient.fetchCastReplies(hash);
+    const casts = await this.getCasts(replies.data);
+    return casts;
   }
 
   async getFeed(feedId: string, cursor?: number) {
@@ -140,11 +218,17 @@ export class FarcasterService {
 
     const promises = [];
     promises.push(
-      this.farcasterClient.getCasts(feed).then((response) => response.data),
+      this.farcasterClient
+        .fetchCasts(feed)
+        .then((response) => this.getCasts(response.data)),
     );
 
     if (feed.length < 25) {
-      promises.push(this.backfillFeed(feedId, cursor, 25 - feed.length));
+      promises.push(
+        this.backfillFeed(feedId, cursor, 25 - feed.length).then((response) =>
+          this.getCasts(response),
+        ),
+      );
     }
 
     const casts = (await Promise.all(promises)).flat();
@@ -158,9 +242,9 @@ export class FarcasterService {
   async backfillFeed(feedId: string, cursor?: number, take?: number) {
     const [type, subtype, id] = feedId.split(":");
 
-    let rawCasts: BaseFarcasterCast[] = [];
+    let rawCasts: BaseFarcasterCastWithContext[] = [];
     if (type === "channel") {
-      const response = await this.farcasterClient.getCastsByParentUrl(
+      const response = await this.farcasterClient.fetchCastsByParentUrl(
         id,
         cursor,
         take,
@@ -168,14 +252,14 @@ export class FarcasterService {
       rawCasts = response.data;
     } else if (type === "user") {
       if (subtype === "following") {
-        const response = await this.farcasterClient.getCastsFromFollowing(
+        const response = await this.farcasterClient.fetchCastsFromFollowing(
           id,
           cursor,
           take,
         );
         rawCasts = response.data;
       } else {
-        const response = await this.farcasterClient.getCastsByFid(
+        const response = await this.farcasterClient.fetchCastsByFid(
           id,
           subtype === "replies",
           cursor,
@@ -185,7 +269,7 @@ export class FarcasterService {
       }
     } else if (type === "custom") {
       if (subtype === "farcaster-og") {
-        const response = await this.farcasterClient.getCastsFromFids(
+        const response = await this.farcasterClient.fetchCastsFromFids(
           FARCASTER_OG_FIDS,
           false,
           cursor,

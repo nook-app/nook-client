@@ -85,6 +85,14 @@ export class RedisClient {
     await this.redis.decr(key);
   }
 
+  async get(key: string) {
+    return await this.redis.get(key);
+  }
+
+  async set(key: string, value: string) {
+    await this.redis.set(key, value);
+  }
+
   async getJson(key: string) {
     try {
       const json = await this.redis.get(key);

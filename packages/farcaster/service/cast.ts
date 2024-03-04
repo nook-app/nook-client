@@ -2,6 +2,8 @@ import { FarcasterCast, PrismaClient } from "@nook/common/prisma/farcaster";
 import { RedisClient } from "@nook/common/redis";
 import {
   BaseFarcasterCast,
+  BaseFarcasterCastWithContext,
+  FarcasterCastEngagement,
   GetFarcasterCastsByFidsRequest,
   GetFarcasterCastsByFollowingRequest,
   GetFarcasterCastsByParentUrlRequest,
@@ -23,16 +25,18 @@ export class CastService {
     this.redis = redis;
   }
 
-  async getCasts(hashes: string[]): Promise<BaseFarcasterCast[]> {
+  async getCasts(hashes: string[]): Promise<BaseFarcasterCastWithContext[]> {
     const casts = await Promise.all(hashes.map((hash) => this.getCast(hash)));
-    return casts.filter(Boolean) as BaseFarcasterCast[];
+    return casts.filter(Boolean) as BaseFarcasterCastWithContext[];
   }
 
-  async getCastsByData(casts: FarcasterCast[]): Promise<BaseFarcasterCast[]> {
+  async getCastsByData(
+    casts: FarcasterCast[],
+  ): Promise<BaseFarcasterCastWithContext[]> {
     const responses = await Promise.all(
       casts.map((cast) => this.getCast(cast.hash, cast)),
     );
-    return responses.filter(Boolean) as BaseFarcasterCast[];
+    return responses.filter(Boolean) as BaseFarcasterCastWithContext[];
   }
 
   async getCastReplies(hash: string) {
@@ -46,23 +50,31 @@ export class CastService {
   async getCast(
     hash: string,
     data?: FarcasterCast,
+  ): Promise<BaseFarcasterCastWithContext | undefined> {
+    const cast = await this.getCastData(hash, data);
+    if (!cast) return;
+
+    const [engagement] = await Promise.all([this.getCastEngagement(hash)]);
+
+    return {
+      ...cast,
+      engagement,
+    };
+  }
+
+  async getCastData(
+    hash: string,
+    data?: FarcasterCast,
   ): Promise<BaseFarcasterCast | undefined> {
     const cached = await this.getCachedCast(hash);
     if (cached) return cached;
 
-    const [cast, likes, recasts, replies, quotes] = await Promise.all([
-      this.fetchCast(hash, data),
-      this.getLikes(hash),
-      this.getRecasts(hash),
-      this.getReplies(hash),
-      this.getQuotes(hash),
-    ]);
-
+    const cast = await this.fetchCast(hash, data);
     if (!cast) {
       return;
     }
 
-    const response: BaseFarcasterCast = {
+    const baseCast: BaseFarcasterCast = {
       hash: cast.hash,
       fid: cast.fid.toString(),
       timestamp: cast.timestamp.getTime(),
@@ -71,19 +83,28 @@ export class CastService {
       embedHashes: getCastEmbeds(cast).map(({ hash }) => hash),
       embedUrls: getEmbedUrls(cast),
       parentHash: cast.parentHash || undefined,
-      rootParentHash: cast.rootParentHash,
       parentUrl: cast.parentUrl || undefined,
-      engagement: {
-        likes,
-        recasts,
-        replies,
-        quotes,
-      },
     };
 
-    await this.setCachedCast(hash, response);
+    await this.setCachedCast(hash, baseCast);
 
-    return response;
+    return baseCast;
+  }
+
+  async getCastEngagement(hash: string): Promise<FarcasterCastEngagement> {
+    const [likes, recasts, replies, quotes] = await Promise.all([
+      this.getLikes(hash),
+      this.getRecasts(hash),
+      this.getReplies(hash),
+      this.getQuotes(hash),
+    ]);
+
+    return {
+      likes,
+      recasts,
+      replies,
+      quotes,
+    };
   }
 
   async fetchCast(hash: string, data?: FarcasterCast) {

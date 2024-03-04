@@ -27,69 +27,67 @@ export class EntityClient {
     await this.redis.close();
   }
 
-  async cacheEntity(entity: EntityResponse) {
-    await Promise.all([
-      this.redis.setJson(`${this.ENTITY_CACHE_PREFIX}:${entity.id}`, entity),
-      this.redis.setJson(
-        `${this.FID_CACHE_PREFIX}:${entity.farcaster.fid}`,
-        entity,
-      ),
-    ]);
+  async getEntity(id: string): Promise<EntityResponse> {
+    let fid = await this.redis.getJson(`${this.ENTITY_CACHE_PREFIX}:${id}`);
+
+    if (!fid) {
+      const entity = await this.client.entity.findFirst({
+        where: { id },
+      });
+
+      if (!entity) {
+        throw new Error("Entity not found");
+      }
+
+      fid = entity.fid.toString();
+      await this.redis.setJson(`${this.ENTITY_CACHE_PREFIX}:${id}`, fid);
+      await this.redis.setJson(`${this.FID_CACHE_PREFIX}:${fid}`, id);
+    }
+
+    return {
+      id,
+      farcaster: await this.farcasterClient.fetchUser(fid),
+    };
   }
 
-  async getEntity(entityId: string) {
-    const cached = await this.redis.getJson(
-      `${this.ENTITY_CACHE_PREFIX}:${entityId}`,
-    );
+  async getEntityForFid(fid: string): Promise<EntityResponse | undefined> {
+    const id = await this.getEntityIdForFid(fid);
+
+    return {
+      id,
+      farcaster: await this.farcasterClient.fetchUser(fid),
+    };
+  }
+
+  async getEntityIdForFid(fid: string): Promise<string> {
+    const cached = await this.redis.get(`${this.FID_CACHE_PREFIX}:${fid}`);
     if (cached) return cached;
 
-    const entity = await this.client.entity.findUnique({
-      where: {
-        id: entityId,
-      },
+    let entity = await this.client.entity.findFirst({
+      where: { fid: BigInt(fid) },
     });
-
-    if (!entity) {
-      throw new Error(`Could not find entity with id ${entityId}`);
-    }
-
-    const farcaster = await this.farcasterClient.getUser(entity.fid.toString());
-
-    const response: EntityResponse = {
-      id: entity.id,
-      farcaster,
-    };
-
-    await this.cacheEntity(response);
-    return response;
-  }
-
-  async getEntitiesByFid(fids: string[]) {
-    return await Promise.all(fids.map(async (fid) => this.getEntityByFid(fid)));
-  }
-
-  async getEntityByFid(fid: string): Promise<EntityResponse> {
-    const cached = await this.redis.getJson(`${this.FID_CACHE_PREFIX}:${fid}`);
-
-    if (cached) {
-      return cached;
-    }
-
-    let entity = await this.fetchEntityByFid(fid);
 
     if (!entity) {
       entity = await this.createEntityByFid(fid);
     }
 
-    const farcaster = await this.farcasterClient.getUser(fid);
+    await this.redis.set(`${this.FID_CACHE_PREFIX}:${fid}`, entity.id);
+    await this.redis.set(`${this.ENTITY_CACHE_PREFIX}:${entity.id}`, fid);
 
-    const response: EntityResponse = {
-      id: entity.id,
-      farcaster,
-    };
+    return entity.id;
+  }
 
-    await this.cacheEntity(response);
-    return response;
+  async cacheEntity(entity: EntityResponse) {
+    await Promise.all([
+      this.redis.setJson(
+        `${this.ENTITY_CACHE_PREFIX}:${entity.id}`,
+        entity.farcaster.fid,
+      ),
+      this.redis.setJson(
+        `${this.FID_CACHE_PREFIX}:${entity.farcaster.fid}`,
+        entity,
+      ),
+    ]);
   }
 
   async fetchEntityByFid(fid: string) {

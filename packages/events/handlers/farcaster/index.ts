@@ -71,7 +71,7 @@ export class FarcasterProcessor {
   }
 
   async processCastAdd(data: FarcasterCast) {
-    const cast = await this.farcasterClient.getCast(data.hash);
+    const cast = await this.farcasterClient.fetchCast(data.hash);
     if (!cast) return;
 
     const promises = [];
@@ -130,7 +130,7 @@ export class FarcasterProcessor {
   }
 
   async processCastRemove(data: FarcasterCast) {
-    const cast = await this.farcasterClient.getCast(data.hash);
+    const cast = await this.farcasterClient.fetchCast(data.hash);
     if (!cast) return;
 
     const promises = [];

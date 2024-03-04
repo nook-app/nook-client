@@ -48,20 +48,16 @@ export class ContentClient {
 
   async removeReferencedContent(cast: BaseFarcasterCast) {
     const references = this.parseReferencedContent(cast);
-    await Promise.all(
-      references.map((reference) =>
-        this.client.farcasterContentReference.delete({
-          where: {
-            uri_fid_hash_type: {
-              fid: reference.fid,
-              hash: reference.hash,
-              type: reference.type,
-              uri: reference.uri,
-            },
-          },
-        }),
-      ),
-    );
+    await this.client.farcasterContentReference.deleteMany({
+      where: {
+        OR: references.map((reference) => ({
+          fid: reference.fid,
+          hash: reference.hash,
+          type: reference.type,
+          uri: reference.uri,
+        })),
+      },
+    });
   }
 
   async getContent(uri: string): Promise<UrlContentResponse> {

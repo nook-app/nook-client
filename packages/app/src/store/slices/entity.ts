@@ -2,12 +2,9 @@ import { createEntityAdapter, createSlice } from "@reduxjs/toolkit";
 import { RootState } from "..";
 import { userApi } from "../apis/userApi";
 import { farcasterApi } from "../apis/farcasterApi";
-import {
-  EntityResponse,
-  FarcasterCastResponseWithContext,
-} from "@nook/common/types";
+import { EntityResponse, FarcasterCastResponse } from "@nook/common/types";
 
-const getEntities = (cast: FarcasterCastResponseWithContext) => {
+const getEntities = (cast: FarcasterCastResponse) => {
   const entities = [];
   entities.push(cast.entity);
   for (const mention of cast.mentions) {

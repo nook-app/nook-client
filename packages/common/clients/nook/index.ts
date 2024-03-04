@@ -239,7 +239,7 @@ export class NookClient {
 
     let creator: EntityResponse | undefined;
     if (channelData.leadFid) {
-      creator = await this.entityClient.getEntityByFid(
+      creator = await this.entityClient.getEntityForFid(
         channelData.leadFid.toString(),
       );
     }

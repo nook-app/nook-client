@@ -15,7 +15,15 @@ export type BaseFarcasterUser = {
   displayName?: string;
   bio?: string;
   url?: string;
+};
+
+export type BaseFarcasterUserWithEngagement = BaseFarcasterUser & {
   engagement: FarcasterUserEngagement;
+};
+
+export type EntityResponse = {
+  id: string;
+  farcaster: BaseFarcasterUserWithEngagement;
 };
 
 export type FarcasterCastEngagement = {
@@ -39,7 +47,29 @@ export type BaseFarcasterCast = {
   parentHash?: string;
   rootParentHash?: string;
   parentUrl?: string;
+};
+
+export type BaseFarcasterCastWithContext = BaseFarcasterCast & {
   engagement: FarcasterCastEngagement;
+};
+
+export type FarcasterCastResponse = {
+  hash: string;
+  timestamp: number;
+  entity: EntityResponse;
+  text: string;
+  mentions: {
+    entity: EntityResponse;
+    position: string;
+  }[];
+  embedHashes: string[];
+  embedCasts: FarcasterCastResponse[];
+  embedUrls: string[];
+  parentHash?: string;
+  parent?: FarcasterCastResponse;
+  rootParentHash?: string;
+  rootParent?: FarcasterCastResponse;
+  parentUrl?: string;
 };
 
 export type GetFarcasterCastRequest = {
@@ -72,7 +102,7 @@ export type GetFarcasterCastsByFollowingRequest = {
 };
 
 export type GetFarcasterCastsResponse = {
-  data: BaseFarcasterCast[];
+  data: BaseFarcasterCastWithContext[];
 };
 
 export type GetFarcasterUserRequest = {
@@ -84,7 +114,7 @@ export type GetFarcasterUsersRequest = {
 };
 
 export type GetFarcasterUsersResponse = {
-  data: BaseFarcasterUser[];
+  data: EntityResponse[];
 };
 
 export type GetFollowerFidsResponse = {
