@@ -27,10 +27,9 @@ export class UserService {
   async getUser(
     fid: string,
   ): Promise<BaseFarcasterUserWithEngagement | undefined> {
-    const [user, following, followers] = await Promise.all([
+    const [user, stats] = await Promise.all([
       this.getUserData(fid),
-      this.getFollowingCount(fid),
-      this.getFollowersCount(fid),
+      this.getUserStats(fid),
     ]);
 
     if (!user) return;
@@ -38,8 +37,8 @@ export class UserService {
     return {
       ...user,
       engagement: {
-        following,
-        followers,
+        following: stats.following,
+        followers: stats.followers,
       },
     };
   }
@@ -82,38 +81,71 @@ export class UserService {
     return await this.redis.getJson(`${this.USER_CACHE_PREFIX}:${fid}`);
   }
 
-  async getFollowingCount(fid: string) {
-    const cached = await this.redis.getJson(
-      `${this.USER_CACHE_PREFIX}:${fid}:following`,
-    );
-    if (cached) return cached;
+  async getUserStats(fid: string) {
+    const [cachedFollowing, cachedFollowers] = await Promise.all([
+      this.redis.getJson(`${this.USER_CACHE_PREFIX}:${fid}:following`),
+      this.redis.getJson(`${this.USER_CACHE_PREFIX}:${fid}:followers`),
+    ]);
 
-    const following = await this.client.farcasterLink.count({
-      where: { linkType: "follow", fid: BigInt(fid) },
+    if (cachedFollowing && cachedFollowers) {
+      return {
+        following: cachedFollowing,
+        followers: cachedFollowers,
+      };
+    }
+
+    const stats = await this.client.farcasterUserStats.findUnique({
+      where: { fid: BigInt(fid) },
     });
 
-    await this.redis.setNumber(
-      `${this.USER_CACHE_PREFIX}:${fid}:following`,
+    if (stats) {
+      await Promise.all([
+        this.redis.setNumber(
+          `${this.USER_CACHE_PREFIX}:${fid}:following`,
+          stats.following,
+        ),
+        this.redis.setNumber(
+          `${this.USER_CACHE_PREFIX}:${fid}:followers`,
+          stats.followers,
+        ),
+      ]);
+      return {
+        following: stats.following,
+        followers: stats.followers,
+      };
+    }
+
+    const [following, followers] = await Promise.all([
+      this.client.farcasterLink.count({
+        where: { linkType: "follow", fid: BigInt(fid) },
+      }),
+      this.client.farcasterLink.count({
+        where: { linkType: "follow", targetFid: BigInt(fid) },
+      }),
+    ]);
+
+    await Promise.all([
+      this.client.farcasterUserStats.create({
+        data: {
+          fid: BigInt(fid),
+          following,
+          followers,
+        },
+      }),
+      this.redis.setNumber(
+        `${this.USER_CACHE_PREFIX}:${fid}:following`,
+        following,
+      ),
+      this.redis.setNumber(
+        `${this.USER_CACHE_PREFIX}:${fid}:followers`,
+        followers,
+      ),
+    ]);
+
+    return {
       following,
-    );
-    return following;
-  }
-
-  async getFollowersCount(fid: string) {
-    const cached = await this.redis.getJson(
-      `${this.USER_CACHE_PREFIX}:${fid}:followers`,
-    );
-    if (cached) return cached;
-
-    const followers = await this.client.farcasterLink.count({
-      where: { linkType: "follow", targetFid: BigInt(fid) },
-    });
-
-    await this.redis.setNumber(
-      `${this.USER_CACHE_PREFIX}:${fid}:followers`,
       followers,
-    );
-    return followers;
+    };
   }
 
   async getFollowers(fid: string) {
@@ -123,6 +155,10 @@ export class UserService {
   }
 
   async incrementFollowing(fid: string) {
+    await this.client.farcasterUserStats.update({
+      where: { fid: BigInt(fid) },
+      data: { following: { increment: 1 } },
+    });
     const key = `${this.USER_CACHE_PREFIX}:${fid}:following`;
     if (await this.redis.exists(key)) {
       await this.redis.increment(key);
@@ -130,6 +166,10 @@ export class UserService {
   }
 
   async incrementFollowers(fid: string) {
+    await this.client.farcasterUserStats.update({
+      where: { fid: BigInt(fid) },
+      data: { followers: { increment: 1 } },
+    });
     const key = `${this.USER_CACHE_PREFIX}:${fid}:followers`;
     if (await this.redis.exists(key)) {
       await this.redis.increment(key);
@@ -137,6 +177,10 @@ export class UserService {
   }
 
   async decrementFollowing(fid: string) {
+    await this.client.farcasterUserStats.update({
+      where: { fid: BigInt(fid) },
+      data: { following: { decrement: 1 } },
+    });
     const key = `${this.USER_CACHE_PREFIX}:${fid}:following`;
     if (await this.redis.exists(key)) {
       await this.redis.decrement(key);
@@ -144,6 +188,10 @@ export class UserService {
   }
 
   async decrementFollowers(fid: string) {
+    await this.client.farcasterUserStats.update({
+      where: { fid: BigInt(fid) },
+      data: { followers: { decrement: 1 } },
+    });
     const key = `${this.USER_CACHE_PREFIX}:${fid}:followers`;
     if (await this.redis.exists(key)) {
       await this.redis.decrement(key);

@@ -206,3 +206,9 @@ model FarcasterLink {
     @@id([fid, linkType, targetFid])
     @@index([targetFid, linkType])
 }
+
+model FarcasterUserStats {
+    fid       BigInt @id
+    followers Int
+    following Int
+}
