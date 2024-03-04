@@ -153,6 +153,7 @@ export class RedisClient {
       key,
       cursor ? cursor - 1 : "+inf",
       "-inf",
+      "WITHSCORES",
       "LIMIT",
       0,
       25,

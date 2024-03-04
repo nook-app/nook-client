@@ -21,6 +21,8 @@ import {
   UrlContentResponse,
 } from "@nook/common/types";
 
+export const MAX_FEED_ITEMS = 25;
+
 export class FarcasterService {
   private nookClient: NookClient;
   private feedClient: FeedClient;
@@ -257,13 +259,18 @@ export class FarcasterService {
 
   async getFeed(feedId: string, cursor?: number) {
     const feed = await this.feedClient.getFeed(feedId, cursor);
+    const startCursor = feed[0]?.score;
 
     const promises = [];
     promises.push(
       this.farcasterClient
-        .fetchCasts(feed)
+        .fetchCasts(feed.map((item) => item.value))
         .then((response) => this.getCasts(response.data)),
     );
+
+    if (!cursor) {
+      promises.push(this.getNewFeedItems(feedId, startCursor));
+    }
 
     if (feed.length < 25) {
       promises.push(
@@ -273,7 +280,12 @@ export class FarcasterService {
       );
     }
 
-    const casts = (await Promise.all(promises)).flat();
+    const casts = (await Promise.all(promises))
+      .flat()
+      .sort((a, b) => {
+        return b.timestamp - a.timestamp;
+      })
+      .slice(0, 25);
 
     return {
       data: casts,
@@ -281,42 +293,65 @@ export class FarcasterService {
     };
   }
 
+  async getNewFeedItems(feedId: string, cursor?: number) {
+    const [type, subtype, id] = feedId.split(":");
+    if (type !== "custom" && subtype !== "following") {
+      return [];
+    }
+
+    const response = await this.farcasterClient.fetchCastsFromFollowing({
+      fid: id,
+      minCursor: cursor,
+      limit: MAX_FEED_ITEMS,
+    });
+
+    await this.feedClient.batchAddToFeed(
+      feedId,
+      response.data.map(({ hash, timestamp }) => ({
+        value: hash,
+        timestamp,
+      })),
+    );
+
+    return await this.getCasts(response.data);
+  }
+
   async backfillFeed(feedId: string, cursor?: number, take?: number) {
     const [type, subtype, id] = feedId.split(":");
 
     let rawCasts: BaseFarcasterCastWithContext[] = [];
     if (type === "channel") {
-      const response = await this.farcasterClient.fetchCastsByParentUrl(
-        id,
-        cursor,
-        take,
-      );
+      const response = await this.farcasterClient.fetchCastsByParentUrl({
+        parentUrl: id,
+        maxCursor: cursor,
+        limit: take,
+      });
       rawCasts = response.data;
     } else if (type === "user") {
       if (subtype === "following") {
-        const response = await this.farcasterClient.fetchCastsFromFollowing(
-          id,
-          cursor,
-          take,
-        );
+        const response = await this.farcasterClient.fetchCastsFromFollowing({
+          fid: id,
+          maxCursor: cursor,
+          limit: take,
+        });
         rawCasts = response.data;
       } else {
-        const response = await this.farcasterClient.fetchCastsByFid(
-          id,
-          subtype === "replies",
-          cursor,
-          take,
-        );
+        const response = await this.farcasterClient.fetchCastsFromFids({
+          fids: [id],
+          replies: subtype === "replies",
+          maxCursor: cursor,
+          limit: take,
+        });
         rawCasts = response.data;
       }
     } else if (type === "custom") {
       if (subtype === "farcaster-og") {
-        const response = await this.farcasterClient.fetchCastsFromFids(
-          FARCASTER_OG_FIDS,
-          false,
-          cursor,
-          take,
-        );
+        const response = await this.farcasterClient.fetchCastsFromFids({
+          fids: FARCASTER_OG_FIDS,
+          replies: false,
+          maxCursor: cursor,
+          limit: take,
+        });
         rawCasts = response.data;
       }
     }

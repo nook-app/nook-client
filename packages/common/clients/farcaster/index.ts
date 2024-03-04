@@ -95,9 +95,7 @@ export class FarcasterClient {
   }
 
   async fetchCastsFromFollowing(
-    fid: string,
-    cursor?: number,
-    limit?: number,
+    req: GetFarcasterCastsByFollowingRequest,
   ): Promise<GetFarcasterCastsResponse> {
     const response = await fetch(
       `${process.env.FARCASTER_API_ENDPOINT}/casts/by-following`,
@@ -106,11 +104,7 @@ export class FarcasterClient {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          fid,
-          cursor,
-          limit,
-        } as GetFarcasterCastsByFollowingRequest),
+        body: JSON.stringify(req),
       },
     );
 
@@ -122,10 +116,7 @@ export class FarcasterClient {
   }
 
   async fetchCastsFromFids(
-    fids: string[],
-    replies?: boolean,
-    cursor?: number,
-    limit?: number,
+    req: GetFarcasterCastsByFidsRequest,
   ): Promise<GetFarcasterCastsResponse> {
     const response = await fetch(
       `${process.env.FARCASTER_API_ENDPOINT}/casts/by-fids`,
@@ -134,41 +125,7 @@ export class FarcasterClient {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          fids,
-          replies,
-          cursor,
-          limit,
-        } as GetFarcasterCastsByFidsRequest),
-      },
-    );
-
-    if (!response.ok) {
-      throw new Error("Failed to fetch casts");
-    }
-
-    return await response.json();
-  }
-
-  async fetchCastsByFid(
-    fid: string,
-    replies?: boolean,
-    cursor?: number,
-    limit?: number,
-  ): Promise<GetFarcasterCastsResponse> {
-    const response = await fetch(
-      `${process.env.FARCASTER_API_ENDPOINT}/casts/by-fids`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          fids: [fid],
-          replies,
-          cursor,
-          limit,
-        } as GetFarcasterCastsByFidsRequest),
+        body: JSON.stringify(req),
       },
     );
 
@@ -180,9 +137,7 @@ export class FarcasterClient {
   }
 
   async fetchCastsByParentUrl(
-    parentUrl: string,
-    cursor?: number,
-    limit?: number,
+    req: GetFarcasterCastsByParentUrlRequest,
   ): Promise<GetFarcasterCastsResponse> {
     const response = await fetch(
       `${process.env.FARCASTER_API_ENDPOINT}/casts/by-parent-url`,
@@ -191,11 +146,7 @@ export class FarcasterClient {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          parentUrl,
-          cursor,
-          limit,
-        } as GetFarcasterCastsByParentUrlRequest),
+        body: JSON.stringify(req),
       },
     );
 

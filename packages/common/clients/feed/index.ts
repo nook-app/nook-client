@@ -66,9 +66,17 @@ export class FeedClient {
   }
 
   async getFeed(feedId: string, cursor?: number) {
-    return await this.redis.getSet(
+    const results = await this.redis.getSet(
       `${this.FEED_CACHE_PREFIX}:${feedId}`,
       cursor,
     );
+    const feedItems = [];
+    for (let i = 0; i < results.length; i += 2) {
+      feedItems.push({
+        value: results[i],
+        score: parseFloat(results[i + 1]),
+      });
+    }
+    return feedItems;
   }
 }

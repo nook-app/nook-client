@@ -189,12 +189,20 @@ export class CastService {
   }
 
   async getCastsByParentUrl(request: GetFarcasterCastsByParentUrlRequest) {
-    const timestamp = request.cursor ? new Date(request.cursor) : new Date();
+    const minTimestamp = request.minCursor
+      ? new Date(request.minCursor)
+      : undefined;
+
+    const maxTimestamp = request.maxCursor
+      ? new Date(request.maxCursor)
+      : undefined;
+
     const casts = await this.client.farcasterCast.findMany({
       where: {
         parentUrl: request.parentUrl,
         timestamp: {
-          lt: timestamp,
+          lt: maxTimestamp,
+          gt: minTimestamp,
         },
       },
       orderBy: {
@@ -207,14 +215,22 @@ export class CastService {
   }
 
   async getCastsByFids(request: GetFarcasterCastsByFidsRequest) {
-    const timestamp = request.cursor ? new Date(request.cursor) : new Date();
+    const minTimestamp = request.minCursor
+      ? new Date(request.minCursor)
+      : undefined;
+
+    const maxTimestamp = request.maxCursor
+      ? new Date(request.maxCursor)
+      : undefined;
+
     const casts = await this.client.farcasterCast.findMany({
       where: {
         fid: {
           in: request.fids.map((fid) => BigInt(fid)),
         },
         timestamp: {
-          lt: timestamp,
+          lt: maxTimestamp,
+          gt: minTimestamp,
         },
         parentHash: request.replies ? { not: null } : null,
       },
@@ -236,14 +252,22 @@ export class CastService {
       },
     });
 
-    const timestamp = request.cursor ? new Date(request.cursor) : new Date();
+    const minTimestamp = request.minCursor
+      ? new Date(request.minCursor)
+      : undefined;
+
+    const maxTimestamp = request.maxCursor
+      ? new Date(request.maxCursor)
+      : undefined;
+
     const casts = await this.client.farcasterCast.findMany({
       where: {
         fid: {
           in: following.map((link) => link.targetFid),
         },
         timestamp: {
-          lt: timestamp,
+          lt: maxTimestamp,
+          gt: minTimestamp,
         },
         parentHash: null,
         deletedAt: null,

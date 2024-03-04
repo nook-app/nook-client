@@ -31,7 +31,7 @@ const buildApp = () => {
 const start = async () => {
   const app = buildApp();
   try {
-    const port = Number(process.env.PORT || "3000");
+    const port = Number(process.env.PORT || "3001");
     await app.listen({ port, host: "0.0.0.0" });
     console.log(`Listening on :${port}`);
   } catch (err) {

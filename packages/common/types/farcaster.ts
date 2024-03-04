@@ -92,21 +92,24 @@ export type GetFarcasterCastsRequest = {
 
 export type GetFarcasterCastsByParentUrlRequest = {
   parentUrl: string;
-  limit: number;
-  cursor?: string;
+  limit?: number;
+  minCursor?: number;
+  maxCursor?: number;
 };
 
 export type GetFarcasterCastsByFidsRequest = {
   fids: string[];
-  limit: number;
-  cursor?: number;
+  limit?: number;
+  minCursor?: number;
+  maxCursor?: number;
   replies?: boolean;
 };
 
 export type GetFarcasterCastsByFollowingRequest = {
   fid: string;
-  limit: number;
-  cursor?: string;
+  limit?: number;
+  minCursor?: number;
+  maxCursor?: number;
 };
 
 export type GetFarcasterCastsResponse = {

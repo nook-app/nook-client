@@ -116,17 +116,6 @@ export class FarcasterProcessor {
     }
 
     await Promise.all(promises);
-
-    if (!data.parentHash) {
-      const followers = await this.farcasterClient.getFollowerFids(
-        data.fid.toString(),
-      );
-      await this.feedClient.addToFeeds(
-        followers.data.map((fid) => `user:following:${fid.toString()}`),
-        data.hash,
-        cast.timestamp,
-      );
-    }
   }
 
   async processCastRemove(data: FarcasterCast) {
@@ -168,15 +157,5 @@ export class FarcasterProcessor {
     }
 
     await Promise.all(promises);
-
-    if (!data.parentHash) {
-      const followers = await this.farcasterClient.getFollowerFids(
-        data.fid.toString(),
-      );
-      await this.feedClient.removeFromFeeds(
-        followers.data.map((fid) => `user:following:${fid.toString()}`),
-        data.hash,
-      );
-    }
   }
 }
