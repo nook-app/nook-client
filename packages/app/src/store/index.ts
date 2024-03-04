@@ -3,11 +3,12 @@ import { userApi } from "./apis/userApi";
 import { nookApi } from "./apis/nookApi";
 import { farcasterApi } from "./apis/farcasterApi";
 import navigatorReducer from "./slices/navigator";
-import contentReducer from "./slices/cast";
+import castReducer from "./slices/cast";
 import userReducer from "./slices/user";
 import entityReducer from "./slices/entity";
 import nookReducer from "./slices/nook";
 import channelReducer from "./slices/channel";
+import contentReducer from "./slices/content";
 
 export const store = configureStore({
   reducer: {
@@ -15,11 +16,12 @@ export const store = configureStore({
     [nookApi.reducerPath]: nookApi.reducer,
     [farcasterApi.reducerPath]: farcasterApi.reducer,
     navigator: navigatorReducer,
-    content: contentReducer,
+    casts: castReducer,
     entities: entityReducer,
     user: userReducer,
     nook: nookReducer,
     channel: channelReducer,
+    content: contentReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

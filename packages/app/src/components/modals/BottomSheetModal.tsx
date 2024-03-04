@@ -152,7 +152,7 @@ export function BottomSheetModal({
             tint={colorScheme === "dark" ? "dark" : "light"}
           />
         ) : (
-          <View flexGrow={1} flex={1} backgroundColor="$surface2" />
+          <View flexGrow={1} flex={1} backgroundColor="$backgroundStrong" />
         )}
       </Animated.View>
     ),

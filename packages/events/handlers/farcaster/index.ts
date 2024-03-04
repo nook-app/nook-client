@@ -105,7 +105,7 @@ export class FarcasterProcessor {
       );
     }
 
-    if (FARCASTER_OG_FIDS.includes(data.fid.toString())) {
+    if (FARCASTER_OG_FIDS.includes(data.fid.toString()) && data.parentHash) {
       promises.push(
         this.feedClient.addToFeed(
           "custom:farcaster-og",
@@ -150,7 +150,7 @@ export class FarcasterProcessor {
       );
     }
 
-    if (FARCASTER_OG_FIDS.includes(data.fid.toString())) {
+    if (FARCASTER_OG_FIDS.includes(data.fid.toString()) && data.parentHash) {
       promises.push(
         this.feedClient.removeFromFeed("custom:farcaster-og", data.hash),
       );

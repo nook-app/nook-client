@@ -20,10 +20,12 @@ export const generateHomeNook = (fid: string): NookResponse => {
     creator: {
       id: "nook",
       farcaster: {
-        fid: "0",
+        fid: "262426",
+        engagement: {
+          followers: 0,
+          following: 0,
+        },
       },
-      blockchain: [],
-      usernames: [],
     },
     name: "Home",
     description: "Your personally-curated nook",

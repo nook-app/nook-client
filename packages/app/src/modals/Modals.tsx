@@ -3,6 +3,7 @@ import { useAppSelector } from "../hooks/useAppSelector";
 import { ModalName, ModalsState } from "./types";
 import { CreatePostModal } from "./CreatePostModal";
 import { EnableSignerModal } from "./EnableSignerModal";
+import { ContentModal } from "./ContentModal";
 
 function ModalWrapper({
   name,
@@ -29,6 +30,10 @@ export function Modals() {
 
       <ModalWrapper name={ModalName.CreatePost}>
         <CreatePostModal />
+      </ModalWrapper>
+
+      <ModalWrapper name={ModalName.Content}>
+        <ContentModal />
       </ModalWrapper>
     </>
   );

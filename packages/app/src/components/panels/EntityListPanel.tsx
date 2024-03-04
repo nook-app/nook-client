@@ -107,7 +107,7 @@ export const EntityListPanel = ({
     [data, accumulatedData, cursor],
   );
 
-  if (isLoading || error || !data) {
+  if (isLoading || !data) {
     return (
       <View
         padding="$3"

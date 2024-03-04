@@ -1,9 +1,9 @@
-import { ModalName, ModalsState } from "@/modals/types";
+import { ContentModalState, ModalName, ModalsState } from "@/modals/types";
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 type ModalParams = {
   name: ModalName;
-  initialState: undefined;
+  initialState: undefined | ContentModalState;
 };
 
 type NavigatorState = {
@@ -19,6 +19,10 @@ const initialState: NavigatorState = {
       initialState: undefined,
     },
     [ModalName.EnableSigner]: {
+      isOpen: false,
+      initialState: undefined,
+    },
+    [ModalName.Content]: {
       isOpen: false,
       initialState: undefined,
     },

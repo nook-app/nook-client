@@ -26,4 +26,7 @@ export type RootStackParamList = {
   FarcasterChannel: {
     channelId: string;
   };
+  ContentScreen: {
+    uri: string;
+  };
 };

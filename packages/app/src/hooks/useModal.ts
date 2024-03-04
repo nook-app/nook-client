@@ -1,4 +1,4 @@
-import { ModalName } from "@/modals/types";
+import { ContentModalState, ModalName } from "@/modals/types";
 import { useAppDispatch } from "./useAppDispatch";
 import {
   closeAllModals,
@@ -6,14 +6,19 @@ import {
   openModal,
 } from "@/store/slices/navigator";
 import { useCallback } from "react";
+import { useAppSelector } from "./useAppSelector";
 
 export type ModalState = {
   [ModalName.CreatePost]: undefined;
   [ModalName.EnableSigner]: undefined;
+  [ModalName.Content]: ContentModalState;
 };
 
 export const useModal = (modalName: ModalName) => {
   const dispatch = useAppDispatch();
+  const state: ModalState[ModalName] = useAppSelector(
+    (state) => state.navigator.modals[modalName],
+  )?.initialState;
 
   const open = useCallback(
     (initialState?: ModalState[typeof modalName]) =>
@@ -34,5 +39,6 @@ export const useModal = (modalName: ModalName) => {
     open,
     close,
     closeAll,
+    state,
   };
 };

@@ -25,7 +25,7 @@ export const useEntity = (entityId: string) => {
     url: entity?.farcaster?.url,
     pfp: formatToWarpcastCDN(entity?.farcaster?.pfp, 168),
     farcaster: entity?.farcaster,
-    following: entity?.farcaster.following || 0,
-    followers: entity?.farcaster.followers || 0,
+    following: entity?.farcaster?.engagement?.following || 0,
+    followers: entity?.farcaster?.engagement?.followers || 0,
   };
 };

@@ -4,7 +4,7 @@ import { RootStackParamList } from "@/types";
 import { RouteProp, useRoute } from "@react-navigation/native";
 import { View } from "tamagui";
 
-export default function ContentScreen() {
+export default function FarcasterCastScreen() {
   const route = useRoute<RouteProp<RootStackParamList, "FarcasterCast">>();
   const cast = useCast(route.params.hash);
 

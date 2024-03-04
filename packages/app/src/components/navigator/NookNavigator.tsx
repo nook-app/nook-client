@@ -7,7 +7,6 @@ import { useAppDispatch } from "@/hooks/useAppDispatch";
 import { setDrawerOpen } from "@/store/slices/navigator";
 import { View, useTheme } from "tamagui";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import ContentScreen from "@/screens/FarcasterCastScreen";
 import { RootStackParamList } from "@/types";
 import { Text } from "tamagui";
 import { useNooks } from "@/hooks/useNooks";
@@ -19,6 +18,7 @@ import { ContentLikesScreen } from "@/screens/FarcasterCastLikesScreen";
 import { ContentRepostsScreen } from "@/screens/FarcasterCastRepostsScreen";
 import { ContentQuotesScreen } from "@/screens/FarcasterCastQuotesScreen";
 import { Image } from "expo-image";
+import FarcasterCastScreen from "@/screens/FarcasterCastScreen";
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -139,7 +139,7 @@ export function NookNavigator() {
       />
       <Stack.Screen
         name="FarcasterCast"
-        component={ContentScreen}
+        component={FarcasterCastScreen}
         options={{
           headerBackTitleVisible: false,
           headerTintColor: "white",

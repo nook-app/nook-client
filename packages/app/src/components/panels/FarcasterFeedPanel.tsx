@@ -66,7 +66,7 @@ export const FarcasterFeedPanel = ({ args }: { args: FarcasterFeedArgs }) => {
     [data, accumulatedData, cursor],
   );
 
-  if (isLoading || error || !data) {
+  if (isLoading || !data) {
     return (
       <Tabs.ScrollView>
         <View padding="$5" alignItems="center" backgroundColor="$background">

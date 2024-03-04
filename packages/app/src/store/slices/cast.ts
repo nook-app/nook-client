@@ -21,20 +21,36 @@ const contentSlice = createSlice({
     builder.addMatcher(
       farcasterApi.endpoints.getCastReplies.matchFulfilled,
       (state, action) => {
-        castAdapter.addMany(state, action.payload.data);
+        const casts = [];
+        for (const cast of action.payload.data) {
+          casts.push(cast);
+          casts.push(...cast.embedCasts);
+          if (cast.parent) {
+            casts.push(cast.parent);
+          }
+        }
+        castAdapter.addMany(state, casts);
       },
     );
     builder.addMatcher(
       farcasterApi.endpoints.getFeed.matchFulfilled,
       (state, action) => {
-        castAdapter.addMany(state, action.payload.data);
+        const casts = [];
+        for (const cast of action.payload.data) {
+          casts.push(cast);
+          casts.push(...cast.embedCasts);
+          if (cast.parent) {
+            casts.push(cast.parent);
+          }
+        }
+        castAdapter.addMany(state, casts);
       },
     );
   },
 });
 
 export const { selectById: selectCastById } = castAdapter.getSelectors(
-  (state: RootState) => state.content,
+  (state: RootState) => state.casts,
 );
 
 export default contentSlice.reducer;

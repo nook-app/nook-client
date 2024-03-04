@@ -8,11 +8,13 @@ import { Text } from "tamagui";
 
 export const Embed = ({
   content,
+  disableLink,
 }: {
   content: UrlContentResponse;
+  disableLink?: boolean;
 }) => {
   if (content.type?.startsWith("image/")) {
-    return <EmbedImage content={content} />;
+    return <EmbedImage content={content} disableLink={disableLink} />;
   }
   if (
     content.type?.startsWith("video/") ||

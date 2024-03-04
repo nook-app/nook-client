@@ -1,18 +1,11 @@
 export enum ModalName {
   CreatePost = "createPost",
   EnableSigner = "enableSigner",
-}
-
-export interface EntityModalState {
-  entityId: string;
-}
-
-export interface ChannelModalState {
-  channelId: string;
+  Content = "content",
 }
 
 export interface ContentModalState {
-  contentId: string;
+  uri: string;
 }
 
 export interface SelectChannelModalState {
@@ -28,4 +21,5 @@ export interface ModalState<T> {
 export interface ModalsState {
   [ModalName.CreatePost]: ModalState<undefined>;
   [ModalName.EnableSigner]: ModalState<undefined>;
+  [ModalName.Content]: ModalState<ContentModalState>;
 }

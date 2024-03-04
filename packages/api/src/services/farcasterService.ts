@@ -260,6 +260,7 @@ export class FarcasterService {
   async getFeed(feedId: string, cursor?: number) {
     const feed = await this.feedClient.getFeed(feedId, cursor);
     const startCursor = feed[0]?.score;
+    const endCursor = feed[feed.length - 1]?.score;
 
     const promises = [];
     promises.push(
@@ -274,8 +275,8 @@ export class FarcasterService {
 
     if (feed.length < 25) {
       promises.push(
-        this.backfillFeed(feedId, cursor, 25 - feed.length).then((response) =>
-          this.getCasts(response),
+        this.backfillFeed(feedId, cursor || endCursor, 25 - feed.length).then(
+          (response) => this.getCasts(response),
         ),
       );
     }
@@ -295,7 +296,7 @@ export class FarcasterService {
 
   async getNewFeedItems(feedId: string, cursor?: number) {
     const [type, subtype, id] = feedId.split(":");
-    if (type !== "custom" && subtype !== "following") {
+    if (type !== "user" || subtype !== "following") {
       return [];
     }
 

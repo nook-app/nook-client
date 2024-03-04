@@ -9,13 +9,12 @@ import {
 import { NavigationProp, useNavigation } from "@react-navigation/native";
 import { RootStackParamList } from "@/types";
 import { ChannelDisplay } from "../channel/ChannelDisplay";
-import { useEffect, useRef } from "react";
-import { ScrollView as RNScrollView, View as RNView } from "react-native";
 import { FarcasterCastCompact } from "./FarcasterCastCompact";
 import { FarcasterCastReplies } from "./FarcasterCastReplies";
 import { FarcasterCastResponseWithContext } from "@nook/common/types";
 import { Embed } from "../embeds/Embed";
 import { EmbedCast } from "../embeds/EmbedCast";
+import { useCast } from "@/hooks/useCast";
 
 export const FarcasterCast = ({
   cast,
@@ -26,7 +25,13 @@ export const FarcasterCast = ({
 
   return (
     <ScrollView>
-      <FarcasterCastContent cast={cast} />
+      <View
+        padding="$2"
+        borderBottomWidth="0.5"
+        borderBottomColor="$borderColor"
+      >
+        <FarcasterCastContent cast={cast} />
+      </View>
       <FarcasterCastReplies hash={cast.hash} />
     </ScrollView>
   );
@@ -35,53 +40,42 @@ export const FarcasterCast = ({
 const FarcasterCastReply = ({
   cast,
 }: { cast: FarcasterCastResponseWithContext }) => {
-  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
-  const scrollViewRef = useRef<RNScrollView>(null);
-  const scrollTargetRef = useRef<RNView>(null);
-
-  useEffect(() => {
-    if (scrollViewRef.current && scrollTargetRef.current) {
-      setTimeout(() => {
-        scrollTargetRef.current?.measureLayout(
-          // @ts-ignore
-          scrollViewRef.current,
-          (left, top, width, height) => {
-            scrollViewRef.current?.scrollTo({
-              y: top,
-              animated: true,
-            });
-          },
-          (error: Error) => {
-            console.error(error);
-          },
-        );
-      }, 300);
-    }
-  }, []);
-
-  if (!cast.parent) return null;
+  if (!cast.parentHash) return null;
 
   return (
-    <ScrollView ref={scrollViewRef}>
+    <ScrollView>
       <View
         padding="$2"
         borderBottomWidth="0.5"
         borderBottomColor="$borderColor"
       >
-        <TouchableWithoutFeedback
-          onPress={() => {
-            if (!cast.parent) return;
-            navigation.navigate("FarcasterCast", {
-              hash: cast.parent.hash,
-            });
-          }}
-        >
-          <FarcasterCastCompact cast={cast.parent} isParent />
-        </TouchableWithoutFeedback>
+        <FarcasterCastAncestors hash={cast.parentHash} />
         <FarcasterCastContent cast={cast} />
       </View>
       <FarcasterCastReplies hash={cast.hash} />
     </ScrollView>
+  );
+};
+
+const FarcasterCastAncestors = ({ hash }: { hash: string }) => {
+  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+  const cast = useCast(hash);
+  if (!cast) return null;
+  return (
+    <>
+      {cast.parentHash && <FarcasterCastAncestors hash={cast.parentHash} />}
+      <TouchableWithoutFeedback
+        key={cast.hash}
+        onPress={() => {
+          if (!cast) return;
+          navigation.navigate("FarcasterCast", {
+            hash: cast.hash,
+          });
+        }}
+      >
+        <FarcasterCastCompact cast={cast} isParent />
+      </TouchableWithoutFeedback>
+    </>
   );
 };
 
@@ -91,12 +85,7 @@ const FarcasterCastContent = ({
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
 
   return (
-    <YStack
-      padding="$2"
-      gap="$3"
-      borderBottomColor="$borderColor"
-      borderBottomWidth="$0.5"
-    >
+    <YStack gap="$3">
       <XStack gap="$2">
         <EntityAvatar entityId={cast.entity.id} />
         <EntityDisplay entityId={cast.entity.id} orientation="vertical" />
