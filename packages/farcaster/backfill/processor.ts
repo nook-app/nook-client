@@ -44,22 +44,44 @@ export class FarcasterBackfillProcessor {
   }
 
   async backfillFid(fid: number) {
+    console.log(`[${fid}] backfilling...`);
+    
+    await Promise.all([
+      this.handleCastAdd(fid),
+      this.handleLinkAdd(fid),
+      this.handleReactionAdd(fid),
+      this.handleUsernameProofAdd(fid),
+      this.handleUserDataAdd(fid),
+      this.handleVerificationAdd(fid),
+    ]);
+  }
+
+  async handleCastAdd(fid: number) {
     const castMessages = await this.getMessagesFromHub(fid, (fid, pageToken) =>
       this.hub.getCastsByFid({ fid, pageToken }),
     );
     await this.backfillCastAdd(castMessages);
+    console.log(`[${fid}] backfilled ${castMessages.length} casts`);
+  }
 
+  async handleLinkAdd(fid: number) {
     const linkMessages = await this.getMessagesFromHub(fid, (fid, pageToken) =>
       this.hub.getLinksByFid({ fid, pageToken }),
     );
     await this.backfillLinkAdd(linkMessages);
+    console.log(`[${fid}] backfilled ${linkMessages.length} links`);
+  }
 
+  async handleReactionAdd(fid: number) {
     const reactionMessages = await this.getMessagesFromHub(
       fid,
       (fid, pageToken) => this.hub.getReactionsByFid({ fid, pageToken }),
     );
     await this.backfillReactionAdd(reactionMessages);
+    console.log(`[${fid}] backfilled ${reactionMessages.length} reactions`);
+  }
 
+  async handleUsernameProofAdd(fid: number) {
     const usernameProofs = await this.hub.getUserNameProofsByFid({ fid });
     if (usernameProofs.isErr()) {
       throw new Error(
@@ -68,19 +90,33 @@ export class FarcasterBackfillProcessor {
       );
     }
     await this.backfillUsernameProofAdd(usernameProofs.value.proofs);
+    console.log(
+      `[${fid}] backfilled ${usernameProofs.value.proofs.length} username proofs`,
+    )
+  }
 
+  async handleUserDataAdd(fid: number) {
     const userDataMessages = await this.getMessagesFromHub(
       fid,
       (fid, pageToken) => this.hub.getUserDataByFid({ fid, pageToken }),
     );
     await this.backfillUserDataAdd(userDataMessages);
+    console.log(
+      `[${fid}] backfilled ${userDataMessages.length} user data messages`,
+    );
+  }
 
+  async handleVerificationAdd(fid: number) {
     const verificationMessages = await this.getMessagesFromHub(
       fid,
       (fid, pageToken) => this.hub.getVerificationsByFid({ fid, pageToken }),
     );
     await this.backfillVerificationAdd(verificationMessages);
+    console.log(
+      `[${fid}] backfilled ${verificationMessages.length} verifications`,
+    );
   }
+
 
   async getMessagesFromHub(
     fid: number,

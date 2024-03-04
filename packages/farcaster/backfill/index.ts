@@ -2,7 +2,7 @@ import { FarcasterBackfillProcessor } from "./processor";
 
 const run = async () => {
   const processor = new FarcasterBackfillProcessor();
-  processor.backfillFid(Number(process.argv[2]));
+  await processor.backfillFid(Number(process.argv[2]));
 };
 
 run()
