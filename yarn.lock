@@ -3791,20 +3791,6 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@nook/entity@workspace:packages/entity":
-  version: 0.0.0-use.local
-  resolution: "@nook/entity@workspace:packages/entity"
-  dependencies:
-    "@fastify/jwt": "npm:^8.0.0"
-    "@nook/common": "npm:*"
-    "@types/jest": "npm:^29.5.11"
-    "@types/node": "npm:^20.10.5"
-    fastify: "npm:^4.25.2"
-    jest: "npm:^29.7.0"
-    typescript: "npm:^5.3.3"
-  languageName: unknown
-  linkType: soft
-
 "@nook/events@workspace:packages/events":
   version: 0.0.0-use.local
   resolution: "@nook/events@workspace:packages/events"
