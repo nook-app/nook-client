@@ -17,7 +17,10 @@ const nookSlice = createSlice({
     builder.addMatcher(
       userApi.endpoints.getUser.matchFulfilled,
       (state, action) => {
-        nookAdapter.addOne(state, generateHomeNook(action.payload.user.fid));
+        nookAdapter.addOne(
+          state,
+          generateHomeNook(action.payload.farcaster.fid),
+        );
         nookAdapter.addMany(state, action.payload.nooks);
       },
     );

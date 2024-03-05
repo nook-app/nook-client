@@ -87,8 +87,8 @@ const FarcasterCastContent = ({
   return (
     <YStack gap="$3">
       <XStack gap="$2">
-        <UserAvatar userId={cast.user.fid} />
-        <UserDisplay userId={cast.user.fid} orientation="vertical" />
+        <UserAvatar userId={cast.entity.id} />
+        <UserDisplay userId={cast.entity.id} orientation="vertical" />
       </XStack>
       <FarcasterCastText cast={cast} />
       {(cast.embeds.length > 0 || cast.embeds.length > 0) && (

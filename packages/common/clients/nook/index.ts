@@ -7,6 +7,7 @@ import {
 } from "../../signer";
 import {
   FarcasterUserWithContext,
+  GetEntityResponse,
   NookMetadata,
   NookResponse,
 } from "../../types";
@@ -20,6 +21,8 @@ export class NookClient {
   FEED_CACHE_PREFIX = "feed";
   CHANNEL_CACHE_PREFIX = "channel";
   NOOK_CACHE_PREFIX = "nook";
+  ENTITY_CACHE_PREFIX = "entity";
+  FID_CACHE_PREFIX = "fid";
 
   constructor() {
     this.client = new PrismaClient();
@@ -37,31 +40,49 @@ export class NookClient {
     await this.redis.close();
   }
 
-  async getUser(id: string) {
-    return await this.client.user.findUnique({
+  async getEntityByFid(fid: string) {
+    return await this.client.entity.findFirst({
+      where: {
+        farcaster: {
+          fid,
+        },
+      },
+    });
+  }
+
+  async createEntityByFid(fid: string) {
+    return await this.client.entity.create({
+      data: {
+        farcaster: {
+          create: {
+            fid,
+            signerEnabled: false,
+          },
+        },
+      },
+    });
+  }
+
+  async getEntity(id: string) {
+    return await this.client.entity.findUnique({
       where: {
         id,
       },
-    });
-  }
-
-  async getUserByFid(fid: string) {
-    return await this.client.user.findFirst({
-      where: {
-        fid,
+      include: {
+        user: true,
+        farcaster: true,
       },
     });
   }
 
-  async createUser(fid: string, refreshToken: string) {
+  async createUser(id: string, refreshToken: string) {
     const date = new Date();
     return await this.client.user.create({
       data: {
-        fid,
+        id,
         signedUpAt: date,
         loggedInAt: date,
         refreshToken,
-        signerEnabled: false,
       },
     });
   }
@@ -126,9 +147,9 @@ export class NookClient {
         },
       });
 
-      await this.client.user.update({
+      await this.client.entityFarcaster.update({
         where: {
-          id: signer.userId,
+          entityId: signer.userId,
         },
         data: {
           signerEnabled: true,
@@ -340,5 +361,23 @@ export class NookClient {
       });
     }
     return feedItems;
+  }
+
+  async getEntityIdsForFids(fids: string[]) {
+    return await Promise.all(fids.map((fid) => this.getEntityIdForFid(fid)));
+  }
+
+  async getEntityIdForFid(fid: string): Promise<string> {
+    let entityId = await this.redis.get(`${this.FID_CACHE_PREFIX}:${fid}`);
+    if (!entityId) {
+      let entity = await this.getEntityByFid(fid);
+      if (!entity) {
+        entity = await this.createEntityByFid(fid);
+      }
+      entityId = entity.id;
+      await this.redis.set(`${this.FID_CACHE_PREFIX}:${fid}`, entityId);
+    }
+
+    return entityId;
   }
 }

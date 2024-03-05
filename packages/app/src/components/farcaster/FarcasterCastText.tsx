@@ -67,8 +67,10 @@ export const FarcasterCastText = ({
     (a, b) => Number(b.position) - Number(a.position),
   );
   for (const mention of sortedMentions) {
-    const mentionedUser = selectUserById(state, mention.user.fid);
-    const label = `@${mentionedUser?.username || mentionedUser?.fid}`;
+    const mentionedUser = selectUserById(state, mention.entity.id);
+    const label = `@${
+      mentionedUser?.farcaster.username || mentionedUser?.farcaster.fid
+    }`;
 
     textParts.push(
       ...splitLinkParts(
@@ -80,7 +82,7 @@ export const FarcasterCastText = ({
       <TouchableOpacity
         key={`${cast.hash}-${mention.position}-${label}`}
         onPress={() =>
-          navigation.navigate("User", { userId: mentionedUser.fid })
+          navigation.navigate("User", { userId: mentionedUser.id })
         }
       >
         <View

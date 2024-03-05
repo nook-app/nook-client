@@ -23,19 +23,19 @@ export const FarcasterCastCompact = ({
   return (
     <XStack gap="$2">
       <View width="$3.5" alignItems="center">
-        <UserAvatar userId={cast.user.fid} />
+        <UserAvatar userId={cast.entity.id} />
         {isParent && <Separator vertical />}
       </View>
       <YStack flex={1} gap="$1" paddingBottom={isParent ? "$2" : "$0"}>
         <View alignSelf="flex-start">
-          <UserDisplay userId={cast.user.fid} />
+          <UserDisplay userId={cast.entity.id} />
         </View>
         <XStack alignItems="center" gap="$1.5">
           <Text color="$gray11">{formatTimeAgo(cast.timestamp)}</Text>
-          {showParentContext && cast.parent?.user && (
+          {showParentContext && cast.parent?.entity && (
             <>
               <Text color="$gray11">replying to</Text>
-              <UserDisplay userId={cast.parent.user.fid} hideDisplayName />
+              <UserDisplay userId={cast.parent.entity.id} hideDisplayName />
             </>
           )}
           {cast.channel && !showParentContext && (
@@ -68,25 +68,30 @@ export const FarcasterCastCompact = ({
                 {cast.engagement.replies}
               </Text>
             </View>
-            <View flexDirection="row" alignItems="center" gap="$1.5" width="$3">
-              <TouchableOpacity
-                onPress={
-                  cast.context
-                    ? cast.context.liked
-                      ? () =>
-                          dispatch(
-                            farcasterApi.endpoints.unrecastCast.initiate({
-                              hash: cast.hash,
-                            }),
-                          )
-                      : () =>
-                          dispatch(
-                            farcasterApi.endpoints.recastCast.initiate({
-                              hash: cast.hash,
-                            }),
-                          )
-                    : () => {}
-                }
+            <TouchableOpacity
+              onPress={
+                cast.context
+                  ? cast.context.liked
+                    ? () =>
+                        dispatch(
+                          farcasterApi.endpoints.unrecastCast.initiate({
+                            hash: cast.hash,
+                          }),
+                        )
+                    : () =>
+                        dispatch(
+                          farcasterApi.endpoints.recastCast.initiate({
+                            hash: cast.hash,
+                          }),
+                        )
+                  : () => {}
+              }
+            >
+              <View
+                flexDirection="row"
+                alignItems="center"
+                gap="$1.5"
+                width="$3"
               >
                 <RefreshCw
                   size={16}
@@ -100,27 +105,32 @@ export const FarcasterCastCompact = ({
                 <Text color="$gray10" fontSize="$4">
                   {cast.engagement.recasts}
                 </Text>
-              </TouchableOpacity>
-            </View>
-            <View flexDirection="row" alignItems="center" gap="$1.5" width="$3">
-              <TouchableOpacity
-                onPress={
-                  cast.context
-                    ? cast.context.liked
-                      ? () =>
-                          dispatch(
-                            farcasterApi.endpoints.unlikeCast.initiate({
-                              hash: cast.hash,
-                            }),
-                          )
-                      : () =>
-                          dispatch(
-                            farcasterApi.endpoints.likeCast.initiate({
-                              hash: cast.hash,
-                            }),
-                          )
-                    : () => {}
-                }
+              </View>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={
+                cast.context
+                  ? cast.context.liked
+                    ? () =>
+                        dispatch(
+                          farcasterApi.endpoints.unlikeCast.initiate({
+                            hash: cast.hash,
+                          }),
+                        )
+                    : () =>
+                        dispatch(
+                          farcasterApi.endpoints.likeCast.initiate({
+                            hash: cast.hash,
+                          }),
+                        )
+                  : () => {}
+              }
+            >
+              <View
+                flexDirection="row"
+                alignItems="center"
+                gap="$1.5"
+                width="$3"
               >
                 <Heart
                   size={16}
@@ -134,8 +144,8 @@ export const FarcasterCastCompact = ({
                 <Text color="$gray10" fontSize="$4">
                   {cast.engagement.likes}
                 </Text>
-              </TouchableOpacity>
-            </View>
+              </View>
+            </TouchableOpacity>
           </XStack>
         )}
       </YStack>

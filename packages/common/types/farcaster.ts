@@ -63,10 +63,10 @@ export type BaseFarcasterCastWithContext = BaseFarcasterCast & {
 export type FarcasterCastResponse = {
   hash: string;
   timestamp: number;
-  user: FarcasterUserWithContext;
+  entity: GetEntityResponse;
   text: string;
   mentions: {
-    user: FarcasterUserWithContext;
+    entity: GetEntityResponse;
     position: string;
   }[];
   embedHashes: string[];
@@ -131,4 +131,9 @@ export type GetFarcasterUsersRequest = {
 
 export type GetFarcasterUsersResponse = {
   data: FarcasterUserWithContext[];
+};
+
+export type GetEntityResponse = {
+  id: string;
+  farcaster: FarcasterUserWithContext;
 };

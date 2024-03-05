@@ -8,7 +8,7 @@ import { FARCASTER_OG_FIDS } from "@nook/common/farcaster";
 import {
   BaseFarcasterCastWithContext,
   FarcasterCastResponse,
-  FarcasterUserWithContext,
+  GetEntityResponse,
   UrlContentResponse,
 } from "@nook/common/types";
 
@@ -87,16 +87,16 @@ export class FarcasterService {
         fids.add(fid);
       }
     }
-    const relatedUsers = await this.farcasterClient.fetchUsers(
-      Array.from(fids),
-      viewerFid,
-    );
+    const [relatedUsers, entityIds] = await Promise.all([
+      this.farcasterClient.fetchUsers(Array.from(fids), viewerFid),
+      this.nookClient.getEntityIdsForFids(Array.from(fids)),
+    ]);
     return relatedUsers.data.reduce(
-      (acc, user) => {
-        acc[user.fid] = user;
+      (acc, user, i) => {
+        acc[user.fid] = { id: entityIds[i], farcaster: user };
         return acc;
       },
-      {} as Record<string, FarcasterUserWithContext>,
+      {} as Record<string, GetEntityResponse>,
     );
   }
 
@@ -120,26 +120,26 @@ export class FarcasterService {
   formatCast(
     hash: string,
     castMap: Record<string, BaseFarcasterCastWithContext>,
-    userMap: Record<string, FarcasterUserWithContext>,
+    entityMap: Record<string, GetEntityResponse>,
     contentMap: Record<string, UrlContentResponse>,
   ): FarcasterCastResponse | undefined {
     const cast = castMap[hash];
     if (!cast) return;
     return {
       ...cast,
-      user: userMap[cast.fid],
+      entity: entityMap[cast.fid],
       mentions: cast.mentions.map((mention) => ({
-        user: userMap[mention.fid],
+        entity: entityMap[mention.fid],
         position: mention.position,
       })),
       embedCasts: cast.embedHashes
-        .map((hash) => this.formatCast(hash, castMap, userMap, contentMap))
+        .map((hash) => this.formatCast(hash, castMap, entityMap, contentMap))
         .filter(Boolean) as FarcasterCastResponse[],
       parent: cast.parentHash
-        ? this.formatCast(cast.parentHash, castMap, userMap, contentMap)
+        ? this.formatCast(cast.parentHash, castMap, entityMap, contentMap)
         : undefined,
       rootParent: cast.rootParentHash
-        ? this.formatCast(cast.rootParentHash, castMap, userMap, contentMap)
+        ? this.formatCast(cast.rootParentHash, castMap, entityMap, contentMap)
         : undefined,
       embeds: cast.embedUrls.map((url) => contentMap[url]),
     };

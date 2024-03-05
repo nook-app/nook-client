@@ -53,7 +53,7 @@ const UserHeader = () => {
       <XStack gap="$2">
         <TouchableOpacity
           onPress={() =>
-            navigation.navigate("EntityFollowers", {
+            navigation.navigate("UserFollowers", {
               userId,
               defaultTab: "Followers",
             })
@@ -66,7 +66,7 @@ const UserHeader = () => {
         </TouchableOpacity>
         <TouchableOpacity
           onPress={() =>
-            navigation.navigate("EntityFollowers", {
+            navigation.navigate("UserFollowers", {
               userId,
               defaultTab: "Followers",
             })
@@ -86,6 +86,7 @@ export const UserScreen = () => {
   const {
     params: { userId },
   } = useRoute<RouteProp<RootStackParamList, "User">>();
+  const user = useUser(userId);
   return (
     <Panels
       renderHeader={UserHeader}
@@ -96,7 +97,7 @@ export const UserScreen = () => {
           data: {
             type: NookPanelType.FarcasterFeed,
             args: {
-              feedId: `user:casts:${userId}`,
+              feedId: `user:casts:${user.fid}`,
             },
           },
         },
@@ -106,7 +107,7 @@ export const UserScreen = () => {
           data: {
             type: NookPanelType.FarcasterFeed,
             args: {
-              feedId: `user:replies:${userId}`,
+              feedId: `user:replies:${user.fid}`,
             },
           },
         },

@@ -1,7 +1,25 @@
 import { createEntityAdapter, createSlice } from "@reduxjs/toolkit";
 import { RootState } from "..";
 import { farcasterApi } from "../apis/farcasterApi";
-import { UrlContentResponse } from "@nook/common/types";
+import { FarcasterCastResponse, UrlContentResponse } from "@nook/common/types";
+
+const getContents = (cast: FarcasterCastResponse) => {
+  const content = [];
+  for (const embed of cast.embeds) {
+    content.push(embed);
+  }
+  if (cast.parent) {
+    for (const embed of cast.parent.embeds) {
+      content.push(embed);
+    }
+  }
+  for (const embed of cast.embedCasts) {
+    for (const e of embed.embeds) {
+      content.push(e);
+    }
+  }
+  return content;
+};
 
 const contentAdapter = createEntityAdapter({
   selectId: (content: UrlContentResponse) => content.uri,
@@ -15,41 +33,19 @@ const contentSlice = createSlice({
     builder.addMatcher(
       farcasterApi.endpoints.getCast.matchFulfilled,
       (state, action) => {
-        contentAdapter.addMany(state, action.payload.embeds);
-        contentAdapter.addMany(
-          state,
-          action.payload.embedCasts.flatMap((ec) => ec.embeds),
-        );
+        contentAdapter.addMany(state, getContents(action.payload));
       },
     );
     builder.addMatcher(
       farcasterApi.endpoints.getCastReplies.matchFulfilled,
       (state, action) => {
-        contentAdapter.addMany(
-          state,
-          action.payload.data.flatMap((c) => c.embeds),
-        );
-        contentAdapter.addMany(
-          state,
-          action.payload.data.flatMap((c) =>
-            c.embedCasts.flatMap((ec) => ec.embeds),
-          ),
-        );
+        contentAdapter.addMany(state, action.payload.data.flatMap(getContents));
       },
     );
     builder.addMatcher(
       farcasterApi.endpoints.getFeed.matchFulfilled,
       (state, action) => {
-        contentAdapter.addMany(
-          state,
-          action.payload.data.flatMap((c) => c.embeds),
-        );
-        contentAdapter.addMany(
-          state,
-          action.payload.data.flatMap((c) =>
-            c.embedCasts.flatMap((ec) => ec.embeds),
-          ),
-        );
+        contentAdapter.addMany(state, action.payload.data.flatMap(getContents));
       },
     );
   },

@@ -3,7 +3,8 @@ import { userApi } from "../apis/userApi";
 import { FarcasterUserWithContext, NookResponse } from "@nook/common/types";
 
 interface UserState {
-  user?: FarcasterUserWithContext;
+  id?: string;
+  farcaster?: FarcasterUserWithContext;
   signerEnabled?: boolean;
   nooks: NookResponse[];
   theme: string;
@@ -12,7 +13,8 @@ interface UserState {
 }
 
 const initialState: UserState = {
-  user: undefined,
+  id: undefined,
+  farcaster: undefined,
   nooks: [],
   activeShelves: {},
   theme: "gray",
@@ -35,7 +37,6 @@ export const userSlice = createSlice({
       state.activeShelves[action.payload.nookId] = action.payload.shelfId;
     },
     setSignerEnabled: (state, action: PayloadAction<boolean>) => {
-      if (!state.user) return;
       state.signerEnabled = action.payload;
     },
   },
@@ -43,7 +44,8 @@ export const userSlice = createSlice({
     builder.addMatcher(
       userApi.endpoints.getUser.matchFulfilled,
       (state, action) => {
-        state.user = action.payload.user;
+        state.id = action.payload.id;
+        state.farcaster = action.payload.farcaster;
         state.nooks = action.payload.nooks;
         state.signerEnabled = action.payload.signerEnabled;
         state.activeNook = "home";

@@ -54,10 +54,10 @@ export const ThemeSelector = () => {
 
 export const ProfileScreen = () => {
   const { signOut } = useAuth();
-  const user = useAppSelector((state) => state.auth.user);
+  const userId = useAppSelector((state) => state.auth.id);
   const insets = useSafeAreaInsets();
 
-  if (!user) return null;
+  if (!userId) return null;
 
   return (
     <YStack
@@ -81,8 +81,8 @@ export const ProfileScreen = () => {
       >
         <YStack gap="$4">
           <XStack gap="$2" alignItems="center">
-            <UserAvatar userId={user.fid} size="$5" />
-            <UserDisplay userId={user.fid} orientation="vertical" />
+            <UserAvatar userId={userId} size="$5" />
+            <UserDisplay userId={userId} orientation="vertical" />
           </XStack>
           <ThemeSelector />
         </YStack>

@@ -25,7 +25,7 @@ export const CreatePostModal = () => {
   const signerEnabled = useAppSelector(
     (state) => state.auth.signerEnabled || false,
   );
-  const user = useAppSelector((state) => state.auth.user);
+  const userId = useAppSelector((state) => state.auth.id);
   const inputRef = useRef<TextInput>(null);
   const [channel, setChannel] = useState<Channel>();
   const [message, setMessage] = useState("");
@@ -130,7 +130,7 @@ export const CreatePostModal = () => {
                   justifyContent="center"
                   alignItems="center"
                 >
-                  {user && <UserAvatar userId={user.fid} size="$4" />}
+                  {userId && <UserAvatar userId={userId} size="$4" />}
                 </View>
                 <Button
                   onPress={() => setSelectChannelModalOpen(true)}

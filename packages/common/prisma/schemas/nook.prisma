@@ -8,16 +8,53 @@ datasource db {
     url      = env("NOOK_DATABASE_URL")
 }
 
-model User {
-    id            String   @id @default(uuid())
-    fid           String
-    signedUpAt    DateTime
-    loggedInAt    DateTime
-    signerEnabled Boolean
-    refreshToken  String
+model Entity {
+    id String @id @default(uuid())
 
     createdAt DateTime @default(now())
     updatedAt DateTime @default(now()) @updatedAt
+
+    user      User?
+    farcaster EntityFarcaster?
+    addresses EntityAddress[]
+}
+
+model EntityFarcaster {
+    fid           String  @id
+    entityId      String  @unique
+    signerEnabled Boolean
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @default(now()) @updatedAt
+
+    entity Entity @relation(fields: [entityId], references: [id])
+}
+
+model EntityAddress {
+    entityId   String
+    protocol   String
+    address    String
+    isContract Boolean
+    source     String
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @default(now()) @updatedAt
+
+    entity Entity @relation(fields: [entityId], references: [id])
+
+    @@id([protocol, address])
+}
+
+model User {
+    id           String   @id
+    signedUpAt   DateTime
+    loggedInAt   DateTime
+    refreshToken String
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @default(now()) @updatedAt
+
+    entity Entity @relation(fields: [id], references: [id])
 
     signers      Signer[]
     createdNooks Nook[]

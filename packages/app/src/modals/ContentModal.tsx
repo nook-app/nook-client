@@ -9,6 +9,8 @@ export const ContentModal = () => {
   const { close, state } = useModal(ModalName.Content);
   const content = useContent(state?.uri || "");
 
+  console.log(content);
+
   return (
     <BottomSheetModal onClose={close} fullScreen blurredBackground>
       <View height="100%" justifyContent="center">

@@ -2,25 +2,31 @@ import { createEntityAdapter, createSlice } from "@reduxjs/toolkit";
 import { RootState } from "..";
 import { userApi } from "../apis/userApi";
 import { farcasterApi } from "../apis/farcasterApi";
-import {
-  FarcasterCastResponse,
-  FarcasterUserWithContext,
-} from "@nook/common/types";
+import { FarcasterCastResponse, GetEntityResponse } from "@nook/common/types";
 
 const getEntities = (cast: FarcasterCastResponse) => {
   const entities = [];
-  entities.push(cast.user);
+  entities.push(cast.entity);
   for (const mention of cast.mentions) {
-    entities.push(mention.user);
+    entities.push(mention.entity);
   }
   if (cast.parent) {
-    entities.push(cast.parent.user);
+    entities.push(cast.parent.entity);
+    for (const mention of cast.parent.mentions) {
+      entities.push(mention.entity);
+    }
+  }
+  for (const embed of cast.embedCasts) {
+    entities.push(embed.entity);
+    for (const mention of embed.mentions) {
+      entities.push(mention.entity);
+    }
   }
   return entities;
 };
 
 const userAdapter = createEntityAdapter({
-  selectId: (entity: FarcasterUserWithContext) => entity.fid,
+  selectId: (user: GetEntityResponse) => user.id,
 });
 
 const userSlice = createSlice({
@@ -55,15 +61,18 @@ const userSlice = createSlice({
     builder.addMatcher(
       userApi.endpoints.getUser.matchFulfilled,
       (state, action) => {
-        userAdapter.addOne(state, action.payload.user);
+        userAdapter.addOne(state, {
+          id: action.payload.id,
+          farcaster: action.payload.farcaster,
+        });
       },
     );
     builder.addMatcher(
       farcasterApi.endpoints.followUser.matchFulfilled,
       (state, action) => {
         const user = state.entities[action.payload.id];
-        if (user.context) {
-          user.context.following = true;
+        if (user.farcaster.context) {
+          user.farcaster.context.following = true;
         }
       },
     );
@@ -71,8 +80,8 @@ const userSlice = createSlice({
       farcasterApi.endpoints.unfollowUser.matchFulfilled,
       (state, action) => {
         const user = state.entities[action.payload.id];
-        if (user.context) {
-          user.context.following = false;
+        if (user.farcaster.context) {
+          user.farcaster.context.following = false;
         }
       },
     );

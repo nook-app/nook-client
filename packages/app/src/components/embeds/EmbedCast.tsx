@@ -31,8 +31,8 @@ export const EmbedCast = ({
         gap="$2"
       >
         <XStack gap="$1" alignItems="center">
-          <UserAvatar userId={cast.user.fid} size="$1" />
-          <UserDisplay userId={cast.user.fid} />
+          <UserAvatar userId={cast.entity.id} size="$1" />
+          <UserDisplay userId={cast.entity.id} />
         </XStack>
         <FarcasterCastText cast={cast} />
         {cast.embeds.map((content) => (

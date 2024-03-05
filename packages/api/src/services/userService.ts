@@ -41,13 +41,19 @@ export class UserService {
     const fid = "20716";
     // const fid = verifyResult.fid.toString();
 
+    let entityByFid = await this.nookClient.getEntityByFid(fid);
+    if (!entityByFid) {
+      entityByFid = await this.nookClient.createEntityByFid(fid);
+    }
+
     const refreshToken = this.jwt.sign({
+      id: entityByFid.id,
       fid,
     });
 
-    let user = await this.nookClient.getUserByFid(fid);
+    let user = (await this.nookClient.getEntity(entityByFid.id))?.user;
     if (!user) {
-      user = await this.nookClient.createUser(fid, refreshToken);
+      user = await this.nookClient.createUser(entityByFid.id, refreshToken);
     }
 
     const expiresIn = 60 * 60 * 24 * 7;
@@ -69,12 +75,12 @@ export class UserService {
 
   async getToken(refreshToken: string): Promise<TokenResponse | undefined> {
     const decoded = this.jwt.verify(refreshToken) as { id: string };
-    const user = await this.nookClient.getUserByFid(decoded.id);
-    if (!user) {
+    const entity = await this.nookClient.getEntity(decoded.id);
+    if (!entity?.user) {
       return;
     }
 
-    if (user.refreshToken !== refreshToken) {
+    if (entity.user.refreshToken !== refreshToken) {
       throw new Error("Invalid refresh token");
     }
 
@@ -82,7 +88,7 @@ export class UserService {
     const expiresAt = Math.floor(new Date().getTime() / 1000) + expiresIn;
     const token = this.jwt.sign(
       {
-        id: user.id,
+        id: entity.user.id,
       },
       { expiresIn },
     );
@@ -95,14 +101,15 @@ export class UserService {
   }
 
   async getUser(id: string): Promise<GetUserResponse | undefined> {
-    const user = await this.nookClient.getUser(id);
-    if (!user) {
+    const entity = await this.nookClient.getEntity(id);
+    if (!entity?.farcaster) {
       return;
     }
 
     return {
-      ...user,
-      user: await this.farcasterClient.fetchUser(user.fid),
+      id: entity.id,
+      signerEnabled: entity.farcaster.signerEnabled,
+      farcaster: await this.farcasterClient.fetchUser(entity.farcaster.fid),
       nooks: await this.nookClient.getNooksByUser(id),
     };
   }
