@@ -1,22 +1,11 @@
 import fp from "fastify-plugin";
-import {
-  ContentClient,
-  EntityClient,
-  FarcasterClient,
-  FeedClient,
-  NookClient,
-} from "@nook/common/clients";
+import { ContentClient, NookClient } from "@nook/common/clients";
+import { HubRpcClient, getSSLHubRpcClient } from "@farcaster/hub-nodejs";
 
 declare module "fastify" {
   interface FastifyInstance {
-    entity: {
-      client: EntityClient;
-    };
-    farcaster: {
-      client: FarcasterClient;
-    };
-    feed: {
-      client: FeedClient;
+    hub: {
+      client: HubRpcClient;
     };
     nook: {
       client: NookClient;
@@ -27,30 +16,11 @@ declare module "fastify" {
   }
 }
 
-export const entityPlugin = fp(async (fastify, opts) => {
-  const client = new EntityClient();
-  await client.connect();
-  fastify.decorate("entity", { client });
+export const hubPlugin = fp(async (fastify, opts) => {
+  const client = getSSLHubRpcClient(process.env.HUB_RPC_ENDPOINT as string);
+  fastify.decorate("hub", { client });
   fastify.addHook("onClose", async (fastify) => {
-    await fastify.entity.client.close();
-  });
-});
-
-export const farcasterPlugin = fp(async (fastify, opts) => {
-  const client = new FarcasterClient();
-  await client.connect();
-  fastify.decorate("farcaster", { client });
-  fastify.addHook("onClose", async (fastify) => {
-    await fastify.farcaster.client.close();
-  });
-});
-
-export const feedPlugin = fp(async (fastify, opts) => {
-  const client = new FeedClient();
-  await client.connect();
-  fastify.decorate("feed", { client });
-  fastify.addHook("onClose", async (fastify) => {
-    await fastify.feed.client.close();
+    fastify.hub.client.close();
   });
 });
 

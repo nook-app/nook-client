@@ -6,56 +6,19 @@ export const farcasterRoutes = async (fastify: FastifyInstance) => {
   fastify.register(async (fastify: FastifyInstance) => {
     const farcasterService = new FarcasterService(fastify);
 
-    fastify.get("/farcaster/signer", async (request, reply) => {
-      const { id } = (await request.jwtDecode()) as { id: string };
-      try {
-        const data = await farcasterService.getSigner(id);
-        return reply.send(data);
-      } catch (e) {
-        console.error("/farcaster/signer", e);
-        return reply.code(500).send({ message: (e as Error).message });
-      }
-    });
-
-    fastify.get<{ Querystring: { token: string } }>(
-      "/farcaster/signer/validate",
-      async (request, reply) => {
-        await request.jwtVerify();
-        try {
-          const data = await farcasterService.validateSigner(
-            request.query.token,
-          );
-          return reply.send(data);
-        } catch (e) {
-          console.error("/farcaster/signer/validate", e);
-          return reply.code(500).send({ message: (e as Error).message });
-        }
-      },
-    );
-
-    fastify.post<{ Body: { message: string; channel?: string } }>(
-      "/farcaster/casts",
-      async (request, reply) => {
-        const { id } = (await request.jwtDecode()) as { id: string };
-        try {
-          const hash = await farcasterService.createCast(
-            id,
-            request.body.message,
-            request.body.channel,
-          );
-          return reply.send({ hash });
-        } catch (e) {
-          console.error("/farcaster/post", e);
-          return reply.code(500).send({ message: (e as Error).message });
-        }
-      },
-    );
-
     fastify.get<{ Params: { hash: string } }>(
       "/farcaster/casts/:hash",
       async (request, reply) => {
+        let viewerFid: string | undefined;
+        if (request.headers.authorization) {
+          const decoded = (await request.jwtDecode()) as { fid: string };
+          viewerFid = decoded.fid;
+        }
         try {
-          const data = await farcasterService.getCast(request.params.hash);
+          const data = await farcasterService.getCast(
+            request.params.hash,
+            viewerFid,
+          );
           return reply.send(data);
         } catch (e) {
           console.error("/farcaster/cast/:hash", e);
@@ -67,9 +30,15 @@ export const farcasterRoutes = async (fastify: FastifyInstance) => {
     fastify.get<{ Params: { hash: string } }>(
       "/farcaster/casts/:hash/replies",
       async (request, reply) => {
+        let viewerFid: string | undefined;
+        if (request.headers.authorization) {
+          const decoded = (await request.jwtDecode()) as { fid: string };
+          viewerFid = decoded.fid;
+        }
         try {
           const data = await farcasterService.getCastReplies(
             request.params.hash,
+            viewerFid,
           );
           return reply.send({ data });
         } catch (e) {
@@ -82,10 +51,16 @@ export const farcasterRoutes = async (fastify: FastifyInstance) => {
     fastify.post<{ Body: FarcasterFeedRequest }>(
       "/farcaster/feed",
       async (request, reply) => {
+        let viewerFid: string | undefined;
+        if (request.headers.authorization) {
+          const decoded = (await request.jwtDecode()) as { fid: string };
+          viewerFid = decoded.fid;
+        }
         try {
           const data = await farcasterService.getFeed(
             request.body.feedId,
             request.body.cursor,
+            viewerFid,
           );
           return reply.send(data);
         } catch (e) {

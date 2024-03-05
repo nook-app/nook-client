@@ -3,6 +3,7 @@ import { RedisClient } from "@nook/common/redis";
 import {
   BaseFarcasterCast,
   BaseFarcasterCastWithContext,
+  FarcasterCastContext,
   FarcasterCastEngagement,
   GetFarcasterCastsByFidsRequest,
   GetFarcasterCastsByFollowingRequest,
@@ -25,41 +26,50 @@ export class CastService {
     this.redis = redis;
   }
 
-  async getCasts(hashes: string[]): Promise<BaseFarcasterCastWithContext[]> {
-    const casts = await Promise.all(hashes.map((hash) => this.getCast(hash)));
+  async getCasts(
+    hashes: string[],
+    viewerFid?: string,
+  ): Promise<BaseFarcasterCastWithContext[]> {
+    const casts = await Promise.all(
+      hashes.map((hash) => this.getCast(hash, undefined, viewerFid)),
+    );
     return casts.filter(Boolean) as BaseFarcasterCastWithContext[];
   }
 
   async getCastsByData(
     casts: FarcasterCast[],
+    viewerFid?: string,
   ): Promise<BaseFarcasterCastWithContext[]> {
     const responses = await Promise.all(
-      casts.map((cast) => this.getCast(cast.hash, cast)),
+      casts.map((cast) => this.getCast(cast.hash, cast, viewerFid)),
     );
     return responses.filter(Boolean) as BaseFarcasterCastWithContext[];
   }
 
-  async getCastReplies(hash: string) {
+  async getCastReplies(hash: string, viewerFid?: string) {
     const replies = await this.client.farcasterCast.findMany({
-      where: { parentHash: hash },
+      where: { parentHash: hash, deletedAt: null },
     });
 
-    return await this.getCastsByData(replies);
+    return await this.getCastsByData(replies, viewerFid);
   }
 
   async getCast(
     hash: string,
     data?: FarcasterCast,
+    viewerFid?: string,
   ): Promise<BaseFarcasterCastWithContext | undefined> {
-    const [cast, engagement] = await Promise.all([
+    const [cast, engagement, context] = await Promise.all([
       this.getCastData(hash, data),
       this.getCastEngagement(hash),
+      this.getCastContext(hash, viewerFid),
     ]);
     if (!cast) return;
 
     return {
       ...cast,
       engagement,
+      context,
     };
   }
 
@@ -106,6 +116,67 @@ export class CastService {
       replies,
       quotes,
     };
+  }
+
+  async getCastContext(
+    hash: string,
+    viewerFid?: string,
+  ): Promise<FarcasterCastContext | undefined> {
+    if (!viewerFid) return;
+
+    const [liked, recasted] = await Promise.all([
+      this.getLikedContext(hash, viewerFid),
+      this.getRecastedContext(hash, viewerFid),
+    ]);
+
+    return {
+      liked,
+      recasted,
+    };
+  }
+
+  async getLikedContext(hash: string, viewerFid: string): Promise<boolean> {
+    const key = `${this.CAST_CACHE_PREFIX}:${hash}:likes:${viewerFid}`;
+    const cached = await this.redis.exists(key);
+    if (cached) return true;
+
+    const reaction = await this.client.farcasterCastReaction.findFirst({
+      where: {
+        reactionType: 1,
+        fid: BigInt(viewerFid),
+        targetHash: hash,
+        deletedAt: null,
+      },
+    });
+
+    if (reaction) {
+      await this.redis.set(key, "1");
+      return true;
+    }
+
+    return false;
+  }
+
+  async getRecastedContext(hash: string, viewerFid: string): Promise<boolean> {
+    const key = `${this.CAST_CACHE_PREFIX}:${hash}:recasts:${viewerFid}`;
+    const cached = await this.redis.exists(key);
+    if (cached) return true;
+
+    const reaction = await this.client.farcasterCastReaction.findFirst({
+      where: {
+        reactionType: 2,
+        fid: BigInt(viewerFid),
+        targetHash: hash,
+        deletedAt: null,
+      },
+    });
+
+    if (reaction) {
+      await this.redis.set(key, "1");
+      return true;
+    }
+
+    return false;
   }
 
   async fetchCast(hash: string, data?: FarcasterCast) {
@@ -188,7 +259,10 @@ export class CastService {
     );
   }
 
-  async getCastsByParentUrl(request: GetFarcasterCastsByParentUrlRequest) {
+  async getCastsByParentUrl(
+    request: GetFarcasterCastsByParentUrlRequest,
+    viewerFid?: string,
+  ) {
     const minTimestamp = request.minCursor
       ? new Date(request.minCursor)
       : undefined;
@@ -204,6 +278,7 @@ export class CastService {
           lt: maxTimestamp,
           gt: minTimestamp,
         },
+        deletedAt: null,
       },
       orderBy: {
         timestamp: "desc",
@@ -211,10 +286,13 @@ export class CastService {
       take: request.limit || MAX_PAGE_SIZE,
     });
 
-    return this.getCastsByData(casts);
+    return await this.getCastsByData(casts, viewerFid);
   }
 
-  async getCastsByFids(request: GetFarcasterCastsByFidsRequest) {
+  async getCastsByFids(
+    request: GetFarcasterCastsByFidsRequest,
+    viewerFid?: string,
+  ) {
     const minTimestamp = request.minCursor
       ? new Date(request.minCursor)
       : undefined;
@@ -233,6 +311,7 @@ export class CastService {
           gt: minTimestamp,
         },
         parentHash: request.replies ? { not: null } : null,
+        deletedAt: null,
       },
       orderBy: {
         timestamp: "desc",
@@ -240,10 +319,13 @@ export class CastService {
       take: request.limit || MAX_PAGE_SIZE,
     });
 
-    return this.getCastsByData(casts);
+    return await this.getCastsByData(casts, viewerFid);
   }
 
-  async getCastsByFollowing(request: GetFarcasterCastsByFollowingRequest) {
+  async getCastsByFollowing(
+    request: GetFarcasterCastsByFollowingRequest,
+    viewerFid?: string,
+  ) {
     const following = await this.client.farcasterLink.findMany({
       where: {
         linkType: "follow",
@@ -278,7 +360,7 @@ export class CastService {
       take: request.limit || MAX_PAGE_SIZE,
     });
 
-    return await this.getCastsByData(casts);
+    return await this.getCastsByData(casts, viewerFid);
   }
 
   async incrementEngagement(hash: string, type: CastEngagementType) {

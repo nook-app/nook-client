@@ -86,6 +86,7 @@ export function NookNavigator() {
         component={NookScreen}
         initialParams={{}}
         options={{
+          title: "Nook",
           headerLeft: () => <DrawerToggleButton />,
           headerStyle: {
             backgroundColor: theme.$background.val,
@@ -100,6 +101,7 @@ export function NookNavigator() {
         name="FarcasterChannel"
         component={ChannelScreen}
         options={{
+          title: "Channel",
           headerBackTitleVisible: false,
           headerTintColor: "white",
           headerStyle: {
@@ -114,6 +116,7 @@ export function NookNavigator() {
         name="Entity"
         component={EntityScreen}
         options={{
+          title: "Profile",
           headerBackTitleVisible: false,
           headerTintColor: "white",
           headerStyle: {
@@ -128,6 +131,7 @@ export function NookNavigator() {
         name="EntityFollowers"
         component={EntityFollowersScreen}
         options={{
+          title: "Followers",
           headerBackTitleVisible: false,
           headerTintColor: "white",
           headerStyle: {
@@ -141,6 +145,7 @@ export function NookNavigator() {
         name="FarcasterCast"
         component={FarcasterCastScreen}
         options={{
+          title: "Post",
           headerBackTitleVisible: false,
           headerTintColor: "white",
           headerStyle: {

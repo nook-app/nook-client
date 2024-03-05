@@ -3,14 +3,15 @@ import { SignerPublicData } from "../../types";
 import {
   CastId,
   FarcasterNetwork,
+  HubRpcClient,
   NobleEd25519Signer,
   makeCastAdd,
+  Message as HubMessage,
 } from "@farcaster/hub-nodejs";
 import {
   ContentClient,
   EntityClient,
   FarcasterClient,
-  FeedClient,
   NookClient,
 } from "@nook/common/clients";
 import { FARCASTER_OG_FIDS } from "@nook/common/farcaster";
@@ -25,130 +26,33 @@ export const MAX_FEED_ITEMS = 25;
 
 export class FarcasterService {
   private nookClient: NookClient;
-  private feedClient: FeedClient;
-  private farcasterClient: FarcasterClient;
   private entityClient: EntityClient;
   private contentClient: ContentClient;
+  private farcasterClient: FarcasterClient;
 
   constructor(fastify: FastifyInstance) {
     this.nookClient = fastify.nook.client;
-    this.farcasterClient = fastify.farcaster.client;
-    this.feedClient = fastify.feed.client;
-    this.entityClient = fastify.entity.client;
     this.contentClient = fastify.content.client;
+    this.farcasterClient = new FarcasterClient();
+    this.entityClient = new EntityClient();
   }
 
-  async getSigner(userId: string): Promise<SignerPublicData> {
-    let signer = await this.nookClient.getSigner(userId);
-    if (!signer) {
-      signer = await this.nookClient.createPendingSigner(userId);
-    }
-
-    return {
-      publicKey: signer.publicKey,
-      token: signer.token,
-      deeplinkUrl: signer.deeplinkUrl,
-      state: signer.state,
-    };
-  }
-
-  async validateSigner(token: string) {
-    return this.nookClient.validateSigner(token);
-  }
-
-  async createCast(
-    userId: string,
-    message: string,
-    channel?: string,
-    parent?: string,
-  ) {
-    const signer = await this.nookClient.getSigner(userId, true);
-    if (!signer?.fid) {
-      throw new Error("Signer not found");
-    }
-
-    const parsedMentions = [];
-    const mentionRegex = /@(\w+)(?=\s|$|\W(?!\w))/g;
-    let match = mentionRegex.exec(message);
-    while (match !== null) {
-      parsedMentions.push({ name: match[1], position: match.index });
-      match = mentionRegex.exec(message);
-    }
-
-    const mentions = (
-      await Promise.all(
-        parsedMentions.map(async ({ name, position }) => {
-          const fid = await this.farcasterClient.getUsernameProof(name);
-          return {
-            name,
-            mention: fid,
-            position,
-          };
-        }),
-      )
-    ).filter(Boolean) as {
-      name: string;
-      mention: number;
-      position: number;
-    }[];
-
-    const namesToReplace = mentions.map((mention) => mention.name);
-    const text = message.replace(
-      new RegExp(`@(${namesToReplace.join("|")})\\b`, "g"),
-      "",
-    );
-
-    let parentCastId: CastId | undefined;
-    if (parent?.startsWith("farcaster://cast/")) {
-      const [fid, hash] = parent.replace("farcaster://cast/", "").split("/");
-      parentCastId = {
-        fid: parseInt(fid, 10),
-        hash: new Uint8Array(Buffer.from(hash.substring(2), "hex")),
-      };
-    }
-
-    const castAddMessage = await makeCastAdd(
-      {
-        text,
-        mentions: mentions.map(({ mention }) => mention),
-        mentionsPositions: mentions.map(({ position }) => position),
-        embeds: [],
-        embedsDeprecated: [],
-        parentCastId,
-        parentUrl: channel,
-      },
-      {
-        fid: parseInt(signer.fid, 10),
-        network: FarcasterNetwork.MAINNET,
-      },
-      new NobleEd25519Signer(
-        Buffer.from(signer.privateKey.substring(2), "hex"),
-      ),
-    );
-
-    if (castAddMessage.isErr()) {
-      throw new Error(castAddMessage.error.message);
-    }
-
-    const result = await this.farcasterClient.submitMessage(
-      castAddMessage.value,
-    );
-
-    return result.hash;
-  }
-
-  async getCast(hash: string): Promise<FarcasterCastResponse> {
-    const cast = await this.farcasterClient.fetchCast(hash);
-    const casts = await this.getCasts([cast]);
+  async getCast(
+    hash: string,
+    viewerFid?: string,
+  ): Promise<FarcasterCastResponse> {
+    const cast = await this.farcasterClient.fetchCast(hash, viewerFid);
+    const casts = await this.getCasts([cast], viewerFid);
     return casts[0];
   }
 
   async getCasts(
     casts: BaseFarcasterCastWithContext[],
+    viewerFid?: string,
   ): Promise<FarcasterCastResponse[]> {
-    const castMap = await this.getCastMap(casts);
+    const castMap = await this.getCastMap(casts, viewerFid);
     const [entityMap, contentMap] = await Promise.all([
-      this.getEntityMap(Object.values(castMap)),
+      this.getEntityMap(Object.values(castMap), viewerFid),
       this.getContentMap(Object.values(castMap)),
     ]);
 
@@ -157,7 +61,7 @@ export class FarcasterService {
       .filter(Boolean) as FarcasterCastResponse[];
   }
 
-  async getCastMap(casts: BaseFarcasterCastWithContext[]) {
+  async getCastMap(casts: BaseFarcasterCastWithContext[], viewerFid?: string) {
     const castMap = casts.reduce(
       (acc, cast) => {
         acc[cast.hash] = cast;
@@ -179,6 +83,7 @@ export class FarcasterService {
     }
     const relatedCasts = await this.farcasterClient.fetchCasts(
       Array.from(relatedCastHashes),
+      viewerFid,
     );
     for (const cast of relatedCasts.data) {
       castMap[cast.hash] = cast;
@@ -186,7 +91,10 @@ export class FarcasterService {
     return castMap;
   }
 
-  async getEntityMap(casts: BaseFarcasterCastWithContext[]) {
+  async getEntityMap(
+    casts: BaseFarcasterCastWithContext[],
+    viewerFid?: string,
+  ) {
     const fids = new Set<string>();
     for (const cast of casts) {
       fids.add(cast.fid);
@@ -194,10 +102,11 @@ export class FarcasterService {
         fids.add(fid);
       }
     }
-    const relatedEntities = await this.entityClient.getEntitiesForFids(
+    const relatedEntities = await this.entityClient.fetchEntitiesByFids(
       Array.from(fids),
+      viewerFid,
     );
-    return relatedEntities.reduce(
+    return relatedEntities.data.reduce(
       (acc, entity) => {
         acc[entity.farcaster.fid] = entity;
         return acc;
@@ -251,32 +160,38 @@ export class FarcasterService {
     };
   }
 
-  async getCastReplies(hash: string) {
-    const replies = await this.farcasterClient.fetchCastReplies(hash);
-    const casts = await this.getCasts(replies.data);
+  async getCastReplies(hash: string, viewerFid?: string) {
+    const replies = await this.farcasterClient.fetchCastReplies(
+      hash,
+      viewerFid,
+    );
+    const casts = await this.getCasts(replies.data, viewerFid);
     return casts;
   }
 
-  async getFeed(feedId: string, cursor?: number) {
-    const feed = await this.feedClient.getFeed(feedId, cursor);
+  async getFeed(feedId: string, cursor?: number, viewerFid?: string) {
+    const feed = await this.nookClient.getFeed(feedId, cursor);
     const startCursor = feed[0]?.score;
     const endCursor = feed[feed.length - 1]?.score;
 
     const promises = [];
     promises.push(
       this.farcasterClient
-        .fetchCasts(feed.map((item) => item.value))
-        .then((response) => this.getCasts(response.data)),
+        .fetchCasts(
+          feed.map((item) => item.value),
+          viewerFid,
+        )
+        .then((response) => this.getCasts(response.data, viewerFid)),
     );
 
     if (!cursor) {
-      promises.push(this.getNewFeedItems(feedId, startCursor));
+      promises.push(this.getNewFeedItems(feedId, startCursor, viewerFid));
     }
 
     if (feed.length < 25) {
       promises.push(
         this.backfillFeed(feedId, cursor || endCursor, 25 - feed.length).then(
-          (response) => this.getCasts(response),
+          (response) => this.getCasts(response, viewerFid),
         ),
       );
     }
@@ -294,19 +209,22 @@ export class FarcasterService {
     };
   }
 
-  async getNewFeedItems(feedId: string, cursor?: number) {
+  async getNewFeedItems(feedId: string, cursor?: number, viewerFid?: string) {
     const [type, subtype, id] = feedId.split(":");
     if (type !== "user" || subtype !== "following") {
       return [];
     }
 
-    const response = await this.farcasterClient.fetchCastsFromFollowing({
-      fid: id,
-      minCursor: cursor,
-      limit: MAX_FEED_ITEMS,
-    });
+    const response = await this.farcasterClient.fetchCastsFromFollowing(
+      {
+        fid: id,
+        minCursor: cursor,
+        limit: MAX_FEED_ITEMS,
+      },
+      viewerFid,
+    );
 
-    await this.feedClient.batchAddToFeed(
+    await this.nookClient.batchAddToFeed(
       feedId,
       response.data.map(({ hash, timestamp }) => ({
         value: hash,
@@ -314,50 +232,67 @@ export class FarcasterService {
       })),
     );
 
-    return await this.getCasts(response.data);
+    return await this.getCasts(response.data, viewerFid);
   }
 
-  async backfillFeed(feedId: string, cursor?: number, take?: number) {
+  async backfillFeed(
+    feedId: string,
+    cursor?: number,
+    take?: number,
+    viewerFid?: string,
+  ) {
     const [type, subtype, id] = feedId.split(":");
 
     let rawCasts: BaseFarcasterCastWithContext[] = [];
     if (type === "channel") {
-      const response = await this.farcasterClient.fetchCastsByParentUrl({
-        parentUrl: id,
-        maxCursor: cursor,
-        limit: take,
-      });
+      const response = await this.farcasterClient.fetchCastsByParentUrl(
+        {
+          parentUrl: id,
+          maxCursor: cursor,
+          limit: take,
+        },
+        viewerFid,
+      );
       rawCasts = response.data;
     } else if (type === "user") {
       if (subtype === "following") {
-        const response = await this.farcasterClient.fetchCastsFromFollowing({
-          fid: id,
-          maxCursor: cursor,
-          limit: take,
-        });
+        const response = await this.farcasterClient.fetchCastsFromFollowing(
+          {
+            fid: id,
+            maxCursor: cursor,
+            limit: take,
+          },
+          viewerFid,
+        );
         rawCasts = response.data;
       } else {
-        const response = await this.farcasterClient.fetchCastsFromFids({
-          fids: [id],
-          replies: subtype === "replies",
-          maxCursor: cursor,
-          limit: take,
-        });
+        const response = await this.farcasterClient.fetchCastsFromFids(
+          {
+            fids: [id],
+            replies: subtype === "replies",
+            maxCursor: cursor,
+            limit: take,
+          },
+          viewerFid,
+        );
         rawCasts = response.data;
       }
     } else if (type === "custom") {
       if (subtype === "farcaster-og") {
-        const response = await this.farcasterClient.fetchCastsFromFids({
-          fids: FARCASTER_OG_FIDS,
-          replies: false,
-          maxCursor: cursor,
-          limit: take,
-        });
+        const response = await this.farcasterClient.fetchCastsFromFids(
+          {
+            fids: FARCASTER_OG_FIDS,
+            replies: false,
+            maxCursor: cursor,
+            limit: take,
+          },
+          viewerFid,
+        );
         rawCasts = response.data;
       }
     }
 
-    await this.feedClient.batchAddToFeed(
+    await this.nookClient.batchAddToFeed(
       feedId,
       rawCasts.map(({ hash, timestamp }) => ({
         value: hash,

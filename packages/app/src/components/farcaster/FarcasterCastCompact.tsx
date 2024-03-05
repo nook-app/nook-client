@@ -58,7 +58,7 @@ export const FarcasterCastCompact = ({
           </YStack>
         )}
         {cast.engagement && (
-          <XStack justifyContent="space-between" width="$15" paddingTop="$1">
+          <XStack justifyContent="space-between" width="$15" paddingTop="$2">
             <View flexDirection="row" alignItems="center" gap="$1.5" width="$3">
               <MessageSquare size={16} color="$gray10" />
               <Text color="$gray10" fontSize="$4">

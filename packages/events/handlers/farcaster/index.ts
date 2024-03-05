@@ -1,7 +1,7 @@
 import {
   ContentClient,
   FarcasterClient,
-  FeedClient,
+  NookClient,
 } from "@nook/common/clients";
 import { FARCASTER_OG_FIDS } from "@nook/common/farcaster";
 import {
@@ -13,12 +13,12 @@ import { EntityEvent, FarcasterEventType } from "@nook/common/types";
 
 export class FarcasterProcessor {
   private farcasterClient: FarcasterClient;
-  private feedClient: FeedClient;
+  private nookClient: NookClient;
   private contentClient: ContentClient;
 
   constructor() {
     this.farcasterClient = new FarcasterClient();
-    this.feedClient = new FeedClient();
+    this.nookClient = new NookClient();
     this.contentClient = new ContentClient();
   }
 
@@ -79,7 +79,7 @@ export class FarcasterProcessor {
 
     if (data.parentUrl) {
       promises.push(
-        this.feedClient.addToFeed(
+        this.nookClient.addToFeed(
           `channel:${data.parentUrl}`,
           data.hash,
           cast.timestamp,
@@ -89,7 +89,7 @@ export class FarcasterProcessor {
 
     if (data.parentHash) {
       promises.push(
-        this.feedClient.addToFeed(
+        this.nookClient.addToFeed(
           `user:replies:${data.fid.toString()}`,
           data.hash,
           cast.timestamp,
@@ -97,7 +97,7 @@ export class FarcasterProcessor {
       );
     } else {
       promises.push(
-        this.feedClient.addToFeed(
+        this.nookClient.addToFeed(
           `user:casts:${data.fid.toString()}`,
           data.hash,
           cast.timestamp,
@@ -107,7 +107,7 @@ export class FarcasterProcessor {
 
     if (FARCASTER_OG_FIDS.includes(data.fid.toString()) && data.parentHash) {
       promises.push(
-        this.feedClient.addToFeed(
+        this.nookClient.addToFeed(
           "custom:farcaster-og",
           data.hash,
           cast.timestamp,
@@ -127,7 +127,7 @@ export class FarcasterProcessor {
 
     if (data.parentUrl) {
       promises.push(
-        this.feedClient.removeFromFeed(
+        this.nookClient.removeFromFeed(
           `channel:casts:${data.parentUrl}`,
           data.hash,
         ),
@@ -136,14 +136,14 @@ export class FarcasterProcessor {
 
     if (data.parentHash) {
       promises.push(
-        this.feedClient.removeFromFeed(
+        this.nookClient.removeFromFeed(
           `user:replies:${data.fid.toString()}`,
           data.hash,
         ),
       );
     } else {
       promises.push(
-        this.feedClient.removeFromFeed(
+        this.nookClient.removeFromFeed(
           `user:casts:${data.fid.toString()}`,
           data.hash,
         ),
@@ -152,7 +152,7 @@ export class FarcasterProcessor {
 
     if (FARCASTER_OG_FIDS.includes(data.fid.toString()) && data.parentHash) {
       promises.push(
-        this.feedClient.removeFromFeed("custom:farcaster-og", data.hash),
+        this.nookClient.removeFromFeed("custom:farcaster-og", data.hash),
       );
     }
 

@@ -1,8 +1,7 @@
 import fastify from "fastify";
 import fastifyJwt from "@fastify/jwt";
-import { farcasterPlugin, redisPlugin } from "./plugins";
-import { castRoutes } from "./routes/casts";
-import { userRoutes } from "./routes/user";
+import { entityPlugin, redisPlugin } from "./plugins";
+import { entityRoutes } from "./routes/entity";
 
 const buildApp = () => {
   const app = fastify({
@@ -24,11 +23,10 @@ const buildApp = () => {
     secret: process.env.JWT_SECRET as string,
   });
 
-  app.register(farcasterPlugin);
+  app.register(entityPlugin);
   app.register(redisPlugin);
 
-  app.register(userRoutes);
-  app.register(castRoutes);
+  app.register(entityRoutes);
 
   return app;
 };
@@ -36,7 +34,7 @@ const buildApp = () => {
 const start = async () => {
   const app = buildApp();
   try {
-    const port = Number(process.env.PORT || "3001");
+    const port = Number(process.env.PORT || "3002");
     await app.listen({ port, host: "0.0.0.0" });
     console.log(`Listening on :${port}`);
   } catch (err) {

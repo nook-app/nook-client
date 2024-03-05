@@ -138,7 +138,7 @@ export class NookClient {
       throw new Error(`Nook not found ${id}`);
     }
 
-    const creator = await this.entityClient.getEntity(nook.creatorId);
+    const creator = await this.entityClient.fetchEntity(nook.creatorId);
 
     const nookResponse: NookResponse = {
       id: nook.id,
@@ -239,7 +239,7 @@ export class NookClient {
 
     let creator: EntityResponse | undefined;
     if (channelData.leadFid) {
-      creator = await this.entityClient.getEntityForFid(
+      creator = await this.entityClient.fetchEntityByFid(
         channelData.leadFid.toString(),
       );
     }
@@ -273,5 +273,60 @@ export class NookClient {
         },
       },
     });
+  }
+
+  async addToFeed(feedId: string, value: string, timestamp: number) {
+    await this.redis.addToSet(
+      `${this.FEED_CACHE_PREFIX}:${feedId}`,
+      value,
+      timestamp,
+    );
+  }
+
+  async batchAddToFeed(
+    feedId: string,
+    values: { value: string; timestamp: number }[],
+  ) {
+    await this.redis.batchAddToSet(
+      `${this.FEED_CACHE_PREFIX}:${feedId}`,
+      values,
+    );
+  }
+
+  async removeFromFeed(feedId: string, value: string) {
+    await this.redis.removeFromSet(
+      `${this.FEED_CACHE_PREFIX}:${feedId}`,
+      value,
+    );
+  }
+
+  async addToFeeds(feedIds: string[], value: string, timestamp: number) {
+    await this.redis.addToSets(
+      feedIds.map((feedId) => `${this.FEED_CACHE_PREFIX}:${feedId}`),
+      value,
+      timestamp,
+    );
+  }
+
+  async removeFromFeeds(feedIds: string[], value: string) {
+    await this.redis.removeFromSets(
+      feedIds.map((feedId) => `${this.FEED_CACHE_PREFIX}:${feedId}`),
+      value,
+    );
+  }
+
+  async getFeed(feedId: string, cursor?: number) {
+    const results = await this.redis.getSet(
+      `${this.FEED_CACHE_PREFIX}:${feedId}`,
+      cursor,
+    );
+    const feedItems = [];
+    for (let i = 0; i < results.length; i += 2) {
+      feedItems.push({
+        value: results[i],
+        score: parseFloat(results[i + 1]),
+      });
+    }
+    return feedItems;
   }
 }

@@ -22,6 +22,9 @@ export type BaseFarcasterUser = {
 
 export type BaseFarcasterUserWithEngagement = BaseFarcasterUser & {
   engagement: FarcasterUserEngagement;
+  context?: {
+    following: boolean;
+  };
 };
 
 export type EntityResponse = {
@@ -34,6 +37,11 @@ export type FarcasterCastEngagement = {
   recasts: number;
   replies: number;
   quotes: number;
+};
+
+export type FarcasterCastContext = {
+  liked: boolean;
+  recasted: boolean;
 };
 
 export type BaseFarcasterCast = {
@@ -54,6 +62,7 @@ export type BaseFarcasterCast = {
 
 export type BaseFarcasterCastWithContext = BaseFarcasterCast & {
   engagement: FarcasterCastEngagement;
+  context?: FarcasterCastContext;
 };
 
 export type FarcasterCastResponse = {
@@ -125,9 +134,13 @@ export type GetFarcasterUsersRequest = {
 };
 
 export type GetFarcasterUsersResponse = {
-  data: EntityResponse[];
+  data: BaseFarcasterUserWithEngagement[];
 };
 
-export type GetFollowerFidsResponse = {
-  data: string[];
+export type GetEntitiesByFidsRequest = {
+  fids: string[];
+};
+
+export type GetEntitiesResponse = {
+  data: EntityResponse[];
 };

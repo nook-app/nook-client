@@ -22,8 +22,8 @@ export class UserService {
     this.farcasterAuthClient = createAppClient({
       ethereum: viemConnector(),
     });
-    this.entityClient = fastify.entity.client;
     this.nookClient = fastify.nook.client;
+    this.entityClient = new EntityClient();
   }
 
   async signInWithFarcaster(
@@ -38,16 +38,17 @@ export class UserService {
       throw new Error(verifyResult.error?.message || "Sign in failed");
     }
 
-    const fid = "3887";
+    const fid = "20716";
     // const fid = verifyResult.fid.toString();
 
-    const entity = await this.entityClient.getEntityForFid(fid);
+    const entity = await this.entityClient.fetchEntityByFid(fid);
     if (!entity) {
       return;
     }
 
     const refreshToken = this.jwt.sign({
       id: entity.id,
+      fid,
     });
 
     let user = await this.nookClient.getUser(entity.id);
@@ -60,6 +61,7 @@ export class UserService {
     const token = this.jwt.sign(
       {
         id: user.id,
+        fid,
       },
       { expiresIn },
     );
@@ -105,7 +107,7 @@ export class UserService {
     }
 
     const nooks = await this.nookClient.getNooksByUser(id);
-    const entity = await this.entityClient.getEntity(user.id);
+    const entity = await this.entityClient.fetchEntity(user.id);
 
     return {
       user,

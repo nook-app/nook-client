@@ -26,10 +26,12 @@ export class UserService {
 
   async getUser(
     fid: string,
+    viewerFid?: string,
   ): Promise<BaseFarcasterUserWithEngagement | undefined> {
-    const [user, stats] = await Promise.all([
+    const [user, stats, context] = await Promise.all([
       this.getUserData(fid),
       this.getUserStats(fid),
+      this.getUserContext(fid, viewerFid),
     ]);
 
     if (!user) return;
@@ -40,6 +42,7 @@ export class UserService {
         following: stats.following,
         followers: stats.followers,
       },
+      context,
     };
   }
 
@@ -118,6 +121,36 @@ export class UserService {
     return await this.createStatsRecords(fid);
   }
 
+  async getUserContext(fid: string, viewerFid?: string) {
+    if (!viewerFid) return;
+
+    const key = `${this.USER_CACHE_PREFIX}:${viewerFid}:${fid}`;
+    const cached = await this.redis.exists(key);
+    if (cached) {
+      return {
+        following: true,
+      };
+    }
+
+    const link = await this.client.farcasterLink.findFirst({
+      where: {
+        fid: BigInt(viewerFid),
+        targetFid: BigInt(fid),
+        linkType: "follow",
+        deletedAt: null,
+      },
+    });
+
+    const following = !!link;
+    if (following) {
+      await this.redis.set(key, "1");
+    }
+
+    return {
+      following,
+    };
+  }
+
   async createStatsRecords(fid: string) {
     const [following, followers] = await Promise.all([
       this.client.farcasterLink.count({
@@ -152,10 +185,13 @@ export class UserService {
     };
   }
 
-  async getFollowers(fid: string) {
-    return await this.client.farcasterLink.findMany({
-      where: { linkType: "follow", targetFid: BigInt(fid) },
-    });
+  async updateContext(fid: string, targetFid: string, following: boolean) {
+    const key = `${this.USER_CACHE_PREFIX}:${fid}:${targetFid}`;
+    if (following) {
+      await this.redis.set(key, "1");
+    } else {
+      await this.redis.del(key);
+    }
   }
 
   async incrementFollowing(fid: string) {

@@ -1,10 +1,10 @@
 import fp from "fastify-plugin";
-import { PrismaClient } from "@nook/common/prisma/farcaster";
+import { PrismaClient } from "@nook/common/prisma/entity";
 import { RedisClient } from "@nook/common/redis";
 
 declare module "fastify" {
   interface FastifyInstance {
-    farcaster: {
+    entity: {
       client: PrismaClient;
     };
     redis: {
@@ -13,12 +13,12 @@ declare module "fastify" {
   }
 }
 
-export const farcasterPlugin = fp(async (fastify, opts) => {
+export const entityPlugin = fp(async (fastify, opts) => {
   const client = new PrismaClient();
   await client.$connect();
-  fastify.decorate("farcaster", { client });
+  fastify.decorate("entity", { client });
   fastify.addHook("onClose", async (fastify) => {
-    await fastify.farcaster.client.$disconnect();
+    await fastify.entity.client.$disconnect();
   });
 });
 

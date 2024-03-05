@@ -18,7 +18,7 @@ export const FarcasterFeedItem = memo(
         <View
           borderBottomWidth="$0.25"
           borderBottomColor="$borderColor"
-          padding="$2"
+          padding="$2.5"
         >
           <TouchableWithoutFeedback
             onPress={() => {
@@ -47,7 +47,7 @@ export const FarcasterFeedItem = memo(
       <View
         borderBottomWidth="$0.25"
         borderBottomColor="$borderColor"
-        padding="$2"
+        padding="$2.5"
       >
         <TouchableWithoutFeedback
           onPress={() =>

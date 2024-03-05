@@ -101,6 +101,13 @@ export class FarcasterEventProcessor {
           promises.push(
             this.userService.incrementFollowers(link.targetFid.toString()),
           );
+          promises.push(
+            this.userService.updateContext(
+              link.fid.toString(),
+              link.targetFid.toString(),
+              true,
+            ),
+          );
           await Promise.all(promises);
         }
         break;
@@ -114,6 +121,13 @@ export class FarcasterEventProcessor {
           );
           promises.push(
             this.userService.decrementFollowers(link.targetFid.toString()),
+          );
+          promises.push(
+            this.userService.updateContext(
+              link.fid.toString(),
+              link.targetFid.toString(),
+              false,
+            ),
           );
           await Promise.all(promises);
         }

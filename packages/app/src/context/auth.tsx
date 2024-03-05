@@ -58,6 +58,7 @@ function AuthProviderContent({ children }: AuthProviderProps) {
 
       try {
         const session = response.data;
+        console.log(JSON.stringify(session, null, 2));
         await updateSession(session);
         setSession(session);
         await getUser(null);

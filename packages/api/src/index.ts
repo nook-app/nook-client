@@ -1,15 +1,10 @@
 import fastify from "fastify";
-import {
-  contentPlugin,
-  entityPlugin,
-  farcasterPlugin,
-  feedPlugin,
-  nookPlugin,
-} from "./plugins";
+import { contentPlugin, hubPlugin, nookPlugin } from "./plugins";
 import { nookRoutes } from "./routes/nook";
 import { userRoutes } from "./routes/user";
 import fastifyJwt from "@fastify/jwt";
 import { farcasterRoutes } from "./routes/farcaster";
+import { actionRoutes } from "./routes/action";
 
 const buildApp = () => {
   const app = fastify({
@@ -31,15 +26,14 @@ const buildApp = () => {
     secret: process.env.JWT_SECRET as string,
   });
 
-  app.register(entityPlugin);
-  app.register(farcasterPlugin);
-  app.register(feedPlugin);
+  app.register(hubPlugin);
   app.register(nookPlugin);
   app.register(contentPlugin);
 
   app.register(nookRoutes);
   app.register(userRoutes);
   app.register(farcasterRoutes);
+  app.register(actionRoutes);
 
   return app;
 };

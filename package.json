@@ -17,7 +17,8 @@
     "start:farcaster:consumer": "yarn workspace @nook/farcaster start:consumer",
     "start:farcaster:publisher": "yarn workspace @nook/farcaster start:publisher",
     "start:events": "yarn workspace @nook/events start",
-    "start:api": "yarn workspace @nook/api start"
+    "start:api": "yarn workspace @nook/api start",
+    "start:entity:api": "yarn workspace @nook/entity start:api"
   },
   "workspaces": [
     "packages/*"

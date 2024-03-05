@@ -17,6 +17,10 @@ const contentSlice = createSlice({
       farcasterApi.endpoints.getCast.matchFulfilled,
       (state, action) => {
         contentAdapter.addMany(state, action.payload.embeds);
+        contentAdapter.addMany(
+          state,
+          action.payload.embedCasts.flatMap((ec) => ec.embeds),
+        );
       },
     );
     builder.addMatcher(
@@ -26,6 +30,12 @@ const contentSlice = createSlice({
           state,
           action.payload.data.flatMap((c) => c.embeds),
         );
+        contentAdapter.addMany(
+          state,
+          action.payload.data.flatMap((c) =>
+            c.embedCasts.flatMap((ec) => ec.embeds),
+          ),
+        );
       },
     );
     builder.addMatcher(
@@ -34,6 +44,12 @@ const contentSlice = createSlice({
         contentAdapter.addMany(
           state,
           action.payload.data.flatMap((c) => c.embeds),
+        );
+        contentAdapter.addMany(
+          state,
+          action.payload.data.flatMap((c) =>
+            c.embedCasts.flatMap((ec) => ec.embeds),
+          ),
         );
       },
     );

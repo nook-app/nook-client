@@ -26,7 +26,7 @@ export const FarcasterCast = ({
   return (
     <ScrollView>
       <View
-        padding="$2"
+        padding="$2.5"
         borderBottomWidth="0.5"
         borderBottomColor="$borderColor"
       >
@@ -45,7 +45,7 @@ const FarcasterCastReply = ({
   return (
     <ScrollView>
       <View
-        padding="$2"
+        padding="$2.5"
         borderBottomWidth="0.5"
         borderBottomColor="$borderColor"
       >

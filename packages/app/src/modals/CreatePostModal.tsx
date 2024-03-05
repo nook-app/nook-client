@@ -37,7 +37,7 @@ export const CreatePostModal = () => {
   const { close } = useModal(ModalName.CreatePost);
 
   useEffect(() => {
-    if (selectChannelModalOpen) {
+    if (selectChannelModalOpen || !signerEnabled) {
       Keyboard.dismiss();
     } else {
       const timer = setTimeout(() => {
@@ -45,7 +45,7 @@ export const CreatePostModal = () => {
       }, 500);
       return () => clearTimeout(timer);
     }
-  }, [selectChannelModalOpen]);
+  }, [selectChannelModalOpen, signerEnabled]);
 
   useEffect(() => {
     if (!signerEnabled) {
@@ -101,7 +101,8 @@ export const CreatePostModal = () => {
     executePoll();
   };
 
-  const isDisabled = !message?.length || isPosting;
+  const messageByteSize = new Blob([message]).size;
+  const isDisabled = !message?.length || isPosting || messageByteSize > 320;
 
   return (
     <BottomSheetModal onClose={close} fullScreen>
@@ -175,7 +176,7 @@ export const CreatePostModal = () => {
               placeholderTextColor="$gray11"
               height="$20"
               borderWidth="$0"
-              value={message}
+              defaultValue={message}
               onChangeText={setMessage}
             />
           </BottomSheetScrollView>
@@ -185,13 +186,20 @@ export const CreatePostModal = () => {
                 {error?.message}
               </Text>
             )}
-            <View
+            <XStack
               borderTopWidth="$1"
               borderTopColor="$borderColor"
               padding="$3"
+              justifyContent="space-between"
+              alignItems="center"
             >
               <Image size={24} />
-            </View>
+              <View>
+                <Text
+                  color={messageByteSize > 320 ? "$red11" : "$color12"}
+                >{`${messageByteSize} / 320`}</Text>
+              </View>
+            </XStack>
           </YStack>
           <SelectChannelModal
             open={selectChannelModalOpen}
