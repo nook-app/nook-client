@@ -1,5 +1,4 @@
 import fastify from "fastify";
-import fastifyJwt from "@fastify/jwt";
 import { farcasterPlugin, redisPlugin } from "./plugins";
 import { castRoutes } from "./routes/casts";
 import { userRoutes } from "./routes/user";
@@ -19,10 +18,6 @@ const buildApp = () => {
   BigInt.prototype.toJSON = function () {
     return this.toString();
   };
-
-  app.register(fastifyJwt, {
-    secret: process.env.JWT_SECRET as string,
-  });
 
   app.register(farcasterPlugin);
   app.register(redisPlugin);

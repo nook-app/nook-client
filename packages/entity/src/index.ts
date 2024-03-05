@@ -1,5 +1,4 @@
 import fastify from "fastify";
-import fastifyJwt from "@fastify/jwt";
 import { entityPlugin, redisPlugin } from "./plugins";
 import { entityRoutes } from "./routes/entity";
 
@@ -18,10 +17,6 @@ const buildApp = () => {
   BigInt.prototype.toJSON = function () {
     return this.toString();
   };
-
-  app.register(fastifyJwt, {
-    secret: process.env.JWT_SECRET as string,
-  });
 
   app.register(entityPlugin);
   app.register(redisPlugin);
