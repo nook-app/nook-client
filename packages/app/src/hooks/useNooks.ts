@@ -3,16 +3,16 @@ import { useAppSelector } from "./useAppSelector";
 import { NavigationProp, useNavigation } from "@react-navigation/native";
 import { RootStackParamList } from "@/types";
 import { useAppDispatch } from "./useAppDispatch";
-import { setActiveNook, setActiveShelf } from "@/store/slices/user";
+import { setActiveNook, setActiveShelf } from "@/store/slices/auth";
 import { selectNookById } from "@/store/slices/nook";
 
 export const useNooks = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const dispatch = useAppDispatch();
-  const nooks = useAppSelector((state) => state.user.nooks);
-  const activeShelves = useAppSelector((state) => state.user.activeShelves);
+  const nooks = useAppSelector((state) => state.auth.nooks);
+  const activeShelves = useAppSelector((state) => state.auth.activeShelves);
 
-  const storedActiveNookId = useAppSelector((state) => state.user.activeNook);
+  const storedActiveNookId = useAppSelector((state) => state.auth.activeNook);
   const activeNook = useAppSelector((state) =>
     storedActiveNookId ? selectNookById(state, storedActiveNookId) : nooks[0],
   );

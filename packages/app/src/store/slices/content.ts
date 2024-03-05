@@ -1,6 +1,5 @@
 import { createEntityAdapter, createSlice } from "@reduxjs/toolkit";
 import { RootState } from "..";
-import { userApi } from "../apis/userApi";
 import { farcasterApi } from "../apis/farcasterApi";
 import { UrlContentResponse } from "@nook/common/types";
 

@@ -4,11 +4,11 @@ export type RootStackParamList = {
     nookId: string;
     shelfId?: string;
   };
-  Entity: {
-    entityId: string;
+  User: {
+    userId: string;
   };
-  EntityFollowers: {
-    entityId: string;
+  UserFollowers: {
+    userId: string;
     defaultTab?: "Followers" | "Following";
   };
   FarcasterCast: {

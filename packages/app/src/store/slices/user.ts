@@ -1,60 +1,86 @@
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { User } from "@nook/common/prisma/nook";
+import { createEntityAdapter, createSlice } from "@reduxjs/toolkit";
+import { RootState } from "..";
 import { userApi } from "../apis/userApi";
-import { EntityResponse, NookResponse } from "@nook/common/types";
+import { farcasterApi } from "../apis/farcasterApi";
+import {
+  FarcasterCastResponse,
+  FarcasterUserWithContext,
+} from "@nook/common/types";
 
-interface UserState {
-  user?: User;
-  entity?: EntityResponse;
-  nooks: NookResponse[];
-  theme: string;
-  activeNook?: string;
-  activeShelves: Record<string, string>;
-}
-
-const initialState: UserState = {
-  user: undefined,
-  nooks: [],
-  activeShelves: {},
-  theme: "gray",
+const getEntities = (cast: FarcasterCastResponse) => {
+  const entities = [];
+  entities.push(cast.user);
+  for (const mention of cast.mentions) {
+    entities.push(mention.user);
+  }
+  if (cast.parent) {
+    entities.push(cast.parent.user);
+  }
+  return entities;
 };
 
-export const userSlice = createSlice({
+const userAdapter = createEntityAdapter({
+  selectId: (entity: FarcasterUserWithContext) => entity.fid,
+});
+
+const userSlice = createSlice({
   name: "user",
-  initialState,
-  reducers: {
-    setActiveNook: (state, action: PayloadAction<string>) => {
-      state.activeNook = action.payload;
-    },
-    setTheme: (state, action: PayloadAction<string>) => {
-      state.theme = action.payload;
-    },
-    setActiveShelf: (
-      state,
-      action: PayloadAction<{ nookId: string; shelfId: string }>,
-    ) => {
-      state.activeShelves[action.payload.nookId] = action.payload.shelfId;
-    },
-    setSignerEnabled: (state, action: PayloadAction<boolean>) => {
-      if (!state.user) return;
-      state.user.signerEnabled = action.payload;
-    },
-  },
+  initialState: userAdapter.getInitialState(),
+  reducers: {},
   extraReducers: (builder) => {
+    builder.addMatcher(
+      farcasterApi.endpoints.getCast.matchFulfilled,
+      (state, action) => {
+        userAdapter.addMany(state, getEntities(action.payload));
+      },
+    );
+    builder.addMatcher(
+      farcasterApi.endpoints.getCastReplies.matchFulfilled,
+      (state, action) => {
+        userAdapter.addMany(
+          state,
+          action.payload.data.flatMap((c) => getEntities(c)),
+        );
+      },
+    );
+    builder.addMatcher(
+      farcasterApi.endpoints.getFeed.matchFulfilled,
+      (state, action) => {
+        userAdapter.addMany(
+          state,
+          action.payload.data.flatMap((c) => getEntities(c)),
+        );
+      },
+    );
     builder.addMatcher(
       userApi.endpoints.getUser.matchFulfilled,
       (state, action) => {
-        state.user = action.payload.user;
-        state.entity = action.payload.entity;
-        state.nooks = action.payload.nooks;
-        state.activeNook = "home";
-        state.theme = "gray";
+        userAdapter.addOne(state, action.payload.user);
+      },
+    );
+    builder.addMatcher(
+      farcasterApi.endpoints.followUser.matchFulfilled,
+      (state, action) => {
+        const user = state.entities[action.payload.id];
+        if (user.context) {
+          user.context.following = true;
+        }
+      },
+    );
+    builder.addMatcher(
+      farcasterApi.endpoints.unfollowUser.matchFulfilled,
+      (state, action) => {
+        const user = state.entities[action.payload.id];
+        if (user.context) {
+          user.context.following = false;
+        }
       },
     );
   },
 });
 
-export const { setTheme, setActiveNook, setActiveShelf, setSignerEnabled } =
-  userSlice.actions;
+export const { selectById: selectUserById } = userAdapter.getSelectors(
+  (state: RootState) => state.user,
+);
 
 export default userSlice.reducer;

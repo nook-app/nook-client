@@ -3,7 +3,7 @@ import { useAuth } from "@/context/auth";
 import { useCallback, useState } from "react";
 import { Linking } from "react-native";
 import { useAppDispatch } from "@/hooks/useAppDispatch";
-import { setSignerEnabled } from "@/store/slices/user";
+import { setSignerEnabled } from "@/store/slices/auth";
 import { farcasterApi } from "@/store/apis/farcasterApi";
 import { closeAllModals } from "@/store/slices/navigator";
 import { BottomSheetModal } from "@/components/modals/BottomSheetModal";

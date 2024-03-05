@@ -2,11 +2,11 @@ import { Button, Text, View, XStack, YStack } from "tamagui";
 import { useAuth } from "@/context/auth";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAppSelector } from "@/hooks/useAppSelector";
-import { EntityAvatar } from "@/components/entity/EntityAvatar";
-import { EntityDisplay } from "@/components/entity/EntityDisplay";
+import { UserAvatar } from "@/components/user/UserAvatar";
+import { UserDisplay } from "@/components/user/UserDisplay";
 import { TouchableOpacity } from "react-native-gesture-handler";
 import { useAppDispatch } from "@/hooks/useAppDispatch";
-import { setTheme } from "@/store/slices/user";
+import { setTheme } from "@/store/slices/auth";
 
 export const ThemeSelector = () => {
   const dispatch = useAppDispatch();
@@ -54,10 +54,10 @@ export const ThemeSelector = () => {
 
 export const ProfileScreen = () => {
   const { signOut } = useAuth();
-  const entity = useAppSelector((state) => state.user.entity);
+  const user = useAppSelector((state) => state.auth.user);
   const insets = useSafeAreaInsets();
 
-  if (!entity) return null;
+  if (!user) return null;
 
   return (
     <YStack
@@ -81,8 +81,8 @@ export const ProfileScreen = () => {
       >
         <YStack gap="$4">
           <XStack gap="$2" alignItems="center">
-            <EntityAvatar entityId={entity.id} size="$5" />
-            <EntityDisplay entityId={entity.id} orientation="vertical" />
+            <UserAvatar userId={user.fid} size="$5" />
+            <UserDisplay userId={user.fid} orientation="vertical" />
           </XStack>
           <ThemeSelector />
         </YStack>

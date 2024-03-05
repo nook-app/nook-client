@@ -170,10 +170,10 @@ const TabBarIcon = memo(
 );
 
 const TabBarUserImage = memo(() => {
-  const entity = useAppSelector((state) => state.user.entity);
+  const user = useAppSelector((state) => state.auth.user);
   return (
     <Avatar circular size="$1.5">
-      <Avatar.Image source={{ uri: entity?.farcaster.pfp || undefined }} />
+      <Avatar.Image source={{ uri: user?.pfp || undefined }} />
       <Avatar.Fallback backgroundColor="$backgroundStrong" />
     </Avatar>
   );

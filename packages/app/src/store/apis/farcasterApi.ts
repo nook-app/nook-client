@@ -17,16 +17,6 @@ export const farcasterApi = createApi({
     validateSigner: builder.mutation<{ state: string }, string>({
       query: (token) => `/farcaster/signer/validate?token=${token}`,
     }),
-    createCast: builder.mutation<
-      { hash: string },
-      { message: string; channel?: string }
-    >({
-      query: ({ message, channel }) => ({
-        url: "/farcaster/casts",
-        method: "POST",
-        body: { message, channel },
-      }),
-    }),
     getCast: builder.query<FarcasterCastResponseWithContext, string>({
       query: (hash) => `/farcaster/casts/${hash}`,
     }),
@@ -38,6 +28,58 @@ export const farcasterApi = createApi({
         url: "/farcaster/feed",
         method: "POST",
         body,
+      }),
+    }),
+    createCast: builder.mutation<
+      { hash: string },
+      { message: string; channel?: string }
+    >({
+      query: ({ message, channel }) => ({
+        url: "/farcaster/casts",
+        method: "POST",
+        body: { message, channel },
+      }),
+    }),
+    deleteCast: builder.mutation<{ hash: string }, { hash: string }>({
+      query: ({ hash }) => ({
+        url: `/farcaster/casts/${hash}`,
+        method: "DELETE",
+      }),
+    }),
+    likeCast: builder.mutation<{ hash: string }, { hash: string }>({
+      query: ({ hash }) => ({
+        url: `/farcaster/casts/${hash}/likes`,
+        method: "POST",
+      }),
+    }),
+    unlikeCast: builder.mutation<{ hash: string }, { hash: string }>({
+      query: ({ hash }) => ({
+        url: `/farcaster/casts/${hash}/likes`,
+        method: "DELETE",
+      }),
+    }),
+    recastCast: builder.mutation<{ hash: string }, { hash: string }>({
+      query: ({ hash }) => ({
+        url: `/farcaster/casts/${hash}/recasts`,
+        method: "POST",
+      }),
+    }),
+    unrecastCast: builder.mutation<{ hash: string }, { hash: string }>({
+      query: ({ hash }) => ({
+        url: `/farcaster/casts/${hash}/recasts`,
+        method: "DELETE",
+      }),
+    }),
+    followUser: builder.mutation<{ id: string }, { fid: string }>({
+      query: ({ fid }) => ({
+        url: `/farcaster/users/${fid}/followers`,
+        method: "POST",
+      }),
+    }),
+    unfollowUser: builder.mutation<{ id: string }, { fid: string }>({
+      query: ({ fid }) => ({
+        url: `/farcaster/users/${fid}/followers`,
+        method: "DELETE",
       }),
     }),
   }),

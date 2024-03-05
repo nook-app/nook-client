@@ -131,12 +131,12 @@ export const actionRoutes = async (fastify: FastifyInstance) => {
       async (request, reply) => {
         const { id } = (await request.jwtDecode()) as { id: string };
         try {
-          const hash = await actionService.createLink(
+          const fid = await actionService.createLink(
             id,
             request.params.fid,
             "follow",
           );
-          return reply.send({ hash });
+          return reply.send({ fid });
         } catch (e) {
           return reply.code(500).send({ message: (e as Error).message });
         }
@@ -148,12 +148,12 @@ export const actionRoutes = async (fastify: FastifyInstance) => {
       async (request, reply) => {
         const { id } = (await request.jwtDecode()) as { id: string };
         try {
-          const hash = await actionService.deleteLink(
+          const fid = await actionService.deleteLink(
             id,
             request.params.fid,
             "follow",
           );
-          return reply.send({ hash });
+          return reply.send({ fid });
         } catch (e) {
           return reply.code(500).send({ message: (e as Error).message });
         }

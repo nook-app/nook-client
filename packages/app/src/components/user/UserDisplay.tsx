@@ -1,27 +1,25 @@
 import { Text } from "tamagui";
 import { XStack, YStack } from "tamagui";
-import { useEntity } from "@/hooks/useEntity";
+import { useUser } from "@/hooks/useUser";
 import { NavigationProp, useNavigation } from "@react-navigation/native";
 import { RootStackParamList } from "@/types";
 import { TouchableOpacity } from "react-native-gesture-handler";
 
-export const EntityDisplay = ({
-  entityId,
+export const UserDisplay = ({
+  userId,
   orientation = "horizontal",
   hideDisplayName,
 }: {
-  entityId: string;
+  userId: string;
   orientation?: "horizontal" | "vertical";
   hideDisplayName?: boolean;
 }) => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
-  const { displayName, username } = useEntity(entityId);
+  const { displayName, username } = useUser(userId);
   const Stack = orientation === "horizontal" ? XStack : YStack;
 
   return (
-    <TouchableOpacity
-      onPress={() => navigation.navigate("Entity", { entityId })}
-    >
+    <TouchableOpacity onPress={() => navigation.navigate("User", { userId })}>
       <Stack
         gap="$1"
         alignItems={orientation === "horizontal" ? "center" : "flex-start"}

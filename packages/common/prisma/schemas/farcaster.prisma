@@ -212,3 +212,11 @@ model FarcasterUserStats {
     followers Int
     following Int
 }
+
+model FarcasterCastStats {
+    hash    String @id
+    likes   Int
+    recasts Int
+    quotes  Int
+    replies Int
+}

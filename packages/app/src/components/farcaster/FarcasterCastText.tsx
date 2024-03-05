@@ -1,13 +1,13 @@
 import { Linking } from "react-native";
 import { Text, View } from "tamagui";
 import { Buffer } from "buffer";
-import { selectEntityById } from "@/store/slices/entity";
 import { store } from "@/store";
 import { isWarpcastUrl } from "@/utils";
 import { TouchableOpacity } from "react-native-gesture-handler";
 import { NavigationProp, useNavigation } from "@react-navigation/native";
 import { RootStackParamList } from "@/types";
 import { FarcasterCastResponseWithContext } from "@nook/common/types";
+import { selectUserById } from "@/store/slices/user";
 
 export const FarcasterCastText = ({
   cast,
@@ -67,11 +67,8 @@ export const FarcasterCastText = ({
     (a, b) => Number(b.position) - Number(a.position),
   );
   for (const mention of sortedMentions) {
-    const mentionedEntity = selectEntityById(state, mention.entity.id);
-    const farcaster = mentionedEntity?.farcaster;
-    const label = `@${
-      farcaster?.username || farcaster?.fid || mention.entity.id
-    }`;
+    const mentionedUser = selectUserById(state, mention.user.fid);
+    const label = `@${mentionedUser?.username || mentionedUser?.fid}`;
 
     textParts.push(
       ...splitLinkParts(
@@ -83,7 +80,7 @@ export const FarcasterCastText = ({
       <TouchableOpacity
         key={`${cast.hash}-${mention.position}-${label}`}
         onPress={() =>
-          navigation.navigate("Entity", { entityId: mention.entity.id })
+          navigation.navigate("User", { userId: mentionedUser.fid })
         }
       >
         <View

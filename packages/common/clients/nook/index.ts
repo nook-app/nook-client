@@ -5,13 +5,17 @@ import {
   getWarpcastDeeplink,
   validateWarpcastSigner,
 } from "../../signer";
-import { EntityResponse, NookMetadata, NookResponse } from "../../types";
-import { EntityClient } from "../entity";
+import {
+  FarcasterUserWithContext,
+  NookMetadata,
+  NookResponse,
+} from "../../types";
+import { FarcasterClient } from "../farcaster";
 
 export class NookClient {
   private client: PrismaClient;
   private redis: RedisClient;
-  private entityClient: EntityClient;
+  private farcasterClient: FarcasterClient;
 
   FEED_CACHE_PREFIX = "feed";
   CHANNEL_CACHE_PREFIX = "channel";
@@ -20,7 +24,7 @@ export class NookClient {
   constructor() {
     this.client = new PrismaClient();
     this.redis = new RedisClient();
-    this.entityClient = new EntityClient();
+    this.farcasterClient = new FarcasterClient();
   }
 
   async connect() {
@@ -41,11 +45,19 @@ export class NookClient {
     });
   }
 
-  async createUser(id: string, refreshToken: string) {
+  async getUserByFid(fid: string) {
+    return await this.client.user.findFirst({
+      where: {
+        fid,
+      },
+    });
+  }
+
+  async createUser(fid: string, refreshToken: string) {
     const date = new Date();
     return await this.client.user.create({
       data: {
-        id,
+        fid,
         signedUpAt: date,
         loggedInAt: date,
         refreshToken,
@@ -138,7 +150,7 @@ export class NookClient {
       throw new Error(`Nook not found ${id}`);
     }
 
-    const creator = await this.entityClient.fetchEntity(nook.creatorId);
+    const creator = await this.farcasterClient.fetchUser(nook.creatorId);
 
     const nookResponse: NookResponse = {
       id: nook.id,
@@ -237,9 +249,9 @@ export class NookClient {
       throw new Error("Channel not found");
     }
 
-    let creator: EntityResponse | undefined;
+    let creator: FarcasterUserWithContext | undefined;
     if (channelData.leadFid) {
-      creator = await this.entityClient.fetchEntityByFid(
+      creator = await this.farcasterClient.fetchUser(
         channelData.leadFid.toString(),
       );
     }
@@ -252,7 +264,7 @@ export class NookClient {
       imageUrl: channelData.imageUrl,
       createdAt: new Date(channelData.createdAt * 1000),
       updatedAt: new Date(),
-      creatorId: creator?.id || null,
+      creatorFid: creator?.fid || null,
     };
 
     return channel;

@@ -20,16 +20,11 @@ export type BaseFarcasterUser = {
   url?: string;
 };
 
-export type BaseFarcasterUserWithEngagement = BaseFarcasterUser & {
+export type FarcasterUserWithContext = BaseFarcasterUser & {
   engagement: FarcasterUserEngagement;
   context?: {
     following: boolean;
   };
-};
-
-export type EntityResponse = {
-  id: string;
-  farcaster: BaseFarcasterUserWithEngagement;
 };
 
 export type FarcasterCastEngagement = {
@@ -68,10 +63,10 @@ export type BaseFarcasterCastWithContext = BaseFarcasterCast & {
 export type FarcasterCastResponse = {
   hash: string;
   timestamp: number;
-  entity: EntityResponse;
+  user: FarcasterUserWithContext;
   text: string;
   mentions: {
-    entity: EntityResponse;
+    user: FarcasterUserWithContext;
     position: string;
   }[];
   embedHashes: string[];
@@ -84,6 +79,7 @@ export type FarcasterCastResponse = {
   rootParent?: FarcasterCastResponse;
   parentUrl?: string;
   engagement: FarcasterCastEngagement;
+  context?: FarcasterCastContext;
   channel?: Channel;
 };
 
@@ -134,13 +130,5 @@ export type GetFarcasterUsersRequest = {
 };
 
 export type GetFarcasterUsersResponse = {
-  data: BaseFarcasterUserWithEngagement[];
-};
-
-export type GetEntitiesByFidsRequest = {
-  fids: string[];
-};
-
-export type GetEntitiesResponse = {
-  data: EntityResponse[];
+  data: FarcasterUserWithContext[];
 };

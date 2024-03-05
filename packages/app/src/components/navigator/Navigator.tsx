@@ -12,7 +12,7 @@ const Stack = createNativeStackNavigator();
 export function Navigator() {
   const { session } = useAuth();
   const homeNook = useAppSelector((state) => selectNookById(state, "home"));
-  const theme = useAppSelector((state) => state.user.theme);
+  const theme = useAppSelector((state) => state.auth.theme);
 
   return (
     <Theme name={theme || "gray"}>

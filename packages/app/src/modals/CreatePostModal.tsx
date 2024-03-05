@@ -2,7 +2,7 @@ import { Button, Spinner, Text, TextArea, View, XStack, YStack } from "tamagui";
 import { NavigationProp, useNavigation } from "@react-navigation/native";
 import { RootStackParamList } from "@/types";
 import { useAppSelector } from "@/hooks/useAppSelector";
-import { EntityAvatar } from "@/components/entity/EntityAvatar";
+import { UserAvatar } from "@/components/user/UserAvatar";
 import { useEffect, useRef, useState } from "react";
 import { SelectChannelModal } from "./SelectChannelModal";
 import { ChevronDown, Image } from "@tamagui/lucide-icons";
@@ -23,9 +23,9 @@ export const CreatePostModal = () => {
   const [selectChannelModalOpen, setSelectChannelModalOpen] = useState(false);
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const signerEnabled = useAppSelector(
-    (state) => state.user.user?.signerEnabled || false,
+    (state) => state.auth.signerEnabled || false,
   );
-  const entity = useAppSelector((state) => state.user.entity);
+  const user = useAppSelector((state) => state.auth.user);
   const inputRef = useRef<TextInput>(null);
   const [channel, setChannel] = useState<Channel>();
   const [message, setMessage] = useState("");
@@ -130,7 +130,7 @@ export const CreatePostModal = () => {
                   justifyContent="center"
                   alignItems="center"
                 >
-                  {entity && <EntityAvatar entityId={entity.id} size="$4" />}
+                  {user && <UserAvatar userId={user.fid} size="$4" />}
                 </View>
                 <Button
                   onPress={() => setSelectChannelModalOpen(true)}

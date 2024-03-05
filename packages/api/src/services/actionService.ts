@@ -268,9 +268,9 @@ export class ActionService {
       throw new Error(linkAddMessage.error.message);
     }
 
-    const result = await this.submitMessage(linkAddMessage.value);
+    await this.submitMessage(linkAddMessage.value);
 
-    return result.hash;
+    return fid;
   }
 
   async deleteLink(userId: string, fid: string, linkType: string) {
@@ -297,8 +297,8 @@ export class ActionService {
       throw new Error(linkRemoveMessage.error.message);
     }
 
-    const result = await this.submitMessage(linkRemoveMessage.value);
+    await this.submitMessage(linkRemoveMessage.value);
 
-    return result.hash;
+    return fid;
   }
 }

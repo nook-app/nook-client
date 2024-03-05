@@ -1,19 +1,17 @@
 import { Avatar } from "tamagui";
-import { useEntity } from "@/hooks/useEntity";
+import { useUser } from "@/hooks/useUser";
 import { NavigationProp, useNavigation } from "@react-navigation/native";
 import { RootStackParamList } from "@/types";
 import { TouchableOpacity } from "react-native-gesture-handler";
 
-export const EntityAvatar = ({
-  entityId,
+export const UserAvatar = ({
+  userId,
   size = "$3.5",
-}: { entityId: string; size?: string }) => {
+}: { userId: string; size?: string }) => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
-  const { pfp } = useEntity(entityId);
+  const { pfp } = useUser(userId);
   return (
-    <TouchableOpacity
-      onPress={() => navigation.navigate("Entity", { entityId })}
-    >
+    <TouchableOpacity onPress={() => navigation.navigate("User", { userId })}>
       <Avatar circular size={size}>
         <Avatar.Image src={pfp} />
         <Avatar.Fallback backgroundColor="$backgroundPress" />

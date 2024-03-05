@@ -46,6 +46,60 @@ const contentSlice = createSlice({
         castAdapter.addMany(state, casts);
       },
     );
+    builder.addMatcher(
+      farcasterApi.endpoints.deleteCast.matchFulfilled,
+      (state, action) => {
+        castAdapter.removeOne(state, action.payload.hash);
+      },
+    );
+    builder.addMatcher(
+      farcasterApi.endpoints.likeCast.matchFulfilled,
+      (state, action) => {
+        const { hash } = action.payload;
+        const existingCast = state.entities[hash];
+        if (existingCast?.context) {
+          existingCast.context.liked = true;
+        } else {
+          existingCast.context = { liked: true, recasted: false };
+        }
+      },
+    );
+    builder.addMatcher(
+      farcasterApi.endpoints.unlikeCast.matchFulfilled,
+      (state, action) => {
+        const { hash } = action.payload;
+        const existingCast = state.entities[hash];
+        if (existingCast?.context) {
+          existingCast.context.liked = false;
+        } else {
+          existingCast.context = { liked: false, recasted: false };
+        }
+      },
+    );
+    builder.addMatcher(
+      farcasterApi.endpoints.recastCast.matchFulfilled,
+      (state, action) => {
+        const { hash } = action.payload;
+        const existingCast = state.entities[hash];
+        if (existingCast?.context) {
+          existingCast.context.recasted = true;
+        } else {
+          existingCast.context = { liked: false, recasted: true };
+        }
+      },
+    );
+    builder.addMatcher(
+      farcasterApi.endpoints.unrecastCast.matchFulfilled,
+      (state, action) => {
+        const { hash } = action.payload;
+        const existingCast = state.entities[hash];
+        if (existingCast?.context) {
+          existingCast.context.recasted = false;
+        } else {
+          existingCast.context = { liked: false, recasted: false };
+        }
+      },
+    );
   },
 });
 

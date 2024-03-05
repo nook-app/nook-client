@@ -1,6 +1,6 @@
 import { ScrollView, Text, View, XStack, YStack } from "tamagui";
-import { EntityAvatar } from "@/components/entity/EntityAvatar";
-import { EntityDisplay } from "../entity/EntityDisplay";
+import { UserAvatar } from "@/components/user/UserAvatar";
+import { UserDisplay } from "../user/UserDisplay";
 import { FarcasterCastText } from "./FarcasterCastText";
 import {
   TouchableOpacity,
@@ -87,8 +87,8 @@ const FarcasterCastContent = ({
   return (
     <YStack gap="$3">
       <XStack gap="$2">
-        <EntityAvatar entityId={cast.entity.id} />
-        <EntityDisplay entityId={cast.entity.id} orientation="vertical" />
+        <UserAvatar userId={cast.user.fid} />
+        <UserDisplay userId={cast.user.fid} orientation="vertical" />
       </XStack>
       <FarcasterCastText cast={cast} />
       {(cast.embeds.length > 0 || cast.embeds.length > 0) && (

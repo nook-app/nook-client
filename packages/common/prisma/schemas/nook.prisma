@@ -9,7 +9,8 @@ datasource db {
 }
 
 model User {
-    id            String   @id
+    id            String   @id @default(uuid())
+    fid           String
     signedUpAt    DateTime
     loggedInAt    DateTime
     signerEnabled Boolean
@@ -74,7 +75,7 @@ model Channel {
     description String
     imageUrl    String
     channelId   String
-    creatorId   String?
+    creatorFid  String?
 
     createdAt DateTime @default(now())
     updatedAt DateTime @default(now()) @updatedAt
@@ -85,7 +86,7 @@ model Feed {
 
     name        String
     description String
-    entityId    String
+    userId      String
 
     filter Json
 

@@ -5,7 +5,7 @@ import { farcasterApi } from "./apis/farcasterApi";
 import navigatorReducer from "./slices/navigator";
 import castReducer from "./slices/cast";
 import userReducer from "./slices/user";
-import entityReducer from "./slices/entity";
+import authReducer from "./slices/auth";
 import nookReducer from "./slices/nook";
 import channelReducer from "./slices/channel";
 import contentReducer from "./slices/content";
@@ -17,8 +17,8 @@ export const store = configureStore({
     [farcasterApi.reducerPath]: farcasterApi.reducer,
     navigator: navigatorReducer,
     casts: castReducer,
-    entities: entityReducer,
     user: userReducer,
+    auth: authReducer,
     nook: nookReducer,
     channel: channelReducer,
     content: contentReducer,

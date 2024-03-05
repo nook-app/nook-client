@@ -1,7 +1,6 @@
 import { User } from "@nook/common/prisma/nook";
 import {
-  BaseFarcasterCast,
-  EntityResponse,
+  FarcasterUserWithContext,
   FarcasterCastResponse,
   NookResponse,
 } from "@nook/common/types";
@@ -25,9 +24,8 @@ export type SignerPublicData = {
   state: string;
 };
 
-export type GetUserResponse = {
-  user: User;
-  entity: EntityResponse;
+export type GetUserResponse = User & {
+  user: FarcasterUserWithContext;
   nooks: NookResponse[];
 };
 

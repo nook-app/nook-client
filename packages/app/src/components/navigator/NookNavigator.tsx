@@ -10,10 +10,10 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { RootStackParamList } from "@/types";
 import { Text } from "tamagui";
 import { useNooks } from "@/hooks/useNooks";
-import { EntityScreen } from "@/screens/EntityScreen";
+import { UserScreen } from "@/screens/UserScreen";
 import { NookScreen } from "@/screens/NookScreen";
 import { ChannelScreen } from "@/screens/ChannelScreen";
-import { EntityFollowersScreen } from "@/screens/EntityFollowersScreen";
+import { UserFollowersScreen } from "@/screens/UserFollowersScreen";
 import { ContentLikesScreen } from "@/screens/FarcasterCastLikesScreen";
 import { ContentRepostsScreen } from "@/screens/FarcasterCastRepostsScreen";
 import { ContentQuotesScreen } from "@/screens/FarcasterCastQuotesScreen";
@@ -113,8 +113,8 @@ export function NookNavigator() {
         getId={({ params }) => params.channelId}
       />
       <Stack.Screen
-        name="Entity"
-        component={EntityScreen}
+        name="User"
+        component={UserScreen}
         options={{
           title: "Profile",
           headerBackTitleVisible: false,
@@ -125,11 +125,11 @@ export function NookNavigator() {
           gestureEnabled: true,
           fullScreenGestureEnabled: true,
         }}
-        getId={({ params }) => params.entityId}
+        getId={({ params }) => params.userId}
       />
       <Stack.Screen
-        name="EntityFollowers"
-        component={EntityFollowersScreen}
+        name="UserFollowers"
+        component={UserFollowersScreen}
         options={{
           title: "Followers",
           headerBackTitleVisible: false,

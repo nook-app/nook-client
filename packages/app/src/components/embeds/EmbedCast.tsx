@@ -1,6 +1,6 @@
 import { XStack, YStack } from "tamagui";
-import { EntityAvatar } from "@/components/entity/EntityAvatar";
-import { EntityDisplay } from "../entity/EntityDisplay";
+import { UserAvatar } from "@/components/user/UserAvatar";
+import { UserDisplay } from "../user/UserDisplay";
 import { FarcasterCastResponseWithContext } from "@nook/common/types";
 import { NavigationProp, useNavigation } from "@react-navigation/native";
 import { RootStackParamList } from "@/types";
@@ -31,8 +31,8 @@ export const EmbedCast = ({
         gap="$2"
       >
         <XStack gap="$1" alignItems="center">
-          <EntityAvatar entityId={cast.entity.id} size="$1" />
-          <EntityDisplay entityId={cast.entity.id} />
+          <UserAvatar userId={cast.user.fid} size="$1" />
+          <UserDisplay userId={cast.user.fid} />
         </XStack>
         <FarcasterCastText cast={cast} />
         {cast.embeds.map((content) => (

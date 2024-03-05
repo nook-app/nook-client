@@ -17,16 +17,6 @@ export const baseQuery = fetchBaseQuery({
 export const generateHomeNook = (fid: string): NookResponse => {
   return {
     id: "home",
-    creator: {
-      id: "nook",
-      farcaster: {
-        fid: "262426",
-        engagement: {
-          followers: 0,
-          following: 0,
-        },
-      },
-    },
     name: "Home",
     description: "Your personally-curated nook",
     imageUrl:

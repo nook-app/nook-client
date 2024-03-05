@@ -1,6 +1,6 @@
 import { Text, View, XStack, YStack } from "tamagui";
-import { EntityAvatar } from "@/components/entity/EntityAvatar";
-import { useEntity } from "@/hooks/useEntity";
+import { UserAvatar } from "@/components/user/UserAvatar";
+import { useUser } from "@/hooks/useUser";
 import { formatNumber } from "@/utils";
 import { NookPanelType } from "@nook/common/types";
 import {
@@ -14,13 +14,12 @@ import { Panels } from "@/components/panels/Panels";
 import { TouchableOpacity } from "react-native-gesture-handler";
 import { useEffect } from "react";
 
-const EntityHeader = () => {
+const UserHeader = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const {
-    params: { entityId },
-  } = useRoute<RouteProp<RootStackParamList, "Entity">>();
-  const { entity, displayName, username, bio, following, followers } =
-    useEntity(entityId);
+    params: { userId },
+  } = useRoute<RouteProp<RootStackParamList, "User">>();
+  const { displayName, username, bio, following, followers } = useUser(userId);
 
   useEffect(() => {
     navigation.setOptions({
@@ -28,13 +27,11 @@ const EntityHeader = () => {
     });
   }, [username, navigation]);
 
-  if (!entity) return null;
-
   return (
     <YStack gap="$4" backgroundColor="$background" padding="$3">
       <View flexDirection="row" justifyContent="space-between">
         <XStack gap="$2" alignItems="center">
-          <EntityAvatar entityId={entityId} size="$5" />
+          <UserAvatar userId={userId} size="$5" />
           <YStack>
             <Text fontWeight="700" fontSize="$5">
               {displayName}
@@ -57,7 +54,7 @@ const EntityHeader = () => {
         <TouchableOpacity
           onPress={() =>
             navigation.navigate("EntityFollowers", {
-              entityId,
+              userId,
               defaultTab: "Followers",
             })
           }
@@ -70,7 +67,7 @@ const EntityHeader = () => {
         <TouchableOpacity
           onPress={() =>
             navigation.navigate("EntityFollowers", {
-              entityId,
+              userId,
               defaultTab: "Followers",
             })
           }
@@ -85,17 +82,13 @@ const EntityHeader = () => {
   );
 };
 
-export const EntityScreen = () => {
+export const UserScreen = () => {
   const {
-    params: { entityId },
-  } = useRoute<RouteProp<RootStackParamList, "Entity">>();
-  const { farcaster } = useEntity(entityId);
-
-  if (!farcaster) return null;
-
+    params: { userId },
+  } = useRoute<RouteProp<RootStackParamList, "User">>();
   return (
     <Panels
-      renderHeader={EntityHeader}
+      renderHeader={UserHeader}
       panels={[
         {
           id: "posts",
@@ -103,7 +96,7 @@ export const EntityScreen = () => {
           data: {
             type: NookPanelType.FarcasterFeed,
             args: {
-              feedId: `user:casts:${farcaster.fid}`,
+              feedId: `user:casts:${userId}`,
             },
           },
         },
@@ -113,7 +106,7 @@ export const EntityScreen = () => {
           data: {
             type: NookPanelType.FarcasterFeed,
             args: {
-              feedId: `user:replies:${farcaster.fid}`,
+              feedId: `user:replies:${userId}`,
             },
           },
         },

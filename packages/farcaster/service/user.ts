@@ -2,7 +2,7 @@ import { PrismaClient } from "@nook/common/prisma/farcaster";
 import { RedisClient } from "@nook/common/redis";
 import {
   BaseFarcasterUser,
-  BaseFarcasterUserWithEngagement,
+  FarcasterUserWithContext,
 } from "@nook/common/types";
 import { UserDataType } from "@farcaster/hub-nodejs";
 
@@ -19,15 +19,15 @@ export class UserService {
     this.redis = redis;
   }
 
-  async getUsers(fids: string[]): Promise<BaseFarcasterUserWithEngagement[]> {
+  async getUsers(fids: string[]): Promise<FarcasterUserWithContext[]> {
     const users = await Promise.all(fids.map((fid) => this.getUser(fid)));
-    return users.filter(Boolean) as BaseFarcasterUserWithEngagement[];
+    return users.filter(Boolean) as FarcasterUserWithContext[];
   }
 
   async getUser(
     fid: string,
     viewerFid?: string,
-  ): Promise<BaseFarcasterUserWithEngagement | undefined> {
+  ): Promise<FarcasterUserWithContext | undefined> {
     const [user, stats, context] = await Promise.all([
       this.getUserData(fid),
       this.getUserStats(fid),

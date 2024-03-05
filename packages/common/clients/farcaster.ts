@@ -5,13 +5,17 @@ import {
   GetFarcasterCastsByFollowingRequest,
   BaseFarcasterCastWithContext,
   GetFarcasterUsersResponse,
+  FarcasterUserWithContext,
 } from "../types";
 import { BaseClient } from "./base";
 
 export class FarcasterClient extends BaseClient {
   API_ENDPOINT = process.env.FARCASTER_API_ENDPOINT;
 
-  async fetchUser(fid: string, viewerFid?: string) {
+  async fetchUser(
+    fid: string,
+    viewerFid?: string,
+  ): Promise<FarcasterUserWithContext> {
     return await this.makeRequest(`/users/${fid}`, { viewerFid });
   }
 

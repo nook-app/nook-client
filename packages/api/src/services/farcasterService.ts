@@ -1,15 +1,14 @@
 import { FastifyInstance } from "fastify";
 import {
   ContentClient,
-  EntityClient,
   FarcasterClient,
   NookClient,
 } from "@nook/common/clients";
 import { FARCASTER_OG_FIDS } from "@nook/common/farcaster";
 import {
   BaseFarcasterCastWithContext,
-  EntityResponse,
   FarcasterCastResponse,
+  FarcasterUserWithContext,
   UrlContentResponse,
 } from "@nook/common/types";
 
@@ -17,7 +16,6 @@ export const MAX_FEED_ITEMS = 25;
 
 export class FarcasterService {
   private nookClient: NookClient;
-  private entityClient: EntityClient;
   private contentClient: ContentClient;
   private farcasterClient: FarcasterClient;
 
@@ -25,7 +23,6 @@ export class FarcasterService {
     this.nookClient = fastify.nook.client;
     this.contentClient = fastify.content.client;
     this.farcasterClient = new FarcasterClient();
-    this.entityClient = new EntityClient();
   }
 
   async getCast(
@@ -42,13 +39,13 @@ export class FarcasterService {
     viewerFid?: string,
   ): Promise<FarcasterCastResponse[]> {
     const castMap = await this.getCastMap(casts, viewerFid);
-    const [entityMap, contentMap] = await Promise.all([
-      this.getEntityMap(Object.values(castMap), viewerFid),
+    const [userMap, contentMap] = await Promise.all([
+      this.getUserMap(Object.values(castMap), viewerFid),
       this.getContentMap(Object.values(castMap)),
     ]);
 
     return casts
-      .map(({ hash }) => this.formatCast(hash, castMap, entityMap, contentMap))
+      .map(({ hash }) => this.formatCast(hash, castMap, userMap, contentMap))
       .filter(Boolean) as FarcasterCastResponse[];
   }
 
@@ -82,10 +79,7 @@ export class FarcasterService {
     return castMap;
   }
 
-  async getEntityMap(
-    casts: BaseFarcasterCastWithContext[],
-    viewerFid?: string,
-  ) {
+  async getUserMap(casts: BaseFarcasterCastWithContext[], viewerFid?: string) {
     const fids = new Set<string>();
     for (const cast of casts) {
       fids.add(cast.fid);
@@ -93,16 +87,16 @@ export class FarcasterService {
         fids.add(fid);
       }
     }
-    const relatedEntities = await this.entityClient.fetchEntitiesByFids(
+    const relatedUsers = await this.farcasterClient.fetchUsers(
       Array.from(fids),
       viewerFid,
     );
-    return relatedEntities.data.reduce(
-      (acc, entity) => {
-        acc[entity.farcaster.fid] = entity;
+    return relatedUsers.data.reduce(
+      (acc, user) => {
+        acc[user.fid] = user;
         return acc;
       },
-      {} as Record<string, EntityResponse>,
+      {} as Record<string, FarcasterUserWithContext>,
     );
   }
 
@@ -126,26 +120,26 @@ export class FarcasterService {
   formatCast(
     hash: string,
     castMap: Record<string, BaseFarcasterCastWithContext>,
-    entityMap: Record<string, EntityResponse>,
+    userMap: Record<string, FarcasterUserWithContext>,
     contentMap: Record<string, UrlContentResponse>,
   ): FarcasterCastResponse | undefined {
     const cast = castMap[hash];
     if (!cast) return;
     return {
       ...cast,
-      entity: entityMap[cast.fid],
+      user: userMap[cast.fid],
       mentions: cast.mentions.map((mention) => ({
-        entity: entityMap[mention.fid],
+        user: userMap[mention.fid],
         position: mention.position,
       })),
       embedCasts: cast.embedHashes
-        .map((hash) => this.formatCast(hash, castMap, entityMap, contentMap))
+        .map((hash) => this.formatCast(hash, castMap, userMap, contentMap))
         .filter(Boolean) as FarcasterCastResponse[],
       parent: cast.parentHash
-        ? this.formatCast(cast.parentHash, castMap, entityMap, contentMap)
+        ? this.formatCast(cast.parentHash, castMap, userMap, contentMap)
         : undefined,
       rootParent: cast.rootParentHash
-        ? this.formatCast(cast.rootParentHash, castMap, entityMap, contentMap)
+        ? this.formatCast(cast.rootParentHash, castMap, userMap, contentMap)
         : undefined,
       embeds: cast.embedUrls.map((url) => contentMap[url]),
     };

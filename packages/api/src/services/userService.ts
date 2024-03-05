@@ -9,13 +9,13 @@ import {
   TokenResponse,
   GetUserResponse,
 } from "../../types";
-import { EntityClient, NookClient } from "@nook/common/clients";
+import { FarcasterClient, NookClient } from "@nook/common/clients";
 
 export class UserService {
   private farcasterAuthClient: FarcasterAuthClient;
   private jwt: FastifyInstance["jwt"];
-  private entityClient: EntityClient;
   private nookClient: NookClient;
+  private farcasterClient: FarcasterClient;
 
   constructor(fastify: FastifyInstance) {
     this.jwt = fastify.jwt;
@@ -23,7 +23,7 @@ export class UserService {
       ethereum: viemConnector(),
     });
     this.nookClient = fastify.nook.client;
-    this.entityClient = new EntityClient();
+    this.farcasterClient = new FarcasterClient();
   }
 
   async signInWithFarcaster(
@@ -41,19 +41,13 @@ export class UserService {
     const fid = "20716";
     // const fid = verifyResult.fid.toString();
 
-    const entity = await this.entityClient.fetchEntityByFid(fid);
-    if (!entity) {
-      return;
-    }
-
     const refreshToken = this.jwt.sign({
-      id: entity.id,
       fid,
     });
 
-    let user = await this.nookClient.getUser(entity.id);
+    let user = await this.nookClient.getUserByFid(fid);
     if (!user) {
-      user = await this.nookClient.createUser(entity.id, refreshToken);
+      user = await this.nookClient.createUser(fid, refreshToken);
     }
 
     const expiresIn = 60 * 60 * 24 * 7;
@@ -75,7 +69,7 @@ export class UserService {
 
   async getToken(refreshToken: string): Promise<TokenResponse | undefined> {
     const decoded = this.jwt.verify(refreshToken) as { id: string };
-    const user = await this.nookClient.getUser(decoded.id);
+    const user = await this.nookClient.getUserByFid(decoded.id);
     if (!user) {
       return;
     }
@@ -106,13 +100,10 @@ export class UserService {
       return;
     }
 
-    const nooks = await this.nookClient.getNooksByUser(id);
-    const entity = await this.entityClient.fetchEntity(user.id);
-
     return {
-      user,
-      entity,
-      nooks,
+      ...user,
+      user: await this.farcasterClient.fetchUser(user.fid),
+      nooks: await this.nookClient.getNooksByUser(id),
     };
   }
 }

@@ -1,8 +1,8 @@
-import { EntityResponse } from "./farcaster";
+import { FarcasterUserWithContext } from "./farcaster";
 
 export type NookResponse = {
   id: string;
-  creator?: EntityResponse;
+  creator?: FarcasterUserWithContext;
   name: string;
   description?: string;
   metadata: NookMetadata;
