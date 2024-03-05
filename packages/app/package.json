@@ -33,6 +33,7 @@
     "expo": "50.0.7",
     "expo-av": "~13.10.5",
     "expo-blur": "~12.9.2",
+    "expo-haptics": "~12.8.1",
     "expo-image": "~1.10.6",
     "expo-linking": "~6.2.1",
     "expo-secure-store": "^12.8.1",

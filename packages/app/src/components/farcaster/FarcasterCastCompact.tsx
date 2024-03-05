@@ -2,15 +2,15 @@ import { Separator, Text, View, XStack, YStack, useTheme } from "tamagui";
 import { UserAvatar } from "@/components/user/UserAvatar";
 import { FarcasterCastText } from "@/components/farcaster/FarcasterCastText";
 import { UserDisplay } from "../user/UserDisplay";
-import { Heart, MessageSquare, RefreshCw } from "@tamagui/lucide-icons";
+import { MessageSquare } from "@tamagui/lucide-icons";
 import { formatTimeAgo } from "@/utils";
 import { ChannelDisplay } from "../channel/ChannelDisplay";
 import { FarcasterCastResponseWithContext } from "@nook/common/types";
 import { Embed } from "../embeds/Embed";
 import { EmbedCast } from "../embeds/EmbedCast";
-import { TouchableOpacity } from "react-native-gesture-handler";
 import { useAppDispatch } from "@/hooks/useAppDispatch";
-import { farcasterApi } from "@/store/apis/farcasterApi";
+import { FarcasterCastLikeButton } from "./FarcasterCastLikeButton";
+import { FarcasterCastRecastButton } from "./FarcasterCastRecastButton";
 
 export const FarcasterCastCompact = ({
   cast,
@@ -68,84 +68,8 @@ export const FarcasterCastCompact = ({
                 {cast.engagement.replies}
               </Text>
             </View>
-            <TouchableOpacity
-              onPress={
-                cast.context
-                  ? cast.context.liked
-                    ? () =>
-                        dispatch(
-                          farcasterApi.endpoints.unrecastCast.initiate({
-                            hash: cast.hash,
-                          }),
-                        )
-                    : () =>
-                        dispatch(
-                          farcasterApi.endpoints.recastCast.initiate({
-                            hash: cast.hash,
-                          }),
-                        )
-                  : () => {}
-              }
-            >
-              <View
-                flexDirection="row"
-                alignItems="center"
-                gap="$1.5"
-                width="$3"
-              >
-                <RefreshCw
-                  size={16}
-                  color={cast.context?.recasted ? "$green9" : "$gray10"}
-                  fill={
-                    cast.context?.recasted
-                      ? theme.$green9.val
-                      : theme.$background.val
-                  }
-                />
-                <Text color="$gray10" fontSize="$4">
-                  {cast.engagement.recasts}
-                </Text>
-              </View>
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={
-                cast.context
-                  ? cast.context.liked
-                    ? () =>
-                        dispatch(
-                          farcasterApi.endpoints.unlikeCast.initiate({
-                            hash: cast.hash,
-                          }),
-                        )
-                    : () =>
-                        dispatch(
-                          farcasterApi.endpoints.likeCast.initiate({
-                            hash: cast.hash,
-                          }),
-                        )
-                  : () => {}
-              }
-            >
-              <View
-                flexDirection="row"
-                alignItems="center"
-                gap="$1.5"
-                width="$3"
-              >
-                <Heart
-                  size={16}
-                  color={cast.context?.liked ? "$red9" : "$gray10"}
-                  fill={
-                    cast.context?.liked
-                      ? theme.$red9.val
-                      : theme.$background.val
-                  }
-                />
-                <Text color="$gray10" fontSize="$4">
-                  {cast.engagement.likes}
-                </Text>
-              </View>
-            </TouchableOpacity>
+            <FarcasterCastRecastButton hash={cast.hash} withAmount />
+            <FarcasterCastLikeButton hash={cast.hash} withAmount />
           </XStack>
         )}
       </YStack>

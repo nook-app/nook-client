@@ -197,11 +197,12 @@ export class NookClient {
     });
   }
 
-  async getChannels(ids: string[]) {
-    return await Promise.all(ids.map((id) => this.getChannel(id)));
+  async getChannels(ids: string[]): Promise<Channel[]> {
+    const channels = await Promise.all(ids.map((id) => this.getChannel(id)));
+    return channels.filter(Boolean) as Channel[];
   }
 
-  async getChannel(id: string) {
+  async getChannel(id: string): Promise<Channel | null> {
     const cached = await this.redis.getJson(
       `${this.CHANNEL_CACHE_PREFIX}:${id}`,
     );

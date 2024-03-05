@@ -11,6 +11,7 @@ import {
   GetEntityResponse,
   UrlContentResponse,
 } from "@nook/common/types";
+import { Channel } from "@nook/common/prisma/nook";
 
 export const MAX_FEED_ITEMS = 25;
 
@@ -39,13 +40,16 @@ export class FarcasterService {
     viewerFid?: string,
   ): Promise<FarcasterCastResponse[]> {
     const castMap = await this.getCastMap(casts, viewerFid);
-    const [userMap, contentMap] = await Promise.all([
+    const [userMap, contentMap, channelMap] = await Promise.all([
       this.getUserMap(Object.values(castMap), viewerFid),
       this.getContentMap(Object.values(castMap)),
+      this.getChannelMap(Object.values(castMap)),
     ]);
 
     return casts
-      .map(({ hash }) => this.formatCast(hash, castMap, userMap, contentMap))
+      .map(({ hash }) =>
+        this.formatCast(hash, castMap, userMap, contentMap, channelMap),
+      )
       .filter(Boolean) as FarcasterCastResponse[];
   }
 
@@ -117,11 +121,29 @@ export class FarcasterService {
     );
   }
 
+  async getChannelMap(casts: BaseFarcasterCastWithContext[]) {
+    const urls = new Set<string>();
+    for (const cast of casts) {
+      if (cast.parentUrl) {
+        urls.add(cast.parentUrl);
+      }
+    }
+    const channels = await this.nookClient.getChannels(Array.from(urls));
+    return channels.reduce(
+      (acc, channel) => {
+        acc[channel.id] = channel;
+        return acc;
+      },
+      {} as Record<string, Channel>,
+    );
+  }
+
   formatCast(
     hash: string,
     castMap: Record<string, BaseFarcasterCastWithContext>,
     entityMap: Record<string, GetEntityResponse>,
     contentMap: Record<string, UrlContentResponse>,
+    channelMap: Record<string, Channel>,
   ): FarcasterCastResponse | undefined {
     const cast = castMap[hash];
     if (!cast) return;
@@ -133,15 +155,30 @@ export class FarcasterService {
         position: mention.position,
       })),
       embedCasts: cast.embedHashes
-        .map((hash) => this.formatCast(hash, castMap, entityMap, contentMap))
+        .map((hash) =>
+          this.formatCast(hash, castMap, entityMap, contentMap, channelMap),
+        )
         .filter(Boolean) as FarcasterCastResponse[],
       parent: cast.parentHash
-        ? this.formatCast(cast.parentHash, castMap, entityMap, contentMap)
+        ? this.formatCast(
+            cast.parentHash,
+            castMap,
+            entityMap,
+            contentMap,
+            channelMap,
+          )
         : undefined,
       rootParent: cast.rootParentHash
-        ? this.formatCast(cast.rootParentHash, castMap, entityMap, contentMap)
+        ? this.formatCast(
+            cast.rootParentHash,
+            castMap,
+            entityMap,
+            contentMap,
+            channelMap,
+          )
         : undefined,
       embeds: cast.embedUrls.map((url) => contentMap[url]),
+      channel: cast.parentUrl ? channelMap[cast.parentUrl] : undefined,
     };
   }
 
