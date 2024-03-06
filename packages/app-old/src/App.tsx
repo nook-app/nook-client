@@ -13,7 +13,7 @@ import { config } from "../tamagui.config";
 import { useFonts } from "expo-font";
 import { useEffect } from "react";
 import { Provider } from "react-redux";
-import { store } from "../src/store/index";
+import { store } from "./store/index";
 import { Navigator } from "./components/navigator/Navigator";
 import { AuthProvider } from "./context/auth";
 import { SafeAreaProvider } from "react-native-safe-area-context";
