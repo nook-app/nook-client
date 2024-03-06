@@ -1,6 +1,6 @@
 import * as cheerio from "cheerio";
 import { RulesOptions, Rules, RulesTestOptions } from "metascraper";
-import { metascraperFrame } from "../../../content/utils/metascraper-frame";
+import { metascraperFrame } from "../../../src/utils/metascraper/metascraper-frame";
 
 type Testable = {
   test: (args: RulesTestOptions) => boolean;

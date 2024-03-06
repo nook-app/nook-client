@@ -1,7 +1,6 @@
 import fastify from "fastify";
-import {  farcasterPlugin, cachePlugin } from "./plugins";
-import { castRoutes } from "./routes/casts";
-import { userRoutes } from "./routes/user";
+import { contentPlugin, cachePlugin } from "./plugins";
+import { contentRoutes } from "./routes/content";
 
 const buildApp = () => {
   const app = fastify({
@@ -19,11 +18,10 @@ const buildApp = () => {
     return this.toString();
   };
 
-  app.register(farcasterPlugin);
+  app.register(contentPlugin);
   app.register(cachePlugin);
 
-  app.register(userRoutes);
-  app.register(castRoutes);
+  app.register(contentRoutes);
 
   return app;
 };
@@ -31,7 +29,7 @@ const buildApp = () => {
 const start = async () => {
   const app = buildApp();
   try {
-    const port = Number(process.env.PORT || "3001");
+    const port = Number(process.env.PORT || "3002");
     await app.listen({ port, host: "0.0.0.0" });
     console.log(`Listening on :${port}`);
   } catch (err) {

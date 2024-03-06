@@ -12,7 +12,7 @@ import metascraperLogoFavicon from "metascraper-logo-favicon";
 import metascraperPublisher from "metascraper-publisher";
 import metascraperReadability from "metascraper-readability";
 import metascraperUrl from "metascraper-url";
-import { metascraperFrame } from "./utils/metascraper-frame";
+import { metascraperFrame } from "./metascraper/metascraper-frame";
 import {
   FrameMetascraperData,
   FrameData,
@@ -20,7 +20,7 @@ import {
   FrameButtonAction,
   UnstructuredFrameMetascraperButtonKeys,
 } from "@nook/common/types";
-import { UrlContent } from "../prisma/content";
+import { UrlContent } from "@nook/common/prisma/content";
 
 export type UrlMetadata = {
   metadata?: Metadata;

@@ -1,29 +1,29 @@
 import fp from "fastify-plugin";
-import { PrismaClient } from "@nook/common/prisma/farcaster";
-import {  FarcasterCacheClient } from "@nook/common/clients";
+import { PrismaClient } from "@nook/common/prisma/content";
+import { ContentCacheClient } from "@nook/common/clients";
 
 declare module "fastify" {
   interface FastifyInstance {
-    farcaster: {
+    content: {
       client: PrismaClient;
     };
     cache: {
-      client: FarcasterCacheClient;
+      client: ContentCacheClient;
     };
   }
 }
 
-export const farcasterPlugin = fp(async (fastify, opts) => {
+export const contentPlugin = fp(async (fastify, opts) => {
   const client = new PrismaClient();
   await client.$connect();
-  fastify.decorate("farcaster", { client });
+  fastify.decorate("content", { client });
   fastify.addHook("onClose", async (fastify) => {
-    await fastify.farcaster.client.$disconnect();
+    await fastify.content.client.$disconnect();
   });
 });
 
 export const cachePlugin = fp(async (fastify, opts) => {
-  const client = new FarcasterCacheClient();
+  const client = new ContentCacheClient();
   await client.connect();
   fastify.decorate("cache", { client });
   fastify.addHook("onClose", async (fastify) => {

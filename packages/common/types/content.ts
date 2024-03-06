@@ -59,3 +59,17 @@ export type UrlContentResponse = {
   metadata?: Metadata;
   frame?: FrameData;
 };
+
+export enum ContentReferenceType {
+  Embed = "EMBED",
+  Reply = "REPLY",
+  Quote = "QUOTE",
+}
+
+export type ContentReference = {
+  fid: bigint;
+  hash: string;
+  uri: string;
+  type: ContentReferenceType;
+  timestamp: Date;
+};

@@ -1,5 +1,5 @@
 import { PrismaClient } from "../../prisma/nook";
-import { RedisClient } from "../../redis";
+import { RedisClient } from "../cache/base";
 import {
   generateKeyPair,
   getWarpcastDeeplink,

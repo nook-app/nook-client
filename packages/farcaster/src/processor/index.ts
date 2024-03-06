@@ -32,16 +32,13 @@ import {
 } from "@nook/common/farcaster";
 import { FarcasterEventType } from "@nook/common/types";
 import { publishEvent } from "@nook/common/queues";
-import { RedisClient } from "@nook/common/redis";
 
 export class FarcasterEventProcessor {
   private client: PrismaClient;
   private hub: HubRpcClient;
-  private redis: RedisClient;
 
   constructor() {
     this.client = new PrismaClient();
-    this.redis = new RedisClient();
     this.hub = getSSLHubRpcClient(process.env.HUB_RPC_ENDPOINT as string);
   }
 

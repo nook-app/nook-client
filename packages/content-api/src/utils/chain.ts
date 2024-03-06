@@ -1,8 +1,8 @@
 import {
   NFTCollection,
   NFTCollectionByContractResponse,
-} from "../types/providers/simplehash/contract";
-import { NFT } from "../types/providers/simplehash/nft";
+} from "@nook/common/types/providers/simplehash/contract";
+import { NFT } from "@nook/common/types/providers/simplehash/nft";
 
 type Asset = {
   contentId: string;

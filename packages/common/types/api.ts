@@ -1,6 +1,6 @@
-import { Channel } from "../prisma/nook";
 import { UrlContentResponse } from "./content";
 import {
+  Channel,
   FarcasterCastContext,
   FarcasterCastEngagement,
   FarcasterUser,
@@ -77,4 +77,16 @@ export type GetFarcasterCastsResponse = {
 export type GetFarcasterUsersResponse = {
   data: FarcasterUser[];
   nextCursor?: string;
+};
+
+export type GetContentRequest = {
+  uri: string;
+};
+
+export type GetContentsRequest = {
+  uris: string[];
+};
+
+export type GetContentsResponse = {
+  data: UrlContentResponse[];
 };

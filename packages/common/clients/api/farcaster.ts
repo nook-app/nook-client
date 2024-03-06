@@ -7,7 +7,7 @@ import {
   FarcasterCastResponse,
   GetFarcasterCastsResponse,
 } from "../../types";
-import { BaseClient } from "../base";
+import { BaseClient } from "./base";
 
 export class FarcasterAPIClient extends BaseClient {
   API_ENDPOINT = process.env.FARCASTER_API_ENDPOINT;

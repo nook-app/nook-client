@@ -94,7 +94,7 @@ export class FarcasterProcessor {
     if (!cast) return;
 
     const promises = [];
-    promises.push(this.contentClient.addReferencedContent(cast));
+    promises.push(this.contentClient.addContentReferences(cast));
 
     if (cast.parentHash) {
       promises.push(
@@ -114,7 +114,7 @@ export class FarcasterProcessor {
     if (!cast) return;
 
     const promises = [];
-    promises.push(this.contentClient.removeReferencedContent(cast));
+    promises.push(this.contentClient.removeContentReferences(cast));
 
     if (cast.parentHash) {
       promises.push(

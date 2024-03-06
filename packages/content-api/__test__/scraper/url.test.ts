@@ -1,4 +1,4 @@
-import { fetchUrlMetadata } from "../../content";
+import { fetchUrlMetadata } from "../../src/utils";
 
 jest.mock("metascraper-media-provider", () => () => {
   return {};

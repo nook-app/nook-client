@@ -1,4 +1,4 @@
-import { RedisClient } from "../../redis";
+import { RedisClient } from "./base";
 import {
   BaseFarcasterCast,
   BaseFarcasterUser,

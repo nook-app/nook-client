@@ -39,7 +39,7 @@ export class FarcasterService {
   constructor(fastify: FastifyInstance) {
     this.client = fastify.farcaster.client;
     this.cache = fastify.cache.client;
-    this.contentClient = fastify.content.client;
+    this.contentClient = new ContentClient();
   }
 
   async getCasts(
@@ -114,7 +114,7 @@ export class FarcasterService {
     return {
       ...rawCast,
       user: userMap[rawCast.fid],
-      embeds,
+      embeds: embeds.data,
       mentions: rawCast.mentions.map((mention) => ({
         user: userMap[mention.fid],
         position: mention.position,
