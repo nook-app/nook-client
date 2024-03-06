@@ -1,5 +1,10 @@
 import fastify from "fastify";
-import { farcasterPlugin, redisPlugin } from "./plugins";
+import {
+  contentPlugin,
+  farcasterPlugin,
+  nookPlugin,
+  cachePlugin,
+} from "./plugins";
 import { castRoutes } from "./routes/casts";
 import { userRoutes } from "./routes/user";
 
@@ -20,7 +25,9 @@ const buildApp = () => {
   };
 
   app.register(farcasterPlugin);
-  app.register(redisPlugin);
+  app.register(nookPlugin);
+  app.register(contentPlugin);
+  app.register(cachePlugin);
 
   app.register(userRoutes);
   app.register(castRoutes);

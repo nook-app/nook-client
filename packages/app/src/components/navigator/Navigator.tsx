@@ -15,7 +15,7 @@ export function Navigator() {
   const theme = useAppSelector((state) => state.auth.theme);
 
   return (
-    <Theme name={theme || "gray"}>
+    <Theme name={theme}>
       <Modals />
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         {session && homeNook ? (

@@ -18,7 +18,7 @@ export const NooksNavigator = () => {
         const focusedRoute = getFocusedRouteNameFromRoute(route);
         return {
           headerShown: false,
-          swipeEdgeWidth: 600,
+          swipeEdgeWidth: 300,
           drawerStyle: {
             width: 300,
           },

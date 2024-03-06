@@ -5,20 +5,14 @@ import {
   getWarpcastDeeplink,
   validateWarpcastSigner,
 } from "../../signer";
-import {
-  FarcasterUserWithContext,
-  GetEntityResponse,
-  NookMetadata,
-  NookResponse,
-} from "../../types";
-import { FarcasterClient } from "../farcaster";
+import { FarcasterUser, NookMetadata, NookResponse } from "../../types";
+import { FarcasterAPIClient } from "../api/farcaster";
 
 export class NookClient {
   private client: PrismaClient;
   private redis: RedisClient;
-  private farcasterClient: FarcasterClient;
+  private farcasterClient: FarcasterAPIClient;
 
-  FEED_CACHE_PREFIX = "feed";
   CHANNEL_CACHE_PREFIX = "channel";
   NOOK_CACHE_PREFIX = "nook";
   ENTITY_CACHE_PREFIX = "entity";
@@ -27,7 +21,7 @@ export class NookClient {
   constructor() {
     this.client = new PrismaClient();
     this.redis = new RedisClient();
-    this.farcasterClient = new FarcasterClient();
+    this.farcasterClient = new FarcasterAPIClient();
   }
 
   async connect() {
@@ -40,57 +34,33 @@ export class NookClient {
     await this.redis.close();
   }
 
-  async getEntityByFid(fid: string) {
-    return await this.client.entity.findFirst({
+  async getUser(fid: string) {
+    return await this.client.user.findFirst({
       where: {
-        farcaster: {
-          fid,
-        },
+        fid,
       },
     });
   }
 
-  async createEntityByFid(fid: string) {
-    return await this.client.entity.create({
-      data: {
-        farcaster: {
-          create: {
-            fid,
-            signerEnabled: false,
-          },
-        },
-      },
-    });
-  }
-
-  async getEntity(id: string) {
-    return await this.client.entity.findUnique({
-      where: {
-        id,
-      },
-      include: {
-        user: true,
-        farcaster: true,
-      },
-    });
-  }
-
-  async createUser(id: string, refreshToken: string) {
+  async createUser(fid: string, refreshToken: string) {
     const date = new Date();
     return await this.client.user.create({
       data: {
-        id,
+        fid,
         signedUpAt: date,
         loggedInAt: date,
         refreshToken,
+        signerEnabled: false,
       },
     });
   }
 
-  async getNooksByUser(id: string) {
+  async getNooksByUser(fid: string) {
     const memberships = await this.client.nookMembership.findMany({
       where: {
-        userId: id,
+        user: {
+          fid,
+        },
       },
     });
 
@@ -99,7 +69,7 @@ export class NookClient {
     );
   }
 
-  async getSigner(id: string, active?: boolean) {
+  async getSigner(fid: string, active?: boolean) {
     const states = [];
     if (active) {
       states.push("completed");
@@ -110,7 +80,7 @@ export class NookClient {
 
     return await this.client.signer.findFirst({
       where: {
-        userId: id,
+        fid,
         state: {
           in: states,
         },
@@ -118,13 +88,13 @@ export class NookClient {
     });
   }
 
-  async createPendingSigner(id: string) {
+  async createPendingSigner(fid: string) {
     const { publicKey, privateKey } = await generateKeyPair();
     const { token, deeplinkUrl, state } = await getWarpcastDeeplink(publicKey);
 
     return await this.client.signer.create({
       data: {
-        userId: id,
+        fid,
         publicKey,
         privateKey,
         token,
@@ -147,9 +117,9 @@ export class NookClient {
         },
       });
 
-      await this.client.entityFarcaster.update({
+      await this.client.user.update({
         where: {
-          entityId: signer.userId,
+          fid: signer.fid,
         },
         data: {
           signerEnabled: true,
@@ -171,7 +141,7 @@ export class NookClient {
       throw new Error(`Nook not found ${id}`);
     }
 
-    const creator = await this.farcasterClient.fetchUser(nook.creatorId);
+    const creator = await this.farcasterClient.getUser(nook.creatorFid);
 
     const nookResponse: NookResponse = {
       id: nook.id,
@@ -202,7 +172,7 @@ export class NookClient {
     return channels.filter(Boolean) as Channel[];
   }
 
-  async getChannel(id: string): Promise<Channel | null> {
+  async getChannel(id: string): Promise<Channel | undefined> {
     const cached = await this.redis.getJson(
       `${this.CHANNEL_CACHE_PREFIX}:${id}`,
     );
@@ -216,24 +186,23 @@ export class NookClient {
       channel = await this.createChannel(id);
     }
 
-    if (channel) {
-      await this.redis.setJson(`${this.CHANNEL_CACHE_PREFIX}:${id}`, channel);
-    }
-
+    await this.redis.setJson(`${this.CHANNEL_CACHE_PREFIX}:${id}`, channel);
     return channel;
   }
 
   async fetchChannel(id: string) {
-    return await this.client.channel.findUnique({
-      where: {
-        id,
-      },
-    });
+    return (
+      (await this.client.channel.findUnique({
+        where: {
+          id,
+        },
+      })) || undefined
+    );
   }
 
   async createChannel(id: string) {
     const channel = await this.fetchChannelFromSource(id);
-    if (!channel) return null;
+    if (!channel) return;
 
     await this.client.channel.upsert({
       where: {
@@ -271,9 +240,9 @@ export class NookClient {
       throw new Error("Channel not found");
     }
 
-    let creator: FarcasterUserWithContext | undefined;
+    let creator: FarcasterUser | undefined;
     if (channelData.leadFid) {
-      creator = await this.farcasterClient.fetchUser(
+      creator = await this.farcasterClient.getUser(
         channelData.leadFid.toString(),
       );
     }
@@ -307,78 +276,5 @@ export class NookClient {
         },
       },
     });
-  }
-
-  async addToFeed(feedId: string, value: string, timestamp: number) {
-    await this.redis.addToSet(
-      `${this.FEED_CACHE_PREFIX}:${feedId}`,
-      value,
-      timestamp,
-    );
-  }
-
-  async batchAddToFeed(
-    feedId: string,
-    values: { value: string; timestamp: number }[],
-  ) {
-    await this.redis.batchAddToSet(
-      `${this.FEED_CACHE_PREFIX}:${feedId}`,
-      values,
-    );
-  }
-
-  async removeFromFeed(feedId: string, value: string) {
-    await this.redis.removeFromSet(
-      `${this.FEED_CACHE_PREFIX}:${feedId}`,
-      value,
-    );
-  }
-
-  async addToFeeds(feedIds: string[], value: string, timestamp: number) {
-    await this.redis.addToSets(
-      feedIds.map((feedId) => `${this.FEED_CACHE_PREFIX}:${feedId}`),
-      value,
-      timestamp,
-    );
-  }
-
-  async removeFromFeeds(feedIds: string[], value: string) {
-    await this.redis.removeFromSets(
-      feedIds.map((feedId) => `${this.FEED_CACHE_PREFIX}:${feedId}`),
-      value,
-    );
-  }
-
-  async getFeed(feedId: string, cursor?: number) {
-    const results = await this.redis.getSet(
-      `${this.FEED_CACHE_PREFIX}:${feedId}`,
-      cursor,
-    );
-    const feedItems = [];
-    for (let i = 0; i < results.length; i += 2) {
-      feedItems.push({
-        value: results[i],
-        score: parseFloat(results[i + 1]),
-      });
-    }
-    return feedItems;
-  }
-
-  async getEntityIdsForFids(fids: string[]) {
-    return await Promise.all(fids.map((fid) => this.getEntityIdForFid(fid)));
-  }
-
-  async getEntityIdForFid(fid: string): Promise<string> {
-    let entityId = await this.redis.get(`${this.FID_CACHE_PREFIX}:${fid}`);
-    if (!entityId) {
-      let entity = await this.getEntityByFid(fid);
-      if (!entity) {
-        entity = await this.createEntityByFid(fid);
-      }
-      entityId = entity.id;
-      await this.redis.set(`${this.FID_CACHE_PREFIX}:${fid}`, entityId);
-    }
-
-    return entityId;
   }
 }

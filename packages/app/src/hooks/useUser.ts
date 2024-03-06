@@ -22,5 +22,6 @@ export const useUser = (userId: string) => {
     pfp: formatToWarpcastCDN(user?.farcaster?.pfp, 168),
     following: user?.farcaster?.engagement?.following || 0,
     followers: user?.farcaster?.engagement?.followers || 0,
+    context: user?.farcaster?.context,
   };
 };

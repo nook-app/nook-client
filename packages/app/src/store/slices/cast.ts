@@ -10,7 +10,40 @@ const castAdapter = createEntityAdapter({
 const contentSlice = createSlice({
   name: "content",
   initialState: castAdapter.getInitialState(),
-  reducers: {},
+  reducers: {
+    likeCast: (state, action) => {
+      const existingCast = state.entities[action.payload.hash];
+      if (existingCast?.context) {
+        existingCast.context.liked = true;
+      } else {
+        existingCast.context = { liked: true, recasted: false };
+      }
+    },
+    unlikeCast: (state, action) => {
+      const existingCast = state.entities[action.payload.hash];
+      if (existingCast?.context) {
+        existingCast.context.liked = false;
+      } else {
+        existingCast.context = { liked: false, recasted: false };
+      }
+    },
+    recastCast: (state, action) => {
+      const existingCast = state.entities[action.payload.hash];
+      if (existingCast?.context) {
+        existingCast.context.recasted = true;
+      } else {
+        existingCast.context = { liked: false, recasted: true };
+      }
+    },
+    unrecastCast: (state, action) => {
+      const existingCast = state.entities[action.payload.hash];
+      if (existingCast?.context) {
+        existingCast.context.recasted = false;
+      } else {
+        existingCast.context = { liked: false, recasted: false };
+      }
+    },
+  },
   extraReducers: (builder) => {
     builder.addMatcher(
       farcasterApi.endpoints.getCast.matchFulfilled,
@@ -52,59 +85,14 @@ const contentSlice = createSlice({
         castAdapter.removeOne(state, action.payload.hash);
       },
     );
-    builder.addMatcher(
-      farcasterApi.endpoints.likeCast.matchFulfilled,
-      (state, action) => {
-        const { hash } = action.payload;
-        const existingCast = state.entities[hash];
-        if (existingCast?.context) {
-          existingCast.context.liked = true;
-        } else {
-          existingCast.context = { liked: true, recasted: false };
-        }
-      },
-    );
-    builder.addMatcher(
-      farcasterApi.endpoints.unlikeCast.matchFulfilled,
-      (state, action) => {
-        const { hash } = action.payload;
-        const existingCast = state.entities[hash];
-        if (existingCast?.context) {
-          existingCast.context.liked = false;
-        } else {
-          existingCast.context = { liked: false, recasted: false };
-        }
-      },
-    );
-    builder.addMatcher(
-      farcasterApi.endpoints.recastCast.matchFulfilled,
-      (state, action) => {
-        const { hash } = action.payload;
-        const existingCast = state.entities[hash];
-        if (existingCast?.context) {
-          existingCast.context.recasted = true;
-        } else {
-          existingCast.context = { liked: false, recasted: true };
-        }
-      },
-    );
-    builder.addMatcher(
-      farcasterApi.endpoints.unrecastCast.matchFulfilled,
-      (state, action) => {
-        const { hash } = action.payload;
-        const existingCast = state.entities[hash];
-        if (existingCast?.context) {
-          existingCast.context.recasted = false;
-        } else {
-          existingCast.context = { liked: false, recasted: false };
-        }
-      },
-    );
   },
 });
 
 export const { selectById: selectCastById } = castAdapter.getSelectors(
   (state: RootState) => state.casts,
 );
+
+export const { likeCast, unlikeCast, recastCast, unrecastCast } =
+  contentSlice.actions;
 
 export default contentSlice.reducer;

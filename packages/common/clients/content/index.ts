@@ -2,7 +2,11 @@ import { Metadata } from "metascraper";
 import { getUrlContent } from "../../content";
 import { Prisma, PrismaClient } from "../../prisma/content";
 import { RedisClient } from "../../redis";
-import { BaseFarcasterCast, FrameData, UrlContentResponse } from "../../types";
+import {
+  FarcasterCastResponse,
+  FrameData,
+  UrlContentResponse,
+} from "../../types";
 
 enum ContentReferenceType {
   Embed = "EMBED",
@@ -39,14 +43,14 @@ export class ContentClient {
     await this.redis.close();
   }
 
-  async addReferencedContent(cast: BaseFarcasterCast) {
+  async addReferencedContent(cast: FarcasterCastResponse) {
     const references = this.parseReferencedContent(cast);
     await Promise.all(
       references.map((reference) => this.upsertReferencedContent(reference)),
     );
   }
 
-  async removeReferencedContent(cast: BaseFarcasterCast) {
+  async removeReferencedContent(cast: FarcasterCastResponse) {
     const references = this.parseReferencedContent(cast);
     await this.client.farcasterContentReference.deleteMany({
       where: {
@@ -122,42 +126,42 @@ export class ContentClient {
     });
   }
 
-  parseReferencedContent(cast: BaseFarcasterCast) {
+  parseReferencedContent(cast: FarcasterCastResponse) {
     const timestamp = new Date(cast.timestamp);
     const references: ContentReference[] = [];
-    for (const url of cast.embedUrls) {
+    for (const url of cast.embeds) {
       references.push({
-        fid: BigInt(cast.fid),
+        fid: BigInt(cast.user.fid),
         hash: cast.hash,
-        uri: url,
+        uri: url.uri,
         type: ContentReferenceType.Embed,
         timestamp,
       });
     }
 
-    // for (const castEmbed of cast.embedHashes) {
-    //   for (const url of castEmbed.embedUrls) {
-    //     references.push({
-    //       fid: BigInt(cast.fid),
-    //       hash: cast.hash,
-    //       uri: url,
-    //       type: ContentReferenceType.Reply,
-    //       timestamp,
-    //     });
-    //   }
-    // }
+    for (const castEmbed of cast.embedCasts) {
+      for (const url of castEmbed.embeds) {
+        references.push({
+          fid: BigInt(cast.user.fid),
+          hash: cast.hash,
+          uri: url.uri,
+          type: ContentReferenceType.Quote,
+          timestamp,
+        });
+      }
+    }
 
-    // if (cast.parentHash) {
-    //   for (const url of cast.parent.embedUrls) {
-    //     references.push({
-    //       fid: BigInt(cast.fid),
-    //       hash: cast.hash,
-    //       uri: url,
-    //       type: ContentReferenceType.Quote,
-    //       timestamp,
-    //     });
-    //   }
-    // }
+    if (cast.parent) {
+      for (const url of cast.parent.embeds) {
+        references.push({
+          fid: BigInt(cast.user.fid),
+          hash: cast.hash,
+          uri: url.uri,
+          type: ContentReferenceType.Quote,
+          timestamp,
+        });
+      }
+    }
 
     return references;
   }

@@ -1,7 +1,7 @@
-import { Spinner, Text, View, useTheme } from "tamagui";
+import { ScrollView, Spinner, Text, View, useTheme } from "tamagui";
 import { ViewToken } from "react-native";
 import { useCallback, useEffect, useState } from "react";
-import { RefreshControl } from "react-native-gesture-handler";
+import { FlatList, RefreshControl } from "react-native-gesture-handler";
 import {
   FarcasterCastResponseWithContext,
   FarcasterFeedArgs,
@@ -10,7 +10,10 @@ import { Tabs } from "react-native-collapsible-tab-view";
 import { farcasterApi } from "@/store/apis/farcasterApi";
 import { FarcasterFeedItem } from "../farcaster/FarcasterFeedItem";
 
-export const FarcasterFeedPanel = ({ args }: { args: FarcasterFeedArgs }) => {
+export const FarcasterFeedPanel = ({
+  args,
+  asTabs,
+}: { args: FarcasterFeedArgs; asTabs?: boolean }) => {
   const [cursor, setCursor] = useState<number | undefined>(undefined);
   const [accumulatedData, setAccumulatedData] = useState<
     FarcasterCastResponseWithContext[]
@@ -67,8 +70,9 @@ export const FarcasterFeedPanel = ({ args }: { args: FarcasterFeedArgs }) => {
   );
 
   if (isLoading || !data) {
+    const ScrollViewComponent = asTabs ? Tabs.ScrollView : ScrollView;
     return (
-      <Tabs.ScrollView>
+      <ScrollViewComponent>
         <View padding="$5" alignItems="center" backgroundColor="$background">
           {isLoading ? (
             <Spinner size="large" color="$color11" />
@@ -76,12 +80,14 @@ export const FarcasterFeedPanel = ({ args }: { args: FarcasterFeedArgs }) => {
             <Text>No data found.</Text>
           )}
         </View>
-      </Tabs.ScrollView>
+      </ScrollViewComponent>
     );
   }
 
+  const FlatListComponent = asTabs ? Tabs.FlatList : FlatList;
+
   return (
-    <Tabs.FlatList
+    <FlatListComponent
       nestedScrollEnabled
       data={accumulatedData}
       renderItem={({ item }) => (

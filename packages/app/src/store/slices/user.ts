@@ -6,20 +6,20 @@ import { FarcasterCastResponse, GetEntityResponse } from "@nook/common/types";
 
 const getEntities = (cast: FarcasterCastResponse) => {
   const entities = [];
-  entities.push(cast.entity);
+  entities.push(cast.user);
   for (const mention of cast.mentions) {
-    entities.push(mention.entity);
+    entities.push(mention.user);
   }
   if (cast.parent) {
-    entities.push(cast.parent.entity);
+    entities.push(cast.parent.user);
     for (const mention of cast.parent.mentions) {
-      entities.push(mention.entity);
+      entities.push(mention.user);
     }
   }
   for (const embed of cast.embedCasts) {
-    entities.push(embed.entity);
+    entities.push(embed.user);
     for (const mention of embed.mentions) {
-      entities.push(mention.entity);
+      entities.push(mention.user);
     }
   }
   return entities;
@@ -32,7 +32,26 @@ const userAdapter = createEntityAdapter({
 const userSlice = createSlice({
   name: "user",
   initialState: userAdapter.getInitialState(),
-  reducers: {},
+  reducers: {
+    followUser: (state, action) => {
+      const existingUser = state.entities[action.payload.id];
+      if (existingUser?.farcaster.context) {
+        existingUser.farcaster.context.following = true;
+      } else {
+        existingUser.farcaster.context = { following: true };
+      }
+      existingUser.farcaster.engagement.followers++;
+    },
+    unfollowUser: (state, action) => {
+      const existingUser = state.entities[action.payload.id];
+      if (existingUser?.farcaster.context) {
+        existingUser.farcaster.context.following = false;
+      } else {
+        existingUser.farcaster.context = { following: false };
+      }
+      existingUser.farcaster.engagement.followers--;
+    },
+  },
   extraReducers: (builder) => {
     builder.addMatcher(
       farcasterApi.endpoints.getCast.matchFulfilled,
@@ -91,5 +110,7 @@ const userSlice = createSlice({
 export const { selectById: selectUserById } = userAdapter.getSelectors(
   (state: RootState) => state.user,
 );
+
+export const { followUser, unfollowUser } = userSlice.actions;
 
 export default userSlice.reducer;

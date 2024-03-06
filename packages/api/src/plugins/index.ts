@@ -1,5 +1,5 @@
 import fp from "fastify-plugin";
-import { ContentClient, NookClient } from "@nook/common/clients";
+import { NookClient } from "@nook/common/clients";
 import { HubRpcClient, getSSLHubRpcClient } from "@farcaster/hub-nodejs";
 
 declare module "fastify" {
@@ -9,9 +9,6 @@ declare module "fastify" {
     };
     nook: {
       client: NookClient;
-    };
-    content: {
-      client: ContentClient;
     };
   }
 }
@@ -30,14 +27,5 @@ export const nookPlugin = fp(async (fastify, opts) => {
   fastify.decorate("nook", { client });
   fastify.addHook("onClose", async (fastify) => {
     await fastify.nook.client.close();
-  });
-});
-
-export const contentPlugin = fp(async (fastify, opts) => {
-  const client = new ContentClient();
-  await client.connect();
-  fastify.decorate("content", { client });
-  fastify.addHook("onClose", async (fastify) => {
-    await fastify.content.client.close();
   });
 });

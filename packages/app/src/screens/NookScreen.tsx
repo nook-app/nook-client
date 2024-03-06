@@ -2,9 +2,8 @@ import { RouteProp, useNavigation, useRoute } from "@react-navigation/native";
 import { RootStackParamList } from "@/types";
 import { useEffect } from "react";
 import { Spinner, View } from "tamagui";
-import { Panels } from "@/components/panels/Panels";
+import { Panel, Panels } from "@/components/panels/Panels";
 import { useNook } from "@/hooks/useNooks";
-import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 export const NookScreen = () => {
   const { params } = useRoute<RouteProp<RootStackParamList, "Nook">>();
@@ -32,10 +31,8 @@ export const NookScreen = () => {
   }
 
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
-      <View backgroundColor="$background" height="100%">
-        <Panels panels={shelf.panels} key={`${nook.id}-${shelf.id}`} />
-      </View>
-    </GestureHandlerRootView>
+    <View backgroundColor="$background" height="100%">
+      <Panel data={shelf.panels[0].data} key={`${nook.id}-${shelf.id}`} />
+    </View>
   );
 };

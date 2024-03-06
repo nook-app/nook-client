@@ -4,10 +4,12 @@ import { useCast } from "@/hooks/useCast";
 import { useModal } from "@/hooks/useModal";
 import { ModalName } from "@/modals/types";
 import { farcasterApi } from "@/store/apis/farcasterApi";
+import { recastCast, unrecastCast } from "@/store/slices/cast";
 import { RefreshCw } from "@tamagui/lucide-icons";
 import { useCallback } from "react";
 import { TouchableOpacity } from "react-native-gesture-handler";
 import { Text, View, useTheme } from "tamagui";
+import * as Haptics from "expo-haptics";
 
 export const FarcasterCastRecastButton = ({
   hash,
@@ -31,12 +33,16 @@ export const FarcasterCastRecastButton = ({
           hash: cast.hash,
         }),
       );
+      dispatch(unrecastCast({ hash: cast.hash }));
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     } else {
       dispatch(
         farcasterApi.endpoints.recastCast.initiate({
           hash: cast.hash,
         }),
       );
+      dispatch(recastCast({ hash: cast.hash }));
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     }
   }, [cast, dispatch, signerEnabled, open]);
 
@@ -46,9 +52,6 @@ export const FarcasterCastRecastButton = ({
         <RefreshCw
           size={16}
           color={cast.context?.recasted ? "$green9" : "$gray10"}
-          fill={
-            cast.context?.recasted ? theme.$green9.val : theme.$background.val
-          }
         />
         {withAmount && (
           <Text color="$gray10" fontSize="$4">

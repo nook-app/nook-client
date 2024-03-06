@@ -65,16 +65,19 @@ export const Panels = ({
     >
       {panels.map(({ name, data }) => (
         <Tabs.Tab key={name} name={name}>
-          <Panel data={data} />
+          <Panel data={data} asTabs />
         </Tabs.Tab>
       ))}
     </Tabs.Container>
   );
 };
 
-export const Panel = ({ data }: { data: NookPanelData }) => {
+export const Panel = ({
+  data,
+  asTabs,
+}: { data: NookPanelData; asTabs?: boolean }) => {
   if (data.type === NookPanelType.FarcasterFeed) {
-    return <FarcasterFeedPanel args={data.args} />;
+    return <FarcasterFeedPanel args={data.args} asTabs={asTabs} />;
   }
 
   return null;

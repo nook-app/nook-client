@@ -3,19 +3,19 @@ import {
   GetFarcasterUsersRequest,
 } from "@nook/common/types";
 import { FastifyInstance } from "fastify";
-import { UserService } from "../../service/user";
+import { FarcasterService } from "../service/farcaster";
 
 export const userRoutes = async (fastify: FastifyInstance) => {
   fastify.register(async (fastify: FastifyInstance) => {
-    const userService = new UserService(
-      fastify.farcaster.client,
-      fastify.redis.client,
-    );
+    const service = new FarcasterService(fastify);
 
     fastify.post<{ Body: GetFarcasterUsersRequest }>(
       "/users",
       async (request, reply) => {
-        const users = await userService.getUsers(request.body.fids);
+        const users = await service.getUsers(
+          request.body.fids,
+          request.headers["x-viewer-fid"] as string,
+        );
 
         reply.send({ data: users });
       },
@@ -24,7 +24,7 @@ export const userRoutes = async (fastify: FastifyInstance) => {
     fastify.get<{
       Params: GetFarcasterUserRequest;
     }>("/users/:fid", async (request, reply) => {
-      const user = await userService.getUser(
+      const user = await service.getUser(
         request.params.fid,
         request.headers["x-viewer-fid"] as string,
       );

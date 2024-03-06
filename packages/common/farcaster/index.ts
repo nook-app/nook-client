@@ -1,5 +1,10 @@
 import { FARCASTER_EPOCH } from "@farcaster/hub-nodejs";
-import { FidHash } from "@nook/common/types";
+import {
+  FarcasterCast,
+  FarcasterCastEmbedCast,
+  FarcasterCastMention,
+  Prisma,
+} from "../prisma/farcaster";
 export * from "./events";
 
 export const timestampToDate = (timestamp: number) =>
@@ -38,6 +43,51 @@ export const getUsernameTypeString = (type: number) => {
     return "ENS";
   }
   throw new Error(`Unknown username type: ${type}`);
+};
+
+export const getMentions = (data: FarcasterCast) => {
+  const mentions = [];
+  if (
+    data.rawMentions &&
+    (data.rawMentions as unknown) !== Prisma.DbNull &&
+    Array.isArray(data.rawMentions)
+  ) {
+    for (const mention of data.rawMentions as unknown as FarcasterCastMention[]) {
+      mentions.push({
+        fid: mention.mention.toString(),
+        position: mention.mentionPosition.toString(),
+      });
+    }
+  }
+  return mentions;
+};
+
+export const getEmbedUrls = (data: FarcasterCast) => {
+  const embeds: string[] = [];
+  if (
+    data.rawUrlEmbeds &&
+    (data.rawUrlEmbeds as unknown) !== Prisma.DbNull &&
+    Array.isArray(data.rawUrlEmbeds)
+  ) {
+    for (const url of data.rawUrlEmbeds as string[]) {
+      embeds.push(url);
+    }
+  }
+  return embeds;
+};
+
+export const getCastEmbeds = (data: FarcasterCast) => {
+  const embeds = [];
+  if (
+    data.rawCastEmbeds &&
+    (data.rawCastEmbeds as unknown) !== Prisma.DbNull &&
+    Array.isArray(data.rawCastEmbeds)
+  ) {
+    for (const embed of data.rawCastEmbeds as unknown as FarcasterCastEmbedCast[]) {
+      embeds.push({ fid: embed.fid, hash: embed.embedHash });
+    }
+  }
+  return embeds;
 };
 
 export const FARCASTER_OG_FIDS = [

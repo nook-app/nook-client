@@ -1,14 +1,10 @@
 {
-  "name": "@nook/farcaster",
+  "name": "@nook/farcaster-api",
   "version": "0.0.1",
   "private": true,
   "scripts": {
     "build": "tsc",
-    "start:consumer": "node dist/src/consumer.js",
-    "start:manual": "tsc && node dist/src/manual.js",
-    "start:publisher": "node dist/src/publisher.js",
-    "start:test": "tsc && node dist/test.js",
-    "start:backfill": "tsc && node dist/backfill/index.js"
+    "start": "node dist/src/index.js"
   },
   "dependencies": {
     "@ethersproject/abstract-signer": "^5.7.0",

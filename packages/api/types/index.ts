@@ -1,7 +1,7 @@
 import {
-  FarcasterUserWithContext,
   FarcasterCastResponse,
   NookResponse,
+  FarcasterUser,
 } from "@nook/common/types";
 
 export type SignInWithFarcasterRequest = {
@@ -24,9 +24,9 @@ export type SignerPublicData = {
 };
 
 export type GetUserResponse = {
-  id: string;
+  fid: string;
   signerEnabled: boolean;
-  farcaster: FarcasterUserWithContext;
+  farcaster: FarcasterUser;
   nooks: NookResponse[];
 };
 

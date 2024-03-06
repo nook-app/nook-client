@@ -9,12 +9,12 @@ import { Image as TImage, View } from "tamagui";
 
 export const EmbedImage = ({
   content: { uri },
-  disableLink,
-}: { content: UrlContentResponse; disableLink?: boolean }) => {
+}: { content: UrlContentResponse }) => {
   const { open } = useModal(ModalName.Content);
   const [height, setHeight] = useState(0);
 
   const cdnUri = formatToWarpcastCDN(uri);
+  if (!cdnUri) return null;
 
   return (
     <View
@@ -31,7 +31,7 @@ export const EmbedImage = ({
         }
       }}
     >
-      <TouchableOpacity onPress={() => open({ uri })} disabled={disableLink}>
+      <TouchableOpacity onPress={() => open({ uri })}>
         <Image source={{ uri: cdnUri }} style={{ width: "100%", height }} />
       </TouchableOpacity>
     </View>

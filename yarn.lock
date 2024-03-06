@@ -3736,6 +3736,7 @@ __metadata:
     react-native-safe-area-context: "npm:^4.8.2"
     react-native-screens: "npm:~3.29.0"
     react-native-svg: "npm:14.1.0"
+    react-native-tab-view: "npm:^3.5.2"
     react-native-web: "npm:^0.19.9"
     react-redux: "npm:^9.1.0"
     tamagui: "npm:^1.89.28"
@@ -3801,6 +3802,25 @@ __metadata:
     "@types/jest": "npm:^29.5.11"
     "@types/node": "npm:^20.10.5"
     bullmq: "npm:^5.1.0"
+    jest: "npm:^29.7.0"
+    typescript: "npm:^5.3.3"
+  languageName: unknown
+  linkType: soft
+
+"@nook/farcaster-api@workspace:packages/farcaster-api":
+  version: 0.0.0-use.local
+  resolution: "@nook/farcaster-api@workspace:packages/farcaster-api"
+  dependencies:
+    "@ethersproject/abstract-signer": "npm:^5.7.0"
+    "@farcaster/fishery": "npm:^2.2.3"
+    "@farcaster/hub-nodejs": "npm:^0.11.3"
+    "@fastify/jwt": "npm:^8.0.0"
+    "@nook/common": "npm:*"
+    "@types/jest": "npm:^29.5.11"
+    "@types/node": "npm:^20.10.5"
+    bullmq: "npm:^5.1.0"
+    ethers: "npm:^6.9.1"
+    fastify: "npm:^4.25.2"
     jest: "npm:^29.7.0"
     typescript: "npm:^5.3.3"
   languageName: unknown
@@ -14891,6 +14911,19 @@ __metadata:
   languageName: node
   linkType: hard
 
+"react-native-tab-view@npm:^3.5.2":
+  version: 3.5.2
+  resolution: "react-native-tab-view@npm:3.5.2"
+  dependencies:
+    use-latest-callback: "npm:^0.1.5"
+  peerDependencies:
+    react: "*"
+    react-native: "*"
+    react-native-pager-view: "*"
+  checksum: 10c0/f243afcb1ee49642f6d13039725634cd3cc4205cef611b27fc305d99a0064566fbaabeea8ef12367fbf4c13095f5b48e20b517ad3885ced3827fd57c6190e3e4
+  languageName: node
+  linkType: hard
+
 "react-native-web-internals@npm:1.90.9":
   version: 1.90.9
   resolution: "react-native-web-internals@npm:1.90.9"
@@ -17315,7 +17348,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"use-latest-callback@npm:^0.1.7":
+"use-latest-callback@npm:^0.1.5, use-latest-callback@npm:^0.1.7":
   version: 0.1.9
   resolution: "use-latest-callback@npm:0.1.9"
   peerDependencies:

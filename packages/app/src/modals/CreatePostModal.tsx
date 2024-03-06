@@ -168,7 +168,6 @@ export const CreatePostModal = () => {
             </XStack>
             <TextArea
               ref={inputRef}
-              autoFocus
               size="$8"
               paddingVertical="$0"
               paddingHorizontal="$3"

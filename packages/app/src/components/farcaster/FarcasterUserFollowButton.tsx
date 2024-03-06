@@ -4,62 +4,67 @@ import { farcasterApi } from "@/store/apis/farcasterApi";
 import { Heart } from "@tamagui/lucide-icons";
 import { useCallback } from "react";
 import { TouchableOpacity } from "react-native-gesture-handler";
-import { Text, View, useTheme } from "tamagui";
+import { Button, Text, View, useTheme } from "tamagui";
 import * as Haptics from "expo-haptics";
 import { useAppSelector } from "@/hooks/useAppSelector";
 import { useModal } from "@/hooks/useModal";
 import { ModalName } from "@/modals/types";
 import { likeCast, unlikeCast } from "@/store/slices/cast";
+import { useUser } from "@/hooks/useUser";
+import { followUser, unfollowUser } from "@/store/slices/user";
 
-export const FarcasterCastLikeButton = ({
-  hash,
-  withAmount,
-}: { hash: string; withAmount?: boolean }) => {
+export const FarcasterUserFollowButton = ({ id }: { id: string }) => {
   const signerEnabled = useAppSelector((state) => state.auth.signerEnabled);
   const { open } = useModal(ModalName.EnableSigner);
   const theme = useTheme();
   const dispatch = useAppDispatch();
-  const cast = useCast(hash);
+  const user = useUser(id);
 
   const onPress = useCallback(() => {
-    if (!cast.context) return;
+    if (!user.context) return;
     if (!signerEnabled) {
       open();
       return;
     }
-    if (cast.context.liked) {
+    if (user.context.following) {
       dispatch(
-        farcasterApi.endpoints.unlikeCast.initiate({
-          hash: cast.hash,
+        farcasterApi.endpoints.unfollowUser.initiate({
+          fid: user.fid,
         }),
       );
-      dispatch(unlikeCast({ hash: cast.hash }));
+      dispatch(
+        unfollowUser({
+          id,
+        }),
+      );
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     } else {
       dispatch(
-        farcasterApi.endpoints.likeCast.initiate({
-          hash: cast.hash,
+        farcasterApi.endpoints.followUser.initiate({
+          fid: user.fid,
         }),
       );
-      dispatch(likeCast({ hash: cast.hash }));
+      dispatch(
+        followUser({
+          id,
+        }),
+      );
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     }
-  }, [cast, dispatch, signerEnabled, open]);
+  }, [user, id, dispatch, signerEnabled, open]);
 
-  return (
-    <TouchableOpacity onPress={onPress}>
-      <View flexDirection="row" alignItems="center" gap="$1.5" width="$3">
-        <Heart
-          size={16}
-          color={cast.context?.liked ? "$red9" : "$gray10"}
-          fill={cast.context?.liked ? theme.$red9.val : theme.$background.val}
-        />
-        {withAmount && (
-          <Text color="$gray10" fontSize="$4">
-            {cast.engagement.likes}
-          </Text>
-        )}
-      </View>
-    </TouchableOpacity>
+  return user.context?.following ? (
+    <Button
+      size="$3"
+      variant="outlined"
+      borderColor="$backgroundHover"
+      onPress={onPress}
+    >
+      Unfollow
+    </Button>
+  ) : (
+    <Button size="$3" onPress={onPress}>
+      Follow
+    </Button>
   );
 };

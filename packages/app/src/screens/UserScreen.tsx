@@ -13,6 +13,7 @@ import { RootStackParamList } from "@/types";
 import { Panels } from "@/components/panels/Panels";
 import { TouchableOpacity } from "react-native-gesture-handler";
 import { useEffect } from "react";
+import { FarcasterUserFollowButton } from "@/components/farcaster/FarcasterUserFollowButton";
 
 const UserHeader = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
@@ -41,13 +42,7 @@ const UserHeader = () => {
             </Text>
           </YStack>
         </XStack>
-        {/* {context?.following ? (
-          <Button size="$3" variant="outlined" borderColor="$backgroundHover">
-            Unfollow
-          </Button>
-        ) : (
-          <Button size="$3">Follow</Button>
-        )} */}
+        <FarcasterUserFollowButton id={userId} />
       </View>
       {bio && <Text>{bio}</Text>}
       <XStack gap="$2">

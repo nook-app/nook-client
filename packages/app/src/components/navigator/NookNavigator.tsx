@@ -94,6 +94,8 @@ export function NookNavigator() {
           headerTitleStyle: {
             fontWeight: "700",
           },
+          gestureEnabled: true,
+          fullScreenGestureEnabled: true,
           headerTitle: (props) => <Text {...props} fontWeight="700" />,
         }}
       />

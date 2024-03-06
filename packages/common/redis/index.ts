@@ -67,6 +67,7 @@ export class RedisClient {
       }
       return num;
     }
+    return 0;
   }
 
   async setNumber(key: string, value: number) {

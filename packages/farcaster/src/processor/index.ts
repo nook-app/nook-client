@@ -2,13 +2,11 @@ import {
   HubRpcClient,
   Message,
   MessageType,
-  UserDataType,
   getSSLHubRpcClient,
 } from "@farcaster/hub-nodejs";
 import { Prisma, PrismaClient } from "@nook/common/prisma/farcaster";
 import {
   findRootParent,
-  getCastEmbeds,
   messageToCast,
   messageToCastEmbedCast,
   messageToCastEmbedUrl,
@@ -35,180 +33,58 @@ import {
 import { FarcasterEventType } from "@nook/common/types";
 import { publishEvent } from "@nook/common/queues";
 import { RedisClient } from "@nook/common/redis";
-import { CastService } from "../../service/cast";
-import { UserService } from "../../service/user";
 
 export class FarcasterEventProcessor {
   private client: PrismaClient;
   private hub: HubRpcClient;
   private redis: RedisClient;
-  private castService: CastService;
-  private userService: UserService;
-
-  CAST_CACHE_PREFIX = "farcaster:cast";
-  USER_CACHE_PREFIX = "farcaster:user";
 
   constructor() {
     this.client = new PrismaClient();
     this.redis = new RedisClient();
     this.hub = getSSLHubRpcClient(process.env.HUB_RPC_ENDPOINT as string);
-    this.castService = new CastService(this.client, this.redis);
-    this.userService = new UserService(this.client, this.redis);
   }
 
   async process(message: Message) {
     switch (message.data?.type) {
       case MessageType.CAST_ADD: {
-        const cast = await this.processCastAdd(message);
-        if (cast) {
-          const promises = [];
-          promises.push(this.castService.getCast(cast.hash, cast));
-          if (cast.parentHash) {
-            promises.push(
-              this.castService.incrementEngagement(cast.parentHash, "replies"),
-            );
-          }
-          for (const { hash } of getCastEmbeds(cast)) {
-            promises.push(this.castService.incrementEngagement(hash, "quotes"));
-          }
-          await Promise.all(promises);
-        }
+        await this.processCastAdd(message);
         break;
       }
       case MessageType.CAST_REMOVE: {
-        const cast = await this.processCastRemove(message);
-        if (cast) {
-          const promises = [];
-          if (cast.parentHash) {
-            promises.push(
-              this.castService.decrementEngagement(cast.parentHash, "replies"),
-            );
-          }
-          for (const { hash } of getCastEmbeds(cast)) {
-            promises.push(this.castService.decrementEngagement(hash, "quotes"));
-          }
-          await Promise.all(promises);
-        }
+        await this.processCastRemove(message);
         break;
       }
       case MessageType.LINK_ADD: {
-        const link = await this.processLinkAdd(message);
-        if (link) {
-          const promises = [];
-          promises.push(
-            this.userService.incrementFollowing(link.fid.toString()),
-          );
-          promises.push(
-            this.userService.incrementFollowers(link.targetFid.toString()),
-          );
-          promises.push(
-            this.userService.updateContext(
-              link.fid.toString(),
-              link.targetFid.toString(),
-              true,
-            ),
-          );
-          await Promise.all(promises);
-        }
+        await this.processLinkAdd(message);
         break;
       }
       case MessageType.LINK_REMOVE: {
-        const link = await this.processLinkRemove(message);
-        if (link) {
-          const promises = [];
-          promises.push(
-            this.userService.decrementFollowing(link.fid.toString()),
-          );
-          promises.push(
-            this.userService.decrementFollowers(link.targetFid.toString()),
-          );
-          promises.push(
-            this.userService.updateContext(
-              link.fid.toString(),
-              link.targetFid.toString(),
-              false,
-            ),
-          );
-          await Promise.all(promises);
-        }
+        await this.processLinkRemove(message);
         break;
       }
       case MessageType.REACTION_ADD: {
-        const reaction = await this.processCastReactionAdd(message);
-        if (reaction) {
-          const promises = [];
-          let type: "likes" | "recasts" | undefined;
-          if (reaction.reactionType === 1) {
-            type = "likes";
-          } else if (reaction.reactionType === 2) {
-            type = "recasts";
-          }
-          if (type) {
-            promises.push(
-              this.castService.incrementEngagement(reaction.targetHash, type),
-            );
-          }
-          await Promise.all(promises);
-        }
+        await this.processCastReactionAdd(message);
         break;
       }
       case MessageType.REACTION_REMOVE: {
-        const reaction = await this.processCastReactionRemove(message);
-        if (reaction) {
-          const promises = [];
-          let type: "likes" | "recasts" | undefined;
-          if (reaction.reactionType === 1) {
-            type = "likes";
-          } else if (reaction.reactionType === 2) {
-            type = "recasts";
-          }
-          if (type) {
-            promises.push(
-              this.castService.decrementEngagement(reaction.targetHash, type),
-            );
-          }
-        }
+        await this.processCastReactionRemove(message);
         break;
       }
       case MessageType.VERIFICATION_ADD_ETH_ADDRESS: {
-        const verification = await this.processVerificationAdd(message);
+        await this.processVerificationAdd(message);
         break;
       }
       case MessageType.VERIFICATION_REMOVE: {
-        const verification = await this.processVerificationRemove(message);
+        await this.processVerificationRemove(message);
         break;
       }
       case MessageType.USER_DATA_ADD: {
-        const userData = await this.userDataAdd(message);
-        if (userData) {
-          const key = `${this.USER_CACHE_PREFIX}:${userData.fid}`;
-          const user = await this.userService.getUser(userData.fid.toString());
-          if (!user) break;
-          switch (userData.type) {
-            case UserDataType.USERNAME:
-              user.username = userData.value;
-              break;
-            case UserDataType.PFP:
-              user.pfp = userData.value;
-              break;
-            case UserDataType.DISPLAY:
-              user.displayName = userData.value;
-              break;
-            case UserDataType.BIO:
-              user.bio = userData.value;
-              break;
-            case UserDataType.URL:
-              user.url = userData.value;
-              break;
-            default:
-              break;
-          }
-          await this.redis.setJson(key, user);
-        }
+        await this.userDataAdd(message);
         break;
       }
       case MessageType.USERNAME_PROOF: {
-        const proof = await this.usernameProofAdd(message);
+        await this.usernameProofAdd(message);
         break;
       }
       default:

@@ -9,13 +9,13 @@ import {
   TokenResponse,
   GetUserResponse,
 } from "../../types";
-import { FarcasterClient, NookClient } from "@nook/common/clients";
+import { FarcasterAPIClient, NookClient } from "@nook/common/clients";
 
 export class UserService {
   private farcasterAuthClient: FarcasterAuthClient;
   private jwt: FastifyInstance["jwt"];
   private nookClient: NookClient;
-  private farcasterClient: FarcasterClient;
+  private farcasterClient: FarcasterAPIClient;
 
   constructor(fastify: FastifyInstance) {
     this.jwt = fastify.jwt;
@@ -23,7 +23,7 @@ export class UserService {
       ethereum: viemConnector(),
     });
     this.nookClient = fastify.nook.client;
-    this.farcasterClient = new FarcasterClient();
+    this.farcasterClient = new FarcasterAPIClient();
   }
 
   async signInWithFarcaster(
@@ -41,26 +41,18 @@ export class UserService {
     const fid = "20716";
     // const fid = verifyResult.fid.toString();
 
-    let entityByFid = await this.nookClient.getEntityByFid(fid);
-    if (!entityByFid) {
-      entityByFid = await this.nookClient.createEntityByFid(fid);
-    }
-
-    const refreshToken = this.jwt.sign({
-      id: entityByFid.id,
-      fid,
-    });
-
-    let user = (await this.nookClient.getEntity(entityByFid.id))?.user;
+    let user = await this.nookClient.getUser(fid);
     if (!user) {
-      user = await this.nookClient.createUser(entityByFid.id, refreshToken);
+      const refreshToken = this.jwt.sign({
+        fid,
+      });
+      user = await this.nookClient.createUser(fid, refreshToken);
     }
 
     const expiresIn = 60 * 60 * 24 * 7;
     const expiresAt = Math.floor(new Date().getTime() / 1000) + expiresIn;
     const token = this.jwt.sign(
       {
-        id: user.id,
         fid,
       },
       { expiresIn },
@@ -74,13 +66,13 @@ export class UserService {
   }
 
   async getToken(refreshToken: string): Promise<TokenResponse | undefined> {
-    const decoded = this.jwt.verify(refreshToken) as { id: string };
-    const entity = await this.nookClient.getEntity(decoded.id);
-    if (!entity?.user) {
+    const decoded = this.jwt.verify(refreshToken) as { fid: string };
+    const user = await this.nookClient.getUser(decoded.fid);
+    if (!user) {
       return;
     }
 
-    if (entity.user.refreshToken !== refreshToken) {
+    if (user.refreshToken !== refreshToken) {
       throw new Error("Invalid refresh token");
     }
 
@@ -88,7 +80,7 @@ export class UserService {
     const expiresAt = Math.floor(new Date().getTime() / 1000) + expiresIn;
     const token = this.jwt.sign(
       {
-        id: entity.user.id,
+        fid: user.fid,
       },
       { expiresIn },
     );
@@ -100,17 +92,17 @@ export class UserService {
     };
   }
 
-  async getUser(id: string): Promise<GetUserResponse | undefined> {
-    const entity = await this.nookClient.getEntity(id);
-    if (!entity?.farcaster) {
+  async getUser(fid: string): Promise<GetUserResponse | undefined> {
+    const user = await this.nookClient.getUser(fid);
+    if (!user) {
       return;
     }
 
     return {
-      id: entity.id,
-      signerEnabled: entity.farcaster.signerEnabled,
-      farcaster: await this.farcasterClient.fetchUser(entity.farcaster.fid),
-      nooks: await this.nookClient.getNooksByUser(id),
+      fid: user.fid,
+      signerEnabled: user.signerEnabled,
+      farcaster: await this.farcasterClient.getUser(user.fid),
+      nooks: await this.nookClient.getNooksByUser(user.fid),
     };
   }
 }

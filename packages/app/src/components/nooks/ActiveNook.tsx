@@ -2,9 +2,11 @@ import { Text, View, XStack, YStack } from "tamagui";
 import { useNooks } from "@/hooks/useNooks";
 import { useCallback } from "react";
 import { TouchableOpacity } from "react-native-gesture-handler";
+import { useAppSelector } from "@/hooks/useAppSelector";
 
 export const ActiveNook = () => {
   const { activeNook, activeShelf, navigateToShelf } = useNooks();
+  const theme = useAppSelector((state) => state.auth.theme);
 
   const onPress = useCallback(
     (shelfId: string) => {
@@ -18,7 +20,7 @@ export const ActiveNook = () => {
   }
 
   return (
-    <YStack minHeight="100%" gap="$2">
+    <YStack minHeight="100%" gap="$2" theme={theme}>
       <View
         backgroundColor="$background"
         borderRadius="$6"

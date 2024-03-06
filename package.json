@@ -13,7 +13,7 @@
     "test:farcaster": "yarn workspace @nook/farcaster run jest",
     "test:sdk": "yarn workspace @nook/sdk run jest",
     "start:dashboard": "yarn workspace @nook/dashboard start",
-    "start:farcaster:api": "yarn workspace @nook/farcaster start:api",
+    "start:farcaster:api": "yarn workspace @nook/farcaster-api start",
     "start:farcaster:consumer": "yarn workspace @nook/farcaster start:consumer",
     "start:farcaster:publisher": "yarn workspace @nook/farcaster start:publisher",
     "start:events": "yarn workspace @nook/events start",

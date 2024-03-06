@@ -1,9 +1,8 @@
 import fastify from "fastify";
-import { contentPlugin, hubPlugin, nookPlugin } from "./plugins";
+import { hubPlugin, nookPlugin } from "./plugins";
 import { nookRoutes } from "./routes/nook";
 import { userRoutes } from "./routes/user";
 import fastifyJwt from "@fastify/jwt";
-import { farcasterRoutes } from "./routes/farcaster";
 import { actionRoutes } from "./routes/action";
 
 const buildApp = () => {
@@ -28,11 +27,9 @@ const buildApp = () => {
 
   app.register(hubPlugin);
   app.register(nookPlugin);
-  app.register(contentPlugin);
 
   app.register(nookRoutes);
   app.register(userRoutes);
-  app.register(farcasterRoutes);
   app.register(actionRoutes);
 
   return app;

@@ -1,24 +1,27 @@
+import { UserDataType } from "@farcaster/hub-nodejs";
 import {
   ContentClient,
-  FarcasterClient,
-  NookClient,
+  FarcasterAPIClient,
+  FarcasterCacheClient,
 } from "@nook/common/clients";
-import { FARCASTER_OG_FIDS } from "@nook/common/farcaster";
 import {
   FarcasterCast,
+  FarcasterCastReaction,
+  FarcasterLink,
+  FarcasterUserData,
   FarcasterUsernameProof,
   FarcasterVerification,
 } from "@nook/common/prisma/farcaster";
 import { EntityEvent, FarcasterEventType } from "@nook/common/types";
 
 export class FarcasterProcessor {
-  private farcasterClient: FarcasterClient;
-  private nookClient: NookClient;
+  private farcasterClient: FarcasterAPIClient;
+  private cacheClient: FarcasterCacheClient;
   private contentClient: ContentClient;
 
   constructor() {
-    this.farcasterClient = new FarcasterClient();
-    this.nookClient = new NookClient();
+    this.farcasterClient = new FarcasterAPIClient();
+    this.cacheClient = new FarcasterCacheClient();
     this.contentClient = new ContentClient();
   }
 
@@ -46,12 +49,28 @@ export class FarcasterProcessor {
         await this.processUsernameProof(event.data as FarcasterUsernameProof);
         break;
       }
-      case FarcasterEventType.CAST_REACTION_ADD:
-      case FarcasterEventType.CAST_REACTION_REMOVE:
-      case FarcasterEventType.LINK_ADD:
-      case FarcasterEventType.LINK_REMOVE:
-      case FarcasterEventType.USER_DATA_ADD:
+      case FarcasterEventType.CAST_REACTION_ADD: {
+        await this.processCastReactionAdd(event.data as FarcasterCastReaction);
         break;
+      }
+      case FarcasterEventType.CAST_REACTION_REMOVE: {
+        await this.processCastReactionRemove(
+          event.data as FarcasterCastReaction,
+        );
+        break;
+      }
+      case FarcasterEventType.LINK_ADD: {
+        await this.processLinkAdd(event.data as FarcasterLink);
+        break;
+      }
+      case FarcasterEventType.LINK_REMOVE: {
+        await this.processLinkRemove(event.data as FarcasterLink);
+        break;
+      }
+      case FarcasterEventType.USER_DATA_ADD: {
+        await this.processUserDataAdd(event.data as FarcasterUserData);
+        break;
+      }
       default: {
         throw new Error(`Unknown event type: ${event.source.type}`);
       }
@@ -71,46 +90,69 @@ export class FarcasterProcessor {
   }
 
   async processCastAdd(data: FarcasterCast) {
-    const cast = await this.farcasterClient.fetchCast(data.hash);
+    const cast = await this.farcasterClient.getCast(data.hash);
     if (!cast) return;
 
     const promises = [];
     promises.push(this.contentClient.addReferencedContent(cast));
 
-    if (data.parentUrl) {
+    if (cast.parentHash) {
       promises.push(
-        this.nookClient.addToFeed(
-          `channel:${data.parentUrl}`,
-          data.hash,
-          cast.timestamp,
-        ),
+        this.cacheClient.incrementCastEngagement(cast.parentHash, "replies"),
       );
     }
 
-    if (data.parentHash) {
+    for (const { hash } of cast.embedCasts) {
+      promises.push(this.cacheClient.incrementCastEngagement(hash, "quotes"));
+    }
+
+    await Promise.all(promises);
+  }
+
+  async processCastRemove(data: FarcasterCast) {
+    const cast = await this.farcasterClient.getCast(data.hash);
+    if (!cast) return;
+
+    const promises = [];
+    promises.push(this.contentClient.removeReferencedContent(cast));
+
+    if (cast.parentHash) {
       promises.push(
-        this.nookClient.addToFeed(
-          `user:replies:${data.fid.toString()}`,
-          data.hash,
-          cast.timestamp,
-        ),
-      );
-    } else {
-      promises.push(
-        this.nookClient.addToFeed(
-          `user:casts:${data.fid.toString()}`,
-          data.hash,
-          cast.timestamp,
-        ),
+        this.cacheClient.decrementCastEngagement(cast.parentHash, "replies"),
       );
     }
 
-    if (FARCASTER_OG_FIDS.includes(data.fid.toString()) && !data.parentHash) {
+    for (const { hash } of cast.embedCasts) {
+      promises.push(this.cacheClient.decrementCastEngagement(hash, "quotes"));
+    }
+
+    await Promise.all(promises);
+  }
+
+  async processCastReactionAdd(data: FarcasterCastReaction) {
+    const promises = [];
+    if (data.reactionType === 1) {
       promises.push(
-        this.nookClient.addToFeed(
-          "custom:farcaster-og",
+        this.cacheClient.incrementCastEngagement(data.hash, "likes"),
+      );
+      promises.push(
+        this.cacheClient.setCastContext(
           data.hash,
-          cast.timestamp,
+          "likes",
+          data.fid.toString(),
+          true,
+        ),
+      );
+    } else if (data.reactionType === 2) {
+      promises.push(
+        this.cacheClient.incrementCastEngagement(data.hash, "recasts"),
+      );
+      promises.push(
+        this.cacheClient.setCastContext(
+          data.hash,
+          "recasts",
+          data.fid.toString(),
+          true,
         ),
       );
     }
@@ -118,44 +160,118 @@ export class FarcasterProcessor {
     await Promise.all(promises);
   }
 
-  async processCastRemove(data: FarcasterCast) {
-    const cast = await this.farcasterClient.fetchCast(data.hash);
-    if (!cast) return;
-
+  async processCastReactionRemove(data: FarcasterCastReaction) {
     const promises = [];
-    promises.push(this.contentClient.removeReferencedContent(cast));
-
-    if (data.parentUrl) {
+    if (data.reactionType === 1) {
       promises.push(
-        this.nookClient.removeFromFeed(
-          `channel:casts:${data.parentUrl}`,
+        this.cacheClient.decrementCastEngagement(data.hash, "likes"),
+      );
+      promises.push(
+        this.cacheClient.setCastContext(
           data.hash,
+          "likes",
+          data.fid.toString(),
+          false,
         ),
       );
-    }
-
-    if (data.parentHash) {
+    } else if (data.reactionType === 2) {
       promises.push(
-        this.nookClient.removeFromFeed(
-          `user:replies:${data.fid.toString()}`,
-          data.hash,
-        ),
+        this.cacheClient.decrementCastEngagement(data.hash, "recasts"),
       );
-    } else {
       promises.push(
-        this.nookClient.removeFromFeed(
-          `user:casts:${data.fid.toString()}`,
+        this.cacheClient.setCastContext(
           data.hash,
+          "recasts",
+          data.fid.toString(),
+          false,
         ),
-      );
-    }
-
-    if (FARCASTER_OG_FIDS.includes(data.fid.toString()) && !data.parentHash) {
-      promises.push(
-        this.nookClient.removeFromFeed("custom:farcaster-og", data.hash),
       );
     }
 
     await Promise.all(promises);
+  }
+
+  async processLinkAdd(data: FarcasterLink) {
+    const promises = [];
+    if (data.linkType === "follow") {
+      promises.push(
+        this.cacheClient.incrementUserEngagement(
+          data.fid.toString(),
+          "following",
+        ),
+      );
+      promises.push(
+        this.cacheClient.incrementUserEngagement(
+          data.targetFid.toString(),
+          "followers",
+        ),
+      );
+      promises.push(
+        this.cacheClient.setUserContext(
+          data.fid.toString(),
+          "following",
+          data.targetFid.toString(),
+          true,
+        ),
+      );
+    }
+    await Promise.all(promises);
+  }
+
+  async processLinkRemove(data: FarcasterLink) {
+    const promises = [];
+    if (data.linkType === "follow") {
+      promises.push(
+        this.cacheClient.decrementUserEngagement(
+          data.fid.toString(),
+          "following",
+        ),
+      );
+      promises.push(
+        this.cacheClient.decrementUserEngagement(
+          data.targetFid.toString(),
+          "followers",
+        ),
+      );
+      promises.push(
+        this.cacheClient.setUserContext(
+          data.fid.toString(),
+          "following",
+          data.targetFid.toString(),
+          false,
+        ),
+      );
+    }
+    await Promise.all(promises);
+  }
+
+  async processUserDataAdd(data: FarcasterUserData) {
+    const user = await this.farcasterClient.getUser(data.fid.toString());
+    if (!user) return;
+
+    switch (data.type) {
+      case UserDataType.USERNAME: {
+        user.username = data.value;
+        break;
+      }
+      case UserDataType.BIO: {
+        user.bio = data.value;
+        break;
+      }
+      case UserDataType.PFP: {
+        user.pfp = data.value;
+        break;
+      }
+      case UserDataType.DISPLAY: {
+        user.displayName = data.value;
+        break;
+      }
+      case UserDataType.URL: {
+        user.url = data.value;
+        break;
+      }
+    }
+
+    await this.cacheClient.setUser(data.fid.toString(), user);
   }
 }

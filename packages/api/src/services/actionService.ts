@@ -13,20 +13,20 @@ import {
   makeLinkAdd,
   makeLinkRemove,
 } from "@farcaster/hub-nodejs";
-import { FarcasterClient, NookClient } from "@nook/common/clients";
-import { hexToBuffer } from "@nook/common/farcaster";
+import { FarcasterAPIClient, NookClient } from "@nook/common/clients";
+import { bufferToHex, hexToBuffer } from "@nook/common/farcaster";
 
 export const MAX_FEED_ITEMS = 25;
 
 export class ActionService {
   private nookClient: NookClient;
   private hub: HubRpcClient;
-  private farcasterClient: FarcasterClient;
+  private farcasterClient: FarcasterAPIClient;
 
   constructor(fastify: FastifyInstance) {
     this.nookClient = fastify.nook.client;
     this.hub = fastify.hub.client;
-    this.farcasterClient = new FarcasterClient();
+    this.farcasterClient = new FarcasterAPIClient();
   }
 
   async getSigner(userId: string): Promise<SignerPublicData> {
@@ -139,7 +139,7 @@ export class ActionService {
 
     const result = await this.submitMessage(castAddMessage.value);
 
-    return result.hash;
+    return bufferToHex(result.hash);
   }
 
   async deleteCast(userId: string, hash: string) {
@@ -167,7 +167,7 @@ export class ActionService {
 
     const result = await this.submitMessage(castRemoveMessage.value);
 
-    return result.hash;
+    return bufferToHex(result.hash);
   }
 
   async createReaction(userId: string, hash: string, reactionType: number) {
@@ -176,7 +176,7 @@ export class ActionService {
       throw new Error("Signer not found");
     }
 
-    const cast = await this.farcasterClient.fetchCast(hash);
+    const cast = await this.farcasterClient.getCast(hash);
     if (!cast) {
       throw new Error("Cast not found");
     }
@@ -184,7 +184,7 @@ export class ActionService {
     const reactionAddMessage = await makeReactionAdd(
       {
         targetCastId: {
-          fid: parseInt(cast.fid, 10),
+          fid: parseInt(cast.user.fid, 10),
           hash: hexToBuffer(hash),
         },
         type: reactionType,
@@ -204,7 +204,7 @@ export class ActionService {
 
     const result = await this.submitMessage(reactionAddMessage.value);
 
-    return result.hash;
+    return bufferToHex(result.hash);
   }
 
   async deleteReaction(userId: string, hash: string, reactionType: number) {
@@ -213,7 +213,7 @@ export class ActionService {
       throw new Error("Signer not found");
     }
 
-    const cast = await this.farcasterClient.fetchCast(hash);
+    const cast = await this.farcasterClient.getCast(hash);
     if (!cast) {
       throw new Error("Cast not found");
     }
@@ -221,7 +221,7 @@ export class ActionService {
     const reactionRemoveMessage = await makeReactionRemove(
       {
         targetCastId: {
-          fid: parseInt(cast.fid, 10),
+          fid: parseInt(cast.user.fid, 10),
           hash: hexToBuffer(hash),
         },
         type: reactionType,
@@ -241,7 +241,7 @@ export class ActionService {
 
     const result = await this.submitMessage(reactionRemoveMessage.value);
 
-    return result.hash;
+    return bufferToHex(result.hash);
   }
 
   async createLink(userId: string, fid: string, linkType: string) {

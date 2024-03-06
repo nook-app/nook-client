@@ -8,53 +8,15 @@ datasource db {
     url      = env("NOOK_DATABASE_URL")
 }
 
-model Entity {
-    id String @id @default(uuid())
-
-    createdAt DateTime @default(now())
-    updatedAt DateTime @default(now()) @updatedAt
-
-    user      User?
-    farcaster EntityFarcaster?
-    addresses EntityAddress[]
-}
-
-model EntityFarcaster {
-    fid           String  @id
-    entityId      String  @unique
+model User {
+    fid           String   @id
+    signedUpAt    DateTime
+    loggedInAt    DateTime
+    refreshToken  String
     signerEnabled Boolean
 
     createdAt DateTime @default(now())
     updatedAt DateTime @default(now()) @updatedAt
-
-    entity Entity @relation(fields: [entityId], references: [id])
-}
-
-model EntityAddress {
-    entityId   String
-    protocol   String
-    address    String
-    isContract Boolean
-    source     String
-
-    createdAt DateTime @default(now())
-    updatedAt DateTime @default(now()) @updatedAt
-
-    entity Entity @relation(fields: [entityId], references: [id])
-
-    @@id([protocol, address])
-}
-
-model User {
-    id           String   @id
-    signedUpAt   DateTime
-    loggedInAt   DateTime
-    refreshToken String
-
-    createdAt DateTime @default(now())
-    updatedAt DateTime @default(now()) @updatedAt
-
-    entity Entity @relation(fields: [id], references: [id])
 
     signers      Signer[]
     createdNooks Nook[]
@@ -62,38 +24,37 @@ model User {
 }
 
 model Signer {
-    userId      String
+    fid         String
     publicKey   String
     privateKey  String
-    token       String  @unique
+    token       String @unique
     deeplinkUrl String
     state       String
-    fid         String?
 
     createdAt DateTime @default(now())
     updatedAt DateTime @default(now()) @updatedAt
+    User      User?    @relation(fields: [userFid], references: [fid])
+    userFid   String?
 
-    user User @relation(fields: [userId], references: [id])
-
-    @@id([userId, publicKey])
+    @@id([fid, publicKey])
 }
 
 model NookMembership {
-    userId String
+    fid    String
     nookId String
 
     createdAt DateTime @default(now())
     updatedAt DateTime @default(now()) @updatedAt
 
-    user User @relation(fields: [userId], references: [id])
+    user User @relation(fields: [fid], references: [fid])
     nook Nook @relation(fields: [nookId], references: [id])
 
-    @@id([userId, nookId])
+    @@id([fid, nookId])
 }
 
 model Nook {
     id          String  @id @default(uuid())
-    creatorId   String
+    creatorFid  String
     name        String
     description String?
     imageUrl    String?
@@ -102,7 +63,7 @@ model Nook {
     createdAt DateTime @default(now())
     updatedAt DateTime @default(now()) @updatedAt
 
-    creator User             @relation(fields: [creatorId], references: [id])
+    creator User             @relation(fields: [creatorFid], references: [fid])
     members NookMembership[]
 }
 

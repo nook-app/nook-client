@@ -1,25 +1,22 @@
 import {
   GetFarcasterCastsByFidsRequest,
-  GetFarcasterCastsResponse,
   GetFarcasterCastsByParentUrlRequest,
   GetFarcasterCastsByFollowingRequest,
-  BaseFarcasterCastWithContext,
+  FarcasterUser,
   GetFarcasterUsersResponse,
-  FarcasterUserWithContext,
-} from "../types";
-import { BaseClient } from "./base";
+  FarcasterCastResponse,
+  GetFarcasterCastsResponse,
+} from "../../types";
+import { BaseClient } from "../base";
 
-export class FarcasterClient extends BaseClient {
+export class FarcasterAPIClient extends BaseClient {
   API_ENDPOINT = process.env.FARCASTER_API_ENDPOINT;
 
-  async fetchUser(
-    fid: string,
-    viewerFid?: string,
-  ): Promise<FarcasterUserWithContext> {
+  async getUser(fid: string, viewerFid?: string): Promise<FarcasterUser> {
     return await this.makeRequest(`/users/${fid}`, { viewerFid });
   }
 
-  async fetchUsers(
+  async getUsers(
     fids: string[],
     viewerFid?: string,
   ): Promise<GetFarcasterUsersResponse> {
@@ -30,14 +27,14 @@ export class FarcasterClient extends BaseClient {
     });
   }
 
-  async fetchCast(
+  async getCast(
     hash: string,
     viewerFid?: string,
-  ): Promise<BaseFarcasterCastWithContext> {
+  ): Promise<FarcasterCastResponse> {
     return await this.makeRequest(`/casts/${hash}`, { viewerFid });
   }
 
-  async fetchCasts(
+  async getCasts(
     hashes: string[],
     viewerFid?: string,
   ): Promise<GetFarcasterCastsResponse> {
@@ -48,14 +45,14 @@ export class FarcasterClient extends BaseClient {
     });
   }
 
-  async fetchCastReplies(
+  async getCastReplies(
     hash: string,
     viewerFid?: string,
   ): Promise<GetFarcasterCastsResponse> {
     return await this.makeRequest(`/casts/${hash}/replies`, { viewerFid });
   }
 
-  async fetchCastsFromFollowing(
+  async getCastsByFollowing(
     req: GetFarcasterCastsByFollowingRequest,
     viewerFid?: string,
   ): Promise<GetFarcasterCastsResponse> {
@@ -66,7 +63,7 @@ export class FarcasterClient extends BaseClient {
     });
   }
 
-  async fetchCastsFromFids(
+  async getCastsByFids(
     req: GetFarcasterCastsByFidsRequest,
     viewerFid?: string,
   ): Promise<GetFarcasterCastsResponse> {
@@ -77,7 +74,7 @@ export class FarcasterClient extends BaseClient {
     });
   }
 
-  async fetchCastsByParentUrl(
+  async getCastsByParentUrl(
     req: GetFarcasterCastsByParentUrlRequest,
     viewerFid?: string,
   ): Promise<GetFarcasterCastsResponse> {
