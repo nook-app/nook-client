@@ -16,7 +16,7 @@ export class ContentClient extends BaseClient {
   }
 
   async getContents(uris: string[]): Promise<GetContentsResponse> {
-    return await this.makeRequest("/contents", {
+    return await this.makeRequest("/content", {
       method: "POST",
       body: JSON.stringify({ uris }),
     });
