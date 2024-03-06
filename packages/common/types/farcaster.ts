@@ -58,3 +58,14 @@ export type FarcasterCast = BaseFarcasterCast & {
   engagement: FarcasterCastEngagement;
   context?: FarcasterCastContext;
 };
+
+export type Channel = {
+  url: string;
+  name: string;
+  description: string;
+  imageUrl: string;
+  channelId: string;
+  creatorId?: string;
+  createdAt: Date;
+  updatedAt: Date;
+};

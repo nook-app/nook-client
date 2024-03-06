@@ -1,18 +1,11 @@
 import fp from "fastify-plugin";
 import { PrismaClient } from "@nook/common/prisma/farcaster";
-import {
-  ContentClient,
-  FarcasterCacheClient,
-  NookClient,
-} from "@nook/common/clients";
+import { ContentClient, FarcasterCacheClient } from "@nook/common/clients";
 
 declare module "fastify" {
   interface FastifyInstance {
     farcaster: {
       client: PrismaClient;
-    };
-    nook: {
-      client: NookClient;
     };
     content: {
       client: ContentClient;
@@ -38,15 +31,6 @@ export const cachePlugin = fp(async (fastify, opts) => {
   fastify.decorate("cache", { client });
   fastify.addHook("onClose", async (fastify) => {
     await fastify.cache.client.close();
-  });
-});
-
-export const nookPlugin = fp(async (fastify, opts) => {
-  const client = new NookClient();
-  await client.connect();
-  fastify.decorate("nook", { client });
-  fastify.addHook("onClose", async (fastify) => {
-    await fastify.nook.client.close();
   });
 });
 

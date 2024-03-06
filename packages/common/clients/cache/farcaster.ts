@@ -4,6 +4,7 @@ import {
   BaseFarcasterUser,
   CastContextType,
   CastEngagementType,
+  Channel,
   UserContextType,
   UserEngagementType,
 } from "../../types";
@@ -11,6 +12,7 @@ import {
 export class FarcasterCacheClient extends RedisClient {
   CAST_CACHE_PREFIX = "farcaster:cast";
   USER_CACHE_PREFIX = "farcaster:user";
+  CHANNEL_CACHE_PREFIX = "farcaster:channel";
 
   async getCast(hash: string): Promise<BaseFarcasterCast> {
     return await this.getJson(`${this.CAST_CACHE_PREFIX}:${hash}`);
@@ -120,5 +122,13 @@ export class FarcasterCacheClient extends RedisClient {
 
   async decrementUserEngagement(fid: string, type: UserEngagementType) {
     await this.decrement(`${this.USER_CACHE_PREFIX}:${fid}:${type}`);
+  }
+
+  async getChannel(url: string): Promise<Channel | undefined> {
+    return await this.getJson(`${this.CHANNEL_CACHE_PREFIX}:${url}`);
+  }
+
+  async setChannel(url: string, channel: Channel) {
+    await this.setJson(`${this.CHANNEL_CACHE_PREFIX}:${url}`, channel);
   }
 }

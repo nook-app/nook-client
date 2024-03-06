@@ -7,6 +7,7 @@ import {
   BaseFarcasterUser,
   CastContextType,
   CastEngagementType,
+  Channel,
   FarcasterCast,
   FarcasterCastContext,
   FarcasterCastEngagement,
@@ -25,11 +26,7 @@ import {
   getMentions,
 } from "@nook/common/farcaster";
 import { UserDataType } from "@farcaster/hub-nodejs";
-import {
-  ContentClient,
-  FarcasterCacheClient,
-  NookClient,
-} from "@nook/common/clients";
+import { ContentClient, FarcasterCacheClient } from "@nook/common/clients";
 import { FastifyInstance } from "fastify";
 
 export const MAX_PAGE_SIZE = 25;
@@ -38,13 +35,11 @@ export class FarcasterService {
   private client: PrismaClient;
   private cache: FarcasterCacheClient;
   private contentClient: ContentClient;
-  private nookClient: NookClient;
 
   constructor(fastify: FastifyInstance) {
     this.client = fastify.farcaster.client;
     this.cache = fastify.cache.client;
     this.contentClient = fastify.content.client;
-    this.nookClient = fastify.nook.client;
   }
 
   async getCasts(
@@ -97,9 +92,7 @@ export class FarcasterService {
       this.getUsers(Array.from(fids), viewerFid),
       this.getCasts(Array.from(hashes), viewerFid),
       this.contentClient.getContents(rawCast.embedUrls),
-      rawCast.parentUrl
-        ? this.nookClient.getChannel(rawCast.parentUrl)
-        : undefined,
+      rawCast.parentUrl ? this.getChannel(rawCast.parentUrl) : undefined,
     ]);
 
     const userMap = users.reduce(
@@ -486,5 +479,92 @@ export class FarcasterService {
       },
       viewerFid,
     );
+  }
+
+  async searchChannels(query: string) {
+    const channels = await this.client.farcasterParentUrl.findMany({
+      where: {
+        url: {
+          contains: query,
+          mode: "insensitive",
+        },
+      },
+    });
+    return channels;
+  }
+
+  async getChannels(urls: string[]) {
+    const channels = await Promise.all(urls.map((url) => this.getChannel(url)));
+    return channels.filter(Boolean) as Channel[];
+  }
+
+  async getChannel(url: string): Promise<Channel | undefined> {
+    const cached = await this.cache.getChannel(url);
+    if (cached) return cached;
+
+    const existingChannel = await this.client.farcasterParentUrl.findUnique({
+      where: { url },
+    });
+    if (existingChannel) {
+      const channel: Channel = {
+        ...existingChannel,
+        creatorId: existingChannel.creatorId?.toString(),
+      };
+      await this.cache.setChannel(url, channel);
+      return channel;
+    }
+
+    const channel = await this.fetchChannel(url);
+    if (!channel) return;
+
+    await this.cache.setChannel(url, channel);
+    return channel;
+  }
+
+  async fetchChannel(url: string) {
+    const response = await fetch("https://api.warpcast.com/v2/all-channels");
+    if (!response.ok) {
+      return;
+    }
+
+    const data = await response.json();
+    const channels: {
+      id: string;
+      url: string;
+      name: string;
+      description: string;
+      imageUrl: string;
+      leadFid: number;
+      createdAt: number;
+    }[] = data?.result?.channels;
+    if (!channels) {
+      return;
+    }
+
+    const channelData = channels.find((channel) => channel.url === url);
+    if (!channelData) {
+      return;
+    }
+
+    const channel: Channel = {
+      url,
+      channelId: channelData.id,
+      name: channelData.name,
+      description: channelData.description,
+      imageUrl: channelData.imageUrl,
+      createdAt: new Date(channelData.createdAt * 1000),
+      updatedAt: new Date(),
+      creatorId: channelData.leadFid.toString(),
+    };
+
+    await this.client.farcasterParentUrl.upsert({
+      where: {
+        url,
+      },
+      update: channel,
+      create: channel,
+    });
+
+    return channel;
   }
 }

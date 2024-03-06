@@ -1,11 +1,11 @@
-import { Channel, PrismaClient } from "../../prisma/nook";
+import { PrismaClient } from "../../prisma/nook";
 import { RedisClient } from "../../redis";
 import {
   generateKeyPair,
   getWarpcastDeeplink,
   validateWarpcastSigner,
 } from "../../signer";
-import { FarcasterUser, NookMetadata, NookResponse } from "../../types";
+import { NookMetadata, NookResponse } from "../../types";
 import { FarcasterAPIClient } from "../api/farcaster";
 
 export class NookClient {
@@ -163,117 +163,6 @@ export class NookClient {
     return await this.client.nook.findUnique({
       where: {
         id,
-      },
-    });
-  }
-
-  async getChannels(ids: string[]): Promise<Channel[]> {
-    const channels = await Promise.all(ids.map((id) => this.getChannel(id)));
-    return channels.filter(Boolean) as Channel[];
-  }
-
-  async getChannel(id: string): Promise<Channel | undefined> {
-    const cached = await this.redis.getJson(
-      `${this.CHANNEL_CACHE_PREFIX}:${id}`,
-    );
-    if (cached) {
-      return cached;
-    }
-
-    let channel = await this.fetchChannel(id);
-
-    if (!channel) {
-      channel = await this.createChannel(id);
-    }
-
-    await this.redis.setJson(`${this.CHANNEL_CACHE_PREFIX}:${id}`, channel);
-    return channel;
-  }
-
-  async fetchChannel(id: string) {
-    return (
-      (await this.client.channel.findUnique({
-        where: {
-          id,
-        },
-      })) || undefined
-    );
-  }
-
-  async createChannel(id: string) {
-    const channel = await this.fetchChannelFromSource(id);
-    if (!channel) return;
-
-    await this.client.channel.upsert({
-      where: {
-        id,
-      },
-      update: channel,
-      create: channel,
-    });
-
-    return channel;
-  }
-
-  async fetchChannelFromSource(id: string) {
-    const response = await fetch("https://api.warpcast.com/v2/all-channels");
-    if (!response.ok) {
-      throw new Error("Failed to fetch channels");
-    }
-
-    const data = await response.json();
-    const channels: {
-      id: string;
-      url: string;
-      name: string;
-      description: string;
-      imageUrl: string;
-      leadFid: number;
-      createdAt: number;
-    }[] = data?.result?.channels;
-    if (!channels) {
-      throw new Error("Channel not found");
-    }
-
-    const channelData = channels.find((channel) => channel.url === id);
-    if (!channelData) {
-      throw new Error("Channel not found");
-    }
-
-    let creator: FarcasterUser | undefined;
-    if (channelData.leadFid) {
-      creator = await this.farcasterClient.getUser(
-        channelData.leadFid.toString(),
-      );
-    }
-
-    const channel: Channel = {
-      id,
-      channelId: channelData.id,
-      name: channelData.name,
-      description: channelData.description,
-      imageUrl: channelData.imageUrl,
-      createdAt: new Date(channelData.createdAt * 1000),
-      updatedAt: new Date(),
-      creatorFid: creator?.fid || null,
-    };
-
-    return channel;
-  }
-
-  async getAllChannels() {
-    return await this.client.channel.findMany({
-      take: 25,
-    });
-  }
-
-  async searchChannels(search: string) {
-    return await this.client.channel.findMany({
-      where: {
-        name: {
-          contains: search,
-          mode: "insensitive",
-        },
       },
     });
   }
