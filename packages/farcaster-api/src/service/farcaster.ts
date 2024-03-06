@@ -17,7 +17,7 @@ import {
   FarcasterUserEngagement,
   GetFarcasterCastsByFidsRequest,
   GetFarcasterCastsByFollowingRequest,
-  GetFarcasterCastsByParentUrlRequest,
+  GetFarcasterCastsByChannelRequest,
   UserEngagementType,
 } from "@nook/common/types";
 import {
@@ -377,10 +377,13 @@ export class FarcasterService {
     return { following: linked };
   }
 
-  async getCastsByParentUrl(
-    request: GetFarcasterCastsByParentUrlRequest,
+  async getCastsByChannel(
+    request: GetFarcasterCastsByChannelRequest,
     viewerFid?: string,
   ) {
+    const channel = await this.getChannelById(request.id);
+    if (!channel) return [];
+
     const minTimestamp = request.minCursor
       ? new Date(request.minCursor)
       : undefined;
@@ -391,7 +394,7 @@ export class FarcasterService {
 
     const rawCasts = await this.client.farcasterCast.findMany({
       where: {
-        parentUrl: request.parentUrl,
+        parentUrl: channel.url,
         timestamp: {
           lt: maxTimestamp,
           gt: minTimestamp,
@@ -534,7 +537,7 @@ export class FarcasterService {
       name: string;
       description: string;
       imageUrl: string;
-      leadFid: number;
+      leadFid?: number;
       createdAt: number;
     }[] = data?.result?.channels;
     if (!channels) {
@@ -547,19 +550,89 @@ export class FarcasterService {
     }
 
     const channel: Channel = {
-      url,
+      url: channelData.url,
       channelId: channelData.id,
       name: channelData.name,
       description: channelData.description,
       imageUrl: channelData.imageUrl,
       createdAt: new Date(channelData.createdAt * 1000),
       updatedAt: new Date(),
-      creatorId: channelData.leadFid.toString(),
+      creatorId: channelData.leadFid?.toString(),
     };
 
     await this.client.farcasterParentUrl.upsert({
       where: {
         url,
+      },
+      update: channel,
+      create: channel,
+    });
+
+    return channel;
+  }
+
+  async getChannelById(id: string): Promise<Channel | undefined> {
+    const cached = await this.cache.getChannelById(id);
+    if (cached) return cached;
+
+    const existingChannel = await this.client.farcasterParentUrl.findFirst({
+      where: { channelId: id },
+    });
+    if (existingChannel) {
+      const channel: Channel = {
+        ...existingChannel,
+        creatorId: existingChannel.creatorId?.toString(),
+      };
+      await this.cache.setChannelById(id, channel);
+      return channel;
+    }
+
+    const channel = await this.fetchChannelById(id);
+    if (!channel) return;
+
+    await this.cache.setChannelById(id, channel);
+    return channel;
+  }
+
+  async fetchChannelById(id: string) {
+    const response = await fetch("https://api.warpcast.com/v2/all-channels");
+    if (!response.ok) {
+      return;
+    }
+
+    const data = await response.json();
+    const channels: {
+      id: string;
+      url: string;
+      name: string;
+      description: string;
+      imageUrl: string;
+      leadFid?: number;
+      createdAt: number;
+    }[] = data?.result?.channels;
+    if (!channels) {
+      return;
+    }
+
+    const channelData = channels.find((channel) => channel.id === id);
+    if (!channelData) {
+      return;
+    }
+
+    const channel: Channel = {
+      url: channelData.url,
+      channelId: channelData.id,
+      name: channelData.name,
+      description: channelData.description,
+      imageUrl: channelData.imageUrl,
+      createdAt: new Date(channelData.createdAt * 1000),
+      updatedAt: new Date(),
+      creatorId: channelData.leadFid?.toString(),
+    };
+
+    await this.client.farcasterParentUrl.upsert({
+      where: {
+        url: channel.url,
       },
       update: channel,
       create: channel,

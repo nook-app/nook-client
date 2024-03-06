@@ -1,6 +1,6 @@
 import {
   GetFarcasterCastsByFidsRequest,
-  GetFarcasterCastsByParentUrlRequest,
+  GetFarcasterCastsByChannelRequest,
   GetFarcasterCastsByFollowingRequest,
   FarcasterUser,
   GetFarcasterUsersResponse,
@@ -74,11 +74,11 @@ export class FarcasterAPIClient extends BaseClient {
     });
   }
 
-  async getCastsByParentUrl(
-    req: GetFarcasterCastsByParentUrlRequest,
+  async getCastsByChannel(
+    req: GetFarcasterCastsByChannelRequest,
     viewerFid?: string,
   ): Promise<GetFarcasterCastsResponse> {
-    return await this.makeRequest("/casts/by-parent-url", {
+    return await this.makeRequest("/casts/by-channel", {
       method: "POST",
       body: JSON.stringify(req),
       viewerFid,

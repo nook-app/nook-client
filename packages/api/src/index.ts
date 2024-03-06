@@ -4,6 +4,7 @@ import { nookRoutes } from "./routes/nook";
 import { userRoutes } from "./routes/user";
 import fastifyJwt from "@fastify/jwt";
 import { actionRoutes } from "./routes/action";
+import { farcasterRoutes } from "./routes/farcaster";
 
 const buildApp = () => {
   const app = fastify({
@@ -31,6 +32,7 @@ const buildApp = () => {
   app.register(nookRoutes);
   app.register(userRoutes);
   app.register(actionRoutes);
+  app.register(farcasterRoutes);
 
   return app;
 };

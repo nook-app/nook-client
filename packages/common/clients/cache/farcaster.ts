@@ -131,4 +131,12 @@ export class FarcasterCacheClient extends RedisClient {
   async setChannel(url: string, channel: Channel) {
     await this.setJson(`${this.CHANNEL_CACHE_PREFIX}:${url}`, channel);
   }
+
+  async getChannelById(id: string): Promise<Channel | undefined> {
+    return await this.getJson(`${this.CHANNEL_CACHE_PREFIX}:${id}`);
+  }
+
+  async setChannelById(id: string, channel: Channel) {
+    await this.setJson(`${this.CHANNEL_CACHE_PREFIX}:${id}`, channel);
+  }
 }

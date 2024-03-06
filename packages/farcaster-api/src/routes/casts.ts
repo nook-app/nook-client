@@ -3,7 +3,7 @@ import {
   GetFarcasterCastRequest,
   GetFarcasterCastsByFidsRequest,
   GetFarcasterCastsByFollowingRequest,
-  GetFarcasterCastsByParentUrlRequest,
+  GetFarcasterCastsByChannelRequest,
   GetFarcasterCastsRequest,
 } from "@nook/common/types";
 import { FastifyInstance } from "fastify";
@@ -71,9 +71,9 @@ export const castRoutes = async (fastify: FastifyInstance) => {
     });
 
     fastify.post<{
-      Body: GetFarcasterCastsByParentUrlRequest;
-    }>("/casts/by-parent-url", async (request, reply) => {
-      const casts = await service.getCastsByParentUrl(
+      Body: GetFarcasterCastsByChannelRequest;
+    }>("/casts/by-channel", async (request, reply) => {
+      const casts = await service.getCastsByChannel(
         request.body,
         request.headers["x-viewer-fid"] as string,
       );

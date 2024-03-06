@@ -45,8 +45,8 @@ export type GetFarcasterCastsRequest = {
   hashes: string[];
 };
 
-export type GetFarcasterCastsByParentUrlRequest = {
-  parentUrl: string;
+export type GetFarcasterCastsByChannelRequest = {
+  id: string;
   limit?: number;
   minCursor?: number;
   maxCursor?: number;
