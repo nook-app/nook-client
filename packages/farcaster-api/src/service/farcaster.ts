@@ -142,7 +142,9 @@ export class FarcasterService {
         user: userMap[mention.fid],
         position: mention.position,
       })),
-      embedCasts: rawCast.embedHashes.map((hash) => castMap[hash]),
+      embedCasts: rawCast.embedHashes
+        .map((hash) => castMap[hash])
+        .filter(Boolean),
       parent: rawCast.parentHash ? castMap[rawCast.parentHash] : undefined,
       channel: rawCast.parentUrl ? channel : undefined,
     };

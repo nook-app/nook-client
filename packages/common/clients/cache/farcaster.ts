@@ -109,19 +109,31 @@ export class FarcasterCacheClient extends RedisClient {
   }
 
   async incrementCastEngagement(hash: string, type: CastEngagementType) {
-    await this.increment(`${this.CAST_CACHE_PREFIX}:${hash}:${type}`);
+    const key = `${this.CAST_CACHE_PREFIX}:${hash}:${type}`;
+    if (await this.exists(key)) {
+      await this.increment(key);
+    }
   }
 
   async decrementCastEngagement(hash: string, type: CastEngagementType) {
-    await this.decrement(`${this.CAST_CACHE_PREFIX}:${hash}:${type}`);
+    const key = `${this.CAST_CACHE_PREFIX}:${hash}:${type}`;
+    if (await this.exists(key)) {
+      await this.decrement(key);
+    }
   }
 
   async incrementUserEngagement(fid: string, type: UserEngagementType) {
-    await this.increment(`${this.USER_CACHE_PREFIX}:${fid}:${type}`);
+    const key = `${this.USER_CACHE_PREFIX}:${fid}:${type}`;
+    if (await this.exists(key)) {
+      await this.increment(key);
+    }
   }
 
   async decrementUserEngagement(fid: string, type: UserEngagementType) {
-    await this.decrement(`${this.USER_CACHE_PREFIX}:${fid}:${type}`);
+    const key = `${this.USER_CACHE_PREFIX}:${fid}:${type}`;
+    if (await this.exists(key)) {
+      await this.decrement(key);
+    }
   }
 
   async getChannel(url: string): Promise<Channel | undefined> {
