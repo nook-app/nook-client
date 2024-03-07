@@ -30,7 +30,10 @@ export const farcasterRoutes = async (fastify: FastifyInstance) => {
           request.params.hash,
           viewerFid,
         );
-        reply.send(response);
+        reply.send({
+          ...response,
+          nextCursor: response.data[response.data.length - 1]?.timestamp,
+        });
       },
     );
 
@@ -47,7 +50,7 @@ export const farcasterRoutes = async (fastify: FastifyInstance) => {
       },
     );
 
-    fastify.get<{ Params: { fid: string }; Querystring: { cursor: number } }>(
+    fastify.get<{ Params: { fid: string }; Querystring: { cursor?: string } }>(
       "/farcaster/users/:fid/casts",
       async (request, reply) => {
         let viewerFid: string | undefined;
@@ -59,7 +62,7 @@ export const farcasterRoutes = async (fastify: FastifyInstance) => {
           {
             fids: [request.params.fid],
             replies: false,
-            maxCursor: request.query.cursor,
+            cursor: request.query.cursor,
           },
           viewerFid,
         );
@@ -67,7 +70,7 @@ export const farcasterRoutes = async (fastify: FastifyInstance) => {
       },
     );
 
-    fastify.get<{ Params: { fid: string }; Querystring: { cursor: number } }>(
+    fastify.get<{ Params: { fid: string }; Querystring: { cursor?: string } }>(
       "/farcaster/users/:fid/replies",
       async (request, reply) => {
         let viewerFid: string | undefined;
@@ -79,7 +82,7 @@ export const farcasterRoutes = async (fastify: FastifyInstance) => {
           {
             fids: [request.params.fid],
             replies: true,
-            maxCursor: request.query.cursor,
+            cursor: request.query.cursor,
           },
           viewerFid,
         );
@@ -87,7 +90,20 @@ export const farcasterRoutes = async (fastify: FastifyInstance) => {
       },
     );
 
-    fastify.get<{ Params: { id: string }; Querystring: { cursor: number } }>(
+    fastify.get<{ Params: { id: string }; Querystring: { cursor?: string } }>(
+      "/farcaster/channels/:id",
+      async (request, reply) => {
+        let viewerFid: string | undefined;
+        try {
+          const { fid } = (await request.jwtDecode()) as { fid: string };
+          viewerFid = fid;
+        } catch (e) {}
+        const response = await client.getChannel(request.params.id, viewerFid);
+        reply.send(response);
+      },
+    );
+
+    fastify.get<{ Params: { id: string }; Querystring: { cursor?: string } }>(
       "/farcaster/channels/:id/casts",
       async (request, reply) => {
         let viewerFid: string | undefined;
@@ -99,7 +115,7 @@ export const farcasterRoutes = async (fastify: FastifyInstance) => {
           {
             id: request.params.id,
             replies: false,
-            maxCursor: request.query.cursor,
+            cursor: request.query.cursor,
           },
           viewerFid,
         );

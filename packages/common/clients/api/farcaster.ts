@@ -6,11 +6,16 @@ import {
   GetFarcasterUsersResponse,
   FarcasterCastResponse,
   GetFarcasterCastsResponse,
+  Channel,
 } from "../../types";
 import { BaseClient } from "./base";
 
 export class FarcasterAPIClient extends BaseClient {
   API_ENDPOINT = process.env.FARCASTER_API_ENDPOINT;
+
+  async getChannel(id: string, viewerFid?: string): Promise<Channel> {
+    return await this.makeRequest(`/channels/${id}`, { viewerFid });
+  }
 
   async getUser(fid: string, viewerFid?: string): Promise<FarcasterUser> {
     return await this.makeRequest(`/users/${fid}`, { viewerFid });

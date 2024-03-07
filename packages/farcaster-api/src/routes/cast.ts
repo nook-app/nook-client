@@ -53,31 +53,31 @@ export const castRoutes = async (fastify: FastifyInstance) => {
     fastify.post<{
       Body: GetFarcasterCastsByFollowingRequest;
     }>("/casts/by-following", async (request, reply) => {
-      const casts = await service.getCastsByFollowing(
+      const response = await service.getCastsByFollowing(
         request.body,
         request.headers["x-viewer-fid"] as string,
       );
-      reply.send({ data: casts });
+      reply.send(response);
     });
 
     fastify.post<{
       Body: GetFarcasterCastsByFidsRequest;
     }>("/casts/by-fids", async (request, reply) => {
-      const casts = await service.getCastsByFids(
+      const response = await service.getCastsByFids(
         request.body,
         request.headers["x-viewer-fid"] as string,
       );
-      reply.send({ data: casts });
+      reply.send(response);
     });
 
     fastify.post<{
       Body: GetFarcasterCastsByChannelRequest;
     }>("/casts/by-channel", async (request, reply) => {
-      const casts = await service.getCastsByChannel(
+      const response = await service.getCastsByChannel(
         request.body,
         request.headers["x-viewer-fid"] as string,
       );
-      reply.send({ data: casts });
+      reply.send(response);
     });
   });
 };

@@ -1,7 +1,8 @@
 import fastify from "fastify";
-import {  farcasterPlugin, cachePlugin } from "./plugins";
-import { castRoutes } from "./routes/casts";
+import { farcasterPlugin, cachePlugin } from "./plugins";
+import { castRoutes } from "./routes/cast";
 import { userRoutes } from "./routes/user";
+import { channelRoutes } from "./routes/channel";
 
 const buildApp = () => {
   const app = fastify({
@@ -24,6 +25,7 @@ const buildApp = () => {
 
   app.register(userRoutes);
   app.register(castRoutes);
+  app.register(channelRoutes);
 
   return app;
 };

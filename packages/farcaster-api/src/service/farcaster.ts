@@ -19,6 +19,7 @@ import {
   GetFarcasterCastsByFollowingRequest,
   GetFarcasterCastsByChannelRequest,
   UserEngagementType,
+  GetFarcasterCastsResponse,
 } from "@nook/common/types";
 import {
   getCastEmbeds,
@@ -199,12 +200,12 @@ export class FarcasterService {
     switch (type) {
       case "likes":
         count = await this.client.farcasterCastReaction.count({
-          where: { targetHash: hash },
+          where: { targetHash: hash, reactionType: 1 },
         });
         break;
       case "recasts":
         count = await this.client.farcasterCastReaction.count({
-          where: { targetHash: hash },
+          where: { targetHash: hash, reactionType: 2 },
         });
         break;
       case "replies":
@@ -380,25 +381,22 @@ export class FarcasterService {
   async getCastsByChannel(
     request: GetFarcasterCastsByChannelRequest,
     viewerFid?: string,
-  ) {
+  ): Promise<GetFarcasterCastsResponse> {
     const channel = await this.getChannelById(request.id);
-    if (!channel) return [];
+    if (!channel) return { data: [] };
 
-    const minTimestamp = request.minCursor
-      ? new Date(request.minCursor)
+    const cursor = request.cursor
+      ? this.decodeCursor(request.cursor)
       : undefined;
 
-    const maxTimestamp = request.maxCursor
-      ? new Date(request.maxCursor)
+    const timestamp = cursor?.timestamp
+      ? { lt: new Date(cursor.timestamp) }
       : undefined;
 
     const rawCasts = await this.client.farcasterCast.findMany({
       where: {
         parentUrl: channel.url,
-        timestamp: {
-          lt: maxTimestamp,
-          gt: minTimestamp,
-        },
+        timestamp,
         parentHash:
           request.replies === true
             ? { not: null }
@@ -410,25 +408,35 @@ export class FarcasterService {
       orderBy: {
         timestamp: "desc",
       },
-      take: request.limit || MAX_PAGE_SIZE,
+      take: MAX_PAGE_SIZE,
     });
 
-    const casts = await Promise.all(
-      rawCasts.map((rawCast) => this.getCast(rawCast.hash, rawCast, viewerFid)),
-    );
-    return casts.filter(Boolean) as FarcasterCastResponse[];
+    const casts = (
+      await Promise.all(
+        rawCasts.map((rawCast) =>
+          this.getCast(rawCast.hash, rawCast, viewerFid),
+        ),
+      )
+    ).filter(Boolean) as FarcasterCastResponse[];
+
+    return {
+      data: casts,
+      nextCursor: this.encodeCursor({
+        timestamp: casts[casts.length - 1]?.timestamp,
+      }),
+    };
   }
 
   async getCastsByFids(
     request: GetFarcasterCastsByFidsRequest,
     viewerFid?: string,
-  ) {
-    const minTimestamp = request.minCursor
-      ? new Date(request.minCursor)
+  ): Promise<GetFarcasterCastsResponse> {
+    const cursor = request.cursor
+      ? this.decodeCursor(request.cursor)
       : undefined;
 
-    const maxTimestamp = request.maxCursor
-      ? new Date(request.maxCursor)
+    const timestamp = cursor?.timestamp
+      ? { lt: new Date(cursor.timestamp) }
       : undefined;
 
     const rawCasts = await this.client.farcasterCast.findMany({
@@ -436,10 +444,7 @@ export class FarcasterService {
         fid: {
           in: request.fids.map((fid) => BigInt(fid)),
         },
-        timestamp: {
-          lt: maxTimestamp,
-          gt: minTimestamp,
-        },
+        timestamp,
         parentHash:
           request.replies === true
             ? { not: null }
@@ -451,19 +456,29 @@ export class FarcasterService {
       orderBy: {
         timestamp: "desc",
       },
-      take: request.limit || MAX_PAGE_SIZE,
+      take: MAX_PAGE_SIZE,
     });
 
-    const casts = await Promise.all(
-      rawCasts.map((rawCast) => this.getCast(rawCast.hash, rawCast, viewerFid)),
-    );
-    return casts.filter(Boolean) as FarcasterCastResponse[];
+    const casts = (
+      await Promise.all(
+        rawCasts.map((rawCast) =>
+          this.getCast(rawCast.hash, rawCast, viewerFid),
+        ),
+      )
+    ).filter(Boolean) as FarcasterCastResponse[];
+
+    return {
+      data: casts,
+      nextCursor: this.encodeCursor({
+        timestamp: casts[casts.length - 1]?.timestamp,
+      }),
+    };
   }
 
   async getCastsByFollowing(
     request: GetFarcasterCastsByFollowingRequest,
     viewerFid?: string,
-  ) {
+  ): Promise<GetFarcasterCastsResponse> {
     const following = await this.client.farcasterLink.findMany({
       where: {
         linkType: "follow",
@@ -475,9 +490,7 @@ export class FarcasterService {
     return await this.getCastsByFids(
       {
         fids: following.map((link) => link.targetFid.toString()),
-        minCursor: request.minCursor,
-        maxCursor: request.maxCursor,
-        limit: request.limit,
+        cursor: request.cursor,
         replies: request.replies,
       },
       viewerFid,
@@ -501,7 +514,10 @@ export class FarcasterService {
     return channels.filter(Boolean) as Channel[];
   }
 
-  async getChannel(url: string): Promise<Channel | undefined> {
+  async getChannel(
+    url: string,
+    viewerFid?: string,
+  ): Promise<Channel | undefined> {
     const cached = await this.cache.getChannel(url);
     if (cached) return cached;
 
@@ -571,7 +587,10 @@ export class FarcasterService {
     return channel;
   }
 
-  async getChannelById(id: string): Promise<Channel | undefined> {
+  async getChannelById(
+    id: string,
+    viewerFid?: string,
+  ): Promise<Channel | undefined> {
     const cached = await this.cache.getChannelById(id);
     if (cached) return cached;
 
@@ -639,5 +658,26 @@ export class FarcasterService {
     });
 
     return channel;
+  }
+
+  decodeCursor(cursor: string): { timestamp: number } | undefined {
+    try {
+      const decodedString = Buffer.from(cursor, "base64").toString("ascii");
+      const decodedCursor = JSON.parse(decodedString);
+      if (typeof decodedCursor === "object" && "timestamp" in decodedCursor) {
+        return decodedCursor;
+      }
+      console.error(
+        "Decoded cursor does not match expected format:",
+        decodedCursor,
+      );
+    } catch (error) {
+      console.error("Error decoding cursor:", error);
+    }
+  }
+
+  encodeCursor(cursor: { timestamp: number }): string {
+    const encodedString = JSON.stringify(cursor);
+    return Buffer.from(encodedString).toString("base64");
   }
 }

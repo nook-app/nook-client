@@ -25,6 +25,10 @@ export type FarcasterCastResponse = {
   context?: FarcasterCastContext;
 };
 
+export type GetFarcasterChannelRequest = {
+  id: string;
+};
+
 export type GetFarcasterUserRequest = {
   fid: string;
 };
@@ -47,25 +51,19 @@ export type GetFarcasterCastsRequest = {
 
 export type GetFarcasterCastsByChannelRequest = {
   id: string;
-  limit?: number;
-  minCursor?: number;
-  maxCursor?: number;
+  cursor?: string;
   replies?: boolean;
 };
 
 export type GetFarcasterCastsByFidsRequest = {
   fids: string[];
-  limit?: number;
-  minCursor?: number;
-  maxCursor?: number;
+  cursor?: string;
   replies?: boolean;
 };
 
 export type GetFarcasterCastsByFollowingRequest = {
   fid: string;
-  limit?: number;
-  minCursor?: number;
-  maxCursor?: number;
+  cursor?: string;
   replies?: boolean;
 };
 
