@@ -5,15 +5,12 @@ import {
   viemConnector,
 } from "@farcaster/auth-client";
 import { SignInWithFarcasterRequest, TokenResponse } from "../../types";
-import { FarcasterAPIClient, SignerAPIClient } from "@nook/common/clients";
 import { PrismaClient } from "@nook/common/prisma/nook";
 
 export class UserService {
   private farcasterAuthClient: FarcasterAuthClient;
   private jwt: FastifyInstance["jwt"];
   private nookClient: PrismaClient;
-  private farcasterClient: FarcasterAPIClient;
-  private signerClient: SignerAPIClient;
 
   constructor(fastify: FastifyInstance) {
     this.jwt = fastify.jwt;
@@ -21,8 +18,6 @@ export class UserService {
       ethereum: viemConnector(),
     });
     this.nookClient = fastify.nook.client;
-    this.farcasterClient = new FarcasterAPIClient();
-    this.signerClient = new SignerAPIClient();
   }
 
   async signInWithFarcaster(
@@ -37,9 +32,7 @@ export class UserService {
       throw new Error(verifyResult.error?.message || "Sign in failed");
     }
 
-    const fid = "20716";
-    // const fid = verifyResult.fid.toString();
-
+    const fid = verifyResult.fid.toString();
     let user = await this.nookClient.user.findFirst({
       where: {
         fid,
@@ -104,25 +97,6 @@ export class UserService {
       refreshToken,
       token,
       expiresAt,
-    };
-  }
-
-  async getUser(fid: string) {
-    const user = await this.nookClient.user.findFirst({
-      where: {
-        fid,
-      },
-    });
-    if (!user) {
-      return;
-    }
-
-    const signer = await this.signerClient.getSigner(fid);
-
-    return {
-      fid: user.fid,
-      signerEnabled: signer?.state === "completed",
-      farcaster: await this.farcasterClient.getUser(user.fid),
     };
   }
 }

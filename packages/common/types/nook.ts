@@ -1,8 +1,7 @@
-import { FarcasterUser } from "./farcaster";
-
 export type Nook = {
   id: string;
-  creator: FarcasterUser;
+  type: string;
+  creatorFid: string;
   name: string;
   description: string;
   imageUrl: string;
@@ -20,11 +19,13 @@ export type NookShelf = {
 };
 
 export enum NookShelfType {
-  FarcasterFeed = "FarcasterFeed",
+  FeedFarcasterFollowing = "FeedFarcasterFollowing",
 }
 
 export type NookShelfArgs = {
-  [NookShelfType.FarcasterFeed]: {
-    lol: boolean;
-  };
+  [NookShelfType.FeedFarcasterFollowing]: FeedFarcasterFollowingArgs;
+};
+
+export type FeedFarcasterFollowingArgs = {
+  fid: string;
 };

@@ -36,6 +36,7 @@ model NookMembership {
 
 model Nook {
     id          String @id @default(uuid())
+    type        String
     creatorFid  String
     name        String
     description String
