@@ -1,4 +1,5 @@
 import {
+  GetFarcasterUserFollowersRequest,
   GetFarcasterUserRequest,
   GetFarcasterUsersRequest,
 } from "@nook/common/types";
@@ -35,6 +36,32 @@ export const userRoutes = async (fastify: FastifyInstance) => {
       }
 
       reply.send(user);
+    });
+
+    fastify.get<{
+      Params: GetFarcasterUserFollowersRequest;
+      Querystring: { cursor?: string };
+    }>("/users/:fid/followers", async (request, reply) => {
+      const response = await service.getUserFollowers(
+        request.params.fid,
+        request.query.cursor,
+        request.headers["x-viewer-fid"] as string,
+      );
+
+      reply.send(response);
+    });
+
+    fastify.get<{
+      Params: GetFarcasterUserFollowersRequest;
+      Querystring: { cursor?: string };
+    }>("/users/:fid/following", async (request, reply) => {
+      const response = await service.getUserFollowing(
+        request.params.fid,
+        request.query.cursor,
+        request.headers["x-viewer-fid"] as string,
+      );
+
+      reply.send(response);
     });
   });
 };

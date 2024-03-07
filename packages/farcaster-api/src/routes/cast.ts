@@ -32,12 +32,50 @@ export const castRoutes = async (fastify: FastifyInstance) => {
 
     fastify.get<{
       Params: GetFarcasterCastRepliesRequest;
+      Querystring: { cursor?: string };
     }>("/casts/:hash/replies", async (request, reply) => {
-      const casts = await service.getCastReplies(
+      const response = await service.getCastReplies(
         request.params.hash,
+        request.query.cursor,
         request.headers["x-viewer-fid"] as string,
       );
-      reply.send({ data: casts });
+      reply.send(response);
+    });
+
+    fastify.get<{
+      Params: GetFarcasterCastRepliesRequest;
+      Querystring: { cursor?: string };
+    }>("/casts/:hash/quotes", async (request, reply) => {
+      const response = await service.getCastQuotes(
+        request.params.hash,
+        request.query.cursor,
+        request.headers["x-viewer-fid"] as string,
+      );
+      reply.send(response);
+    });
+
+    fastify.get<{
+      Params: GetFarcasterCastRepliesRequest;
+      Querystring: { cursor?: string };
+    }>("/casts/:hash/likes", async (request, reply) => {
+      const response = await service.getCastLikes(
+        request.params.hash,
+        request.query.cursor,
+        request.headers["x-viewer-fid"] as string,
+      );
+      reply.send(response);
+    });
+
+    fastify.get<{
+      Params: GetFarcasterCastRepliesRequest;
+      Querystring: { cursor?: string };
+    }>("/casts/:hash/recasts", async (request, reply) => {
+      const response = await service.getCastRecasts(
+        request.params.hash,
+        request.query.cursor,
+        request.headers["x-viewer-fid"] as string,
+      );
+      reply.send(response);
     });
 
     fastify.post<{

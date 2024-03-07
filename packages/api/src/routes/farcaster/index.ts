@@ -18,7 +18,7 @@ export const farcasterRoutes = async (fastify: FastifyInstance) => {
       },
     );
 
-    fastify.get<{ Params: { hash: string } }>(
+    fastify.get<{ Params: { hash: string }; Querystring: { cursor?: string } }>(
       "/farcaster/casts/:hash/replies",
       async (request, reply) => {
         let viewerFid: string | undefined;
@@ -28,12 +28,61 @@ export const farcasterRoutes = async (fastify: FastifyInstance) => {
         } catch (e) {}
         const response = await client.getCastReplies(
           request.params.hash,
+          request.query.cursor,
           viewerFid,
         );
-        reply.send({
-          ...response,
-          nextCursor: response.data[response.data.length - 1]?.timestamp,
-        });
+        reply.send(response);
+      },
+    );
+
+    fastify.get<{ Params: { hash: string }; Querystring: { cursor?: string } }>(
+      "/farcaster/casts/:hash/quotes",
+      async (request, reply) => {
+        let viewerFid: string | undefined;
+        try {
+          const { fid } = (await request.jwtDecode()) as { fid: string };
+          viewerFid = fid;
+        } catch (e) {}
+        const response = await client.getCastQuotes(
+          request.params.hash,
+          request.query.cursor,
+          viewerFid,
+        );
+        reply.send(response);
+      },
+    );
+
+    fastify.get<{ Params: { hash: string }; Querystring: { cursor?: string } }>(
+      "/farcaster/casts/:hash/likes",
+      async (request, reply) => {
+        let viewerFid: string | undefined;
+        try {
+          const { fid } = (await request.jwtDecode()) as { fid: string };
+          viewerFid = fid;
+        } catch (e) {}
+        const response = await client.getCastLikes(
+          request.params.hash,
+          request.query.cursor,
+          viewerFid,
+        );
+        reply.send(response);
+      },
+    );
+
+    fastify.get<{ Params: { hash: string }; Querystring: { cursor?: string } }>(
+      "/farcaster/casts/:hash/recasts",
+      async (request, reply) => {
+        let viewerFid: string | undefined;
+        try {
+          const { fid } = (await request.jwtDecode()) as { fid: string };
+          viewerFid = fid;
+        } catch (e) {}
+        const response = await client.getCastRecasts(
+          request.params.hash,
+          request.query.cursor,
+          viewerFid,
+        );
+        reply.send(response);
       },
     );
 
@@ -46,6 +95,40 @@ export const farcasterRoutes = async (fastify: FastifyInstance) => {
           viewerFid = fid;
         } catch (e) {}
         const response = await client.getUser(request.params.fid, viewerFid);
+        reply.send(response);
+      },
+    );
+
+    fastify.get<{ Params: { fid: string }; Querystring: { cursor?: string } }>(
+      "/farcaster/users/:fid/followers",
+      async (request, reply) => {
+        let viewerFid: string | undefined;
+        try {
+          const { fid } = (await request.jwtDecode()) as { fid: string };
+          viewerFid = fid;
+        } catch (e) {}
+        const response = await client.getUserFollowers(
+          request.params.fid,
+          request.query.cursor,
+          viewerFid,
+        );
+        reply.send(response);
+      },
+    );
+
+    fastify.get<{ Params: { fid: string }; Querystring: { cursor?: string } }>(
+      "/farcaster/users/:fid/following",
+      async (request, reply) => {
+        let viewerFid: string | undefined;
+        try {
+          const { fid } = (await request.jwtDecode()) as { fid: string };
+          viewerFid = fid;
+        } catch (e) {}
+        const response = await client.getUserFollowing(
+          request.params.fid,
+          request.query.cursor,
+          viewerFid,
+        );
         reply.send(response);
       },
     );

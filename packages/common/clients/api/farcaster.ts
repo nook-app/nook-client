@@ -21,6 +21,32 @@ export class FarcasterAPIClient extends BaseClient {
     return await this.makeRequest(`/users/${fid}`, { viewerFid });
   }
 
+  async getUserFollowers(
+    fid: string,
+    cursor?: string,
+    viewerFid?: string,
+  ): Promise<GetFarcasterUsersResponse> {
+    return await this.makeRequest(
+      `/users/${fid}/followers${cursor ? `?cursor=${cursor}` : ""}`,
+      {
+        viewerFid,
+      },
+    );
+  }
+
+  async getUserFollowing(
+    fid: string,
+    cursor?: string,
+    viewerFid?: string,
+  ): Promise<GetFarcasterUsersResponse> {
+    return await this.makeRequest(
+      `/users/${fid}/following${cursor ? `?cursor=${cursor}` : ""}`,
+      {
+        viewerFid,
+      },
+    );
+  }
+
   async getUsers(
     fids: string[],
     viewerFid?: string,
@@ -52,9 +78,46 @@ export class FarcasterAPIClient extends BaseClient {
 
   async getCastReplies(
     hash: string,
+    cursor?: string,
     viewerFid?: string,
   ): Promise<GetFarcasterCastsResponse> {
-    return await this.makeRequest(`/casts/${hash}/replies`, { viewerFid });
+    return await this.makeRequest(
+      `/casts/${hash}/replies${cursor ? `?cursor=${cursor}` : ""}`,
+      { viewerFid },
+    );
+  }
+
+  async getCastQuotes(
+    hash: string,
+    cursor?: string,
+    viewerFid?: string,
+  ): Promise<GetFarcasterCastsResponse> {
+    return await this.makeRequest(
+      `/casts/${hash}/quotes${cursor ? `?cursor=${cursor}` : ""}`,
+      { viewerFid },
+    );
+  }
+
+  async getCastLikes(
+    hash: string,
+    cursor?: string,
+    viewerFid?: string,
+  ): Promise<GetFarcasterUsersResponse> {
+    return await this.makeRequest(
+      `/casts/${hash}/likes${cursor ? `?cursor=${cursor}` : ""}`,
+      { viewerFid },
+    );
+  }
+
+  async getCastRecasts(
+    hash: string,
+    cursor?: string,
+    viewerFid?: string,
+  ): Promise<GetFarcasterUsersResponse> {
+    return await this.makeRequest(
+      `/casts/${hash}/recasts${cursor ? `?cursor=${cursor}` : ""}`,
+      { viewerFid },
+    );
   }
 
   async getCastsByFollowing(

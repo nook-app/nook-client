@@ -20,6 +20,7 @@ import {
   GetFarcasterCastsByChannelRequest,
   UserEngagementType,
   GetFarcasterCastsResponse,
+  GetFarcasterUsersResponse,
 } from "@nook/common/types";
 import {
   getCastEmbeds,
@@ -55,16 +56,37 @@ export class FarcasterService {
 
   async getCastReplies(
     hash: string,
+    cursor?: string,
     viewerFid?: string,
-  ): Promise<FarcasterCastResponse[]> {
+  ): Promise<GetFarcasterCastsResponse> {
     const rawCasts = await this.client.farcasterCast.findMany({
-      where: { parentHash: hash },
+      where: {
+        timestamp: this.decodeCursor(cursor),
+        parentHash: hash,
+      },
+      orderBy: {
+        timestamp: "desc",
+      },
+      take: MAX_PAGE_SIZE,
     });
 
-    const casts = await Promise.all(
-      rawCasts.map((rawCast) => this.getCast(rawCast.hash, rawCast, viewerFid)),
-    );
-    return casts.filter(Boolean) as FarcasterCastResponse[];
+    const casts = (
+      await Promise.all(
+        rawCasts.map((rawCast) =>
+          this.getCast(rawCast.hash, rawCast, viewerFid),
+        ),
+      )
+    ).filter(Boolean) as FarcasterCastResponse[];
+
+    return {
+      data: casts,
+      nextCursor:
+        casts.length === MAX_PAGE_SIZE
+          ? this.encodeCursor({
+              timestamp: casts[casts.length - 1]?.timestamp,
+            })
+          : undefined,
+    };
   }
 
   async getCast(
@@ -264,6 +286,170 @@ export class FarcasterService {
     return reacted;
   }
 
+  async getCastLikes(
+    hash: string,
+    cursor?: string,
+    viewerFid?: string,
+  ): Promise<GetFarcasterUsersResponse> {
+    const likes = await this.client.farcasterCastReaction.findMany({
+      where: {
+        targetHash: hash,
+        reactionType: 1,
+        timestamp: this.decodeCursor(cursor),
+        deletedAt: null,
+      },
+      orderBy: {
+        timestamp: "desc",
+      },
+      take: MAX_PAGE_SIZE,
+    });
+
+    const fids = likes.map((reaction) => reaction.fid.toString());
+    const users = await this.getUsers(fids, viewerFid);
+
+    return {
+      data: users,
+      nextCursor:
+        likes.length === MAX_PAGE_SIZE
+          ? this.encodeCursor({
+              timestamp: likes[likes.length - 1]?.timestamp.getTime(),
+            })
+          : undefined,
+    };
+  }
+
+  async getCastRecasts(
+    hash: string,
+    cursor?: string,
+    viewerFid?: string,
+  ): Promise<GetFarcasterUsersResponse> {
+    const recasts = await this.client.farcasterCastReaction.findMany({
+      where: {
+        targetHash: hash,
+        reactionType: 2,
+        timestamp: this.decodeCursor(cursor),
+        deletedAt: null,
+      },
+      orderBy: {
+        timestamp: "desc",
+      },
+      take: MAX_PAGE_SIZE,
+    });
+
+    const fids = recasts.map((reaction) => reaction.fid.toString());
+    const users = await this.getUsers(fids, viewerFid);
+
+    return {
+      data: users,
+      nextCursor:
+        recasts.length === MAX_PAGE_SIZE
+          ? this.encodeCursor({
+              timestamp: recasts[recasts.length - 1]?.timestamp.getTime(),
+            })
+          : undefined,
+    };
+  }
+
+  async getCastQuotes(
+    hash: string,
+    cursor?: string,
+    viewerFid?: string,
+  ): Promise<GetFarcasterCastsResponse> {
+    const rawCasts = await this.client.farcasterCastEmbedCast.findMany({
+      where: {
+        embedHash: hash,
+        timestamp: this.decodeCursor(cursor),
+        deletedAt: null,
+      },
+      orderBy: {
+        timestamp: "desc",
+      },
+      take: MAX_PAGE_SIZE,
+    });
+
+    const casts = (
+      await Promise.all(
+        rawCasts.map((rawCast) =>
+          this.getCast(rawCast.hash, undefined, viewerFid),
+        ),
+      )
+    ).filter(Boolean) as FarcasterCastResponse[];
+
+    return {
+      data: casts,
+      nextCursor:
+        casts.length === MAX_PAGE_SIZE
+          ? this.encodeCursor({
+              timestamp: casts[casts.length - 1]?.timestamp,
+            })
+          : undefined,
+    };
+  }
+
+  async getUserFollowers(
+    fid: string,
+    cursor?: string,
+    viewerFid?: string,
+  ): Promise<GetFarcasterUsersResponse> {
+    const followers = await this.client.farcasterLink.findMany({
+      where: {
+        timestamp: this.decodeCursor(cursor),
+        linkType: "follow",
+        targetFid: BigInt(fid),
+        deletedAt: null,
+      },
+      orderBy: {
+        timestamp: "desc",
+      },
+      take: MAX_PAGE_SIZE,
+    });
+
+    const fids = followers.map((link) => link.fid.toString());
+    const users = await this.getUsers(fids, viewerFid);
+
+    return {
+      data: users,
+      nextCursor:
+        followers.length === MAX_PAGE_SIZE
+          ? this.encodeCursor({
+              timestamp: followers[followers.length - 1]?.timestamp.getTime(),
+            })
+          : undefined,
+    };
+  }
+
+  async getUserFollowing(
+    fid: string,
+    cursor?: string,
+    viewerFid?: string,
+  ): Promise<GetFarcasterUsersResponse> {
+    const following = await this.client.farcasterLink.findMany({
+      where: {
+        timestamp: this.decodeCursor(cursor),
+        linkType: "follow",
+        fid: BigInt(fid),
+        deletedAt: null,
+      },
+      orderBy: {
+        timestamp: "desc",
+      },
+      take: MAX_PAGE_SIZE,
+    });
+
+    const fids = following.map((link) => link.targetFid.toString());
+    const users = await this.getUsers(fids, viewerFid);
+
+    return {
+      data: users,
+      nextCursor:
+        following.length === MAX_PAGE_SIZE
+          ? this.encodeCursor({
+              timestamp: following[following.length - 1]?.timestamp.getTime(),
+            })
+          : undefined,
+    };
+  }
+
   async getUsers(fids: string[], viewerFid?: string): Promise<FarcasterUser[]> {
     const users = await Promise.all(
       fids.map((fid) => this.getUser(fid, viewerFid)),
@@ -385,18 +571,10 @@ export class FarcasterService {
     const channel = await this.getChannelById(request.id);
     if (!channel) return { data: [] };
 
-    const cursor = request.cursor
-      ? this.decodeCursor(request.cursor)
-      : undefined;
-
-    const timestamp = cursor?.timestamp
-      ? { lt: new Date(cursor.timestamp) }
-      : undefined;
-
     const rawCasts = await this.client.farcasterCast.findMany({
       where: {
         parentUrl: channel.url,
-        timestamp,
+        timestamp: this.decodeCursor(request.cursor),
         parentHash:
           request.replies === true
             ? { not: null }
@@ -421,9 +599,12 @@ export class FarcasterService {
 
     return {
       data: casts,
-      nextCursor: this.encodeCursor({
-        timestamp: casts[casts.length - 1]?.timestamp,
-      }),
+      nextCursor:
+        casts.length === MAX_PAGE_SIZE
+          ? this.encodeCursor({
+              timestamp: casts[casts.length - 1]?.timestamp,
+            })
+          : undefined,
     };
   }
 
@@ -431,20 +612,12 @@ export class FarcasterService {
     request: GetFarcasterCastsByFidsRequest,
     viewerFid?: string,
   ): Promise<GetFarcasterCastsResponse> {
-    const cursor = request.cursor
-      ? this.decodeCursor(request.cursor)
-      : undefined;
-
-    const timestamp = cursor?.timestamp
-      ? { lt: new Date(cursor.timestamp) }
-      : undefined;
-
     const rawCasts = await this.client.farcasterCast.findMany({
       where: {
         fid: {
           in: request.fids.map((fid) => BigInt(fid)),
         },
-        timestamp,
+        timestamp: this.decodeCursor(request.cursor),
         parentHash:
           request.replies === true
             ? { not: null }
@@ -469,9 +642,12 @@ export class FarcasterService {
 
     return {
       data: casts,
-      nextCursor: this.encodeCursor({
-        timestamp: casts[casts.length - 1]?.timestamp,
-      }),
+      nextCursor:
+        casts.length === MAX_PAGE_SIZE
+          ? this.encodeCursor({
+              timestamp: casts[casts.length - 1]?.timestamp,
+            })
+          : undefined,
     };
   }
 
@@ -660,12 +836,13 @@ export class FarcasterService {
     return channel;
   }
 
-  decodeCursor(cursor: string): { timestamp: number } | undefined {
+  decodeCursor(cursor?: string): { lt: Date } | undefined {
+    if (!cursor) return;
     try {
       const decodedString = Buffer.from(cursor, "base64").toString("ascii");
       const decodedCursor = JSON.parse(decodedString);
       if (typeof decodedCursor === "object" && "timestamp" in decodedCursor) {
-        return decodedCursor;
+        return { lt: new Date(decodedCursor.timestamp) };
       }
       console.error(
         "Decoded cursor does not match expected format:",
@@ -676,7 +853,8 @@ export class FarcasterService {
     }
   }
 
-  encodeCursor(cursor: { timestamp: number }): string {
+  encodeCursor(cursor?: { timestamp: number }): string | undefined {
+    if (!cursor) return;
     const encodedString = JSON.stringify(cursor);
     return Buffer.from(encodedString).toString("base64");
   }

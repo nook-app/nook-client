@@ -62,6 +62,7 @@ model FarcasterVerification {
     deletedAt DateTime?
 
     @@id([fid, address])
+    @@index([address])
 }
 
 model FarcasterCast {
@@ -169,6 +170,8 @@ model FarcasterCastReaction {
 
     @@id([targetHash, reactionType, fid])
     @@index([fid])
+    @@index([timestamp, targetHash, deletedAt, reactionType])
+    @@index([timestamp, fid, deletedAt, reactionType])
 }
 
 model FarcasterUrlReaction {
@@ -205,6 +208,8 @@ model FarcasterLink {
 
     @@id([fid, linkType, targetFid])
     @@index([targetFid, linkType])
+    @@index([timestamp, fid, deletedAt, linkType])
+    @@index([timestamp, targetFid, deletedAt, linkType])
 }
 
 model FarcasterParentUrl {

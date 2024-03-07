@@ -88,3 +88,7 @@ export type GetContentsRequest = {
 export type GetContentsResponse = {
   data: UrlContentResponse[];
 };
+
+export type GetFarcasterUserFollowersRequest = {
+  fid: string;
+};
