@@ -1,6 +1,6 @@
 import { UserDataType } from "@farcaster/hub-nodejs";
 import {
-  ContentClient,
+  ContentAPIClient,
   FarcasterAPIClient,
   FarcasterCacheClient,
 } from "@nook/common/clients";
@@ -17,12 +17,12 @@ import { EntityEvent, FarcasterEventType } from "@nook/common/types";
 export class FarcasterProcessor {
   private farcasterClient: FarcasterAPIClient;
   private cacheClient: FarcasterCacheClient;
-  private contentClient: ContentClient;
+  private contentClient: ContentAPIClient;
 
   constructor() {
     this.farcasterClient = new FarcasterAPIClient();
     this.cacheClient = new FarcasterCacheClient();
-    this.contentClient = new ContentClient();
+    this.contentClient = new ContentAPIClient();
   }
 
   async process(event: EntityEvent) {

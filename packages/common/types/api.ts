@@ -92,3 +92,55 @@ export type GetContentsResponse = {
 export type GetFarcasterUserFollowersRequest = {
   fid: string;
 };
+
+export type GetSignerResponse = {
+  publicKey: string;
+  token: string;
+  deeplinkUrl: string;
+  state: string;
+};
+
+export type ValidateSignerResponse = {
+  state: string;
+};
+
+export type SubmitCastAddRequest = {
+  text: string;
+  parentUrl?: string;
+  parentFid?: string;
+  parentHash?: string;
+};
+
+export type SubmitCastRemoveRequest = {
+  hash: string;
+};
+
+export type SubmitReactionAddRequest = {
+  reactionType: number;
+  targetFid: string;
+  targetHash: string;
+};
+
+export type SubmitReactionRemoveRequest = {
+  reactionType: number;
+  targetFid: string;
+  targetHash: string;
+};
+
+export type SubmitLinkAddRequest = {
+  linkType: string;
+  targetFid: string;
+};
+
+export type SubmitLinkRemoveRequest = {
+  linkType: string;
+  targetFid: string;
+};
+
+export type SubmitMessageResponse = {
+  hash: string;
+};
+
+export type SubmitMessageError = {
+  message: string;
+};

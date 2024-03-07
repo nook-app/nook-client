@@ -3,9 +3,9 @@ import {
   GetContentsResponse,
   UrlContentResponse,
 } from "../../types";
-import { BaseClient } from "./base";
+import { BaseAPIClient } from "./base";
 
-export class ContentClient extends BaseClient {
+export class ContentAPIClient extends BaseAPIClient {
   API_ENDPOINT = process.env.CONTENT_API_ENDPOINT;
 
   async getContent(uri: string): Promise<UrlContentResponse> {

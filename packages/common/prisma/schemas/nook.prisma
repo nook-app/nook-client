@@ -9,34 +9,16 @@ datasource db {
 }
 
 model User {
-    fid           String   @id
-    signedUpAt    DateTime
-    loggedInAt    DateTime
-    refreshToken  String
-    signerEnabled Boolean
+    fid          String   @id
+    signedUpAt   DateTime
+    loggedInAt   DateTime
+    refreshToken String
 
     createdAt DateTime @default(now())
     updatedAt DateTime @default(now()) @updatedAt
 
-    signers      Signer[]
     createdNooks Nook[]
     nooks        NookMembership[]
-}
-
-model Signer {
-    fid         String
-    publicKey   String
-    privateKey  String
-    token       String @unique
-    deeplinkUrl String
-    state       String
-
-    createdAt DateTime @default(now())
-    updatedAt DateTime @default(now()) @updatedAt
-    User      User?    @relation(fields: [userFid], references: [fid])
-    userFid   String?
-
-    @@id([fid, publicKey])
 }
 
 model NookMembership {
@@ -53,16 +35,27 @@ model NookMembership {
 }
 
 model Nook {
-    id          String  @id @default(uuid())
+    id          String @id @default(uuid())
     creatorFid  String
     name        String
-    description String?
-    imageUrl    String?
-    metadata    Json
+    description String
+    imageUrl    String
 
     createdAt DateTime @default(now())
     updatedAt DateTime @default(now()) @updatedAt
 
     creator User             @relation(fields: [creatorFid], references: [fid])
     members NookMembership[]
+    shelves NookShelf[]
+}
+
+model NookShelf {
+    id          String @id @default(uuid())
+    nookId      String
+    name        String
+    description String
+    type        String
+    args        Json
+
+    Nook Nook @relation(fields: [nookId], references: [id])
 }

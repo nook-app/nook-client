@@ -4,18 +4,16 @@ import {
   createAppClient,
   viemConnector,
 } from "@farcaster/auth-client";
-import {
-  SignInWithFarcasterRequest,
-  TokenResponse,
-  GetUserResponse,
-} from "../../types";
-import { FarcasterAPIClient, NookClient } from "@nook/common/clients";
+import { SignInWithFarcasterRequest, TokenResponse } from "../../types";
+import { FarcasterAPIClient, SignerAPIClient } from "@nook/common/clients";
+import { PrismaClient } from "@nook/common/prisma/nook";
 
 export class UserService {
   private farcasterAuthClient: FarcasterAuthClient;
   private jwt: FastifyInstance["jwt"];
-  private nookClient: NookClient;
+  private nookClient: PrismaClient;
   private farcasterClient: FarcasterAPIClient;
+  private signerClient: SignerAPIClient;
 
   constructor(fastify: FastifyInstance) {
     this.jwt = fastify.jwt;
@@ -24,6 +22,7 @@ export class UserService {
     });
     this.nookClient = fastify.nook.client;
     this.farcasterClient = new FarcasterAPIClient();
+    this.signerClient = new SignerAPIClient();
   }
 
   async signInWithFarcaster(
@@ -41,12 +40,24 @@ export class UserService {
     const fid = "20716";
     // const fid = verifyResult.fid.toString();
 
-    let user = await this.nookClient.getUser(fid);
+    let user = await this.nookClient.user.findFirst({
+      where: {
+        fid,
+      },
+    });
     if (!user) {
       const refreshToken = this.jwt.sign({
         fid,
       });
-      user = await this.nookClient.createUser(fid, refreshToken);
+      const date = new Date();
+      user = await this.nookClient.user.create({
+        data: {
+          fid,
+          signedUpAt: date,
+          loggedInAt: date,
+          refreshToken,
+        },
+      });
     }
 
     const expiresIn = 60 * 60 * 24 * 7;
@@ -66,8 +77,12 @@ export class UserService {
   }
 
   async getToken(refreshToken: string): Promise<TokenResponse | undefined> {
-    const decoded = this.jwt.verify(refreshToken) as { fid: string };
-    const user = await this.nookClient.getUser(decoded.fid);
+    const { fid } = this.jwt.verify(refreshToken) as { fid: string };
+    const user = await this.nookClient.user.findFirst({
+      where: {
+        fid,
+      },
+    });
     if (!user) {
       return;
     }
@@ -92,17 +107,22 @@ export class UserService {
     };
   }
 
-  async getUser(fid: string): Promise<GetUserResponse | undefined> {
-    const user = await this.nookClient.getUser(fid);
+  async getUser(fid: string) {
+    const user = await this.nookClient.user.findFirst({
+      where: {
+        fid,
+      },
+    });
     if (!user) {
       return;
     }
 
+    const signer = await this.signerClient.getSigner(fid);
+
     return {
       fid: user.fid,
-      signerEnabled: user.signerEnabled,
+      signerEnabled: signer?.state === "completed",
       farcaster: await this.farcasterClient.getUser(user.fid),
-      nooks: await this.nookClient.getNooksByUser(user.fid),
     };
   }
 }

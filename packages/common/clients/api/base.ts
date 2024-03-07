@@ -1,4 +1,4 @@
-export class BaseClient {
+export class BaseAPIClient {
   API_ENDPOINT?: string | undefined = undefined;
 
   async makeRequest(

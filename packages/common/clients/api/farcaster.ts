@@ -8,9 +8,9 @@ import {
   GetFarcasterCastsResponse,
   Channel,
 } from "../../types";
-import { BaseClient } from "./base";
+import { BaseAPIClient } from "./base";
 
-export class FarcasterAPIClient extends BaseClient {
+export class FarcasterAPIClient extends BaseAPIClient {
   API_ENDPOINT = process.env.FARCASTER_API_ENDPOINT;
 
   async getChannel(id: string, viewerFid?: string): Promise<Channel> {

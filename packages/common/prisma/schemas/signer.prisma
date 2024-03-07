@@ -1,0 +1,23 @@
+generator client {
+    provider = "prisma-client-js"
+    output   = "../generated/signer"
+}
+
+datasource db {
+    provider = "postgresql"
+    url      = env("SIGNER_DATABASE_URL")
+}
+
+model Signer {
+    fid         String
+    publicKey   String
+    privateKey  String
+    token       String @unique
+    deeplinkUrl String
+    state       String
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @default(now()) @updatedAt
+
+    @@id([fid, publicKey])
+}

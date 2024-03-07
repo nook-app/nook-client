@@ -1,16 +1,23 @@
 import { FastifyInstance } from "fastify";
 import { SignInWithFarcasterRequest } from "../../../types";
-import { UserService } from "../../services/userService";
+import { UserService } from "../../services/user";
+import { NookService } from "../../services/nook";
 
 export const userRoutes = async (fastify: FastifyInstance) => {
   fastify.register(async (fastify: FastifyInstance) => {
     const userService = new UserService(fastify);
+    const nookService = new NookService(fastify);
 
     fastify.get("/user", async (request, reply) => {
       const { id } = (await request.jwtDecode()) as { id: string };
       try {
         const data = await userService.getUser(id);
-        return reply.send(data);
+        if (!data) {
+          return reply.code(404).send({ message: "User not found" });
+        }
+
+        const nooks = await nookService.getNooksByUser(data.fid);
+        return reply.send({ ...data, nooks });
       } catch (e) {
         console.error("/user", e);
         return reply.code(500).send({ message: (e as Error).message });

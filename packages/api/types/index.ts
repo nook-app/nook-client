@@ -1,8 +1,4 @@
-import {
-  FarcasterCastResponse,
-  NookResponse,
-  FarcasterUser,
-} from "@nook/common/types";
+import { FarcasterCastResponse, FarcasterUser, Nook } from "@nook/common/types";
 
 export type SignInWithFarcasterRequest = {
   message: string;
@@ -16,18 +12,11 @@ export type TokenResponse = {
   expiresAt: number;
 };
 
-export type SignerPublicData = {
-  publicKey: string;
-  token: string;
-  deeplinkUrl: string;
-  state: string;
-};
-
 export type GetUserResponse = {
   fid: string;
   signerEnabled: boolean;
   farcaster: FarcasterUser;
-  nooks: NookResponse[];
+  nooks: Nook[];
 };
 
 export type FarcasterFeedRequest = {

@@ -1486,6 +1486,22 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@nook/signer-api@workspace:packages/signer-api":
+  version: 0.0.0-use.local
+  resolution: "@nook/signer-api@workspace:packages/signer-api"
+  dependencies:
+    "@farcaster/fishery": "npm:^2.2.3"
+    "@farcaster/hub-nodejs": "npm:^0.11.3"
+    "@fastify/jwt": "npm:^8.0.0"
+    "@nook/common": "npm:*"
+    "@types/jest": "npm:^29.5.11"
+    "@types/node": "npm:^20.10.5"
+    fastify: "npm:^4.25.2"
+    jest: "npm:^29.7.0"
+    typescript: "npm:^5.3.3"
+  languageName: unknown
+  linkType: soft
+
 "@npmcli/agent@npm:^2.0.0":
   version: 2.2.1
   resolution: "@npmcli/agent@npm:2.2.1"

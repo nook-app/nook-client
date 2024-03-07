@@ -1,5 +1,5 @@
 import { FastifyInstance } from "fastify";
-import { NookService } from "../../services/nookService";
+import { NookService } from "../../services/nook";
 
 export const nookRoutes = async (fastify: FastifyInstance) => {
   fastify.register(async (fastify: FastifyInstance) => {

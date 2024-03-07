@@ -28,7 +28,7 @@ import {
   getMentions,
 } from "@nook/common/farcaster";
 import { UserDataType } from "@farcaster/hub-nodejs";
-import { ContentClient, FarcasterCacheClient } from "@nook/common/clients";
+import { ContentAPIClient, FarcasterCacheClient } from "@nook/common/clients";
 import { FastifyInstance } from "fastify";
 
 export const MAX_PAGE_SIZE = 25;
@@ -36,12 +36,12 @@ export const MAX_PAGE_SIZE = 25;
 export class FarcasterService {
   private client: PrismaClient;
   private cache: FarcasterCacheClient;
-  private contentClient: ContentClient;
+  private contentClient: ContentAPIClient;
 
   constructor(fastify: FastifyInstance) {
     this.client = fastify.farcaster.client;
     this.cache = fastify.cache.client;
-    this.contentClient = new ContentClient();
+    this.contentClient = new ContentAPIClient();
   }
 
   async getCasts(

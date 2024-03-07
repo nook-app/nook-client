@@ -5,12 +5,14 @@
   "main": "./dist/index.js",
   "scripts": {
     "build": "yarn db:generate && tsc && cp -r prisma/generated dist/prisma",
-    "db:generate": "yarn db:generate:farcaster && yarn db:generate:nook && yarn db:generate:content",
+    "db:generate": "yarn db:generate:farcaster && yarn db:generate:nook && yarn db:generate:content && yarn db:generate:signer",
     "db:generate:farcaster": "npx prisma generate --schema ./prisma/schemas/farcaster.prisma",
     "db:generate:nook": "npx prisma generate --schema ./prisma/schemas/nook.prisma",
+    "db:generate:signer": "npx prisma generate --schema ./prisma/schemas/signer.prisma",
     "db:generate:content": "npx prisma generate --schema ./prisma/schemas/content.prisma",
     "db:push:farcaster": "npx prisma db push --schema ./prisma/schemas/farcaster.prisma",
     "db:push:nook": "npx prisma db push --schema ./prisma/schemas/nook.prisma",
+    "db:push:signer": "npx prisma db push --schema ./prisma/schemas/signer.prisma",
     "db:push:content": "npx prisma db push --schema ./prisma/schemas/content.prisma"
   },
   "exports": {

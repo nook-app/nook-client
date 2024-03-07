@@ -60,13 +60,15 @@ export const getWarpcastDeeplink = async (key: `0x${string}`) => {
   };
 };
 
-export const validateWarpcastSigner = async (token: string) => {
+export const validateSignerRegistration = async (token: string) => {
   const response = await fetch(
     `${WARPCAST_API_URL}/signed-key-request?token=${token}`,
   );
 
   if (!response.ok) {
-    throw new Error(await response.text());
+    return {
+      state: "pending",
+    };
   }
 
   const {

@@ -1,10 +1,7 @@
 import fastify from "fastify";
-import { nookPlugin } from "./plugins";
-import { nookRoutes } from "./routes/nook";
-import { userRoutes } from "./routes/user";
+import { signerRoutes } from "./routes/signer";
+import { signerPlugin } from "./plugins";
 import fastifyJwt from "@fastify/jwt";
-import { farcasterRoutes } from "./routes/farcaster";
-import { farcasterSignerRoutes } from "./routes/farcaster/signer";
 
 const buildApp = () => {
   const app = fastify({
@@ -26,12 +23,9 @@ const buildApp = () => {
     secret: process.env.JWT_SECRET as string,
   });
 
-  app.register(nookPlugin);
+  app.register(signerPlugin);
 
-  app.register(nookRoutes, { prefix: "/v0" });
-  app.register(userRoutes, { prefix: "/v0" });
-  app.register(farcasterRoutes, { prefix: "/v0" });
-  app.register(farcasterSignerRoutes, { prefix: "/v0" });
+  app.register(signerRoutes);
 
   return app;
 };
@@ -39,7 +33,7 @@ const buildApp = () => {
 const start = async () => {
   const app = buildApp();
   try {
-    const port = Number(process.env.PORT || "3000");
+    const port = Number(process.env.PORT || "3002");
     await app.listen({ port, host: "0.0.0.0" });
     console.log(`Listening on :${port}`);
   } catch (err) {
