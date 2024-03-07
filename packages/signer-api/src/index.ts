@@ -1,6 +1,6 @@
 import fastify from "fastify";
 import { signerRoutes } from "./routes/signer";
-import { signerPlugin } from "./plugins";
+import { hubPlugin, signerPlugin } from "./plugins";
 import fastifyJwt from "@fastify/jwt";
 
 const buildApp = () => {
@@ -23,6 +23,7 @@ const buildApp = () => {
     secret: process.env.JWT_SECRET as string,
   });
 
+  app.register(hubPlugin);
   app.register(signerPlugin);
 
   app.register(signerRoutes);
@@ -33,7 +34,7 @@ const buildApp = () => {
 const start = async () => {
   const app = buildApp();
   try {
-    const port = Number(process.env.PORT || "3002");
+    const port = Number(process.env.PORT || "3003");
     await app.listen({ port, host: "0.0.0.0" });
     console.log(`Listening on :${port}`);
   } catch (err) {
