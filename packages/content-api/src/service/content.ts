@@ -23,10 +23,13 @@ export class ContentService {
   }
 
   async getContents(uris: string[]): Promise<UrlContentResponse[]> {
-    return Promise.all(uris.map((uri) => this.getContent(uri)));
+    const contents = await Promise.all(uris.map((uri) => this.getContent(uri)));
+    return contents.filter(Boolean) as UrlContentResponse[];
   }
 
-  async getContent(uri: string): Promise<UrlContentResponse> {
+  async getContent(uri: string): Promise<UrlContentResponse | undefined> {
+    if (uri.includes(" ")) return;
+
     const cached = await this.cache.getContent(uri);
     if (cached) return cached;
 

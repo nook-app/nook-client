@@ -18,11 +18,10 @@
     "start:events": "yarn workspace @nook/events start",
     "start:farcaster:api": "yarn workspace @nook/farcaster-api start",
     "start:content:api": "yarn workspace @nook/content-api start",
+    "start:signer:api": "yarn workspace @nook/signer-api start",
     "start:api": "yarn workspace @nook/api start"
   },
-  "workspaces": [
-    "packages/*"
-  ],
+  "workspaces": ["packages/*"],
   "devDependencies": {
     "@biomejs/biome": "1.4.1",
     "@types/jest": "^29.5.11",

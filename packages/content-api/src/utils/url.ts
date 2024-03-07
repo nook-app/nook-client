@@ -215,6 +215,7 @@ function parseFrameMetadata(urlMetadata: UrlMetadata) {
       // already handled above
       continue;
     }
+
     if (key === "frameRefreshPeriod") {
       // convert to number
       let parsed: number | undefined = parseInt(readValue || "") as number;
@@ -224,6 +225,12 @@ function parseFrameMetadata(urlMetadata: UrlMetadata) {
       frameData.refreshPeriod = parsed;
       continue;
     }
+
+    // ignore images above a certain size (256kB)
+    if (key === "frameImage" && readValue && readValue.length > 256 * 1024) {
+      continue;
+    }
+
     frameData[value as keyof FrameData] = readValue as string &
       "vNext" &
       FrameButton[] &

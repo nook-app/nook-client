@@ -21,6 +21,7 @@ import {
   UserEngagementType,
   GetFarcasterCastsResponse,
   GetFarcasterUsersResponse,
+  UrlContentResponse,
 } from "@nook/common/types";
 import {
   getCastEmbeds,
@@ -137,7 +138,7 @@ export class FarcasterService {
     return {
       ...rawCast,
       user: userMap[rawCast.fid],
-      embeds: embeds.data,
+      embeds: embeds.data.filter(Boolean) as UrlContentResponse[],
       mentions: rawCast.mentions.map((mention) => ({
         user: userMap[mention.fid],
         position: mention.position,

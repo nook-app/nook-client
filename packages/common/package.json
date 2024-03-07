@@ -22,6 +22,7 @@
     "./prisma/farcaster": "./dist/prisma/farcaster.js",
     "./prisma/nook": "./dist/prisma/nook.js",
     "./prisma/content": "./dist/prisma/content.js",
+    "./prisma/signer": "./dist/prisma/signer.js",
     "./farcaster": "./dist/farcaster/index.js"
   },
   "dependencies": {
