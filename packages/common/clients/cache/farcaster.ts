@@ -108,18 +108,8 @@ export class FarcasterCacheClient extends RedisClient {
     );
   }
 
-  async incrementCastEngagement(hash: string, type: CastEngagementType) {
-    const key = `${this.CAST_CACHE_PREFIX}:${hash}:${type}`;
-    if (await this.exists(key)) {
-      await this.increment(key);
-    }
-  }
-
-  async decrementCastEngagement(hash: string, type: CastEngagementType) {
-    const key = `${this.CAST_CACHE_PREFIX}:${hash}:${type}`;
-    if (await this.exists(key)) {
-      await this.decrement(key);
-    }
+  async resetCastEngagement(hash: string, type: CastEngagementType) {
+    await this.del(`${this.CAST_CACHE_PREFIX}:${hash}:${type}`);
   }
 
   async incrementUserEngagement(fid: string, type: UserEngagementType) {

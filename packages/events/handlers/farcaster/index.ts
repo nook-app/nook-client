@@ -98,12 +98,12 @@ export class FarcasterProcessor {
 
     if (cast.parentHash) {
       promises.push(
-        this.cacheClient.incrementCastEngagement(cast.parentHash, "replies"),
+        this.cacheClient.resetCastEngagement(cast.parentHash, "replies"),
       );
     }
 
     for (const { hash } of cast.embedCasts) {
-      promises.push(this.cacheClient.incrementCastEngagement(hash, "quotes"));
+      promises.push(this.cacheClient.resetCastEngagement(hash, "quotes"));
     }
 
     await Promise.all(promises);
@@ -118,12 +118,12 @@ export class FarcasterProcessor {
 
     if (cast.parentHash) {
       promises.push(
-        this.cacheClient.decrementCastEngagement(cast.parentHash, "replies"),
+        this.cacheClient.resetCastEngagement(cast.parentHash, "replies"),
       );
     }
 
     for (const { hash } of cast.embedCasts) {
-      promises.push(this.cacheClient.decrementCastEngagement(hash, "quotes"));
+      promises.push(this.cacheClient.resetCastEngagement(hash, "quotes"));
     }
 
     await Promise.all(promises);
@@ -133,7 +133,7 @@ export class FarcasterProcessor {
     const promises = [];
     if (data.reactionType === 1) {
       promises.push(
-        this.cacheClient.incrementCastEngagement(data.hash, "likes"),
+        this.cacheClient.resetCastEngagement(data.targetHash, "likes"),
       );
       promises.push(
         this.cacheClient.setCastContext(
@@ -145,7 +145,7 @@ export class FarcasterProcessor {
       );
     } else if (data.reactionType === 2) {
       promises.push(
-        this.cacheClient.incrementCastEngagement(data.hash, "recasts"),
+        this.cacheClient.resetCastEngagement(data.targetHash, "recasts"),
       );
       promises.push(
         this.cacheClient.setCastContext(
@@ -164,7 +164,7 @@ export class FarcasterProcessor {
     const promises = [];
     if (data.reactionType === 1) {
       promises.push(
-        this.cacheClient.decrementCastEngagement(data.hash, "likes"),
+        this.cacheClient.resetCastEngagement(data.targetHash, "likes"),
       );
       promises.push(
         this.cacheClient.setCastContext(
@@ -176,7 +176,7 @@ export class FarcasterProcessor {
       );
     } else if (data.reactionType === 2) {
       promises.push(
-        this.cacheClient.decrementCastEngagement(data.hash, "recasts"),
+        this.cacheClient.resetCastEngagement(data.targetHash, "recasts"),
       );
       promises.push(
         this.cacheClient.setCastContext(
