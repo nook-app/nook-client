@@ -1,5 +1,5 @@
 import fastify from "fastify";
-import { nookPlugin } from "./plugins";
+import { cachePlugin, nookPlugin } from "./plugins";
 import { nookRoutes } from "./routes/nook";
 import { userRoutes } from "./routes/user";
 import fastifyJwt from "@fastify/jwt";
@@ -27,6 +27,7 @@ const buildApp = () => {
   });
 
   app.register(nookPlugin);
+  app.register(cachePlugin);
 
   app.register(nookRoutes, { prefix: "/v0" });
   app.register(userRoutes, { prefix: "/v0" });

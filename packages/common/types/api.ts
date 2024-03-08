@@ -59,12 +59,16 @@ export type GetFarcasterCastsByFidsRequest = {
   fids: string[];
   cursor?: string;
   replies?: boolean;
+  minTimestamp?: number;
+  limit?: number;
 };
 
 export type GetFarcasterCastsByFollowingRequest = {
   fid: string;
   cursor?: string;
   replies?: boolean;
+  minTimestamp?: number;
+  limit?: number;
 };
 
 export type GetFarcasterCastsResponse = {

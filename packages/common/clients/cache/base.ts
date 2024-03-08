@@ -113,42 +113,47 @@ export class RedisClient {
     await this.redis.set(key, JSON.stringify(value, replacer));
   }
 
-  async addToSet(key: string, value: string, timestamp: number) {
+  // biome-ignore lint/suspicious/noExplicitAny: generic setter
+  async addToSet(key: string, value: any, timestamp: number) {
     const pipeline = this.redis.pipeline();
-    pipeline.zadd(key, timestamp, value);
+    pipeline.zadd(key, timestamp, JSON.stringify(value));
     pipeline.zremrangebyrank(key, 0, -1000);
     await pipeline.exec();
   }
 
   async batchAddToSet(
     key: string,
-    values: { value: string; timestamp: number }[],
+    // biome-ignore lint/suspicious/noExplicitAny: generic setter
+    values: { value: any; timestamp: number }[],
   ) {
     const pipeline = this.redis.pipeline();
     for (const value of values) {
-      pipeline.zadd(key, value.timestamp, value.value);
+      pipeline.zadd(key, value.timestamp, JSON.stringify(value.value));
       pipeline.zremrangebyrank(key, 0, -1000);
     }
     await pipeline.exec();
   }
 
-  async addToSets(keys: string[], value: string, timestamp: number) {
+  // biome-ignore lint/suspicious/noExplicitAny: generic setter
+  async addToSets(keys: string[], value: any, timestamp: number) {
     const pipeline = this.redis.pipeline();
     for (const key of keys) {
-      pipeline.zadd(key, timestamp, value);
+      pipeline.zadd(key, timestamp, JSON.stringify(value));
       pipeline.zremrangebyrank(key, 0, -1000);
     }
     await pipeline.exec();
   }
 
-  async removeFromSet(key: string, value: string) {
-    await this.redis.zrem(key, value);
+  // biome-ignore lint/suspicious/noExplicitAny: generic setter
+  async removeFromSet(key: string, value: any) {
+    await this.redis.zrem(key, JSON.stringify(value));
   }
 
-  async removeFromSets(keys: string[], value: string) {
+  // biome-ignore lint/suspicious/noExplicitAny: generic setter
+  async removeFromSets(keys: string[], value: any) {
     const pipeline = this.redis.pipeline();
     for (const key of keys) {
-      pipeline.zrem(key, value);
+      pipeline.zrem(key, JSON.stringify(value));
     }
     await pipeline.exec();
   }

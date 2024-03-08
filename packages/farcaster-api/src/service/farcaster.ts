@@ -620,7 +620,12 @@ export class FarcasterService {
         fid: {
           in: request.fids.map((fid) => BigInt(fid)),
         },
-        timestamp: this.decodeCursor(request.cursor),
+        timestamp: {
+          ...(request.minTimestamp
+            ? { gt: new Date(request.minTimestamp) }
+            : {}),
+          ...this.decodeCursor(request.cursor),
+        },
         parentHash:
           request.replies === true
             ? { not: null }
@@ -632,7 +637,7 @@ export class FarcasterService {
       orderBy: {
         timestamp: "desc",
       },
-      take: MAX_PAGE_SIZE,
+      take: request.limit ?? MAX_PAGE_SIZE,
     });
 
     const casts = (
@@ -671,6 +676,8 @@ export class FarcasterService {
         fids: following.map((link) => link.targetFid.toString()),
         cursor: request.cursor,
         replies: request.replies,
+        minTimestamp: request.minTimestamp,
+        limit: request.limit,
       },
       viewerFid,
     );

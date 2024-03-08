@@ -10,8 +10,8 @@ export const nookRoutes = async (fastify: FastifyInstance) => {
 
     fastify.get("/nooks", async (request, reply) => {
       const { fid } = (await request.jwtDecode()) as { fid: string };
-      const nook = await nookService.getNooks(fid);
-      return reply.send(nook);
+      const data = await nookService.getNooks(fid);
+      return reply.send({ data });
     });
 
     fastify.get<{ Params: { nookId: string } }>(
@@ -37,6 +37,7 @@ export const nookRoutes = async (fastify: FastifyInstance) => {
         request.query.cursor,
         viewerFid,
       );
+
       return reply.send(response);
     });
   });
