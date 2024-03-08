@@ -21,6 +21,7 @@ import {
   UnstructuredFrameMetascraperButtonKeys,
 } from "@nook/common/types";
 import { UrlContent } from "@nook/common/prisma/content";
+import { getHtmlContent } from "./html";
 
 export type UrlMetadata = {
   metadata?: Metadata;
@@ -136,18 +137,9 @@ const scrapeMetadata = async (options: MetascraperOptions) => {
 };
 
 export const fetchUrlMetadata = async (url: string) => {
-  const res = await fetch(url, {
-    headers: {
-      "user-agent":
-        USER_AGENT_OVERRIDES[new URL(url).hostname] ||
-        "Mozilla/5.0 (compatible; TelegramBot/1.0; +https://core.telegram.org/bots/webhooks)",
-    },
-  });
-  const html = await res.text();
-  const headers = res.headers;
-
-  const contentType = headers.get("content-type");
-  const contentLength = headers.get("content-length");
+  const { html, headers } = await getHtmlContent(url);
+  const contentType = headers["content-type"];
+  const contentLength = headers["content-length"];
 
   const urlMetadata: UrlMetadata = {
     contentType: contentType || undefined,

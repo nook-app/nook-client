@@ -7,6 +7,7 @@ export type SignInWithFarcasterRequest = {
 };
 
 export type TokenResponse = {
+  fid: string;
   refreshToken: string;
   token: string;
   expiresAt: number;

@@ -63,6 +63,7 @@ export class UserService {
     );
 
     return {
+      fid,
       token,
       refreshToken: user.refreshToken,
       expiresAt,
@@ -94,6 +95,7 @@ export class UserService {
     );
 
     return {
+      fid,
       refreshToken,
       token,
       expiresAt,
