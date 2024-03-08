@@ -12,56 +12,14 @@ import metascraperLogoFavicon from "metascraper-logo-favicon";
 import metascraperPublisher from "metascraper-publisher";
 import metascraperReadability from "metascraper-readability";
 import metascraperUrl from "metascraper-url";
-import { metascraperFrame } from "./metascraper/metascraper-frame";
-import {
-  FrameMetascraperData,
-  FrameData,
-  FrameButton,
-  FrameButtonAction,
-  UnstructuredFrameMetascraperButtonKeys,
-} from "@nook/common/types";
 import { UrlContent } from "@nook/common/prisma/content";
+import { Frame, getFrame } from "frames.js";
 
 export type UrlMetadata = {
   metadata?: Metadata;
-  frame?: FrameData;
+  frame?: Frame;
   contentType?: string;
   contentLength?: number;
-};
-
-// Require that a key in T maps to a key of FrameData
-type FrameDataTypesafeMapping<T> = {
-  [K in keyof T]: keyof FrameData;
-};
-
-// Helper to enumerate over all unstructured Metascraper frame keys and map them to structured FrameData keys
-// This wacky type should make it robust to any upstream changes in both the Metascraper frame keys and the FrameData keys
-const ENUMERATED_FRAME_KEYS: FrameDataTypesafeMapping<
-  Required<
-    Omit<FrameMetascraperData, keyof UnstructuredFrameMetascraperButtonKeys>
-  >
-> &
-  UnstructuredFrameMetascraperButtonKeys = {
-  frameVersion: "version",
-  frameImage: "image",
-  framePostUrl: "postUrl",
-  frameButton1: "frameButton1",
-  frameButton1Action: "frameButton1Action",
-  frameButton1Target: "frameButton1Target",
-  frameButton2: "frameButton2",
-  frameButton2Action: "frameButton2Action",
-  frameButton2Target: "frameButton2Target",
-  frameButton3: "frameButton3",
-  frameButton3Action: "frameButton3Action",
-  frameButton3Target: "frameButton3Target",
-  frameButton4: "frameButton4",
-  frameButton4Action: "frameButton4Action",
-  frameButton4Target: "frameButton4Target",
-  frameRefreshPeriod: "refreshPeriod",
-  frameIdemKey: "idempotencyKey",
-  frameTextInput: "textInput",
-  frameImageAspectRatio: "aspectRatio",
-  frameState: "state",
 };
 
 const USER_AGENT_OVERRIDES: { [key: string]: string } = {
@@ -120,7 +78,9 @@ export const getUrlContent = async (
       content.type = metadata.contentType || null;
       content.length = metadata.contentLength || null;
       content.metadata = metadata.metadata || null;
-      content.frame = metadata.frame || null;
+      content.frame = metadata.frame
+        ? JSON.parse(JSON.stringify(metadata.frame))
+        : null;
     }
   } catch (e) {
     return;
@@ -144,7 +104,6 @@ const scrapeMetadata = async (options: MetascraperOptions) => {
     metascraperPublisher(),
     metascraperReadability(),
     metascraperUrl(),
-    metascraperFrame(),
   ]);
   return await scraper(options);
 };
@@ -171,86 +130,12 @@ export const fetchUrlMetadata = async (url: string) => {
   if (contentType?.startsWith("text/html")) {
     const scrapedMetadata = await scrapeMetadata({ html, url });
     urlMetadata.metadata = scrapedMetadata;
-    urlMetadata.frame = parseFrameMetadata(urlMetadata);
+    const { frame } = getFrame({
+      url,
+      htmlString: html,
+    });
+    urlMetadata.frame = frame;
   }
 
   return urlMetadata;
 };
-
-/**
- * Metascraper only allows key:value scraping, so this helper takes the unstructured frame metadata and structures it into a FrameData object.
- * Then it removes the unstructured frame keys from the metadata object.
- * @param urlMetadata UrlMetadata object including metadata scraped from the URL
- */
-function parseFrameMetadata(urlMetadata: UrlMetadata) {
-  const frameData: FrameData = {} as FrameData;
-  // better way to shut up the type checker? inline ignore only works for first access
-  if (!urlMetadata.metadata) {
-    urlMetadata.metadata = {};
-  }
-
-  // construct structured button data
-  // TODO: validate button actions etc?
-  const buttons = [
-    {
-      label: urlMetadata.metadata.frameButton1,
-      action: urlMetadata.metadata.frameButton1Action as FrameButtonAction,
-      target: urlMetadata.metadata.frameButton1Target,
-      index: 1,
-    },
-    {
-      label: urlMetadata.metadata.frameButton2,
-      action: urlMetadata.metadata.frameButton2Action as FrameButtonAction,
-      target: urlMetadata.metadata.frameButton2Target,
-      index: 2,
-    },
-    {
-      label: urlMetadata.metadata.frameButton3,
-      action: urlMetadata.metadata.frameButton3Action as FrameButtonAction,
-      target: urlMetadata.metadata.frameButton3Target,
-      index: 3,
-    },
-    {
-      label: urlMetadata.metadata.frameButton4,
-      action: urlMetadata.metadata.frameButton4Action as FrameButtonAction,
-      target: urlMetadata.metadata.frameButton4Target,
-      index: 4,
-    },
-  ].filter((button) => button.label != null) as FrameButton[];
-  frameData.buttons = buttons.length > 0 ? buttons : undefined;
-
-  // metascraper returns unstructured metadata; all frame keys are prefixed with "frame", which we will structure into a FrameData object under the "frame" key
-  // clean up unstructured frame keys
-  for (const [key, value] of Object.entries(ENUMERATED_FRAME_KEYS)) {
-    const readValue = urlMetadata.metadata[key as keyof FrameMetascraperData];
-    delete urlMetadata.metadata[key as keyof FrameMetascraperData];
-
-    if (key.startsWith("frameButton")) {
-      // already handled above
-      continue;
-    }
-
-    if (key === "frameRefreshPeriod") {
-      // convert to number
-      let parsed: number | undefined = parseInt(readValue || "") as number;
-      if (Number.isNaN(parsed)) {
-        parsed = undefined;
-      }
-      frameData.refreshPeriod = parsed;
-      continue;
-    }
-
-    // ignore images above a certain size (256kB)
-    if (key === "frameImage" && readValue && readValue.length > 256 * 1024) {
-      continue;
-    }
-
-    frameData[value as keyof FrameData] = readValue as string &
-      "vNext" &
-      FrameButton[] &
-      number;
-  }
-  if (frameData.version) {
-    return frameData;
-  }
-}

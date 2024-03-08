@@ -1,3 +1,4 @@
+import { Frame } from "frames.js";
 import { UrlContentResponse } from "./content";
 import {
   Channel,
@@ -143,6 +144,7 @@ export type SubmitLinkRemoveRequest = {
 
 export type SubmitMessageResponse = {
   hash: string;
+  trustedBytes?: string;
 };
 
 export type SubmitMessageError = {
@@ -152,8 +154,34 @@ export type SubmitMessageError = {
 export type SubmitFrameActionRequest = {
   castFid: string;
   castHash: string;
-  actionIndex: number;
   postUrl: string;
+  action?: string;
   inputText?: string;
+  buttonIndex: number;
   state?: string;
+};
+
+export type FramePayload = {
+  untrustedData: {
+    fid: number;
+    url: string;
+    messageHash: string;
+    timestamp: number;
+    network: number;
+    buttonIndex: number;
+    inputText?: string;
+    state?: string;
+    castId: {
+      fid: number;
+      hash: string;
+    };
+  };
+  trustedData: {
+    messageBytes: string;
+  };
+};
+
+export type SubmitFrameActionResponse = {
+  location?: string;
+  frame?: Frame;
 };

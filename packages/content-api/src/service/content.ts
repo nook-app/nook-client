@@ -5,11 +5,11 @@ import {
   ContentReference,
   ContentReferenceType,
   FarcasterCastResponse,
-  FrameData,
   UrlContentResponse,
 } from "@nook/common/types";
 import { FastifyInstance } from "fastify";
 import { getUrlContent } from "../utils";
+import { Frame } from "frames.js";
 
 export const MAX_PAGE_SIZE = 25;
 
@@ -42,7 +42,7 @@ export class ContentService {
       const response = {
         ...content,
         metadata: content.metadata as Metadata,
-        frame: content.frame as FrameData,
+        frame: content.frame as Frame,
       } as UrlContentResponse;
       await this.cache.setContent(uri, response);
       return response;
@@ -79,7 +79,7 @@ export class ContentService {
     const response = {
       ...content,
       metadata: content.metadata as Metadata,
-      frame: content.frame as FrameData,
+      frame: content.frame as Frame,
     } as UrlContentResponse;
     await this.cache.setContent(uri, response);
     return response;

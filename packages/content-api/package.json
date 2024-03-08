@@ -16,6 +16,7 @@
     "bullmq": "^5.1.0",
     "ethers": "^6.9.1",
     "fastify": "^4.25.2",
+    "frames.js": "^0.8.2",
     "metascraper": "^5.45.0",
     "metascraper-audio": "^5.45.0",
     "metascraper-author": "^5.45.0",

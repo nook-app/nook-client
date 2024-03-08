@@ -12,6 +12,7 @@ import {
   makeLinkAdd,
   makeLinkRemove,
   makeFrameAction,
+  FrameActionBody,
 } from "@farcaster/hub-nodejs";
 import { bufferToHex, hexToBuffer } from "@nook/common/farcaster";
 import { PrismaClient } from "@nook/common/prisma/signer";
@@ -124,6 +125,15 @@ export class SignerService {
       return { state: "pending" };
     }
 
+    await this.client.signer.update({
+      where: {
+        token,
+      },
+      data: {
+        state,
+      },
+    });
+
     return { state: "completed" };
   }
 
@@ -233,7 +243,9 @@ export class SignerService {
     );
 
     if (castRemoveMessage.isErr()) {
-      throw new Error(castRemoveMessage.error.message);
+      return {
+        message: castRemoveMessage.error.message,
+      };
     }
 
     const result = await this.submitMessage(castRemoveMessage.value);
@@ -272,7 +284,9 @@ export class SignerService {
     );
 
     if (reactionAddMessage.isErr()) {
-      throw new Error(reactionAddMessage.error.message);
+      return {
+        message: reactionAddMessage.error.message,
+      };
     }
 
     const result = await this.submitMessage(reactionAddMessage.value);
@@ -309,7 +323,9 @@ export class SignerService {
     );
 
     if (reactionRemoveMessage.isErr()) {
-      throw new Error(reactionRemoveMessage.error.message);
+      return {
+        message: reactionRemoveMessage.error.message,
+      };
     }
 
     const result = await this.submitMessage(reactionRemoveMessage.value);
@@ -345,7 +361,9 @@ export class SignerService {
     );
 
     if (linkAddMessage.isErr()) {
-      throw new Error(linkAddMessage.error.message);
+      return {
+        message: linkAddMessage.error.message,
+      };
     }
 
     const result = await this.submitMessage(linkAddMessage.value);
@@ -381,7 +399,9 @@ export class SignerService {
     );
 
     if (linkRemoveMessage.isErr()) {
-      throw new Error(linkRemoveMessage.error.message);
+      return {
+        message: linkRemoveMessage.error.message,
+      };
     }
 
     const result = await this.submitMessage(linkRemoveMessage.value);
@@ -391,7 +411,10 @@ export class SignerService {
     };
   }
 
-  async signFrameAction(fid: string, req: SubmitFrameActionRequest) {
+  async signFrameAction(
+    fid: string,
+    req: SubmitFrameActionRequest,
+  ): Promise<SubmitMessageResponse | SubmitMessageError> {
     const signer = await this.getActiveSigner(fid);
     if (!signer) {
       return {
@@ -399,20 +422,19 @@ export class SignerService {
       };
     }
 
-    console.log("got signer");
-
     const frameActionMessage = await makeFrameAction(
-      {
+      FrameActionBody.create({
         url: new Uint8Array(Buffer.from(req.postUrl)),
-        buttonIndex: req.actionIndex,
+        buttonIndex: req.buttonIndex,
         castId: {
           fid: parseInt(req.castFid, 10),
           hash: new Uint8Array(Buffer.from(req.castHash.substring(2), "hex")),
         },
-        inputText: new Uint8Array(Buffer.from(req.inputText || "")),
-        state: new Uint8Array(Buffer.from(req.state || "")),
-        transactionId: new Uint8Array(Buffer.from("")),
-      },
+        inputText: req.inputText
+          ? new Uint8Array(Buffer.from(req.inputText))
+          : undefined,
+        state: req.state ? new Uint8Array(Buffer.from(req.state)) : undefined,
+      }),
       {
         fid: parseInt(fid, 10),
         network: FarcasterNetwork.MAINNET,
@@ -423,11 +445,19 @@ export class SignerService {
     );
 
     if (frameActionMessage.isErr()) {
-      console.log(frameActionMessage.error.message);
-      throw new Error(frameActionMessage.error.message);
+      return {
+        message: frameActionMessage.error.message,
+      };
     }
 
-    console.log(frameActionMessage.value);
+    const trustedBytes = bufferToHex(
+      HubMessage.encode(frameActionMessage._unsafeUnwrap()).finish(),
+    );
+
+    return {
+      hash: bufferToHex(frameActionMessage.value.hash),
+      trustedBytes,
+    };
   }
 
   async getUsernameProof(name: string) {

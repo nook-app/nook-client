@@ -121,6 +121,7 @@ export class SignerAPIClient extends BaseAPIClient {
       method: "POST",
       headers: {
         Authorization: token,
+        ContentType: "application/json",
       },
       body: JSON.stringify(data),
     });
