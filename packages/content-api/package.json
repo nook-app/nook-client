@@ -13,11 +13,9 @@
     "@farcaster/hub-nodejs": "^0.11.3",
     "@fastify/jwt": "^8.0.0",
     "@nook/common": "*",
-    "browserless": "^10.3.0",
     "bullmq": "^5.1.0",
     "ethers": "^6.9.1",
     "fastify": "^4.25.2",
-    "html-get": "^2.16.2",
     "metascraper": "^5.45.0",
     "metascraper-audio": "^5.45.0",
     "metascraper-author": "^5.45.0",
@@ -34,8 +32,7 @@
     "metascraper-readability": "^5.45.0",
     "metascraper-title": "^5.45.0",
     "metascraper-url": "^5.45.0",
-    "metascraper-video": "^5.45.0",
-    "puppeteer": "^22.4.0"
+    "metascraper-video": "^5.45.0"
   },
   "devDependencies": {
     "@types/jest": "^29.5.11",

@@ -52,11 +52,14 @@ export class ContentService {
   }
 
   async refreshContents(uris: string[]): Promise<UrlContentResponse[]> {
-    return Promise.all(uris.map((uri) => this.refreshContent(uri)));
+    return (
+      await Promise.all(uris.map((uri) => this.refreshContent(uri)))
+    ).filter(Boolean) as UrlContentResponse[];
   }
 
-  async refreshContent(uri: string): Promise<UrlContentResponse> {
+  async refreshContent(uri: string): Promise<UrlContentResponse | undefined> {
     const content = await getUrlContent(uri);
+    if (!content) return;
     await this.client.urlContent.upsert({
       where: {
         uri,

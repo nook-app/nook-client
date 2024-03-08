@@ -21,7 +21,6 @@ import {
   UnstructuredFrameMetascraperButtonKeys,
 } from "@nook/common/types";
 import { UrlContent } from "@nook/common/prisma/content";
-import { getHtmlContent } from "./html";
 
 export type UrlMetadata = {
   metadata?: Metadata;
@@ -78,14 +77,20 @@ const USER_AGENT_OVERRIDES: { [key: string]: string } = {
  * @param request
  * @returns
  */
-export const getUrlContent = async (uri: string): Promise<UrlContent> => {
+export const getUrlContent = async (
+  uri: string,
+): Promise<UrlContent | undefined> => {
   const date = new Date();
 
   let url: URL;
   try {
     url = new URL(uri);
   } catch (e) {
-    url = new URL(`https://${uri}`);
+    try {
+      url = new URL(`https://${uri}`);
+    } catch (e2) {
+      return;
+    }
   }
 
   const content: UrlContent = {
@@ -106,12 +111,20 @@ export const getUrlContent = async (uri: string): Promise<UrlContent> => {
   try {
     if (uri.startsWith("http://") || uri.startsWith("https://")) {
       const metadata = await fetchUrlMetadata(uri);
+
+      // If CloudFlare error, don't save the metadata
+      if (metadata?.metadata?.title === "Just a moment...") {
+        return;
+      }
+
       content.type = metadata.contentType || null;
       content.length = metadata.contentLength || null;
       content.metadata = metadata.metadata || null;
       content.frame = metadata.frame || null;
     }
-  } catch (e) {}
+  } catch (e) {
+    return;
+  }
 
   return content;
 };
@@ -137,12 +150,18 @@ const scrapeMetadata = async (options: MetascraperOptions) => {
 };
 
 export const fetchUrlMetadata = async (url: string) => {
-  const response = await getHtmlContent(url);
-  if (!response) return {};
+  const res = await fetch(url, {
+    headers: {
+      "user-agent":
+        USER_AGENT_OVERRIDES[new URL(url).hostname] ||
+        "Mozilla/5.0 (compatible; TelegramBot/1.0; +https://core.telegram.org/bots/webhooks)",
+    },
+  });
+  const html = await res.text();
+  const headers = res.headers;
 
-  const { html, headers } = response;
-  const contentType = headers["content-type"];
-  const contentLength = headers["content-length"];
+  const contentType = headers.get("content-type");
+  const contentLength = headers.get("content-length");
 
   const urlMetadata: UrlMetadata = {
     contentType: contentType || undefined,
