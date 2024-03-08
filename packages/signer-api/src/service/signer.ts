@@ -11,6 +11,7 @@ import {
   makeReactionRemove,
   makeLinkAdd,
   makeLinkRemove,
+  makeFrameAction,
 } from "@farcaster/hub-nodejs";
 import { bufferToHex, hexToBuffer } from "@nook/common/farcaster";
 import { PrismaClient } from "@nook/common/prisma/signer";
@@ -23,6 +24,7 @@ import {
   GetSignerResponse,
   SubmitCastAddRequest,
   SubmitCastRemoveRequest,
+  SubmitFrameActionRequest,
   SubmitLinkAddRequest,
   SubmitLinkRemoveRequest,
   SubmitMessageError,
@@ -387,6 +389,45 @@ export class SignerService {
     return {
       hash: bufferToHex(result.hash),
     };
+  }
+
+  async signFrameAction(fid: string, req: SubmitFrameActionRequest) {
+    const signer = await this.getActiveSigner(fid);
+    if (!signer) {
+      return {
+        message: "Signer not found",
+      };
+    }
+
+    console.log("got signer");
+
+    const frameActionMessage = await makeFrameAction(
+      {
+        url: new Uint8Array(Buffer.from(req.postUrl)),
+        buttonIndex: req.actionIndex,
+        castId: {
+          fid: parseInt(req.castFid, 10),
+          hash: new Uint8Array(Buffer.from(req.castHash.substring(2), "hex")),
+        },
+        inputText: new Uint8Array(Buffer.from(req.inputText || "")),
+        state: new Uint8Array(Buffer.from(req.state || "")),
+        transactionId: new Uint8Array(Buffer.from("")),
+      },
+      {
+        fid: parseInt(fid, 10),
+        network: FarcasterNetwork.MAINNET,
+      },
+      new NobleEd25519Signer(
+        Buffer.from(signer.privateKey.substring(2), "hex"),
+      ),
+    );
+
+    if (frameActionMessage.isErr()) {
+      console.log(frameActionMessage.error.message);
+      throw new Error(frameActionMessage.error.message);
+    }
+
+    console.log(frameActionMessage.value);
   }
 
   async getUsernameProof(name: string) {

@@ -33,25 +33,28 @@ export class UserService {
     }
 
     const fid = verifyResult.fid.toString();
-    let user = await this.nookClient.user.findFirst({
+    const refreshToken = this.jwt.sign({
+      fid,
+    });
+
+    const date = new Date();
+    const user = await this.nookClient.user.upsert({
       where: {
         fid,
       },
-    });
-    if (!user) {
-      const refreshToken = this.jwt.sign({
+      create: {
         fid,
-      });
-      const date = new Date();
-      user = await this.nookClient.user.create({
-        data: {
-          fid,
-          signedUpAt: date,
-          loggedInAt: date,
-          refreshToken,
-        },
-      });
-    }
+        signedUpAt: date,
+        loggedInAt: date,
+        refreshToken,
+        siwfData: request,
+      },
+      update: {
+        loggedInAt: date,
+        refreshToken,
+        siwfData: request,
+      },
+    });
 
     const expiresIn = 60 * 60 * 24 * 7;
     const expiresAt = Math.floor(new Date().getTime() / 1000) + expiresIn;

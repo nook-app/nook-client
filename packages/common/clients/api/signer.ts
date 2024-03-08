@@ -2,6 +2,7 @@ import {
   GetSignerResponse,
   SubmitCastAddRequest,
   SubmitCastRemoveRequest,
+  SubmitFrameActionRequest,
   SubmitLinkAddRequest,
   SubmitLinkRemoveRequest,
   SubmitMessageError,
@@ -23,8 +24,11 @@ export class SignerAPIClient extends BaseAPIClient {
     });
   }
 
-  async validateSigner(token: string): Promise<ValidateSignerResponse> {
-    return await this.makeRequest("/signer/validate", {
+  async validateSigner(
+    token: string,
+    signerToken: string,
+  ): Promise<ValidateSignerResponse> {
+    return await this.makeRequest(`/signer/validate?token=${signerToken}`, {
       headers: {
         Authorization: token,
       },
@@ -101,6 +105,19 @@ export class SignerAPIClient extends BaseAPIClient {
     data: SubmitLinkRemoveRequest,
   ): Promise<SubmitMessageResponse | SubmitMessageError> {
     return await this.makeRequest("/signer/link-remove", {
+      method: "POST",
+      headers: {
+        Authorization: token,
+      },
+      body: JSON.stringify(data),
+    });
+  }
+
+  async submitFrameAction(
+    token: string,
+    data: SubmitFrameActionRequest,
+  ): Promise<SubmitMessageResponse | SubmitMessageError> {
+    return await this.makeRequest("/signer/frame-action", {
       method: "POST",
       headers: {
         Authorization: token,

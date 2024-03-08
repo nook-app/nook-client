@@ -148,3 +148,12 @@ export type SubmitMessageResponse = {
 export type SubmitMessageError = {
   message: string;
 };
+
+export type SubmitFrameActionRequest = {
+  castFid: string;
+  castHash: string;
+  actionIndex: number;
+  postUrl: string;
+  inputText?: string;
+  state?: string;
+};

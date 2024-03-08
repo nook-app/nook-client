@@ -13,12 +13,47 @@ export const farcasterSignerRoutes = async (fastify: FastifyInstance) => {
   fastify.register(async (fastify: FastifyInstance) => {
     const client = new SignerAPIClient();
 
+    fastify.get("/signer", async (request, reply) => {
+      if (!request.headers.authorization) {
+        return reply.code(401).send({ message: "Unauthorized" });
+      }
+      try {
+        const response = await client.getSigner(request.headers.authorization);
+        return reply.send(response);
+      } catch (e) {
+        return reply.code(500).send({ message: (e as Error).message });
+      }
+    });
+
+    fastify.get<{ Querystring: { token: string } }>(
+      "/signer/validate",
+      async (request, reply) => {
+        if (!request.headers.authorization) {
+          return reply.code(401).send({ message: "Unauthorized" });
+        }
+        try {
+          const response = await client.validateSigner(
+            request.headers.authorization,
+            request.query.token,
+          );
+          return reply.send(response);
+        } catch (e) {
+          return reply.code(500).send({ message: (e as Error).message });
+        }
+      },
+    );
+
     fastify.post<{ Body: SubmitCastAddRequest }>(
       "/signer/cast-add",
       async (request, reply) => {
-        const { fid } = (await request.jwtDecode()) as { fid: string };
+        if (!request.headers.authorization) {
+          return reply.code(401).send({ message: "Unauthorized" });
+        }
         try {
-          const response = await client.submitCastAdd(fid, request.body);
+          const response = await client.submitCastAdd(
+            request.headers.authorization,
+            request.body,
+          );
           return reply.send(response);
         } catch (e) {
           return reply.code(500).send({ message: (e as Error).message });
@@ -29,9 +64,14 @@ export const farcasterSignerRoutes = async (fastify: FastifyInstance) => {
     fastify.post<{ Body: SubmitCastRemoveRequest }>(
       "/signer/cast-remove",
       async (request, reply) => {
-        const { fid } = (await request.jwtDecode()) as { fid: string };
+        if (!request.headers.authorization) {
+          return reply.code(401).send({ message: "Unauthorized" });
+        }
         try {
-          const response = await client.submitCastRemove(fid, request.body);
+          const response = await client.submitCastRemove(
+            request.headers.authorization,
+            request.body,
+          );
           return reply.send(response);
         } catch (e) {
           return reply.code(500).send({ message: (e as Error).message });
@@ -42,9 +82,14 @@ export const farcasterSignerRoutes = async (fastify: FastifyInstance) => {
     fastify.post<{ Body: SubmitReactionAddRequest }>(
       "/signer/reaction-add",
       async (request, reply) => {
-        const { fid } = (await request.jwtDecode()) as { fid: string };
+        if (!request.headers.authorization) {
+          return reply.code(401).send({ message: "Unauthorized" });
+        }
         try {
-          const response = await client.submitReactionAdd(fid, request.body);
+          const response = await client.submitReactionAdd(
+            request.headers.authorization,
+            request.body,
+          );
           return reply.send(response);
         } catch (e) {
           return reply.code(500).send({ message: (e as Error).message });
@@ -55,9 +100,14 @@ export const farcasterSignerRoutes = async (fastify: FastifyInstance) => {
     fastify.post<{ Body: SubmitReactionRemoveRequest }>(
       "/signer/reaction-remove",
       async (request, reply) => {
-        const { fid } = (await request.jwtDecode()) as { fid: string };
+        if (!request.headers.authorization) {
+          return reply.code(401).send({ message: "Unauthorized" });
+        }
         try {
-          const response = await client.submitReactionRemove(fid, request.body);
+          const response = await client.submitReactionRemove(
+            request.headers.authorization,
+            request.body,
+          );
           return reply.send(response);
         } catch (e) {
           return reply.code(500).send({ message: (e as Error).message });
@@ -68,9 +118,14 @@ export const farcasterSignerRoutes = async (fastify: FastifyInstance) => {
     fastify.post<{ Body: SubmitLinkAddRequest }>(
       "/signer/link-add",
       async (request, reply) => {
-        const { fid } = (await request.jwtDecode()) as { fid: string };
+        if (!request.headers.authorization) {
+          return reply.code(401).send({ message: "Unauthorized" });
+        }
         try {
-          const response = await client.submitLinkAdd(fid, request.body);
+          const response = await client.submitLinkAdd(
+            request.headers.authorization,
+            request.body,
+          );
           return reply.send(response);
         } catch (e) {
           return reply.code(500).send({ message: (e as Error).message });
@@ -81,9 +136,14 @@ export const farcasterSignerRoutes = async (fastify: FastifyInstance) => {
     fastify.post<{ Body: SubmitLinkRemoveRequest }>(
       "/signer/link-remove",
       async (request, reply) => {
-        const { fid } = (await request.jwtDecode()) as { fid: string };
+        if (!request.headers.authorization) {
+          return reply.code(401).send({ message: "Unauthorized" });
+        }
         try {
-          const response = await client.submitLinkRemove(fid, request.body);
+          const response = await client.submitLinkRemove(
+            request.headers.authorization,
+            request.body,
+          );
           return reply.send(response);
         } catch (e) {
           return reply.code(500).send({ message: (e as Error).message });

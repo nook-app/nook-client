@@ -3,6 +3,7 @@ import { SignerService } from "../service/signer";
 import {
   SubmitCastAddRequest,
   SubmitCastRemoveRequest,
+  SubmitFrameActionRequest,
   SubmitLinkAddRequest,
   SubmitLinkRemoveRequest,
   SubmitReactionAddRequest,
@@ -118,6 +119,22 @@ export const signerRoutes = async (fastify: FastifyInstance) => {
         const { fid } = (await request.jwtDecode()) as { fid: string };
         try {
           const response = await signerService.submitLinkRemove(
+            fid,
+            request.body,
+          );
+          return reply.send(response);
+        } catch (e) {
+          return reply.code(500).send({ message: (e as Error).message });
+        }
+      },
+    );
+
+    fastify.post<{ Body: SubmitFrameActionRequest }>(
+      "/signer/frame-action",
+      async (request, reply) => {
+        const { fid } = (await request.jwtDecode()) as { fid: string };
+        try {
+          const response = await signerService.signFrameAction(
             fid,
             request.body,
           );

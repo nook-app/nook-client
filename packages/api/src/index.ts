@@ -5,6 +5,7 @@ import { userRoutes } from "./routes/user";
 import fastifyJwt from "@fastify/jwt";
 import { farcasterRoutes } from "./routes/farcaster";
 import { farcasterSignerRoutes } from "./routes/farcaster/signer";
+import { frameRoutes } from "./routes/frames";
 
 const buildApp = () => {
   const app = fastify({
@@ -33,6 +34,7 @@ const buildApp = () => {
   app.register(userRoutes, { prefix: "/v0" });
   app.register(farcasterRoutes, { prefix: "/v0" });
   app.register(farcasterSignerRoutes, { prefix: "/v0" });
+  app.register(frameRoutes, { prefix: "/v0" });
 
   return app;
 };
