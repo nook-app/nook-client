@@ -137,7 +137,10 @@ const scrapeMetadata = async (options: MetascraperOptions) => {
 };
 
 export const fetchUrlMetadata = async (url: string) => {
-  const { html, headers } = await getHtmlContent(url);
+  const response = await getHtmlContent(url);
+  if (!response) return {};
+
+  const { html, headers } = response;
   const contentType = headers["content-type"];
   const contentLength = headers["content-length"];
 
