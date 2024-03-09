@@ -4,7 +4,7 @@ import {
   FarcasterAPIClient,
   FarcasterCacheClient,
 } from "@nook/common/clients";
-import { RedisClient } from "@nook/common/clients/cache";
+import { RedisClient } from "@nook/common/clients";
 import {
   FarcasterCast,
   FarcasterCastReaction,
