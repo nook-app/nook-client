@@ -1,5 +1,5 @@
 import fastify from "fastify";
-import { contentPlugin, cachePlugin } from "./plugins";
+import { contentPlugin, redisPlugin } from "./plugins";
 import { contentRoutes } from "./routes/content";
 
 const buildApp = () => {
@@ -19,7 +19,7 @@ const buildApp = () => {
   };
 
   app.register(contentPlugin);
-  app.register(cachePlugin);
+  app.register(redisPlugin);
 
   app.register(contentRoutes);
 
