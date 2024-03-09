@@ -9,30 +9,54 @@ export class ContentAPIClient extends BaseAPIClient {
   API_ENDPOINT = process.env.CONTENT_API_ENDPOINT;
 
   async getContent(uri: string): Promise<UrlContentResponse> {
-    return await this.makeRequest("/content", {
+    const response = await this.makeRequest("/content", {
       method: "POST",
       body: JSON.stringify({ uri }),
     });
+
+    if (!response.ok) {
+      throw new Error(response.statusText);
+    }
+
+    return response.json();
   }
 
   async getContents(uris: string[]): Promise<GetContentsResponse> {
-    return await this.makeRequest("/content", {
+    const response = await this.makeRequest("/content", {
       method: "POST",
       body: JSON.stringify({ uris }),
     });
+
+    if (!response.ok) {
+      throw new Error(response.statusText);
+    }
+
+    return response.json();
   }
 
   async addContentReferences(cast: FarcasterCastResponse) {
-    return await this.makeRequest("/content/references", {
+    const response = await this.makeRequest("/content/references", {
       method: "POST",
       body: JSON.stringify(cast),
     });
+
+    if (!response.ok) {
+      throw new Error(response.statusText);
+    }
+
+    return response.json();
   }
 
   async removeContentReferences(cast: FarcasterCastResponse) {
-    return await this.makeRequest("/content/references", {
+    const response = await this.makeRequest("/content/references", {
       method: "DELETE",
       body: JSON.stringify(cast),
     });
+
+    if (!response.ok) {
+      throw new Error(response.statusText);
+    }
+
+    return response.json();
   }
 }

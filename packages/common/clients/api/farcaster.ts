@@ -14,11 +14,23 @@ export class FarcasterAPIClient extends BaseAPIClient {
   API_ENDPOINT = process.env.FARCASTER_API_ENDPOINT;
 
   async getChannel(id: string, viewerFid?: string): Promise<Channel> {
-    return await this.makeRequest(`/channels/${id}`, { viewerFid });
+    const response = await this.makeRequest(`/channels/${id}`, { viewerFid });
+
+    if (!response.ok) {
+      throw new Error(response.statusText);
+    }
+
+    return response.json();
   }
 
   async getUser(fid: string, viewerFid?: string): Promise<FarcasterUser> {
-    return await this.makeRequest(`/users/${fid}`, { viewerFid });
+    const response = await this.makeRequest(`/users/${fid}`, { viewerFid });
+
+    if (!response.ok) {
+      throw new Error(response.statusText);
+    }
+
+    return response.json();
   }
 
   async getUserFollowers(
@@ -26,12 +38,18 @@ export class FarcasterAPIClient extends BaseAPIClient {
     cursor?: string,
     viewerFid?: string,
   ): Promise<GetFarcasterUsersResponse> {
-    return await this.makeRequest(
+    const response = await this.makeRequest(
       `/users/${fid}/followers${cursor ? `?cursor=${cursor}` : ""}`,
       {
         viewerFid,
       },
     );
+
+    if (!response.ok) {
+      throw new Error(response.statusText);
+    }
+
+    return response.json();
   }
 
   async getUserFollowing(
@@ -39,41 +57,69 @@ export class FarcasterAPIClient extends BaseAPIClient {
     cursor?: string,
     viewerFid?: string,
   ): Promise<GetFarcasterUsersResponse> {
-    return await this.makeRequest(
+    const response = await this.makeRequest(
       `/users/${fid}/following${cursor ? `?cursor=${cursor}` : ""}`,
       {
         viewerFid,
       },
     );
+
+    if (!response.ok) {
+      throw new Error(response.statusText);
+    }
+
+    return response.json();
   }
 
   async getUsers(
     fids: string[],
     viewerFid?: string,
   ): Promise<GetFarcasterUsersResponse> {
-    return await this.makeRequest("/users", {
+    const response = await this.makeRequest("/users", {
       method: "POST",
       body: JSON.stringify({ fids }),
       viewerFid,
     });
+
+    if (!response.ok) {
+      throw new Error(response.statusText);
+    }
+
+    return response.json();
   }
 
   async getCast(
     hash: string,
     viewerFid?: string,
-  ): Promise<FarcasterCastResponse> {
-    return await this.makeRequest(`/casts/${hash}`, { viewerFid });
+  ): Promise<FarcasterCastResponse | undefined> {
+    const response = await this.makeRequest(`/casts/${hash}`, { viewerFid });
+
+    if (response.status === 404) {
+      return;
+    }
+
+    if (!response.ok) {
+      throw new Error(response.statusText);
+    }
+
+    return response.json();
   }
 
   async getCasts(
     hashes: string[],
     viewerFid?: string,
   ): Promise<GetFarcasterCastsResponse> {
-    return await this.makeRequest("/casts", {
+    const response = await this.makeRequest("/casts", {
       method: "POST",
       body: JSON.stringify({ hashes }),
       viewerFid,
     });
+
+    if (!response.ok) {
+      throw new Error(response.statusText);
+    }
+
+    return response.json();
   }
 
   async getCastReplies(
@@ -81,10 +127,16 @@ export class FarcasterAPIClient extends BaseAPIClient {
     cursor?: string,
     viewerFid?: string,
   ): Promise<GetFarcasterCastsResponse> {
-    return await this.makeRequest(
+    const response = await this.makeRequest(
       `/casts/${hash}/replies${cursor ? `?cursor=${cursor}` : ""}`,
       { viewerFid },
     );
+
+    if (!response.ok) {
+      throw new Error(response.statusText);
+    }
+
+    return response.json();
   }
 
   async getCastQuotes(
@@ -92,10 +144,16 @@ export class FarcasterAPIClient extends BaseAPIClient {
     cursor?: string,
     viewerFid?: string,
   ): Promise<GetFarcasterCastsResponse> {
-    return await this.makeRequest(
+    const response = await this.makeRequest(
       `/casts/${hash}/quotes${cursor ? `?cursor=${cursor}` : ""}`,
       { viewerFid },
     );
+
+    if (!response.ok) {
+      throw new Error(response.statusText);
+    }
+
+    return response.json();
   }
 
   async getCastLikes(
@@ -103,10 +161,16 @@ export class FarcasterAPIClient extends BaseAPIClient {
     cursor?: string,
     viewerFid?: string,
   ): Promise<GetFarcasterUsersResponse> {
-    return await this.makeRequest(
+    const response = await this.makeRequest(
       `/casts/${hash}/likes${cursor ? `?cursor=${cursor}` : ""}`,
       { viewerFid },
     );
+
+    if (!response.ok) {
+      throw new Error(response.statusText);
+    }
+
+    return response.json();
   }
 
   async getCastRecasts(
@@ -114,42 +178,66 @@ export class FarcasterAPIClient extends BaseAPIClient {
     cursor?: string,
     viewerFid?: string,
   ): Promise<GetFarcasterUsersResponse> {
-    return await this.makeRequest(
+    const response = await this.makeRequest(
       `/casts/${hash}/recasts${cursor ? `?cursor=${cursor}` : ""}`,
       { viewerFid },
     );
+
+    if (!response.ok) {
+      throw new Error(response.statusText);
+    }
+
+    return response.json();
   }
 
   async getCastsByFollowing(
     req: GetFarcasterCastsByFollowingRequest,
     viewerFid?: string,
   ): Promise<GetFarcasterCastsResponse> {
-    return await this.makeRequest("/casts/by-following", {
+    const response = await this.makeRequest("/casts/by-following", {
       method: "POST",
       body: JSON.stringify(req),
       viewerFid,
     });
+
+    if (!response.ok) {
+      throw new Error(response.statusText);
+    }
+
+    return response.json();
   }
 
   async getCastsByFids(
     req: GetFarcasterCastsByFidsRequest,
     viewerFid?: string,
   ): Promise<GetFarcasterCastsResponse> {
-    return await this.makeRequest("/casts/by-fids", {
+    const response = await this.makeRequest("/casts/by-fids", {
       method: "POST",
       body: JSON.stringify(req),
       viewerFid,
     });
+
+    if (!response.ok) {
+      throw new Error(response.statusText);
+    }
+
+    return response.json();
   }
 
   async getCastsByChannel(
     req: GetFarcasterCastsByChannelRequest,
     viewerFid?: string,
   ): Promise<GetFarcasterCastsResponse> {
-    return await this.makeRequest("/casts/by-channel", {
+    const response = await this.makeRequest("/casts/by-channel", {
       method: "POST",
       body: JSON.stringify(req),
       viewerFid,
     });
+
+    if (!response.ok) {
+      throw new Error(response.statusText);
+    }
+
+    return response.json();
   }
 }

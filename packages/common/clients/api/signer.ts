@@ -17,107 +17,158 @@ export class SignerAPIClient extends BaseAPIClient {
   API_ENDPOINT = process.env.SIGNER_API_ENDPOINT;
 
   async getSigner(token: string): Promise<GetSignerResponse> {
-    return await this.makeRequest("/signer", {
+    const response = await this.makeRequest("/signer", {
       headers: {
         Authorization: token,
       },
     });
+
+    if (!response.ok) {
+      throw new Error(response.statusText);
+    }
+
+    return await response.json();
   }
 
   async validateSigner(
     token: string,
     signerToken: string,
   ): Promise<ValidateSignerResponse> {
-    return await this.makeRequest(`/signer/validate?token=${signerToken}`, {
-      headers: {
-        Authorization: token,
+    const response = await this.makeRequest(
+      `/signer/validate?token=${signerToken}`,
+      {
+        headers: {
+          Authorization: token,
+        },
       },
-    });
+    );
+
+    if (!response.ok) {
+      throw new Error(response.statusText);
+    }
+
+    return await response.json();
   }
 
   async submitCastAdd(
     token: string,
     data: SubmitCastAddRequest,
   ): Promise<SubmitMessageResponse | SubmitMessageError> {
-    return await this.makeRequest("/signer/cast-add", {
+    const response = await this.makeRequest("/signer/cast-add", {
       method: "POST",
       headers: {
         Authorization: token,
       },
       body: JSON.stringify(data),
     });
+
+    if (!response.ok) {
+      throw new Error(response.statusText);
+    }
+
+    return await response.json();
   }
 
   async submitCastRemove(
     token: string,
     data: SubmitCastRemoveRequest,
   ): Promise<SubmitMessageResponse | SubmitMessageError> {
-    return await this.makeRequest("/signer/cast-remove", {
+    const response = await this.makeRequest("/signer/cast-remove", {
       method: "POST",
       headers: {
         Authorization: token,
       },
       body: JSON.stringify(data),
     });
+
+    if (!response.ok) {
+      throw new Error(response.statusText);
+    }
+
+    return await response.json();
   }
 
   async submitReactionAdd(
     token: string,
     data: SubmitReactionAddRequest,
   ): Promise<SubmitMessageResponse | SubmitMessageError> {
-    return await this.makeRequest("/signer/reaction-add", {
+    const response = await this.makeRequest("/signer/reaction-add", {
       method: "POST",
       headers: {
         Authorization: token,
       },
       body: JSON.stringify(data),
     });
+
+    if (!response.ok) {
+      throw new Error(response.statusText);
+    }
+
+    return await response.json();
   }
 
   async submitReactionRemove(
     token: string,
     data: SubmitReactionRemoveRequest,
   ): Promise<SubmitMessageResponse | SubmitMessageError> {
-    return await this.makeRequest("/signer/reaction-remove", {
+    const response = await this.makeRequest("/signer/reaction-remove", {
       method: "POST",
       headers: {
         Authorization: token,
       },
       body: JSON.stringify(data),
     });
+
+    if (!response.ok) {
+      throw new Error(response.statusText);
+    }
+
+    return await response.json();
   }
 
   async submitLinkAdd(
     token: string,
     data: SubmitLinkAddRequest,
   ): Promise<SubmitMessageResponse | SubmitMessageError> {
-    return await this.makeRequest("/signer/link-add", {
+    const response = await this.makeRequest("/signer/link-add", {
       method: "POST",
       headers: {
         Authorization: token,
       },
       body: JSON.stringify(data),
     });
+
+    if (!response.ok) {
+      throw new Error(response.statusText);
+    }
+
+    return await response.json();
   }
 
   async submitLinkRemove(
     token: string,
     data: SubmitLinkRemoveRequest,
   ): Promise<SubmitMessageResponse | SubmitMessageError> {
-    return await this.makeRequest("/signer/link-remove", {
+    const response = await this.makeRequest("/signer/link-remove", {
       method: "POST",
       headers: {
         Authorization: token,
       },
       body: JSON.stringify(data),
     });
+
+    if (!response.ok) {
+      throw new Error(response.statusText);
+    }
+
+    return await response.json();
   }
 
   async submitFrameAction(
     token: string,
     data: SubmitFrameActionRequest,
   ): Promise<SubmitMessageResponse | SubmitMessageError> {
-    return await this.makeRequest("/signer/frame-action", {
+    const response = await this.makeRequest("/signer/frame-action", {
       method: "POST",
       headers: {
         Authorization: token,
@@ -125,5 +176,11 @@ export class SignerAPIClient extends BaseAPIClient {
       },
       body: JSON.stringify(data),
     });
+
+    if (!response.ok) {
+      throw new Error(response.statusText);
+    }
+
+    return await response.json();
   }
 }

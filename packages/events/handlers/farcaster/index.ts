@@ -4,6 +4,7 @@ import {
   FarcasterAPIClient,
   FarcasterCacheClient,
 } from "@nook/common/clients";
+import { RedisClient } from "@nook/common/clients/cache/base";
 import {
   FarcasterCast,
   FarcasterCastReaction,
@@ -21,7 +22,7 @@ export class FarcasterProcessor {
 
   constructor() {
     this.farcasterClient = new FarcasterAPIClient();
-    this.cacheClient = new FarcasterCacheClient();
+    this.cacheClient = new FarcasterCacheClient(new RedisClient());
     this.contentClient = new ContentAPIClient();
   }
 
@@ -114,6 +115,7 @@ export class FarcasterProcessor {
     if (!cast) return;
 
     const promises = [];
+    promises.push(this.cacheClient.removeCast(data.hash));
     promises.push(this.contentClient.removeContentReferences(cast));
 
     if (cast.parentHash) {

@@ -16,11 +16,6 @@ export class BaseAPIClient {
       headers,
     });
 
-    if (!response.ok) {
-      const errorBody = await response.text();
-      throw new Error(`Request failed: ${response.status} - ${errorBody}`);
-    }
-
-    return response.json();
+    return response;
   }
 }

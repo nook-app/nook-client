@@ -13,7 +13,7 @@ export class NookService {
 
   constructor(fastify: FastifyInstance) {
     this.nookClient = fastify.nook.client;
-    this.nookCacheClient = new NookCacheClient();
+    this.nookCacheClient = new NookCacheClient(fastify.redis.client);
   }
 
   async getNooks(fid: string) {

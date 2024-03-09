@@ -19,7 +19,7 @@ export class ContentService {
 
   constructor(fastify: FastifyInstance) {
     this.client = fastify.content.client;
-    this.cache = fastify.cache.client;
+    this.cache = new ContentCacheClient(fastify.redis.client);
   }
 
   async getContents(uris: string[]): Promise<UrlContentResponse[]> {

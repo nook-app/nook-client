@@ -1,14 +1,20 @@
 import { RedisClient } from "./base";
 import { UrlContentResponse } from "../../types";
 
-export class ContentCacheClient extends RedisClient {
+export class ContentCacheClient {
+  private redis: RedisClient;
+
   CONTENT_CACHE_PREFIX = "content";
 
+  constructor(redis: RedisClient) {
+    this.redis = redis;
+  }
+
   async getContent(url: string): Promise<UrlContentResponse> {
-    return await this.getJson(`${this.CONTENT_CACHE_PREFIX}:${url}`);
+    return await this.redis.getJson(`${this.CONTENT_CACHE_PREFIX}:${url}`);
   }
 
   async setContent(url: string, content: UrlContentResponse) {
-    await this.setJson(`${this.CONTENT_CACHE_PREFIX}:${url}`, content);
+    await this.redis.setJson(`${this.CONTENT_CACHE_PREFIX}:${url}`, content);
   }
 }

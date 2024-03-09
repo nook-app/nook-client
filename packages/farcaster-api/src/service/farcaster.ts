@@ -41,7 +41,7 @@ export class FarcasterService {
 
   constructor(fastify: FastifyInstance) {
     this.client = fastify.farcaster.client;
-    this.cache = fastify.cache.client;
+    this.cache = new FarcasterCacheClient(fastify.redis.client);
     this.contentClient = new ContentAPIClient();
   }
 
@@ -180,8 +180,8 @@ export class FarcasterService {
 
     const cast =
       data ||
-      (await this.client.farcasterCast.findUnique({
-        where: { hash },
+      (await this.client.farcasterCast.findFirst({
+        where: { hash, deletedAt: null },
       }));
 
     if (!cast) return;
@@ -559,6 +559,7 @@ export class FarcasterService {
         linkType: "follow",
         fid: BigInt(viewerFid),
         targetFid: BigInt(fid),
+        deletedAt: null,
       },
     });
 

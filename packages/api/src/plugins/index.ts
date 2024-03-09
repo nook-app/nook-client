@@ -1,14 +1,15 @@
 import fp from "fastify-plugin";
 import { PrismaClient } from "@nook/common/prisma/nook";
 import { FeedCacheClient } from "@nook/common/clients";
+import { RedisClient } from "@nook/common/clients/cache/base";
 
 declare module "fastify" {
   interface FastifyInstance {
     nook: {
       client: PrismaClient;
     };
-    cache: {
-      client: FeedCacheClient;
+    redis: {
+      client: RedisClient;
     };
   }
 }
@@ -22,11 +23,11 @@ export const nookPlugin = fp(async (fastify, opts) => {
   });
 });
 
-export const cachePlugin = fp(async (fastify, opts) => {
-  const client = new FeedCacheClient();
+export const redisPlugin = fp(async (fastify, opts) => {
+  const client = new RedisClient();
   await client.connect();
-  fastify.decorate("cache", { client });
+  fastify.decorate("redis", { client });
   fastify.addHook("onClose", async (fastify) => {
-    await fastify.cache.client.close();
+    await fastify.redis.client.close();
   });
 });

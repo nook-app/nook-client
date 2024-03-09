@@ -14,6 +14,10 @@ export const farcasterRoutes = async (fastify: FastifyInstance) => {
           viewerFid = fid;
         } catch (e) {}
         const response = await client.getCast(request.params.hash, viewerFid);
+        if (!response) {
+          reply.status(404);
+          return;
+        }
         reply.send(response);
       },
     );

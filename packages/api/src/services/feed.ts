@@ -10,7 +10,7 @@ export class FeedService {
 
   constructor(fastify: FastifyInstance) {
     this.farcasterClient = new FarcasterAPIClient();
-    this.cache = fastify.cache.client;
+    this.cache = new FeedCacheClient(fastify.redis.client);
   }
 
   async getFarcasterFollowingFeed(
