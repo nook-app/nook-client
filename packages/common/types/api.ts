@@ -114,6 +114,7 @@ export type SubmitCastAddRequest = {
   parentUrl?: string;
   parentFid?: string;
   parentHash?: string;
+  embeds?: string[];
 };
 
 export type SubmitCastRemoveRequest = {

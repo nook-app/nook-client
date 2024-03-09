@@ -6,6 +6,7 @@ import fastifyJwt from "@fastify/jwt";
 import { farcasterRoutes } from "./routes/farcaster";
 import { farcasterSignerRoutes } from "./routes/farcaster/signer";
 import { frameRoutes } from "./routes/frames";
+import { contentRoutes } from "./routes/content";
 
 const buildApp = () => {
   const app = fastify({
@@ -30,6 +31,7 @@ const buildApp = () => {
   app.register(nookPlugin);
   app.register(cachePlugin);
 
+  app.register(contentRoutes, { prefix: "/v0" });
   app.register(nookRoutes, { prefix: "/v0" });
   app.register(userRoutes, { prefix: "/v0" });
   app.register(farcasterRoutes, { prefix: "/v0" });

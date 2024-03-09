@@ -192,7 +192,7 @@ export class SignerService {
         text,
         mentions: mentions.map(({ mention }) => mention),
         mentionsPositions: mentions.map(({ position }) => position),
-        embeds: [],
+        embeds: req.embeds?.map((embed) => ({ url: embed })) || [],
         embedsDeprecated: [],
         parentCastId,
         parentUrl: req.parentUrl,
