@@ -1,5 +1,5 @@
 import { FastifyInstance } from "fastify";
-import { NookCacheClient } from "@nook/common/clients";
+import { FarcasterAPIClient, NookCacheClient } from "@nook/common/clients";
 import {
   PrismaClient,
   Nook as DBNook,
@@ -86,19 +86,27 @@ export class NookService {
           createMany: {
             data: [
               {
+                name: "You",
+                description: "Your profile",
+                type: NookShelfType.FarcasterProfile,
+                args: {
+                  fid,
+                },
+              },
+              {
                 name: "Following",
-                description: "Posts from people you follow",
+                description: "From people you follow",
                 type: NookShelfType.FeedFarcasterFollowing,
                 args: {
                   fid,
                 },
               },
               {
-                name: "Dan's Following",
-                description: "Posts from people @dwr follows",
+                name: "Discover",
+                description: "From people you should follow",
                 type: NookShelfType.FeedFarcasterFollowing,
                 args: {
-                  fid: 3,
+                  fid,
                 },
               },
             ],
