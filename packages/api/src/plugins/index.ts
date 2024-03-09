@@ -1,7 +1,6 @@
 import fp from "fastify-plugin";
 import { PrismaClient } from "@nook/common/prisma/nook";
-import { FeedCacheClient } from "@nook/common/clients";
-import { RedisClient } from "@nook/common/clients/cache/base";
+import { RedisClient } from "@nook/common/clients/cache";
 
 declare module "fastify" {
   interface FastifyInstance {
