@@ -225,22 +225,22 @@ export class FarcasterService {
     switch (type) {
       case "likes":
         count = await this.client.farcasterCastReaction.count({
-          where: { targetHash: hash, reactionType: 1 },
+          where: { targetHash: hash, reactionType: 1, deletedAt: null },
         });
         break;
       case "recasts":
         count = await this.client.farcasterCastReaction.count({
-          where: { targetHash: hash, reactionType: 2 },
+          where: { targetHash: hash, reactionType: 2, deletedAt: null },
         });
         break;
       case "replies":
         count = await this.client.farcasterCast.count({
-          where: { parentHash: hash },
+          where: { parentHash: hash, deletedAt: null },
         });
         break;
       case "quotes":
         count = await this.client.farcasterCastEmbedCast.count({
-          where: { embedHash: hash },
+          where: { embedHash: hash, deletedAt: null },
         });
         break;
     }
