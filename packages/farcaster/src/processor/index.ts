@@ -169,6 +169,14 @@ export class FarcasterEventProcessor {
     const hash = bufferToHex(message.data.castRemoveBody.targetHash);
     const deletedAt = timestampToDate(message.data.timestamp);
 
+    const existingCast = await this.client.farcasterCast.findUnique({
+      where: { hash },
+    });
+
+    if (!existingCast || existingCast.deletedAt) {
+      return;
+    }
+
     await this.client.farcasterCast.updateMany({
       where: { hash },
       data: { deletedAt },
@@ -191,19 +199,30 @@ export class FarcasterEventProcessor {
 
     console.log(`[cast-remove] [${message.data?.fid}] removed ${hash}`);
 
-    const cast = await this.client.farcasterCast.findUnique({
-      where: { hash },
-    });
-    if (cast) {
-      publishEvent(transformToCastEvent(FarcasterEventType.CAST_REMOVE, cast));
-    }
+    publishEvent(
+      transformToCastEvent(FarcasterEventType.CAST_REMOVE, existingCast),
+    );
 
-    return cast;
+    return existingCast;
   }
 
   async processLinkAdd(message: Message) {
     const link = messageToLink(message);
     if (!link) return;
+
+    const existingLink = await this.client.farcasterLink.findUnique({
+      where: {
+        fid_linkType_targetFid: {
+          fid: link.fid,
+          linkType: link.linkType,
+          targetFid: link.targetFid,
+        },
+      },
+    });
+
+    if (existingLink && !existingLink.deletedAt) {
+      return existingLink;
+    }
 
     await this.client.farcasterLink.upsert({
       where: {
@@ -240,6 +259,10 @@ export class FarcasterEventProcessor {
       },
     });
 
+    if (existingLink?.deletedAt) {
+      return existingLink;
+    }
+
     await this.client.farcasterLink.updateMany({
       where: {
         fid: link.fid,
@@ -265,6 +288,22 @@ export class FarcasterEventProcessor {
   async processCastReactionAdd(message: Message) {
     const reaction = messageToCastReaction(message);
     if (!reaction) return;
+
+    const existingReaction = await this.client.farcasterCastReaction.findUnique(
+      {
+        where: {
+          targetHash_reactionType_fid: {
+            targetHash: reaction.targetHash,
+            reactionType: reaction.reactionType,
+            fid: reaction.fid,
+          },
+        },
+      },
+    );
+
+    if (existingReaction && !existingReaction.deletedAt) {
+      return existingReaction;
+    }
 
     await this.client.farcasterCastReaction.upsert({
       where: {
@@ -308,6 +347,10 @@ export class FarcasterEventProcessor {
       },
     );
 
+    if (existingReaction?.deletedAt) {
+      return existingReaction;
+    }
+
     await this.client.farcasterCastReaction.updateMany({
       where: {
         targetHash: reaction.targetHash,
@@ -338,6 +381,20 @@ export class FarcasterEventProcessor {
   async processUrlReactionAdd(message: Message) {
     const reaction = messageToUrlReaction(message);
     if (!reaction) return;
+
+    const existingReaction = await this.client.farcasterUrlReaction.findUnique({
+      where: {
+        targetUrl_reactionType_fid: {
+          targetUrl: reaction.targetUrl,
+          reactionType: reaction.reactionType,
+          fid: reaction.fid,
+        },
+      },
+    });
+
+    if (existingReaction && !existingReaction.deletedAt) {
+      return existingReaction;
+    }
 
     await this.client.farcasterUrlReaction.upsert({
       where: {
@@ -378,6 +435,10 @@ export class FarcasterEventProcessor {
         },
       },
     });
+
+    if (existingReaction?.deletedAt) {
+      return existingReaction;
+    }
 
     await this.client.farcasterUrlReaction.updateMany({
       where: {
