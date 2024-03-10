@@ -11,6 +11,10 @@ export const contentRoutes = async (fastify: FastifyInstance) => {
       async (request, reply) => {
         await request.jwtVerify();
         const data = await client.getContent(request.body.uri);
+        if (!data) {
+          reply.status(404).send({ message: "Content not found" });
+          return;
+        }
         return reply.send(data);
       },
     );

@@ -15,10 +15,14 @@ export const contentRoutes = async (fastify: FastifyInstance) => {
     }>("/content", async (request, reply) => {
       if ("uri" in request.body) {
         const content = await service.getContent(request.body.uri);
+        if (!content) {
+          reply.status(404).send({ message: "Content not found" });
+          return;
+        }
         reply.send(content);
       } else {
         const contents = await service.getContents(request.body.uris);
-        reply.send({data: contents});
+        reply.send({ data: contents });
       }
     });
 
@@ -30,7 +34,7 @@ export const contentRoutes = async (fastify: FastifyInstance) => {
         reply.send(content);
       } else {
         const contents = await service.refreshContents(request.body.uris);
-        reply.send({data: contents});
+        reply.send({ data: contents });
       }
     });
 

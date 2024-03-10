@@ -8,11 +8,15 @@ import { BaseAPIClient } from "./base";
 export class ContentAPIClient extends BaseAPIClient {
   API_ENDPOINT = process.env.CONTENT_API_ENDPOINT;
 
-  async getContent(uri: string): Promise<UrlContentResponse> {
+  async getContent(uri: string): Promise<UrlContentResponse | undefined> {
     const response = await this.makeRequest("/content", {
       method: "POST",
       body: JSON.stringify({ uri }),
     });
+
+    if (response.status === 404) {
+      return;
+    }
 
     if (!response.ok) {
       throw new Error(response.statusText);
