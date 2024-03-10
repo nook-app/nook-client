@@ -530,12 +530,16 @@ export class FarcasterService {
     switch (type) {
       case "followers":
         count = await this.client.farcasterLink.count({
-          where: { linkType: "follow", targetFid: BigInt(fid) },
+          where: {
+            linkType: "follow",
+            targetFid: BigInt(fid),
+            deletedAt: null,
+          },
         });
         break;
       case "following":
         count = await this.client.farcasterLink.count({
-          where: { linkType: "follow", fid: BigInt(fid) },
+          where: { linkType: "follow", fid: BigInt(fid), deletedAt: null },
         });
         break;
     }
