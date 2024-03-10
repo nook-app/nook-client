@@ -22,6 +22,10 @@ export type FarcasterCastResponse = {
   parent?: FarcasterCastResponse;
   parentUrl?: string;
   channel?: Channel;
+  channelMentions: {
+    channel: Channel;
+    position: string;
+  }[];
   engagement: FarcasterCastEngagement;
   context?: FarcasterCastContext;
 };

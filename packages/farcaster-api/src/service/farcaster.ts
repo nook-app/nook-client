@@ -112,11 +112,23 @@ export class FarcasterService {
       hashes.add(embedHash);
     }
 
-    const [users, casts, embeds, channel] = await Promise.all([
+    const potentialChannelMentions = rawCast.text
+      .split(" ")
+      .filter((word) => word.startsWith("/"));
+    const channelIds = new Set<string>();
+
+    for (const mention of potentialChannelMentions) {
+      channelIds.add(mention.slice(1));
+    }
+
+    const [users, casts, embeds, channel, channelsById] = await Promise.all([
       this.getUsers(Array.from(fids), viewerFid),
       this.getCasts(Array.from(hashes), viewerFid),
       this.contentClient.getContents(rawCast.embedUrls),
-      rawCast.parentUrl ? this.getChannel(rawCast.parentUrl) : undefined,
+      rawCast.parentUrl
+        ? this.getChannel(rawCast.parentUrl, viewerFid)
+        : undefined,
+      this.getChannelsById(Array.from(channelIds)),
     ]);
 
     const userMap = users.reduce(
@@ -135,6 +147,14 @@ export class FarcasterService {
       {} as Record<string, FarcasterCastResponse>,
     );
 
+    const channelMap = channelsById.concat(channelsById).reduce(
+      (acc, channel) => {
+        acc[channel.channelId] = channel;
+        return acc;
+      },
+      {} as Record<string, Channel>,
+    );
+
     return {
       ...rawCast,
       user: userMap[rawCast.fid],
@@ -148,6 +168,16 @@ export class FarcasterService {
         .filter(Boolean),
       parent: rawCast.parentHash ? castMap[rawCast.parentHash] : undefined,
       channel: rawCast.parentUrl ? channel : undefined,
+      channelMentions: potentialChannelMentions
+        .map((mention) => {
+          const channel = channelMap[mention.slice(1)];
+          if (!channel) return;
+          return {
+            channel,
+            position: rawCast.text.indexOf(mention).toString(),
+          };
+        })
+        .filter(Boolean) as { channel: Channel; position: string }[],
     };
   }
 
@@ -776,6 +806,13 @@ export class FarcasterService {
     });
 
     return channel;
+  }
+
+  async getChannelsById(ids: string[]): Promise<Channel[]> {
+    const channels = await Promise.all(
+      ids.map((id) => this.getChannelById(id)),
+    );
+    return channels.filter(Boolean) as Channel[];
   }
 
   async getChannelById(
