@@ -114,6 +114,8 @@ export type SubmitCastAddRequest = {
   parentUrl?: string;
   parentFid?: string;
   parentHash?: string;
+  castEmbedFid?: string;
+  castEmbedHash?: string;
   embeds?: string[];
 };
 

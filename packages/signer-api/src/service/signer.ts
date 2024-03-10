@@ -13,6 +13,7 @@ import {
   makeLinkRemove,
   makeFrameAction,
   FrameActionBody,
+  Embed,
 } from "@farcaster/hub-nodejs";
 import { bufferToHex, hexToBuffer } from "@nook/common/farcaster";
 import { PrismaClient } from "@nook/common/prisma/signer";
@@ -187,12 +188,24 @@ export class SignerService {
       };
     }
 
+    const embeds: Embed[] = req.embeds?.map((embed) => ({ url: embed })) || [];
+    if (req.castEmbedFid && req.castEmbedHash) {
+      embeds.push({
+        castId: {
+          fid: parseInt(req.castEmbedFid, 10),
+          hash: new Uint8Array(
+            Buffer.from(req.castEmbedHash.substring(2), "hex"),
+          ),
+        },
+      });
+    }
+
     const castAddMessage = await makeCastAdd(
       {
         text,
         mentions: mentions.map(({ mention }) => mention),
         mentionsPositions: mentions.map(({ position }) => position),
-        embeds: req.embeds?.map((embed) => ({ url: embed })) || [],
+        embeds,
         embedsDeprecated: [],
         parentCastId,
         parentUrl: req.parentUrl,
