@@ -1,5 +1,5 @@
 import { Frame } from "frames.js";
-import { ContentReference, UrlContentResponse } from "./content";
+import { ContentReferenceResponse, UrlContentResponse } from "./content";
 import {
   Channel,
   FarcasterCastContext,
@@ -210,6 +210,6 @@ export type GetContentReferencesRequest = {
 };
 
 export type GetContentReferencesResponse = {
-  data: ContentReference[];
+  data: ContentReferenceResponse[];
   nextCursor?: string;
 };

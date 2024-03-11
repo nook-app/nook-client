@@ -20,10 +20,10 @@ export enum ContentReferenceType {
   Quote = "QUOTE",
 }
 
-export type ContentReference = {
-  fid: bigint;
+export type ContentReferenceResponse = {
+  fid: string;
   hash: string;
-  parentFid?: bigint;
+  parentFid?: string;
   parentHash?: string;
   parentUrl?: string;
   uri: string;

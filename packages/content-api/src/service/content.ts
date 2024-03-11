@@ -2,7 +2,7 @@ import { ContentCacheClient } from "@nook/common/clients";
 import { Metadata } from "metascraper";
 import { Prisma, PrismaClient } from "@nook/common/prisma/content";
 import {
-  ContentReference,
+  ContentReferenceResponse,
   ContentReferenceType,
   FarcasterCastResponse,
   GetContentReferencesRequest,
@@ -99,7 +99,7 @@ export class ContentService {
     await this.client.farcasterContentReference.deleteMany({
       where: {
         OR: references.map((reference) => ({
-          fid: reference.fid,
+          fid: BigInt(reference.fid),
           hash: reference.hash,
           type: reference.type,
           uri: reference.uri,
@@ -108,33 +108,43 @@ export class ContentService {
     });
   }
 
-  async upsertReferencedContent(reference: ContentReference) {
+  async upsertReferencedContent(reference: ContentReferenceResponse) {
     await this.getContent(reference.uri);
 
     await this.client.farcasterContentReference.upsert({
       where: {
         uri_fid_hash_type: {
-          fid: reference.fid,
+          fid: BigInt(reference.fid),
           hash: reference.hash,
           type: reference.type,
           uri: reference.uri,
         },
       },
-      create: reference,
-      update: reference,
+      create: {
+        ...reference,
+        fid: BigInt(reference.fid),
+        parentFid: reference.parentFid
+          ? BigInt(reference.parentFid)
+          : undefined,
+      },
+      update: {
+        ...reference,
+        fid: BigInt(reference.fid),
+        parentFid: reference.parentFid
+          ? BigInt(reference.parentFid)
+          : undefined,
+      },
     });
   }
 
   parseReferencedContent(cast: FarcasterCastResponse) {
     const timestamp = new Date(cast.timestamp);
-    const references: ContentReference[] = [];
+    const references: ContentReferenceResponse[] = [];
     for (const url of cast.embeds) {
       references.push({
-        fid: BigInt(cast.user.fid),
+        fid: cast.user.fid,
         hash: cast.hash,
-        parentFid: cast.parent?.user.fid
-          ? BigInt(cast.parent.user.fid)
-          : undefined,
+        parentFid: cast.parent?.user.fid,
         parentHash: cast.parent?.hash,
         parentUrl: cast.parentUrl,
         uri: url.uri,
@@ -146,11 +156,9 @@ export class ContentService {
     for (const castEmbed of cast.embedCasts) {
       for (const url of castEmbed.embeds) {
         references.push({
-          fid: BigInt(cast.user.fid),
+          fid: cast.user.fid,
           hash: cast.hash,
-          parentFid: cast.parent?.user.fid
-            ? BigInt(cast.parent.user.fid)
-            : undefined,
+          parentFid: cast.parent?.user.fid,
           parentHash: cast.parent?.hash,
           parentUrl: cast.parentUrl,
           uri: url.uri,
@@ -163,11 +171,9 @@ export class ContentService {
     if (cast.parent) {
       for (const url of cast.parent.embeds) {
         references.push({
-          fid: BigInt(cast.user.fid),
+          fid: cast.user.fid,
           hash: cast.hash,
-          parentFid: cast.parent?.user.fid
-            ? BigInt(cast.parent.user.fid)
-            : undefined,
+          parentFid: cast.parent?.user.fid,
           parentHash: cast.parent?.hash,
           parentUrl: cast.parentUrl,
           uri: url.uri,
@@ -231,6 +237,10 @@ export class ContentService {
     return {
       data: references.map((reference) => ({
         ...reference,
+        fid: reference.fid.toString(),
+        parentFid: reference.parentFid?.toString(),
+        parentUrl: reference.parentUrl || undefined,
+        parentHash: reference.parentHash || undefined,
         type: reference.type as ContentReferenceType,
       })),
       nextCursor:

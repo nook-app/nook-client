@@ -9,10 +9,13 @@ datasource db {
 }
 
 model FarcasterContentReference {
-    fid  BigInt
-    hash String
-    uri  String
-    type String // embed, reply, quote
+    fid        BigInt
+    hash       String
+    parentFid  BigInt?
+    parentHash String?
+    parentUrl  String?
+    uri        String
+    type       String // embed, reply, quote
 
     timestamp DateTime
 
