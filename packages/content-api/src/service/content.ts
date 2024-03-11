@@ -1,6 +1,10 @@
 import { ContentCacheClient } from "@nook/common/clients";
 import { Metadata } from "metascraper";
-import { Prisma, PrismaClient } from "@nook/common/prisma/content";
+import {
+  FarcasterContentReference,
+  Prisma,
+  PrismaClient,
+} from "@nook/common/prisma/content";
 import {
   ContentReferenceResponse,
   ContentReferenceType,
@@ -109,8 +113,6 @@ export class ContentService {
   }
 
   async upsertReferencedContent(reference: ContentReferenceResponse) {
-    await this.getContent(reference.uri);
-
     await this.client.farcasterContentReference.upsert({
       where: {
         uri_fid_hash_type: {
@@ -194,45 +196,45 @@ export class ContentService {
     for (const type of req.types) {
       switch (type) {
         case "image":
-          contentFilter.push({
-            type: {
-              startsWith: "image",
-            },
-          });
+          contentFilter.push(`"content"."type" LIKE 'image%'`);
           break;
         case "video":
-          contentFilter.push({
-            type: {
-              startsWith: "video",
-            },
-          });
+          contentFilter.push(`"content"."type" LIKE 'video%'`);
           break;
         case "frame":
-          contentFilter.push({
-            frame: {
-              not: Prisma.DbNull,
-            },
-          });
+          contentFilter.push(`"content"."frame" IS NOT NULL`);
+          break;
       }
     }
 
-    const references = await this.client.farcasterContentReference.findMany({
-      where: {
-        timestamp: this.decodeCursor(cursor),
-        fid: req.fids ? { in: req.fids.map((fid) => BigInt(fid)) } : undefined,
-        content:
-          contentFilter.length > 0
-            ? {
-                OR: contentFilter,
-              }
-            : undefined,
-        type: "EMBED",
-      },
-      orderBy: {
-        timestamp: "desc",
-      },
-      take: MAX_PAGE_SIZE,
-    });
+    const whereClause = [];
+    if (contentFilter.length > 0) {
+      whereClause.push(`(${contentFilter.join(" OR ")})`);
+    }
+    if (req.fids && req.fids.length > 0) {
+      whereClause.push(
+        `"fid" IN (${req.fids.map((fid) => `'${BigInt(fid)}'`).join(",")})`,
+      );
+    }
+    if (cursor) {
+      whereClause.push(`"timestamp" = '${this.decodeCursor(cursor)}'`);
+    }
+
+    const references = (await this.client.$queryRaw`
+      SELECT "FarcasterContentReference"."id",
+             "FarcasterContentReference"."fid",
+             "FarcasterContentReference"."timestamp",
+             "FarcasterContentReference"."type",
+             "content"."id" AS "content_id",
+             "content"."type" AS "content_type",
+             "content"."frame" AS "content_frame"
+      FROM "FarcasterContentReference"
+      LEFT JOIN "FarcasterContent" AS "content" ON "FarcasterContentReference"."contentId" = "content"."id"
+      WHERE "FarcasterContentReference"."type" = 'EMBED'
+        ${whereClause.length > 0 ? `AND ${whereClause.join(" AND ")}` : ""}
+      ORDER BY "FarcasterContentReference"."timestamp" DESC
+      LIMIT ${MAX_PAGE_SIZE}
+    `) as FarcasterContentReference[];
 
     return {
       data: references.map((reference) => ({

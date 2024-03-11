@@ -22,8 +22,6 @@ model FarcasterContentReference {
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
 
-    content UrlContent? @relation(fields: [uri], references: [uri])
-
     @@id([uri, fid, hash, type])
     @@index([timestamp, type])
 }
@@ -43,8 +41,6 @@ model UrlContent {
 
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
-
-    references FarcasterContentReference[]
 
     @@index([type])
 }
