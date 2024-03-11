@@ -18,12 +18,12 @@ const run = async () => {
       );
       nextCursor = casts.nextCursor;
       count += casts.data.length;
-      console.log(nextCursor);
     } while (nextCursor);
   };
 
   const worker = getWorker(QueueName.Backfill, async (job) => {
     await backfillContentForFid(job.data.fid);
+    console.log(`[${job.data.fid}] backfilled cache`);
   });
 
   worker.on("failed", (job, err) => {
