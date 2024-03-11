@@ -8,7 +8,11 @@ const run = async () => {
 
   let batch = [];
   for (let i = 1; i <= totalItems; i++) {
-    batch.push({ name: `backfill-${i}`, data: { fid: i.toString() } });
+    batch.push({
+      name: `backfill-${i}`,
+      data: { fid: i.toString() },
+      opts: { jobId: `backfill-${i}`, removeOnComplete: { count: 1000 } },
+    });
     if (i % batchSize === 0) {
       console.log(`Adding batch ${i - batchSize} to ${i}`);
       await queue.addBulk(batch); // Add the current batch
