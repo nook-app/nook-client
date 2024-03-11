@@ -19,17 +19,3 @@ export const publishEvent = async (event: EntityEvent<EntityEventData>) => {
     },
   });
 };
-
-export const publishContent = async (contentId: string) => {
-  const queue = getQueue(QueueName.Content);
-  await queue.add(
-    contentId,
-    { contentId },
-    {
-      jobId: contentId,
-      removeOnComplete: {
-        count: 10000,
-      },
-    },
-  );
-};

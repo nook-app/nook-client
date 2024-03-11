@@ -8,7 +8,8 @@
     "start:manual": "tsc && node dist/src/manual.js",
     "start:publisher": "node dist/src/publisher.js",
     "start:test": "tsc && node dist/test.js",
-    "start:backfill": "tsc && node dist/backfill/index.js"
+    "start:backfill:enqueue": "node dist/backfill/enqueue.js",
+    "start:backfill:stats": "node dist/backfill/stats.js"
   },
   "dependencies": {
     "@ethersproject/abstract-signer": "^5.7.0",

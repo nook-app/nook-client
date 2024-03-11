@@ -8,16 +8,12 @@ export enum QueueName {
   Farcaster = "farcaster",
   Backfill = "backfill",
   Events = "events",
-  Content = "content",
-  Actions = "actions",
 }
 
 type QueueType = {
   [QueueName.Backfill]: { fid: string };
   [QueueName.Farcaster]: Message;
   [QueueName.Events]: EntityEvent<EntityEventData>;
-  [QueueName.Content]: { contentId: string; channel?: boolean };
-  [QueueName.Actions]: { actionId: string; created: boolean };
 };
 
 const connection = new Redis({
