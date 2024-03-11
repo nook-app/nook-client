@@ -132,6 +132,11 @@ export class ContentService {
       references.push({
         fid: BigInt(cast.user.fid),
         hash: cast.hash,
+        parentFid: cast.parent?.user.fid
+          ? BigInt(cast.parent.user.fid)
+          : undefined,
+        parentHash: cast.parent?.hash,
+        parentUrl: cast.parentUrl,
         uri: url.uri,
         type: ContentReferenceType.Embed,
         timestamp,
@@ -143,6 +148,11 @@ export class ContentService {
         references.push({
           fid: BigInt(cast.user.fid),
           hash: cast.hash,
+          parentFid: cast.parent?.user.fid
+            ? BigInt(cast.parent.user.fid)
+            : undefined,
+          parentHash: cast.parent?.hash,
+          parentUrl: cast.parentUrl,
           uri: url.uri,
           type: ContentReferenceType.Quote,
           timestamp,
@@ -155,6 +165,11 @@ export class ContentService {
         references.push({
           fid: BigInt(cast.user.fid),
           hash: cast.hash,
+          parentFid: cast.parent?.user.fid
+            ? BigInt(cast.parent.user.fid)
+            : undefined,
+          parentHash: cast.parent?.hash,
+          parentUrl: cast.parentUrl,
           uri: url.uri,
           type: ContentReferenceType.Quote,
           timestamp,
@@ -169,34 +184,42 @@ export class ContentService {
     req: GetContentReferencesRequest,
     cursor?: string,
   ): Promise<GetContentReferencesResponse> {
-    let contentFilter = undefined;
-    switch (req.type) {
-      case "image":
-        contentFilter = {
-          type: {
-            startsWith: "image",
-          },
-        };
-        break;
-      case "video":
-        contentFilter = {
-          type: {
-            startsWith: "video",
-          },
-        };
-        break;
-      case "frame":
-        contentFilter = {
-          frame: {
-            not: Prisma.DbNull,
-          },
-        };
+    const contentFilter = [];
+    for (const type of req.types) {
+      switch (type) {
+        case "image":
+          contentFilter.push({
+            type: {
+              startsWith: "image",
+            },
+          });
+          break;
+        case "video":
+          contentFilter.push({
+            type: {
+              startsWith: "video",
+            },
+          });
+          break;
+        case "frame":
+          contentFilter.push({
+            frame: {
+              not: Prisma.DbNull,
+            },
+          });
+      }
     }
 
     const references = await this.client.farcasterContentReference.findMany({
       where: {
         timestamp: this.decodeCursor(cursor),
-        content: contentFilter,
+        fid: req.fids ? { in: req.fids.map((fid) => BigInt(fid)) } : undefined,
+        content:
+          contentFilter.length > 0
+            ? {
+                OR: contentFilter,
+              }
+            : undefined,
         type: "EMBED",
       },
       orderBy: {

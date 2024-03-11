@@ -23,6 +23,9 @@ export enum ContentReferenceType {
 export type ContentReference = {
   fid: bigint;
   hash: string;
+  parentFid?: bigint;
+  parentHash?: string;
+  parentUrl?: string;
   uri: string;
   type: ContentReferenceType;
   timestamp: Date;

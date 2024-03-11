@@ -1,9 +1,5 @@
 import { FastifyInstance } from "fastify";
-import {
-  ContentAPIClient,
-  FarcasterAPIClient,
-  FeedCacheClient,
-} from "@nook/common/clients";
+import { FarcasterAPIClient } from "@nook/common/clients";
 import {
   FeedFarcasterContentArgs,
   FeedFarcasterFollowingArgs,
@@ -13,11 +9,9 @@ export const MAX_PAGE_SIZE = 25;
 
 export class FeedService {
   private farcasterClient: FarcasterAPIClient;
-  private contentAPIClient: ContentAPIClient;
 
   constructor(fastify: FastifyInstance) {
     this.farcasterClient = new FarcasterAPIClient();
-    this.contentAPIClient = new ContentAPIClient();
   }
 
   async getFarcasterContentFeed(
@@ -25,19 +19,13 @@ export class FeedService {
     cursor?: string,
     viewerFid?: string,
   ) {
-    const references = await this.contentAPIClient.getContentReferences(
-      req,
-      cursor,
+    return await this.farcasterClient.getCastsByContentType(
+      {
+        ...req,
+        cursor,
+      },
       viewerFid,
     );
-
-    return {
-      data: await this.farcasterClient.getCasts(
-        references.data.map((i) => i.hash),
-        viewerFid,
-      ),
-      nextCursor: references.nextCursor,
-    };
   }
 
   async getFarcasterFollowingFeed(

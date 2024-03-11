@@ -39,5 +39,7 @@ export type FarcasterProfileArgs = {
 };
 
 export type FeedFarcasterContentArgs = {
-  type: "image" | "video" | "frame";
+  types: string[];
+  followerFid?: string;
+  fid?: string;
 };

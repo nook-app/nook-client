@@ -1,5 +1,5 @@
 import { FastifyInstance } from "fastify";
-import { FarcasterAPIClient, NookCacheClient } from "@nook/common/clients";
+import { NookCacheClient } from "@nook/common/clients";
 import {
   PrismaClient,
   Nook as DBNook,

@@ -6,7 +6,6 @@ import {
   FarcasterCastEngagement,
   FarcasterUser,
 } from "./farcaster";
-import { UrlContent } from "../prisma/content";
 
 export type FarcasterCastResponse = {
   hash: string;
@@ -29,6 +28,8 @@ export type FarcasterCastResponse = {
   }[];
   engagement: FarcasterCastEngagement;
   context?: FarcasterCastContext;
+  // Temporarily used to identify the primary reference for content requests
+  reference?: string;
 };
 
 export type GetFarcasterChannelRequest = {
@@ -73,6 +74,15 @@ export type GetFarcasterCastsByFollowingRequest = {
   fid: string;
   cursor?: string;
   replies?: boolean;
+  minTimestamp?: number;
+  limit?: number;
+};
+
+export type GetFarcasterCastByContentTypeRequest = {
+  types: string[];
+  fid?: string;
+  followerFid?: string;
+  cursor?: string;
   minTimestamp?: number;
   limit?: number;
 };
@@ -195,7 +205,8 @@ export type SubmitFrameActionResponse = {
 };
 
 export type GetContentReferencesRequest = {
-  type: "image" | "video" | "frame";
+  types: string[];
+  fids?: string[];
 };
 
 export type GetContentReferencesResponse = {

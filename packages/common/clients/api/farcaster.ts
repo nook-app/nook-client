@@ -7,6 +7,7 @@ import {
   FarcasterCastResponse,
   GetFarcasterCastsResponse,
   Channel,
+  GetFarcasterCastByContentTypeRequest,
 } from "../../types";
 import { BaseAPIClient } from "./base";
 
@@ -229,6 +230,23 @@ export class FarcasterAPIClient extends BaseAPIClient {
     viewerFid?: string,
   ): Promise<GetFarcasterCastsResponse> {
     const response = await this.makeRequest("/casts/by-channel", {
+      method: "POST",
+      body: JSON.stringify(req),
+      viewerFid,
+    });
+
+    if (!response.ok) {
+      throw new Error(response.statusText);
+    }
+
+    return response.json();
+  }
+
+  async getCastsByContentType(
+    req: GetFarcasterCastByContentTypeRequest,
+    viewerFid?: string,
+  ): Promise<GetFarcasterCastsResponse> {
+    const response = await this.makeRequest("/casts/by-content-type", {
       method: "POST",
       body: JSON.stringify(req),
       viewerFid,

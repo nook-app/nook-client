@@ -22,6 +22,7 @@ import {
   GetFarcasterCastsResponse,
   GetFarcasterUsersResponse,
   UrlContentResponse,
+  GetFarcasterCastByContentTypeRequest,
 } from "@nook/common/types";
 import {
   getCastEmbeds,
@@ -700,17 +701,10 @@ export class FarcasterService {
     request: GetFarcasterCastsByFollowingRequest,
     viewerFid?: string,
   ): Promise<GetFarcasterCastsResponse> {
-    const following = await this.client.farcasterLink.findMany({
-      where: {
-        linkType: "follow",
-        fid: BigInt(request.fid),
-        deletedAt: null,
-      },
-    });
-
+    const following = await this.getFollowingFids(request.fid);
     return await this.getCastsByFids(
       {
-        fids: following.map((link) => link.targetFid.toString()),
+        fids: following,
         cursor: request.cursor,
         replies: request.replies,
         minTimestamp: request.minTimestamp,
@@ -718,6 +712,58 @@ export class FarcasterService {
       },
       viewerFid,
     );
+  }
+
+  async getCastsByContentType(
+    request: GetFarcasterCastByContentTypeRequest,
+    viewerFid?: string,
+  ): Promise<GetFarcasterCastsResponse> {
+    let fids: string[] | undefined;
+    if (request.followerFid) {
+      fids = await this.getFollowingFids(request.followerFid);
+    }
+
+    const references = await this.contentClient.getContentReferences(
+      {
+        ...request,
+        fids: fids || (request.fid ? [request.fid] : undefined),
+      },
+      request.cursor,
+      viewerFid,
+    );
+
+    const casts = await this.getCasts(
+      references.data.map((i) => i.hash),
+      viewerFid,
+    );
+
+    const castMap = casts.reduce(
+      (acc, cast) => {
+        acc[cast.hash] = cast;
+        return acc;
+      },
+      {} as Record<string, FarcasterCastResponse>,
+    );
+
+    return {
+      data: references.data.map((ref) => ({
+        ...castMap[ref.hash],
+        reference: ref.uri,
+      })),
+      nextCursor: references.nextCursor,
+    };
+  }
+
+  async getFollowingFids(fid: string) {
+    const following = await this.client.farcasterLink.findMany({
+      where: {
+        linkType: "follow",
+        fid: BigInt(fid),
+        deletedAt: null,
+      },
+    });
+
+    return following.map((link) => link.targetFid.toString());
   }
 
   async searchChannels(query: string) {

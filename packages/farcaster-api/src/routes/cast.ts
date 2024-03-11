@@ -5,6 +5,7 @@ import {
   GetFarcasterCastsByFollowingRequest,
   GetFarcasterCastsByChannelRequest,
   GetFarcasterCastsRequest,
+  GetFarcasterCastByContentTypeRequest,
 } from "@nook/common/types";
 import { FastifyInstance } from "fastify";
 import { FarcasterService } from "../service/farcaster";
@@ -112,6 +113,16 @@ export const castRoutes = async (fastify: FastifyInstance) => {
       Body: GetFarcasterCastsByChannelRequest;
     }>("/casts/by-channel", async (request, reply) => {
       const response = await service.getCastsByChannel(
+        request.body,
+        request.headers["x-viewer-fid"] as string,
+      );
+      reply.send(response);
+    });
+
+    fastify.post<{
+      Body: GetFarcasterCastByContentTypeRequest;
+    }>("/casts/by-content-type", async (request, reply) => {
+      const response = await service.getCastsByContentType(
         request.body,
         request.headers["x-viewer-fid"] as string,
       );
