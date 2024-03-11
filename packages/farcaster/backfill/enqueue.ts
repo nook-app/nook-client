@@ -6,13 +6,14 @@ const run = async () => {
   const batchSize = 1000;
   const totalItems = 387000;
 
-  for (let i = 1; i <= totalItems; i += batchSize) {
-    console.log(`Adding batch ${i} to ${i + batchSize}`);
-    const batch = [];
-    for (let j = i; j <= batchSize; j++) {
-      batch.push({ name: `backfill-${j}`, data: { fid: j.toString() } });
+  let batch = [];
+  for (let i = 1; i <= totalItems; i++) {
+    batch.push({ name: `backfill-${i}`, data: { fid: i.toString() } });
+    if (i % batchSize === 0) {
+      console.log(`Adding batch ${i - batchSize} to ${i}`);
+      await queue.addBulk(batch); // Add the current batch
+      batch = [];
     }
-    await queue.addBulk(batch); // Add the current batch
   }
 };
 

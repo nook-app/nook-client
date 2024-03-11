@@ -174,7 +174,9 @@ export class FarcasterService {
           if (!channel) return;
           return {
             channel,
-            position: rawCast.text.indexOf(mention).toString(),
+            position: Buffer.from(
+              rawCast.text.slice(0, rawCast.text.indexOf(mention)),
+            ).length.toString(),
           };
         })
         .filter(Boolean) as { channel: Channel; position: string }[],
