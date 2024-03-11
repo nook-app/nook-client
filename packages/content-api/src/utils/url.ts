@@ -61,6 +61,7 @@ export const getUrlContent = async (
     type: null,
     length: null,
     metadata: null,
+    hasFrame: false,
     frame: null,
     createdAt: date,
     updatedAt: date,
@@ -78,9 +79,10 @@ export const getUrlContent = async (
       content.type = metadata.contentType || null;
       content.length = metadata.contentLength || null;
       content.metadata = metadata.metadata || null;
-      content.frame = metadata.frame
-        ? JSON.parse(JSON.stringify(metadata.frame))
-        : null;
+      if (metadata.frame?.buttons && metadata.frame?.buttons.length > 0) {
+        content.hasFrame = true;
+        content.frame = JSON.parse(JSON.stringify(metadata.frame));
+      }
     }
   } catch (e) {
     return;

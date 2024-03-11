@@ -1,11 +1,12 @@
 import { Frame } from "frames.js";
-import { UrlContentResponse } from "./content";
+import { ContentReference, UrlContentResponse } from "./content";
 import {
   Channel,
   FarcasterCastContext,
   FarcasterCastEngagement,
   FarcasterUser,
 } from "./farcaster";
+import { UrlContent } from "../prisma/content";
 
 export type FarcasterCastResponse = {
   hash: string;
@@ -191,4 +192,13 @@ export type FramePayload = {
 export type SubmitFrameActionResponse = {
   location?: string;
   frame?: Frame;
+};
+
+export type GetContentReferencesRequest = {
+  type: "image" | "video" | "frame";
+};
+
+export type GetContentReferencesResponse = {
+  data: ContentReference[];
+  nextCursor?: string;
 };

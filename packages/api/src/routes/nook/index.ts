@@ -1,6 +1,9 @@
 import { FastifyInstance } from "fastify";
 import { NookService } from "../../services/nook";
-import { FeedFarcasterFollowingArgs } from "@nook/common/types";
+import {
+  FeedFarcasterContentArgs,
+  FeedFarcasterFollowingArgs,
+} from "@nook/common/types";
 import { FeedService } from "../../services/feed";
 
 export const nookRoutes = async (fastify: FastifyInstance) => {
@@ -33,6 +36,25 @@ export const nookRoutes = async (fastify: FastifyInstance) => {
       } catch (e) {}
 
       const response = await feedService.getFarcasterFollowingFeed(
+        request.body,
+        request.query.cursor,
+        viewerFid,
+      );
+
+      return reply.send(response);
+    });
+
+    fastify.post<{
+      Body: FeedFarcasterContentArgs;
+      Querystring: { cursor?: string };
+    }>("/feed/farcaster/content", async (request, reply) => {
+      let viewerFid: string | undefined;
+      try {
+        const { fid } = (await request.jwtDecode()) as { fid: string };
+        viewerFid = fid;
+      } catch (e) {}
+
+      const response = await feedService.getFarcasterContentFeed(
         request.body,
         request.query.cursor,
         viewerFid,

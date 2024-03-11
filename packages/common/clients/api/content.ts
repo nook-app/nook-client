@@ -1,5 +1,7 @@
 import {
   FarcasterCastResponse,
+  GetContentReferencesRequest,
+  GetContentReferencesResponse,
   GetContentsResponse,
   UrlContentResponse,
 } from "../../types";
@@ -40,7 +42,7 @@ export class ContentAPIClient extends BaseAPIClient {
 
   async addContentReferences(cast: FarcasterCastResponse) {
     const response = await this.makeRequest("/content/references", {
-      method: "POST",
+      method: "PUT",
       body: JSON.stringify(cast),
     });
 
@@ -56,6 +58,27 @@ export class ContentAPIClient extends BaseAPIClient {
       method: "DELETE",
       body: JSON.stringify(cast),
     });
+
+    if (!response.ok) {
+      throw new Error(response.statusText);
+    }
+
+    return response.json();
+  }
+
+  async getContentReferences(
+    req: GetContentReferencesRequest,
+    cursor?: string,
+    viewerFid?: string,
+  ): Promise<GetContentReferencesResponse> {
+    const response = await this.makeRequest(
+      `/content/references${cursor ? `?cursor=${cursor}` : ""}`,
+      {
+        method: "POST",
+        body: JSON.stringify(req),
+        viewerFid,
+      },
+    );
 
     if (!response.ok) {
       throw new Error(response.statusText);

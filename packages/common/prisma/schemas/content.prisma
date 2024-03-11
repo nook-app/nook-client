@@ -22,6 +22,7 @@ model FarcasterContentReference {
     content UrlContent? @relation(fields: [uri], references: [uri])
 
     @@id([uri, fid, hash, type])
+    @@index([timestamp, type])
 }
 
 model UrlContent {
@@ -34,10 +35,13 @@ model UrlContent {
     type     String?
     length   Int?
     metadata Json?
+    hasFrame Boolean @default(false)
     frame    Json?
 
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
 
     references FarcasterContentReference[]
+
+    @@index([type])
 }

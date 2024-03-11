@@ -5,6 +5,8 @@ import {
   ContentReference,
   ContentReferenceType,
   FarcasterCastResponse,
+  GetContentReferencesRequest,
+  GetContentReferencesResponse,
   UrlContentResponse,
 } from "@nook/common/types";
 import { FastifyInstance } from "fastify";
@@ -161,5 +163,82 @@ export class ContentService {
     }
 
     return references;
+  }
+
+  async getContentReferences(
+    req: GetContentReferencesRequest,
+    cursor?: string,
+  ): Promise<GetContentReferencesResponse> {
+    let contentFilter = undefined;
+    switch (req.type) {
+      case "image":
+        contentFilter = {
+          type: {
+            startsWith: "image",
+          },
+        };
+        break;
+      case "video":
+        contentFilter = {
+          type: {
+            startsWith: "video",
+          },
+        };
+        break;
+      case "frame":
+        contentFilter = {
+          frame: {
+            not: Prisma.DbNull,
+          },
+        };
+    }
+
+    const references = await this.client.farcasterContentReference.findMany({
+      where: {
+        timestamp: this.decodeCursor(cursor),
+        content: contentFilter,
+        type: "EMBED",
+      },
+      orderBy: {
+        timestamp: "desc",
+      },
+      take: MAX_PAGE_SIZE,
+    });
+
+    return {
+      data: references.map((reference) => ({
+        ...reference,
+        type: reference.type as ContentReferenceType,
+      })),
+      nextCursor:
+        references.length === MAX_PAGE_SIZE
+          ? this.encodeCursor({
+              timestamp: references[references.length - 1]?.timestamp.getTime(),
+            })
+          : undefined,
+    };
+  }
+
+  decodeCursor(cursor?: string): { lt: Date } | undefined {
+    if (!cursor) return;
+    try {
+      const decodedString = Buffer.from(cursor, "base64").toString("ascii");
+      const decodedCursor = JSON.parse(decodedString);
+      if (typeof decodedCursor === "object" && "timestamp" in decodedCursor) {
+        return { lt: new Date(decodedCursor.timestamp) };
+      }
+      console.error(
+        "Decoded cursor does not match expected format:",
+        decodedCursor,
+      );
+    } catch (error) {
+      console.error("Error decoding cursor:", error);
+    }
+  }
+
+  encodeCursor(cursor?: { timestamp: number }): string | undefined {
+    if (!cursor) return;
+    const encodedString = JSON.stringify(cursor);
+    return Buffer.from(encodedString).toString("base64");
   }
 }

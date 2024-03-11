@@ -21,11 +21,13 @@ export type NookShelf = {
 export enum NookShelfType {
   FeedFarcasterFollowing = "FeedFarcasterFollowing",
   FarcasterProfile = "FarcasterProfile",
+  FeedFarcasterContent = "FeedFarcasterContent",
 }
 
 export type NookShelfArgs = {
   [NookShelfType.FeedFarcasterFollowing]: FeedFarcasterFollowingArgs;
   [NookShelfType.FarcasterProfile]: FarcasterProfileArgs;
+  [NookShelfType.FeedFarcasterContent]: FeedFarcasterContentArgs;
 };
 
 export type FeedFarcasterFollowingArgs = {
@@ -34,4 +36,8 @@ export type FeedFarcasterFollowingArgs = {
 
 export type FarcasterProfileArgs = {
   fid: string;
+};
+
+export type FeedFarcasterContentArgs = {
+  type: "image" | "video" | "frame";
 };

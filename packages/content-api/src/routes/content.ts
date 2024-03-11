@@ -2,6 +2,7 @@ import { FastifyInstance } from "fastify";
 import { ContentService } from "../service/content";
 import {
   FarcasterCastResponse,
+  GetContentReferencesRequest,
   GetContentRequest,
   GetContentsRequest,
 } from "@nook/common/types";
@@ -38,7 +39,7 @@ export const contentRoutes = async (fastify: FastifyInstance) => {
       }
     });
 
-    fastify.post<{
+    fastify.put<{
       Body: FarcasterCastResponse;
     }>("/content/references", async (request, reply) => {
       await service.addReferencedContent(request.body);
@@ -50,6 +51,17 @@ export const contentRoutes = async (fastify: FastifyInstance) => {
     }>("/content/references", async (request, reply) => {
       await service.removeReferencedContent(request.body);
       reply.send({});
+    });
+
+    fastify.post<{
+      Body: GetContentReferencesRequest;
+      Querystring: { cursor?: string };
+    }>("/content/references", async (request, reply) => {
+      const data = await service.getContentReferences(
+        request.body,
+        request.query.cursor,
+      );
+      reply.send(data);
     });
   });
 };
