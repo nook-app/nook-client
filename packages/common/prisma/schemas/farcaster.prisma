@@ -1,6 +1,7 @@
 generator client {
-    provider = "prisma-client-js"
-    output   = "../generated/farcaster"
+    provider        = "prisma-client-js"
+    output          = "../generated/farcaster"
+    previewFeatures = ["fullTextSearch"]
 }
 
 datasource db {
@@ -222,4 +223,30 @@ model FarcasterParentUrl {
 
     createdAt DateTime @default(now())
     updatedAt DateTime @default(now()) @updatedAt
+}
+
+model FarcasterUserStats {
+    fid BigInt @id
+
+    following       Int @default(0)
+    followers       Int @default(0)
+    casts           Int @default(0)
+    replies         Int @default(0)
+    likes           Int @default(0)
+    recasts         Int @default(0)
+    repliesReceived Int @default(0)
+    likesReceived   Int @default(0)
+    recastsReceived Int @default(0)
+}
+
+model FarcasterCastStats {
+    hash String @id
+    fid  BigInt
+
+    likes   Int @default(0)
+    recasts Int @default(0)
+    replies Int @default(0)
+    quotes  Int @default(0)
+
+    @@index([likes])
 }

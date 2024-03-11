@@ -21,6 +21,7 @@ import {
 import {
   bufferToHex,
   bufferToHexAddress,
+  getCastEmbeds,
   timestampToDate,
   transformToCastEvent,
   transformToCastReactionEvent,
@@ -110,6 +111,8 @@ export class FarcasterEventProcessor {
       update: cast as Prisma.FarcasterCastCreateInput,
     });
 
+    const statsPromises = [];
+
     const embedCasts = messageToCastEmbedCast(message);
 
     for (const embedCast of embedCasts) {
@@ -123,6 +126,23 @@ export class FarcasterEventProcessor {
         create: embedCast,
         update: embedCast,
       });
+      statsPromises.push(
+        this.client.farcasterCastStats.upsert({
+          where: {
+            hash: embedCast.embedHash,
+          },
+          create: {
+            fid: embedCast.embedFid,
+            hash: embedCast.embedHash,
+            quotes: 1,
+          },
+          update: {
+            quotes: {
+              increment: 1,
+            },
+          },
+        }),
+      );
     }
 
     const embedUrls = messageToCastEmbedUrl(message);
@@ -156,6 +176,77 @@ export class FarcasterEventProcessor {
       });
     }
 
+    if (cast.parentHash && cast.parentFid) {
+      statsPromises.push(
+        this.client.farcasterCastStats.upsert({
+          where: {
+            hash: cast.parentHash,
+          },
+          create: {
+            fid: cast.parentFid,
+            hash: cast.parentHash,
+            replies: 1,
+          },
+          update: {
+            replies: {
+              increment: 1,
+            },
+          },
+        }),
+      );
+      statsPromises.push(
+        this.client.farcasterUserStats.upsert({
+          where: {
+            fid: cast.fid,
+          },
+          create: {
+            fid: cast.fid,
+            replies: 1,
+          },
+          update: {
+            replies: {
+              increment: 1,
+            },
+          },
+        }),
+      );
+      statsPromises.push(
+        this.client.farcasterUserStats.upsert({
+          where: {
+            fid: cast.parentFid,
+          },
+          create: {
+            fid: cast.parentFid,
+            repliesReceived: 1,
+          },
+          update: {
+            repliesReceived: {
+              increment: 1,
+            },
+          },
+        }),
+      );
+    } else {
+      statsPromises.push(
+        this.client.farcasterUserStats.upsert({
+          where: {
+            fid: cast.fid,
+          },
+          create: {
+            fid: cast.fid,
+            casts: 1,
+          },
+          update: {
+            casts: {
+              increment: 1,
+            },
+          },
+        }),
+      );
+    }
+
+    await Promise.all(statsPromises);
+
     console.log(`[cast-add] [${cast.fid}] added ${cast.hash}`);
 
     publishEvent(transformToCastEvent(FarcasterEventType.CAST_ADD, cast));
@@ -169,11 +260,11 @@ export class FarcasterEventProcessor {
     const hash = bufferToHex(message.data.castRemoveBody.targetHash);
     const deletedAt = timestampToDate(message.data.timestamp);
 
-    const existingCast = await this.client.farcasterCast.findUnique({
+    const cast = await this.client.farcasterCast.findUnique({
       where: { hash },
     });
 
-    if (!existingCast || existingCast.deletedAt) {
+    if (!cast || cast.deletedAt) {
       return;
     }
 
@@ -197,13 +288,82 @@ export class FarcasterEventProcessor {
       data: { deletedAt },
     });
 
+    const statsPromises = [];
+
+    for (const embedCast of getCastEmbeds(cast)) {
+      statsPromises.push(
+        this.client.farcasterCastStats.updateMany({
+          where: {
+            hash: embedCast.hash,
+          },
+          data: {
+            quotes: {
+              decrement: 1,
+            },
+          },
+        }),
+      );
+    }
+
+    if (cast.parentHash && cast.parentFid) {
+      statsPromises.push(
+        this.client.farcasterCastStats.updateMany({
+          where: {
+            hash: cast.parentHash,
+          },
+          data: {
+            replies: {
+              decrement: 1,
+            },
+          },
+        }),
+      );
+      statsPromises.push(
+        this.client.farcasterUserStats.updateMany({
+          where: {
+            fid: cast.fid,
+          },
+          data: {
+            replies: {
+              decrement: 1,
+            },
+          },
+        }),
+      );
+      statsPromises.push(
+        this.client.farcasterUserStats.updateMany({
+          where: {
+            fid: cast.parentFid,
+          },
+          data: {
+            repliesReceived: {
+              decrement: 1,
+            },
+          },
+        }),
+      );
+    } else {
+      statsPromises.push(
+        this.client.farcasterUserStats.updateMany({
+          where: {
+            fid: cast.fid,
+          },
+          data: {
+            casts: {
+              decrement: 1,
+            },
+          },
+        }),
+      );
+    }
+
+    await Promise.all(statsPromises);
+
     console.log(`[cast-remove] [${message.data?.fid}] removed ${hash}`);
 
-    publishEvent(
-      transformToCastEvent(FarcasterEventType.CAST_REMOVE, existingCast),
-    );
+    publishEvent(transformToCastEvent(FarcasterEventType.CAST_REMOVE, cast));
 
-    return existingCast;
+    return cast;
   }
 
   async processLinkAdd(message: Message) {
@@ -235,6 +395,39 @@ export class FarcasterEventProcessor {
       create: link,
       update: link,
     });
+
+    if (link.linkType === "follow") {
+      await Promise.all([
+        this.client.farcasterUserStats.upsert({
+          where: {
+            fid: link.fid,
+          },
+          create: {
+            fid: link.fid,
+            following: 1,
+          },
+          update: {
+            following: {
+              increment: 1,
+            },
+          },
+        }),
+        this.client.farcasterUserStats.upsert({
+          where: {
+            fid: link.targetFid,
+          },
+          create: {
+            fid: link.targetFid,
+            followers: 1,
+          },
+          update: {
+            followers: {
+              increment: 1,
+            },
+          },
+        }),
+      ]);
+    }
 
     console.log(
       `[link-add] [${link.fid}] added ${link.linkType} to ${link.targetFid}`,
@@ -273,6 +466,31 @@ export class FarcasterEventProcessor {
         deletedAt: link.timestamp,
       },
     });
+
+    if (link.linkType === "follow") {
+      await Promise.all([
+        this.client.farcasterUserStats.updateMany({
+          where: {
+            fid: link.fid,
+          },
+          data: {
+            following: {
+              decrement: 1,
+            },
+          },
+        }),
+        this.client.farcasterUserStats.updateMany({
+          where: {
+            fid: link.targetFid,
+          },
+          data: {
+            followers: {
+              decrement: 1,
+            },
+          },
+        }),
+      ]);
+    }
 
     console.log(
       `[link-remove] [${link.fid}] removed ${link.linkType} to ${link.targetFid}`,
@@ -316,6 +534,55 @@ export class FarcasterEventProcessor {
       create: reaction,
       update: reaction,
     });
+
+    if (reaction.reactionType === 1 || reaction.reactionType === 2) {
+      const reactionType = reaction.reactionType === 1 ? "likes" : "recasts";
+      await Promise.all([
+        this.client.farcasterCastStats.upsert({
+          where: {
+            hash: reaction.targetHash,
+          },
+          create: {
+            fid: reaction.fid,
+            hash: reaction.targetHash,
+            [reactionType]: 1,
+          },
+          update: {
+            [reactionType]: {
+              increment: 1,
+            },
+          },
+        }),
+        this.client.farcasterUserStats.upsert({
+          where: {
+            fid: reaction.fid,
+          },
+          create: {
+            fid: reaction.fid,
+            [reactionType]: 1,
+          },
+          update: {
+            [reactionType]: {
+              increment: 1,
+            },
+          },
+        }),
+        this.client.farcasterUserStats.upsert({
+          where: {
+            fid: reaction.targetFid,
+          },
+          create: {
+            fid: reaction.targetFid,
+            [`${reactionType}Received`]: 1,
+          },
+          update: {
+            [`${reactionType}Received`]: {
+              increment: 1,
+            },
+          },
+        }),
+      ]);
+    }
 
     console.log(
       `[reaction-add] [${reaction.fid}] added ${reaction.reactionType} from ${reaction.targetHash}`,
@@ -361,6 +628,42 @@ export class FarcasterEventProcessor {
         deletedAt: reaction.timestamp,
       },
     });
+
+    if (reaction.reactionType === 1 || reaction.reactionType === 2) {
+      const reactionType = reaction.reactionType === 1 ? "likes" : "recasts";
+      await Promise.all([
+        this.client.farcasterCastStats.updateMany({
+          where: {
+            hash: reaction.targetHash,
+          },
+          data: {
+            [reactionType]: {
+              decrement: 1,
+            },
+          },
+        }),
+        this.client.farcasterUserStats.updateMany({
+          where: {
+            fid: reaction.fid,
+          },
+          data: {
+            [reactionType]: {
+              decrement: 1,
+            },
+          },
+        }),
+        this.client.farcasterUserStats.updateMany({
+          where: {
+            fid: reaction.targetFid,
+          },
+          data: {
+            [`${reactionType}Received`]: {
+              decrement: 1,
+            },
+          },
+        }),
+      ]);
+    }
 
     console.log(
       `[reaction-remove] [${reaction.fid}] removed ${reaction.reactionType} from ${reaction.targetHash}`,
