@@ -124,12 +124,13 @@ export class FarcasterService {
   }
 
   async getFeedFids(req: FarcasterFeedArgs): Promise<string[] | undefined> {
-    if (!req.userFilter || !req.context?.viewerFid) return;
+    if (!req.userFilter) return;
 
     switch (req.userFilter.type) {
       case UserFilterType.Fids:
         return req.userFilter.args.fids;
       case UserFilterType.Following:
+        if (!req.context?.viewerFid) return;
         return await this.getFollowingFids(
           [req.context.viewerFid],
           req.userFilter.args.degree,
