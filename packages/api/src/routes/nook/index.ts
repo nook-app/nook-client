@@ -10,13 +10,5 @@ export const nookRoutes = async (fastify: FastifyInstance) => {
       const data = await nookService.getNooks(fid);
       return reply.send({ data });
     });
-
-    fastify.get<{ Params: { nookId: string } }>(
-      "/nooks/:nookId",
-      async (request, reply) => {
-        const nook = await nookService.getNook(request.params.nookId);
-        return reply.send(nook);
-      },
-    );
   });
 };

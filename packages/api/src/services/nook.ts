@@ -1,5 +1,4 @@
 import { FastifyInstance } from "fastify";
-import { NookCacheClient } from "@nook/common/clients";
 import {
   PrismaClient,
   Nook as DBNook,
@@ -9,11 +8,9 @@ import { Nook, NookShelf, NookShelfType } from "@nook/common/types";
 
 export class NookService {
   private nookClient: PrismaClient;
-  private nookCacheClient: NookCacheClient;
 
   constructor(fastify: FastifyInstance) {
     this.nookClient = fastify.nook.client;
-    this.nookCacheClient = new NookCacheClient(fastify.redis.client);
   }
 
   async getNooks(fid: string) {
@@ -25,6 +22,17 @@ export class NookService {
       },
     });
 
+    const nooks = await this.nookClient.nook.findMany({
+      where: {
+        id: {
+          in: memberships.map((membership) => membership.nookId),
+        },
+      },
+      include: {
+        shelves: true,
+      },
+    });
+
     const defaultNooks = await this.nookClient.nook.findMany({
       where: {
         creatorFid: "262426",
@@ -33,10 +41,6 @@ export class NookService {
         shelves: true,
       },
     });
-
-    const nooks = await Promise.all(
-      memberships.map((membership) => this.getNook(membership.nookId)),
-    );
 
     const missingDefaultNooks = defaultNooks.filter(
       (defaultNook) => !nooks.find((nook) => nook.id === defaultNook.id),
@@ -72,29 +76,6 @@ export class NookService {
         return 0;
       },
     );
-  }
-
-  async getNook(id: string): Promise<Nook> {
-    const cached = await this.nookCacheClient.getNook(id);
-    if (cached) {
-      return cached;
-    }
-
-    const nook = await await this.nookClient.nook.findUnique({
-      where: {
-        id,
-      },
-      include: {
-        shelves: true,
-      },
-    });
-    if (!nook) {
-      throw new Error(`Nook not found ${id}`);
-    }
-
-    const response = this.formatNook(nook);
-    await this.nookCacheClient.setNook(id, response);
-    return response;
   }
 
   async getShelf(id: string): Promise<NookShelf | undefined> {
