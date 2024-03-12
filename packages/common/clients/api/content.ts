@@ -42,7 +42,7 @@ export class ContentAPIClient extends BaseAPIClient {
 
   async addContentReferences(cast: FarcasterCastResponse) {
     const response = await this.makeRequest("/content/references", {
-      method: "PUT",
+      method: "POST",
       body: JSON.stringify(cast),
     });
 
@@ -72,7 +72,7 @@ export class ContentAPIClient extends BaseAPIClient {
     viewerFid?: string,
   ): Promise<GetContentReferencesResponse> {
     const response = await this.makeRequest(
-      `/content/references${cursor ? `?cursor=${cursor}` : ""}`,
+      `/content/references/by-type${cursor ? `?cursor=${cursor}` : ""}`,
       {
         method: "POST",
         body: JSON.stringify(req),

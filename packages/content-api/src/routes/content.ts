@@ -39,7 +39,7 @@ export const contentRoutes = async (fastify: FastifyInstance) => {
       }
     });
 
-    fastify.put<{
+    fastify.post<{
       Body: FarcasterCastResponse;
     }>("/content/references", async (request, reply) => {
       await service.addReferencedContent(request.body);
@@ -56,7 +56,7 @@ export const contentRoutes = async (fastify: FastifyInstance) => {
     fastify.post<{
       Body: GetContentReferencesRequest;
       Querystring: { cursor?: string };
-    }>("/content/references", async (request, reply) => {
+    }>("/content/references/by-type", async (request, reply) => {
       const data = await service.getContentReferences(
         request.body,
         request.query.cursor,
