@@ -205,7 +205,7 @@ export type SubmitFrameActionResponse = {
 };
 
 export type GetContentReferencesRequest = {
-  types: string[];
+  types?: string[];
   fids?: string[];
 };
 

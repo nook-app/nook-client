@@ -193,17 +193,19 @@ export class ContentService {
     cursor?: string,
   ): Promise<GetContentReferencesResponse> {
     const contentFilter = [];
-    for (const type of req.types) {
-      switch (type) {
-        case "image":
-          contentFilter.push(`"content"."type" LIKE 'image%'`);
-          break;
-        case "video":
-          contentFilter.push(`"content"."type" LIKE 'video%'`);
-          break;
-        case "frame":
-          contentFilter.push(`"content"."frame" IS NOT NULL`);
-          break;
+    if (req.types) {
+      for (const type of req.types) {
+        switch (type) {
+          case "image":
+            contentFilter.push(`"content"."type" LIKE 'image%'`);
+            break;
+          case "video":
+            contentFilter.push(`"content"."type" LIKE 'video%'`);
+            break;
+          case "frame":
+            contentFilter.push(`"content"."frame" IS NOT NULL`);
+            break;
+        }
       }
     }
 
@@ -217,24 +219,26 @@ export class ContentService {
       );
     }
     if (cursor) {
-      whereClause.push(`"timestamp" = '${this.decodeCursor(cursor)}'`);
+      whereClause.push(
+        `"timestamp" < '${this.decodeCursor(cursor)?.toISOString()}'`,
+      );
     }
 
-    const references = (await this.client.$queryRaw`
-      SELECT "FarcasterContentReference"."id",
-             "FarcasterContentReference"."fid",
-             "FarcasterContentReference"."timestamp",
-             "FarcasterContentReference"."type",
-             "content"."id" AS "content_id",
-             "content"."type" AS "content_type",
-             "content"."frame" AS "content_frame"
+    const whereClauseString =
+      whereClause.length > 0 ? `WHERE ${whereClause.join(" AND ")}` : "";
+
+    const query = `
+      SELECT "FarcasterContentReference".*, "content"."frame" AS "content_frame"
       FROM "FarcasterContentReference"
-      LEFT JOIN "FarcasterContent" AS "content" ON "FarcasterContentReference"."contentId" = "content"."id"
-      WHERE "FarcasterContentReference"."type" = 'EMBED'
-        ${whereClause.length > 0 ? `AND ${whereClause.join(" AND ")}` : ""}
+      LEFT JOIN "UrlContent" AS "content" ON "FarcasterContentReference"."uri" = "content"."uri"
+      ${whereClauseString}
       ORDER BY "FarcasterContentReference"."timestamp" DESC
       LIMIT ${MAX_PAGE_SIZE}
-    `) as FarcasterContentReference[];
+    `;
+
+    const references = await this.client.$queryRaw<FarcasterContentReference[]>(
+      Prisma.sql([query]),
+    );
 
     return {
       data: references.map((reference) => ({
@@ -254,13 +258,13 @@ export class ContentService {
     };
   }
 
-  decodeCursor(cursor?: string): { lt: Date } | undefined {
+  decodeCursor(cursor?: string): Date | undefined {
     if (!cursor) return;
     try {
       const decodedString = Buffer.from(cursor, "base64").toString("ascii");
       const decodedCursor = JSON.parse(decodedString);
       if (typeof decodedCursor === "object" && "timestamp" in decodedCursor) {
-        return { lt: new Date(decodedCursor.timestamp) };
+        return new Date(decodedCursor.timestamp);
       }
       console.error(
         "Decoded cursor does not match expected format:",
