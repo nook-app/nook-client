@@ -4,26 +4,71 @@ import { Nook, NookShelfType, UserFilterType } from "@nook/common/types";
 const run = async () => {
   const client = new PrismaClient();
 
-  const defaultNooks = await client.nook.findMany({
+  const user = await client.user.findUnique({
     where: {
+      fid: "262426",
+    },
+  });
+
+  if (!user) {
+    const date = new Date();
+    await client.user.create({
+      data: {
+        fid: "262426",
+        refreshToken: "",
+        siwfData: "",
+        createdAt: date,
+        updatedAt: date,
+        signedUpAt: date,
+        loggedInAt: date,
+      },
+    });
+  }
+
+  await createNook(client, HOME_NOOK);
+  await createNook(client, IMAGES_NOOK);
+  await createNook(client, FRAMES_NOOK);
+};
+
+const createNook = async (client: PrismaClient, nook: Omit<Nook, "id">) => {
+  const existingNook = await client.nook.findFirst({
+    where: {
+      name: nook.name,
       creatorFid: "262426",
     },
   });
 
-  if (!defaultNooks.find((nook) => nook.name === "Home")) {
-    await createNook(client, HOME_NOOK);
+  if (existingNook) {
+    await client.nookShelf.deleteMany({
+      where: {
+        nookId: existingNook.id,
+      },
+    });
+    await client.nook.update({
+      where: {
+        id: existingNook.id,
+      },
+      data: {
+        name: nook.name,
+        description: nook.description,
+        imageUrl: nook.imageUrl,
+        creatorFid: nook.creatorFid,
+        shelves: {
+          createMany: {
+            data: nook.shelves.map((shelf) => ({
+              name: shelf.name,
+              description: shelf.description,
+              type: shelf.type,
+              args: shelf.args,
+            })),
+            skipDuplicates: true,
+          },
+        },
+      },
+    });
+    return;
   }
 
-  if (!defaultNooks.find((nook) => nook.name === "Images")) {
-    await createNook(client, IMAGES_NOOK);
-  }
-
-  if (!defaultNooks.find((nook) => nook.name === "Frames")) {
-    await createNook(client, FRAMES_NOOK);
-  }
-};
-
-const createNook = async (client: PrismaClient, nook: Omit<Nook, "id">) => {
   await client.nook.create({
     data: {
       name: nook.name,
@@ -62,6 +107,7 @@ const HOME_NOOK: Omit<Nook, "id"> = {
             degree: 1,
           },
         },
+        replies: false,
       },
     },
     {
@@ -76,6 +122,7 @@ const HOME_NOOK: Omit<Nook, "id"> = {
             degree: 2,
           },
         },
+        replies: false,
       },
     },
     {
@@ -83,7 +130,9 @@ const HOME_NOOK: Omit<Nook, "id"> = {
       name: "Global",
       description: "New globally",
       type: NookShelfType.FarcasterFeed,
-      args: {},
+      args: {
+        replies: false,
+      },
     },
   ],
 };
@@ -110,6 +159,8 @@ const IMAGES_NOOK: Omit<Nook, "id"> = {
         contentFilter: {
           types: ["image"],
         },
+        displayMode: "media",
+        replies: false,
       },
     },
     {
@@ -127,6 +178,8 @@ const IMAGES_NOOK: Omit<Nook, "id"> = {
         contentFilter: {
           types: ["image"],
         },
+        displayMode: "media",
+        replies: false,
       },
     },
     {
@@ -138,6 +191,8 @@ const IMAGES_NOOK: Omit<Nook, "id"> = {
         contentFilter: {
           types: ["image"],
         },
+        displayMode: "media",
+        replies: false,
       },
     },
   ],
@@ -165,6 +220,8 @@ const FRAMES_NOOK: Omit<Nook, "id"> = {
         contentFilter: {
           frames: true,
         },
+        displayMode: "frame",
+        replies: false,
       },
     },
     {
@@ -182,6 +239,8 @@ const FRAMES_NOOK: Omit<Nook, "id"> = {
         contentFilter: {
           frames: true,
         },
+        displayMode: "frame",
+        replies: false,
       },
     },
     {
@@ -193,6 +252,8 @@ const FRAMES_NOOK: Omit<Nook, "id"> = {
         contentFilter: {
           frames: true,
         },
+        displayMode: "frame",
+        replies: false,
       },
     },
   ],

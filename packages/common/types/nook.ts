@@ -79,8 +79,15 @@ export type FarcasterFeedArgs = {
   channelFilter?: ChannelFilter;
   replies?: boolean;
   context?: FarcasterFeedContext;
+  displayMode?: FarcasterFeedDisplayMode;
 };
 
 export type FarcasterProfileArgs = {
   fid: string;
 };
+
+export type FarcasterFeedDisplayMode =
+  | "media"
+  | "frame"
+  | "replies"
+  | "default";

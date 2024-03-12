@@ -44,189 +44,6 @@ export class FarcasterService {
     this.contentClient = new ContentAPIClient();
   }
 
-  async getCastEngagement(hash: string): Promise<FarcasterCastEngagement> {
-    const [likes, recasts, replies, quotes] = await Promise.all([
-      this.getCastEngagementItem(hash, "likes"),
-      this.getCastEngagementItem(hash, "recasts"),
-      this.getCastEngagementItem(hash, "replies"),
-      this.getCastEngagementItem(hash, "quotes"),
-    ]);
-
-    return { likes, recasts, replies, quotes };
-  }
-
-  async getCastEngagementItem(
-    hash: string,
-    type: CastEngagementType,
-  ): Promise<number> {
-    const cached = await this.cache.getCastEngagement(hash, type);
-    if (cached !== undefined) return cached;
-
-    let count = 0;
-    switch (type) {
-      case "likes":
-        count = await this.client.farcasterCastReaction.count({
-          where: { targetHash: hash, reactionType: 1, deletedAt: null },
-        });
-        break;
-      case "recasts":
-        count = await this.client.farcasterCastReaction.count({
-          where: { targetHash: hash, reactionType: 2, deletedAt: null },
-        });
-        break;
-      case "replies":
-        count = await this.client.farcasterCast.count({
-          where: { parentHash: hash, deletedAt: null },
-        });
-        break;
-      case "quotes":
-        count = await this.client.farcasterCastEmbedCast.count({
-          where: { embedHash: hash, deletedAt: null },
-        });
-        break;
-    }
-
-    await this.cache.setCastEngagement(hash, type, count);
-
-    return count;
-  }
-
-  async getCastContext(
-    hash: string,
-    viewerFid?: string,
-  ): Promise<FarcasterCastContext | undefined> {
-    if (!viewerFid) return;
-
-    const [liked, recasted] = await Promise.all([
-      this.getCastContextItem(hash, "likes", viewerFid),
-      this.getCastContextItem(hash, "recasts", viewerFid),
-    ]);
-
-    return {
-      liked,
-      recasted,
-    };
-  }
-
-  async getCastContextItem(
-    hash: string,
-    type: CastContextType,
-    viewerFid: string,
-  ) {
-    const cached = await this.cache.getCastContext(hash, type, viewerFid);
-    if (cached !== undefined) return cached;
-
-    const reaction = await this.client.farcasterCastReaction.findFirst({
-      where: {
-        reactionType: type === "likes" ? 1 : 2,
-        fid: BigInt(viewerFid),
-        targetHash: hash,
-        deletedAt: null,
-      },
-    });
-
-    const reacted = !!reaction;
-    await this.cache.setCastContext(hash, type, viewerFid, reacted);
-    return reacted;
-  }
-
-  async getCastLikes(
-    hash: string,
-    cursor?: string,
-    viewerFid?: string,
-  ): Promise<GetFarcasterUsersResponse> {
-    const likes = await this.client.farcasterCastReaction.findMany({
-      where: {
-        targetHash: hash,
-        reactionType: 1,
-        timestamp: this.decodeCursor(cursor),
-        deletedAt: null,
-      },
-      orderBy: {
-        timestamp: "desc",
-      },
-      take: MAX_PAGE_SIZE,
-    });
-
-    const fids = likes.map((reaction) => reaction.fid.toString());
-    const users = await this.getUsers(fids, viewerFid);
-
-    return {
-      data: users,
-      nextCursor:
-        likes.length === MAX_PAGE_SIZE
-          ? this.encodeCursor({
-              timestamp: likes[likes.length - 1]?.timestamp.getTime(),
-            })
-          : undefined,
-    };
-  }
-
-  async getCastRecasts(
-    hash: string,
-    cursor?: string,
-    viewerFid?: string,
-  ): Promise<GetFarcasterUsersResponse> {
-    const recasts = await this.client.farcasterCastReaction.findMany({
-      where: {
-        targetHash: hash,
-        reactionType: 2,
-        timestamp: this.decodeCursor(cursor),
-        deletedAt: null,
-      },
-      orderBy: {
-        timestamp: "desc",
-      },
-      take: MAX_PAGE_SIZE,
-    });
-
-    const fids = recasts.map((reaction) => reaction.fid.toString());
-    const users = await this.getUsers(fids, viewerFid);
-
-    return {
-      data: users,
-      nextCursor:
-        recasts.length === MAX_PAGE_SIZE
-          ? this.encodeCursor({
-              timestamp: recasts[recasts.length - 1]?.timestamp.getTime(),
-            })
-          : undefined,
-    };
-  }
-
-  async getCastQuotes(
-    hash: string,
-    cursor?: string,
-    viewerFid?: string,
-  ): Promise<GetFarcasterCastsResponse> {
-    const embeds = await this.client.farcasterCastEmbedCast.findMany({
-      where: {
-        embedHash: hash,
-        timestamp: this.decodeCursor(cursor),
-        deletedAt: null,
-      },
-      orderBy: {
-        timestamp: "desc",
-      },
-      take: MAX_PAGE_SIZE,
-    });
-
-    const casts = await this.getCastsFromHashes(
-      embeds.map(({ embedHash }) => embedHash),
-      viewerFid,
-    );
-
-    return {
-      data: casts,
-      nextCursor:
-        casts.length === MAX_PAGE_SIZE
-          ? this.encodeCursor({
-              timestamp: casts[casts.length - 1]?.timestamp,
-            })
-          : undefined,
-    };
-  }
-
   async getFeed(
     req: FarcasterFeedArgs,
     cursor?: string,
@@ -390,6 +207,7 @@ export class FarcasterService {
       where: {
         timestamp: this.decodeCursor(cursor),
         parentHash: hash,
+        deletedAt: null,
       },
       orderBy: {
         timestamp: "desc",
@@ -980,6 +798,189 @@ export class FarcasterService {
         following.length === MAX_PAGE_SIZE
           ? this.encodeCursor({
               timestamp: following[following.length - 1]?.timestamp.getTime(),
+            })
+          : undefined,
+    };
+  }
+
+  async getCastEngagement(hash: string): Promise<FarcasterCastEngagement> {
+    const [likes, recasts, replies, quotes] = await Promise.all([
+      this.getCastEngagementItem(hash, "likes"),
+      this.getCastEngagementItem(hash, "recasts"),
+      this.getCastEngagementItem(hash, "replies"),
+      this.getCastEngagementItem(hash, "quotes"),
+    ]);
+
+    return { likes, recasts, replies, quotes };
+  }
+
+  async getCastEngagementItem(
+    hash: string,
+    type: CastEngagementType,
+  ): Promise<number> {
+    const cached = await this.cache.getCastEngagement(hash, type);
+    if (cached !== undefined) return cached;
+
+    let count = 0;
+    switch (type) {
+      case "likes":
+        count = await this.client.farcasterCastReaction.count({
+          where: { targetHash: hash, reactionType: 1, deletedAt: null },
+        });
+        break;
+      case "recasts":
+        count = await this.client.farcasterCastReaction.count({
+          where: { targetHash: hash, reactionType: 2, deletedAt: null },
+        });
+        break;
+      case "replies":
+        count = await this.client.farcasterCast.count({
+          where: { parentHash: hash, deletedAt: null },
+        });
+        break;
+      case "quotes":
+        count = await this.client.farcasterCastEmbedCast.count({
+          where: { embedHash: hash, deletedAt: null },
+        });
+        break;
+    }
+
+    await this.cache.setCastEngagement(hash, type, count);
+
+    return count;
+  }
+
+  async getCastContext(
+    hash: string,
+    viewerFid?: string,
+  ): Promise<FarcasterCastContext | undefined> {
+    if (!viewerFid) return;
+
+    const [liked, recasted] = await Promise.all([
+      this.getCastContextItem(hash, "likes", viewerFid),
+      this.getCastContextItem(hash, "recasts", viewerFid),
+    ]);
+
+    return {
+      liked,
+      recasted,
+    };
+  }
+
+  async getCastContextItem(
+    hash: string,
+    type: CastContextType,
+    viewerFid: string,
+  ) {
+    const cached = await this.cache.getCastContext(hash, type, viewerFid);
+    if (cached !== undefined) return cached;
+
+    const reaction = await this.client.farcasterCastReaction.findFirst({
+      where: {
+        reactionType: type === "likes" ? 1 : 2,
+        fid: BigInt(viewerFid),
+        targetHash: hash,
+        deletedAt: null,
+      },
+    });
+
+    const reacted = !!reaction;
+    await this.cache.setCastContext(hash, type, viewerFid, reacted);
+    return reacted;
+  }
+
+  async getCastLikes(
+    hash: string,
+    cursor?: string,
+    viewerFid?: string,
+  ): Promise<GetFarcasterUsersResponse> {
+    const likes = await this.client.farcasterCastReaction.findMany({
+      where: {
+        targetHash: hash,
+        reactionType: 1,
+        timestamp: this.decodeCursor(cursor),
+        deletedAt: null,
+      },
+      orderBy: {
+        timestamp: "desc",
+      },
+      take: MAX_PAGE_SIZE,
+    });
+
+    const fids = likes.map((reaction) => reaction.fid.toString());
+    const users = await this.getUsers(fids, viewerFid);
+
+    return {
+      data: users,
+      nextCursor:
+        likes.length === MAX_PAGE_SIZE
+          ? this.encodeCursor({
+              timestamp: likes[likes.length - 1]?.timestamp.getTime(),
+            })
+          : undefined,
+    };
+  }
+
+  async getCastRecasts(
+    hash: string,
+    cursor?: string,
+    viewerFid?: string,
+  ): Promise<GetFarcasterUsersResponse> {
+    const recasts = await this.client.farcasterCastReaction.findMany({
+      where: {
+        targetHash: hash,
+        reactionType: 2,
+        timestamp: this.decodeCursor(cursor),
+        deletedAt: null,
+      },
+      orderBy: {
+        timestamp: "desc",
+      },
+      take: MAX_PAGE_SIZE,
+    });
+
+    const fids = recasts.map((reaction) => reaction.fid.toString());
+    const users = await this.getUsers(fids, viewerFid);
+
+    return {
+      data: users,
+      nextCursor:
+        recasts.length === MAX_PAGE_SIZE
+          ? this.encodeCursor({
+              timestamp: recasts[recasts.length - 1]?.timestamp.getTime(),
+            })
+          : undefined,
+    };
+  }
+
+  async getCastQuotes(
+    hash: string,
+    cursor?: string,
+    viewerFid?: string,
+  ): Promise<GetFarcasterCastsResponse> {
+    const embeds = await this.client.farcasterCastEmbedCast.findMany({
+      where: {
+        embedHash: hash,
+        timestamp: this.decodeCursor(cursor),
+        deletedAt: null,
+      },
+      orderBy: {
+        timestamp: "desc",
+      },
+      take: MAX_PAGE_SIZE,
+    });
+
+    const casts = await this.getCastsFromHashes(
+      embeds.map(({ embedHash }) => embedHash),
+      viewerFid,
+    );
+
+    return {
+      data: casts,
+      nextCursor:
+        casts.length === MAX_PAGE_SIZE
+          ? this.encodeCursor({
+              timestamp: casts[casts.length - 1]?.timestamp,
             })
           : undefined,
     };
