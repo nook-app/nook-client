@@ -617,6 +617,8 @@ export class FarcasterService {
   }
 
   async getUsers(fids: string[], viewerFid?: string): Promise<FarcasterUser[]> {
+    if (fids.length === 0) return [];
+
     const users = await this.cache.getUsers(fids);
     const uncachedFids = fids.filter(
       (fid) => !users.some((user) => user.fid === fid),

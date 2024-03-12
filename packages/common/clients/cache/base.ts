@@ -109,6 +109,7 @@ export class RedisClient {
   }
 
   async mgetJson(keys: string[]) {
+    if (keys.length === 0) return [];
     const jsons = await this.redis.mget(keys);
     return jsons.map((json) => (json ? JSON.parse(json, reviver) : undefined));
   }
@@ -120,6 +121,7 @@ export class RedisClient {
 
   // biome-ignore lint/suspicious/noExplicitAny: generic setter
   async msetJson(pairs: [string, any][]) {
+    if (pairs.length === 0) return;
     const pipeline = this.redis.pipeline();
     for (const [key, value] of pairs) {
       pipeline.set(key, JSON.stringify(value, replacer));

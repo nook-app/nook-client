@@ -99,6 +99,8 @@ model FarcasterCast {
     @@index([timestamp, deletedAt, parentHash])
     @@index([timestamp, deletedAt, fid, parentHash])
     @@index([timestamp, deletedAt, parentUrl, parentHash])
+    @@index([fid, deletedAt, parentHash, timestamp])
+    @@index([parentUrl, deletedAt, parentHash, timestamp])
 }
 
 model FarcasterCastMention {
