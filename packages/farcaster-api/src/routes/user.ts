@@ -25,17 +25,17 @@ export const userRoutes = async (fastify: FastifyInstance) => {
     fastify.get<{
       Params: GetFarcasterUserRequest;
     }>("/users/:fid", async (request, reply) => {
-      const user = await service.getUser(
-        request.params.fid,
+      const users = await service.getUsers(
+        [request.params.fid],
         request.headers["x-viewer-fid"] as string,
       );
 
-      if (!user) {
+      if (users.length === 0) {
         reply.status(404).send({ message: "User not found" });
         return;
       }
 
-      reply.send(user);
+      reply.send(users[0]);
     });
 
     fastify.get<{

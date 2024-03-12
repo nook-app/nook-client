@@ -67,7 +67,7 @@ export class RedisClient {
       }
       return num;
     }
-    return 0;
+    return;
   }
 
   async setNumber(key: string, value: number) {
@@ -108,9 +108,23 @@ export class RedisClient {
     }
   }
 
+  async mgetJson(keys: string[]) {
+    const jsons = await this.redis.mget(keys);
+    return jsons.map((json) => (json ? JSON.parse(json, reviver) : undefined));
+  }
+
   // biome-ignore lint/suspicious/noExplicitAny: generic setter
   async setJson(key: string, value: any) {
     await this.redis.set(key, JSON.stringify(value, replacer));
+  }
+
+  // biome-ignore lint/suspicious/noExplicitAny: generic setter
+  async msetJson(pairs: [string, any][]) {
+    const pipeline = this.redis.pipeline();
+    for (const [key, value] of pairs) {
+      pipeline.set(key, JSON.stringify(value, replacer));
+    }
+    await pipeline.exec();
   }
 
   // biome-ignore lint/suspicious/noExplicitAny: generic setter

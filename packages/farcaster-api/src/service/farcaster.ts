@@ -15,14 +15,12 @@ import {
   FarcasterUser,
   FarcasterUserContext,
   FarcasterUserEngagement,
-  GetFarcasterCastsByFidsRequest,
-  GetFarcasterCastsByFollowingRequest,
-  GetFarcasterCastsByChannelRequest,
   UserEngagementType,
   GetFarcasterCastsResponse,
   GetFarcasterUsersResponse,
   UrlContentResponse,
-  GetFarcasterCastByContentTypeRequest,
+  FarcasterFeedArgs,
+  UserFilterType,
 } from "@nook/common/types";
 import {
   getCastEmbeds,
@@ -46,196 +44,6 @@ export class FarcasterService {
     this.contentClient = new ContentAPIClient();
   }
 
-  async getCasts(
-    hashes: string[],
-    viewerFid?: string,
-  ): Promise<FarcasterCastResponse[]> {
-    const casts = await Promise.all(
-      hashes.map((hash) => this.getCast(hash, undefined, viewerFid)),
-    );
-    return casts.filter(Boolean) as FarcasterCastResponse[];
-  }
-
-  async getCastReplies(
-    hash: string,
-    cursor?: string,
-    viewerFid?: string,
-  ): Promise<GetFarcasterCastsResponse> {
-    const rawCasts = await this.client.farcasterCast.findMany({
-      where: {
-        timestamp: this.decodeCursor(cursor),
-        parentHash: hash,
-      },
-      orderBy: {
-        timestamp: "desc",
-      },
-      take: MAX_PAGE_SIZE,
-    });
-
-    const casts = (
-      await Promise.all(
-        rawCasts.map((rawCast) =>
-          this.getCast(rawCast.hash, rawCast, viewerFid),
-        ),
-      )
-    ).filter(Boolean) as FarcasterCastResponse[];
-
-    return {
-      data: casts,
-      nextCursor:
-        casts.length === MAX_PAGE_SIZE
-          ? this.encodeCursor({
-              timestamp: casts[casts.length - 1]?.timestamp,
-            })
-          : undefined,
-    };
-  }
-
-  async getCast(
-    hash: string,
-    data?: DBFarcasterCast,
-    viewerFid?: string,
-  ): Promise<FarcasterCastResponse | undefined> {
-    const rawCast = await this.getRawCast(hash, data, viewerFid);
-    if (!rawCast) return;
-
-    const fids = new Set<string>();
-    fids.add(rawCast.fid);
-    for (const mention of rawCast.mentions) {
-      fids.add(mention.fid);
-    }
-
-    const hashes = new Set<string>();
-    if (rawCast.parentHash) {
-      hashes.add(rawCast.parentHash);
-    }
-    for (const embedHash of rawCast.embedHashes) {
-      hashes.add(embedHash);
-    }
-
-    const potentialChannelMentions = rawCast.text
-      .split(" ")
-      .filter((word) => word.startsWith("/"));
-    const channelIds = new Set<string>();
-
-    for (const mention of potentialChannelMentions) {
-      channelIds.add(mention.slice(1));
-    }
-
-    const [users, casts, embeds, channel, channelsById] = await Promise.all([
-      this.getUsers(Array.from(fids), viewerFid),
-      this.getCasts(Array.from(hashes), viewerFid),
-      this.contentClient.getContents(rawCast.embedUrls),
-      rawCast.parentUrl
-        ? this.getChannel(rawCast.parentUrl, viewerFid)
-        : undefined,
-      this.getChannelsById(Array.from(channelIds)),
-    ]);
-
-    const userMap = users.reduce(
-      (acc, user) => {
-        acc[user.fid] = user;
-        return acc;
-      },
-      {} as Record<string, FarcasterUser>,
-    );
-
-    const castMap = casts.reduce(
-      (acc, cast) => {
-        acc[cast.hash] = cast;
-        return acc;
-      },
-      {} as Record<string, FarcasterCastResponse>,
-    );
-
-    const channelMap = channelsById.concat(channelsById).reduce(
-      (acc, channel) => {
-        acc[channel.channelId] = channel;
-        return acc;
-      },
-      {} as Record<string, Channel>,
-    );
-
-    return {
-      ...rawCast,
-      user: userMap[rawCast.fid],
-      embeds: embeds.data.filter(Boolean) as UrlContentResponse[],
-      mentions: rawCast.mentions.map((mention) => ({
-        user: userMap[mention.fid],
-        position: mention.position,
-      })),
-      embedCasts: rawCast.embedHashes
-        .map((hash) => castMap[hash])
-        .filter(Boolean),
-      parent: rawCast.parentHash ? castMap[rawCast.parentHash] : undefined,
-      channel: rawCast.parentUrl ? channel : undefined,
-      channelMentions: potentialChannelMentions
-        .map((mention) => {
-          const channel = channelMap[mention.slice(1)];
-          if (!channel) return;
-          return {
-            channel,
-            position: Buffer.from(
-              rawCast.text.slice(0, rawCast.text.indexOf(mention)),
-            ).length.toString(),
-          };
-        })
-        .filter(Boolean) as { channel: Channel; position: string }[],
-    };
-  }
-
-  async getRawCast(
-    hash: string,
-    data?: DBFarcasterCast,
-    viewerFid?: string,
-  ): Promise<FarcasterCast | undefined> {
-    const [cast, engagement, context] = await Promise.all([
-      this.getCastBase(hash, data),
-      this.getCastEngagement(hash),
-      this.getCastContext(hash, viewerFid),
-    ]);
-
-    if (!cast) return;
-
-    return {
-      ...cast,
-      engagement,
-      context,
-    };
-  }
-
-  async getCastBase(
-    hash: string,
-    data?: DBFarcasterCast,
-  ): Promise<BaseFarcasterCast | undefined> {
-    const cached = await this.cache.getCast(hash);
-    if (cached) return cached;
-
-    const cast =
-      data ||
-      (await this.client.farcasterCast.findFirst({
-        where: { hash, deletedAt: null },
-      }));
-
-    if (!cast) return;
-
-    const baseCast: BaseFarcasterCast = {
-      hash: cast.hash,
-      fid: cast.fid.toString(),
-      timestamp: cast.timestamp.getTime(),
-      text: cast.text,
-      mentions: getMentions(cast),
-      embedHashes: getCastEmbeds(cast).map(({ hash }) => hash),
-      embedUrls: getEmbedUrls(cast),
-      parentHash: cast.parentHash || undefined,
-      parentUrl: cast.parentUrl || undefined,
-    };
-
-    await this.cache.setCast(hash, baseCast);
-
-    return baseCast;
-  }
-
   async getCastEngagement(hash: string): Promise<FarcasterCastEngagement> {
     const [likes, recasts, replies, quotes] = await Promise.all([
       this.getCastEngagementItem(hash, "likes"),
@@ -252,7 +60,7 @@ export class FarcasterService {
     type: CastEngagementType,
   ): Promise<number> {
     const cached = await this.cache.getCastEngagement(hash, type);
-    if (cached) return cached;
+    if (cached !== undefined) return cached;
 
     let count = 0;
     switch (type) {
@@ -391,7 +199,7 @@ export class FarcasterService {
     cursor?: string,
     viewerFid?: string,
   ): Promise<GetFarcasterCastsResponse> {
-    const rawCasts = await this.client.farcasterCastEmbedCast.findMany({
+    const embeds = await this.client.farcasterCastEmbedCast.findMany({
       where: {
         embedHash: hash,
         timestamp: this.decodeCursor(cursor),
@@ -403,13 +211,10 @@ export class FarcasterService {
       take: MAX_PAGE_SIZE,
     });
 
-    const casts = (
-      await Promise.all(
-        rawCasts.map((rawCast) =>
-          this.getCast(rawCast.hash, undefined, viewerFid),
-        ),
-      )
-    ).filter(Boolean) as FarcasterCastResponse[];
+    const casts = await this.getCastsFromHashes(
+      embeds.map(({ embedHash }) => embedHash),
+      viewerFid,
+    );
 
     return {
       data: casts,
@@ -422,16 +227,64 @@ export class FarcasterService {
     };
   }
 
-  async getUserFollowers(
-    fid: string,
+  async getFeed(
+    req: FarcasterFeedArgs,
     cursor?: string,
-    viewerFid?: string,
-  ): Promise<GetFarcasterUsersResponse> {
-    const followers = await this.client.farcasterLink.findMany({
+  ): Promise<GetFarcasterCastsResponse> {
+    const fids = await this.getFeedFids(req);
+
+    if (req.contentFilter) {
+      const references = await this.contentClient.getContentReferences(
+        {
+          ...req.contentFilter,
+          fids,
+        },
+        cursor,
+        req.context?.viewerFid,
+      );
+      const hashes = references.data.map((i) => i.hash);
+      const casts = await this.getCastsFromHashes(
+        hashes,
+        req.context?.viewerFid,
+      );
+      const castMap = casts.reduce(
+        (acc, cast) => {
+          acc[cast.hash] = cast;
+          return acc;
+        },
+        {} as Record<string, FarcasterCastResponse>,
+      );
+
+      return {
+        data: references.data.map((ref) => ({
+          ...castMap[ref.hash],
+          reference: ref.uri,
+        })),
+        nextCursor: references.nextCursor,
+      };
+    }
+
+    let parentUrls: string[] | undefined;
+    if (req.channelFilter) {
+      const channels = await this.getChannelsById(req.channelFilter.channelIds);
+      parentUrls = channels.map((channel) => channel.url);
+    }
+
+    const rawCasts = await this.client.farcasterCast.findMany({
       where: {
+        fid: fids ? { in: fids.map((fid) => BigInt(fid)) } : undefined,
+        parentUrl: parentUrls
+          ? {
+              in: parentUrls,
+            }
+          : undefined,
         timestamp: this.decodeCursor(cursor),
-        linkType: "follow",
-        targetFid: BigInt(fid),
+        parentHash:
+          req.replies === true
+            ? { not: null }
+            : req.replies === false
+              ? null
+              : undefined,
         deletedAt: null,
       },
       orderBy: {
@@ -440,31 +293,103 @@ export class FarcasterService {
       take: MAX_PAGE_SIZE,
     });
 
-    const fids = followers.map((link) => link.fid.toString());
-    const users = await this.getUsers(fids, viewerFid);
+    const casts = await this.getCastsFromData(rawCasts, req.context?.viewerFid);
 
     return {
-      data: users,
+      data: casts,
       nextCursor:
-        followers.length === MAX_PAGE_SIZE
+        casts.length === MAX_PAGE_SIZE
           ? this.encodeCursor({
-              timestamp: followers[followers.length - 1]?.timestamp.getTime(),
+              timestamp: casts[casts.length - 1]?.timestamp,
             })
           : undefined,
     };
   }
 
-  async getUserFollowing(
-    fid: string,
-    cursor?: string,
-    viewerFid?: string,
-  ): Promise<GetFarcasterUsersResponse> {
+  async getFeedFids(req: FarcasterFeedArgs): Promise<string[] | undefined> {
+    if (!req.userFilter || !req.context?.viewerFid) return;
+
+    switch (req.userFilter.type) {
+      case UserFilterType.Fids:
+        return req.userFilter.args.fids;
+      case UserFilterType.Following:
+        return await this.getFollowingFids(
+          [req.context.viewerFid],
+          req.userFilter.args.degree,
+        );
+      default:
+        return undefined;
+    }
+  }
+
+  async getFollowingFids(fids: string[], degree?: number) {
     const following = await this.client.farcasterLink.findMany({
       where: {
-        timestamp: this.decodeCursor(cursor),
         linkType: "follow",
-        fid: BigInt(fid),
+        fid: {
+          in: fids.map((fid) => BigInt(fid)),
+        },
         deletedAt: null,
+      },
+    });
+
+    const followingFids = following.map((link) => link.targetFid.toString());
+
+    if (!degree || degree === 1) {
+      return followingFids;
+    }
+
+    const followingOfFollowing = await this.client.farcasterLink.findMany({
+      where: {
+        linkType: "follow",
+        fid: {
+          in: following.map((link) => link.targetFid),
+        },
+        deletedAt: null,
+      },
+    });
+
+    const followingOfFollowingFids = followingOfFollowing.map((link) =>
+      link.targetFid.toString(),
+    );
+
+    if (degree === 2) {
+      return followingOfFollowingFids.filter(
+        (fid) => !followingFids.includes(fid.toString()) && !fids.includes(fid),
+      );
+    }
+
+    const followingOfFollowingOfFollowing =
+      await this.client.farcasterLink.findMany({
+        where: {
+          linkType: "follow",
+          fid: {
+            in: followingOfFollowing.map((link) => link.targetFid),
+          },
+          deletedAt: null,
+        },
+      });
+
+    const followingOfFollowingOfFollowingFids =
+      followingOfFollowingOfFollowing.map((link) => link.targetFid.toString());
+
+    return followingOfFollowingOfFollowingFids.filter(
+      (fid) =>
+        !followingFids.includes(fid.toString()) &&
+        !followingOfFollowingFids.includes(fid.toString()) &&
+        !fids.includes(fid),
+    );
+  }
+
+  async getCastReplies(
+    hash: string,
+    cursor?: string,
+    viewerFid?: string,
+  ): Promise<GetFarcasterCastsResponse> {
+    const data = await this.client.farcasterCast.findMany({
+      where: {
+        timestamp: this.decodeCursor(cursor),
+        parentHash: hash,
       },
       orderBy: {
         timestamp: "desc",
@@ -472,298 +397,234 @@ export class FarcasterService {
       take: MAX_PAGE_SIZE,
     });
 
-    const fids = following.map((link) => link.targetFid.toString());
-    const users = await this.getUsers(fids, viewerFid);
+    const casts = await this.getCastsFromData(data, viewerFid);
 
     return {
-      data: users,
+      data: casts,
       nextCursor:
-        following.length === MAX_PAGE_SIZE
+        casts.length === MAX_PAGE_SIZE
           ? this.encodeCursor({
-              timestamp: following[following.length - 1]?.timestamp.getTime(),
+              timestamp: casts[casts.length - 1]?.timestamp,
             })
           : undefined,
     };
   }
 
-  async getUsers(fids: string[], viewerFid?: string): Promise<FarcasterUser[]> {
-    const users = await Promise.all(
-      fids.map((fid) => this.getUser(fid, viewerFid)),
-    );
-    return users.filter(Boolean) as FarcasterUser[];
+  async getCastsFromHashes(
+    hashes: string[],
+    viewerFid?: string,
+  ): Promise<FarcasterCastResponse[]> {
+    const casts = (
+      await Promise.all(hashes.map((hash) => this.getRawCast(hash, viewerFid)))
+    ).filter(Boolean) as FarcasterCast[];
+
+    return await this.getCasts(casts, viewerFid);
   }
 
-  async getUser(
-    fid: string,
+  async getRawCast(
+    hash: string,
     viewerFid?: string,
-  ): Promise<FarcasterUser | undefined> {
-    const [user, engagement, context] = await Promise.all([
-      this.getUserBase(fid),
-      this.getUserEngagement(fid),
-      this.getUserContext(fid, viewerFid),
+  ): Promise<FarcasterCast | undefined> {
+    const [cast, engagement, context] = await Promise.all([
+      this.getCastBase(hash),
+      this.getCastEngagement(hash),
+      this.getCastContext(hash, viewerFid),
     ]);
 
-    if (!user) return;
+    if (!cast) return;
 
     return {
-      ...user,
+      ...cast,
       engagement,
       context,
     };
   }
 
-  async getUserBase(fid: string): Promise<BaseFarcasterUser | undefined> {
-    const cached = await this.cache.getUser(fid);
+  async getCastBase(hash: string): Promise<BaseFarcasterCast | undefined> {
+    const cached = await this.cache.getCast(hash);
     if (cached) return cached;
 
-    const userData = await this.client.farcasterUserData.findMany({
-      where: { fid: BigInt(fid) },
+    const cast = await this.client.farcasterCast.findFirst({
+      where: { hash, deletedAt: null },
     });
-    if (!userData) {
-      throw new Error(`Could not find user data for fid ${fid}`);
-    }
 
-    const username = userData.find((d) => d.type === UserDataType.USERNAME);
-    const pfp = userData.find((d) => d.type === UserDataType.PFP);
-    const displayName = userData.find((d) => d.type === UserDataType.DISPLAY);
-    const bio = userData.find((d) => d.type === UserDataType.BIO);
-    const url = userData.find((d) => d.type === UserDataType.URL);
+    if (!cast) return;
 
-    const baseUser: BaseFarcasterUser = {
-      fid,
-      username: username?.value,
-      pfp: pfp?.value,
-      displayName: displayName?.value,
-      bio: bio?.value,
-      url: url?.value,
+    const baseCast: BaseFarcasterCast = {
+      hash: cast.hash,
+      fid: cast.fid.toString(),
+      timestamp: cast.timestamp.getTime(),
+      text: cast.text,
+      mentions: getMentions(cast),
+      embedHashes: getCastEmbeds(cast).map(({ hash }) => hash),
+      embedUrls: getEmbedUrls(cast),
+      parentHash: cast.parentHash || undefined,
+      parentUrl: cast.parentUrl || undefined,
     };
 
-    await this.cache.setUser(fid, baseUser);
-
-    return baseUser;
+    await this.cache.setCast(hash, baseCast);
+    return baseCast;
   }
 
-  async getUserEngagement(fid: string): Promise<FarcasterUserEngagement> {
-    const [followers, following] = await Promise.all([
-      this.getUserEngagementItem(fid, "followers"),
-      this.getUserEngagementItem(fid, "following"),
+  async getCastsFromData(
+    data: DBFarcasterCast[],
+    viewerFid?: string,
+  ): Promise<FarcasterCastResponse[]> {
+    const casts = (
+      await Promise.all(
+        data.map(async (cast) => {
+          const [engagement, context] = await Promise.all([
+            this.getCastEngagement(cast.hash),
+            this.getCastContext(cast.hash, viewerFid),
+          ]);
+          return {
+            hash: cast.hash,
+            fid: cast.fid.toString(),
+            timestamp: cast.timestamp.getTime(),
+            text: cast.text,
+            mentions: getMentions(cast),
+            embedHashes: getCastEmbeds(cast).map(({ hash }) => hash),
+            embedUrls: getEmbedUrls(cast),
+            parentHash: cast.parentHash || undefined,
+            parentUrl: cast.parentUrl || undefined,
+            engagement,
+            context,
+          };
+        }),
+      )
+    ).filter(Boolean) as FarcasterCast[];
+
+    return await this.getCasts(casts, viewerFid);
+  }
+
+  async getCasts(casts: FarcasterCast[], viewerFid?: string) {
+    const hashes = new Set<string>();
+    for (const rawCast of casts) {
+      if (rawCast.parentHash) {
+        hashes.add(rawCast.parentHash);
+      }
+      for (const embedHash of rawCast.embedHashes) {
+        hashes.add(embedHash);
+      }
+    }
+
+    const relatedRawCasts = (
+      await Promise.all(
+        Array.from(hashes).map((hash) => this.getRawCast(hash, viewerFid)),
+      )
+    ).filter(Boolean) as FarcasterCast[];
+
+    const allCasts = relatedRawCasts.concat(casts);
+
+    const fids = new Set<string>();
+    for (const cast of allCasts) {
+      fids.add(cast.fid);
+      for (const mention of cast.mentions) {
+        fids.add(mention.fid);
+      }
+    }
+
+    const channelIds = new Set<string>();
+    for (const cast of allCasts) {
+      const potentialChannelMentions = cast.text
+        .split(" ")
+        .filter((word) => word.startsWith("/"));
+      for (const mention of potentialChannelMentions) {
+        const channelId = mention.slice(1).trim();
+        if (channelId) channelIds.add(channelId);
+      }
+    }
+
+    const channelUrls = new Set<string>();
+    for (const cast of allCasts) {
+      if (cast.parentUrl) {
+        channelUrls.add(cast.parentUrl);
+      }
+    }
+
+    const embedUrls = new Set<string>();
+    for (const cast of allCasts) {
+      for (const embedUrl of cast.embedUrls) {
+        embedUrls.add(embedUrl);
+      }
+    }
+
+    const [users, embeds, channelsByUrl, channelsById] = await Promise.all([
+      this.getUsers(Array.from(fids), viewerFid),
+      this.contentClient.getContents(Array.from(embedUrls)),
+      this.getChannels(Array.from(channelUrls)),
+      this.getChannelsById(Array.from(channelIds)),
     ]);
 
-    return { followers, following };
-  }
-
-  async getUserEngagementItem(
-    fid: string,
-    type: UserEngagementType,
-  ): Promise<number> {
-    const cached = await this.cache.getUserEngagement(fid, type);
-    if (cached) return cached;
-
-    let count = 0;
-    switch (type) {
-      case "followers":
-        count = await this.client.farcasterLink.count({
-          where: {
-            linkType: "follow",
-            targetFid: BigInt(fid),
-            deletedAt: null,
-          },
-        });
-        break;
-      case "following":
-        count = await this.client.farcasterLink.count({
-          where: { linkType: "follow", fid: BigInt(fid), deletedAt: null },
-        });
-        break;
-    }
-
-    await this.cache.setUserEngagement(fid, type, count);
-
-    return count;
-  }
-
-  async getUserContext(
-    fid: string,
-    viewerFid?: string,
-  ): Promise<FarcasterUserContext | undefined> {
-    if (!viewerFid) return;
-
-    const cached = await this.cache.getUserContext(viewerFid, "following", fid);
-    if (cached) return { following: true };
-
-    const link = await this.client.farcasterLink.findFirst({
-      where: {
-        linkType: "follow",
-        fid: BigInt(viewerFid),
-        targetFid: BigInt(fid),
-        deletedAt: null,
+    const userMap = users.reduce(
+      (acc, user) => {
+        acc[user.fid] = user;
+        return acc;
       },
-    });
-
-    const linked = !!link;
-    await this.cache.setUserContext(viewerFid, "following", fid, linked);
-    return { following: linked };
-  }
-
-  async getCastsByChannel(
-    request: GetFarcasterCastsByChannelRequest,
-    viewerFid?: string,
-  ): Promise<GetFarcasterCastsResponse> {
-    const channel = await this.getChannelById(request.id);
-    if (!channel) return { data: [] };
-
-    const rawCasts = await this.client.farcasterCast.findMany({
-      where: {
-        parentUrl: channel.url,
-        timestamp: this.decodeCursor(request.cursor),
-        parentHash:
-          request.replies === true
-            ? { not: null }
-            : request.replies === false
-              ? null
-              : undefined,
-        deletedAt: null,
-      },
-      orderBy: {
-        timestamp: "desc",
-      },
-      take: MAX_PAGE_SIZE,
-    });
-
-    const casts = (
-      await Promise.all(
-        rawCasts.map((rawCast) =>
-          this.getCast(rawCast.hash, rawCast, viewerFid),
-        ),
-      )
-    ).filter(Boolean) as FarcasterCastResponse[];
-
-    return {
-      data: casts,
-      nextCursor:
-        casts.length === MAX_PAGE_SIZE
-          ? this.encodeCursor({
-              timestamp: casts[casts.length - 1]?.timestamp,
-            })
-          : undefined,
-    };
-  }
-
-  async getCastsByFids(
-    request: GetFarcasterCastsByFidsRequest,
-    viewerFid?: string,
-  ): Promise<GetFarcasterCastsResponse> {
-    const rawCasts = await this.client.farcasterCast.findMany({
-      where: {
-        fid: {
-          in: request.fids.map((fid) => BigInt(fid)),
-        },
-        timestamp: {
-          ...(request.minTimestamp
-            ? { gt: new Date(request.minTimestamp) }
-            : {}),
-          ...this.decodeCursor(request.cursor),
-        },
-        parentHash:
-          request.replies === true
-            ? { not: null }
-            : request.replies === false
-              ? null
-              : undefined,
-        deletedAt: null,
-      },
-      orderBy: {
-        timestamp: "desc",
-      },
-      take: request.limit ?? MAX_PAGE_SIZE,
-    });
-
-    const casts = (
-      await Promise.all(
-        rawCasts.map((rawCast) =>
-          this.getCast(rawCast.hash, rawCast, viewerFid),
-        ),
-      )
-    ).filter(Boolean) as FarcasterCastResponse[];
-
-    return {
-      data: casts,
-      nextCursor:
-        casts.length === MAX_PAGE_SIZE
-          ? this.encodeCursor({
-              timestamp: casts[casts.length - 1]?.timestamp,
-            })
-          : undefined,
-    };
-  }
-
-  async getCastsByFollowing(
-    request: GetFarcasterCastsByFollowingRequest,
-    viewerFid?: string,
-  ): Promise<GetFarcasterCastsResponse> {
-    const following = await this.getFollowingFids(request.fid);
-    return await this.getCastsByFids(
-      {
-        fids: following,
-        cursor: request.cursor,
-        replies: request.replies,
-        minTimestamp: request.minTimestamp,
-        limit: request.limit,
-      },
-      viewerFid,
-    );
-  }
-
-  async getCastsByContentType(
-    request: GetFarcasterCastByContentTypeRequest,
-    viewerFid?: string,
-  ): Promise<GetFarcasterCastsResponse> {
-    let fids: string[] | undefined;
-    if (request.followerFid) {
-      fids = await this.getFollowingFids(request.followerFid);
-    }
-
-    const references = await this.contentClient.getContentReferences(
-      {
-        ...request,
-        fids: fids || (request.fid ? [request.fid] : undefined),
-      },
-      request.cursor,
-      viewerFid,
+      {} as Record<string, FarcasterUser>,
     );
 
-    const casts = await this.getCasts(
-      references.data.map((i) => i.hash),
-      viewerFid,
+    const channelByIdMap = channelsById.reduce(
+      (acc, channel) => {
+        acc[channel.channelId] = channel;
+        return acc;
+      },
+      {} as Record<string, Channel>,
     );
 
-    const castMap = casts.reduce(
+    const channelByUrlMap = channelsByUrl.reduce(
+      (acc, channel) => {
+        acc[channel.url] = channel;
+        return acc;
+      },
+      {} as Record<string, Channel>,
+    );
+
+    const embedMap = embeds.data.reduce(
+      (acc, embed) => {
+        acc[embed.uri] = embed;
+        return acc;
+      },
+      {} as Record<string, UrlContentResponse>,
+    );
+
+    const castMap = allCasts.reduce(
       (acc, cast) => {
-        acc[cast.hash] = cast;
+        const potentialChannelMentions = cast.text
+          .split(" ")
+          .filter((word) => word.startsWith("/"));
+        acc[cast.hash] = {
+          ...cast,
+          user: userMap[cast.fid],
+          embeds: cast.embedUrls
+            .map((embed) => embedMap[embed])
+            .filter(Boolean),
+          mentions: cast.mentions.map((mention) => ({
+            user: userMap[mention.fid],
+            position: mention.position,
+          })),
+          embedCasts: cast.embedHashes.map((hash) => acc[hash]).filter(Boolean),
+          parent: cast.parentHash ? acc[cast.parentHash] : undefined,
+          channel: cast.parentUrl ? channelByUrlMap[cast.parentUrl] : undefined,
+          channelMentions: potentialChannelMentions
+            .map((mention) => {
+              const channel = channelByIdMap[mention.slice(1)];
+              if (!channel) return;
+              return {
+                channel,
+                position: Buffer.from(
+                  cast.text.slice(0, cast.text.indexOf(mention)),
+                ).length.toString(),
+              };
+            })
+            .filter(Boolean) as { channel: Channel; position: string }[],
+        };
         return acc;
       },
       {} as Record<string, FarcasterCastResponse>,
     );
 
-    return {
-      data: references.data.map((ref) => ({
-        ...castMap[ref.hash],
-        reference: ref.uri,
-      })),
-      nextCursor: references.nextCursor,
-    };
-  }
-
-  async getFollowingFids(fid: string) {
-    const following = await this.client.farcasterLink.findMany({
-      where: {
-        linkType: "follow",
-        fid: BigInt(fid),
-        deletedAt: null,
-      },
-    });
-
-    return following.map((link) => link.targetFid.toString());
+    return casts.map((cast) => castMap[cast.hash]);
   }
 
   async searchChannels(query: string) {
@@ -934,6 +795,194 @@ export class FarcasterService {
     });
 
     return channel;
+  }
+
+  async getUsers(fids: string[], viewerFid?: string): Promise<FarcasterUser[]> {
+    const users = await this.cache.getUsers(fids);
+    const uncachedFids = fids.filter(
+      (fid) => !users.some((user) => user.fid === fid),
+    );
+
+    if (uncachedFids.length > 0) {
+      const userDatas = await this.client.farcasterUserData.findMany({
+        where: { fid: { in: uncachedFids.map((fid) => BigInt(fid)) } },
+      });
+
+      const uncachedUsers = uncachedFids.map((fid) => {
+        const username = userDatas.find(
+          (d) => d.type === UserDataType.USERNAME && d.fid === BigInt(fid),
+        );
+        const pfp = userDatas.find(
+          (d) => d.type === UserDataType.PFP && d.fid === BigInt(fid),
+        );
+        const displayName = userDatas.find(
+          (d) => d.type === UserDataType.DISPLAY && d.fid === BigInt(fid),
+        );
+        const bio = userDatas.find(
+          (d) => d.type === UserDataType.BIO && d.fid === BigInt(fid),
+        );
+        const url = userDatas.find(
+          (d) => d.type === UserDataType.URL && d.fid === BigInt(fid),
+        );
+
+        const baseUser: BaseFarcasterUser = {
+          fid,
+          username: username?.value,
+          pfp: pfp?.value,
+          displayName: displayName?.value,
+          bio: bio?.value,
+          url: url?.value,
+        };
+
+        return baseUser;
+      });
+
+      await this.cache.setUsers(uncachedUsers);
+
+      users.push(...uncachedUsers);
+    }
+
+    const response = await Promise.all(
+      users.map(async (user) => {
+        const [engagement, context] = await Promise.all([
+          this.getUserEngagement(user.fid),
+          this.getUserContext(user.fid, viewerFid),
+        ]);
+        return {
+          ...user,
+          engagement,
+          context,
+        };
+      }),
+    );
+
+    return response;
+  }
+
+  async getUserEngagement(fid: string): Promise<FarcasterUserEngagement> {
+    const [followers, following] = await Promise.all([
+      this.getUserEngagementItem(fid, "followers"),
+      this.getUserEngagementItem(fid, "following"),
+    ]);
+
+    return { followers, following };
+  }
+
+  async getUserEngagementItem(
+    fid: string,
+    type: UserEngagementType,
+  ): Promise<number> {
+    const cached = await this.cache.getUserEngagement(fid, type);
+    if (cached !== undefined) return cached;
+
+    let count = 0;
+    switch (type) {
+      case "followers":
+        count = await this.client.farcasterLink.count({
+          where: {
+            linkType: "follow",
+            targetFid: BigInt(fid),
+            deletedAt: null,
+          },
+        });
+        break;
+      case "following":
+        count = await this.client.farcasterLink.count({
+          where: { linkType: "follow", fid: BigInt(fid), deletedAt: null },
+        });
+        break;
+    }
+
+    await this.cache.setUserEngagement(fid, type, count);
+
+    return count;
+  }
+
+  async getUserContext(
+    fid: string,
+    viewerFid?: string,
+  ): Promise<FarcasterUserContext | undefined> {
+    if (!viewerFid) return;
+
+    const cached = await this.cache.getUserContext(viewerFid, "following", fid);
+    if (cached !== undefined) return { following: true };
+
+    const link = await this.client.farcasterLink.findFirst({
+      where: {
+        linkType: "follow",
+        fid: BigInt(viewerFid),
+        targetFid: BigInt(fid),
+        deletedAt: null,
+      },
+    });
+
+    const linked = !!link;
+    await this.cache.setUserContext(viewerFid, "following", fid, linked);
+    return { following: linked };
+  }
+
+  async getUserFollowers(
+    fid: string,
+    cursor?: string,
+    viewerFid?: string,
+  ): Promise<GetFarcasterUsersResponse> {
+    const followers = await this.client.farcasterLink.findMany({
+      where: {
+        timestamp: this.decodeCursor(cursor),
+        linkType: "follow",
+        targetFid: BigInt(fid),
+        deletedAt: null,
+      },
+      orderBy: {
+        timestamp: "desc",
+      },
+      take: MAX_PAGE_SIZE,
+    });
+
+    const fids = followers.map((link) => link.fid.toString());
+    const users = await this.getUsers(fids, viewerFid);
+
+    return {
+      data: users,
+      nextCursor:
+        followers.length === MAX_PAGE_SIZE
+          ? this.encodeCursor({
+              timestamp: followers[followers.length - 1]?.timestamp.getTime(),
+            })
+          : undefined,
+    };
+  }
+
+  async getUserFollowing(
+    fid: string,
+    cursor?: string,
+    viewerFid?: string,
+  ): Promise<GetFarcasterUsersResponse> {
+    const following = await this.client.farcasterLink.findMany({
+      where: {
+        timestamp: this.decodeCursor(cursor),
+        linkType: "follow",
+        fid: BigInt(fid),
+        deletedAt: null,
+      },
+      orderBy: {
+        timestamp: "desc",
+      },
+      take: MAX_PAGE_SIZE,
+    });
+
+    const fids = following.map((link) => link.targetFid.toString());
+    const users = await this.getUsers(fids, viewerFid);
+
+    return {
+      data: users,
+      nextCursor:
+        following.length === MAX_PAGE_SIZE
+          ? this.encodeCursor({
+              timestamp: following[following.length - 1]?.timestamp.getTime(),
+            })
+          : undefined,
+    };
   }
 
   decodeCursor(cursor?: string): { lt: Date } | undefined {

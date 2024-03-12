@@ -202,10 +202,15 @@ export class ContentService {
           case "video":
             contentFilter.push(`"content"."type" LIKE 'video%'`);
             break;
-          case "frame":
-            contentFilter.push(`"content"."frame" IS NOT NULL`);
-            break;
         }
+      }
+    }
+
+    if (req.frames !== undefined) {
+      if (req.frames) {
+        contentFilter.push(`"content"."frame" IS NOT NULL`);
+      } else {
+        contentFilter.push(`"content"."frame" IS NULL`);
       }
     }
 

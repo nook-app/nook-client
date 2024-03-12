@@ -1,5 +1,6 @@
 import { QueueName, getWorker } from "@nook/common/queues";
 import { ContentAPIClient, FarcasterAPIClient } from "@nook/common/clients";
+import { UserFilterType } from "@nook/common/types";
 
 const run = async () => {
   const farcasterApi = new FarcasterAPIClient();
@@ -9,10 +10,17 @@ const run = async () => {
     let nextCursor: string | undefined;
     let count = 0;
     do {
-      const casts = await farcasterApi.getCastsByFids({
-        fids: [fid],
-        cursor: nextCursor,
-      });
+      const casts = await farcasterApi.getFeed(
+        {
+          userFilter: {
+            type: UserFilterType.Fids,
+            args: {
+              fids: [fid],
+            },
+          },
+        },
+        nextCursor,
+      );
       await Promise.all(
         casts.data.map((cast) => contentApi.addContentReferences(cast)),
       );
@@ -22,6 +30,11 @@ const run = async () => {
 
     console.log(`[${fid}] backfilled ${count} casts`);
   };
+
+  if (process.argv[2]) {
+    await backfillContentForFid(process.argv[2]);
+    return;
+  }
 
   const worker = getWorker(QueueName.Backfill, async (job) => {
     await backfillContentForFid(job.data.fid);
@@ -33,8 +46,6 @@ const run = async () => {
       console.log(`[${job.id}] failed with ${err.message}`);
     }
   });
-
-  await backfillContentForFid("30");
 };
 
 run().catch((e) => {

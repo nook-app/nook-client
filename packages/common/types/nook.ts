@@ -1,45 +1,86 @@
 export type Nook = {
   id: string;
-  type: string;
   creatorFid: string;
   name: string;
   description: string;
   imageUrl: string;
   shelves: NookShelf[];
-  createdAt: number;
-  updatedAt: number;
 };
 
-export type NookShelf = {
+type NookShelfBase = {
   id: string;
   name: string;
   description: string;
-  type: NookShelfType;
-  args: NookShelfArgs[NookShelfType];
 };
 
+export type NookShelf =
+  | (NookShelfBase & {
+      type: NookShelfType;
+      args: NookShelfArgs[NookShelfType];
+    })
+  | (NookShelfBase & {
+      type: NookShelfType.FarcasterFeed;
+      args: FarcasterFeedArgs;
+    })
+  | (NookShelfBase & {
+      type: NookShelfType.FarcasterProfile;
+      args: FarcasterProfileArgs;
+    });
+
 export enum NookShelfType {
-  FeedFarcasterFollowing = "FeedFarcasterFollowing",
+  FarcasterFeed = "FarcasterFeed",
   FarcasterProfile = "FarcasterProfile",
-  FeedFarcasterContent = "FeedFarcasterContent",
 }
 
 export type NookShelfArgs = {
-  [NookShelfType.FeedFarcasterFollowing]: FeedFarcasterFollowingArgs;
+  [NookShelfType.FarcasterFeed]: FarcasterFeedArgs;
   [NookShelfType.FarcasterProfile]: FarcasterProfileArgs;
-  [NookShelfType.FeedFarcasterContent]: FeedFarcasterContentArgs;
 };
 
-export type FeedFarcasterFollowingArgs = {
-  fid: string;
+export enum UserFilterType {
+  Following = "following",
+  Fids = "fids",
+}
+
+export type UserFilterFollowingArgs = {
+  degree: number;
+};
+
+export type UserFilterFidsArgs = {
+  fids: string[];
+};
+
+export type UserFilter =
+  | {
+      type: UserFilterType.Following;
+      args: UserFilterFollowingArgs;
+    }
+  | {
+      type: UserFilterType.Fids;
+      args: UserFilterFidsArgs;
+    };
+
+export type ContentFilter = {
+  types?: string[];
+  frames?: boolean;
+};
+
+export type ChannelFilter = {
+  channelIds: string[];
+};
+
+export type FarcasterFeedContext = {
+  viewerFid?: string;
+};
+
+export type FarcasterFeedArgs = {
+  userFilter?: UserFilter;
+  contentFilter?: ContentFilter;
+  channelFilter?: ChannelFilter;
+  replies?: boolean;
+  context?: FarcasterFeedContext;
 };
 
 export type FarcasterProfileArgs = {
   fid: string;
-};
-
-export type FeedFarcasterContentArgs = {
-  types: string[];
-  followerFid?: string;
-  fid?: string;
 };

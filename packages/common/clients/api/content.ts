@@ -28,10 +28,12 @@ export class ContentAPIClient extends BaseAPIClient {
   }
 
   async getContents(uris: string[]): Promise<GetContentsResponse> {
+    console.time("contents");
     const response = await this.makeRequest("/content", {
       method: "POST",
       body: JSON.stringify({ uris }),
     });
+    console.timeEnd("contents");
 
     if (!response.ok) {
       throw new Error(response.statusText);

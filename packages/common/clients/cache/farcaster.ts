@@ -35,7 +35,7 @@ export class FarcasterCacheClient {
   async getCastEngagement(
     hash: string,
     type: CastEngagementType,
-  ): Promise<number> {
+  ): Promise<number | undefined> {
     return await this.redis.getNumber(
       `${this.CAST_CACHE_PREFIX}:${hash}:${type}`,
     );
@@ -80,14 +80,28 @@ export class FarcasterCacheClient {
     return await this.redis.getJson(`${this.USER_CACHE_PREFIX}:${fid}`);
   }
 
+  async getUsers(fids: string[]): Promise<BaseFarcasterUser[]> {
+    return (
+      await this.redis.mgetJson(
+        fids.map((fid) => `${this.USER_CACHE_PREFIX}:${fid}`),
+      )
+    ).filter(Boolean);
+  }
+
   async setUser(fid: string, user: BaseFarcasterUser) {
     await this.redis.setJson(`${this.USER_CACHE_PREFIX}:${fid}`, user);
+  }
+
+  async setUsers(users: BaseFarcasterUser[]) {
+    await this.redis.msetJson(
+      users.map((user) => [`${this.USER_CACHE_PREFIX}:${user.fid}`, user]),
+    );
   }
 
   async getUserEngagement(
     fid: string,
     type: UserEngagementType,
-  ): Promise<number> {
+  ): Promise<number | undefined> {
     return await this.redis.getNumber(
       `${this.USER_CACHE_PREFIX}:${fid}:${type}`,
     );

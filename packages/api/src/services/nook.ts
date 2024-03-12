@@ -25,18 +25,53 @@ export class NookService {
       },
     });
 
+    const defaultNooks = await this.nookClient.nook.findMany({
+      where: {
+        creatorFid: "262426",
+      },
+      include: {
+        shelves: true,
+      },
+    });
+
     const nooks = await Promise.all(
       memberships.map((membership) => this.getNook(membership.nookId)),
     );
 
-    let homeNook = nooks.find((nook) => nook.type === "home");
-    if (!homeNook) {
-      homeNook = await this.createHomeNook(fid);
-    }
+    const missingDefaultNooks = defaultNooks.filter(
+      (defaultNook) => !nooks.find((nook) => nook.id === defaultNook.id),
+    );
 
-    const otherNooks = nooks.filter((nook) => nook.type !== "home");
+    await Promise.all(
+      missingDefaultNooks.map((nook) =>
+        this.nookClient.nookMembership.create({
+          data: {
+            user: {
+              connect: {
+                fid,
+              },
+            },
+            nook: {
+              connect: {
+                id: nook.id,
+              },
+            },
+          },
+        }),
+      ),
+    );
 
-    return [homeNook, ...otherNooks];
+    return [...nooks, ...missingDefaultNooks.map(this.formatNook)].sort(
+      (a, b) => {
+        if (a.creatorFid === "262426" && b.creatorFid !== "262426") {
+          return -1;
+        }
+        if (a.creatorFid !== "262426" && b.creatorFid === "262426") {
+          return 1;
+        }
+        return 0;
+      },
+    );
   }
 
   async getNook(id: string): Promise<Nook> {
@@ -73,74 +108,14 @@ export class NookService {
     return this.formatShelf(shelf);
   }
 
-  async createHomeNook(fid: string): Promise<Nook> {
-    const nook = await this.nookClient.nook.create({
-      data: {
-        type: "home",
-        name: "Home",
-        description: "Your personally-curated nook",
-        imageUrl:
-          "https://upload.wikimedia.org/wikipedia/commons/3/34/Home-icon.svg",
-        creatorFid: fid,
-        shelves: {
-          createMany: {
-            data: [
-              {
-                name: "You",
-                description: "Your profile",
-                type: NookShelfType.FarcasterProfile,
-                args: {
-                  fid,
-                },
-              },
-              {
-                name: "Following",
-                description: "From people you follow",
-                type: NookShelfType.FeedFarcasterFollowing,
-                args: {
-                  fid,
-                },
-              },
-              {
-                name: "Discover",
-                description: "From people you should follow",
-                type: NookShelfType.FeedFarcasterFollowing,
-                args: {
-                  fid,
-                },
-              },
-            ],
-          },
-        },
-      },
-      include: {
-        shelves: true,
-      },
-    });
-
-    await this.nookClient.nookMembership.create({
-      data: {
-        nookId: nook.id,
-        fid,
-      },
-    });
-
-    const response = this.formatNook(nook);
-    await this.nookCacheClient.setNook(nook.id, response);
-    return response;
-  }
-
   formatNook(nook: DBNook & { shelves: DBNookShelf[] }): Nook {
     return {
       id: nook.id,
-      type: nook.type,
       name: nook.name,
       description: nook.description,
       imageUrl: nook.imageUrl,
       creatorFid: nook.creatorFid,
       shelves: nook.shelves.map(this.formatShelf),
-      createdAt: nook.createdAt.getTime(),
-      updatedAt: nook.updatedAt.getTime(),
     };
   }
 

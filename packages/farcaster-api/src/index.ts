@@ -3,6 +3,7 @@ import { farcasterPlugin, redisPlugin } from "./plugins";
 import { castRoutes } from "./routes/cast";
 import { userRoutes } from "./routes/user";
 import { channelRoutes } from "./routes/channel";
+import { feedRoutes } from "./routes/feed";
 
 const buildApp = () => {
   const app = fastify({
@@ -23,6 +24,7 @@ const buildApp = () => {
   app.register(farcasterPlugin);
   app.register(redisPlugin);
 
+  app.register(feedRoutes);
   app.register(userRoutes);
   app.register(castRoutes);
   app.register(channelRoutes);

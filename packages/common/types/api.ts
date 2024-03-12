@@ -56,37 +56,6 @@ export type GetFarcasterCastsRequest = {
   hashes: string[];
 };
 
-export type GetFarcasterCastsByChannelRequest = {
-  id: string;
-  cursor?: string;
-  replies?: boolean;
-};
-
-export type GetFarcasterCastsByFidsRequest = {
-  fids: string[];
-  cursor?: string;
-  replies?: boolean;
-  minTimestamp?: number;
-  limit?: number;
-};
-
-export type GetFarcasterCastsByFollowingRequest = {
-  fid: string;
-  cursor?: string;
-  replies?: boolean;
-  minTimestamp?: number;
-  limit?: number;
-};
-
-export type GetFarcasterCastByContentTypeRequest = {
-  types: string[];
-  fid?: string;
-  followerFid?: string;
-  cursor?: string;
-  minTimestamp?: number;
-  limit?: number;
-};
-
 export type GetFarcasterCastsResponse = {
   data: FarcasterCastResponse[];
   nextCursor?: string;
@@ -206,6 +175,7 @@ export type SubmitFrameActionResponse = {
 
 export type GetContentReferencesRequest = {
   types?: string[];
+  frames?: boolean;
   fids?: string[];
 };
 

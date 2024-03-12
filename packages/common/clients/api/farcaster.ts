@@ -1,13 +1,10 @@
 import {
-  GetFarcasterCastsByFidsRequest,
-  GetFarcasterCastsByChannelRequest,
-  GetFarcasterCastsByFollowingRequest,
   FarcasterUser,
   GetFarcasterUsersResponse,
   FarcasterCastResponse,
   GetFarcasterCastsResponse,
   Channel,
-  GetFarcasterCastByContentTypeRequest,
+  FarcasterFeedArgs,
 } from "../../types";
 import { BaseAPIClient } from "./base";
 
@@ -191,66 +188,17 @@ export class FarcasterAPIClient extends BaseAPIClient {
     return response.json();
   }
 
-  async getCastsByFollowing(
-    req: GetFarcasterCastsByFollowingRequest,
-    viewerFid?: string,
+  async getFeed(
+    req: FarcasterFeedArgs,
+    cursor?: string,
   ): Promise<GetFarcasterCastsResponse> {
-    const response = await this.makeRequest("/casts/by-following", {
-      method: "POST",
-      body: JSON.stringify(req),
-      viewerFid,
-    });
-
-    if (!response.ok) {
-      throw new Error(response.statusText);
-    }
-
-    return response.json();
-  }
-
-  async getCastsByFids(
-    req: GetFarcasterCastsByFidsRequest,
-    viewerFid?: string,
-  ): Promise<GetFarcasterCastsResponse> {
-    const response = await this.makeRequest("/casts/by-fids", {
-      method: "POST",
-      body: JSON.stringify(req),
-      viewerFid,
-    });
-
-    if (!response.ok) {
-      throw new Error(response.statusText);
-    }
-
-    return response.json();
-  }
-
-  async getCastsByChannel(
-    req: GetFarcasterCastsByChannelRequest,
-    viewerFid?: string,
-  ): Promise<GetFarcasterCastsResponse> {
-    const response = await this.makeRequest("/casts/by-channel", {
-      method: "POST",
-      body: JSON.stringify(req),
-      viewerFid,
-    });
-
-    if (!response.ok) {
-      throw new Error(response.statusText);
-    }
-
-    return response.json();
-  }
-
-  async getCastsByContentType(
-    req: GetFarcasterCastByContentTypeRequest,
-    viewerFid?: string,
-  ): Promise<GetFarcasterCastsResponse> {
-    const response = await this.makeRequest("/casts/by-content-type", {
-      method: "POST",
-      body: JSON.stringify(req),
-      viewerFid,
-    });
+    const response = await this.makeRequest(
+      `/feed${cursor ? `?cursor=${cursor}` : ""}`,
+      {
+        method: "POST",
+        body: JSON.stringify(req),
+      },
+    );
 
     if (!response.ok) {
       throw new Error(response.statusText);

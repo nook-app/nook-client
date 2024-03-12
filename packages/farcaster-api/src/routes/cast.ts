@@ -1,11 +1,7 @@
 import {
   GetFarcasterCastRepliesRequest,
   GetFarcasterCastRequest,
-  GetFarcasterCastsByFidsRequest,
-  GetFarcasterCastsByFollowingRequest,
-  GetFarcasterCastsByChannelRequest,
   GetFarcasterCastsRequest,
-  GetFarcasterCastByContentTypeRequest,
 } from "@nook/common/types";
 import { FastifyInstance } from "fastify";
 import { FarcasterService } from "../service/farcaster";
@@ -17,18 +13,17 @@ export const castRoutes = async (fastify: FastifyInstance) => {
     fastify.get<{
       Params: GetFarcasterCastRequest;
     }>("/casts/:hash", async (request, reply) => {
-      const cast = await service.getCast(
-        request.params.hash,
-        undefined,
+      const casts = await service.getCastsFromHashes(
+        [request.params.hash],
         request.headers["x-viewer-fid"] as string,
       );
 
-      if (!cast) {
+      if (casts.length === 0) {
         reply.status(404).send({ message: "Cast not found" });
         return;
       }
 
-      reply.send(cast);
+      reply.send(casts[0]);
     });
 
     fastify.get<{
@@ -82,51 +77,11 @@ export const castRoutes = async (fastify: FastifyInstance) => {
     fastify.post<{
       Body: GetFarcasterCastsRequest;
     }>("/casts", async (request, reply) => {
-      const casts = await service.getCasts(
+      const casts = await service.getCastsFromHashes(
         request.body.hashes,
         request.headers["x-viewer-fid"] as string,
       );
       reply.send({ data: casts });
-    });
-
-    fastify.post<{
-      Body: GetFarcasterCastsByFollowingRequest;
-    }>("/casts/by-following", async (request, reply) => {
-      const response = await service.getCastsByFollowing(
-        request.body,
-        request.headers["x-viewer-fid"] as string,
-      );
-      reply.send(response);
-    });
-
-    fastify.post<{
-      Body: GetFarcasterCastsByFidsRequest;
-    }>("/casts/by-fids", async (request, reply) => {
-      const response = await service.getCastsByFids(
-        request.body,
-        request.headers["x-viewer-fid"] as string,
-      );
-      reply.send(response);
-    });
-
-    fastify.post<{
-      Body: GetFarcasterCastsByChannelRequest;
-    }>("/casts/by-channel", async (request, reply) => {
-      const response = await service.getCastsByChannel(
-        request.body,
-        request.headers["x-viewer-fid"] as string,
-      );
-      reply.send(response);
-    });
-
-    fastify.post<{
-      Body: GetFarcasterCastByContentTypeRequest;
-    }>("/casts/by-content-type", async (request, reply) => {
-      const response = await service.getCastsByContentType(
-        request.body,
-        request.headers["x-viewer-fid"] as string,
-      );
-      reply.send(response);
     });
   });
 };

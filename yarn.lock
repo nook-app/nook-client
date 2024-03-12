@@ -1488,6 +1488,18 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@nook/scripts@workspace:packages/scripts":
+  version: 0.0.0-use.local
+  resolution: "@nook/scripts@workspace:packages/scripts"
+  dependencies:
+    "@nook/common": "npm:*"
+    "@types/jest": "npm:^29.5.11"
+    "@types/node": "npm:^20.10.5"
+    jest: "npm:^29.7.0"
+    typescript: "npm:^5.3.3"
+  languageName: unknown
+  linkType: soft
+
 "@nook/signer-api@workspace:packages/signer-api":
   version: 0.0.0-use.local
   resolution: "@nook/signer-api@workspace:packages/signer-api"
