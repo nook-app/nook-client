@@ -111,13 +111,23 @@ const scrapeMetadata = async (options: MetascraperOptions) => {
 };
 
 export const fetchUrlMetadata = async (url: string) => {
-  const res = await fetch(url, {
-    headers: {
-      "user-agent":
-        USER_AGENT_OVERRIDES[new URL(url).hostname] ||
-        "Mozilla/5.0 (compatible; TelegramBot/1.0; +https://core.telegram.org/bots/webhooks)",
-    },
-  });
+  const res = await Promise.race([
+    fetch(url, {
+      headers: {
+        "user-agent":
+          USER_AGENT_OVERRIDES[new URL(url).hostname] ||
+          "Mozilla/5.0 (compatible; TelegramBot/1.0; +https://core.telegram.org/bots/webhooks)",
+      },
+    }) as Promise<Response>,
+    new Promise((_, reject) =>
+      setTimeout(() => reject(new Error("Timed out getting frame")), 20000),
+    ) as Promise<Error>,
+  ]);
+
+  if (res instanceof Error) {
+    throw res;
+  }
+
   const html = await res.text();
   const headers = res.headers;
 
