@@ -206,4 +206,21 @@ export class FarcasterAPIClient extends BaseAPIClient {
 
     return response.json();
   }
+
+  async searchUsers(
+    query: string,
+    cursor?: string,
+    viewerFid?: string,
+  ): Promise<GetFarcasterUsersResponse> {
+    const response = await this.makeRequest(
+      `/users?query=${query}&${cursor ? `&cursor=${cursor}` : ""}`,
+      { viewerFid },
+    );
+
+    if (!response.ok) {
+      throw new Error(response.statusText);
+    }
+
+    return response.json();
+  }
 }

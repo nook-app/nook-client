@@ -101,6 +101,7 @@ model FarcasterCast {
     @@index([timestamp, deletedAt, parentUrl, parentHash])
     @@index([fid, deletedAt, parentHash, timestamp])
     @@index([parentUrl, deletedAt, parentHash, timestamp])
+    @@index([timestamp])
 }
 
 model FarcasterCastMention {
@@ -240,6 +241,8 @@ model FarcasterUserStats {
     repliesReceived Int @default(0)
     likesReceived   Int @default(0)
     recastsReceived Int @default(0)
+
+    @@index([followers])
 }
 
 model FarcasterCastStats {

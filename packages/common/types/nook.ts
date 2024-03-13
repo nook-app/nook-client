@@ -77,6 +77,9 @@ export type FarcasterFeedArgs = {
   userFilter?: UserFilter;
   contentFilter?: ContentFilter;
   channelFilter?: ChannelFilter;
+  textFilter?: {
+    query: string;
+  };
   replies?: boolean;
   context?: FarcasterFeedContext;
   displayMode?: FarcasterFeedDisplayMode;

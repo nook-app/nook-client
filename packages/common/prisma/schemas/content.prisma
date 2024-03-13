@@ -24,6 +24,7 @@ model FarcasterContentReference {
 
     @@id([uri, fid, hash, type])
     @@index([timestamp, type])
+    @@index([fid, timestamp])
 }
 
 model UrlContent {
@@ -43,4 +44,5 @@ model UrlContent {
     updatedAt DateTime @updatedAt
 
     @@index([type])
+    @@index([hasFrame])
 }

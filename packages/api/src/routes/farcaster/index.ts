@@ -91,6 +91,23 @@ export const farcasterRoutes = async (fastify: FastifyInstance) => {
       },
     );
 
+    fastify.get<{ Querystring: { query: string; cursor?: string } }>(
+      "/farcaster/users",
+      async (request, reply) => {
+        let viewerFid: string | undefined;
+        try {
+          const { fid } = (await request.jwtDecode()) as { fid: string };
+          viewerFid = fid;
+        } catch (e) {}
+        const response = await client.searchUsers(
+          request.query.query,
+          request.query.cursor,
+          viewerFid,
+        );
+        reply.send(response);
+      },
+    );
+
     fastify.get<{ Params: { fid: string } }>(
       "/farcaster/users/:fid",
       async (request, reply) => {

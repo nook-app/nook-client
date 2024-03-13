@@ -10,6 +10,19 @@ export const userRoutes = async (fastify: FastifyInstance) => {
   fastify.register(async (fastify: FastifyInstance) => {
     const service = new FarcasterService(fastify);
 
+    fastify.get<{ Querystring: { query: string; cursor?: string } }>(
+      "/users",
+      async (request, reply) => {
+        const data = await service.searchUsers(
+          request.query.query,
+          request.query.cursor,
+          request.headers["x-viewer-fid"] as string,
+        );
+
+        reply.send(data);
+      },
+    );
+
     fastify.post<{ Body: GetFarcasterUsersRequest }>(
       "/users",
       async (request, reply) => {

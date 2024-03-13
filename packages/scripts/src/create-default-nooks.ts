@@ -134,6 +134,13 @@ const HOME_NOOK: Omit<Nook, "id"> = {
         replies: false,
       },
     },
+    {
+      id: "you",
+      name: "You",
+      description: "Your profile",
+      type: NookShelfType.FarcasterProfile,
+      args: {},
+    },
   ],
 };
 

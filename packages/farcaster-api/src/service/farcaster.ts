@@ -1,5 +1,6 @@
 import {
   FarcasterCast as DBFarcasterCast,
+  Prisma,
   PrismaClient,
 } from "@nook/common/prisma/farcaster";
 import {
@@ -32,6 +33,11 @@ import { ContentAPIClient, FarcasterCacheClient } from "@nook/common/clients";
 import { FastifyInstance } from "fastify";
 
 export const MAX_PAGE_SIZE = 25;
+
+function sanitizeInput(input: string): string {
+  // Basic example: remove non-alphanumeric characters and truncate
+  return input.replace(/[^a-zA-Z0-9\s]/g, "").substring(0, 100);
+}
 
 export class FarcasterService {
   private client: PrismaClient;
@@ -87,28 +93,46 @@ export class FarcasterService {
       parentUrls = channels.map((channel) => channel.url);
     }
 
-    const rawCasts = await this.client.farcasterCast.findMany({
-      where: {
-        fid: fids ? { in: fids.map((fid) => BigInt(fid)) } : undefined,
-        parentUrl: parentUrls
-          ? {
-              in: parentUrls,
-            }
-          : undefined,
-        timestamp: this.decodeCursor(cursor),
-        parentHash:
-          req.replies === true
-            ? { not: null }
-            : req.replies === false
-              ? null
-              : undefined,
-        deletedAt: null,
-      },
-      orderBy: {
-        timestamp: "desc",
-      },
-      take: MAX_PAGE_SIZE,
-    });
+    const conditions: string[] = ['"deletedAt" IS NULL'];
+
+    if (req.textFilter?.query) {
+      conditions.push(
+        `(to_tsvector('english', "text") @@ plainto_tsquery('english', '${sanitizeInput(
+          req.textFilter.query,
+        )}'))`,
+      );
+    }
+    if (fids) {
+      conditions.push(`"fid" IN (${fids.map((fid) => BigInt(fid)).join(",")})`);
+    }
+    if (parentUrls) {
+      conditions.push(`"parentUrl" IN ('${parentUrls.join("','")}')`);
+    }
+    if (cursor) {
+      const cursorTimestamp =
+        this.decodeCursorTimestamp(cursor)?.lt.toISOString();
+      if (cursorTimestamp)
+        conditions.push(`"timestamp" < '${cursorTimestamp}'`);
+    }
+    if (req.replies === true) {
+      conditions.push(`"parentHash" IS NOT NULL`);
+    } else if (req.replies === false) {
+      conditions.push(`"parentHash" IS NULL`);
+    }
+
+    const whereClause = conditions.join(" AND ");
+
+    const rawCasts = await this.client.$queryRaw<DBFarcasterCast[]>(
+      Prisma.sql([
+        `
+          SELECT *
+          FROM "FarcasterCast"
+          WHERE ${whereClause}
+          ORDER BY "timestamp" DESC
+          LIMIT ${MAX_PAGE_SIZE}
+        `,
+      ]),
+    );
 
     const casts = await this.getCastsFromData(rawCasts, req.context?.viewerFid);
 
@@ -206,7 +230,7 @@ export class FarcasterService {
   ): Promise<GetFarcasterCastsResponse> {
     const data = await this.client.farcasterCast.findMany({
       where: {
-        timestamp: this.decodeCursor(cursor),
+        timestamp: this.decodeCursorTimestamp(cursor),
         parentHash: hash,
         deletedAt: null,
       },
@@ -450,7 +474,7 @@ export class FarcasterService {
     const channels = await this.client.farcasterParentUrl.findMany({
       where: {
         url: {
-          contains: query,
+          contains: sanitizeInput(query),
           mode: "insensitive",
         },
       },
@@ -616,6 +640,51 @@ export class FarcasterService {
     return channel;
   }
 
+  async searchUsers(query: string, cursor?: string, viewerFid?: string) {
+    const decodedCursor = this.decodeCursor(cursor);
+
+    const conditions: string[] = [
+      `(to_tsvector('english', "value") @@ plainto_tsquery('english', '${sanitizeInput(
+        query,
+      )}'))`,
+    ];
+
+    if (decodedCursor?.followers) {
+      conditions.push(`"stats.followers" < ${decodedCursor.followers}`);
+    }
+
+    const whereClause = conditions.join(" AND ");
+
+    const rawUsers = await this.client.$queryRaw<
+      { fid: string; followers: number }[]
+    >(
+      Prisma.sql([
+        `
+          SELECT DISTINCT u.fid AS fid, followers
+          FROM "FarcasterUserData" u
+          JOIN "FarcasterUserStats" stats ON u.fid = stats.fid
+          WHERE ${whereClause}
+          ORDER BY stats.followers DESC
+          LIMIT ${MAX_PAGE_SIZE}
+        `,
+      ]),
+    );
+
+    const users = await this.getUsers(
+      rawUsers.map((user) => user.fid.toString()),
+      viewerFid,
+    );
+    return {
+      data: users,
+      nextCursor:
+        users.length === MAX_PAGE_SIZE
+          ? this.encodeCursor({
+              followers: rawUsers[rawUsers.length - 1]?.followers,
+            })
+          : undefined,
+    };
+  }
+
   async getUsers(fids: string[], viewerFid?: string): Promise<FarcasterUser[]> {
     if (fids.length === 0) return [];
 
@@ -726,7 +795,7 @@ export class FarcasterService {
     if (!viewerFid) return;
 
     const cached = await this.cache.getUserContext(viewerFid, "following", fid);
-    if (cached !== undefined) return { following: true };
+    if (cached !== undefined) return { following: cached };
 
     const link = await this.client.farcasterLink.findFirst({
       where: {
@@ -749,7 +818,7 @@ export class FarcasterService {
   ): Promise<GetFarcasterUsersResponse> {
     const followers = await this.client.farcasterLink.findMany({
       where: {
-        timestamp: this.decodeCursor(cursor),
+        timestamp: this.decodeCursorTimestamp(cursor),
         linkType: "follow",
         targetFid: BigInt(fid),
         deletedAt: null,
@@ -781,7 +850,7 @@ export class FarcasterService {
   ): Promise<GetFarcasterUsersResponse> {
     const following = await this.client.farcasterLink.findMany({
       where: {
-        timestamp: this.decodeCursor(cursor),
+        timestamp: this.decodeCursorTimestamp(cursor),
         linkType: "follow",
         fid: BigInt(fid),
         deletedAt: null,
@@ -901,7 +970,7 @@ export class FarcasterService {
       where: {
         targetHash: hash,
         reactionType: 1,
-        timestamp: this.decodeCursor(cursor),
+        timestamp: this.decodeCursorTimestamp(cursor),
         deletedAt: null,
       },
       orderBy: {
@@ -933,7 +1002,7 @@ export class FarcasterService {
       where: {
         targetHash: hash,
         reactionType: 2,
-        timestamp: this.decodeCursor(cursor),
+        timestamp: this.decodeCursorTimestamp(cursor),
         deletedAt: null,
       },
       orderBy: {
@@ -964,7 +1033,7 @@ export class FarcasterService {
     const embeds = await this.client.farcasterCastEmbedCast.findMany({
       where: {
         embedHash: hash,
-        timestamp: this.decodeCursor(cursor),
+        timestamp: this.decodeCursorTimestamp(cursor),
         deletedAt: null,
       },
       orderBy: {
@@ -989,13 +1058,21 @@ export class FarcasterService {
     };
   }
 
-  decodeCursor(cursor?: string): { lt: Date } | undefined {
+  decodeCursorTimestamp(cursor?: string): { lt: Date } | undefined {
+    if (!cursor) return;
+    const decodedCursor = this.decodeCursor(cursor);
+    return decodedCursor
+      ? { lt: new Date(decodedCursor.timestamp) }
+      : undefined;
+  }
+
+  decodeCursor(cursor?: string): Record<string, string> | undefined {
     if (!cursor) return;
     try {
       const decodedString = Buffer.from(cursor, "base64").toString("ascii");
       const decodedCursor = JSON.parse(decodedString);
-      if (typeof decodedCursor === "object" && "timestamp" in decodedCursor) {
-        return { lt: new Date(decodedCursor.timestamp) };
+      if (typeof decodedCursor === "object") {
+        return decodedCursor;
       }
       console.error(
         "Decoded cursor does not match expected format:",
@@ -1006,7 +1083,7 @@ export class FarcasterService {
     }
   }
 
-  encodeCursor(cursor?: { timestamp: number }): string | undefined {
+  encodeCursor(cursor?: Record<string, string | number>): string | undefined {
     if (!cursor) return;
     const encodedString = JSON.stringify(cursor);
     return Buffer.from(encodedString).toString("base64");
