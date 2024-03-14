@@ -223,4 +223,21 @@ export class FarcasterAPIClient extends BaseAPIClient {
 
     return response.json();
   }
+
+  async searchChannels(
+    query: string,
+    cursor?: string,
+    viewerFid?: string,
+  ): Promise<Channel[]> {
+    const response = await this.makeRequest(
+      `/channels?query=${query}&${cursor ? `&cursor=${cursor}` : ""}`,
+      { viewerFid },
+    );
+
+    if (!response.ok) {
+      throw new Error(response.statusText);
+    }
+
+    return response.json();
+  }
 }

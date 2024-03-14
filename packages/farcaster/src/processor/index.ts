@@ -226,6 +226,22 @@ export class FarcasterEventProcessor {
           },
         }),
       );
+      if (cast.parentUrl) {
+        this.client.farcasterParentUrlStats.upsert({
+          where: {
+            url: cast.parentUrl,
+          },
+          create: {
+            url: cast.parentUrl,
+            replies: 1,
+          },
+          update: {
+            replies: {
+              increment: 1,
+            },
+          },
+        });
+      }
     } else {
       statsPromises.push(
         this.client.farcasterUserStats.upsert({
@@ -243,6 +259,22 @@ export class FarcasterEventProcessor {
           },
         }),
       );
+      if (cast.parentUrl) {
+        this.client.farcasterParentUrlStats.upsert({
+          where: {
+            url: cast.parentUrl,
+          },
+          create: {
+            url: cast.parentUrl,
+            casts: 1,
+          },
+          update: {
+            casts: {
+              increment: 1,
+            },
+          },
+        });
+      }
     }
 
     await Promise.all(statsPromises);
@@ -342,6 +374,18 @@ export class FarcasterEventProcessor {
           },
         }),
       );
+      if (cast.parentUrl) {
+        this.client.farcasterParentUrlStats.updateMany({
+          where: {
+            url: cast.parentUrl,
+          },
+          data: {
+            replies: {
+              decrement: 1,
+            },
+          },
+        });
+      }
     } else {
       statsPromises.push(
         this.client.farcasterUserStats.updateMany({
@@ -355,6 +399,18 @@ export class FarcasterEventProcessor {
           },
         }),
       );
+      if (cast.parentUrl) {
+        this.client.farcasterParentUrlStats.updateMany({
+          where: {
+            url: cast.parentUrl,
+          },
+          data: {
+            casts: {
+              decrement: 1,
+            },
+          },
+        });
+      }
     }
 
     await Promise.all(statsPromises);

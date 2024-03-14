@@ -257,3 +257,12 @@ model FarcasterCastStats {
     @@index([likes])
     @@index([fid])
 }
+
+model FarcasterParentUrlStats {
+    url String @id
+
+    casts   Int @default(0)
+    replies Int @default(0)
+
+    @@index([casts])
+}

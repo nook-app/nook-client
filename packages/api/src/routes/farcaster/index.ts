@@ -162,5 +162,22 @@ export const farcasterRoutes = async (fastify: FastifyInstance) => {
       const response = await client.getFeed(request.body, request.query.cursor);
       return reply.send(response);
     });
+
+    fastify.get<{ Querystring: { query: string; cursor?: string } }>(
+      "/farcaster/channels",
+      async (request, reply) => {
+        let viewerFid: string | undefined;
+        try {
+          const { fid } = (await request.jwtDecode()) as { fid: string };
+          viewerFid = fid;
+        } catch (e) {}
+        const response = await client.searchChannels(
+          request.query.query,
+          request.query.cursor,
+          viewerFid,
+        );
+        reply.send(response);
+      },
+    );
   });
 };

@@ -1,5 +1,6 @@
 import {
   FarcasterCast as DBFarcasterCast,
+  FarcasterParentUrl,
   Prisma,
   PrismaClient,
 } from "@nook/common/prisma/farcaster";
@@ -499,16 +500,43 @@ export class FarcasterService {
     return casts.map((cast) => castMap[cast.hash]);
   }
 
-  async searchChannels(query: string) {
-    const channels = await this.client.farcasterParentUrl.findMany({
-      where: {
-        url: {
-          contains: sanitizeInput(query),
-          mode: "insensitive",
-        },
-      },
-    });
-    return channels;
+  async searchChannels(query: string, cursor?: string) {
+    const conditions: string[] = [`name ILIKE '%${sanitizeInput(query)}%'`];
+
+    if (cursor) {
+      const decodedCursor = this.decodeCursor(cursor);
+      if (decodedCursor?.channelId) {
+        conditions.push(`"channelId" > '${decodedCursor.channelId}'`);
+      }
+    }
+
+    const whereClause = conditions.join(" AND ");
+    const rawChannels = await this.client.$queryRaw<FarcasterParentUrl[]>(
+      Prisma.sql([
+        `
+          SELECT *
+          FROM "FarcasterParentUrl"
+          WHERE ${whereClause}
+          ORDER BY "channelId" ASC
+          LIMIT ${MAX_PAGE_SIZE}
+        `,
+      ]),
+    );
+
+    const channels = rawChannels.map((channel) => ({
+      ...channel,
+      creatorId: channel.creatorId?.toString(),
+    }));
+
+    return {
+      data: channels,
+      nextCursor:
+        channels.length === MAX_PAGE_SIZE
+          ? this.encodeCursor({
+              channelId: channels[channels.length - 1].channelId,
+            })
+          : undefined,
+    };
   }
 
   async getChannels(urls: string[]) {

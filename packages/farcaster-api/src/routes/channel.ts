@@ -21,5 +21,17 @@ export const channelRoutes = async (fastify: FastifyInstance) => {
 
       reply.send(channel);
     });
+
+    fastify.get<{ Querystring: { query: string; cursor?: string } }>(
+      "/channels",
+      async (request, reply) => {
+        const data = await service.searchChannels(
+          request.query.query,
+          request.query.cursor,
+        );
+
+        reply.send(data);
+      },
+    );
   });
 };
