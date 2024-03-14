@@ -1,4 +1,8 @@
-import { Notification } from "../../types";
+import {
+  GetNotificationsRequest,
+  GetNotificationsResponse,
+  Notification,
+} from "../../types";
 import { BaseAPIClient } from "./base";
 
 export class NotificationsAPIClient extends BaseAPIClient {
@@ -69,6 +73,53 @@ export class NotificationsAPIClient extends BaseAPIClient {
     const response = await this.makeRequest("/publish", {
       method: "DELETE",
       body: JSON.stringify(notification),
+    });
+
+    if (!response.ok) {
+      throw new Error(response.statusText);
+    }
+  }
+
+  async getNotifications(
+    req: GetNotificationsRequest,
+    cursor?: string,
+  ): Promise<GetNotificationsResponse> {
+    const response = await this.makeRequest(
+      `/notifications${cursor ? `?cursor=${cursor}` : ""}`,
+      {
+        method: "POST",
+        body: JSON.stringify(req),
+      },
+    );
+
+    if (!response.ok) {
+      throw new Error(response.statusText);
+    }
+
+    return await response.json();
+  }
+
+  async getNotificationCount(token: string): Promise<{ count: number }> {
+    const response = await this.makeRequest("/notifications/count", {
+      method: "POST",
+      headers: {
+        Authorization: token,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(response.statusText);
+    }
+
+    return await response.json();
+  }
+
+  async markNotificationsRead(token: string): Promise<void> {
+    const response = await this.makeRequest("/notifications/mark-read", {
+      method: "POST",
+      headers: {
+        Authorization: token,
+      },
     });
 
     if (!response.ok) {

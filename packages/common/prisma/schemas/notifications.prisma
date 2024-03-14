@@ -32,5 +32,7 @@ model Notification {
 
     @@id([fid, service, type, sourceId])
     @@index([fid, read])
-    @@index([fid, type])
+    @@index([fid, timestamp])
+    @@index([fid, type, timestamp])
+    @@index([sourceFid, type, timestamp])
 }

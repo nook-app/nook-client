@@ -6,6 +6,7 @@ import {
   FarcasterCastEngagement,
   FarcasterUser,
 } from "./farcaster";
+import { Notification } from "./notifications";
 
 export type FarcasterCastResponse = {
   hash: string;
@@ -181,5 +182,15 @@ export type GetContentReferencesRequest = {
 
 export type GetContentReferencesResponse = {
   data: ContentReferenceResponse[];
+  nextCursor?: string;
+};
+
+export type GetNotificationsRequest = {
+  fid: string;
+  types?: string[];
+};
+
+export type GetNotificationsResponse = {
+  data: Notification[];
   nextCursor?: string;
 };

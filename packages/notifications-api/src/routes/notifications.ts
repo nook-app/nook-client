@@ -1,6 +1,6 @@
 import { FastifyInstance } from "fastify";
 import { NotificationsService } from "../service/notifications";
-import { Notification } from "@nook/common/types";
+import { GetNotificationsRequest, Notification } from "@nook/common/types";
 
 export const notificationsRoutes = async (fastify: FastifyInstance) => {
   fastify.register(async (fastify: FastifyInstance) => {
@@ -62,5 +62,40 @@ export const notificationsRoutes = async (fastify: FastifyInstance) => {
         }
       },
     );
+
+    fastify.post<{
+      Body: GetNotificationsRequest;
+      Querystring: { cursor?: string };
+    }>("/notifications", async (request, reply) => {
+      try {
+        const data = await service.getNotifications(
+          request.body,
+          request.query.cursor,
+        );
+        return reply.send(data);
+      } catch (e) {
+        reply.code(500).send({ message: (e as Error).message });
+      }
+    });
+
+    fastify.get("/notifications/count", async (request, reply) => {
+      const { fid } = (await request.jwtDecode()) as { fid: string };
+      try {
+        const count = await service.getUnreadNotifications(fid);
+        return reply.send({ count });
+      } catch (e) {
+        reply.code(500).send({ message: (e as Error).message });
+      }
+    });
+
+    fastify.post("/notifications/mark-read", async (request, reply) => {
+      const { fid } = (await request.jwtDecode()) as { fid: string };
+      try {
+        await service.markNotificationsRead(fid);
+        return reply.send();
+      } catch (e) {
+        reply.code(500).send({ message: (e as Error).message });
+      }
+    });
   });
 };

@@ -1,3 +1,6 @@
+import { FarcasterCastResponse } from "./api";
+import { FarcasterUser } from "./farcaster";
+
 export type BaseNotification = {
   fid: string;
   service: NotificationService;
@@ -19,14 +22,14 @@ export enum NotificationType {
   FOLLOW = "FOLLOW",
 }
 
-export type FarcasterMentionNotification = BaseNotification & {
+type FarcasterMentionData = {
   type: NotificationType.MENTION;
   data: {
     hash: string;
   };
 };
 
-export type FarcasterReplyNotification = BaseNotification & {
+type FarcasterReplyData = {
   type: NotificationType.REPLY;
   data: {
     hash: string;
@@ -34,21 +37,21 @@ export type FarcasterReplyNotification = BaseNotification & {
   };
 };
 
-export type FarcasterLikeNotification = BaseNotification & {
+type FarcasterLikeData = {
   type: NotificationType.LIKE;
   data: {
     targetHash: string;
   };
 };
 
-export type FarcasterRecastNotification = BaseNotification & {
+type FarcasterRecastData = {
   type: NotificationType.RECAST;
   data: {
     targetHash: string;
   };
 };
 
-export type FarcasterQuoteNotification = BaseNotification & {
+type FarcasterQuoteData = {
   type: NotificationType.QUOTE;
   data: {
     hash: string;
@@ -56,10 +59,20 @@ export type FarcasterQuoteNotification = BaseNotification & {
   };
 };
 
-export type FarcasterFollowNotification = BaseNotification & {
+type FarcasterFollowData = {
   type: NotificationType.FOLLOW;
   data: undefined;
 };
+
+export type FarcasterMentionNotification = BaseNotification &
+  FarcasterMentionData;
+export type FarcasterReplyNotification = BaseNotification & FarcasterReplyData;
+export type FarcasterLikeNotification = BaseNotification & FarcasterLikeData;
+export type FarcasterRecastNotification = BaseNotification &
+  FarcasterRecastData;
+export type FarcasterQuoteNotification = BaseNotification & FarcasterQuoteData;
+export type FarcasterFollowNotification = BaseNotification &
+  FarcasterFollowData;
 
 export type Notification =
   | FarcasterMentionNotification
@@ -68,3 +81,10 @@ export type Notification =
   | FarcasterRecastNotification
   | FarcasterQuoteNotification
   | FarcasterFollowNotification;
+
+export type NotificationResponse = {
+  type: NotificationType;
+  cast?: FarcasterCastResponse;
+  timestamp: number;
+  users?: FarcasterUser[];
+};

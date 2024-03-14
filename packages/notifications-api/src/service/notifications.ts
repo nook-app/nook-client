@@ -1,8 +1,8 @@
 import { Prisma, PrismaClient } from "@nook/common/prisma/notifications";
-import { Notification } from "@nook/common/types";
+import { GetNotificationsRequest, Notification } from "@nook/common/types";
 import { FastifyInstance } from "fastify";
 
-export const MAX_PAGE_SIZE = 25;
+export const MAX_PAGE_SIZE = 50;
 
 export class NotificationsService {
   private client: PrismaClient;
@@ -76,5 +76,85 @@ export class NotificationsService {
         sourceId: notification.sourceId,
       },
     });
+  }
+
+  async getNotifications(req: GetNotificationsRequest, cursor?: string) {
+    const data = await this.client.notification.findMany({
+      where: {
+        fid: req.fid,
+        type: req.types
+          ? {
+              in: req.types,
+            }
+          : undefined,
+        timestamp: this.decodeCursorTimestamp(cursor),
+      },
+      orderBy: {
+        timestamp: "desc",
+      },
+      take: MAX_PAGE_SIZE,
+    });
+
+    return {
+      data,
+      nextCursor:
+        data.length === MAX_PAGE_SIZE
+          ? this.encodeCursor({
+              timestamp: data[data.length - 1]?.timestamp.getTime(),
+            })
+          : undefined,
+    };
+  }
+
+  async getUnreadNotifications(fid: string) {
+    return await this.client.notification.count({
+      where: {
+        fid,
+        read: false,
+      },
+    });
+  }
+
+  async markNotificationsRead(fid: string) {
+    await this.client.notification.updateMany({
+      where: {
+        fid,
+        read: false,
+      },
+      data: {
+        read: true,
+      },
+    });
+  }
+
+  decodeCursorTimestamp(cursor?: string): { lt: Date } | undefined {
+    if (!cursor) return;
+    const decodedCursor = this.decodeCursor(cursor);
+    return decodedCursor
+      ? { lt: new Date(decodedCursor.timestamp) }
+      : undefined;
+  }
+
+  decodeCursor(cursor?: string): Record<string, string> | undefined {
+    if (!cursor) return;
+    try {
+      const decodedString = Buffer.from(cursor, "base64").toString("ascii");
+      const decodedCursor = JSON.parse(decodedString);
+      if (typeof decodedCursor === "object") {
+        return decodedCursor;
+      }
+      console.error(
+        "Decoded cursor does not match expected format:",
+        decodedCursor,
+      );
+    } catch (error) {
+      console.error("Error decoding cursor:", error);
+    }
+  }
+
+  encodeCursor(cursor?: Record<string, string | number>): string | undefined {
+    if (!cursor) return;
+    const encodedString = JSON.stringify(cursor);
+    return Buffer.from(encodedString).toString("base64");
   }
 }
