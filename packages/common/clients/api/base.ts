@@ -11,6 +11,8 @@ export class BaseAPIClient {
       ...(options.viewerFid ? { "X-Viewer-Fid": options.viewerFid } : {}),
     };
 
+    console.log(`Making request to ${this.API_ENDPOINT}${path}`);
+
     const response = await fetch(`${this.API_ENDPOINT}${path}`, {
       ...options,
       headers,
