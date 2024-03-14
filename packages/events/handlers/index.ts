@@ -19,7 +19,7 @@ export const getEventsHandler = async () => {
     }
 
     console.log(
-      `[${event.source.service}] [${event.source.type}] processed ${event.source.id}}`,
+      `[${event.source.service}] [${event.source.type}] processed ${event.source.id}`,
     );
   };
 };

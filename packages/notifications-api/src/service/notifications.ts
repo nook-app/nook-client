@@ -49,10 +49,26 @@ export class NotificationsService {
   async publishNotification(notification: Notification) {
     await this.client.notification.upsert({
       where: {
-        sourceId: notification.sourceId,
+        fid_service_type_sourceId: {
+          fid: notification.fid,
+          service: notification.service,
+          type: notification.type,
+          sourceId: notification.sourceId,
+        },
       },
       create: notification,
       update: notification,
+    });
+  }
+
+  async deleteNotification(notification: Notification) {
+    await this.client.notification.deleteMany({
+      where: {
+        fid: notification.fid,
+        service: notification.service,
+        type: notification.type,
+        sourceId: notification.sourceId,
+      },
     });
   }
 }

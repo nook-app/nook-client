@@ -1,3 +1,4 @@
+import { Notification } from "../../types";
 import { BaseAPIClient } from "./base";
 
 export class NotificationsAPIClient extends BaseAPIClient {
@@ -46,6 +47,28 @@ export class NotificationsAPIClient extends BaseAPIClient {
         Authorization: token,
       },
       body: JSON.stringify({ token: pushToken }),
+    });
+
+    if (!response.ok) {
+      throw new Error(response.statusText);
+    }
+  }
+
+  async publishNotification(notification: Notification): Promise<void> {
+    const response = await this.makeRequest("/publish", {
+      method: "POST",
+      body: JSON.stringify(notification),
+    });
+
+    if (!response.ok) {
+      throw new Error(response.statusText);
+    }
+  }
+
+  async deleteNotification(notification: Notification): Promise<void> {
+    const response = await this.makeRequest("/publish", {
+      method: "DELETE",
+      body: JSON.stringify(notification),
     });
 
     if (!response.ok) {

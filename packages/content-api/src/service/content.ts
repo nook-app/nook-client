@@ -233,7 +233,7 @@ export class ContentService {
       whereClause.length > 0 ? `WHERE ${whereClause.join(" AND ")}` : "";
 
     const query = `
-      SELECT "FarcasterContentReference".*, "content"."frame" AS "content_frame"
+      SELECT "FarcasterContentReference".*
       FROM "FarcasterContentReference"
       LEFT JOIN "UrlContent" AS "content" ON "FarcasterContentReference"."uri" = "content"."uri"
       ${whereClauseString}

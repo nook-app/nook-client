@@ -50,5 +50,17 @@ export const notificationsRoutes = async (fastify: FastifyInstance) => {
         reply.code(500).send({ message: (e as Error).message });
       }
     });
+
+    fastify.delete<{ Body: Notification }>(
+      "/publish",
+      async (request, reply) => {
+        try {
+          await service.deleteNotification(request.body);
+          reply.code(201).send();
+        } catch (e) {
+          reply.code(500).send({ message: (e as Error).message });
+        }
+      },
+    );
   });
 };

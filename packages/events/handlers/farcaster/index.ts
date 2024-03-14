@@ -3,6 +3,7 @@ import {
   ContentAPIClient,
   FarcasterAPIClient,
   FarcasterCacheClient,
+  NotificationsAPIClient,
 } from "@nook/common/clients";
 import { RedisClient } from "@nook/common/clients";
 import {
@@ -13,17 +14,24 @@ import {
   FarcasterUsernameProof,
   FarcasterVerification,
 } from "@nook/common/prisma/farcaster";
-import { EntityEvent, FarcasterEventType } from "@nook/common/types";
+import {
+  EntityEvent,
+  FarcasterEventType,
+  NotificationService,
+  NotificationType,
+} from "@nook/common/types";
 
 export class FarcasterProcessor {
   private farcasterClient: FarcasterAPIClient;
   private cacheClient: FarcasterCacheClient;
   private contentClient: ContentAPIClient;
+  private notificationClient: NotificationsAPIClient;
 
   constructor() {
     this.farcasterClient = new FarcasterAPIClient();
     this.cacheClient = new FarcasterCacheClient(new RedisClient());
     this.contentClient = new ContentAPIClient();
+    this.notificationClient = new NotificationsAPIClient();
   }
 
   async process(event: EntityEvent) {
@@ -97,14 +105,58 @@ export class FarcasterProcessor {
     const promises = [];
     promises.push(this.contentClient.addContentReferences(cast));
 
-    if (cast.parentHash) {
+    if (cast.parentHash && data.parentFid) {
       promises.push(
         this.cacheClient.resetCastEngagement(cast.parentHash, "replies"),
       );
+      promises.push(
+        this.notificationClient.publishNotification({
+          fid: data.parentFid.toString(),
+          service: NotificationService.FARCASTER,
+          type: NotificationType.REPLY,
+          sourceId: data.hash,
+          timestamp: data.timestamp,
+          data: {
+            fid: data.fid.toString(),
+            hash: data.hash,
+            parentHash: cast.parentHash,
+          },
+        }),
+      );
     }
 
-    for (const { hash } of cast.embedCasts) {
+    for (const { user, hash } of cast.embedCasts) {
       promises.push(this.cacheClient.resetCastEngagement(hash, "quotes"));
+      promises.push(
+        this.notificationClient.publishNotification({
+          fid: user.fid.toString(),
+          service: NotificationService.FARCASTER,
+          type: NotificationType.QUOTE,
+          sourceId: data.hash,
+          timestamp: data.timestamp,
+          data: {
+            fid: data.fid.toString(),
+            hash: data.hash,
+            embedHash: hash,
+          },
+        }),
+      );
+    }
+
+    for (const { user } of cast.mentions) {
+      promises.push(
+        this.notificationClient.publishNotification({
+          fid: user.fid.toString(),
+          service: NotificationService.FARCASTER,
+          type: NotificationType.MENTION,
+          sourceId: data.hash,
+          timestamp: data.timestamp,
+          data: {
+            fid: data.fid.toString(),
+            hash: data.hash,
+          },
+        }),
+      );
     }
 
     await Promise.all(promises);
@@ -118,14 +170,58 @@ export class FarcasterProcessor {
     promises.push(this.cacheClient.removeCast(data.hash));
     promises.push(this.contentClient.removeContentReferences(cast));
 
-    if (cast.parentHash) {
+    if (cast.parentHash && data.parentFid) {
       promises.push(
         this.cacheClient.resetCastEngagement(cast.parentHash, "replies"),
       );
+      promises.push(
+        this.notificationClient.deleteNotification({
+          fid: data.parentFid.toString(),
+          service: NotificationService.FARCASTER,
+          type: NotificationType.REPLY,
+          sourceId: data.hash,
+          timestamp: data.timestamp,
+          data: {
+            fid: data.fid.toString(),
+            hash: data.hash,
+            parentHash: cast.parentHash,
+          },
+        }),
+      );
     }
 
-    for (const { hash } of cast.embedCasts) {
+    for (const { user, hash } of cast.embedCasts) {
       promises.push(this.cacheClient.resetCastEngagement(hash, "quotes"));
+      promises.push(
+        this.notificationClient.deleteNotification({
+          fid: user.fid.toString(),
+          service: NotificationService.FARCASTER,
+          type: NotificationType.QUOTE,
+          sourceId: data.hash,
+          timestamp: data.timestamp,
+          data: {
+            fid: data.fid.toString(),
+            hash: data.hash,
+            embedHash: hash,
+          },
+        }),
+      );
+    }
+
+    for (const { user } of cast.mentions) {
+      promises.push(
+        this.notificationClient.deleteNotification({
+          fid: user.fid.toString(),
+          service: NotificationService.FARCASTER,
+          type: NotificationType.MENTION,
+          sourceId: data.hash,
+          timestamp: data.timestamp,
+          data: {
+            fid: data.fid.toString(),
+            hash: data.hash,
+          },
+        }),
+      );
     }
 
     await Promise.all(promises);
@@ -145,6 +241,19 @@ export class FarcasterProcessor {
           true,
         ),
       );
+      promises.push(
+        this.notificationClient.publishNotification({
+          fid: data.targetFid.toString(),
+          service: NotificationService.FARCASTER,
+          type: NotificationType.LIKE,
+          sourceId: data.hash,
+          timestamp: data.timestamp,
+          data: {
+            fid: data.fid.toString(),
+            targetHash: data.targetHash,
+          },
+        }),
+      );
     } else if (data.reactionType === 2) {
       promises.push(
         this.cacheClient.resetCastEngagement(data.targetHash, "recasts"),
@@ -156,6 +265,19 @@ export class FarcasterProcessor {
           data.fid.toString(),
           true,
         ),
+      );
+      promises.push(
+        this.notificationClient.publishNotification({
+          fid: data.targetFid.toString(),
+          service: NotificationService.FARCASTER,
+          type: NotificationType.RECAST,
+          sourceId: data.hash,
+          timestamp: data.timestamp,
+          data: {
+            fid: data.fid.toString(),
+            targetHash: data.targetHash,
+          },
+        }),
       );
     }
 
@@ -176,6 +298,19 @@ export class FarcasterProcessor {
           false,
         ),
       );
+      promises.push(
+        this.notificationClient.deleteNotification({
+          fid: data.targetFid.toString(),
+          service: NotificationService.FARCASTER,
+          type: NotificationType.LIKE,
+          sourceId: data.hash,
+          timestamp: data.timestamp,
+          data: {
+            fid: data.fid.toString(),
+            targetHash: data.targetHash,
+          },
+        }),
+      );
     } else if (data.reactionType === 2) {
       promises.push(
         this.cacheClient.resetCastEngagement(data.targetHash, "recasts"),
@@ -187,6 +322,19 @@ export class FarcasterProcessor {
           data.fid.toString(),
           false,
         ),
+      );
+      promises.push(
+        this.notificationClient.deleteNotification({
+          fid: data.targetFid.toString(),
+          service: NotificationService.FARCASTER,
+          type: NotificationType.RECAST,
+          sourceId: data.hash,
+          timestamp: data.timestamp,
+          data: {
+            fid: data.fid.toString(),
+            targetHash: data.targetHash,
+          },
+        }),
       );
     }
 
@@ -216,6 +364,18 @@ export class FarcasterProcessor {
           true,
         ),
       );
+      promises.push(
+        this.notificationClient.publishNotification({
+          fid: data.targetFid.toString(),
+          service: NotificationService.FARCASTER,
+          type: NotificationType.FOLLOW,
+          sourceId: data.hash,
+          timestamp: data.timestamp,
+          data: {
+            fid: data.fid.toString(),
+          },
+        }),
+      );
     }
     await Promise.all(promises);
   }
@@ -242,6 +402,18 @@ export class FarcasterProcessor {
           data.targetFid.toString(),
           false,
         ),
+      );
+      promises.push(
+        this.notificationClient.deleteNotification({
+          fid: data.targetFid.toString(),
+          service: NotificationService.FARCASTER,
+          type: NotificationType.FOLLOW,
+          sourceId: data.hash,
+          timestamp: data.timestamp,
+          data: {
+            fid: data.fid.toString(),
+          },
+        }),
       );
     }
     await Promise.all(promises);

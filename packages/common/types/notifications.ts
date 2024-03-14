@@ -1,21 +1,25 @@
 export type BaseNotification = {
-  sourceId: string;
   fid: string;
+  service: NotificationService;
+  sourceId: string;
   timestamp: Date;
 };
 
+export enum NotificationService {
+  FARCASTER = "FARCASTER",
+}
+
 export enum NotificationType {
-  FARCASTER_MENTION = "FARCASTER_MENTION",
-  FARCASTER_REPLY = "FARCASTER_REPLY",
-  FARCASTER_LIKE = "FARCASTER_LIKE",
-  FARCASTER_RECAST = "FARCASTER_RECAST",
-  FARCASTER_QUOTE = "FARCASTER_QUOTE",
-  FARCASTER_FOLLOW = "FARCASTER_FOLLOW",
-  FARCASTER_CAST = "FARCASTER_CAST",
+  MENTION = "MENTION",
+  REPLY = "REPLY",
+  LIKE = "LIKE",
+  RECAST = "RECAST",
+  QUOTE = "QUOTE",
+  FOLLOW = "FOLLOW",
 }
 
 export type FarcasterMentionNotification = BaseNotification & {
-  type: NotificationType.FARCASTER_MENTION;
+  type: NotificationType.MENTION;
   data: {
     fid: string;
     hash: string;
@@ -23,7 +27,7 @@ export type FarcasterMentionNotification = BaseNotification & {
 };
 
 export type FarcasterReplyNotification = BaseNotification & {
-  type: NotificationType.FARCASTER_REPLY;
+  type: NotificationType.REPLY;
   data: {
     fid: string;
     hash: string;
@@ -32,7 +36,7 @@ export type FarcasterReplyNotification = BaseNotification & {
 };
 
 export type FarcasterLikeNotification = BaseNotification & {
-  type: NotificationType.FARCASTER_LIKE;
+  type: NotificationType.LIKE;
   data: {
     fid: string;
     targetHash: string;
@@ -40,7 +44,7 @@ export type FarcasterLikeNotification = BaseNotification & {
 };
 
 export type FarcasterRecastNotification = BaseNotification & {
-  type: NotificationType.FARCASTER_RECAST;
+  type: NotificationType.RECAST;
   data: {
     fid: string;
     targetHash: string;
@@ -48,7 +52,7 @@ export type FarcasterRecastNotification = BaseNotification & {
 };
 
 export type FarcasterQuoteNotification = BaseNotification & {
-  type: NotificationType.FARCASTER_QUOTE;
+  type: NotificationType.QUOTE;
   data: {
     fid: string;
     hash: string;
@@ -57,18 +61,9 @@ export type FarcasterQuoteNotification = BaseNotification & {
 };
 
 export type FarcasterFollowNotification = BaseNotification & {
-  type: NotificationType.FARCASTER_FOLLOW;
+  type: NotificationType.FOLLOW;
   data: {
     fid: string;
-  };
-};
-
-export type FarcasterCastNotification = BaseNotification & {
-  type: NotificationType.FARCASTER_CAST;
-  data: {
-    fid: string;
-    hash: string;
-    feedId: string;
   };
 };
 
@@ -78,5 +73,4 @@ export type Notification =
   | FarcasterLikeNotification
   | FarcasterRecastNotification
   | FarcasterQuoteNotification
-  | FarcasterFollowNotification
-  | FarcasterCastNotification;
+  | FarcasterFollowNotification;

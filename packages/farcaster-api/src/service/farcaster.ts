@@ -79,10 +79,15 @@ export class FarcasterService {
       );
 
       return {
-        data: references.data.map((ref) => ({
-          ...castMap[ref.hash],
-          reference: ref.uri,
-        })),
+        data: references.data
+          .map((ref) => {
+            if (!castMap[ref.hash]) return;
+            return {
+              ...castMap[ref.hash],
+              reference: ref.uri,
+            };
+          })
+          .filter(Boolean) as FarcasterCastResponse[],
         nextCursor: references.nextCursor,
       };
     }
