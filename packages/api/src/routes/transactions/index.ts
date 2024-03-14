@@ -5,6 +5,7 @@ import {
   TransactionsApi,
   TransactionsControllerGetTransactionsRequest,
   GetTransactionDto,
+  AddressTag,
 } from "@nook/common/onceupon";
 import { FarcasterAPIClient } from "@nook/common/clients";
 
@@ -17,14 +18,18 @@ export const transactionRoutes = async (fastify: FastifyInstance) => {
       "/transactions",
       async (request, reply) => {
         await request.jwtVerify();
-        const addresses = (await farcasterClient.getUsers([request.body.fid]))
-          .data[0].verifiedAddresses;
+        const farResponse = await farcasterClient.getUsers([request.body.fid]);
+        console.log(farResponse);
+        const addresses = farResponse.data[0].verifiedAddresses;
+        console.log(addresses);
+        const contextAddresses: AddressTag[] = addresses.map((address) => {
+          return { address, toFromAll: "From" };
+        });
+        console.log(contextAddresses);
 
         const req: TransactionsControllerGetTransactionsRequest = {
           getTransactionDto: {
-            contextAddresses: addresses.map((address) => {
-              return { address, toFromAll: "From" };
-            }),
+            contextAddresses,
             filterAddresses: [],
             sort: -1,
             skip: 0,
@@ -33,6 +38,8 @@ export const transactionRoutes = async (fastify: FastifyInstance) => {
             functionSelectors: [],
             tokenTransfers: [],
             dateRange: {},
+            //@ts-ignore
+            chainIds: [0],
           },
         };
         // do we want to transform data..?
