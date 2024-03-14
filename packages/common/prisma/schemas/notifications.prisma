@@ -16,3 +16,19 @@ model User {
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
 }
+
+model Notification {
+    id        String   @id @default(uuid())
+    sourceId  String   @unique
+    fid       String
+    timestamp DateTime
+    type      String
+    data      Json
+    read      Boolean  @default(false)
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    @@index([fid, read])
+    @@index([fid, type])
+}

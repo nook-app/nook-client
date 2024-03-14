@@ -1,9 +1,10 @@
 import { PrismaClient } from "@nook/common/prisma/notifications";
+import { Notification } from "@nook/common/types";
 import { FastifyInstance } from "fastify";
 
 export const MAX_PAGE_SIZE = 25;
 
-export class UserService {
+export class NotificationsService {
   private client: PrismaClient;
 
   constructor(fastify: FastifyInstance) {
@@ -42,6 +43,16 @@ export class UserService {
         fid,
         token,
       },
+    });
+  }
+
+  async publishNotification(notification: Notification) {
+    await this.client.notification.upsert({
+      where: {
+        sourceId: notification.sourceId,
+      },
+      create: notification,
+      update: notification,
     });
   }
 }

@@ -1,9 +1,10 @@
 import { FastifyInstance } from "fastify";
-import { UserService } from "../service/user";
+import { NotificationsService } from "../service/notifications";
+import { Notification } from "@nook/common/types";
 
 export const notificationsRoutes = async (fastify: FastifyInstance) => {
   fastify.register(async (fastify: FastifyInstance) => {
-    const service = new UserService(fastify);
+    const service = new NotificationsService(fastify);
 
     fastify.get("/user", async (request, reply) => {
       const { fid } = (await request.jwtDecode()) as { fid: string };
@@ -40,5 +41,14 @@ export const notificationsRoutes = async (fastify: FastifyInstance) => {
         }
       },
     );
+
+    fastify.post<{ Body: Notification }>("/publish", async (request, reply) => {
+      try {
+        await service.publishNotification(request.body);
+        reply.code(201).send();
+      } catch (e) {
+        reply.code(500).send({ message: (e as Error).message });
+      }
+    });
   });
 };

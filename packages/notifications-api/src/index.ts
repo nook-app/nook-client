@@ -1,6 +1,6 @@
 import fastify from "fastify";
 import { notificationsPlugin } from "./plugins";
-import { notificationsRoutes } from "./routes/user";
+import { notificationsRoutes } from "./routes/notifications";
 import fastifyJwt from "@fastify/jwt";
 
 const buildApp = () => {
