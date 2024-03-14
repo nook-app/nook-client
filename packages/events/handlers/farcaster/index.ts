@@ -116,8 +116,8 @@ export class FarcasterProcessor {
           type: NotificationType.REPLY,
           sourceId: data.hash,
           timestamp: data.timestamp,
+          sourceFid: data.fid.toString(),
           data: {
-            fid: data.fid.toString(),
             hash: data.hash,
             parentHash: cast.parentHash,
           },
@@ -134,8 +134,8 @@ export class FarcasterProcessor {
           type: NotificationType.QUOTE,
           sourceId: data.hash,
           timestamp: data.timestamp,
+          sourceFid: data.fid.toString(),
           data: {
-            fid: data.fid.toString(),
             hash: data.hash,
             embedHash: hash,
           },
@@ -151,8 +151,8 @@ export class FarcasterProcessor {
           type: NotificationType.MENTION,
           sourceId: data.hash,
           timestamp: data.timestamp,
+          sourceFid: data.fid.toString(),
           data: {
-            fid: data.fid.toString(),
             hash: data.hash,
           },
         }),
@@ -181,8 +181,8 @@ export class FarcasterProcessor {
           type: NotificationType.REPLY,
           sourceId: data.hash,
           timestamp: data.timestamp,
+          sourceFid: data.fid.toString(),
           data: {
-            fid: data.fid.toString(),
             hash: data.hash,
             parentHash: cast.parentHash,
           },
@@ -199,8 +199,8 @@ export class FarcasterProcessor {
           type: NotificationType.QUOTE,
           sourceId: data.hash,
           timestamp: data.timestamp,
+          sourceFid: data.fid.toString(),
           data: {
-            fid: data.fid.toString(),
             hash: data.hash,
             embedHash: hash,
           },
@@ -216,8 +216,8 @@ export class FarcasterProcessor {
           type: NotificationType.MENTION,
           sourceId: data.hash,
           timestamp: data.timestamp,
+          sourceFid: data.fid.toString(),
           data: {
-            fid: data.fid.toString(),
             hash: data.hash,
           },
         }),
@@ -248,8 +248,8 @@ export class FarcasterProcessor {
           type: NotificationType.LIKE,
           sourceId: data.hash,
           timestamp: data.timestamp,
+          sourceFid: data.fid.toString(),
           data: {
-            fid: data.fid.toString(),
             targetHash: data.targetHash,
           },
         }),
@@ -273,8 +273,8 @@ export class FarcasterProcessor {
           type: NotificationType.RECAST,
           sourceId: data.hash,
           timestamp: data.timestamp,
+          sourceFid: data.fid.toString(),
           data: {
-            fid: data.fid.toString(),
             targetHash: data.targetHash,
           },
         }),
@@ -305,8 +305,8 @@ export class FarcasterProcessor {
           type: NotificationType.LIKE,
           sourceId: data.hash,
           timestamp: data.timestamp,
+          sourceFid: data.fid.toString(),
           data: {
-            fid: data.fid.toString(),
             targetHash: data.targetHash,
           },
         }),
@@ -330,8 +330,8 @@ export class FarcasterProcessor {
           type: NotificationType.RECAST,
           sourceId: data.hash,
           timestamp: data.timestamp,
+          sourceFid: data.fid.toString(),
           data: {
-            fid: data.fid.toString(),
             targetHash: data.targetHash,
           },
         }),
@@ -371,9 +371,8 @@ export class FarcasterProcessor {
           type: NotificationType.FOLLOW,
           sourceId: data.hash,
           timestamp: data.timestamp,
-          data: {
-            fid: data.fid.toString(),
-          },
+          sourceFid: data.fid.toString(),
+          data: undefined,
         }),
       );
     }
@@ -410,9 +409,8 @@ export class FarcasterProcessor {
           type: NotificationType.FOLLOW,
           sourceId: data.hash,
           timestamp: data.timestamp,
-          data: {
-            fid: data.fid.toString(),
-          },
+          sourceFid: data.fid.toString(),
+          data: undefined,
         }),
       );
     }

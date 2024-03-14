@@ -22,8 +22,9 @@ model Notification {
     service   String
     type      String
     sourceId  String
+    sourceFid String
     timestamp DateTime
-    data      Json
+    data      Json?
     read      Boolean  @default(false)
 
     createdAt DateTime @default(now())

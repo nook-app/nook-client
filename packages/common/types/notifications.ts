@@ -1,6 +1,7 @@
 export type BaseNotification = {
   fid: string;
   service: NotificationService;
+  sourceFid: string;
   sourceId: string;
   timestamp: Date;
 };
@@ -21,7 +22,6 @@ export enum NotificationType {
 export type FarcasterMentionNotification = BaseNotification & {
   type: NotificationType.MENTION;
   data: {
-    fid: string;
     hash: string;
   };
 };
@@ -29,7 +29,6 @@ export type FarcasterMentionNotification = BaseNotification & {
 export type FarcasterReplyNotification = BaseNotification & {
   type: NotificationType.REPLY;
   data: {
-    fid: string;
     hash: string;
     parentHash: string;
   };
@@ -38,7 +37,6 @@ export type FarcasterReplyNotification = BaseNotification & {
 export type FarcasterLikeNotification = BaseNotification & {
   type: NotificationType.LIKE;
   data: {
-    fid: string;
     targetHash: string;
   };
 };
@@ -46,7 +44,6 @@ export type FarcasterLikeNotification = BaseNotification & {
 export type FarcasterRecastNotification = BaseNotification & {
   type: NotificationType.RECAST;
   data: {
-    fid: string;
     targetHash: string;
   };
 };
@@ -54,7 +51,6 @@ export type FarcasterRecastNotification = BaseNotification & {
 export type FarcasterQuoteNotification = BaseNotification & {
   type: NotificationType.QUOTE;
   data: {
-    fid: string;
     hash: string;
     embedHash: string;
   };
@@ -62,9 +58,7 @@ export type FarcasterQuoteNotification = BaseNotification & {
 
 export type FarcasterFollowNotification = BaseNotification & {
   type: NotificationType.FOLLOW;
-  data: {
-    fid: string;
-  };
+  data: undefined;
 };
 
 export type Notification =

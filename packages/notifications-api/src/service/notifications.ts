@@ -1,4 +1,4 @@
-import { PrismaClient } from "@nook/common/prisma/notifications";
+import { Prisma, PrismaClient } from "@nook/common/prisma/notifications";
 import { Notification } from "@nook/common/types";
 import { FastifyInstance } from "fastify";
 
@@ -56,8 +56,14 @@ export class NotificationsService {
           sourceId: notification.sourceId,
         },
       },
-      create: notification,
-      update: notification,
+      create: {
+        ...notification,
+        data: notification.data || Prisma.DbNull,
+      },
+      update: {
+        ...notification,
+        data: notification.data || Prisma.DbNull,
+      },
     });
   }
 
