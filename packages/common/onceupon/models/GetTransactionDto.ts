@@ -82,10 +82,10 @@ export interface GetTransactionDto {
     tokenTransfers: Array<string>;
     /**
      * Chain ID
-     * @type {Array<string>}
+     * @type {Array<number>}
      * @memberof GetTransactionDto
      */
-    chainIds: Array<string>;
+    chainIds: Array<number>;
     /**
      * Block number
      * @type {number}

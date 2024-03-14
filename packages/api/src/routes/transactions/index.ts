@@ -32,13 +32,11 @@ export const transactionRoutes = async (fastify: FastifyInstance) => {
             contextAddresses,
             filterAddresses: [],
             sort: -1,
-            skip: 0,
+            skip: request.body.cursor || 0,
             limit: 25,
-            // marked as optional but get 500 if these aren't included
             functionSelectors: [],
             tokenTransfers: [],
             dateRange: {},
-            //@ts-ignore
             chainIds: [0],
           },
         };

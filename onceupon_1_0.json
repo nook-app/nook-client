@@ -4596,7 +4596,7 @@
             "description": "Chain ID",
             "type": "array",
             "items": {
-              "type": "string"
+              "type": "number"
             }
           },
           "blockNumber": {

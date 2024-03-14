@@ -197,5 +197,5 @@ export type GetNotificationsResponse = {
 
 export type GetTransactionsRequest = {
   fid: string;
-  cursor?: string;
+  cursor?: number;
 };
