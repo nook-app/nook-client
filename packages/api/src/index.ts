@@ -7,6 +7,7 @@ import { farcasterRoutes } from "./routes/farcaster";
 import { farcasterSignerRoutes } from "./routes/farcaster/signer";
 import { frameRoutes } from "./routes/frames";
 import { contentRoutes } from "./routes/content";
+import { notificationsRoutes } from "./routes/notifications";
 
 const buildApp = () => {
   const app = fastify({
@@ -37,6 +38,7 @@ const buildApp = () => {
   app.register(farcasterRoutes, { prefix: "/v0" });
   app.register(farcasterSignerRoutes, { prefix: "/v0" });
   app.register(frameRoutes, { prefix: "/v0" });
+  app.register(notificationsRoutes, { prefix: "/v0" });
 
   return app;
 };

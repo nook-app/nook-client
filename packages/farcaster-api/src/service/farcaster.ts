@@ -228,17 +228,40 @@ export class FarcasterService {
     cursor?: string,
     viewerFid?: string,
   ): Promise<GetFarcasterCastsResponse> {
-    const data = await this.client.farcasterCast.findMany({
-      where: {
-        timestamp: this.decodeCursorTimestamp(cursor),
-        parentHash: hash,
-        deletedAt: null,
-      },
-      orderBy: {
-        timestamp: "desc",
-      },
-      take: MAX_PAGE_SIZE,
-    });
+    const decodedCursor = this.decodeCursor(cursor);
+
+    const conditions: string[] = [
+      `"parentHash" = '${sanitizeInput(hash)}'`,
+      `"deletedAt" IS NULL`,
+    ];
+
+    if (decodedCursor?.likes) {
+      conditions.push(
+        `(stats.likes <= ${decodedCursor.likes} OR stats.likes IS NULL)`,
+      );
+    }
+    if (decodedCursor?.timestamp) {
+      conditions.push(
+        `timestamp < '${new Date(decodedCursor.timestamp).toISOString()}'`,
+      );
+    }
+
+    const whereClause = conditions.join(" AND ");
+
+    const data = await this.client.$queryRaw<
+      (DBFarcasterCast & { likes: number })[]
+    >(
+      Prisma.sql([
+        `
+          SELECT c.*, likes
+          FROM "FarcasterCast" c
+          LEFT JOIN "FarcasterCastStats" stats ON c.hash = stats.hash
+          WHERE ${whereClause}
+          ORDER BY stats.likes DESC NULLS LAST, timestamp DESC
+          LIMIT ${MAX_PAGE_SIZE}
+        `,
+      ]),
+    );
 
     const casts = await this.getCastsFromData(data, viewerFid);
 
@@ -247,6 +270,7 @@ export class FarcasterService {
       nextCursor:
         casts.length === MAX_PAGE_SIZE
           ? this.encodeCursor({
+              likes: data[data.length - 1]?.likes,
               timestamp: casts[casts.length - 1]?.timestamp,
             })
           : undefined,
