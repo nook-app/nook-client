@@ -1,0 +1,4922 @@
+{
+  "openapi": "3.1.0",
+  "paths": {
+    "/v1/addresses/meta": {
+      "get": {
+        "operationId": "AddressesController_meta",
+        "summary": "Retrieve address metadata",
+        "description": "Fetches metadata for a list of addresses provided as a query parameter.",
+        "parameters": [
+          {
+            "name": "addresses",
+            "required": true,
+            "in": "query",
+            "description": "Comma-separated list of addresses to retrieve metadata for.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved address metadata.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AddressMetadataDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request if the addresses parameter is invalid or missing."
+          },
+          "401": {
+            "description": "Unauthorized if the user is not authenticated."
+          }
+        },
+        "tags": ["addresses"],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/v1/addresses/{address}/{chainId}/transactions-details": {
+      "get": {
+        "operationId": "AddressesController_getAddressTransactionsDetails",
+        "summary": "Retrieve Address Transactions Details",
+        "description": "Fetches transaction details for a given address and chain ID.",
+        "parameters": [
+          {
+            "name": "address",
+            "required": true,
+            "in": "path",
+            "description": "The blockchain address for which transaction details are to be retrieved.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "chainId",
+            "required": true,
+            "in": "path",
+            "description": "The ID of the blockchain chain to fetch transactions from.",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "ignoreDenylist",
+            "required": false,
+            "in": "query",
+            "description": "Optional query param to ignore denylist addresses",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved Transactions.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AddressMetadataDto"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request if the address or chainId parameters are invalid or missing."
+          },
+          "404": {
+            "description": "Not Found if the address or chainId does not exist or is incorrect."
+          }
+        },
+        "tags": ["addresses"]
+      }
+    },
+    "/v1/addresses/{address}/balance": {
+      "get": {
+        "operationId": "AddressesController_getBalance",
+        "summary": "Retrieve address balance",
+        "description": "Fetches the balance for a specified blockchain address.",
+        "parameters": [
+          {
+            "name": "address",
+            "required": true,
+            "in": "path",
+            "description": "The blockchain address for which the balance is to be retrieved.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved address balance.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BalanceDataDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request if the address parameter is invalid or missing."
+          },
+          "404": {
+            "description": "Not Found if the address does not exist or is incorrect."
+          }
+        },
+        "tags": ["addresses"]
+      }
+    },
+    "/v1/addresses/{address}/socials": {
+      "get": {
+        "operationId": "AddressesController_getSocials",
+        "summary": "Retrieve address social media details",
+        "description": "Fetches social media information associated with a specified blockchain address.",
+        "parameters": [
+          {
+            "name": "address",
+            "required": true,
+            "in": "path",
+            "description": "The blockchain address for which social media details are to be retrieved.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved social media details for the address.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SocialsDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request if the address parameter is invalid or missing."
+          },
+          "404": {
+            "description": "Not Found if the address does not exist or is incorrect."
+          }
+        },
+        "tags": ["addresses"]
+      }
+    },
+    "/v1/addresses/{address}/farcaster-follows": {
+      "get": {
+        "operationId": "AddressesController_getFarcasterFollows",
+        "summary": "Retrieve farcaster follows",
+        "parameters": [
+          {
+            "name": "address",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved address Farcaster follows.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/FarcasterProfileDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": ["addresses"]
+      }
+    },
+    "/v1/addresses/{address}/{chainId}/heatmap": {
+      "get": {
+        "operationId": "AddressesController_getHeatmap",
+        "summary": "Retrieve address heatmap",
+        "description": "Fetches a heatmap representation for a given blockchain address and chain ID, illustrating various activities or metrics associated with the address.",
+        "parameters": [
+          {
+            "name": "address",
+            "required": true,
+            "in": "path",
+            "description": "The blockchain address for which the heatmap is to be retrieved.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "chainId",
+            "required": true,
+            "in": "path",
+            "description": "The ID of the blockchain chain for which the heatmap is to be generated.",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "ignoreDenylist",
+            "required": false,
+            "in": "query",
+            "description": "Optional query param to ignore denylist addresses",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved address heatmap.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/HeatMapDto"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request if the address or chainId parameters are invalid or missing."
+          },
+          "404": {
+            "description": "Not Found if the address or chainId does not exist or is incorrect."
+          }
+        },
+        "tags": ["addresses"]
+      }
+    },
+    "/v1/addresses/{address}/{chainId}/neighbors": {
+      "get": {
+        "operationId": "AddressesController_getNeighbors",
+        "summary": "Retrieve address neighbors",
+        "description": "Fetches data about neighbors (or related addresses) for a given blockchain address and chain ID, providing insights into connections and interactions.",
+        "parameters": [
+          {
+            "name": "address",
+            "required": true,
+            "in": "path",
+            "description": "The blockchain address for which neighbors are to be retrieved.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "chainId",
+            "required": true,
+            "in": "path",
+            "description": "The ID of the blockchain chain related to the address for neighbor data retrieval.",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved address neighbors.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/NeighborDto"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request if the address or chainId parameters are invalid or missing."
+          },
+          "404": {
+            "description": "Not Found if the address or chainId does not exist or is incorrect."
+          }
+        },
+        "tags": ["addresses"]
+      }
+    },
+    "/v1/addresses/{address}/{chainId}/tokens": {
+      "get": {
+        "operationId": "AddressesController_getTokens",
+        "summary": "Retrieve user tokens",
+        "description": "Fetches a list of tokens associated with a given blockchain address and chain ID, detailing the token holdings and related information.",
+        "parameters": [
+          {
+            "name": "address",
+            "required": true,
+            "in": "path",
+            "description": "The blockchain address for which token information is to be retrieved.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "chainId",
+            "required": true,
+            "in": "path",
+            "description": "The ID of the blockchain chain related to the address for token data retrieval.",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved tokens.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TokenDto"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request if the address or chainId parameters are invalid or missing."
+          },
+          "404": {
+            "description": "Not Found if the address or chainId does not exist or is incorrect."
+          }
+        },
+        "tags": ["addresses"]
+      }
+    },
+    "/v1/addresses/{address}/{chainId}/nfts": {
+      "get": {
+        "operationId": "AddressesController_getNfts",
+        "summary": "Retrieve user NFTs",
+        "description": "Fetches a list of Non-Fungible Tokens (NFTs) associated with a given blockchain address and chain ID, including details about each NFT.",
+        "parameters": [
+          {
+            "name": "address",
+            "required": true,
+            "in": "path",
+            "description": "The blockchain address for which NFT information is to be retrieved.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "chainId",
+            "required": true,
+            "in": "path",
+            "description": "The ID of the blockchain chain related to the address for NFT data retrieval.",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved NFTs.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/NftDto"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request if the address or chainId parameters are invalid or missing."
+          },
+          "404": {
+            "description": "Not Found if the address or chainId does not exist or is incorrect."
+          }
+        },
+        "tags": ["addresses"]
+      }
+    },
+    "/v1/addresses/{address}/farcaster-frame-internal": {
+      "post": {
+        "operationId": "AddressesController_buildAddressesFCFrameInternal",
+        "summary": "Retrieve Farcaster Frame",
+        "description": "Fetches farcaster frame based on the provided POST body and the variables in the path.",
+        "parameters": [
+          {
+            "name": "address",
+            "required": true,
+            "in": "path",
+            "description": "The address for which metadata is to be retrieved.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "callback",
+            "required": false,
+            "in": "query",
+            "description": "Callback url",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "skip",
+            "required": true,
+            "in": "query",
+            "description": "Skip",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "description": "Address Frame API POST body",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved farcaster frame."
+          },
+          "400": {
+            "description": "Bad request if the provided query parameters are invalid."
+          }
+        },
+        "tags": ["addresses"]
+      }
+    },
+    "/v1/contracts/fingerprint/{fingerprint}": {
+      "get": {
+        "operationId": "ContractsController_getContractsByCodeFingerprint",
+        "summary": "Retrieve contract by fingerprint",
+        "description": "Fetches contract details based on a unique code fingerprint, providing information about the contract associated with that fingerprint.",
+        "parameters": [
+          {
+            "name": "fingerprint",
+            "required": true,
+            "in": "path",
+            "description": "The unique fingerprint identifier for the contract to be retrieved.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved contract details.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContractsDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request if the provided fingerprint parameter is invalid or missing."
+          },
+          "404": {
+            "description": "Not Found if no contract is found for the provided fingerprint."
+          }
+        },
+        "tags": ["contracts"]
+      }
+    },
+    "/v1/contracts/fingerprint/{chainId}/{fingerprint}": {
+      "get": {
+        "operationId": "ContractsController_getContractsByCodeFingerprintAndChain",
+        "summary": "Retrieve contract by fingerprint and chain ID",
+        "description": "Fetches contract details based on a unique code fingerprint and chain ID, providing information about the contract associated with that fingerprint on a specific blockchain.",
+        "parameters": [
+          {
+            "name": "chainId",
+            "required": true,
+            "in": "path",
+            "description": "The ID of the blockchain chain associated with the contract to be retrieved.",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "fingerprint",
+            "required": true,
+            "in": "path",
+            "description": "The unique fingerprint identifier for the contract to be retrieved.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved contract details.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ContractsDto"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request if the provided fingerprint or chain ID parameters are invalid or missing."
+          },
+          "404": {
+            "description": "Not Found if no contract is found for the provided fingerprint and chain ID."
+          }
+        },
+        "tags": ["contracts"]
+      }
+    },
+    "/v1/contracts/abi/{fingerprint}": {
+      "get": {
+        "operationId": "ContractsController_getAbi",
+        "summary": "Retrieve Contract ABI",
+        "description": "Fetches the ABI for a specific contract using its fingerprint.",
+        "parameters": [
+          {
+            "name": "fingerprint",
+            "required": true,
+            "in": "path",
+            "description": "Unique fingerprint of the contract.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved contract ABI.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AbiDto"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request if the fingerprint is invalid."
+          },
+          "404": {
+            "description": "Not found if no ABI is found for the given fingerprint."
+          }
+        },
+        "tags": ["contracts"]
+      }
+    },
+    "/v1/contracts/{address}": {
+      "get": {
+        "operationId": "ContractsController_getContractsByAddress",
+        "summary": "Retrieve Contracts by Address",
+        "description": "Fetches contracts associated with a given address.",
+        "parameters": [
+          {
+            "name": "address",
+            "required": true,
+            "in": "path",
+            "description": "Blockchain address to fetch contracts for.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved contracts.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ContractsDto"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request if the address is invalid."
+          },
+          "404": {
+            "description": "Not found if no contracts are associated with the address."
+          }
+        },
+        "tags": ["contracts"]
+      }
+    },
+    "/v1/contracts/{address}/{chainId}": {
+      "get": {
+        "operationId": "ContractsController_getContract",
+        "summary": "Retrieve Specific Contract",
+        "description": "Fetches a specific contract based on address and chain ID.",
+        "parameters": [
+          {
+            "name": "address",
+            "required": true,
+            "in": "path",
+            "description": "Contract address.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "chainId",
+            "required": true,
+            "in": "path",
+            "description": "Chain ID of the blockchain.",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved the contract.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ContractsDto"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request if the parameters are invalid."
+          },
+          "404": {
+            "description": "Not found if no contract exists with the given address and chain ID."
+          }
+        },
+        "tags": ["contracts"]
+      }
+    },
+    "/v1/contracts/{address}/{chainId}/call": {
+      "post": {
+        "operationId": "ContractsController_callContract",
+        "summary": "Call Contract Method",
+        "description": "Calls a method on a contract with specified parameters.",
+        "parameters": [
+          {
+            "name": "address",
+            "required": true,
+            "in": "path",
+            "description": "Contract address.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "chainId",
+            "required": true,
+            "in": "path",
+            "description": "Chain ID of the blockchain.",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "description": "Details of the contract method call.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ContractCallRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successfully called contract method.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ContractsDto"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request if the parameters or the body is invalid."
+          }
+        },
+        "tags": ["contracts"]
+      }
+    },
+    "/v1/contracts/{address}/{chainId}/transactions-details": {
+      "get": {
+        "operationId": "ContractsController_getContractTransactionsDetails",
+        "summary": "Retrieve Contract Transactions",
+        "description": "Fetches transaction details of a specific contract.",
+        "parameters": [
+          {
+            "name": "address",
+            "required": true,
+            "in": "path",
+            "description": "Contract address.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "chainId",
+            "required": true,
+            "in": "path",
+            "description": "Chain ID of the blockchain.",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved contract transactions.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ContractsDto"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request if the parameters are invalid."
+          },
+          "404": {
+            "description": "Not found if no transactions are available for the specified contract."
+          }
+        },
+        "tags": ["contracts"]
+      }
+    },
+    "/v1/contracts/{address}/{chainId}/nfts/holders": {
+      "get": {
+        "operationId": "ContractsController_getNftHolders",
+        "summary": "Retrieve NFT Holders",
+        "description": "Fetches a list of holders for a specific Non-Fungible Token (NFT) based on its contract address and the blockchain chain ID.",
+        "parameters": [
+          {
+            "name": "address",
+            "required": true,
+            "in": "path",
+            "description": "The contract address of the NFT for which holders are to be retrieved.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "chainId",
+            "required": true,
+            "in": "path",
+            "description": "The ID of the blockchain chain related to the NFT.",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved NFT holders.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/OwnershipDto"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request if the address or chain ID parameters are invalid or missing."
+          },
+          "404": {
+            "description": "Not Found if no NFT holders are found for the provided address and chain ID."
+          }
+        },
+        "tags": ["contracts"]
+      }
+    },
+    "/v1/contracts/{address}/{chainId}/nfts/price-data": {
+      "get": {
+        "operationId": "ContractsController_getPriceData",
+        "summary": "Retrieve NFT Floor Price",
+        "description": "Fetches the floor price data for a specific Non-Fungible Token (NFT) collection based on its contract address and the blockchain chain ID.",
+        "parameters": [
+          {
+            "name": "address",
+            "required": true,
+            "in": "path",
+            "description": "The contract address of the NFT collection for which floor price data is to be retrieved.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "chainId",
+            "required": true,
+            "in": "path",
+            "description": "The ID of the blockchain chain associated with the NFT collection.",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved NFT floor price data.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CollectionPriceDataDto"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request if the address or chain ID parameters are invalid or missing."
+          },
+          "404": {
+            "description": "Not Found if no floor price data is found for the provided address and chain ID."
+          }
+        },
+        "tags": ["contracts"]
+      }
+    },
+    "/v1/contracts/{address}/{chainId}/nfts": {
+      "get": {
+        "operationId": "ContractsController_getNfts",
+        "summary": "Retrieve All NFTs",
+        "description": "Fetches all Non-Fungible Tokens (NFTs) associated with a specific contract address and blockchain chain ID, with optional pagination.",
+        "parameters": [
+          {
+            "name": "address",
+            "required": true,
+            "in": "path",
+            "description": "The contract address of the NFT collection.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "chainId",
+            "required": true,
+            "in": "path",
+            "description": "The ID of the blockchain chain associated with the NFT collection.",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "cursor",
+            "required": false,
+            "in": "query",
+            "description": "Cursor for pagination, indicating the starting point for the query.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "The maximum number of NFTs to retrieve.",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved all NFTs.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NftsByContractResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request if the parameters are invalid or missing."
+          },
+          "404": {
+            "description": "Not Found if no NFTs are found for the provided address and chain ID."
+          }
+        },
+        "tags": ["contracts"]
+      }
+    },
+    "/v1/contracts/{address}/{chainId}/nfts/{tokenId}": {
+      "get": {
+        "operationId": "ContractsController_getNftByTokenId",
+        "summary": "Retrieve Specific NFT",
+        "description": "Fetches details of a specific Non-Fungible Token (NFT) based on its contract address, blockchain chain ID, and token ID.",
+        "parameters": [
+          {
+            "name": "address",
+            "required": true,
+            "in": "path",
+            "description": "The contract address of the NFT.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "chainId",
+            "required": true,
+            "in": "path",
+            "description": "The ID of the blockchain chain associated with the NFT.",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "tokenId",
+            "required": true,
+            "in": "path",
+            "description": "The unique identifier of the specific NFT within the collection.",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved the specified NFT.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NFTCollectionDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request if the address, chain ID, or token ID parameters are invalid or missing."
+          },
+          "404": {
+            "description": "Not Found if no NFT is found with the provided address, chain ID, and token ID."
+          }
+        },
+        "tags": ["contracts"]
+      }
+    },
+    "/v1/contracts/{address}/{chainId}/tokens/holders": {
+      "get": {
+        "operationId": "ContractsController_getTokenHolders",
+        "summary": "Retrieve Token Holders",
+        "description": "Fetches a list of holders for a specific token based on its contract address and the blockchain chain ID.",
+        "parameters": [
+          {
+            "name": "address",
+            "required": true,
+            "in": "path",
+            "description": "The contract address of the token for which holders are to be retrieved.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "chainId",
+            "required": true,
+            "in": "path",
+            "description": "The ID of the blockchain chain associated with the token.",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved token holders.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/OwnershipDto"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request if the address or chain ID parameters are invalid or missing."
+          },
+          "404": {
+            "description": "Not Found if no token holders are found for the provided address and chain ID."
+          }
+        },
+        "tags": ["contracts"]
+      }
+    },
+    "/v1/contracts/{address}/{chainId}/tokens/price": {
+      "get": {
+        "operationId": "ContractsController_getTokenPrice",
+        "summary": "Retrieve Token Price",
+        "description": "Fetches the current price of a specific token based on its contract address and the blockchain chain ID.",
+        "parameters": [
+          {
+            "name": "address",
+            "required": true,
+            "in": "path",
+            "description": "The contract address of the token for which the price is to be retrieved.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "chainId",
+            "required": true,
+            "in": "path",
+            "description": "The ID of the blockchain chain associated with the token.",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved the token price."
+          },
+          "400": {
+            "description": "Bad request if the address or chain ID parameters are invalid or missing."
+          },
+          "404": {
+            "description": "Not Found if no price data is available for the provided token address and chain ID."
+          }
+        },
+        "tags": ["contracts"]
+      }
+    },
+    "/v1/ens/{ensOrAddr}": {
+      "get": {
+        "operationId": "EnsController_getEns",
+        "summary": "Retrieve User ENS",
+        "description": "Fetches Ethereum Name Service (ENS) details for a given ENS name or address.",
+        "parameters": [
+          {
+            "name": "ensOrAddr",
+            "required": true,
+            "in": "path",
+            "description": "The ENS name or Ethereum address for which to retrieve ENS details.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved ENS details.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ENSDto"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request if the ENS name or address parameter is invalid."
+          },
+          "404": {
+            "description": "Not Found if no ENS details are found for the provided ENS name or address."
+          }
+        },
+        "tags": ["ens"]
+      }
+    },
+    "/v1/ens/{address}/reverse": {
+      "get": {
+        "operationId": "EnsController_getReverseEns",
+        "summary": "Retrieve User's Reverse ENS",
+        "description": "Fetches the reverse Ethereum Name Service (ENS) name for a given Ethereum address.",
+        "parameters": [
+          {
+            "name": "address",
+            "required": true,
+            "in": "path",
+            "description": "The Ethereum address for which to retrieve the reverse ENS name.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved reverse ENS name.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ENSDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request if the address parameter is invalid or if the format is not as expected."
+          },
+          "404": {
+            "description": "Not Found if no reverse ENS name is found for the provided address."
+          }
+        },
+        "tags": ["ens"]
+      }
+    },
+    "/v1/ens/token/{tokenId}": {
+      "get": {
+        "operationId": "EnsController_getEnsFromTokenId",
+        "summary": "Retrieve ENS from Token ID",
+        "description": "Fetches Ethereum Name Service (ENS) details based on a given token ID.",
+        "parameters": [
+          {
+            "name": "tokenId",
+            "required": true,
+            "in": "path",
+            "description": "The token ID for which to retrieve ENS details.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved ENS details.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ENSDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request if the token ID parameter is invalid."
+          },
+          "404": {
+            "description": "Not Found if no ENS details are found for the provided token ID."
+          }
+        },
+        "tags": ["ens"]
+      }
+    },
+    "/v1/labels": {
+      "get": {
+        "operationId": "LabelsController_getLabels",
+        "summary": "Retrieve user labels",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved labels.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/LabelDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": ["labels"],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "post": {
+        "operationId": "LabelsController_createLabel",
+        "summary": "Create a new label",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "description": "The details of the label to be created.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateLabelDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successfully created a new label.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LabelDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": ["labels"],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/v1/labels/{address}": {
+      "get": {
+        "operationId": "LabelsController_getLabel",
+        "summary": "Retrieve user label",
+        "parameters": [
+          {
+            "name": "address",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved label.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LabelDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": ["labels"],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "patch": {
+        "operationId": "LabelsController_updateLabel",
+        "summary": "Update a label",
+        "parameters": [
+          {
+            "name": "address",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "description": "The details of the group to be updated.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateLabelDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successfully updated a label.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LabelDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": ["labels"],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "delete": {
+        "operationId": "LabelsController_deleteLabel",
+        "summary": "Delete a label",
+        "parameters": [
+          {
+            "name": "address",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully deleted the label."
+          }
+        },
+        "tags": ["labels"],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/v1/labels/public/{address}": {
+      "get": {
+        "operationId": "LabelsController_getPublicLabels",
+        "summary": "Retrieve user public labels",
+        "parameters": [
+          {
+            "name": "address",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved public labels.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/LabelDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": ["labels"]
+      }
+    },
+    "/v1/labels/public/{address}/{labelledAddress}": {
+      "get": {
+        "operationId": "LabelsController_getPublicLabel",
+        "summary": "Retrieve user public label",
+        "parameters": [
+          {
+            "name": "address",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "labelledAddress",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved public label.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LabelDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": ["labels"]
+      }
+    },
+    "/v1/blocks/{chainId}": {
+      "get": {
+        "operationId": "BlocksController_getBlocks",
+        "summary": "Retrieve Blocks",
+        "description": "Fetches a list of blocks for a given chain ID, with optional parameters to specify the starting block and sorting order.",
+        "parameters": [
+          {
+            "name": "chainId",
+            "required": true,
+            "in": "path",
+            "description": "The ID of the blockchain chain for which the blocks are to be retrieved.",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "startBlock",
+            "required": false,
+            "in": "query",
+            "description": "Optional starting block number from which to begin retrieval.",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "sort",
+            "required": false,
+            "in": "query",
+            "description": "Optional sorting order for the retrieval of blocks. Specify the sorting criteria.",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved blocks.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/BlockDto"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request if the provided parameters are invalid."
+          },
+          "404": {
+            "description": "Not Found if no blocks are found for the provided chainId."
+          }
+        }
+      }
+    },
+    "/v1/blocks/{chainId}/latest": {
+      "get": {
+        "operationId": "BlocksController_getLatestBlock",
+        "summary": "Retrieve Latest Block",
+        "description": "Fetches the latest block for a given chain ID, providing the most recent blockchain data for that chain.",
+        "parameters": [
+          {
+            "name": "chainId",
+            "required": true,
+            "in": "path",
+            "description": "The ID of the blockchain chain for which the latest block is to be retrieved.",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved the latest block.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BlockDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request if the provided chainId is invalid."
+          },
+          "404": {
+            "description": "Not Found if no block is found for the provided chainId or the chain does not exist."
+          }
+        }
+      }
+    },
+    "/v1/blocks/{chainId}/{blockNumber}": {
+      "get": {
+        "operationId": "BlocksController_getBlock",
+        "summary": "Retrieve Specific Block",
+        "description": "Fetches details of a specific block by chain ID and block number, with an option to include transaction details.",
+        "parameters": [
+          {
+            "name": "chainId",
+            "required": true,
+            "in": "path",
+            "description": "The ID of the blockchain chain for which the block information is to be retrieved.",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "blockNumber",
+            "required": false,
+            "in": "path",
+            "description": "The number of the specific block to retrieve. If not provided, the latest block may be returned.",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "withTransactions",
+            "required": false,
+            "in": "query",
+            "description": "A boolean flag to indicate whether to include transaction details in the response.",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved the block details.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BlockDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request if the provided parameters are invalid."
+          },
+          "404": {
+            "description": "Not Found if no block is found for the provided parameters."
+          }
+        }
+      }
+    },
+    "/v1/transactions/{hash}": {
+      "get": {
+        "operationId": "TransactionsController_getTransaction",
+        "summary": "Retrieve Transaction Metadata",
+        "description": "Fetches metadata for a specific transaction based on its hash.",
+        "parameters": [
+          {
+            "name": "hash",
+            "required": true,
+            "in": "path",
+            "description": "The hash of the transaction for which metadata is to be retrieved.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "withContext",
+            "required": false,
+            "in": "query",
+            "description": "Specifies whether additional context information should be included in the response.",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved transaction metadata.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransactionDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request if the transaction hash parameter is invalid."
+          },
+          "404": {
+            "description": "Not Found if no transaction metadata is found for the provided hash."
+          }
+        },
+        "tags": ["transactions"]
+      }
+    },
+    "/v1/transactions": {
+      "post": {
+        "operationId": "TransactionsController_getTransactions",
+        "summary": "Retrieve Transactions",
+        "description": "Fetches transactions based on the provided query parameters.",
+        "parameters": [
+          {
+            "name": "includeEnrichedParties",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "description": "Transaction query parameters",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GetTransactionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved transactions.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TransactionDto"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request if the provided query parameters are invalid."
+          }
+        },
+        "tags": ["transactions"]
+      }
+    },
+    "/v1/transactions/{hash}/farcaster-frame": {
+      "get": {
+        "operationId": "TransactionsController_buildFarcasterFrameGet",
+        "summary": "Retrieve Farcaster Frame",
+        "description": "Fetches farcaster frame based on the provided variables in the path.",
+        "parameters": [
+          {
+            "name": "hash",
+            "required": true,
+            "in": "path",
+            "description": "The hash of the transaction for which metadata is to be retrieved.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "callback",
+            "required": false,
+            "in": "query",
+            "description": "Callback url",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "buttonText",
+            "required": false,
+            "in": "query",
+            "description": "Callback url",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "delay",
+            "required": false,
+            "in": "query",
+            "description": "Delay in ms",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved farcaster frame.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TransactionDto"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request if the provided query parameters are invalid."
+          }
+        },
+        "tags": ["transactions"]
+      },
+      "post": {
+        "operationId": "TransactionsController_buildFarcasterFrame",
+        "summary": "Retrieve Farcaster Frame",
+        "description": "Fetches farcaster frame based on the provided POST body and the variables in the path.",
+        "parameters": [
+          {
+            "name": "hash",
+            "required": true,
+            "in": "path",
+            "description": "The hash of the transaction for which metadata is to be retrieved.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "callback",
+            "required": false,
+            "in": "query",
+            "description": "Callback url",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "buttonText",
+            "required": false,
+            "in": "query",
+            "description": "Callback url",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "delay",
+            "required": false,
+            "in": "query",
+            "description": "Delay in ms",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "description": "Transaction Frame API POST body",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved farcaster frame.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TransactionDto"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request if the provided query parameters are invalid."
+          }
+        },
+        "tags": ["transactions"]
+      }
+    },
+    "/v1/transactions/{hash}/farcaster-frame-internal": {
+      "post": {
+        "operationId": "TransactionsController_buildTransactionsFCFrameInternal",
+        "summary": "Retrieve Farcaster Frame",
+        "description": "Fetches farcaster frame based on the provided POST body and the variables in the path.",
+        "parameters": [
+          {
+            "name": "hash",
+            "required": true,
+            "in": "path",
+            "description": "The hash of the transaction for which metadata is to be retrieved.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "callback",
+            "required": false,
+            "in": "query",
+            "description": "Callback url",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "description": "Transaction Frame API POST body",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved farcaster frame.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TransactionDto"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request if the provided query parameters are invalid."
+          }
+        },
+        "tags": ["transactions"]
+      }
+    },
+    "/v1/transactions/farcaster-frame-internal/{address}": {
+      "post": {
+        "operationId": "TransactionsController_buildTxListFarcasterFrameInternal",
+        "summary": "Retrieve Farcaster Frame",
+        "description": "Fetches farcaster frame based on the provided POST body and the variables in the path.",
+        "parameters": [
+          {
+            "name": "address",
+            "required": true,
+            "in": "path",
+            "description": "The hash of the transaction for which metadata is to be retrieved.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "callback",
+            "required": false,
+            "in": "query",
+            "description": "Callback url",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "skip",
+            "required": true,
+            "in": "query",
+            "description": "Skip",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "description": "Transaction Frame API POST body",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved farcaster frame.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TransactionDto"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request if the provided query parameters are invalid."
+          }
+        },
+        "tags": ["transactions"]
+      }
+    },
+    "/v1/eth-price": {
+      "get": {
+        "operationId": "EthPriceController_getLatestEthPrice",
+        "summary": "Retrieve Latest Ethereum Price",
+        "description": "Fetches the latest price of Ethereum (ETH).",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved the latest Ethereum price.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EthPriceDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request if an error occurs while fetching the price."
+          },
+          "500": {
+            "description": "Internal server error if unable to process the request."
+          }
+        }
+      }
+    },
+    "/v1/eth-price/{timestamp}": {
+      "get": {
+        "operationId": "EthPriceController_getEthPrice",
+        "summary": "Retrieve Ethereum Price at Specific Timestamp",
+        "description": "Fetches the price of Ethereum (ETH) for a given timestamp.",
+        "parameters": [
+          {
+            "name": "timestamp",
+            "required": true,
+            "in": "path",
+            "description": "The timestamp for which to retrieve the Ethereum price. Expected to be a Unix timestamp.",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved the Ethereum price.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EthPriceDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request if the timestamp parameter is invalid or missing."
+          },
+          "404": {
+            "description": "Not Found if no Ethereum price data is available for the provided timestamp."
+          }
+        }
+      }
+    },
+    "/v1/farcaster": {
+      "get": {
+        "operationId": "FarcasterController_farcaster",
+        "summary": "Retrieve Farcaster handles",
+        "description": "Fetches Farcaster handles for a list of farcaster IDs provided as a query parameter.",
+        "parameters": [
+          {
+            "name": "ids",
+            "required": true,
+            "in": "query",
+            "description": "Comma-separated list of farcaster ids to retrieve metadata for.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved Farcaster handles.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AddressMetadataDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request if the fids parameter is invalid or missing."
+          },
+          "401": {
+            "description": "Unauthorized if the user is not authenticated."
+          }
+        },
+        "tags": ["farcaster"],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/v1/farcaster/channel-follows/{channel}": {
+      "get": {
+        "operationId": "FarcasterController_warpcastChannelFollows",
+        "summary": "Retrieve Follower Profiles on Farcaster",
+        "description": "Returns user profiles for followers of a specified channel on Farcaster. The followers are identified by their Farcaster IDs. This endpoint facilitates the retrieval of detailed profile information for each follower.",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved user profiles for channel followers on Farcaster.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/FarcasterProfileDto"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request if the channel parameter is invalid or missing."
+          },
+          "401": {
+            "description": "Unauthorized if the user is not authenticated."
+          }
+        },
+        "tags": ["farcaster"],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/v1/farcaster/users/{fid}/follows": {
+      "get": {
+        "operationId": "FarcasterController_getFarcasterFollows",
+        "summary": "Retrieve farcaster follows",
+        "parameters": [
+          {
+            "name": "fid",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved address Farcaster follows.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/FarcasterProfileDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": ["farcaster"]
+      }
+    },
+    "/v1/farcaster/users/{fid}/followers": {
+      "get": {
+        "operationId": "FarcasterController_getFarcasterFollowers",
+        "summary": "Retrieve farcaster followers",
+        "parameters": [
+          {
+            "name": "fid",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved address Farcaster followers.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/FarcasterProfileDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": ["farcaster"]
+      }
+    },
+    "/v1/farcaster/users/{fid}": {
+      "get": {
+        "operationId": "FarcasterController_getFarcasterLinkedAddresses",
+        "summary": "Retrieve farcaster linked addresses",
+        "parameters": [
+          {
+            "name": "fid",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved address Farcaster linked addresses.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/FarcasterProfileDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": ["farcaster"]
+      }
+    },
+    "/v1/farcaster/{fid}/farcaster-frame-internal": {
+      "post": {
+        "operationId": "FarcasterController_buildAddressesFCFrameInternal",
+        "summary": "Retrieve Farcaster Frame",
+        "description": "Fetches farcaster frame based on the provided POST body and the variables in the path.",
+        "parameters": [
+          {
+            "name": "fid",
+            "required": true,
+            "in": "path",
+            "description": "The fid for which metadata is to be retrieved.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "callback",
+            "required": false,
+            "in": "query",
+            "description": "Callback url",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "skip",
+            "required": true,
+            "in": "query",
+            "description": "Skip",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "description": "Address Frame API POST body",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved farcaster frame."
+          },
+          "400": {
+            "description": "Bad request if the provided query parameters are invalid."
+          }
+        },
+        "tags": ["farcaster"]
+      }
+    },
+    "/v1/gas-price/{chainId}": {
+      "get": {
+        "operationId": "GasPriceController_getLatestGasPrice",
+        "summary": "Retrieve Latest Gas Price",
+        "description": "Fetches the latest gas price for a specified blockchain chain ID.",
+        "parameters": [
+          {
+            "name": "chainId",
+            "required": true,
+            "in": "path",
+            "description": "The ID of the blockchain chain for which the latest gas price is to be retrieved.",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved the latest gas price.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GasPriceDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request if the chain ID parameter is invalid."
+          },
+          "404": {
+            "description": "Not Found if no gas price data is available for the provided chain ID."
+          }
+        }
+      }
+    },
+    "/v1/gas-price/{chainId}/{timestamp}": {
+      "get": {
+        "operationId": "GasPriceController_getGasPrice",
+        "summary": "Retrieve Gas Price at a Specific Timestamp",
+        "description": "Fetches the gas price for a specified blockchain chain ID at a particular timestamp.",
+        "parameters": [
+          {
+            "name": "chainId",
+            "required": true,
+            "in": "path",
+            "description": "The ID of the blockchain chain for which the gas price is to be retrieved.",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "timestamp",
+            "required": true,
+            "in": "path",
+            "description": "The Unix timestamp for which the gas price is to be retrieved.",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved the gas price.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GasPriceDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request if the chain ID or timestamp parameters are invalid."
+          },
+          "404": {
+            "description": "Not Found if no gas price data is available for the provided chain ID and timestamp."
+          }
+        }
+      }
+    },
+    "/v1/groups": {
+      "get": {
+        "operationId": "GroupsController_getGroups",
+        "summary": "Retrieve User Groups",
+        "description": "Fetches groups associated with the authenticated user.",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved groups.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/GroupDto"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request if the request parameters are invalid."
+          },
+          "401": {
+            "description": "Unauthorized if the user is not authenticated."
+          }
+        },
+        "tags": ["groups"],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "post": {
+        "operationId": "GroupsController_createGroup",
+        "summary": "Create a New Group",
+        "description": "Creates a new group with the given details.",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "description": "The details of the group to be created.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateGroupDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successfully created a new group.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GroupDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized if the user is not authenticated."
+          }
+        },
+        "tags": ["groups"],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/v1/groups/starred": {
+      "get": {
+        "operationId": "GroupsController_getStarredGroup",
+        "summary": "Retrieve Starred User Groups",
+        "description": "Fetches groups starred by the authenticated user.",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved starred groups.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/GroupDto"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized if the user is not authenticated."
+          }
+        },
+        "tags": ["groups"],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/v1/groups/{groupId}": {
+      "get": {
+        "operationId": "GroupsController_getGroup",
+        "summary": "Retrieve User Group",
+        "description": "Fetches details of a specific group by its ID for the authenticated user.",
+        "parameters": [
+          {
+            "name": "groupId",
+            "required": true,
+            "in": "path",
+            "description": "The ID of the group to retrieve.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved group.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GroupDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized if the user is not authenticated."
+          },
+          "404": {
+            "description": "Not Found if no group is found with the provided ID."
+          }
+        },
+        "tags": ["groups"],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "patch": {
+        "operationId": "GroupsController_updateGroup",
+        "summary": "Update a Group",
+        "description": "Updates the details of an existing group.",
+        "parameters": [
+          {
+            "name": "groupId",
+            "required": true,
+            "in": "path",
+            "description": "The ID of the group to be updated.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "description": "The details of the group to be updated.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateGroupDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successfully updated a group.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GroupDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized if the user is not authenticated."
+          }
+        },
+        "tags": ["groups"],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "delete": {
+        "operationId": "GroupsController_deleteGroup",
+        "summary": "Delete User Group",
+        "description": "Deletes a specific group based on the provided group ID.",
+        "parameters": [
+          {
+            "name": "groupId",
+            "required": true,
+            "in": "path",
+            "description": "The ID of the group to be deleted.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully deleted group."
+          },
+          "401": {
+            "description": "Unauthorized if the user is not authenticated."
+          }
+        },
+        "tags": ["groups"],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/v1/groups/public/{address}": {
+      "get": {
+        "operationId": "GroupsController_getPublicGroups",
+        "summary": "Retrieve User Public Groups",
+        "description": "Fetches public groups associated with a given address.",
+        "parameters": [
+          {
+            "name": "address",
+            "required": true,
+            "in": "path",
+            "description": "The address for which to retrieve public groups.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved public groups.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/GroupDto"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found if no public groups are available for the provided address."
+          }
+        },
+        "tags": ["groups"]
+      }
+    },
+    "/v1/groups/public/{address}/{groupId}": {
+      "get": {
+        "operationId": "GroupsController_getPublicGroup",
+        "summary": "Retrieve User Public Group",
+        "description": "Fetches details of a specific public group based on the provided address and group ID.",
+        "parameters": [
+          {
+            "name": "address",
+            "required": true,
+            "in": "path",
+            "description": "Address associated with the public group.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "groupId",
+            "required": true,
+            "in": "path",
+            "description": "The ID of the group to retrieve.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved public group.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GroupDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": ["groups"]
+      }
+    },
+    "/v1/groups/{groupId}/rename": {
+      "patch": {
+        "operationId": "GroupsController_renameGroup",
+        "summary": "rename a Group",
+        "description": "Renames the group.",
+        "parameters": [
+          {
+            "name": "groupId",
+            "required": true,
+            "in": "path",
+            "description": "The ID of the group to be updated.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "description": "The details of the group to be updated.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RenameGroupDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successfully updated a group.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GroupDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized if the user is not authenticated."
+          }
+        },
+        "tags": ["groups"],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/v1/groups/{groupId}/add": {
+      "post": {
+        "operationId": "GroupsController_addAddress",
+        "summary": "Add an address to a Group",
+        "description": "Adds an address to the list of addresses in group",
+        "parameters": [
+          {
+            "name": "groupId",
+            "required": true,
+            "in": "path",
+            "description": "The ID of the group to be updated.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddressWithChainIdDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successfully updated a group.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GroupDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized if the user is not authenticated."
+          }
+        },
+        "tags": ["groups"],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/v1/groups/{groupId}/remove/{address}": {
+      "post": {
+        "operationId": "GroupsController_removeAddress",
+        "summary": "Remove an address from a Group",
+        "description": "Removes an address from the list of addresses in group",
+        "parameters": [
+          {
+            "name": "groupId",
+            "required": true,
+            "in": "path",
+            "description": "The ID of the group to be updated.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "address",
+            "required": true,
+            "in": "path",
+            "description": "The address to remove",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully updated a group.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GroupDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized if the user is not authenticated."
+          }
+        },
+        "tags": ["groups"],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/v1/user/me": {
+      "get": {
+        "operationId": "UserController_getMe",
+        "summary": "Retrieve current user data",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved user.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": ["user"],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/v1/user/team": {
+      "get": {
+        "operationId": "UserController_getTeam",
+        "summary": "Retrieve user team data",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved team.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TeamDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": ["user"],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/v1/teams": {
+      "get": {
+        "operationId": "TeamsController_findAll",
+        "summary": "Get all teams",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Returns all teams",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TeamDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": ["teams"],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "post": {
+        "operationId": "TeamsController_createTeam",
+        "summary": "Create a new team",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "description": "Team Data",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateTeamDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Creates a new team and returns it",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TeamDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": ["teams"],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/v1/teams/{teamId}": {
+      "get": {
+        "operationId": "TeamsController_findTeamsById",
+        "summary": "Find a team by ID",
+        "parameters": [
+          {
+            "name": "teamId",
+            "required": true,
+            "in": "path",
+            "description": "Team ID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns a team by its ID",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TeamDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": ["teams"],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "delete": {
+        "operationId": "TeamsController_deleteTeam",
+        "summary": "Delete a team",
+        "parameters": [
+          {
+            "name": "teamId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully deleted the team"
+          },
+          "404": {
+            "description": "Team not found"
+          },
+          "500": {
+            "description": "Failed to delete the team from the database"
+          }
+        },
+        "tags": ["teams"],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/v1/teams/{teamId}/add/{memberAddress}/{role}": {
+      "patch": {
+        "operationId": "TeamsController_addTeamMember",
+        "summary": "Add a team member",
+        "parameters": [
+          {
+            "name": "teamId",
+            "required": true,
+            "in": "path",
+            "description": "Team ID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "memberAddress",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "role",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns the updated team after adding a member",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TeamDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": ["teams"],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/v1/teams/{teamId}/remove/{memberAddress}/{role}": {
+      "patch": {
+        "operationId": "TeamsController_removeTeamMember",
+        "summary": "Remove a team member",
+        "parameters": [
+          {
+            "name": "teamId",
+            "required": true,
+            "in": "path",
+            "description": "Team ID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "memberAddress",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "role",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns the updated team after removing a member",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TeamDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": ["teams"],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/v1/logs/{hash}": {
+      "get": {
+        "operationId": "LogsController_getLogsByHash",
+        "summary": "Retrieve Logs by Hash",
+        "description": "Fetches logs associated with a specific hash, sorted by logIndex.",
+        "parameters": [
+          {
+            "name": "hash",
+            "required": true,
+            "in": "path",
+            "description": "The hash of the logs to be retrieved.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved logs sorted by logIndex.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/LogDto"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request if the hash parameter is invalid."
+          },
+          "404": {
+            "description": "Not Found if no logs are found for the provided hash."
+          }
+        },
+        "tags": ["logs"]
+      }
+    },
+    "/v1/logs": {
+      "get": {
+        "operationId": "LogsController_getLogs",
+        "summary": "Retrieve Logs",
+        "description": "Fetches logs based on the provided query parameters.",
+        "parameters": [
+          {
+            "name": "topic",
+            "required": true,
+            "in": "query",
+            "description": "Topic to retrieve logs for.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "chainId",
+            "required": true,
+            "in": "query",
+            "description": "Chain ID",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "skip",
+            "required": false,
+            "in": "query",
+            "description": "Skip for pagination",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved logs.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/LogDto"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request if the provided query parameters are invalid."
+          }
+        },
+        "tags": ["logs"]
+      }
+    },
+    "/v1/logs/{chainId}/{address}/{topic}": {
+      "get": {
+        "operationId": "LogsController_getLogsByAddressAndTopic",
+        "summary": "Retrieve all logs for a given address and topic",
+        "parameters": [
+          {
+            "name": "chainId",
+            "required": true,
+            "in": "path",
+            "description": "Chain Id",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "address",
+            "required": true,
+            "in": "path",
+            "description": "User address",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "topic",
+            "required": true,
+            "in": "path",
+            "description": "Log topic",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "blockNumberStart",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "blockNumberEnd",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved logs sorted by blockNumber.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/LogDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": ["logs"]
+      }
+    },
+    "/v1/summaries": {
+      "post": {
+        "operationId": "SummaryController_summarizeAddresses",
+        "summary": "Provide an aggregated summary of all address activity for addresses provided.",
+        "description": "Provide an aggregated summary of all address activity for addresses provided.",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "description": "Summary POST parameters",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GetSummaryDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved summary of addresses.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SummaryDto"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request if provided addresses are not valid."
+          },
+          "404": {
+            "description": "Not Found if no address provided."
+          }
+        },
+        "tags": ["summaries"]
+      }
+    }
+  },
+  "info": {
+    "title": "Once Upon",
+    "description": "API documentation",
+    "version": "1.0",
+    "contact": {}
+  },
+  "tags": [],
+  "servers": [],
+  "components": {
+    "securitySchemes": {
+      "bearer": {
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "type": "http"
+      }
+    },
+    "schemas": {
+      "LabelDto": {
+        "type": "object",
+        "properties": {
+          "address": {
+            "type": "string",
+            "description": "The address of the label."
+          },
+          "owner": {
+            "type": "string",
+            "description": "The owner of the label."
+          },
+          "nickname": {
+            "type": "string",
+            "description": "The nickname of the label."
+          },
+          "isPublic": {
+            "type": "boolean",
+            "description": "Indicates if the label is public."
+          }
+        },
+        "required": ["address", "owner", "nickname"]
+      },
+      "AddressMetadataDto": {
+        "type": "object",
+        "properties": {
+          "chainId": {
+            "type": "object",
+            "description": "Chain ID. If null, this is a global label (aka for EOA).",
+            "nullable": true
+          },
+          "label": {
+            "description": "Labels associated with the address.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LabelDto"
+              }
+            ]
+          },
+          "isContract": {
+            "type": "boolean",
+            "description": "Flag indicating if the address is a contract."
+          },
+          "tokenStandard": {
+            "type": "string",
+            "description": "Token standard. Can be null or one of the ERC standards.",
+            "enum": [null, "erc20", "erc721", "erc1155"],
+            "nullable": true
+          },
+          "imgUrl": {
+            "type": "string",
+            "description": "Image URL associated with the address."
+          },
+          "decimals": {
+            "type": "object",
+            "description": "Number of decimals. Can be null for non-tokens.",
+            "nullable": true
+          },
+          "symbol": {
+            "type": "string",
+            "description": "Symbol representing the token or contract."
+          }
+        },
+        "required": ["chainId", "label", "isContract", "imgUrl", "symbol"]
+      },
+      "BalanceDataDto": {
+        "type": "object",
+        "properties": {
+          "balances": {
+            "type": "object",
+            "description": "Mapping of chain IDs to their respective balances",
+            "additionalProperties": {
+              "type": "object",
+              "$ref": "#/components/schemas/Balance"
+            },
+            "example": {
+              "1": {
+                "eth": "10.5",
+                "weth": "5.5"
+              },
+              "2": {
+                "eth": "8.5",
+                "weth": null
+              }
+            }
+          }
+        },
+        "required": ["balances"]
+      },
+      "PfpDto": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "URL of the profile picture"
+          }
+        },
+        "required": ["url"]
+      },
+      "BioDto": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string",
+            "description": "Text of the bio"
+          },
+          "mentionedProfiles": {
+            "description": "List of mentioned profiles",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": ["text", "mentionedProfiles"]
+      },
+      "FarcasterProfileDto": {
+        "type": "object",
+        "properties": {
+          "fid": {
+            "type": "number",
+            "description": "Unique identifier for the user"
+          },
+          "custodyAddress": {
+            "type": "string",
+            "description": "Ethereum custody address"
+          },
+          "username": {
+            "type": "string",
+            "description": "Username of the user"
+          },
+          "displayName": {
+            "type": "string",
+            "description": "Display name of the user"
+          },
+          "pfp": {
+            "type": "string",
+            "description": "Profile picture URL"
+          },
+          "profile": {
+            "type": "string",
+            "description": "Bio of the user"
+          },
+          "followerCount": {
+            "type": "number",
+            "description": "Number of followers"
+          },
+          "followingCount": {
+            "type": "number",
+            "description": "Number of following"
+          },
+          "verifications": {
+            "type": "array",
+            "description": "List of verifications",
+            "items": {
+              "type": "string"
+            }
+          },
+          "activeStatus": {
+            "type": "string",
+            "description": "Active status of the user"
+          },
+          "timestamp": {
+            "type": "string",
+            "description": "Timestamp of the user profile information"
+          }
+        },
+        "required": [
+          "fid",
+          "custodyAddress",
+          "username",
+          "displayName",
+          "pfp",
+          "profile",
+          "followerCount",
+          "followingCount",
+          "activeStatus",
+          "timestamp"
+        ]
+      },
+      "SocialsDto": {
+        "type": "object",
+        "properties": {
+          "farcaster": {
+            "description": "Farcaster profile details",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/FarcasterProfileDto"
+              }
+            ]
+          },
+          "opensea": {
+            "type": "object",
+            "description": "Opensea details"
+          }
+        },
+        "required": ["farcaster", "opensea"]
+      },
+      "HeatMapDto": {
+        "type": "object",
+        "properties": {
+          "address": {
+            "type": "string",
+            "description": "Address associated with the heatmap."
+          },
+          "chainId": {
+            "type": "number",
+            "description": "Chain ID associated with the heatmap."
+          },
+          "lastRun": {
+            "type": "number",
+            "description": "Timestamp or number indicating the last run."
+          },
+          "results": {
+            "type": "object",
+            "description": "Results associated with the heatmap, with key-value pairs representing some identifier and a numeric metric or value.",
+            "additionalProperties": {
+              "type": "number"
+            }
+          },
+          "count": {
+            "type": "number",
+            "description": "Count metric associated with the heatmap."
+          }
+        },
+        "required": ["address", "chainId", "lastRun", "results", "count"]
+      },
+      "NeighborDto": {
+        "type": "object",
+        "properties": {
+          "address": {
+            "type": "string",
+            "description": "Address of the neighbor."
+          },
+          "chainId": {
+            "type": "number",
+            "description": "Chain ID associated with the neighbor."
+          },
+          "lastRun": {
+            "type": "number",
+            "description": "Timestamp or number indicating the last run."
+          },
+          "gifted": {
+            "type": "object",
+            "description": "Gifts given by the neighbor, with key-value pairs representing address and amount.",
+            "additionalProperties": {
+              "type": "number"
+            }
+          },
+          "received": {
+            "type": "object",
+            "description": "Gifts received by the neighbor, with key-value pairs representing address and amount.",
+            "additionalProperties": {
+              "type": "number"
+            }
+          },
+          "neighbors": {
+            "type": "object",
+            "description": "Other neighbors connected to this neighbor, with key-value pairs representing address and some numeric metric or count.",
+            "additionalProperties": {
+              "type": "number"
+            }
+          }
+        },
+        "required": [
+          "address",
+          "chainId",
+          "lastRun",
+          "gifted",
+          "received",
+          "neighbors"
+        ]
+      },
+      "TokenDto": {
+        "type": "object",
+        "properties": {
+          "chainId": {
+            "type": "number"
+          },
+          "token": {
+            "type": "string"
+          },
+          "owner": {
+            "type": "string"
+          },
+          "netValue": {
+            "type": "string"
+          }
+        },
+        "required": ["chainId", "token", "owner", "netValue"]
+      },
+      "NftDto": {
+        "type": "object",
+        "properties": {
+          "chainId": {
+            "type": "number"
+          },
+          "token": {
+            "type": "string"
+          },
+          "owner": {
+            "type": "string"
+          },
+          "tokens": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "totalTokens": {
+            "type": "number"
+          }
+        },
+        "required": ["chainId", "token", "owner", "tokens", "totalTokens"]
+      },
+      "ContractsDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "ParamTypeDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Local name of the parameter, or null if unbound."
+          },
+          "type": {
+            "type": "string",
+            "description": "Fully qualified type (e.g., \"address\", \"tuple(address)\", \"uint256[3][]\")."
+          },
+          "baseType": {
+            "type": "string",
+            "description": "Base type (e.g., \"address\", \"tuple\", \"array\")."
+          },
+          "indexed": {
+            "type": "boolean",
+            "description": "Indicates if the parameter is indexable. Applicable only for indexable parameters."
+          },
+          "components": {
+            "description": "Sub-components of the tuple. Applicable only for tuples.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ParamTypeDto"
+            }
+          },
+          "arrayLength": {
+            "type": "number",
+            "description": "Length of the array. -1 for dynamic length. Applicable only for arrays."
+          },
+          "arrayChildren": {
+            "description": "Child type of the array. Applicable only for arrays.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ParamTypeDto"
+              }
+            ]
+          }
+        },
+        "required": ["name", "type", "baseType"]
+      },
+      "AbiDto": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "description": "Type of the fragment."
+          },
+          "name": {
+            "type": "string",
+            "description": "Name of the fragment."
+          },
+          "inputs": {
+            "description": "List of input parameters.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ParamTypeDto"
+            }
+          }
+        },
+        "required": ["type", "name", "inputs"]
+      },
+      "ContractCallRequestDto": {
+        "type": "object",
+        "properties": {
+          "method": {
+            "type": "string",
+            "description": "Name of the method to be called on the contract."
+          },
+          "args": {
+            "description": "Arguments for the method call.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": ["method", "args"]
+      },
+      "OwnershipDto": {
+        "type": "object",
+        "properties": {
+          "chainId": {
+            "type": "number"
+          },
+          "token": {
+            "type": "string"
+          },
+          "owner": {
+            "type": "string"
+          },
+          "tokens": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "totalTokens": {
+            "type": "number"
+          },
+          "netValue": {
+            "type": "string"
+          }
+        },
+        "required": ["chainId", "token", "owner"]
+      },
+      "PaymentTokenDto": {
+        "type": "object",
+        "properties": {
+          "payment_token_id": {
+            "type": "string",
+            "description": "The ID of the payment token"
+          },
+          "name": {
+            "type": "string",
+            "description": "Name of the payment token"
+          },
+          "symbol": {
+            "type": "string",
+            "description": "Symbol of the payment token"
+          },
+          "address": {
+            "type": "string",
+            "description": "Address of the payment token",
+            "nullable": true
+          },
+          "decimals": {
+            "type": "number",
+            "description": "Decimals used by the payment token"
+          }
+        },
+        "required": ["payment_token_id", "name", "symbol", "decimals"]
+      },
+      "CollectionFloorPriceDto": {
+        "type": "object",
+        "properties": {
+          "marketplace_id": {
+            "type": "string",
+            "description": "The ID of the marketplace"
+          },
+          "marketplace_name": {
+            "type": "string",
+            "description": "Name of the marketplace"
+          },
+          "value": {
+            "type": "number",
+            "description": "Value of the transaction"
+          },
+          "payment_token": {
+            "description": "Details of the payment token",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PaymentTokenDto"
+              }
+            ]
+          },
+          "value_usd_cents": {
+            "type": "number",
+            "description": "Value in USD cents"
+          }
+        },
+        "required": [
+          "marketplace_id",
+          "marketplace_name",
+          "value",
+          "payment_token",
+          "value_usd_cents"
+        ]
+      },
+      "CollectionTopBidDto": {
+        "type": "object",
+        "properties": {
+          "marketplace_id": {
+            "type": "string",
+            "description": "The ID of the marketplace"
+          },
+          "marketplace_name": {
+            "type": "string",
+            "description": "The name of the marketplace"
+          },
+          "value": {
+            "type": "number",
+            "description": "The value of the bid"
+          },
+          "payment_token": {
+            "description": "The payment token details",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PaymentTokenDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "marketplace_id",
+          "marketplace_name",
+          "value",
+          "payment_token"
+        ]
+      },
+      "CollectionPriceDataDto": {
+        "type": "object",
+        "properties": {
+          "floorPrices": {
+            "description": "Array of collection floor prices",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CollectionFloorPriceDto"
+            }
+          },
+          "topBids": {
+            "description": "Array of collection top bids",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CollectionTopBidDto"
+            }
+          }
+        },
+        "required": ["floorPrices", "topBids"]
+      },
+      "NFTCollectionDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "The name of the NFT collection"
+          },
+          "description": {
+            "type": "string",
+            "description": "Description about the NFT collection"
+          },
+          "image_url": {
+            "type": "string",
+            "description": "URL of the image representing the NFT collection"
+          },
+          "banner_image_url": {
+            "type": "string",
+            "description": "URL of the banner image for the NFT collection"
+          },
+          "category": {
+            "type": "string",
+            "description": "Category of the NFT collection"
+          },
+          "is_nsfw": {
+            "type": "boolean",
+            "description": "Indicates if the collection is not safe for work"
+          },
+          "external_url": {
+            "type": "string",
+            "description": "External URL related to the NFT collection"
+          }
+        },
+        "required": [
+          "name",
+          "description",
+          "image_url",
+          "banner_image_url",
+          "category",
+          "is_nsfw",
+          "external_url"
+        ]
+      },
+      "NftsByContractResponseDto": {
+        "type": "object",
+        "properties": {
+          "next_cursor": {
+            "type": "string",
+            "description": "Cursor for the next set of results"
+          },
+          "next": {
+            "type": "string",
+            "description": "URL for the next set of results"
+          },
+          "previous": {
+            "type": "string",
+            "description": "URL for the previous set of results"
+          },
+          "count": {
+            "type": "number",
+            "description": "Total count of NFTs"
+          },
+          "nfts": {
+            "description": "List of NFT collections",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/NFTCollectionDto"
+            }
+          }
+        },
+        "required": ["next_cursor", "count", "nfts"]
+      },
+      "Attribute": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Attribute name"
+          },
+          "value": {
+            "type": "string",
+            "description": "Attribute value"
+          }
+        },
+        "required": ["name", "value"]
+      },
+      "ENSDto": {
+        "type": "object",
+        "properties": {
+          "node": {
+            "type": "string",
+            "description": "ENS node"
+          },
+          "name": {
+            "type": "string",
+            "description": "ENS name"
+          },
+          "owner": {
+            "type": "string",
+            "description": "ENS owner address"
+          },
+          "tokenId": {
+            "type": "string",
+            "description": "ENS token ID"
+          },
+          "reverse": {
+            "type": "string",
+            "description": "ENS reverse"
+          },
+          "attributes": {
+            "description": "List of attributes associated with the ENS",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Attribute"
+            }
+          }
+        },
+        "required": ["name"]
+      },
+      "CreateLabelDto": {
+        "type": "object",
+        "properties": {
+          "address": {
+            "type": "string",
+            "description": "The address of the label."
+          },
+          "nickname": {
+            "type": "string",
+            "description": "The nickname of the label."
+          },
+          "isPublic": {
+            "type": "boolean",
+            "description": "Indicates if the label is public."
+          }
+        },
+        "required": ["address", "nickname"]
+      },
+      "UpdateLabelDto": {
+        "type": "object",
+        "properties": {
+          "nickname": {
+            "type": "string",
+            "description": "The nickname of the label."
+          },
+          "isPublic": {
+            "type": "boolean",
+            "description": "Flag indicating if the label is public.",
+            "default": false
+          }
+        },
+        "required": ["nickname"]
+      },
+      "BlockDto": {
+        "type": "object",
+        "properties": {
+          "chainId": {
+            "type": "number",
+            "description": "ID of the chain."
+          },
+          "number": {
+            "type": "number",
+            "description": "Number of the block."
+          },
+          "timestamp": {
+            "type": "number",
+            "description": "Timestamp of the block."
+          },
+          "price": {
+            "type": "number",
+            "description": "Price of the block. Optional."
+          }
+        },
+        "required": ["chainId", "number", "timestamp"]
+      },
+      "TraceDto": {
+        "type": "object",
+        "properties": {
+          "action": {
+            "type": "object",
+            "description": "Action details"
+          },
+          "blockHash": {
+            "type": "string",
+            "description": "Block hash"
+          },
+          "blockNumber": {
+            "type": "number",
+            "description": "Block number"
+          },
+          "result": {
+            "type": "object",
+            "description": "Result details"
+          },
+          "subtraces": {
+            "type": "number",
+            "description": "Number of subtraces"
+          },
+          "traceAddress": {
+            "description": "Trace address",
+            "type": "array",
+            "items": {
+              "type": "number"
+            }
+          },
+          "transactionHash": {
+            "type": "string",
+            "description": "Transaction hash"
+          },
+          "transactionPosition": {
+            "type": "number",
+            "description": "Transaction position"
+          },
+          "type": {
+            "type": "string",
+            "description": "Type of the trace"
+          }
+        },
+        "required": [
+          "action",
+          "blockHash",
+          "blockNumber",
+          "result",
+          "subtraces",
+          "traceAddress",
+          "transactionHash",
+          "transactionPosition",
+          "type"
+        ]
+      },
+      "AssetTransferDto": {
+        "type": "object",
+        "properties": {
+          "asset": {
+            "type": "string",
+            "description": "Asset"
+          },
+          "from": {
+            "type": "string",
+            "description": "Sender address"
+          },
+          "to": {
+            "type": "string",
+            "description": "Receiver address"
+          },
+          "type": {
+            "type": "string",
+            "description": "Type",
+            "enum": ["eth", "erc20", "erc721", "erc1155"]
+          },
+          "value": {
+            "type": "string",
+            "description": "Value"
+          },
+          "tokenId": {
+            "type": "string",
+            "description": "Token ID"
+          }
+        },
+        "required": ["asset", "from", "to", "type", "value", "tokenId"]
+      },
+      "SigHashDto": {
+        "type": "object",
+        "properties": {
+          "from": {
+            "type": "string",
+            "description": "Sender address"
+          },
+          "to": {
+            "type": "string",
+            "description": "Receiver address"
+          },
+          "sigHash": {
+            "type": "string",
+            "description": "Signature hash"
+          }
+        },
+        "required": ["from", "to", "sigHash"]
+      },
+      "TransactionFragment": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Name of the fragment"
+          },
+          "type": {
+            "type": "string",
+            "description": "Type of the fragment"
+          },
+          "inputs": {
+            "description": "Inputs of the fragment",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ParamTypeDto"
+            }
+          },
+          "outputs": {
+            "description": "Outputs of the fragment",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ParamTypeDto"
+            }
+          },
+          "constant": {
+            "type": "boolean",
+            "description": "Is the fragment constant"
+          },
+          "stateMutability": {
+            "type": "string",
+            "description": "State mutability of the fragment"
+          },
+          "payable": {
+            "type": "boolean",
+            "description": "Is the fragment payable"
+          },
+          "gas": {
+            "type": "string",
+            "description": "Gas value of the fragment"
+          }
+        },
+        "required": [
+          "name",
+          "type",
+          "inputs",
+          "outputs",
+          "constant",
+          "stateMutability",
+          "payable",
+          "gas"
+        ]
+      },
+      "AssetDto": {
+        "type": "object",
+        "properties": {
+          "asset": {
+            "type": "string",
+            "description": "Asset"
+          },
+          "id": {
+            "type": "string",
+            "description": "ID"
+          },
+          "type": {
+            "type": "string",
+            "description": "Type",
+            "enum": ["eth", "erc20", "erc721", "erc1155"]
+          },
+          "value": {
+            "type": "string",
+            "description": "Value"
+          },
+          "tokenId": {
+            "type": "string",
+            "description": "Token ID"
+          }
+        },
+        "required": ["asset", "id", "type", "value", "tokenId"]
+      },
+      "NetAssetTransfersDto": {
+        "type": "object",
+        "properties": {
+          "received": {
+            "description": "Received assets",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AssetDto"
+            }
+          },
+          "sent": {
+            "description": "Sent assets",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AssetDto"
+            }
+          }
+        },
+        "required": ["received", "sent"]
+      },
+      "ReceiptDto": {
+        "type": "object",
+        "properties": {
+          "blockHash": {
+            "type": "string",
+            "description": "Block hash"
+          },
+          "blockNumber": {
+            "type": "number",
+            "description": "Block number"
+          },
+          "contractAddress": {
+            "type": "string",
+            "description": "Contract address"
+          },
+          "cumulativeGasUsed": {
+            "type": "string",
+            "description": "Cumulative gas used"
+          },
+          "effectiveGasPrice": {
+            "type": "string",
+            "description": "Effective gas price"
+          },
+          "from": {
+            "type": "string",
+            "description": "Sender address"
+          },
+          "gasUsed": {
+            "type": "string",
+            "description": "Gas used"
+          },
+          "l1Fee": {
+            "type": "string",
+            "description": "L1 fee"
+          },
+          "l1FeeScalar": {
+            "type": "string",
+            "description": "L1 fee scalar"
+          },
+          "l1GasPrice": {
+            "type": "string",
+            "description": "L1 gas price"
+          },
+          "l1GasUsed": {
+            "type": "string",
+            "description": "L1 gas used"
+          },
+          "logsBloom": {
+            "type": "string",
+            "description": "Logs bloom"
+          },
+          "status": {
+            "type": "boolean",
+            "description": "Transaction status"
+          },
+          "to": {
+            "type": "string",
+            "description": "Receiver address"
+          },
+          "transactionHash": {
+            "type": "string",
+            "description": "Transaction hash"
+          },
+          "transactionIndex": {
+            "type": "number",
+            "description": "Transaction index"
+          },
+          "type": {
+            "type": "string",
+            "description": "Type of the receipt"
+          }
+        },
+        "required": [
+          "blockHash",
+          "blockNumber",
+          "contractAddress",
+          "cumulativeGasUsed",
+          "effectiveGasPrice",
+          "from",
+          "gasUsed",
+          "l1Fee",
+          "l1FeeScalar",
+          "l1GasPrice",
+          "l1GasUsed",
+          "logsBloom",
+          "status",
+          "to",
+          "transactionHash",
+          "transactionIndex",
+          "type"
+        ]
+      },
+      "ContextOutcomeTypeDto": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string",
+            "description": "Key of the outcome"
+          },
+          "value": {
+            "type": "object",
+            "description": "Value of the outcome"
+          }
+        },
+        "required": ["key", "value"]
+      },
+      "TransactionContextTypeDto": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "description": "Type of the context"
+          },
+          "category": {
+            "type": "string",
+            "description": "Category of the context",
+            "enum": [
+              "MULTICHAIN",
+              "FUNGIBLE_TOKEN",
+              "NFT",
+              "IDENTITY",
+              "CORE",
+              "OTHER",
+              "DEV",
+              "UNKNOWN"
+            ]
+          },
+          "outcomes": {
+            "description": "Outcomes of the context",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ContextOutcomeTypeDto"
+            }
+          },
+          "crossChainTx": {
+            "description": "Cross-chain transactions",
+            "type": "array",
+            "items": {
+              "type": "array"
+            }
+          }
+        },
+        "required": ["type", "category", "outcomes", "crossChainTx"]
+      },
+      "TransactionDto": {
+        "type": "object",
+        "properties": {
+          "blockHash": {
+            "type": "string",
+            "description": "Block hash"
+          },
+          "blockNumber": {
+            "type": "number",
+            "description": "Block number"
+          },
+          "from": {
+            "type": "string",
+            "description": "Sender address"
+          },
+          "gas": {
+            "type": "number",
+            "description": "Gas"
+          },
+          "gasPrice": {
+            "type": "string",
+            "description": "Gas price"
+          },
+          "maxFeePerGas": {
+            "type": "string",
+            "description": "Max fee per gas"
+          },
+          "maxPriorityFeePerGas": {
+            "type": "string",
+            "description": "Max priority fee per gas"
+          },
+          "hash": {
+            "type": "string",
+            "description": "Transaction hash"
+          },
+          "input": {
+            "type": "string",
+            "description": "Input data"
+          },
+          "nonce": {
+            "type": "number",
+            "description": "Nonce"
+          },
+          "to": {
+            "type": "string",
+            "description": "Receiver address"
+          },
+          "transactionIndex": {
+            "type": "number",
+            "description": "Transaction index"
+          },
+          "value": {
+            "type": "string",
+            "description": "Transaction value"
+          },
+          "type": {
+            "type": "number",
+            "description": "Transaction type"
+          },
+          "accessList": {
+            "description": "Access list",
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          },
+          "chainId": {
+            "type": "number",
+            "description": "Chain ID"
+          },
+          "v": {
+            "type": "string",
+            "description": "V value"
+          },
+          "r": {
+            "type": "string",
+            "description": "R value"
+          },
+          "s": {
+            "type": "string",
+            "description": "S value"
+          },
+          "timestamp": {
+            "type": "number",
+            "description": "Timestamp"
+          },
+          "isoTimestamp": {
+            "type": "string",
+            "description": "ISO timestamp"
+          },
+          "delegateCalls": {
+            "description": "Delegate calls",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TraceDto"
+            }
+          },
+          "assetTransfers": {
+            "description": "Asset transfers",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AssetTransferDto"
+            }
+          },
+          "sigHash": {
+            "type": "string",
+            "description": "Signature hash"
+          },
+          "internalSigHashes": {
+            "description": "Internal signature hashes",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SigHashDto"
+            }
+          },
+          "parties": {
+            "description": "Parties involved",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "decode": {
+            "description": "Transaction description",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TransactionFragment"
+              }
+            ]
+          },
+          "netAssetTransfers": {
+            "description": "Net asset transfers",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/NetAssetTransfersDto"
+              }
+            ]
+          },
+          "receipt": {
+            "description": "Receipt details",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ReceiptDto"
+              }
+            ]
+          },
+          "context": {
+            "description": "Transaction context",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TransactionContextTypeDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "blockHash",
+          "blockNumber",
+          "from",
+          "gas",
+          "gasPrice",
+          "maxFeePerGas",
+          "maxPriorityFeePerGas",
+          "hash",
+          "input",
+          "nonce",
+          "to",
+          "transactionIndex",
+          "value",
+          "type",
+          "accessList",
+          "chainId",
+          "v",
+          "r",
+          "s",
+          "timestamp",
+          "isoTimestamp",
+          "delegateCalls",
+          "assetTransfers",
+          "sigHash",
+          "internalSigHashes",
+          "parties",
+          "decode",
+          "netAssetTransfers",
+          "receipt",
+          "context"
+        ]
+      },
+      "AddressTag": {
+        "type": "object",
+        "properties": {
+          "address": {
+            "type": "string",
+            "description": "Address value"
+          },
+          "toFromAll": {
+            "type": "string",
+            "description": "To/From or All indication",
+            "enum": ["To/From", "All", "To", "From"]
+          }
+        },
+        "required": ["address", "toFromAll"]
+      },
+      "DateRange": {
+        "type": "object",
+        "properties": {
+          "$gte": {
+            "type": "number",
+            "description": "Start date range (inclusive)"
+          },
+          "$lte": {
+            "type": "number",
+            "description": "End date range (inclusive)"
+          }
+        }
+      },
+      "GetTransactionDto": {
+        "type": "object",
+        "properties": {
+          "contextAddresses": {
+            "description": "Context address tags",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AddressTag"
+            }
+          },
+          "filterAddresses": {
+            "description": "Filter address tags",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AddressTag"
+            }
+          },
+          "dateRange": {
+            "description": "Date ranges",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/DateRange"
+              }
+            ]
+          },
+          "sort": {
+            "type": "number",
+            "description": "Sorting order",
+            "enum": [1, -1]
+          },
+          "skip": {
+            "type": "number",
+            "description": "Skip for pagination"
+          },
+          "limit": {
+            "type": "number",
+            "description": "Number of Transactions Per Page (Maximum Limit: 1000)"
+          },
+          "functionSelectors": {
+            "description": "Function selectors",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "tokenTransfers": {
+            "description": "Tokens transferred",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "chainIds": {
+            "description": "Chain ID",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "blockNumber": {
+            "type": "number",
+            "description": "Block number"
+          }
+        },
+        "required": [
+          "contextAddresses",
+          "filterAddresses",
+          "sort",
+          "skip",
+          "limit"
+        ]
+      },
+      "EthPriceDto": {
+        "type": "object",
+        "properties": {
+          "price": {
+            "type": "number",
+            "description": "The price of the asset.",
+            "example": 2096.9
+          },
+          "timestamp": {
+            "type": "number",
+            "description": "Timestamp of the price data.",
+            "example": 1699902527
+          }
+        },
+        "required": ["price", "timestamp"]
+      },
+      "GasPriceDto": {
+        "type": "object",
+        "properties": {
+          "price": {
+            "type": "number",
+            "description": "The price of the gas.",
+            "example": 2096.9
+          },
+          "timestamp": {
+            "type": "number",
+            "description": "Timestamp of the price data.",
+            "example": 1699902527
+          }
+        },
+        "required": ["price", "timestamp"]
+      },
+      "AddressWithChainIdDto": {
+        "type": "object",
+        "properties": {
+          "chainIds": {
+            "description": "List of chain IDs associated with the address.",
+            "type": "array",
+            "items": {
+              "type": "number"
+            }
+          },
+          "address": {
+            "type": "string",
+            "description": "The address."
+          }
+        },
+        "required": ["chainIds", "address"]
+      },
+      "GroupDto": {
+        "type": "object",
+        "properties": {
+          "groupId": {
+            "type": "string",
+            "description": "The unique ID of the group."
+          },
+          "owner": {
+            "type": "string",
+            "description": "The owner of the group."
+          },
+          "name": {
+            "type": "string",
+            "description": "The name of the group."
+          },
+          "addresses": {
+            "description": "List of addresses associated with the group, each with an array of chain IDs.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AddressWithChainIdDto"
+            }
+          }
+        },
+        "required": ["groupId", "owner", "name", "addresses"]
+      },
+      "CreateGroupDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "The name of the group."
+          },
+          "addresses": {
+            "description": "List of addresses associated with the group, each with an array of chain IDs.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AddressWithChainIdDto"
+            }
+          },
+          "isPublic": {
+            "type": "boolean",
+            "description": "Indicates if the group is public."
+          }
+        },
+        "required": ["name", "addresses"]
+      },
+      "UpdateGroupDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "The name of the group."
+          },
+          "addresses": {
+            "description": "List of addresses associated with the group, each with an array of chain IDs.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AddressWithChainIdDto"
+            }
+          },
+          "isPublic": {
+            "type": "boolean",
+            "description": "Indicates if the group is public."
+          }
+        },
+        "required": ["name", "addresses"]
+      },
+      "RenameGroupDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "The name of the group."
+          }
+        },
+        "required": ["name"]
+      },
+      "UserDto": {
+        "type": "object",
+        "properties": {
+          "privyUserId": {
+            "type": "string",
+            "description": "The privy user ID."
+          },
+          "address": {
+            "type": "string",
+            "description": "The address of the user."
+          },
+          "expires": {
+            "type": "number",
+            "description": "Expiration timestamp."
+          },
+          "registeredTimestamp": {
+            "type": "number",
+            "description": "The registration timestamp of the user."
+          },
+          "email": {
+            "type": "string",
+            "description": "The email address of the user."
+          },
+          "role": {
+            "type": "string",
+            "description": "The role of the user.",
+            "enum": ["admin"],
+            "example": "admin"
+          }
+        },
+        "required": ["privyUserId", "address", "expires"]
+      },
+      "TeamDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Name of the team"
+          },
+          "teamId": {
+            "type": "string",
+            "description": "Unique identifier of the team"
+          },
+          "active": {
+            "type": "boolean",
+            "description": "Whether the team is active or not"
+          },
+          "admins": {
+            "description": "List of admins in the team",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "members": {
+            "description": "List of members in the team",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": ["name", "teamId", "active", "admins", "members"]
+      },
+      "CreateTeamDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Name of the team"
+          },
+          "active": {
+            "type": "boolean",
+            "description": "Whether the team is active or not"
+          },
+          "admins": {
+            "description": "List of admins in the team",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "members": {
+            "description": "List of members in the team",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": ["name", "active", "admins", "members"]
+      },
+      "LogDto": {
+        "type": "object",
+        "properties": {
+          "address": {
+            "type": "string",
+            "description": "Address associated with the log."
+          },
+          "topics": {
+            "description": "Array of topics related to the log.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "data": {
+            "type": "string",
+            "description": "Data contained in the log."
+          },
+          "blockNumber": {
+            "type": "number",
+            "description": "Block number where this log was recorded."
+          },
+          "transactionHash": {
+            "type": "string",
+            "description": "Hash of the transaction."
+          },
+          "transactionIndex": {
+            "type": "number",
+            "description": "Index of the transaction."
+          },
+          "blockHash": {
+            "type": "string",
+            "description": "Hash of the block."
+          },
+          "logIndex": {
+            "type": "number",
+            "description": "Index of the log in the block."
+          },
+          "removed": {
+            "type": "boolean",
+            "description": "Indicates if the log was removed."
+          },
+          "id": {
+            "type": "string",
+            "description": "Unique identifier of the log."
+          },
+          "chainId": {
+            "type": "number",
+            "description": "Chain ID where the log was recorded."
+          }
+        },
+        "required": [
+          "address",
+          "topics",
+          "data",
+          "blockNumber",
+          "transactionHash",
+          "transactionIndex",
+          "blockHash",
+          "logIndex",
+          "removed",
+          "id",
+          "chainId"
+        ]
+      },
+      "GetSummaryDto": {
+        "type": "object",
+        "properties": {
+          "addresses": {
+            "description": "Addresses",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "chainIds": {
+            "description": "ChainIds",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": ["addresses", "chainIds"]
+      },
+      "SummaryDto": {
+        "type": "object",
+        "properties": {}
+      }
+    }
+  }
+}

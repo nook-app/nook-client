@@ -795,14 +795,16 @@ export class FarcasterService {
 
     const response = await Promise.all(
       users.map(async (user) => {
-        const [engagement, context] = await Promise.all([
+        const [engagement, context, addresses] = await Promise.all([
           this.getUserEngagement(user.fid),
           this.getUserContext(user.fid, viewerFid),
+          this.getUserVerifiedAddresses(user.fid),
         ]);
         return {
           ...user,
           engagement,
           context,
+          verifiedAddresses: addresses,
         };
       }),
     );
@@ -934,6 +936,14 @@ export class FarcasterService {
             })
           : undefined,
     };
+  }
+
+  async getUserVerifiedAddresses(fid: string) {
+    const addresses = await this.client.farcasterVerification.findMany({
+      where: { fid: BigInt(fid), deletedAt: null },
+    });
+
+    return addresses.map((address) => address.address);
   }
 
   async getCastEngagement(hash: string): Promise<FarcasterCastEngagement> {

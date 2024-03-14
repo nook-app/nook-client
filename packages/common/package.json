@@ -26,7 +26,8 @@
     "./prisma/notifications": "./dist/prisma/notifications.js",
     "./prisma/content": "./dist/prisma/content.js",
     "./prisma/signer": "./dist/prisma/signer.js",
-    "./farcaster": "./dist/farcaster/index.js"
+    "./farcaster": "./dist/farcaster/index.js",
+    "./onceupon": "./dist/onceupon/index.js"
   },
   "dependencies": {
     "@farcaster/hub-nodejs": "^0.11.3",

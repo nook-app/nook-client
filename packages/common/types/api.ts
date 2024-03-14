@@ -194,3 +194,8 @@ export type GetNotificationsResponse = {
   data: Notification[];
   nextCursor?: string;
 };
+
+export type GetTransactionsRequest = {
+  fid: string;
+  cursor?: string;
+};
