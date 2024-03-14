@@ -49,12 +49,6 @@ import {
     TransactionContextTypeDtoFromJSONTyped,
     TransactionContextTypeDtoToJSON,
 } from './TransactionContextTypeDto';
-import type { TransactionFragment } from './TransactionFragment';
-import {
-    TransactionFragmentFromJSON,
-    TransactionFragmentFromJSONTyped,
-    TransactionFragmentToJSON,
-} from './TransactionFragment';
 
 /**
  * 
@@ -193,13 +187,13 @@ export interface TransactionDto {
      * @type {Array<TraceDto>}
      * @memberof TransactionDto
      */
-    delegateCalls: Array<TraceDto>;
+    delegateCalls?: Array<TraceDto>;
     /**
      * Asset transfers
      * @type {Array<AssetTransferDto>}
      * @memberof TransactionDto
      */
-    assetTransfers: Array<AssetTransferDto>;
+    assetTransfers?: Array<AssetTransferDto>;
     /**
      * Signature hash
      * @type {string}
@@ -211,7 +205,7 @@ export interface TransactionDto {
      * @type {Array<SigHashDto>}
      * @memberof TransactionDto
      */
-    internalSigHashes: Array<SigHashDto>;
+    internalSigHashes?: Array<SigHashDto>;
     /**
      * Parties involved
      * @type {Array<string>}
@@ -220,16 +214,16 @@ export interface TransactionDto {
     parties: Array<string>;
     /**
      * Transaction description
-     * @type {TransactionFragment}
+     * @type {{ [key: string]: string; }}
      * @memberof TransactionDto
      */
-    decode: TransactionFragment;
+    decode: { [key: string]: string; };
     /**
      * Net asset transfers
-     * @type {NetAssetTransfersDto}
+     * @type {{ [key: string]: NetAssetTransfersDto; }}
      * @memberof TransactionDto
      */
-    netAssetTransfers: NetAssetTransfersDto;
+    netAssetTransfers: { [key: string]: NetAssetTransfersDto; };
     /**
      * Receipt details
      * @type {ReceiptDto}
@@ -269,10 +263,7 @@ export function instanceOfTransactionDto(value: object): boolean {
     if (!('s' in value)) return false;
     if (!('timestamp' in value)) return false;
     if (!('isoTimestamp' in value)) return false;
-    if (!('delegateCalls' in value)) return false;
-    if (!('assetTransfers' in value)) return false;
     if (!('sigHash' in value)) return false;
-    if (!('internalSigHashes' in value)) return false;
     if (!('parties' in value)) return false;
     if (!('decode' in value)) return false;
     if (!('netAssetTransfers' in value)) return false;
@@ -312,13 +303,13 @@ export function TransactionDtoFromJSONTyped(json: any, ignoreDiscriminator: bool
         's': json['s'],
         'timestamp': json['timestamp'],
         'isoTimestamp': json['isoTimestamp'],
-        'delegateCalls': ((json['delegateCalls'] as Array<any>).map(TraceDtoFromJSON)),
-        'assetTransfers': ((json['assetTransfers'] as Array<any>).map(AssetTransferDtoFromJSON)),
+        'delegateCalls': json['delegateCalls'] == null ? undefined : ((json['delegateCalls'] as Array<any>).map(TraceDtoFromJSON)),
+        'assetTransfers': json['assetTransfers'] == null ? undefined : ((json['assetTransfers'] as Array<any>).map(AssetTransferDtoFromJSON)),
         'sigHash': json['sigHash'],
-        'internalSigHashes': ((json['internalSigHashes'] as Array<any>).map(SigHashDtoFromJSON)),
+        'internalSigHashes': json['internalSigHashes'] == null ? undefined : ((json['internalSigHashes'] as Array<any>).map(SigHashDtoFromJSON)),
         'parties': json['parties'],
-        'decode': TransactionFragmentFromJSON(json['decode']),
-        'netAssetTransfers': NetAssetTransfersDtoFromJSON(json['netAssetTransfers']),
+        'decode': json['decode'],
+        'netAssetTransfers': json['netAssetTransfers'],
         'receipt': ReceiptDtoFromJSON(json['receipt']),
         'context': TransactionContextTypeDtoFromJSON(json['context']),
     };
@@ -351,13 +342,13 @@ export function TransactionDtoToJSON(value?: TransactionDto | null): any {
         's': value['s'],
         'timestamp': value['timestamp'],
         'isoTimestamp': value['isoTimestamp'],
-        'delegateCalls': ((value['delegateCalls'] as Array<any>).map(TraceDtoToJSON)),
-        'assetTransfers': ((value['assetTransfers'] as Array<any>).map(AssetTransferDtoToJSON)),
+        'delegateCalls': value['delegateCalls'] == null ? undefined : ((value['delegateCalls'] as Array<any>).map(TraceDtoToJSON)),
+        'assetTransfers': value['assetTransfers'] == null ? undefined : ((value['assetTransfers'] as Array<any>).map(AssetTransferDtoToJSON)),
         'sigHash': value['sigHash'],
-        'internalSigHashes': ((value['internalSigHashes'] as Array<any>).map(SigHashDtoToJSON)),
+        'internalSigHashes': value['internalSigHashes'] == null ? undefined : ((value['internalSigHashes'] as Array<any>).map(SigHashDtoToJSON)),
         'parties': value['parties'],
-        'decode': TransactionFragmentToJSON(value['decode']),
-        'netAssetTransfers': NetAssetTransfersDtoToJSON(value['netAssetTransfers']),
+        'decode': value['decode'],
+        'netAssetTransfers': value['netAssetTransfers'],
         'receipt': ReceiptDtoToJSON(value['receipt']),
         'context': TransactionContextTypeDtoToJSON(value['context']),
     };

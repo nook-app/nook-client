@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "build": "tsc",
-    "start": "node dist/src/index.js"
+    "start": "node dist/src/index.js",
+    "dev": "ts-node src/index.ts --inspect=9229"
   },
   "exports": {
     "types": "./dist/types/index.js"

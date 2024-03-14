@@ -49,7 +49,7 @@ export interface GetTransactionDto {
      * @type {DateRange}
      * @memberof GetTransactionDto
      */
-    dateRange?: DateRange;
+    dateRange: DateRange;
     /**
      * Sorting order
      * @type {number}
@@ -73,19 +73,19 @@ export interface GetTransactionDto {
      * @type {Array<string>}
      * @memberof GetTransactionDto
      */
-    functionSelectors?: Array<string>;
+    functionSelectors: Array<string>;
     /**
      * Tokens transferred
      * @type {Array<string>}
      * @memberof GetTransactionDto
      */
-    tokenTransfers?: Array<string>;
+    tokenTransfers: Array<string>;
     /**
      * Chain ID
      * @type {Array<string>}
      * @memberof GetTransactionDto
      */
-    chainIds?: Array<string>;
+    chainIds: Array<string>;
     /**
      * Block number
      * @type {number}
@@ -111,9 +111,13 @@ export type GetTransactionDtoSortEnum = typeof GetTransactionDtoSortEnum[keyof t
 export function instanceOfGetTransactionDto(value: object): boolean {
     if (!('contextAddresses' in value)) return false;
     if (!('filterAddresses' in value)) return false;
+    if (!('dateRange' in value)) return false;
     if (!('sort' in value)) return false;
     if (!('skip' in value)) return false;
     if (!('limit' in value)) return false;
+    if (!('functionSelectors' in value)) return false;
+    if (!('tokenTransfers' in value)) return false;
+    if (!('chainIds' in value)) return false;
     return true;
 }
 
@@ -129,13 +133,13 @@ export function GetTransactionDtoFromJSONTyped(json: any, ignoreDiscriminator: b
         
         'contextAddresses': ((json['contextAddresses'] as Array<any>).map(AddressTagFromJSON)),
         'filterAddresses': ((json['filterAddresses'] as Array<any>).map(AddressTagFromJSON)),
-        'dateRange': json['dateRange'] == null ? undefined : DateRangeFromJSON(json['dateRange']),
+        'dateRange': DateRangeFromJSON(json['dateRange']),
         'sort': json['sort'],
         'skip': json['skip'],
         'limit': json['limit'],
-        'functionSelectors': json['functionSelectors'] == null ? undefined : json['functionSelectors'],
-        'tokenTransfers': json['tokenTransfers'] == null ? undefined : json['tokenTransfers'],
-        'chainIds': json['chainIds'] == null ? undefined : json['chainIds'],
+        'functionSelectors': json['functionSelectors'],
+        'tokenTransfers': json['tokenTransfers'],
+        'chainIds': json['chainIds'],
         'blockNumber': json['blockNumber'] == null ? undefined : json['blockNumber'],
     };
 }

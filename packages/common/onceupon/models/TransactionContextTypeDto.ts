@@ -31,25 +31,25 @@ export interface TransactionContextTypeDto {
      * @type {string}
      * @memberof TransactionContextTypeDto
      */
-    type: string;
+    type?: string;
     /**
      * Category of the context
      * @type {string}
      * @memberof TransactionContextTypeDto
      */
-    category: TransactionContextTypeDtoCategoryEnum;
+    category?: TransactionContextTypeDtoCategoryEnum;
     /**
      * Outcomes of the context
      * @type {Array<ContextOutcomeTypeDto>}
      * @memberof TransactionContextTypeDto
      */
-    outcomes: Array<ContextOutcomeTypeDto>;
+    outcomes?: Array<ContextOutcomeTypeDto>;
     /**
      * Cross-chain transactions
      * @type {Array<Array<string>>}
      * @memberof TransactionContextTypeDto
      */
-    crossChainTx: Array<Array<string>>;
+    crossChainTx?: Array<Array<string>>;
 }
 
 
@@ -73,10 +73,6 @@ export type TransactionContextTypeDtoCategoryEnum = typeof TransactionContextTyp
  * Check if a given object implements the TransactionContextTypeDto interface.
  */
 export function instanceOfTransactionContextTypeDto(value: object): boolean {
-    if (!('type' in value)) return false;
-    if (!('category' in value)) return false;
-    if (!('outcomes' in value)) return false;
-    if (!('crossChainTx' in value)) return false;
     return true;
 }
 
@@ -90,10 +86,10 @@ export function TransactionContextTypeDtoFromJSONTyped(json: any, ignoreDiscrimi
     }
     return {
         
-        'type': json['type'],
-        'category': json['category'],
-        'outcomes': ((json['outcomes'] as Array<any>).map(ContextOutcomeTypeDtoFromJSON)),
-        'crossChainTx': json['crossChainTx'],
+        'type': json['type'] == null ? undefined : json['type'],
+        'category': json['category'] == null ? undefined : json['category'],
+        'outcomes': json['outcomes'] == null ? undefined : ((json['outcomes'] as Array<any>).map(ContextOutcomeTypeDtoFromJSON)),
+        'crossChainTx': json['crossChainTx'] == null ? undefined : json['crossChainTx'],
     };
 }
 
@@ -105,7 +101,7 @@ export function TransactionContextTypeDtoToJSON(value?: TransactionContextTypeDt
         
         'type': value['type'],
         'category': value['category'],
-        'outcomes': ((value['outcomes'] as Array<any>).map(ContextOutcomeTypeDtoToJSON)),
+        'outcomes': value['outcomes'] == null ? undefined : ((value['outcomes'] as Array<any>).map(ContextOutcomeTypeDtoToJSON)),
         'crossChainTx': value['crossChainTx'],
     };
 }

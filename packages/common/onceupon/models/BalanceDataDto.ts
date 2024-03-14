@@ -13,11 +13,7 @@
  */
 
 import { mapValues } from '../runtime';
-
-export type Balance = {
-    [key: string]: string;
-}
-/** 
+/**
  * 
  * @export
  * @interface BalanceDataDto
@@ -25,10 +21,10 @@ export type Balance = {
 export interface BalanceDataDto {
     /**
      * Mapping of chain IDs to their respective balances
-     * @type {{ [key: string]: Balance; }}
+     * @type {{ [key: string]: { [key: string]: string; }; }}
      * @memberof BalanceDataDto
      */
-    balances: { [key: string]: Balance; };
+    balances: { [key: string]: { [key: string]: string; }; };
 }
 
 /**

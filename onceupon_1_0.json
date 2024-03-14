@@ -3351,6 +3351,12 @@
         },
         "required": ["balances"]
       },
+      "Balance": {
+        "type": "object",
+        "additionalProperties": {
+          "type": "string"
+        }
+      },
       "PfpDto": {
         "type": "object",
         "properties": {
@@ -4320,7 +4326,7 @@
             }
           }
         },
-        "required": ["type", "category", "outcomes", "crossChainTx"]
+        "required": []
       },
       "TransactionDto": {
         "type": "object",
@@ -4446,20 +4452,19 @@
           },
           "decode": {
             "description": "Transaction description",
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/TransactionFragment"
-              }
-            ]
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
           },
           "netAssetTransfers": {
             "description": "Net asset transfers",
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/NetAssetTransfersDto"
-              }
-            ]
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/NetAssetTransfersDto"
+            }
           },
+
           "receipt": {
             "description": "Receipt details",
             "allOf": [
@@ -4499,10 +4504,7 @@
           "s",
           "timestamp",
           "isoTimestamp",
-          "delegateCalls",
-          "assetTransfers",
           "sigHash",
-          "internalSigHashes",
           "parties",
           "decode",
           "netAssetTransfers",
@@ -4607,7 +4609,11 @@
           "filterAddresses",
           "sort",
           "skip",
-          "limit"
+          "limit",
+          "chainIds",
+          "functionSelectors",
+          "tokenTransfers",
+          "dateRange"
         ]
       },
       "EthPriceDto": {
