@@ -101,7 +101,7 @@ export class NotificationsAPIClient extends BaseAPIClient {
 
   async getNotificationCount(token: string): Promise<{ count: number }> {
     const response = await this.makeRequest("/notifications/count", {
-      method: "POST",
+      method: "GET",
       headers: {
         Authorization: token,
       },
@@ -120,6 +120,7 @@ export class NotificationsAPIClient extends BaseAPIClient {
       headers: {
         Authorization: token,
       },
+      body: JSON.stringify({}),
     });
 
     if (!response.ok) {

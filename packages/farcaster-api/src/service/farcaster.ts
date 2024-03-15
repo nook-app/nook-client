@@ -747,7 +747,8 @@ export class FarcasterService {
 
     const users = await this.cache.getUsers(fids);
     const uncachedFids = fids.filter(
-      (fid) => !users.some((user) => user.fid === fid),
+      // TODO: Figure out why pfp is not getting update in some cases, temporarily try to backfill
+      (fid) => !users.some((user) => user.fid === fid && user.pfp),
     );
 
     if (uncachedFids.length > 0) {

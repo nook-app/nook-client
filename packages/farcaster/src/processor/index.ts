@@ -227,20 +227,22 @@ export class FarcasterEventProcessor {
         }),
       );
       if (cast.parentUrl) {
-        this.client.farcasterParentUrlStats.upsert({
-          where: {
-            url: cast.parentUrl,
-          },
-          create: {
-            url: cast.parentUrl,
-            replies: 1,
-          },
-          update: {
-            replies: {
-              increment: 1,
+        statsPromises.push(
+          this.client.farcasterParentUrlStats.upsert({
+            where: {
+              url: cast.parentUrl,
             },
-          },
-        });
+            create: {
+              url: cast.parentUrl,
+              replies: 1,
+            },
+            update: {
+              replies: {
+                increment: 1,
+              },
+            },
+          }),
+        );
       }
     } else {
       statsPromises.push(
@@ -260,20 +262,22 @@ export class FarcasterEventProcessor {
         }),
       );
       if (cast.parentUrl) {
-        this.client.farcasterParentUrlStats.upsert({
-          where: {
-            url: cast.parentUrl,
-          },
-          create: {
-            url: cast.parentUrl,
-            casts: 1,
-          },
-          update: {
-            casts: {
-              increment: 1,
+        statsPromises.push(
+          this.client.farcasterParentUrlStats.upsert({
+            where: {
+              url: cast.parentUrl,
             },
-          },
-        });
+            create: {
+              url: cast.parentUrl,
+              casts: 1,
+            },
+            update: {
+              casts: {
+                increment: 1,
+              },
+            },
+          }),
+        );
       }
     }
 
@@ -375,16 +379,18 @@ export class FarcasterEventProcessor {
         }),
       );
       if (cast.parentUrl) {
-        this.client.farcasterParentUrlStats.updateMany({
-          where: {
-            url: cast.parentUrl,
-          },
-          data: {
-            replies: {
-              decrement: 1,
+        statsPromises.push(
+          this.client.farcasterParentUrlStats.updateMany({
+            where: {
+              url: cast.parentUrl,
             },
-          },
-        });
+            data: {
+              replies: {
+                decrement: 1,
+              },
+            },
+          }),
+        );
       }
     } else {
       statsPromises.push(
@@ -400,16 +406,18 @@ export class FarcasterEventProcessor {
         }),
       );
       if (cast.parentUrl) {
-        this.client.farcasterParentUrlStats.updateMany({
-          where: {
-            url: cast.parentUrl,
-          },
-          data: {
-            casts: {
-              decrement: 1,
+        statsPromises.push(
+          this.client.farcasterParentUrlStats.updateMany({
+            where: {
+              url: cast.parentUrl,
             },
-          },
-        });
+            data: {
+              casts: {
+                decrement: 1,
+              },
+            },
+          }),
+        );
       }
     }
 

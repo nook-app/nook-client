@@ -79,6 +79,7 @@ export const getUrlContent = async (
       content.type = metadata.contentType || null;
       content.length = metadata.contentLength || null;
       content.metadata = metadata.metadata || null;
+
       if (metadata.frame?.buttons && metadata.frame?.buttons.length > 0) {
         content.hasFrame = true;
         content.frame = JSON.parse(JSON.stringify(metadata.frame));
@@ -142,11 +143,19 @@ export const fetchUrlMetadata = async (url: string) => {
   if (contentType?.startsWith("text/html")) {
     const scrapedMetadata = await scrapeMetadata({ html, url });
     urlMetadata.metadata = scrapedMetadata;
+    if (
+      urlMetadata.metadata?.image &&
+      new Blob([urlMetadata.metadata?.image]).size >= 256000
+    ) {
+      urlMetadata.metadata.image = undefined;
+    }
     const { frame } = getFrame({
       url,
       htmlString: html,
     });
-    urlMetadata.frame = frame;
+    if (frame?.image && new Blob([frame?.image]).size < 256000) {
+      urlMetadata.frame = frame;
+    }
   }
 
   return urlMetadata;

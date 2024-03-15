@@ -47,6 +47,7 @@ export class ContentAPIClient extends BaseAPIClient {
     });
 
     if (!response.ok) {
+      console.log(cast.embeds.map((embed) => embed.uri));
       throw new Error(response.statusText);
     }
 

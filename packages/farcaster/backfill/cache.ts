@@ -37,6 +37,7 @@ const run = async () => {
   }
 
   const worker = getWorker(QueueName.Backfill, async (job) => {
+    console.log(`[${job.data.fid}] backfilling cache`);
     await backfillContentForFid(job.data.fid);
     console.log(`[${job.data.fid}] backfilled cache`);
   });
