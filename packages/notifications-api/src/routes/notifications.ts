@@ -15,6 +15,7 @@ export const notificationsRoutes = async (fastify: FastifyInstance) => {
         }
         return reply.send({ fid: user.fid, disabled: user.disabled });
       } catch (e) {
+        console.error(e);
         reply.code(500).send({ message: (e as Error).message });
       }
     });
@@ -25,6 +26,7 @@ export const notificationsRoutes = async (fastify: FastifyInstance) => {
         await service.deleteNotificationUser(fid);
         reply.code(204).send({ fid });
       } catch (e) {
+        console.error(e);
         reply.code(500).send({ message: (e as Error).message });
       }
     });
@@ -37,6 +39,7 @@ export const notificationsRoutes = async (fastify: FastifyInstance) => {
           await service.createNotificationUser(fid, request.body.token);
           reply.code(201).send({ fid });
         } catch (e) {
+          console.error(e);
           reply.code(500).send({ message: (e as Error).message });
         }
       },
@@ -47,6 +50,7 @@ export const notificationsRoutes = async (fastify: FastifyInstance) => {
         await service.publishNotification(request.body);
         reply.code(201).send();
       } catch (e) {
+        console.error(e);
         reply.code(500).send({ message: (e as Error).message });
       }
     });
@@ -58,6 +62,7 @@ export const notificationsRoutes = async (fastify: FastifyInstance) => {
           await service.deleteNotification(request.body);
           reply.code(201).send();
         } catch (e) {
+          console.error(e);
           reply.code(500).send({ message: (e as Error).message });
         }
       },
@@ -74,6 +79,7 @@ export const notificationsRoutes = async (fastify: FastifyInstance) => {
         );
         return reply.send(data);
       } catch (e) {
+        console.error(e);
         reply.code(500).send({ message: (e as Error).message });
       }
     });
@@ -84,6 +90,7 @@ export const notificationsRoutes = async (fastify: FastifyInstance) => {
         const count = await service.getUnreadNotifications(fid);
         return reply.send({ count });
       } catch (e) {
+        console.error(e);
         reply.code(500).send({ message: (e as Error).message });
       }
     });
@@ -94,6 +101,7 @@ export const notificationsRoutes = async (fastify: FastifyInstance) => {
         await service.markNotificationsRead(fid);
         return reply.send();
       } catch (e) {
+        console.error(e);
         reply.code(500).send({ message: (e as Error).message });
       }
     });

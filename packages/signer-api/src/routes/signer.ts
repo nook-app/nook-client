@@ -20,6 +20,7 @@ export const signerRoutes = async (fastify: FastifyInstance) => {
         const data = await signerService.getSigner(fid);
         return reply.send(data);
       } catch (e) {
+        console.error(e);
         return reply.code(500).send({ message: (e as Error).message });
       }
     });
@@ -34,6 +35,7 @@ export const signerRoutes = async (fastify: FastifyInstance) => {
           );
           return reply.send(response);
         } catch (e) {
+          console.error(e);
           return reply.code(500).send({ message: (e as Error).message });
         }
       },
@@ -47,6 +49,7 @@ export const signerRoutes = async (fastify: FastifyInstance) => {
           const response = await signerService.submitCastAdd(fid, request.body);
           return reply.send(response);
         } catch (e) {
+          console.error(e);
           return reply.code(500).send({ message: (e as Error).message });
         }
       },
@@ -63,6 +66,7 @@ export const signerRoutes = async (fastify: FastifyInstance) => {
           );
           return reply.send(response);
         } catch (e) {
+          console.error(e);
           return reply.code(500).send({ message: (e as Error).message });
         }
       },
@@ -79,6 +83,7 @@ export const signerRoutes = async (fastify: FastifyInstance) => {
           );
           return reply.send(response);
         } catch (e) {
+          console.error(e);
           return reply.code(500).send({ message: (e as Error).message });
         }
       },
@@ -95,6 +100,7 @@ export const signerRoutes = async (fastify: FastifyInstance) => {
           );
           return reply.send(response);
         } catch (e) {
+          console.error(e);
           return reply.code(500).send({ message: (e as Error).message });
         }
       },
@@ -108,6 +114,7 @@ export const signerRoutes = async (fastify: FastifyInstance) => {
           const response = await signerService.submitLinkAdd(fid, request.body);
           return reply.send(response);
         } catch (e) {
+          console.error(e);
           return reply.code(500).send({ message: (e as Error).message });
         }
       },
@@ -124,6 +131,7 @@ export const signerRoutes = async (fastify: FastifyInstance) => {
           );
           return reply.send(response);
         } catch (e) {
+          console.error(e);
           return reply.code(500).send({ message: (e as Error).message });
         }
       },
@@ -140,6 +148,7 @@ export const signerRoutes = async (fastify: FastifyInstance) => {
           );
           return reply.send(response);
         } catch (e) {
+          console.error(e);
           return reply.code(500).send({ message: (e as Error).message });
         }
       },

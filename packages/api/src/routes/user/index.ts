@@ -20,7 +20,7 @@ export const userRoutes = async (fastify: FastifyInstance) => {
         );
         return reply.send(data);
       } catch (e) {
-        console.error("/token", e);
+        console.error(e);
         return reply.code(500).send({ message: (e as Error).message });
       }
     });
@@ -32,7 +32,7 @@ export const userRoutes = async (fastify: FastifyInstance) => {
           const data = await userService.signInWithFarcaster(request.body);
           return reply.send(data);
         } catch (e) {
-          console.error("/farcaster/login", e);
+          console.error(e);
           return reply.code(500).send({ message: (e as Error).message });
         }
       },

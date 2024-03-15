@@ -17,7 +17,7 @@ const run = async () => {
         where: {
           fid,
           timestamp: {
-            gt: new Date("2024-01-01"),
+            gt: new Date("2024-03-12"),
           },
         },
       }),
@@ -25,7 +25,7 @@ const run = async () => {
         where: {
           fid,
           timestamp: {
-            gt: new Date("2024-01-01"),
+            gt: new Date("2024-03-12"),
           },
         },
       }),
@@ -33,7 +33,7 @@ const run = async () => {
         where: {
           fid,
           timestamp: {
-            gt: new Date("2024-01-01"),
+            gt: new Date("2024-03-12"),
           },
         },
       }),
