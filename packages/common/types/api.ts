@@ -218,8 +218,8 @@ export type GetNftsRequest = {
 };
 
 export type GetNftsResponse = {
-  data: TransactionDto[];
-  nextCursor?: string;
+  nfts: TransactionDto[];
+  next_cursor?: string;
 };
 
 export type GetNooksResponse = {
