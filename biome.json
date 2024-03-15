@@ -7,11 +7,13 @@
     "enabled": true,
     "rules": {
       "recommended": true
-    }
+    },
+    "ignore": ["packages/common/onceupon/**/*.ts"]
   },
   "formatter": {
     "enabled": true,
     "indentStyle": "space",
-    "indentWidth": 2
+    "indentWidth": 2,
+    "ignore": ["packages/common/onceupon/**/*.ts"]
   }
 }

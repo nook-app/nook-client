@@ -20,16 +20,17 @@
     "start:content:api": "yarn workspace @nook/content-api start",
     "start:signer:api": "yarn workspace @nook/signer-api start",
     "start:notifications:api": "yarn workspace @nook/notifications-api start",
-    "start:api": "yarn workspace @nook/api start"
+    "start:api": "yarn workspace @nook/api start",
+    "dev:api": " nodemon --exec 'yarn workspace @nook/api dev' --config ./packages/api/nodemon.json",
+    "generate:onceupon": "openapi-generator-cli generate -i onceupon_1_0.json -g typescript-fetch -o packages/common/onceupon --skip-validate-spec"
   },
-  "workspaces": [
-    "packages/*"
-  ],
+  "workspaces": ["packages/*"],
   "devDependencies": {
     "@biomejs/biome": "1.4.1",
     "@types/jest": "^29.5.11",
     "@types/node": "^20.11.14",
     "jest": "^29.7.0",
+    "nodemon": "^3.1.0",
     "ts-jest": "^29.1.2",
     "ts-node": "^10.9.2",
     "tsconfig-paths": "^4.2.0",

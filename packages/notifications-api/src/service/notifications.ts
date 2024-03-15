@@ -1,7 +1,7 @@
 import { Prisma, PrismaClient } from "@nook/common/prisma/notifications";
 import { GetNotificationsRequest, Notification } from "@nook/common/types";
 import { FastifyInstance } from "fastify";
-
+import { decodeCursorTimestamp, encodeCursor } from "@nook/common/utils";
 export const MAX_PAGE_SIZE = 50;
 
 export class NotificationsService {
@@ -87,7 +87,7 @@ export class NotificationsService {
               in: req.types,
             }
           : undefined,
-        timestamp: this.decodeCursorTimestamp(cursor),
+        timestamp: decodeCursorTimestamp(cursor),
       },
       orderBy: {
         timestamp: "desc",
@@ -99,7 +99,7 @@ export class NotificationsService {
       data,
       nextCursor:
         data.length === MAX_PAGE_SIZE
-          ? this.encodeCursor({
+          ? encodeCursor({
               timestamp: data[data.length - 1]?.timestamp.getTime(),
             })
           : undefined,
@@ -125,36 +125,5 @@ export class NotificationsService {
         read: true,
       },
     });
-  }
-
-  decodeCursorTimestamp(cursor?: string): { lt: Date } | undefined {
-    if (!cursor) return;
-    const decodedCursor = this.decodeCursor(cursor);
-    return decodedCursor
-      ? { lt: new Date(decodedCursor.timestamp) }
-      : undefined;
-  }
-
-  decodeCursor(cursor?: string): Record<string, string> | undefined {
-    if (!cursor) return;
-    try {
-      const decodedString = Buffer.from(cursor, "base64").toString("ascii");
-      const decodedCursor = JSON.parse(decodedString);
-      if (typeof decodedCursor === "object") {
-        return decodedCursor;
-      }
-      console.error(
-        "Decoded cursor does not match expected format:",
-        decodedCursor,
-      );
-    } catch (error) {
-      console.error("Error decoding cursor:", error);
-    }
-  }
-
-  encodeCursor(cursor?: Record<string, string | number>): string | undefined {
-    if (!cursor) return;
-    const encodedString = JSON.stringify(cursor);
-    return Buffer.from(encodedString).toString("base64");
   }
 }

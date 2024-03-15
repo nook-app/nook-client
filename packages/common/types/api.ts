@@ -7,6 +7,7 @@ import {
   FarcasterUser,
 } from "./farcaster";
 import { Notification } from "./notifications";
+import { TransactionDto } from "../onceupon";
 
 export type FarcasterCastResponse = {
   hash: string;
@@ -192,5 +193,15 @@ export type GetNotificationsRequest = {
 
 export type GetNotificationsResponse = {
   data: Notification[];
+  nextCursor?: string;
+};
+
+export type GetTransactionsRequest = {
+  fid: string;
+  cursor?: string;
+};
+
+export type GetTransactionsResponse = {
+  data: TransactionDto[];
   nextCursor?: string;
 };

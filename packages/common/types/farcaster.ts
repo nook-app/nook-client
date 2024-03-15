@@ -23,6 +23,7 @@ export type BaseFarcasterUser = {
 
 export type FarcasterUser = BaseFarcasterUser & {
   engagement: FarcasterUserEngagement;
+  verifiedAddresses: string[];
   context?: FarcasterUserContext;
 };
 
