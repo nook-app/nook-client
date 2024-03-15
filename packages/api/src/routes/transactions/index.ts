@@ -1,10 +1,11 @@
 import { FastifyInstance } from "fastify";
-import { GetContentRequest, GetTransactionsRequest } from "@nook/common/types";
-import { ContentAPIClient } from "@nook/common/clients";
+import {
+  TransactionFeedRequest,
+  TransactionResponse,
+} from "@nook/common/types";
 import {
   TransactionsApi,
   TransactionsControllerGetTransactionsRequest,
-  GetTransactionDto,
   AddressTag,
 } from "@nook/common/onceupon";
 import { FarcasterAPIClient } from "@nook/common/clients";
@@ -15,48 +16,73 @@ export const transactionRoutes = async (fastify: FastifyInstance) => {
     const farcasterClient = new FarcasterAPIClient();
     const client = new TransactionsApi();
 
-    fastify.post<{ Body: GetTransactionsRequest }>(
-      "/transactions",
-      async (request, reply) => {
-        await request.jwtVerify();
-        const farResponse = await farcasterClient.getUsers([request.body.fid]);
-        const addresses = farResponse.data[0].verifiedAddresses;
-        const contextAddresses: AddressTag[] = addresses.map((address) => {
-          return { address, toFromAll: "From" };
-        });
-        const cursor = decodeCursor(request.body.cursor) ?? {
-          // use current timestamp for the lte dateRange and rely on skip to
-          // paginate from beginning of that timestamp
-          // subtract one just in case they're still indexing txs
-          timestamp: Math.floor(new Date().getTime() / 1000) - 1,
-          skip: 0,
-        };
+    fastify.post<{
+      Body: TransactionFeedRequest;
+      Querystring: { cursor?: string };
+    }>("/transactions", async (request, reply) => {
+      await request.jwtVerify();
+      if (!request.body.args.userFilter) {
+        return reply.status(400).send({ message: "Invalid request" });
+      }
 
-        const req: TransactionsControllerGetTransactionsRequest = {
-          getTransactionDto: {
-            contextAddresses,
-            filterAddresses: [],
-            sort: -1,
-            limit: 25,
-            skip: cursor.skip as number,
-            functionSelectors: [],
-            tokenTransfers: [],
-            dateRange: { $lte: cursor.timestamp as number },
-            chainIds: [0],
-          },
-        };
+      const response = await farcasterClient.getAddresses({
+        ...request.body.args.userFilter,
+        context: request.body.context,
+      });
+      if (!response?.data || response?.data.length === 0) {
+        return reply.status(404).send({ message: "Addresses not found" });
+      }
 
-        // do we want to transform data..?
-        const data = await client.transactionsControllerGetTransactions(req);
-        const nextCursor =
-          data.length === 25
-            ? encodeCursor({
-                timestamp: cursor.timestamp,
-                skip: (cursor.skip as number) + 25,
-              })
-            : null;
-        return reply.send({ nextCursor, data });
-      },
-    );
+      const contextAddresses: AddressTag[] = response?.data.map((address) => {
+        return { address, toFromAll: "From" };
+      });
+      const cursor = decodeCursor(request.query.cursor) ?? {
+        // use current timestamp for the lte dateRange and rely on skip to
+        // paginate from beginning of that timestamp
+        // subtract one just in case they're still indexing txs
+        timestamp: Math.floor(new Date().getTime() / 1000) - 1,
+        skip: 0,
+      };
+
+      const req: TransactionsControllerGetTransactionsRequest = {
+        getTransactionDto: {
+          contextAddresses,
+          filterAddresses: [],
+          sort: -1,
+          limit: 25,
+          skip: cursor.skip as number,
+          functionSelectors: [],
+          tokenTransfers: [],
+          dateRange: { $lte: cursor.timestamp as number },
+          chainIds: [0],
+        },
+      };
+
+      // do we want to transform data..?
+      const rawData = await client.transactionsControllerGetTransactions(req);
+
+      const data: TransactionResponse[] = rawData.map((tx) => ({
+        chainId: tx.chainId,
+        blockNumber: tx.blockNumber,
+        blockHash: tx.blockHash,
+        hash: tx.hash,
+        from: tx.from,
+        to: tx.to,
+        value: tx.value,
+        timestamp: tx.timestamp,
+        parties: tx.parties,
+        netAssetTransfers: tx.netAssetTransfers,
+        context: tx.context,
+      }));
+
+      const nextCursor =
+        data.length === 25
+          ? encodeCursor({
+              timestamp: cursor.timestamp,
+              skip: (cursor.skip as number) + 25,
+            })
+          : null;
+      return reply.send({ nextCursor, data });
+    });
   });
 };

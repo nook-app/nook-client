@@ -14,54 +14,79 @@ export const contentRoutes = async (fastify: FastifyInstance) => {
     fastify.post<{
       Body: GetContentRequest | GetContentsRequest;
     }>("/content", async (request, reply) => {
-      if ("uri" in request.body) {
-        const content = await service.getContent(request.body.uri);
-        if (!content) {
-          reply.status(404).send({ message: "Content not found" });
-          return;
+      try {
+        if ("uri" in request.body) {
+          const content = await service.getContent(request.body.uri);
+          if (!content) {
+            reply.status(404).send({ message: "Content not found" });
+            return;
+          }
+          reply.send(content);
+        } else {
+          const contents = await service.getContents(request.body.uris);
+          reply.send({ data: contents });
         }
-        reply.send(content);
-      } else {
-        const contents = await service.getContents(request.body.uris);
-        reply.send({ data: contents });
+      } catch (e) {
+        console.error(e);
+        reply.status(500).send({ message: "Internal server error" });
       }
     });
 
     fastify.post<{
       Body: GetContentRequest | GetContentsRequest;
     }>("/content/refresh", async (request, reply) => {
-      if ("uri" in request.body) {
-        const content = await service.refreshContent(request.body.uri);
-        reply.send(content);
-      } else {
-        const contents = await service.refreshContents(request.body.uris);
-        reply.send({ data: contents });
+      try {
+        if ("uri" in request.body) {
+          const content = await service.refreshContent(request.body.uri);
+          reply.send(content);
+        } else {
+          const contents = await service.refreshContents(request.body.uris);
+          reply.send({ data: contents });
+        }
+      } catch (e) {
+        console.error(e);
+        reply.status(500).send({ message: "Internal server error" });
       }
     });
 
     fastify.post<{
       Body: FarcasterCastResponse;
     }>("/content/references", async (request, reply) => {
-      await service.addReferencedContent(request.body);
-      reply.send({});
+      try {
+        await service.addReferencedContent(request.body);
+        reply.send({});
+      } catch (e) {
+        console.error(e);
+        reply.status(500).send({ message: "Internal server error" });
+      }
     });
 
     fastify.delete<{
       Body: FarcasterCastResponse;
     }>("/content/references", async (request, reply) => {
-      await service.removeReferencedContent(request.body);
-      reply.send({});
+      try {
+        await service.removeReferencedContent(request.body);
+        reply.send({});
+      } catch (e) {
+        console.error(e);
+        reply.status(500).send({ message: "Internal server error" });
+      }
     });
 
     fastify.post<{
       Body: GetContentReferencesRequest;
       Querystring: { cursor?: string };
     }>("/content/references/by-type", async (request, reply) => {
-      const data = await service.getContentReferences(
-        request.body,
-        request.query.cursor,
-      );
-      reply.send(data);
+      try {
+        const data = await service.getContentReferences(
+          request.body,
+          request.query.cursor,
+        );
+        reply.send(data);
+      } catch (e) {
+        console.error(e);
+        reply.status(500).send({ message: "Internal server error" });
+      }
     });
   });
 };

@@ -196,11 +196,6 @@ export type GetNotificationsResponse = {
   nextCursor?: string;
 };
 
-export type GetTransactionsRequest = {
-  fid: string;
-  cursor?: string;
-};
-
 export type GetTransactionsResponse = {
   data: TransactionDto[];
   nextCursor?: string;

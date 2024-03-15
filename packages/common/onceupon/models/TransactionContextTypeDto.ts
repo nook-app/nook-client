@@ -50,6 +50,16 @@ export interface TransactionContextTypeDto {
      * @memberof TransactionContextTypeDto
      */
     crossChainTx?: Array<Array<string>>;
+
+    summaries: {
+        category: string;
+        en: {
+            title: string;
+            default: string;
+        };
+    }
+    
+    variables: Record<string, any>
 }
 
 
@@ -90,6 +100,8 @@ export function TransactionContextTypeDtoFromJSONTyped(json: any, ignoreDiscrimi
         'category': json['category'] == null ? undefined : json['category'],
         'outcomes': json['outcomes'] == null ? undefined : ((json['outcomes'] as Array<any>).map(ContextOutcomeTypeDtoFromJSON)),
         'crossChainTx': json['crossChainTx'] == null ? undefined : json['crossChainTx'],
+        'summaries': json['summaries'] == null ? undefined : json['summaries'],
+        'variables': json['variables'] == null ? undefined : json['variables'],
     };
 }
 

@@ -25,16 +25,22 @@ export type NookShelf =
   | (NookShelfBase & {
       type: NookShelfType.FarcasterProfile;
       args: FarcasterProfileArgs;
+    })
+  | (NookShelfBase & {
+      type: NookShelfType.TransactionFeed;
+      args: TransactionFeedArgs;
     });
 
 export enum NookShelfType {
   FarcasterFeed = "FarcasterFeed",
   FarcasterProfile = "FarcasterProfile",
+  TransactionFeed = "TransactionFeed",
 }
 
 export type NookShelfArgs = {
   [NookShelfType.FarcasterFeed]: FarcasterFeedArgs;
   [NookShelfType.FarcasterProfile]: FarcasterProfileArgs;
+  [NookShelfType.TransactionFeed]: TransactionFeedArgs;
 };
 
 export enum UserFilterType {
@@ -43,6 +49,7 @@ export enum UserFilterType {
 }
 
 export type UserFilterFollowingArgs = {
+  fid?: string;
   degree: number;
 };
 
@@ -69,10 +76,6 @@ export type ChannelFilter = {
   channelIds: string[];
 };
 
-export type FarcasterFeedContext = {
-  viewerFid?: string;
-};
-
 export type FarcasterFeedArgs = {
   userFilter?: UserFilter;
   contentFilter?: ContentFilter;
@@ -81,7 +84,6 @@ export type FarcasterFeedArgs = {
     query: string;
   };
   replies?: boolean;
-  context?: FarcasterFeedContext;
   displayMode?: FarcasterFeedDisplayMode;
 };
 
@@ -94,3 +96,32 @@ export type FarcasterFeedDisplayMode =
   | "frame"
   | "replies"
   | "default";
+
+export type TransactionFeedArgs = {
+  userFilter?: UserFilter;
+};
+
+export type RequestContext = {
+  viewerFid?: string;
+};
+
+export type BaseNookShelfRequest = {
+  context?: RequestContext;
+};
+
+export type FarcasterFeedRequest = BaseNookShelfRequest & {
+  args: FarcasterFeedArgs;
+};
+
+export type FarcasterProfileRequest = BaseNookShelfRequest & {
+  args: FarcasterProfileArgs;
+};
+
+export type TransactionFeedRequest = BaseNookShelfRequest & {
+  args: TransactionFeedArgs;
+};
+
+export type NookShelfRequest =
+  | FarcasterFeedRequest
+  | FarcasterProfileRequest
+  | TransactionFeedRequest;

@@ -206,15 +206,15 @@ export class ContentService {
       }
     }
 
+    const whereClause = [`"reference"."type" = 'EMBED'`];
     if (req.frames !== undefined) {
       if (req.frames) {
-        contentFilter.push(`"content"."frame" IS NOT NULL`);
+        whereClause.push(`"content"."hasFrame"`);
       } else {
-        contentFilter.push(`"content"."frame" IS NULL`);
+        whereClause.push(`NOT "content"."hasFrame"`);
       }
     }
 
-    const whereClause = [];
     if (contentFilter.length > 0) {
       whereClause.push(`(${contentFilter.join(" OR ")})`);
     }
@@ -233,11 +233,11 @@ export class ContentService {
       whereClause.length > 0 ? `WHERE ${whereClause.join(" AND ")}` : "";
 
     const query = `
-      SELECT "FarcasterContentReference".*
-      FROM "FarcasterContentReference"
-      LEFT JOIN "UrlContent" AS "content" ON "FarcasterContentReference"."uri" = "content"."uri"
+      SELECT "reference".*
+      FROM "FarcasterContentReference" AS "reference"
+      LEFT JOIN "UrlContent" AS "content" ON "reference"."uri" = "content"."uri"
       ${whereClauseString}
-      ORDER BY "FarcasterContentReference"."timestamp" DESC
+      ORDER BY "reference"."timestamp" DESC
       LIMIT ${MAX_PAGE_SIZE}
     `;
 

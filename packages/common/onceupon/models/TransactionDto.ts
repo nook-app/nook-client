@@ -311,7 +311,7 @@ export function TransactionDtoFromJSONTyped(json: any, ignoreDiscriminator: bool
         'decode': json['decode'],
         'netAssetTransfers': json['netAssetTransfers'],
         'receipt': ReceiptDtoFromJSON(json['receipt']),
-        'context': TransactionContextTypeDtoFromJSON(json['context']),
+        'context': json['context'],
     };
 }
 

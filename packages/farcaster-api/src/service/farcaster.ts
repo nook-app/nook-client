@@ -23,6 +23,7 @@ import {
   UrlContentResponse,
   FarcasterFeedArgs,
   UserFilterType,
+  UserFilter,
 } from "@nook/common/types";
 import {
   getCastEmbeds,
@@ -56,11 +57,32 @@ export class FarcasterService {
     this.contentClient = new ContentAPIClient();
   }
 
+  async getAddresses(req: UserFilter, viewerFid?: string) {
+    const fids = await this.getFeedFids(req, viewerFid);
+    if (!fids) return { data: [] };
+
+    const addresses = await this.client.farcasterVerification.findMany({
+      where: {
+        fid: {
+          in: fids.map((fid) => BigInt(fid)),
+        },
+        protocol: 0,
+      },
+    });
+
+    return {
+      data: addresses.map(({ address }) => address),
+    };
+  }
+
   async getFeed(
     req: FarcasterFeedArgs,
     cursor?: string,
+    viewerFid?: string,
   ): Promise<GetFarcasterCastsResponse> {
-    const fids = await this.getFeedFids(req);
+    const fids = req.userFilter
+      ? await this.getFeedFids(req.userFilter, viewerFid)
+      : undefined;
 
     if (req.contentFilter) {
       const references = await this.contentClient.getContentReferences(
@@ -69,13 +91,10 @@ export class FarcasterService {
           fids,
         },
         cursor,
-        req.context?.viewerFid,
+        viewerFid,
       );
       const hashes = references.data.map((i) => i.hash);
-      const casts = await this.getCastsFromHashes(
-        hashes,
-        req.context?.viewerFid,
-      );
+      const casts = await this.getCastsFromHashes(hashes, viewerFid);
       const castMap = casts.reduce(
         (acc, cast) => {
           acc[cast.hash] = cast;
@@ -144,7 +163,7 @@ export class FarcasterService {
       ]),
     );
 
-    const casts = await this.getCastsFromData(rawCasts, req.context?.viewerFid);
+    const casts = await this.getCastsFromData(rawCasts, viewerFid);
 
     return {
       data: casts,
@@ -157,18 +176,18 @@ export class FarcasterService {
     };
   }
 
-  async getFeedFids(req: FarcasterFeedArgs): Promise<string[] | undefined> {
-    if (!req.userFilter) return;
-
-    switch (req.userFilter.type) {
+  async getFeedFids(
+    filter: UserFilter,
+    viewerFid?: string,
+  ): Promise<string[] | undefined> {
+    switch (filter.type) {
       case UserFilterType.Fids:
-        return req.userFilter.args.fids;
-      case UserFilterType.Following:
-        if (!req.context?.viewerFid) return;
-        return await this.getFollowingFids(
-          [req.context.viewerFid],
-          req.userFilter.args.degree,
-        );
+        return filter.args.fids;
+      case UserFilterType.Following: {
+        const fid = filter.args.fid || viewerFid;
+        if (!fid) return;
+        return await this.getFollowingFids([fid], filter.args.degree);
+      }
       default:
         return undefined;
     }
