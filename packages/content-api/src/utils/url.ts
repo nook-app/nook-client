@@ -111,7 +111,8 @@ const scrapeMetadata = async (options: MetascraperOptions) => {
   return await scraper(options);
 };
 
-export const fetchUrlMetadata = async (url: string) => {
+const fetchUrlMetadata = async (url: string) => {
+  console.log("fetching");
   const res = await Promise.race([
     fetch(url, {
       headers: {
@@ -141,7 +142,15 @@ export const fetchUrlMetadata = async (url: string) => {
   };
 
   if (contentType?.startsWith("text/html")) {
-    const scrapedMetadata = await scrapeMetadata({ html, url });
+    const scrapedMetadata = await Promise.race([
+      scrapeMetadata({ html, url }),
+      new Promise((_, reject) =>
+        setTimeout(() => reject(new Error("Timed out getting frame")), 20000),
+      ) as Promise<Error>,
+    ]);
+    if (scrapedMetadata instanceof Error) {
+      throw scrapedMetadata;
+    }
     urlMetadata.metadata = scrapedMetadata;
     if (
       urlMetadata.metadata?.image &&
