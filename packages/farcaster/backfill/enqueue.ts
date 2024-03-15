@@ -4,7 +4,7 @@ const run = async () => {
   const queue = getQueue(QueueName.Backfill);
 
   const batchSize = 1000;
-  const totalItems = 20000;
+  const totalItems = 392000;
 
   let batch = [];
   for (let i = 1; i <= totalItems; i++) {

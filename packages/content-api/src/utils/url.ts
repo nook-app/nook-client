@@ -112,7 +112,6 @@ const scrapeMetadata = async (options: MetascraperOptions) => {
 };
 
 const fetchUrlMetadata = async (url: string) => {
-  console.log("fetching");
   const res = await Promise.race([
     fetch(url, {
       headers: {

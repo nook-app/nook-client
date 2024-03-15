@@ -14,6 +14,7 @@ export enum NotificationService {
 }
 
 export enum NotificationType {
+  POST = "POST",
   MENTION = "MENTION",
   REPLY = "REPLY",
   LIKE = "LIKE",
@@ -21,6 +22,13 @@ export enum NotificationType {
   QUOTE = "QUOTE",
   FOLLOW = "FOLLOW",
 }
+
+export type FarcasterPostData = {
+  type: NotificationType.POST;
+  data: {
+    hash: string;
+  };
+};
 
 type FarcasterMentionData = {
   type: NotificationType.MENTION;
@@ -64,6 +72,7 @@ type FarcasterFollowData = {
   data: undefined;
 };
 
+export type FarcasterPostNotification = BaseNotification & FarcasterPostData;
 export type FarcasterMentionNotification = BaseNotification &
   FarcasterMentionData;
 export type FarcasterReplyNotification = BaseNotification & FarcasterReplyData;
@@ -75,6 +84,7 @@ export type FarcasterFollowNotification = BaseNotification &
   FarcasterFollowData;
 
 export type Notification =
+  | FarcasterPostNotification
   | FarcasterMentionNotification
   | FarcasterReplyNotification
   | FarcasterLikeNotification

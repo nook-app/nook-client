@@ -6,6 +6,7 @@ import {
   Prisma,
 } from "../prisma/farcaster";
 export * from "./events";
+export * from "./notifications";
 
 export const timestampToDate = (timestamp: number) =>
   new Date(timestamp * 1000 + FARCASTER_EPOCH);
@@ -84,7 +85,7 @@ export const getCastEmbeds = (data: FarcasterCast) => {
     Array.isArray(data.rawCastEmbeds)
   ) {
     for (const embed of data.rawCastEmbeds as unknown as FarcasterCastEmbedCast[]) {
-      embeds.push({ fid: embed.fid, hash: embed.embedHash });
+      embeds.push({ fid: embed.embedFid, hash: embed.embedHash });
     }
   }
   return embeds;

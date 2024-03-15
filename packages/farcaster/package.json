@@ -11,7 +11,8 @@
     "start:backfill:enqueue": "node dist/backfill/enqueue.js",
     "start:backfill:stats": "node dist/backfill/stats.js",
     "start:backfill:cache": "tsc && node dist/backfill/cache.js",
-    "start:backfill:channels": "tsc && node dist/backfill/channels.js"
+    "start:backfill:channels": "tsc && node dist/backfill/channels.js",
+    "start:backfill:notifications": "tsc && node dist/backfill/notifications.js"
   },
   "dependencies": {
     "@ethersproject/abstract-signer": "^5.7.0",

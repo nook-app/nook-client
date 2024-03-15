@@ -20,6 +20,11 @@ import {
   NotificationService,
   NotificationType,
 } from "@nook/common/types";
+import {
+  parseNotificationsFromCast,
+  parseNotificationsFromLink,
+  parseNotificationsFromReaction,
+} from "@nook/common/farcaster";
 
 export class FarcasterProcessor {
   private farcasterClient: FarcasterAPIClient;
@@ -109,55 +114,18 @@ export class FarcasterProcessor {
       promises.push(
         this.cacheClient.resetCastEngagement(cast.parentHash, "replies"),
       );
-      promises.push(
-        this.notificationClient.publishNotification({
-          fid: data.parentFid.toString(),
-          service: NotificationService.FARCASTER,
-          type: NotificationType.REPLY,
-          sourceId: data.hash,
-          timestamp: data.timestamp,
-          sourceFid: data.fid.toString(),
-          data: {
-            hash: data.hash,
-            parentHash: cast.parentHash,
-          },
-        }),
-      );
     }
 
-    for (const { user, hash } of cast.embedCasts) {
+    for (const { hash } of cast.embedCasts) {
       promises.push(this.cacheClient.resetCastEngagement(hash, "quotes"));
-      promises.push(
-        this.notificationClient.publishNotification({
-          fid: user.fid.toString(),
-          service: NotificationService.FARCASTER,
-          type: NotificationType.QUOTE,
-          sourceId: data.hash,
-          timestamp: data.timestamp,
-          sourceFid: data.fid.toString(),
-          data: {
-            hash: data.hash,
-            embedHash: hash,
-          },
-        }),
-      );
     }
 
-    for (const { user } of cast.mentions) {
-      promises.push(
-        this.notificationClient.publishNotification({
-          fid: user.fid.toString(),
-          service: NotificationService.FARCASTER,
-          type: NotificationType.MENTION,
-          sourceId: data.hash,
-          timestamp: data.timestamp,
-          sourceFid: data.fid.toString(),
-          data: {
-            hash: data.hash,
-          },
-        }),
-      );
-    }
+    const notifications = parseNotificationsFromCast(data);
+    promises.push(
+      ...notifications.map((n) =>
+        this.notificationClient.publishNotification(n),
+      ),
+    );
 
     await Promise.all(promises);
   }
@@ -174,55 +142,18 @@ export class FarcasterProcessor {
       promises.push(
         this.cacheClient.resetCastEngagement(cast.parentHash, "replies"),
       );
-      promises.push(
-        this.notificationClient.deleteNotification({
-          fid: data.parentFid.toString(),
-          service: NotificationService.FARCASTER,
-          type: NotificationType.REPLY,
-          sourceId: data.hash,
-          timestamp: data.timestamp,
-          sourceFid: data.fid.toString(),
-          data: {
-            hash: data.hash,
-            parentHash: cast.parentHash,
-          },
-        }),
-      );
     }
 
-    for (const { user, hash } of cast.embedCasts) {
+    for (const { hash } of cast.embedCasts) {
       promises.push(this.cacheClient.resetCastEngagement(hash, "quotes"));
-      promises.push(
-        this.notificationClient.deleteNotification({
-          fid: user.fid.toString(),
-          service: NotificationService.FARCASTER,
-          type: NotificationType.QUOTE,
-          sourceId: data.hash,
-          timestamp: data.timestamp,
-          sourceFid: data.fid.toString(),
-          data: {
-            hash: data.hash,
-            embedHash: hash,
-          },
-        }),
-      );
     }
 
-    for (const { user } of cast.mentions) {
-      promises.push(
-        this.notificationClient.deleteNotification({
-          fid: user.fid.toString(),
-          service: NotificationService.FARCASTER,
-          type: NotificationType.MENTION,
-          sourceId: data.hash,
-          timestamp: data.timestamp,
-          sourceFid: data.fid.toString(),
-          data: {
-            hash: data.hash,
-          },
-        }),
-      );
-    }
+    const notifications = parseNotificationsFromCast(data);
+    promises.push(
+      ...notifications.map((n) =>
+        this.notificationClient.deleteNotification(n),
+      ),
+    );
 
     await Promise.all(promises);
   }
@@ -241,19 +172,6 @@ export class FarcasterProcessor {
           true,
         ),
       );
-      promises.push(
-        this.notificationClient.publishNotification({
-          fid: data.targetFid.toString(),
-          service: NotificationService.FARCASTER,
-          type: NotificationType.LIKE,
-          sourceId: data.hash,
-          timestamp: data.timestamp,
-          sourceFid: data.fid.toString(),
-          data: {
-            targetHash: data.targetHash,
-          },
-        }),
-      );
     } else if (data.reactionType === 2) {
       promises.push(
         this.cacheClient.resetCastEngagement(data.targetHash, "recasts"),
@@ -266,20 +184,14 @@ export class FarcasterProcessor {
           true,
         ),
       );
-      promises.push(
-        this.notificationClient.publishNotification({
-          fid: data.targetFid.toString(),
-          service: NotificationService.FARCASTER,
-          type: NotificationType.RECAST,
-          sourceId: data.hash,
-          timestamp: data.timestamp,
-          sourceFid: data.fid.toString(),
-          data: {
-            targetHash: data.targetHash,
-          },
-        }),
-      );
     }
+
+    const notifications = parseNotificationsFromReaction(data);
+    promises.push(
+      ...notifications.map((n) =>
+        this.notificationClient.publishNotification(n),
+      ),
+    );
 
     await Promise.all(promises);
   }
@@ -298,19 +210,6 @@ export class FarcasterProcessor {
           false,
         ),
       );
-      promises.push(
-        this.notificationClient.deleteNotification({
-          fid: data.targetFid.toString(),
-          service: NotificationService.FARCASTER,
-          type: NotificationType.LIKE,
-          sourceId: data.hash,
-          timestamp: data.timestamp,
-          sourceFid: data.fid.toString(),
-          data: {
-            targetHash: data.targetHash,
-          },
-        }),
-      );
     } else if (data.reactionType === 2) {
       promises.push(
         this.cacheClient.resetCastEngagement(data.targetHash, "recasts"),
@@ -323,20 +222,14 @@ export class FarcasterProcessor {
           false,
         ),
       );
-      promises.push(
-        this.notificationClient.deleteNotification({
-          fid: data.targetFid.toString(),
-          service: NotificationService.FARCASTER,
-          type: NotificationType.RECAST,
-          sourceId: data.hash,
-          timestamp: data.timestamp,
-          sourceFid: data.fid.toString(),
-          data: {
-            targetHash: data.targetHash,
-          },
-        }),
-      );
     }
+
+    const notifications = parseNotificationsFromReaction(data);
+    promises.push(
+      ...notifications.map((n) =>
+        this.notificationClient.deleteNotification(n),
+      ),
+    );
 
     await Promise.all(promises);
   }
@@ -364,18 +257,15 @@ export class FarcasterProcessor {
           true,
         ),
       );
-      promises.push(
-        this.notificationClient.publishNotification({
-          fid: data.targetFid.toString(),
-          service: NotificationService.FARCASTER,
-          type: NotificationType.FOLLOW,
-          sourceId: data.hash,
-          timestamp: data.timestamp,
-          sourceFid: data.fid.toString(),
-          data: undefined,
-        }),
-      );
     }
+
+    const notifications = parseNotificationsFromLink(data);
+    promises.push(
+      ...notifications.map((n) =>
+        this.notificationClient.publishNotification(n),
+      ),
+    );
+
     await Promise.all(promises);
   }
 
@@ -402,18 +292,15 @@ export class FarcasterProcessor {
           false,
         ),
       );
-      promises.push(
-        this.notificationClient.deleteNotification({
-          fid: data.targetFid.toString(),
-          service: NotificationService.FARCASTER,
-          type: NotificationType.FOLLOW,
-          sourceId: data.hash,
-          timestamp: data.timestamp,
-          sourceFid: data.fid.toString(),
-          data: undefined,
-        }),
-      );
     }
+
+    const notifications = parseNotificationsFromLink(data);
+    promises.push(
+      ...notifications.map((n) =>
+        this.notificationClient.deleteNotification(n),
+      ),
+    );
+
     await Promise.all(promises);
   }
 
