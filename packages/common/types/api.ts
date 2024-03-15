@@ -212,6 +212,15 @@ export type GetTransactionsResponse = {
   data: TransactionDto[];
   nextCursor?: string;
 };
+export type GetNftsRequest = {
+  fid: string;
+  cursor?: string;
+};
+
+export type GetNftsResponse = {
+  data: TransactionDto[];
+  nextCursor?: string;
+};
 
 export type GetNooksResponse = {
   data: Nook[];
