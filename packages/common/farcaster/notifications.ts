@@ -72,7 +72,7 @@ export const parseNotificationsFromCast = (
 export const parseNotificationsFromReaction = (
   data: FarcasterCastReaction,
 ): Notification[] => {
-  if (data.reactionType === 1) {
+  if (data.reactionType === 1 && data.targetFid !== data.fid) {
     return [
       {
         fid: data.targetFid.toString(),
@@ -88,7 +88,7 @@ export const parseNotificationsFromReaction = (
     ];
   }
 
-  if (data.reactionType === 2) {
+  if (data.reactionType === 2 && data.targetFid !== data.fid) {
     return [
       {
         fid: data.targetFid.toString(),
@@ -110,7 +110,7 @@ export const parseNotificationsFromReaction = (
 export const parseNotificationsFromLink = (
   data: FarcasterLink,
 ): Notification[] => {
-  if (data.linkType === "follow") {
+  if (data.linkType === "follow" && data.targetFid !== data.fid) {
     return [
       {
         fid: data.targetFid.toString(),

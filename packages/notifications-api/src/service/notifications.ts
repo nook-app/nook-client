@@ -68,12 +68,15 @@ export class NotificationsService {
   }
 
   async deleteNotification(notification: Notification) {
-    await this.client.notification.deleteMany({
+    await this.client.notification.updateMany({
       where: {
         fid: notification.fid,
         service: notification.service,
         type: notification.type,
         sourceId: notification.sourceId,
+      },
+      data: {
+        deletedAt: new Date(),
       },
     });
   }
@@ -88,6 +91,7 @@ export class NotificationsService {
             }
           : undefined,
         timestamp: decodeCursorTimestamp(cursor),
+        deletedAt: null,
       },
       orderBy: {
         timestamp: "desc",

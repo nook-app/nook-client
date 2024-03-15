@@ -27,8 +27,9 @@ model Notification {
     data      Json?
     read      Boolean  @default(false)
 
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
+    createdAt DateTime  @default(now())
+    updatedAt DateTime  @updatedAt
+    deletedAt DateTime?
 
     @@id([fid, service, type, sourceId])
     @@index([fid, read])
