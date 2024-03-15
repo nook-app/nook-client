@@ -101,6 +101,7 @@ model FarcasterCast {
     @@index([timestamp, deletedAt, parentUrl, parentHash])
     @@index([fid, deletedAt, parentHash, timestamp])
     @@index([parentUrl, deletedAt, parentHash, timestamp])
+    @@index([rootParentUrl, deletedAt, parentHash, timestamp])
     @@index([timestamp])
 }
 

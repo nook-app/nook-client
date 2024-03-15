@@ -505,19 +505,22 @@ export class FarcasterService {
 
     if (cursor) {
       const decodedCursor = this.decodeCursor(cursor);
-      if (decodedCursor?.channelId) {
-        conditions.push(`"channelId" > '${decodedCursor.channelId}'`);
+      if (decodedCursor?.casts) {
+        conditions.push(`"casts" < '${decodedCursor.casts}'`);
       }
     }
 
     const whereClause = conditions.join(" AND ");
-    const rawChannels = await this.client.$queryRaw<FarcasterParentUrl[]>(
+    const rawChannels = await this.client.$queryRaw<
+      (FarcasterParentUrl & { casts: number })[]
+    >(
       Prisma.sql([
         `
-          SELECT *
-          FROM "FarcasterParentUrl"
+          SELECT u.*, casts
+          FROM "FarcasterParentUrl" u
+          JOIN "FarcasterParentUrlStats" stats ON u.url = stats.url
           WHERE ${whereClause}
-          ORDER BY "channelId" ASC
+          ORDER BY casts DESC
           LIMIT ${MAX_PAGE_SIZE}
         `,
       ]),
@@ -533,7 +536,7 @@ export class FarcasterService {
       nextCursor:
         channels.length === MAX_PAGE_SIZE
           ? this.encodeCursor({
-              channelId: channels[channels.length - 1].channelId,
+              casts: channels[channels.length - 1].casts,
             })
           : undefined,
     };

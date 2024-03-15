@@ -33,10 +33,49 @@ const run = async () => {
     creatorId: channel.leadFid?.toString(),
   }));
 
+  console.log(`[channels] upserting ${channels.length} channels`);
   await client.farcasterParentUrl.createMany({
     data: channels,
     skipDuplicates: true,
   });
+
+  let i = 1;
+  for (const channel of channels) {
+    console.log(
+      `[${i}] [${channel.channelId}] upserting stats for ${channel.url}`,
+    );
+    const [casts, replies] = await Promise.all([
+      client.farcasterCast.count({
+        where: {
+          parentUrl: channel.url,
+          deletedAt: null,
+          parentHash: null,
+        },
+      }),
+      client.farcasterCast.count({
+        where: {
+          rootParentUrl: channel.url,
+          deletedAt: null,
+          parentHash: { not: null },
+        },
+      }),
+    ]);
+
+    await client.farcasterParentUrlStats.upsert({
+      where: { url: channel.url },
+      create: {
+        url: channel.url,
+        casts: casts,
+        replies: replies,
+      },
+      update: {
+        casts: casts,
+        replies: replies,
+      },
+    });
+
+    i++;
+  }
 };
 
 run().catch((e) => {

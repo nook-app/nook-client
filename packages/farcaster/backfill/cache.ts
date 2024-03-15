@@ -24,6 +24,7 @@ const run = async () => {
       await Promise.all(
         casts.data.map((cast) => contentApi.addContentReferences(cast)),
       );
+      console.log(fid, nextCursor);
       nextCursor = casts.nextCursor;
       count += casts.data.length;
     } while (nextCursor);
