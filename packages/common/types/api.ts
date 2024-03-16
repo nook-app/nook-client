@@ -43,7 +43,8 @@ export type GetFarcasterUserRequest = {
 };
 
 export type GetFarcasterUsersRequest = {
-  fids: string[];
+  fids?: string[];
+  addresses?: string[];
 };
 
 export type GetFarcasterCastRequest = {
@@ -179,6 +180,7 @@ export type GetContentReferencesRequest = {
   types?: string[];
   frames?: boolean;
   fids?: string[];
+  parentUrls?: string[];
 };
 
 export type GetContentReferencesResponse = {

@@ -84,11 +84,18 @@ export class FarcasterService {
       ? await this.getFeedFids(req.userFilter, viewerFid)
       : undefined;
 
+    let parentUrls: string[] | undefined;
+    if (req.channelFilter) {
+      const channels = await this.getChannelsById(req.channelFilter.channelIds);
+      parentUrls = channels.map((channel) => channel.url);
+    }
+
     if (req.contentFilter) {
       const references = await this.contentClient.getContentReferences(
         {
           ...req.contentFilter,
           fids,
+          parentUrls,
         },
         cursor,
         viewerFid,
@@ -115,12 +122,6 @@ export class FarcasterService {
           .filter(Boolean) as FarcasterCastResponse[],
         nextCursor: references.nextCursor,
       };
-    }
-
-    let parentUrls: string[] | undefined;
-    if (req.channelFilter) {
-      const channels = await this.getChannelsById(req.channelFilter.channelIds);
-      parentUrls = channels.map((channel) => channel.url);
     }
 
     const conditions: string[] = ['"deletedAt" IS NULL'];
@@ -486,9 +487,21 @@ export class FarcasterService {
 
     const castMap = allCasts.reduce(
       (acc, cast) => {
-        const potentialChannelMentions = cast.text
-          .split(" ")
-          .filter((word) => word.startsWith("/"));
+        const potentialChannelMentions = cast.text.split(" ").reduce(
+          (acc, word, index) => {
+            if (word.startsWith("/")) {
+              const position = cast.text.indexOf(word, acc.lastIndex);
+              acc.mentions.push({ word, position });
+              acc.lastIndex = position + word.length;
+            }
+            return acc;
+          },
+          { mentions: [], lastIndex: 0 } as {
+            mentions: { word: string; position: number }[];
+            lastIndex: number;
+          },
+        ).mentions;
+
         acc[cast.hash] = {
           ...cast,
           user: userMap[cast.fid],
@@ -504,12 +517,12 @@ export class FarcasterService {
           channel: cast.parentUrl ? channelByUrlMap[cast.parentUrl] : undefined,
           channelMentions: potentialChannelMentions
             .map((mention) => {
-              const channel = channelByIdMap[mention.slice(1)];
+              const channel = channelByIdMap[mention.word.slice(1)];
               if (!channel) return;
               return {
                 channel,
                 position: Buffer.from(
-                  cast.text.slice(0, cast.text.indexOf(mention)),
+                  cast.text.slice(0, mention.position),
                 ).length.toString(),
               };
             })
@@ -766,6 +779,22 @@ export class FarcasterService {
             })
           : undefined,
     };
+  }
+
+  async getUsersForAddresses(addresses: string[], viewerFid?: string) {
+    const fids = await this.client.farcasterVerification.findMany({
+      where: {
+        address: {
+          in: addresses,
+        },
+        protocol: 0,
+      },
+    });
+
+    return await this.getUsers(
+      fids.map(({ fid }) => fid.toString()),
+      viewerFid,
+    );
   }
 
   async getUsers(fids: string[], viewerFid?: string): Promise<FarcasterUser[]> {

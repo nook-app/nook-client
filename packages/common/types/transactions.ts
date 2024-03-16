@@ -1,3 +1,5 @@
+import { FarcasterUser } from "./farcaster";
+
 export type TransactionResponse = {
   chainId: number;
   blockNumber: number;
@@ -25,6 +27,8 @@ export type TransactionResponse = {
     // biome-ignore lint/suspicious/noExplicitAny: can be anything for now
     variables: Record<string, any>;
   };
+  // biome-ignore lint/suspicious/noExplicitAny: can be anything for now
+  enrichedParties: Record<string, any>;
 };
 
 export type TransactionAssetTransfer = {

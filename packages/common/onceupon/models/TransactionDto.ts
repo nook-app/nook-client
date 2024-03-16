@@ -236,6 +236,7 @@ export interface TransactionDto {
      * @memberof TransactionDto
      */
     context: TransactionContextTypeDto;
+    enrichedParties: Record<string,any>
 }
 
 /**
@@ -312,6 +313,7 @@ export function TransactionDtoFromJSONTyped(json: any, ignoreDiscriminator: bool
         'netAssetTransfers': json['netAssetTransfers'],
         'receipt': ReceiptDtoFromJSON(json['receipt']),
         'context': json['context'],
+        'enrichedParties': json['enrichedParties'],
     };
 }
 
@@ -351,6 +353,7 @@ export function TransactionDtoToJSON(value?: TransactionDto | null): any {
         'netAssetTransfers': value['netAssetTransfers'],
         'receipt': ReceiptDtoToJSON(value['receipt']),
         'context': TransactionContextTypeDtoToJSON(value['context']),
+        'enrichedParties': value['enrichedParties'],
     };
 }
 

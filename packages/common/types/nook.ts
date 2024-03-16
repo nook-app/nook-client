@@ -95,6 +95,7 @@ export type FarcasterFeedDisplayMode =
   | "media"
   | "frame"
   | "replies"
+  | "grid"
   | "default";
 
 export type TransactionFeedArgs = {

@@ -1,5 +1,6 @@
 import { FastifyInstance } from "fastify";
 import {
+  FarcasterUser,
   TransactionFeedRequest,
   TransactionResponse,
 } from "@nook/common/types";
@@ -60,7 +61,6 @@ export const transactionRoutes = async (fastify: FastifyInstance) => {
 
       // do we want to transform data..?
       const rawData = await client.transactionsControllerGetTransactions(req);
-
       const data: TransactionResponse[] = rawData.map((tx) => ({
         chainId: tx.chainId,
         blockNumber: tx.blockNumber,
@@ -73,6 +73,7 @@ export const transactionRoutes = async (fastify: FastifyInstance) => {
         parties: tx.parties,
         netAssetTransfers: tx.netAssetTransfers,
         context: tx.context,
+        enrichedParties: tx.enrichedParties,
       }));
 
       const nextCursor =

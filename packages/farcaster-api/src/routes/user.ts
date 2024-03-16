@@ -25,12 +25,21 @@ export const userRoutes = async (fastify: FastifyInstance) => {
     fastify.post<{ Body: GetFarcasterUsersRequest }>(
       "/users",
       async (request, reply) => {
-        const users = await service.getUsers(
-          request.body.fids,
-          request.headers["x-viewer-fid"] as string,
-        );
-
-        reply.send({ data: users });
+        if (request.body.fids) {
+          const users = await service.getUsers(
+            request.body.fids,
+            request.headers["x-viewer-fid"] as string,
+          );
+          reply.send({ data: users });
+        } else if (request.body.addresses) {
+          const users = await service.getUsersForAddresses(
+            request.body.addresses,
+            request.headers["x-viewer-fid"] as string,
+          );
+          reply.send({ data: users });
+        } else {
+          reply.status(400).send({ message: "Invalid request" });
+        }
       },
     );
 

@@ -218,11 +218,21 @@ export class ContentService {
     if (contentFilter.length > 0) {
       whereClause.push(`(${contentFilter.join(" OR ")})`);
     }
+
     if (req.fids && req.fids.length > 0) {
       whereClause.push(
         `"fid" IN (${req.fids.map((fid) => `'${BigInt(fid)}'`).join(",")})`,
       );
     }
+
+    if (req.parentUrls && req.parentUrls.length > 0) {
+      whereClause.push(
+        `"parentUrl" IN (${req.parentUrls
+          .map((parentUrl) => `'${parentUrl}'`)
+          .join(",")})`,
+      );
+    }
+
     if (cursor) {
       whereClause.push(
         `"timestamp" < '${this.decodeCursor(cursor)?.toISOString()}'`,

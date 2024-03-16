@@ -157,7 +157,7 @@ export const notificationsRoutes = async (fastify: FastifyInstance) => {
 
         const [casts, users] = await Promise.all([
           farcaster.getCasts(Array.from(castsToFetch)),
-          farcaster.getUsers(Array.from(usersToFetch)),
+          farcaster.getUsers({ fids: Array.from(usersToFetch) }),
         ]);
 
         const castMap = casts.data.reduce(

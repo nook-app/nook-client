@@ -8,6 +8,7 @@ import {
   UserFilter,
   FarcasterFeedRequest,
   RequestContext,
+  GetFarcasterUsersRequest,
 } from "../../types";
 import { BaseAPIClient } from "./base";
 
@@ -73,12 +74,12 @@ export class FarcasterAPIClient extends BaseAPIClient {
   }
 
   async getUsers(
-    fids: string[],
+    req: GetFarcasterUsersRequest,
     viewerFid?: string,
   ): Promise<GetFarcasterUsersResponse> {
     const response = await this.makeRequest("/users", {
       method: "POST",
-      body: JSON.stringify({ fids }),
+      body: JSON.stringify(req),
       viewerFid,
     });
 
