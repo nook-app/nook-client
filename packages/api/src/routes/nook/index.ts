@@ -10,5 +10,22 @@ export const nookRoutes = async (fastify: FastifyInstance) => {
       const data = await nookService.getNooks(fid);
       return reply.send({ data });
     });
+
+    fastify.post<{
+      Body: { feedId: string };
+      Querystring: { cursor?: string };
+    }>("/feeds/farcaster", async (request, reply) => {
+      const { fid } = (await request.jwtDecode()) as { fid: string };
+      const feed = await nookService.getFarcasterFeed(
+        request.body.feedId,
+        request.query.cursor,
+        fid,
+      );
+      if (!feed) {
+        reply.status(404);
+        return;
+      }
+      return reply.send(feed);
+    });
   });
 };

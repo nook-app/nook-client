@@ -25,6 +25,7 @@ model User {
 model NookMembership {
     fid    String
     nookId String
+    index  Int
 
     createdAt DateTime @default(now())
     updatedAt DateTime @default(now()) @updatedAt
@@ -36,27 +37,80 @@ model NookMembership {
 }
 
 model Nook {
-    id          String @id @default(uuid())
+    id          String  @id @default(uuid())
     creatorFid  String
     name        String
     description String
-    imageUrl    String
+    imageUrl    String?
+    visibility  String
+    metadata    Json
+
+    createdAt DateTime  @default(now())
+    updatedAt DateTime  @default(now()) @updatedAt
+    deletedAt DateTime?
+
+    members NookMembership[]
+    User    User?            @relation(fields: [userFid], references: [fid])
+    userFid String?
+}
+
+model Feed {
+    id         String @id @default(uuid())
+    type       String
+    creatorFid String
+    hash       String @unique
+    filter     Json
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @default(now()) @updatedAt
+}
+
+model UserList {
+    id          String  @id @default(uuid())
+    creatorFid  String
+    name        String
+    description String
+    imageUrl    String?
+
+    users UserListItem[]
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @default(now()) @updatedAt
+}
+
+model UserListItem {
+    listId String
+    fid    String
 
     createdAt DateTime @default(now())
     updatedAt DateTime @default(now()) @updatedAt
 
-    creator User             @relation(fields: [creatorFid], references: [fid])
-    members NookMembership[]
-    shelves NookShelf[]
+    list UserList @relation(fields: [listId], references: [id])
+
+    @@id([listId, fid])
 }
 
-model NookShelf {
-    id          String @id @default(uuid())
-    nookId      String
+model ChannelList {
+    id          String  @id @default(uuid())
+    creatorFid  String
     name        String
     description String
-    type        String
-    args        Json
+    imageUrl    String?
 
-    Nook Nook @relation(fields: [nookId], references: [id])
+    channels ChannelListItem[]
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @default(now()) @updatedAt
+}
+
+model ChannelListItem {
+    listId    String
+    channelId String
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @default(now()) @updatedAt
+
+    list ChannelList @relation(fields: [listId], references: [id])
+
+    @@id([listId, channelId])
 }

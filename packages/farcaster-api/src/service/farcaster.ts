@@ -21,9 +21,10 @@ import {
   GetFarcasterCastsResponse,
   GetFarcasterUsersResponse,
   UrlContentResponse,
-  FarcasterFeedArgs,
   UserFilterType,
   UserFilter,
+  FarcasterFeedFilterWithContext,
+  UserFilterWithContext,
 } from "@nook/common/types";
 import {
   getCastEmbeds,
@@ -57,8 +58,8 @@ export class FarcasterService {
     this.contentClient = new ContentAPIClient();
   }
 
-  async getAddresses(req: UserFilter, viewerFid?: string) {
-    const fids = await this.getFeedFids(req, viewerFid);
+  async getAddresses({ filter, context }: UserFilterWithContext) {
+    const fids = await this.getFeedFids(filter, context?.viewerFid);
     if (!fids) return { data: [] };
 
     const addresses = await this.client.farcasterVerification.findMany({
@@ -76,32 +77,33 @@ export class FarcasterService {
   }
 
   async getFeed(
-    req: FarcasterFeedArgs,
+    { filter, context }: FarcasterFeedFilterWithContext,
     cursor?: string,
-    viewerFid?: string,
   ): Promise<GetFarcasterCastsResponse> {
-    const fids = req.userFilter
-      ? await this.getFeedFids(req.userFilter, viewerFid)
+    const fids = filter.userFilter
+      ? await this.getFeedFids(filter.userFilter, context?.viewerFid)
       : undefined;
 
     let parentUrls: string[] | undefined;
-    if (req.channelFilter) {
-      const channels = await this.getChannelsById(req.channelFilter.channelIds);
+    if (filter.channelFilter) {
+      const channels = await this.getChannelsById(
+        filter.channelFilter.channelIds,
+      );
       parentUrls = channels.map((channel) => channel.url);
     }
 
-    if (req.contentFilter) {
+    if (filter.contentFilter) {
       const references = await this.contentClient.getContentReferences(
         {
-          ...req.contentFilter,
+          ...filter.contentFilter,
           fids,
           parentUrls,
         },
         cursor,
-        viewerFid,
+        context?.viewerFid,
       );
       const hashes = references.data.map((i) => i.hash);
-      const casts = await this.getCastsFromHashes(hashes, viewerFid);
+      const casts = await this.getCastsFromHashes(hashes, context?.viewerFid);
       const castMap = casts.reduce(
         (acc, cast) => {
           acc[cast.hash] = cast;
@@ -126,10 +128,10 @@ export class FarcasterService {
 
     const conditions: string[] = ['"deletedAt" IS NULL'];
 
-    if (req.textFilter?.query) {
+    if (filter.textFilter?.query) {
       conditions.push(
         `(to_tsvector('english', "text") @@ plainto_tsquery('english', '${sanitizeInput(
-          req.textFilter.query,
+          filter.textFilter.query,
         )}'))`,
       );
     }
@@ -144,9 +146,9 @@ export class FarcasterService {
       if (cursorTimestamp)
         conditions.push(`"timestamp" < '${cursorTimestamp}'`);
     }
-    if (req.replies === true) {
+    if (filter.replies === true) {
       conditions.push(`"parentHash" IS NOT NULL`);
-    } else if (req.replies === false) {
+    } else if (filter.replies === false) {
       conditions.push(`"parentHash" IS NULL`);
     }
 
@@ -164,7 +166,7 @@ export class FarcasterService {
       ]),
     );
 
-    const casts = await this.getCastsFromData(rawCasts, viewerFid);
+    const casts = await this.getCastsFromData(rawCasts, context?.viewerFid);
 
     return {
       data: casts,
@@ -182,9 +184,9 @@ export class FarcasterService {
     viewerFid?: string,
   ): Promise<string[] | undefined> {
     switch (filter.type) {
-      case UserFilterType.Fids:
+      case UserFilterType.FIDS:
         return filter.args.fids;
-      case UserFilterType.Following: {
+      case UserFilterType.FOLLOWING: {
         const fid = filter.args.fid || viewerFid;
         if (!fid) return;
         return await this.getFollowingFids([fid], filter.args.degree);

@@ -1,6 +1,6 @@
 import { FastifyInstance } from "fastify";
 import { FarcasterAPIClient } from "@nook/common/clients";
-import { FarcasterFeedArgs, FarcasterFeedRequest } from "@nook/common/types";
+import { FarcasterFeedFilter } from "@nook/common/types";
 
 export const farcasterRoutes = async (fastify: FastifyInstance) => {
   fastify.register(async (fastify: FastifyInstance) => {
@@ -156,10 +156,14 @@ export const farcasterRoutes = async (fastify: FastifyInstance) => {
     );
 
     fastify.post<{
-      Body: FarcasterFeedRequest;
+      Body: FarcasterFeedFilter;
       Querystring: { cursor?: string };
     }>("/farcaster/feed", async (request, reply) => {
-      const response = await client.getFeed(request.body, request.query.cursor);
+      const { fid } = (await request.jwtDecode()) as { fid: string };
+      const response = await client.getFeed(
+        { filter: request.body, context: { viewerFid: fid } },
+        request.query.cursor,
+      );
       return reply.send(response);
     });
 

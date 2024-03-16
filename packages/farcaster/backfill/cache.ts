@@ -12,9 +12,9 @@ const run = async () => {
     do {
       const casts = await farcasterApi.getFeed(
         {
-          args: {
+          filter: {
             userFilter: {
-              type: UserFilterType.Fids,
+              type: UserFilterType.FIDS,
               args: {
                 fids: [fid],
               },

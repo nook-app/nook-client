@@ -1,7 +1,6 @@
 import { FastifyInstance } from "fastify";
 import {
-  FarcasterUser,
-  TransactionFeedRequest,
+  TransactionFeedFilterWithContext,
   TransactionResponse,
 } from "@nook/common/types";
 import {
@@ -18,16 +17,16 @@ export const transactionRoutes = async (fastify: FastifyInstance) => {
     const client = new TransactionsApi();
 
     fastify.post<{
-      Body: TransactionFeedRequest;
+      Body: TransactionFeedFilterWithContext;
       Querystring: { cursor?: string };
     }>("/transactions", async (request, reply) => {
       await request.jwtVerify();
-      if (!request.body.args.userFilter) {
+      if (!request.body.filter || !request.body.filter.userFilter) {
         return reply.status(400).send({ message: "Invalid request" });
       }
 
       const response = await farcasterClient.getAddresses({
-        ...request.body.args.userFilter,
+        filter: request.body.filter.userFilter,
         context: request.body.context,
       });
       if (!response?.data || response?.data.length === 0) {

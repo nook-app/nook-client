@@ -4,10 +4,21 @@ export type Nook = {
   name: string;
   description: string;
   imageUrl: string;
+  visibility: "PUBLIC" | "PRIVATE" | "HIDDEN";
+  metadata: NookMetadata;
+};
+
+export type NookMetadata = {
+  categories: NookCategory[];
+};
+
+export type NookCategory = {
+  id: string;
+  name: string;
   shelves: NookShelf[];
 };
 
-type NookShelfBase = {
+export type NookShelfBase = {
   id: string;
   name: string;
   description: string;
@@ -15,56 +26,62 @@ type NookShelfBase = {
 
 export type NookShelf =
   | (NookShelfBase & {
-      type: NookShelfType;
-      args: NookShelfArgs[NookShelfType];
+      service: "FARCASTER";
+      type: "FARCASTER_FEED";
+      data: {
+        api: "/v0/feeds/farcaster";
+        args: {
+          feedId: string;
+        };
+        displayMode: "MEDIA" | "FRAME" | "REPLIES" | "GRID" | "DEFAULT";
+      };
     })
   | (NookShelfBase & {
-      type: NookShelfType.FarcasterFeed;
-      args: FarcasterFeedArgs;
+      service: "FARCASTER";
+      type: "FARCASTER_EVENTS";
+      data: {
+        api: "/v0/feeds/farcaster-events";
+        args: {
+          feedId: string;
+        };
+      };
     })
   | (NookShelfBase & {
-      type: NookShelfType.FarcasterProfile;
-      args: FarcasterProfileArgs;
+      service: "FARCASTER";
+      type: "FARCASTER_PROFILE";
+      data: {
+        fid?: string;
+      };
     })
   | (NookShelfBase & {
-      type: NookShelfType.TransactionFeed;
-      args: TransactionFeedArgs;
+      service: "ONCEUPON";
+      type: "TRANSACTION_FEED";
+      data: {
+        api: "/v0/feeds/transactions";
+        args: {
+          feedId: string;
+        };
+      };
     });
 
-export enum NookShelfType {
-  FarcasterFeed = "FarcasterFeed",
-  FarcasterProfile = "FarcasterProfile",
-  TransactionFeed = "TransactionFeed",
-}
-
-export type NookShelfArgs = {
-  [NookShelfType.FarcasterFeed]: FarcasterFeedArgs;
-  [NookShelfType.FarcasterProfile]: FarcasterProfileArgs;
-  [NookShelfType.TransactionFeed]: TransactionFeedArgs;
-};
-
 export enum UserFilterType {
-  Following = "following",
-  Fids = "fids",
+  FOLLOWING = "FOLLOWING",
+  FIDS = "FIDS",
 }
-
-export type UserFilterFollowingArgs = {
-  fid?: string;
-  degree: number;
-};
-
-export type UserFilterFidsArgs = {
-  fids: string[];
-};
 
 export type UserFilter =
   | {
-      type: UserFilterType.Following;
-      args: UserFilterFollowingArgs;
+      type: UserFilterType.FOLLOWING;
+      args: {
+        fid?: string;
+        degree: number;
+      };
     }
   | {
-      type: UserFilterType.Fids;
-      args: UserFilterFidsArgs;
+      type: UserFilterType.FIDS;
+      args: {
+        fids: string[];
+      };
     };
 
 export type ContentFilter = {
@@ -76,7 +93,7 @@ export type ChannelFilter = {
   channelIds: string[];
 };
 
-export type FarcasterFeedArgs = {
+export type FarcasterFeedFilter = {
   userFilter?: UserFilter;
   contentFilter?: ContentFilter;
   channelFilter?: ChannelFilter;
@@ -84,45 +101,29 @@ export type FarcasterFeedArgs = {
     query: string;
   };
   replies?: boolean;
-  displayMode?: FarcasterFeedDisplayMode;
 };
 
-export type FarcasterProfileArgs = {
-  fid: string;
-};
-
-export type FarcasterFeedDisplayMode =
-  | "media"
-  | "frame"
-  | "replies"
-  | "grid"
-  | "default";
-
-export type TransactionFeedArgs = {
+export type TransactionFeedFilter = {
   userFilter?: UserFilter;
 };
+
+export type FeedFilter = FarcasterFeedFilter | TransactionFeedFilter;
 
 export type RequestContext = {
   viewerFid?: string;
 };
 
-export type BaseNookShelfRequest = {
+export type FarcasterFeedFilterWithContext = {
+  filter: FarcasterFeedFilter;
   context?: RequestContext;
 };
 
-export type FarcasterFeedRequest = BaseNookShelfRequest & {
-  args: FarcasterFeedArgs;
+export type UserFilterWithContext = {
+  filter: UserFilter;
+  context?: RequestContext;
 };
 
-export type FarcasterProfileRequest = BaseNookShelfRequest & {
-  args: FarcasterProfileArgs;
+export type TransactionFeedFilterWithContext = {
+  filter: TransactionFeedFilter;
+  context?: RequestContext;
 };
-
-export type TransactionFeedRequest = BaseNookShelfRequest & {
-  args: TransactionFeedArgs;
-};
-
-export type NookShelfRequest =
-  | FarcasterFeedRequest
-  | FarcasterProfileRequest
-  | TransactionFeedRequest;

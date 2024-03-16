@@ -4,11 +4,9 @@ import {
   FarcasterCastResponse,
   GetFarcasterCastsResponse,
   Channel,
-  FarcasterFeedArgs,
-  UserFilter,
-  FarcasterFeedRequest,
-  RequestContext,
   GetFarcasterUsersRequest,
+  FarcasterFeedFilterWithContext,
+  UserFilterWithContext,
 } from "../../types";
 import { BaseAPIClient } from "./base";
 
@@ -193,7 +191,7 @@ export class FarcasterAPIClient extends BaseAPIClient {
   }
 
   async getFeed(
-    req: FarcasterFeedRequest,
+    req: FarcasterFeedFilterWithContext,
     cursor?: string,
   ): Promise<GetFarcasterCastsResponse> {
     const response = await this.makeRequest(
@@ -211,9 +209,7 @@ export class FarcasterAPIClient extends BaseAPIClient {
     return response.json();
   }
 
-  async getAddresses(
-    req: UserFilter & { context?: RequestContext },
-  ): Promise<{ data: string[] }> {
+  async getAddresses(req: UserFilterWithContext): Promise<{ data: string[] }> {
     const response = await this.makeRequest("/addresses", {
       method: "POST",
       body: JSON.stringify(req),
