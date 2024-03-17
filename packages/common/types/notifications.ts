@@ -92,6 +92,13 @@ export type Notification =
   | FarcasterQuoteNotification
   | FarcasterFollowNotification;
 
+export type RawNotificationResponse = {
+  type: NotificationType;
+  hash?: string;
+  timestamp: number;
+  fids?: string[];
+};
+
 export type NotificationResponse = {
   type: NotificationType;
   cast?: FarcasterCastResponse;

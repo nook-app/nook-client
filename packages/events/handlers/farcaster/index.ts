@@ -91,18 +91,6 @@ export class FarcasterProcessor {
     }
   }
 
-  async processUsernameProof(data: FarcasterUsernameProof) {
-    return;
-  }
-
-  async processVerificationAdd(data: FarcasterVerification) {
-    return;
-  }
-
-  async processVerificationRemove(data: FarcasterVerification) {
-    return;
-  }
-
   async processCastAdd(data: FarcasterCast) {
     const cast = await this.farcasterClient.getCast(data.hash);
     if (!cast) return;
@@ -332,5 +320,34 @@ export class FarcasterProcessor {
     }
 
     await this.cacheClient.setUser(data.fid.toString(), user);
+  }
+
+  async processVerificationAdd(data: FarcasterVerification) {
+    const user = await this.farcasterClient.getUser(data.fid.toString());
+    if (!user) return;
+
+    user.verifiedAddresses = user.verifiedAddresses || [];
+    user.verifiedAddresses.push({
+      protocol: data.protocol,
+      address: data.address,
+    });
+
+    await this.cacheClient.setUser(data.fid.toString(), user);
+  }
+
+  async processVerificationRemove(data: FarcasterVerification) {
+    const user = await this.farcasterClient.getUser(data.fid.toString());
+    if (!user) return;
+
+    user.verifiedAddresses = user.verifiedAddresses || [];
+    user.verifiedAddresses = user.verifiedAddresses.filter(
+      (a) => a.address !== data.address,
+    );
+
+    await this.cacheClient.setUser(data.fid.toString(), user);
+  }
+
+  async processUsernameProof(data: FarcasterUsernameProof) {
+    return;
   }
 }

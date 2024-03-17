@@ -19,11 +19,11 @@ export type BaseFarcasterUser = {
   displayName?: string;
   bio?: string;
   url?: string;
+  verifiedAddresses?: { protocol: number; address: string }[];
 };
 
 export type FarcasterUser = BaseFarcasterUser & {
   engagement: FarcasterUserEngagement;
-  verifiedAddresses: string[];
   context?: FarcasterUserContext;
 };
 

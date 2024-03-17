@@ -1,8 +1,19 @@
 import { Prisma, PrismaClient } from "@nook/common/prisma/notifications";
-import { GetNotificationsRequest, Notification } from "@nook/common/types";
+import {
+  FarcasterFollowNotification,
+  FarcasterLikeNotification,
+  FarcasterMentionNotification,
+  FarcasterQuoteNotification,
+  FarcasterRecastNotification,
+  FarcasterReplyNotification,
+  GetNotificationsRequest,
+  Notification,
+  NotificationType,
+  RawNotificationResponse,
+} from "@nook/common/types";
 import { FastifyInstance } from "fastify";
 import { decodeCursorTimestamp, encodeCursor } from "@nook/common/utils";
-export const MAX_PAGE_SIZE = 50;
+export const MAX_PAGE_SIZE = 200;
 
 export class NotificationsService {
   private client: PrismaClient;
@@ -99,8 +110,147 @@ export class NotificationsService {
       take: MAX_PAGE_SIZE,
     });
 
+    const mentions = data.filter(
+      (notification) => notification.type === NotificationType.MENTION,
+    ) as unknown as FarcasterMentionNotification[];
+    const replies = data.filter(
+      (notification) => notification.type === NotificationType.REPLY,
+    ) as unknown as FarcasterReplyNotification[];
+    const likes = data.filter(
+      (notification) => notification.type === NotificationType.LIKE,
+    ) as unknown as FarcasterLikeNotification[];
+    const recasts = data.filter(
+      (notification) => notification.type === NotificationType.RECAST,
+    ) as unknown as FarcasterRecastNotification[];
+    const quotes = data.filter(
+      (notification) => notification.type === NotificationType.QUOTE,
+    ) as unknown as FarcasterQuoteNotification[];
+    const follows = data.filter(
+      (notification) => notification.type === NotificationType.FOLLOW,
+    ) as unknown as FarcasterFollowNotification[];
+
+    const castsToFetch = new Set<string>();
+    for (const notification of mentions) {
+      castsToFetch.add(notification.data.hash);
+    }
+    for (const notification of replies) {
+      castsToFetch.add(notification.data.hash);
+    }
+    for (const notification of likes) {
+      castsToFetch.add(notification.data.targetHash);
+    }
+    for (const notification of recasts) {
+      castsToFetch.add(notification.data.targetHash);
+    }
+    for (const notification of quotes) {
+      castsToFetch.add(notification.data.hash);
+    }
+
+    const usersToFetch = new Set<string>();
+    for (const notification of likes) {
+      usersToFetch.add(notification.sourceFid);
+    }
+    for (const notification of recasts) {
+      usersToFetch.add(notification.sourceFid);
+    }
+    for (const notification of follows) {
+      usersToFetch.add(notification.sourceFid);
+    }
+
+    const likeMap = likes.reduce(
+      (acc, like) => {
+        if (!acc[like.data.targetHash]) {
+          acc[like.data.targetHash] = {
+            type: NotificationType.LIKE,
+            hash: like.data.targetHash,
+            timestamp: new Date(like.timestamp).getTime(),
+            fids: [],
+          };
+        }
+
+        acc[like.data.targetHash].fids?.push(like.sourceFid);
+        return acc;
+      },
+      {} as Record<string, RawNotificationResponse>,
+    );
+    const likeResponse = Object.values(likeMap);
+
+    const recastMap = recasts.reduce(
+      (acc, recast) => {
+        if (!acc[recast.data.targetHash]) {
+          acc[recast.data.targetHash] = {
+            type: NotificationType.RECAST,
+            hash: recast.data.targetHash,
+            timestamp: new Date(recast.timestamp).getTime(),
+            fids: [],
+          };
+        }
+
+        acc[recast.data.targetHash].fids?.unshift(recast.sourceFid);
+        return acc;
+      },
+      {} as Record<string, RawNotificationResponse>,
+    );
+    const recastResponse = Object.values(recastMap);
+
+    const mentionResponses: RawNotificationResponse[] = mentions.map(
+      (mention) => ({
+        type: NotificationType.MENTION,
+        hash: mention.data.hash,
+        timestamp: new Date(mention.timestamp).getTime(),
+      }),
+    );
+
+    const replyResponses: RawNotificationResponse[] = replies.map((reply) => ({
+      type: NotificationType.REPLY,
+      hash: reply.data.hash,
+      timestamp: new Date(reply.timestamp).getTime(),
+    }));
+
+    const quoteResponses: RawNotificationResponse[] = quotes.map((quote) => ({
+      type: NotificationType.QUOTE,
+      hash: quote.data.hash,
+      timestamp: new Date(quote.timestamp).getTime(),
+    }));
+
+    const followResponses: RawNotificationResponse[] = follows.map(
+      (follow) => ({
+        type: NotificationType.FOLLOW,
+        timestamp: new Date(follow.timestamp).getTime(),
+        fids: [follow.sourceFid],
+      }),
+    );
+
+    const allResponses = [
+      ...mentionResponses,
+      ...replyResponses,
+      ...likeResponse,
+      ...recastResponse,
+      ...quoteResponses,
+      ...followResponses,
+    ];
+
+    const allResponsesSorted = allResponses.sort(
+      (a, b) => b.timestamp - a.timestamp,
+    );
+
+    const allResponsesMergedFollows = allResponsesSorted.reduce(
+      (acc, notification) => {
+        if (
+          notification.type === NotificationType.FOLLOW &&
+          acc[acc.length - 1]?.type === NotificationType.FOLLOW
+        ) {
+          acc[acc.length - 1].fids?.push(...(notification.fids || []));
+        } else {
+          acc.push(notification);
+        }
+        return acc;
+      },
+      [] as RawNotificationResponse[],
+    );
+
     return {
-      data,
+      data: allResponsesMergedFollows,
       nextCursor:
         data.length === MAX_PAGE_SIZE
           ? encodeCursor({

@@ -3,7 +3,7 @@ export type Nook = {
   creatorFid: string;
   name: string;
   description: string;
-  imageUrl: string;
+  imageUrl?: string;
   visibility: "PUBLIC" | "PRIVATE" | "HIDDEN";
   metadata: NookMetadata;
 };

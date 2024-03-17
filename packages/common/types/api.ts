@@ -6,8 +6,9 @@ import {
   FarcasterCastEngagement,
   FarcasterUser,
 } from "./farcaster";
-import { Notification } from "./notifications";
+import { RawNotificationResponse } from "./notifications";
 import { TransactionDto } from "../onceupon";
+import { Nook } from "./nook";
 
 export type FarcasterCastResponse = {
   hash: string;
@@ -36,6 +37,16 @@ export type FarcasterCastResponse = {
 
 export type GetFarcasterChannelRequest = {
   id: string;
+};
+
+export type GetFarcasterChannelsRequest = {
+  channelIds?: string[];
+  parentUrls?: string[];
+};
+
+export type GetFarcasterChannelResponse = {
+  data: Channel[];
+  nextCursor?: string;
 };
 
 export type GetFarcasterUserRequest = {
@@ -194,11 +205,16 @@ export type GetNotificationsRequest = {
 };
 
 export type GetNotificationsResponse = {
-  data: Notification[];
+  data: RawNotificationResponse[];
   nextCursor?: string;
 };
 
 export type GetTransactionsResponse = {
   data: TransactionDto[];
+  nextCursor?: string;
+};
+
+export type GetNooksResponse = {
+  data: Nook[];
   nextCursor?: string;
 };

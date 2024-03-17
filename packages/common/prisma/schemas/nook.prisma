@@ -25,13 +25,12 @@ model User {
 model NookMembership {
     fid    String
     nookId String
-    index  Int
 
     createdAt DateTime @default(now())
     updatedAt DateTime @default(now()) @updatedAt
 
     user User @relation(fields: [fid], references: [fid])
-    nook Nook @relation(fields: [nookId], references: [id])
+    nook Nook @relation(fields: [nookId], references: [id], onDelete: Cascade)
 
     @@id([fid, nookId])
 }

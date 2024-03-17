@@ -9,6 +9,7 @@ import { frameRoutes } from "./routes/frames";
 import { contentRoutes } from "./routes/content";
 import { notificationsRoutes } from "./routes/notifications";
 import { transactionRoutes } from "./routes/transactions";
+import { listRoutes } from "./routes/lists";
 
 const buildApp = () => {
   const app = fastify({
@@ -41,6 +42,7 @@ const buildApp = () => {
   app.register(frameRoutes, { prefix: "/v0" });
   app.register(transactionRoutes, { prefix: "/v0" });
   app.register(notificationsRoutes, { prefix: "/v0" });
+  app.register(listRoutes, { prefix: "/v0" });
 
   return app;
 };

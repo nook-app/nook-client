@@ -313,56 +313,68 @@ export class FarcasterService {
     hashes: string[],
     viewerFid?: string,
   ): Promise<FarcasterCastResponse[]> {
-    const casts = (
-      await Promise.all(hashes.map((hash) => this.getRawCast(hash, viewerFid)))
-    ).filter(Boolean) as FarcasterCast[];
-
-    return await this.getCasts(casts, viewerFid);
+    const casts = await this.getRawCasts(hashes, viewerFid);
+    const x = await this.getCasts(casts, viewerFid);
+    return x;
   }
 
-  async getRawCast(
-    hash: string,
-    viewerFid?: string,
-  ): Promise<FarcasterCast | undefined> {
-    const [cast, engagement, context] = await Promise.all([
-      this.getCastBase(hash),
-      this.getCastEngagement(hash),
-      this.getCastContext(hash, viewerFid),
-    ]);
+  async getRawCasts(hashes: string[], viewerFid?: string) {
+    if (hashes.length === 0) return [];
 
-    if (!cast) return;
+    const casts = await this.cache.getCasts(hashes);
+    const cacheMap = casts.reduce(
+      (acc, cast) => {
+        acc[cast.hash] = cast;
+        return acc;
+      },
+      {} as Record<string, BaseFarcasterCast>,
+    );
 
-    return {
-      ...cast,
-      engagement,
-      context,
-    };
-  }
+    const uncachedHashes = hashes.filter((hash) => !cacheMap[hash]);
 
-  async getCastBase(hash: string): Promise<BaseFarcasterCast | undefined> {
-    const cached = await this.cache.getCast(hash);
-    if (cached) return cached;
+    if (uncachedHashes.length > 0) {
+      const data = await this.client.farcasterCast.findMany({
+        where: {
+          hash: {
+            in: uncachedHashes,
+          },
+          deletedAt: null,
+        },
+      });
 
-    const cast = await this.client.farcasterCast.findFirst({
-      where: { hash, deletedAt: null },
-    });
+      const uncachedCasts = data.map((cast) => ({
+        hash: cast.hash,
+        fid: cast.fid.toString(),
+        timestamp: cast.timestamp.getTime(),
+        text: cast.text,
+        mentions: getMentions(cast),
+        embedHashes: getCastEmbeds(cast).map(({ hash }) => hash),
+        embedUrls: getEmbedUrls(cast),
+        parentHash: cast.parentHash || undefined,
+        parentUrl: cast.parentUrl || undefined,
+      }));
 
-    if (!cast) return;
+      await this.cache.setCasts(uncachedCasts);
 
-    const baseCast: BaseFarcasterCast = {
-      hash: cast.hash,
-      fid: cast.fid.toString(),
-      timestamp: cast.timestamp.getTime(),
-      text: cast.text,
-      mentions: getMentions(cast),
-      embedHashes: getCastEmbeds(cast).map(({ hash }) => hash),
-      embedUrls: getEmbedUrls(cast),
-      parentHash: cast.parentHash || undefined,
-      parentUrl: cast.parentUrl || undefined,
-    };
+      casts.push(...uncachedCasts);
+    }
 
-    await this.cache.setCast(hash, baseCast);
-    return baseCast;
+    const response: FarcasterCast[] = await Promise.all(
+      casts.map(async (cast) => {
+        const [engagement, context] = await Promise.all([
+          this.getCastEngagement(cast.hash),
+          this.getCastContext(cast.hash, viewerFid),
+        ]);
+
+        return {
+          ...cast,
+          engagement,
+          context,
+        };
+      }),
+    );
+
+    return response;
   }
 
   async getCastsFromData(
@@ -407,11 +419,10 @@ export class FarcasterService {
       }
     }
 
-    const relatedRawCasts = (
-      await Promise.all(
-        Array.from(hashes).map((hash) => this.getRawCast(hash, viewerFid)),
-      )
-    ).filter(Boolean) as FarcasterCast[];
+    const relatedRawCasts = await this.getRawCasts(
+      Array.from(hashes),
+      viewerFid,
+    );
 
     const allCasts = relatedRawCasts.concat(casts);
 
@@ -803,15 +814,28 @@ export class FarcasterService {
     if (fids.length === 0) return [];
 
     const users = await this.cache.getUsers(fids);
+    const cacheMap = users.reduce(
+      (acc, user) => {
+        acc[user.fid] = user;
+        return acc;
+      },
+      {} as Record<string, BaseFarcasterUser>,
+    );
+
     const uncachedFids = fids.filter(
-      // TODO: Figure out why pfp is not getting update in some cases, temporarily try to backfill
-      (fid) => !users.some((user) => user.fid === fid && user.pfp),
+      (fid) => !cacheMap[fid] || cacheMap[fid].verifiedAddresses === undefined,
     );
 
     if (uncachedFids.length > 0) {
-      const userDatas = await this.client.farcasterUserData.findMany({
-        where: { fid: { in: uncachedFids.map((fid) => BigInt(fid)) } },
-      });
+      const fids = uncachedFids.map((fid) => BigInt(fid));
+      const [userDatas, addresses] = await Promise.all([
+        this.client.farcasterUserData.findMany({
+          where: { fid: { in: fids } },
+        }),
+        this.client.farcasterVerification.findMany({
+          where: { fid: { in: fids }, deletedAt: null },
+        }),
+      ]);
 
       const uncachedUsers = uncachedFids.map((fid) => {
         const username = userDatas.find(
@@ -829,6 +853,12 @@ export class FarcasterService {
         const url = userDatas.find(
           (d) => d.type === UserDataType.URL && d.fid === BigInt(fid),
         );
+        const verifiedAddresses = addresses
+          .filter((address) => address.fid === BigInt(fid))
+          .map((address) => ({
+            protocol: address.protocol,
+            address: address.address,
+          }));
 
         const baseUser: BaseFarcasterUser = {
           fid,
@@ -837,6 +867,7 @@ export class FarcasterService {
           displayName: displayName?.value,
           bio: bio?.value,
           url: url?.value,
+          verifiedAddresses,
         };
 
         return baseUser;
@@ -849,16 +880,14 @@ export class FarcasterService {
 
     const response = await Promise.all(
       users.map(async (user) => {
-        const [engagement, context, addresses] = await Promise.all([
+        const [engagement, context] = await Promise.all([
           this.getUserEngagement(user.fid),
           this.getUserContext(user.fid, viewerFid),
-          this.getUserVerifiedAddresses(user.fid),
         ]);
         return {
           ...user,
           engagement,
           context,
-          verifiedAddresses: addresses,
         };
       }),
     );
@@ -912,6 +941,7 @@ export class FarcasterService {
     if (!viewerFid) return;
 
     const cached = await this.cache.getUserContext(viewerFid, "following", fid);
+
     if (cached !== undefined) return { following: cached };
 
     const link = await this.client.farcasterLink.findFirst({

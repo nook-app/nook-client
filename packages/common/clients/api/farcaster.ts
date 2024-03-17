@@ -7,6 +7,8 @@ import {
   GetFarcasterUsersRequest,
   FarcasterFeedFilterWithContext,
   UserFilterWithContext,
+  GetFarcasterChannelsRequest,
+  GetFarcasterChannelResponse,
 } from "../../types";
 import { BaseAPIClient } from "./base";
 
@@ -15,6 +17,23 @@ export class FarcasterAPIClient extends BaseAPIClient {
 
   async getChannel(id: string, viewerFid?: string): Promise<Channel> {
     const response = await this.makeRequest(`/channels/${id}`, { viewerFid });
+
+    if (!response.ok) {
+      throw new Error(response.statusText);
+    }
+
+    return response.json();
+  }
+
+  async getChannels(
+    req: GetFarcasterChannelsRequest,
+    viewerFid?: string,
+  ): Promise<GetFarcasterChannelResponse> {
+    const response = await this.makeRequest("/channels", {
+      method: "POST",
+      body: JSON.stringify(req),
+      viewerFid,
+    });
 
     if (!response.ok) {
       throw new Error(response.statusText);

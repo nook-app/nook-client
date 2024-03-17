@@ -1,4 +1,7 @@
-import { GetFarcasterChannelRequest } from "@nook/common/types";
+import {
+  GetFarcasterChannelRequest,
+  GetFarcasterChannelsRequest,
+} from "@nook/common/types";
 import { FastifyInstance } from "fastify";
 import { FarcasterService } from "../service/farcaster";
 
@@ -31,6 +34,23 @@ export const channelRoutes = async (fastify: FastifyInstance) => {
         );
 
         reply.send(data);
+      },
+    );
+
+    fastify.post<{ Body: GetFarcasterChannelsRequest }>(
+      "/channels",
+      async (request, reply) => {
+        if (request.body.channelIds) {
+          const channels = await service.getChannelsById(
+            request.body.channelIds,
+          );
+          reply.send({ data: channels });
+        } else if (request.body.parentUrls) {
+          const channels = await service.getChannels(request.body.parentUrls);
+          reply.send({ data: channels });
+        } else {
+          reply.status(400).send({ message: "Invalid request" });
+        }
       },
     );
   });

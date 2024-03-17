@@ -95,14 +95,14 @@ model FarcasterCast {
     deletedAt DateTime?
 
     @@id([hash])
-    @@index([parentHash, deletedAt, timestamp])
-    @@index([timestamp, deletedAt, parentHash])
-    @@index([timestamp, deletedAt, fid, parentHash])
-    @@index([timestamp, deletedAt, parentUrl, parentHash])
-    @@index([fid, deletedAt, parentHash, timestamp])
-    @@index([parentUrl, deletedAt, parentHash, timestamp])
-    @@index([rootParentUrl, deletedAt, parentHash, timestamp])
-    @@index([timestamp])
+    @@index([parentHash, deletedAt, timestamp(sort: Desc)])
+    @@index([fid, deletedAt, parentHash, timestamp(sort: Desc)])
+    @@index([parentUrl, deletedAt, parentHash, timestamp(sort: Desc)])
+    @@index([timestamp(sort: Desc), fid, deletedAt, parentHash])
+    @@index([timestamp(sort: Desc), deletedAt, fid, parentHash])
+    @@index([timestamp(sort: Desc), parentUrl, deletedAt, parentHash])
+    @@index([timestamp(sort: Desc), deletedAt, parentUrl, parentHash])
+    @@index([timestamp(sort: Desc), deletedAt, parentHash])
 }
 
 model FarcasterCastMention {
