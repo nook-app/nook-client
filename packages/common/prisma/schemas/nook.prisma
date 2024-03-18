@@ -39,7 +39,7 @@ model Nook {
     id          String  @id @default(uuid())
     creatorFid  String
     name        String
-    description String
+    description String?
     imageUrl    String?
     visibility  String
     metadata    Json
@@ -68,7 +68,7 @@ model List {
     id          String  @id @default(uuid())
     creatorFid  String
     name        String
-    description String
+    description String?
     type        String
     imageUrl    String?
     visibility  String

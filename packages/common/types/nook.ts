@@ -2,7 +2,7 @@ export type Nook = {
   id: string;
   creatorFid: string;
   name: string;
-  description: string;
+  description?: string;
   imageUrl?: string;
   visibility: "PUBLIC" | "PRIVATE" | "HIDDEN";
   metadata: NookMetadata;
@@ -10,18 +10,19 @@ export type Nook = {
 
 export type NookMetadata = {
   categories: NookCategory[];
+  shelves: NookShelf[];
 };
 
 export type NookCategory = {
   id: string;
   name: string;
-  shelves: NookShelf[];
+  shelves: string[];
 };
 
 export type NookShelfBase = {
   id: string;
   name: string;
-  description: string;
+  description?: string;
 };
 
 export enum NookShelfType {

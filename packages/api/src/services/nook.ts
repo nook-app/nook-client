@@ -132,7 +132,7 @@ export class NookService {
     });
   }
 
-  async getHomeNook(fid: string, index?: number) {
+  async getHomeNook(fid: string) {
     let homeNook = await this.nookClient.nook.findFirst({
       where: {
         name: "Home",
@@ -188,86 +188,87 @@ export class NookService {
       this.getDiscoverFeedId(fid),
       this.getFollowingFeedId(fid),
     ]);
+
+    const followingShelf: NookShelf = {
+      id: randomUUID(),
+      name: "Posts",
+      description: "Posts from people you follow",
+      service: "FARCASTER",
+      type: NookShelfType.FARCASTER_FEED,
+      data: {
+        api: "/v0/feeds/farcaster",
+        args: {
+          feedId: followingFeedId,
+        },
+        displayMode: DisplayMode.DEFAULT,
+      },
+    };
+
+    const discoverShelf: NookShelf = {
+      id: randomUUID(),
+      name: "Discover",
+      description: "Posts you may like",
+      service: "FARCASTER",
+      type: NookShelfType.FARCASTER_FEED,
+      data: {
+        api: "/v0/feeds/farcaster",
+        args: {
+          feedId: discoverFeedId,
+        },
+        displayMode: DisplayMode.DEFAULT,
+      },
+    };
+
+    const globalShelf: NookShelf = {
+      id: randomUUID(),
+      name: "Global",
+      description: "Posts from everyone",
+      service: "FARCASTER",
+      type: NookShelfType.FARCASTER_FEED,
+      data: {
+        api: "/v0/feeds/farcaster",
+        args: {
+          feedId: globalFeedId,
+        },
+        displayMode: DisplayMode.DEFAULT,
+      },
+    };
+
+    const profileShelf: NookShelf = {
+      id: randomUUID(),
+      name: "Profile",
+      description: "Your posts and activity",
+      service: "FARCASTER",
+      type: NookShelfType.FARCASTER_PROFILE,
+      data: {
+        fid,
+      },
+    };
+
     return {
       categories: [
         {
           id: randomUUID(),
           name: "Following",
-          shelves: [
-            {
-              id: randomUUID(),
-              name: "Posts",
-              description: "Posts from people you follow",
-              service: "FARCASTER",
-              type: NookShelfType.FARCASTER_FEED,
-              data: {
-                api: "/v0/feeds/farcaster",
-                args: {
-                  feedId: followingFeedId,
-                },
-                displayMode: DisplayMode.DEFAULT,
-              },
-            },
-          ],
+          shelves: [followingShelf.id],
         },
         {
           id: randomUUID(),
           name: "Explore",
-          shelves: [
-            {
-              id: randomUUID(),
-              name: "Discover",
-              description: "Posts you may like",
-              service: "FARCASTER",
-              type: NookShelfType.FARCASTER_FEED,
-              data: {
-                api: "/v0/feeds/farcaster",
-                args: {
-                  feedId: discoverFeedId,
-                },
-                displayMode: DisplayMode.DEFAULT,
-              },
-            },
-            {
-              id: randomUUID(),
-              name: "Global",
-              description: "Posts from everyone",
-              service: "FARCASTER",
-              type: NookShelfType.FARCASTER_FEED,
-              data: {
-                api: "/v0/feeds/farcaster",
-                args: {
-                  feedId: globalFeedId,
-                },
-                displayMode: DisplayMode.DEFAULT,
-              },
-            },
-          ],
+          shelves: [discoverShelf.id, globalShelf.id],
         },
         {
           id: randomUUID(),
           name: "You",
-          shelves: [
-            {
-              id: randomUUID(),
-              name: "Profile",
-              description: "Your posts and activity",
-              service: "FARCASTER",
-              type: NookShelfType.FARCASTER_PROFILE,
-              data: {
-                fid,
-              },
-            },
-          ],
+          shelves: [profileShelf.id],
         },
       ],
+      shelves: [followingShelf, discoverShelf, globalShelf, profileShelf],
     };
   }
 
   async getGlobalFeedId() {
-    const filter: FarcasterFeedFilter = {
-      replies: false,
-    };
+    const filter: FarcasterFeedFilter = {};
     const feed = await this.getOrCreateFeed(filter, "FARCASTER_FEED", "262426");
     return feed.id;
   }
@@ -281,7 +282,6 @@ export class NookService {
           degree: 2,
         },
       },
-      replies: false,
     };
     const feed = await this.getOrCreateFeed(filter, "FARCASTER_FEED", "262426");
     return feed.id;
@@ -296,7 +296,6 @@ export class NookService {
           degree: 1,
         },
       },
-      replies: false,
     };
     const feed = await this.getOrCreateFeed(filter, "FARCASTER_FEED", "262426");
     return feed.id;
@@ -426,18 +425,6 @@ export class NookService {
 
   async addShelf(nook: DBNook, shelf: CreateShelfRequest, fid: string) {
     const metadata = nook.metadata as NookMetadata | undefined;
-    const categories = metadata?.categories || [];
-    let uncategorized = categories.find(
-      (category) => category.id === "uncategorized",
-    );
-    if (!uncategorized) {
-      uncategorized = {
-        id: "uncategorized",
-        name: "Uncategorized",
-        shelves: [],
-      };
-      categories.push(uncategorized);
-    }
 
     let newShelf: NookShelf | undefined;
     switch (shelf.type) {
@@ -511,13 +498,11 @@ export class NookService {
       throw new Error("Invalid shelf type");
     }
 
-    uncategorized.shelves.push(newShelf);
-
     const newNook = {
       ...nook,
       metadata: {
         ...metadata,
-        categories,
+        shelves: [...(metadata?.shelves || []), newShelf],
       },
     };
 
@@ -540,7 +525,7 @@ export class NookService {
     const metadata = nook.metadata as NookMetadata | undefined;
     const categories = metadata?.categories?.map((category) => ({
       ...category,
-      shelves: category.shelves.filter((shelf) => shelf.id !== shelfId),
+      shelves: category.shelves.filter((shelf) => shelf !== shelfId),
     }));
 
     await this.nookClient.nook.update({
@@ -551,6 +536,7 @@ export class NookService {
         metadata: {
           ...metadata,
           categories,
+          shelves: metadata?.shelves?.filter((shelf) => shelf.id !== shelfId),
         },
       },
     });
