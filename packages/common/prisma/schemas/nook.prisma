@@ -64,52 +64,30 @@ model Feed {
     updatedAt DateTime @default(now()) @updatedAt
 }
 
-model UserList {
+model List {
     id          String  @id @default(uuid())
     creatorFid  String
     name        String
     description String
+    type        String
     imageUrl    String?
+    visibility  String
 
-    users UserListItem[]
+    items ListItem[]
 
-    createdAt DateTime @default(now())
-    updatedAt DateTime @default(now()) @updatedAt
+    createdAt DateTime  @default(now())
+    updatedAt DateTime  @default(now()) @updatedAt
+    deletedAt DateTime?
 }
 
-model UserListItem {
+model ListItem {
     listId String
-    fid    String
+    id     String
 
     createdAt DateTime @default(now())
     updatedAt DateTime @default(now()) @updatedAt
 
-    list UserList @relation(fields: [listId], references: [id])
+    list List @relation(fields: [listId], references: [id])
 
-    @@id([listId, fid])
-}
-
-model ChannelList {
-    id          String  @id @default(uuid())
-    creatorFid  String
-    name        String
-    description String
-    imageUrl    String?
-
-    channels ChannelListItem[]
-
-    createdAt DateTime @default(now())
-    updatedAt DateTime @default(now()) @updatedAt
-}
-
-model ChannelListItem {
-    listId    String
-    channelId String
-
-    createdAt DateTime @default(now())
-    updatedAt DateTime @default(now()) @updatedAt
-
-    list ChannelList @relation(fields: [listId], references: [id])
-
-    @@id([listId, channelId])
+    @@id([listId, id])
 }

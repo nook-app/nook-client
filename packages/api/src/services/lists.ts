@@ -1,12 +1,11 @@
 import { FastifyInstance } from "fastify";
-import { PrismaClient } from "@nook/common/prisma/nook";
+import { List, ListItem, PrismaClient } from "@nook/common/prisma/nook";
 import { FarcasterAPIClient } from "@nook/common/clients";
 import {
-  Channel,
-  ChannelList,
   FarcasterUser,
   ListMetadata,
-  UserList,
+  Channel,
+  CreateListRequest,
 } from "@nook/common/types";
 
 export class ListService {
@@ -18,59 +17,45 @@ export class ListService {
     this.farcaster = new FarcasterAPIClient();
   }
 
-  async getUserLists(fid: string, viewerFid?: string) {
-    const response = await this.nookClient.userList.findMany({
-      where: {
-        creatorFid: fid,
-      },
-      include: {
-        users: true,
-      },
-    });
-
-    const users = await this.farcaster.getUsers(
-      { fids: response.flatMap((list) => list.users.map((user) => user.fid)) },
-      viewerFid,
-    );
-
-    const userMap = users.data.reduce(
-      (acc, user) => {
-        acc[user.fid] = user;
-        return acc;
-      },
-      {} as Record<string, FarcasterUser>,
-    );
-
-    return response.map((list) => ({
-      id: list.id,
-      creatorFid: list.creatorFid,
-      name: list.name,
-      description: list.description,
-      imageUrl: list.imageUrl,
-      users: list.users.map((user) => userMap[user.fid]),
-    }));
-  }
-
-  async getUserList(listId: string, viewerFid?: string) {
-    const list = await this.nookClient.userList.findUnique({
+  async getList(listId: string) {
+    return await this.nookClient.list.findUnique({
       where: {
         id: listId,
       },
       include: {
-        users: true,
+        items: true,
+      },
+    });
+  }
+
+  async getUserLists(fid: string, viewerFid?: string) {
+    const response = await this.nookClient.list.findMany({
+      where: {
+        creatorFid: fid,
+        visibility: "PUBLIC",
+      },
+      include: {
+        items: true,
       },
     });
 
-    if (!list) {
-      return;
+    return this.formatUserLists(response, viewerFid);
+  }
+
+  async formatUserLists(
+    lists: (List & { items: ListItem[] })[],
+    viewerFid?: string,
+  ) {
+    const fids = [];
+    for (const list of lists) {
+      if (list.type === "USER") {
+        fids.push(...list.items.map((user) => user.id));
+      }
     }
 
-    const users = await this.farcaster.getUsers(
-      { fids: list.users.map((user) => user.fid) },
-      viewerFid,
-    );
+    const users = await this.farcaster.getUsers({ fids }, viewerFid);
 
-    const userMap = users.data.reduce(
+    const userMap = users?.data.reduce(
       (acc, user) => {
         acc[user.fid] = user;
         return acc;
@@ -78,100 +63,46 @@ export class ListService {
       {} as Record<string, FarcasterUser>,
     );
 
-    return {
+    return lists.map((list) => ({
       id: list.id,
       creatorFid: list.creatorFid,
       name: list.name,
       description: list.description,
       imageUrl: list.imageUrl,
-      users: list.users.map((user) => userMap[user.fid]),
-    };
-  }
-
-  async createUserList(fid: string, list: UserList) {
-    return this.nookClient.userList.create({
-      data: {
-        ...list,
-        creatorFid: fid,
-        users: {
-          createMany: {
-            data: list.users.map((user) => ({
-              fid: user.fid,
-            })),
-            skipDuplicates: true,
-          },
-        },
-      },
-    });
-  }
-
-  async updateUserList(listId: string, list: ListMetadata) {
-    return this.nookClient.userList.update({
-      where: {
-        id: listId,
-      },
-      data: list,
-    });
-  }
-
-  async deleteUserList(listId: string) {
-    return this.nookClient.userList.delete({
-      where: {
-        id: listId,
-      },
-    });
-  }
-
-  async addToUserList(listId: string, fid: string) {
-    return this.nookClient.userList.update({
-      where: {
-        id: listId,
-      },
-      data: {
-        users: {
-          create: {
-            fid,
-          },
-        },
-      },
-    });
-  }
-
-  async removeFromUserList(listId: string, fid: string) {
-    return this.nookClient.userList.update({
-      where: {
-        id: listId,
-      },
-      data: {
-        users: {
-          delete: {
-            listId_fid: {
-              listId,
-              fid,
-            },
-          },
-        },
-      },
-    });
+      items: list.items.map((user) => userMap[user.id]),
+    }));
   }
 
   async getChannelLists(fid: string, viewerFid?: string) {
-    const response = await this.nookClient.channelList.findMany({
+    const response = await this.nookClient.list.findMany({
       where: {
         creatorFid: fid,
+        visibility: "PUBLIC",
       },
       include: {
-        channels: true,
+        items: true,
       },
     });
+    return this.formatChannelLists(response, viewerFid);
+  }
 
-    const channels = await this.farcaster.getChannels({
-      channelIds: response.flatMap((list) =>
-        list.channels.map((channel) => channel.channelId),
-      ),
-    });
+  async formatChannelLists(
+    lists: (List & { items: ListItem[] })[],
+    viewerFid?: string,
+  ) {
+    const channelIds = [];
+    for (const list of lists) {
+      if (list.type === "CHANNEL") {
+        channelIds.push(...list.items.map((channel) => channel.id));
+      }
+    }
 
-    const channelMap = channels.data.reduce(
+    const channels = await this.farcaster.getChannels(
+      { channelIds },
+      viewerFid,
+    );
+
+    const channelMap = channels?.data.reduce(
       (acc, channel) => {
         acc[channel.channelId] = channel;
         return acc;
@@ -179,61 +110,25 @@ export class ListService {
       {} as Record<string, Channel>,
     );
 
-    return response.map((list) => ({
+    return lists.map((list) => ({
       id: list.id,
       creatorFid: list.creatorFid,
       name: list.name,
       description: list.description,
       imageUrl: list.imageUrl,
-      channels: list.channels.map((channel) => channelMap[channel.channelId]),
+      items: list.items.map((channel) => channelMap[channel.id]),
     }));
   }
 
-  async getChannelList(listId: string, viewerFid?: string) {
-    const list = await this.nookClient.channelList.findUnique({
-      where: {
-        id: listId,
-      },
-      include: {
-        channels: true,
-      },
-    });
-
-    if (!list) {
-      return;
-    }
-
-    const channels = await this.farcaster.getChannels({
-      channelIds: list.channels.map((channel) => channel.channelId),
-    });
-
-    const channelMap = channels.data.reduce(
-      (acc, channel) => {
-        acc[channel.channelId] = channel;
-        return acc;
-      },
-      {} as Record<string, Channel>,
-    );
-
-    return {
-      id: list.id,
-      creatorFid: list.creatorFid,
-      name: list.name,
-      description: list.description,
-      imageUrl: list.imageUrl,
-      channels: list.channels.map((channel) => channelMap[channel.channelId]),
-    };
-  }
-
-  async createChannelList(fid: string, list: ChannelList) {
-    return this.nookClient.channelList.create({
+  async createList(fid: string, list: CreateListRequest) {
+    return this.nookClient.list.create({
       data: {
         ...list,
         creatorFid: fid,
-        channels: {
+        items: {
           createMany: {
-            data: list.channels.map((channel) => ({
-              channelId: channel.channelId,
+            data: list.itemIds.map((id) => ({
+              id,
             })),
             skipDuplicates: true,
           },
@@ -242,8 +137,8 @@ export class ListService {
     });
   }
 
-  async updateChannelList(listId: string, list: ListMetadata) {
-    return this.nookClient.channelList.update({
+  async updateList(listId: string, list: ListMetadata) {
+    return this.nookClient.list.update({
       where: {
         id: listId,
       },
@@ -251,38 +146,43 @@ export class ListService {
     });
   }
 
-  async deleteChannelList(listId: string) {
-    return this.nookClient.channelList.delete({
-      where: {
-        id: listId,
-      },
-    });
-  }
-
-  async addToChannelList(listId: string, channelId: string) {
-    return this.nookClient.channelList.update({
+  async deleteList(listId: string) {
+    return this.nookClient.list.updateMany({
       where: {
         id: listId,
       },
       data: {
-        channels: {
-          create: { channelId },
+        deletedAt: new Date(),
+      },
+    });
+  }
+
+  async addToList(listId: string, id: string) {
+    return this.nookClient.list.update({
+      where: {
+        id: listId,
+      },
+      data: {
+        items: {
+          create: {
+            id,
+          },
         },
       },
     });
   }
 
-  async removeFromChannelList(listId: string, channelId: string) {
-    return this.nookClient.channelList.update({
+  async removeFromList(listId: string, id: string) {
+    return this.nookClient.list.update({
       where: {
         id: listId,
       },
       data: {
-        channels: {
+        items: {
           delete: {
-            listId_channelId: {
+            listId_id: {
               listId,
-              channelId,
+              id,
             },
           },
         },

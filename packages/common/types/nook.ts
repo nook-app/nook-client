@@ -24,21 +24,36 @@ export type NookShelfBase = {
   description: string;
 };
 
+export enum NookShelfType {
+  FARCASTER_FEED = "FARCASTER_FEED",
+  FARCASTER_EVENTS = "FARCASTER_EVENTS",
+  FARCASTER_PROFILE = "FARCASTER_PROFILE",
+  TRANSACTION_FEED = "TRANSACTION_FEED",
+}
+
+export enum DisplayMode {
+  MEDIA = "MEDIA",
+  FRAME = "FRAME",
+  REPLIES = "REPLIES",
+  GRID = "GRID",
+  DEFAULT = "DEFAULT",
+}
+
 export type NookShelf =
   | (NookShelfBase & {
       service: "FARCASTER";
-      type: "FARCASTER_FEED";
+      type: NookShelfType.FARCASTER_FEED;
       data: {
         api: "/v0/feeds/farcaster";
         args: {
           feedId: string;
         };
-        displayMode: "MEDIA" | "FRAME" | "REPLIES" | "GRID" | "DEFAULT";
+        displayMode: DisplayMode;
       };
     })
   | (NookShelfBase & {
       service: "FARCASTER";
-      type: "FARCASTER_EVENTS";
+      type: NookShelfType.FARCASTER_EVENTS;
       data: {
         api: "/v0/feeds/farcaster-events";
         args: {
@@ -48,14 +63,14 @@ export type NookShelf =
     })
   | (NookShelfBase & {
       service: "FARCASTER";
-      type: "FARCASTER_PROFILE";
+      type: NookShelfType.FARCASTER_PROFILE;
       data: {
         fid?: string;
       };
     })
   | (NookShelfBase & {
       service: "ONCEUPON";
-      type: "TRANSACTION_FEED";
+      type: NookShelfType.TRANSACTION_FEED;
       data: {
         api: "/v0/feeds/transactions";
         args: {
@@ -87,6 +102,7 @@ export type UserFilter =
 export type ContentFilter = {
   types?: string[];
   frames?: boolean;
+  urls?: string[];
 };
 
 export type ChannelFilter = {
@@ -127,3 +143,44 @@ export type TransactionFeedFilterWithContext = {
   filter: TransactionFeedFilter;
   context?: RequestContext;
 };
+
+export type BaseCreateShelfRequest = {
+  name: string;
+  description: string;
+};
+
+export type CreateShelfRequest =
+  | (BaseCreateShelfRequest & {
+      type: NookShelfType.FARCASTER_FEED;
+      data: {
+        api: "/v0/feeds/farcaster";
+        args: {
+          filter: FarcasterFeedFilter;
+        };
+        displayMode: DisplayMode;
+      };
+    })
+  | (BaseCreateShelfRequest & {
+      type: NookShelfType.FARCASTER_EVENTS;
+      data: {
+        api: "/v0/feeds/farcaster-events";
+        args: {
+          filter: FarcasterFeedFilter;
+        };
+      };
+    })
+  | (BaseCreateShelfRequest & {
+      type: NookShelfType.FARCASTER_PROFILE;
+      data: {
+        fid?: string;
+      };
+    })
+  | (BaseCreateShelfRequest & {
+      type: NookShelfType.TRANSACTION_FEED;
+      data: {
+        api: "/v0/feeds/transactions";
+        args: {
+          filter: TransactionFeedFilter;
+        };
+      };
+    });

@@ -1,5 +1,5 @@
 import { FastifyInstance } from "fastify";
-import { ChannelList, UserList } from "@nook/common/types";
+import { CreateListRequest } from "@nook/common/types";
 import { ListService } from "../../services/lists";
 
 export const listRoutes = async (fastify: FastifyInstance) => {
@@ -13,124 +13,6 @@ export const listRoutes = async (fastify: FastifyInstance) => {
           const { fid } = (await request.jwtDecode()) as { fid: string };
           const data = await listService.getUserLists(request.query.fid, fid);
           return reply.send({ data });
-        } catch (error) {
-          console.error(error);
-          return reply.code(500).send({ message: "Internal Server Error" });
-        }
-      },
-    );
-
-    fastify.put<{ Body: UserList }>("/lists/users", async (request, reply) => {
-      try {
-        const { fid } = (await request.jwtDecode()) as { fid: string };
-        const data = await listService.createUserList(fid, request.body);
-        return reply.send(data);
-      } catch (error) {
-        console.error(error);
-        return reply.code(500).send({ message: "Internal Server Error" });
-      }
-    });
-
-    fastify.get<{ Params: { listId: string } }>(
-      "/lists/users/:listId",
-      async (request, reply) => {
-        try {
-          const { fid } = (await request.jwtDecode()) as { fid: string };
-          const data = await listService.getUserList(
-            request.params.listId,
-            fid,
-          );
-          return reply.send(data);
-        } catch (error) {
-          console.error(error);
-          return reply.code(500).send({ message: "Internal Server Error" });
-        }
-      },
-    );
-
-    fastify.patch<{ Params: { listId: string }; Body: UserList }>(
-      "/lists/users/:listId",
-      async (request, reply) => {
-        try {
-          const { fid } = (await request.jwtDecode()) as { fid: string };
-          const list = await listService.getUserList(request.params.listId);
-          if (!list) {
-            return reply.code(404).send({ message: "List not found" });
-          }
-          if (list.creatorFid !== fid) {
-            return reply.code(403).send({ message: "Forbidden" });
-          }
-          await listService.updateUserList(request.params.listId, request.body);
-          return reply.send({});
-        } catch (error) {
-          console.error(error);
-          return reply.code(500).send({ message: "Internal Server Error" });
-        }
-      },
-    );
-
-    fastify.delete<{ Params: { listId: string } }>(
-      "/lists/users/:listId",
-      async (request, reply) => {
-        try {
-          const { fid } = (await request.jwtDecode()) as { fid: string };
-          const list = await listService.getUserList(request.params.listId);
-          if (!list) {
-            return reply.code(404).send({ message: "List not found" });
-          }
-          if (list.creatorFid !== fid) {
-            return reply.code(403).send({ message: "Forbidden" });
-          }
-          await listService.deleteUserList(request.params.listId);
-          return reply.send({});
-        } catch (error) {
-          console.error(error);
-          return reply.code(500).send({ message: "Internal Server Error" });
-        }
-      },
-    );
-
-    fastify.put<{ Params: { listId: string }; Body: { fid: string } }>(
-      "/lists/users/:listId/add",
-      async (request, reply) => {
-        try {
-          const { fid } = (await request.jwtDecode()) as { fid: string };
-          const list = await listService.getUserList(request.params.listId);
-          if (!list) {
-            return reply.code(404).send({ message: "List not found" });
-          }
-          if (list.creatorFid !== fid) {
-            return reply.code(403).send({ message: "Forbidden" });
-          }
-          const data = await listService.addToUserList(
-            request.params.listId,
-            request.body.fid,
-          );
-          return reply.send({});
-        } catch (error) {
-          console.error(error);
-          return reply.code(500).send({ message: "Internal Server Error" });
-        }
-      },
-    );
-
-    fastify.delete<{ Params: { listId: string }; Body: { fid: string } }>(
-      "/lists/users/:listId/remove",
-      async (request, reply) => {
-        try {
-          const { fid } = (await request.jwtDecode()) as { fid: string };
-          const list = await listService.getUserList(request.params.listId);
-          if (!list) {
-            return reply.code(404).send({ message: "List not found" });
-          }
-          if (list.creatorFid !== fid) {
-            return reply.code(403).send({ message: "Forbidden" });
-          }
-          await listService.removeFromUserList(
-            request.params.listId,
-            request.body.fid,
-          );
-          return reply.send({});
         } catch (error) {
           console.error(error);
           return reply.code(500).send({ message: "Internal Server Error" });
@@ -155,12 +37,12 @@ export const listRoutes = async (fastify: FastifyInstance) => {
       },
     );
 
-    fastify.put<{ Body: ChannelList }>(
-      "/lists/channels",
+    fastify.put<{ Body: CreateListRequest }>(
+      "/lists",
       async (request, reply) => {
         try {
           const { fid } = (await request.jwtDecode()) as { fid: string };
-          const data = await listService.createChannelList(fid, request.body);
+          const data = await listService.createList(fid, request.body);
           return reply.send(data);
         } catch (error) {
           console.error(error);
@@ -170,15 +52,26 @@ export const listRoutes = async (fastify: FastifyInstance) => {
     );
 
     fastify.get<{ Params: { listId: string } }>(
-      "/lists/channels/:listId",
+      "/lists/:listId",
       async (request, reply) => {
         try {
           const { fid } = (await request.jwtDecode()) as { fid: string };
-          const data = await listService.getChannelList(
-            request.params.listId,
-            fid,
-          );
-          return reply.send(data);
+          const list = await listService.getList(request.params.listId);
+          if (
+            !list ||
+            list.deletedAt ||
+            (list.visibility === "PRIVATE" && list.creatorFid !== fid)
+          ) {
+            return reply.code(404).send({ message: "List not found" });
+          }
+          if (list.type === "USER") {
+            const data = await listService.formatUserLists([list]);
+            return reply.send(data[0]);
+          }
+          if (list.type === "CHANNEL") {
+            const data = await listService.formatChannelLists([list]);
+            return reply.send(data[0]);
+          }
         } catch (error) {
           console.error(error);
           return reply.code(500).send({ message: "Internal Server Error" });
@@ -186,22 +79,23 @@ export const listRoutes = async (fastify: FastifyInstance) => {
       },
     );
 
-    fastify.patch<{ Params: { listId: string }; Body: ChannelList }>(
-      "/lists/channels/:listId",
+    fastify.patch<{ Params: { listId: string }; Body: CreateListRequest }>(
+      "/lists/:listId",
       async (request, reply) => {
         try {
           const { fid } = (await request.jwtDecode()) as { fid: string };
-          const list = await listService.getChannelList(request.params.listId);
-          if (!list) {
+          const list = await listService.getList(request.params.listId);
+          if (
+            !list ||
+            list.deletedAt ||
+            (list.visibility === "PRIVATE" && list.creatorFid !== fid)
+          ) {
             return reply.code(404).send({ message: "List not found" });
           }
           if (list.creatorFid !== fid) {
             return reply.code(403).send({ message: "Forbidden" });
           }
-          const data = await listService.updateChannelList(
-            request.params.listId,
-            request.body,
-          );
+          await listService.updateList(request.params.listId, request.body);
           return reply.send({});
         } catch (error) {
           console.error(error);
@@ -211,18 +105,22 @@ export const listRoutes = async (fastify: FastifyInstance) => {
     );
 
     fastify.delete<{ Params: { listId: string } }>(
-      "/lists/channels/:listId",
+      "/lists/:listId",
       async (request, reply) => {
         try {
           const { fid } = (await request.jwtDecode()) as { fid: string };
-          const list = await listService.getChannelList(request.params.listId);
-          if (!list) {
+          const list = await listService.getList(request.params.listId);
+          if (
+            !list ||
+            list.deletedAt ||
+            (list.visibility === "PRIVATE" && list.creatorFid !== fid)
+          ) {
             return reply.code(404).send({ message: "List not found" });
           }
           if (list.creatorFid !== fid) {
             return reply.code(403).send({ message: "Forbidden" });
           }
-          await listService.deleteChannelList(request.params.listId);
+          await listService.deleteList(request.params.listId);
           return reply.send({});
         } catch (error) {
           console.error(error);
@@ -231,21 +129,25 @@ export const listRoutes = async (fastify: FastifyInstance) => {
       },
     );
 
-    fastify.put<{ Params: { listId: string }; Body: { channelId: string } }>(
-      "/lists/channels/:listId/add",
+    fastify.put<{ Params: { listId: string }; Body: { id: string } }>(
+      "/lists/:listId/add",
       async (request, reply) => {
         try {
           const { fid } = (await request.jwtDecode()) as { fid: string };
-          const list = await listService.getChannelList(request.params.listId);
-          if (!list) {
+          const list = await listService.getList(request.params.listId);
+          if (
+            !list ||
+            list.deletedAt ||
+            (list.visibility === "PRIVATE" && list.creatorFid !== fid)
+          ) {
             return reply.code(404).send({ message: "List not found" });
           }
           if (list.creatorFid !== fid) {
             return reply.code(403).send({ message: "Forbidden" });
           }
-          await listService.addToChannelList(
+          const data = await listService.addToList(
             request.params.listId,
-            request.body.channelId,
+            request.body.id,
           );
           return reply.send({});
         } catch (error) {
@@ -255,21 +157,25 @@ export const listRoutes = async (fastify: FastifyInstance) => {
       },
     );
 
-    fastify.delete<{ Params: { listId: string }; Body: { channelId: string } }>(
-      "/lists/channels/:listId/remove",
+    fastify.delete<{ Params: { listId: string }; Body: { id: string } }>(
+      "/lists/:listId/remove",
       async (request, reply) => {
         try {
           const { fid } = (await request.jwtDecode()) as { fid: string };
-          const list = await listService.getChannelList(request.params.listId);
-          if (!list) {
+          const list = await listService.getList(request.params.listId);
+          if (
+            !list ||
+            list.deletedAt ||
+            (list.visibility === "PRIVATE" && list.creatorFid !== fid)
+          ) {
             return reply.code(404).send({ message: "List not found" });
           }
           if (list.creatorFid !== fid) {
             return reply.code(403).send({ message: "Forbidden" });
           }
-          await listService.removeFromChannelList(
+          await listService.removeFromList(
             request.params.listId,
-            request.body.channelId,
+            request.body.id,
           );
           return reply.send({});
         } catch (error) {

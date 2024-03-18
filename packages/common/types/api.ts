@@ -192,6 +192,8 @@ export type GetContentReferencesRequest = {
   frames?: boolean;
   fids?: string[];
   parentUrls?: string[];
+  urls?: string[];
+  replies?: boolean;
 };
 
 export type GetContentReferencesResponse = {

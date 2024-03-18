@@ -44,7 +44,7 @@ export const MAX_PAGE_SIZE = 25;
 
 function sanitizeInput(input: string): string {
   // Basic example: remove non-alphanumeric characters and truncate
-  return input.replace(/[^a-zA-Z0-9\s]/g, "").substring(0, 100);
+  return input.replace(/[^a-zA-Z0-9\s./]/g, "").substring(0, 100);
 }
 
 export class FarcasterService {
@@ -98,6 +98,7 @@ export class FarcasterService {
           ...filter.contentFilter,
           fids,
           parentUrls,
+          replies: filter.replies,
         },
         cursor,
         context?.viewerFid,
@@ -130,9 +131,11 @@ export class FarcasterService {
 
     if (filter.textFilter?.query) {
       conditions.push(
-        `(to_tsvector('english', "text") @@ plainto_tsquery('english', '${sanitizeInput(
+        `((to_tsvector('english', "text") @@ to_tsquery('english', '${sanitizeInput(
           filter.textFilter.query,
-        )}'))`,
+        )}')) OR (to_tsvector('english', "text") @@ to_tsquery('english', '/${sanitizeInput(
+          filter.textFilter.query,
+        )}')))`,
       );
     }
     if (fids) {

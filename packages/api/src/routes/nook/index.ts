@@ -1,6 +1,6 @@
 import { FastifyInstance } from "fastify";
 import { NookService } from "../../services/nook";
-import { Nook } from "@nook/common/types";
+import { CreateShelfRequest, Nook } from "@nook/common/types";
 
 export const nookRoutes = async (fastify: FastifyInstance) => {
   fastify.register(async (fastify: FastifyInstance) => {
@@ -15,13 +15,67 @@ export const nookRoutes = async (fastify: FastifyInstance) => {
     fastify.get<{ Params: { nookId: string } }>(
       "/nooks/:nookId",
       async (request, reply) => {
+        const { fid } = (await request.jwtDecode()) as { fid: string };
         const nook = await nookService.getNook(request.params.nookId);
-        if (!nook || nook.deletedAt) {
+        if (
+          !nook ||
+          nook.deletedAt ||
+          (nook.visibility === "PRIVATE" && nook.creatorFid !== fid)
+        ) {
           return reply.code(404).send({ message: "Nook not found" });
         }
         return reply.send(nook);
       },
     );
+
+    fastify.put<{ Params: { nookId: string }; Body: CreateShelfRequest }>(
+      "/nooks/:nookId/shelves",
+      async (request, reply) => {
+        try {
+          const { fid } = (await request.jwtDecode()) as { fid: string };
+          const nook = await nookService.getNook(request.params.nookId);
+          if (
+            !nook ||
+            nook.deletedAt ||
+            (nook.visibility === "PRIVATE" && nook.creatorFid !== fid)
+          ) {
+            return reply.code(404).send({ message: "Nook not found" });
+          }
+          if (nook.creatorFid !== fid) {
+            return reply.code(403).send({ message: "Forbidden" });
+          }
+          const response = await nookService.addShelf(nook, request.body, fid);
+          return reply.send(response);
+        } catch (error) {
+          console.error(error);
+          return reply.code(500).send({ message: "Internal Server Error" });
+        }
+      },
+    );
+
+    fastify.delete<{
+      Params: { nookId: string; shelfId: string };
+    }>("/nooks/:nookId/shelves/:shelfId", async (request, reply) => {
+      try {
+        const { fid } = (await request.jwtDecode()) as { fid: string };
+        const nook = await nookService.getNook(request.params.nookId);
+        if (
+          !nook ||
+          nook.deletedAt ||
+          (nook.visibility === "PRIVATE" && nook.creatorFid !== fid)
+        ) {
+          return reply.code(404).send({ message: "Nook not found" });
+        }
+        if (nook.creatorFid !== fid) {
+          return reply.code(403).send({ message: "Forbidden" });
+        }
+        await nookService.removeShelf(nook, request.params.shelfId);
+        return reply.send({});
+      } catch (error) {
+        console.error(error);
+        return reply.code(500).send({ message: "Internal Server Error" });
+      }
+    });
 
     fastify.put<{ Params: { nookId: string } }>(
       "/nooks/:nookId/members",
@@ -29,7 +83,11 @@ export const nookRoutes = async (fastify: FastifyInstance) => {
         try {
           const { fid } = (await request.jwtDecode()) as { fid: string };
           const nook = await nookService.getNook(request.params.nookId);
-          if (!nook || nook.deletedAt) {
+          if (
+            !nook ||
+            nook.deletedAt ||
+            (nook.visibility === "PRIVATE" && nook.creatorFid !== fid)
+          ) {
             return reply.code(404).send({ message: "Nook not found" });
           }
           await nookService.joinNook(request.params.nookId, fid);
@@ -47,7 +105,11 @@ export const nookRoutes = async (fastify: FastifyInstance) => {
         try {
           const { fid } = (await request.jwtDecode()) as { fid: string };
           const nook = await nookService.getNook(request.params.nookId);
-          if (!nook || nook.deletedAt) {
+          if (
+            !nook ||
+            nook.deletedAt ||
+            (nook.visibility === "PRIVATE" && nook.creatorFid !== fid)
+          ) {
             return reply.code(404).send({ message: "Nook not found" });
           }
           await nookService.leaveNook(request.params.nookId, fid);
@@ -87,7 +149,11 @@ export const nookRoutes = async (fastify: FastifyInstance) => {
         try {
           const { fid } = (await request.jwtDecode()) as { fid: string };
           const nook = await nookService.getNook(request.params.nookId);
-          if (!nook) {
+          if (
+            !nook ||
+            nook.deletedAt ||
+            (nook.visibility === "PRIVATE" && nook.creatorFid !== fid)
+          ) {
             return reply.code(404).send({ message: "Nook not found" });
           }
           if (nook.creatorFid !== fid) {
@@ -108,7 +174,11 @@ export const nookRoutes = async (fastify: FastifyInstance) => {
         try {
           const { fid } = (await request.jwtDecode()) as { fid: string };
           const nook = await nookService.getNook(request.params.nookId);
-          if (!nook) {
+          if (
+            !nook ||
+            nook.deletedAt ||
+            (nook.visibility === "PRIVATE" && nook.creatorFid !== fid)
+          ) {
             return reply.code(404).send({ message: "Nook not found" });
           }
           if (nook.creatorFid !== fid) {

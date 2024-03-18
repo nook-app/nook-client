@@ -1,10 +1,15 @@
 import { FastifyInstance } from "fastify";
-import { Prisma, PrismaClient } from "@nook/common/prisma/nook";
+import { Prisma, PrismaClient, Nook as DBNook } from "@nook/common/prisma/nook";
 import { FarcasterAPIClient } from "@nook/common/clients";
 import {
+  CreateShelfRequest,
+  DisplayMode,
   FarcasterFeedFilter,
+  FeedFilter,
   Nook,
   NookMetadata,
+  NookShelf,
+  NookShelfType,
   UserFilterType,
 } from "@nook/common/types";
 import { randomUUID, createHash } from "crypto";
@@ -14,7 +19,7 @@ const MAX_PAGE_SIZE = 25;
 
 function sanitizeInput(input: string): string {
   // Basic example: remove non-alphanumeric characters and truncate
-  return input.replace(/[^a-zA-Z0-9\s]/g, "").substring(0, 100);
+  return input.replace(/[^a-zA-Z0-9\s./]/g, "").substring(0, 100);
 }
 
 export class NookService {
@@ -27,7 +32,10 @@ export class NookService {
   }
 
   async searchNooks(query?: string, cursor?: string) {
-    const conditions: string[] = [`"deletedAt" IS NULL`];
+    const conditions: string[] = [
+      `"deletedAt" IS NULL`,
+      `"visibility" = 'PUBLIC'`,
+    ];
     if (query) {
       conditions.push(
         `((to_tsvector('english', "name") @@ plainto_tsquery('english', '${sanitizeInput(
@@ -92,6 +100,7 @@ export class NookService {
         },
         nook: {
           deletedAt: null,
+          visibility: "PUBLIC",
         },
       },
       include: {
@@ -148,8 +157,14 @@ export class NookService {
       });
     }
 
-    await this.nookClient.nookMembership.create({
-      data: {
+    await this.nookClient.nookMembership.upsert({
+      where: {
+        fid_nookId: {
+          nookId: homeNook.id,
+          fid,
+        },
+      },
+      create: {
         user: {
           connect: {
             fid,
@@ -161,6 +176,7 @@ export class NookService {
           },
         },
       },
+      update: {},
     });
 
     return homeNook;
@@ -183,13 +199,13 @@ export class NookService {
               name: "Posts",
               description: "Posts from people you follow",
               service: "FARCASTER",
-              type: "FARCASTER_FEED",
+              type: NookShelfType.FARCASTER_FEED,
               data: {
                 api: "/v0/feeds/farcaster",
                 args: {
                   feedId: followingFeedId,
                 },
-                displayMode: "DEFAULT",
+                displayMode: DisplayMode.DEFAULT,
               },
             },
           ],
@@ -203,13 +219,13 @@ export class NookService {
               name: "Discover",
               description: "Posts you may like",
               service: "FARCASTER",
-              type: "FARCASTER_FEED",
+              type: NookShelfType.FARCASTER_FEED,
               data: {
                 api: "/v0/feeds/farcaster",
                 args: {
                   feedId: discoverFeedId,
                 },
-                displayMode: "DEFAULT",
+                displayMode: DisplayMode.DEFAULT,
               },
             },
             {
@@ -217,13 +233,13 @@ export class NookService {
               name: "Global",
               description: "Posts from everyone",
               service: "FARCASTER",
-              type: "FARCASTER_FEED",
+              type: NookShelfType.FARCASTER_FEED,
               data: {
                 api: "/v0/feeds/farcaster",
                 args: {
                   feedId: globalFeedId,
                 },
-                displayMode: "DEFAULT",
+                displayMode: DisplayMode.DEFAULT,
               },
             },
           ],
@@ -237,7 +253,7 @@ export class NookService {
               name: "Profile",
               description: "Your posts and activity",
               service: "FARCASTER",
-              type: "FARCASTER_PROFILE",
+              type: NookShelfType.FARCASTER_PROFILE,
               data: {
                 fid,
               },
@@ -252,27 +268,8 @@ export class NookService {
     const filter: FarcasterFeedFilter = {
       replies: false,
     };
-    const hash = this.hash(filter);
-    const feed = await this.nookClient.feed.findUnique({
-      where: {
-        hash,
-      },
-    });
-
-    if (feed) {
-      return feed.id;
-    }
-
-    const newFeed = await this.nookClient.feed.create({
-      data: {
-        type: "FARCASTER_FEED",
-        hash,
-        filter,
-        creatorFid: "262426",
-      },
-    });
-
-    return newFeed.id;
+    const feed = await this.getOrCreateFeed(filter, "FARCASTER_FEED", "262426");
+    return feed.id;
   }
 
   async getDiscoverFeedId(fid: string) {
@@ -286,29 +283,8 @@ export class NookService {
       },
       replies: false,
     };
-
-    const hash = this.hash(filter);
-
-    const feed = await this.nookClient.feed.findUnique({
-      where: {
-        hash,
-      },
-    });
-
-    if (feed) {
-      return feed.id;
-    }
-
-    const newFeed = await this.nookClient.feed.create({
-      data: {
-        type: "FARCASTER_FEED",
-        hash,
-        filter,
-        creatorFid: "262426",
-      },
-    });
-
-    return newFeed.id;
+    const feed = await this.getOrCreateFeed(filter, "FARCASTER_FEED", "262426");
+    return feed.id;
   }
 
   async getFollowingFeedId(fid: string) {
@@ -322,29 +298,8 @@ export class NookService {
       },
       replies: false,
     };
-
-    const hash = this.hash(filter);
-
-    const feed = await this.nookClient.feed.findUnique({
-      where: {
-        hash,
-      },
-    });
-
-    if (feed) {
-      return feed.id;
-    }
-
-    const newFeed = await this.nookClient.feed.create({
-      data: {
-        type: "FARCASTER_FEED",
-        hash,
-        filter,
-        creatorFid: "262426",
-      },
-    });
-
-    return newFeed.id;
+    const feed = await this.getOrCreateFeed(filter, "FARCASTER_FEED", "262426");
+    return feed.id;
   }
 
   async getFarcasterFeed(feedId: string, cursor?: string, viewerFid?: string) {
@@ -370,6 +325,30 @@ export class NookService {
     return response;
   }
 
+  async getOrCreateFeed(filter: FeedFilter, type: string, fid: string) {
+    const hash = this.hash(filter);
+    const feed = await this.nookClient.feed.findUnique({
+      where: {
+        hash,
+      },
+    });
+
+    if (feed) {
+      return feed;
+    }
+
+    const newFeed = await this.nookClient.feed.create({
+      data: {
+        type,
+        hash,
+        filter,
+        creatorFid: fid,
+      },
+    });
+
+    return newFeed;
+  }
+
   hash(data: object): string {
     const json = JSON.stringify(data);
     const hash = createHash("md5").update(json).digest("hex");
@@ -377,7 +356,7 @@ export class NookService {
   }
 
   async getNook(nookId: string) {
-    return this.nookClient.nook.findUnique({
+    return await this.nookClient.nook.findUnique({
       where: {
         id: nookId,
       },
@@ -441,6 +420,138 @@ export class NookService {
       where: {
         nookId,
         fid,
+      },
+    });
+  }
+
+  async addShelf(nook: DBNook, shelf: CreateShelfRequest, fid: string) {
+    const metadata = nook.metadata as NookMetadata | undefined;
+    const categories = metadata?.categories || [];
+    let uncategorized = categories.find(
+      (category) => category.id === "uncategorized",
+    );
+    if (!uncategorized) {
+      uncategorized = {
+        id: "uncategorized",
+        name: "Uncategorized",
+        shelves: [],
+      };
+      categories.push(uncategorized);
+    }
+
+    let newShelf: NookShelf | undefined;
+    switch (shelf.type) {
+      case NookShelfType.TRANSACTION_FEED: {
+        const feed = await this.getOrCreateFeed(
+          shelf.data.args.filter,
+          shelf.type,
+          fid,
+        );
+        newShelf = {
+          ...shelf,
+          id: randomUUID(),
+          service: "ONCEUPON",
+          data: {
+            ...shelf.data,
+            args: {
+              feedId: feed.id,
+            },
+          },
+        };
+        break;
+      }
+      case NookShelfType.FARCASTER_EVENTS: {
+        const feed = await this.getOrCreateFeed(
+          shelf.data.args.filter,
+          shelf.type,
+          fid,
+        );
+        newShelf = {
+          ...shelf,
+          id: randomUUID(),
+          service: "FARCASTER",
+          data: {
+            ...shelf.data,
+            args: {
+              feedId: feed.id,
+            },
+          },
+        };
+        break;
+      }
+      case NookShelfType.FARCASTER_FEED: {
+        const feed = await this.getOrCreateFeed(
+          shelf.data.args.filter,
+          shelf.type,
+          fid,
+        );
+        newShelf = {
+          ...shelf,
+          id: randomUUID(),
+          service: "FARCASTER",
+          data: {
+            ...shelf.data,
+            args: {
+              feedId: feed.id,
+            },
+          },
+        };
+        break;
+      }
+      case NookShelfType.FARCASTER_PROFILE:
+        newShelf = {
+          ...shelf,
+          service: "FARCASTER",
+          id: randomUUID(),
+        };
+        break;
+    }
+
+    if (!newShelf) {
+      throw new Error("Invalid shelf type");
+    }
+
+    uncategorized.shelves.push(newShelf);
+
+    const newNook = {
+      ...nook,
+      metadata: {
+        ...metadata,
+        categories,
+      },
+    };
+
+    await this.nookClient.nook.update({
+      where: {
+        id: nook.id,
+      },
+      data: {
+        metadata: newNook.metadata,
+      },
+    });
+
+    return {
+      nook: newNook,
+      shelf: newShelf,
+    };
+  }
+
+  async removeShelf(nook: DBNook, shelfId: string) {
+    const metadata = nook.metadata as NookMetadata | undefined;
+    const categories = metadata?.categories?.map((category) => ({
+      ...category,
+      shelves: category.shelves.filter((shelf) => shelf.id !== shelfId),
+    }));
+
+    await this.nookClient.nook.update({
+      where: {
+        id: nook.id,
+      },
+      data: {
+        metadata: {
+          ...metadata,
+          categories,
+        },
       },
     });
   }

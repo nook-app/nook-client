@@ -233,6 +233,19 @@ export class ContentService {
       );
     }
 
+    if (req.urls && req.urls.length > 0) {
+      const likeClauses = req.urls
+        .map((uri) => `"content"."uri" LIKE '%${uri}%'`)
+        .join(" OR ");
+      whereClause.push(`(${likeClauses})`);
+    }
+
+    if (req.replies === true) {
+      whereClause.push(`"parentHash" IS NOT NULL`);
+    } else if (req.replies === false) {
+      whereClause.push(`"parentHash" IS NULL`);
+    }
+
     if (cursor) {
       whereClause.push(
         `"timestamp" < '${this.decodeCursor(cursor)?.toISOString()}'`,
