@@ -197,10 +197,10 @@ export class ContentService {
       for (const type of req.types) {
         switch (type) {
           case "image":
-            contentFilter.push(`"content"."type" LIKE 'image%'`);
+            contentFilter.push(`"content"."type" ILIKE 'image%'`);
             break;
           case "video":
-            contentFilter.push(`"content"."type" LIKE 'video%'`);
+            contentFilter.push(`"content"."type" ILIKE 'video%'`);
             break;
         }
       }
@@ -235,7 +235,7 @@ export class ContentService {
 
     if (req.urls && req.urls.length > 0) {
       const likeClauses = req.urls
-        .map((uri) => `"content"."uri" LIKE '%${uri}%'`)
+        .map((uri) => `"content"."uri" ILIKE '%${uri}%'`)
         .join(" OR ");
       whereClause.push(`(${likeClauses})`);
     }
