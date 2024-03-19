@@ -92,7 +92,11 @@ export class FarcasterService {
       parentUrls = channels.map((channel) => channel.url);
     }
 
-    if (filter.contentFilter) {
+    if (
+      filter.contentFilter?.types ||
+      filter.contentFilter?.urls ||
+      filter.contentFilter?.frames
+    ) {
       const references = await this.contentClient.getContentReferences(
         {
           ...filter.contentFilter,
@@ -752,20 +756,24 @@ export class FarcasterService {
     return channel;
   }
 
-  async searchUsers(query: string, cursor?: string, viewerFid?: string) {
+  async searchUsers(query?: string, cursor?: string, viewerFid?: string) {
     const decodedCursor = decodeCursor(cursor);
 
-    const conditions: string[] = [
-      `(to_tsvector('english', "value") @@ plainto_tsquery('english', '${sanitizeInput(
-        query,
-      )}'))`,
-    ];
+    const conditions: string[] = [];
+    if (query) {
+      conditions.push(
+        `(to_tsvector('english', "value") @@ to_tsquery('english', '${sanitizeInput(
+          query,
+        )}'))`,
+      );
+    }
 
     if (decodedCursor?.followers) {
       conditions.push(`"stats.followers" < ${decodedCursor.followers}`);
     }
 
-    const whereClause = conditions.join(" AND ");
+    const whereClause =
+      conditions.length > 0 ? conditions.join(" AND ") : "true";
 
     const rawUsers = await this.client.$queryRaw<
       { fid: string; followers: number }[]
