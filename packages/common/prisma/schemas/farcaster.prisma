@@ -28,6 +28,8 @@ model FarcasterUserData {
     timestamp DateTime
 
     @@id([fid, type])
+    @@index([value])
+    @@index([type, value])
 }
 
 model FarcasterUsernameProof {

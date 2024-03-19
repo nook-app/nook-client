@@ -274,18 +274,40 @@ export class FarcasterService {
       `"deletedAt" IS NULL`,
     ];
 
-    if (decodedCursor?.likes) {
-      conditions.push(
-        `(stats.likes <= ${decodedCursor.likes} OR stats.likes IS NULL)`,
-      );
-    }
-    if (decodedCursor?.timestamp) {
-      conditions.push(
-        `timestamp < '${new Date(decodedCursor.timestamp).toISOString()}'`,
-      );
+    if (decodedCursor?.likes !== undefined) {
+      const likes = Number(decodedCursor.likes);
+      if (likes > 0) {
+        const cursorConditions = ["stats.likes IS NULL"];
+        cursorConditions.push(`stats.likes < ${likes}`);
+        cursorConditions.push(
+          `(stats.likes = ${
+            decodedCursor.likes
+          } AND c."timestamp" < '${new Date(
+            decodedCursor.timestamp,
+          ).toISOString()}')`,
+        );
+        conditions.push(`(${cursorConditions.join(" OR ")})`);
+      } else {
+        conditions.push(
+          `(stats.likes IS NULL OR stats.likes = 0) AND timestamp < '${new Date(
+            decodedCursor.timestamp,
+          ).toISOString()}'`,
+        );
+      }
     }
 
     const whereClause = conditions.join(" AND ");
+
+    console.log(
+      `
+        SELECT c.*, likes
+        FROM "FarcasterCast" c
+        LEFT JOIN "FarcasterCastStats" stats ON c.hash = stats.hash
+        WHERE ${whereClause}
+        ORDER BY stats.likes DESC NULLS LAST, timestamp DESC
+        LIMIT ${MAX_PAGE_SIZE}
+      `,
+    );
 
     const data = await this.client.$queryRaw<
       (DBFarcasterCast & { likes: number })[]
@@ -309,7 +331,7 @@ export class FarcasterService {
       nextCursor:
         casts.length === MAX_PAGE_SIZE
           ? encodeCursor({
-              likes: data[data.length - 1]?.likes,
+              likes: data[data.length - 1]?.likes || 0,
               timestamp: casts[casts.length - 1]?.timestamp,
             })
           : undefined,
@@ -762,9 +784,11 @@ export class FarcasterService {
     const conditions: string[] = [];
     if (query) {
       conditions.push(
-        `(to_tsvector('english', "value") @@ to_tsquery('english', '${sanitizeInput(
+        `((to_tsvector('english', "value") @@ to_tsquery('english', '${sanitizeInput(
           query,
-        )}'))`,
+        )}')) OR (type = 6 AND value LIKE '${sanitizeInput(
+          query,
+        ).toLowerCase()}%'))`,
       );
     }
 
