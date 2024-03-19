@@ -70,10 +70,12 @@ export class NotificationsService {
       create: {
         ...notification,
         data: notification.data || Prisma.DbNull,
+        read: NotificationType.FOLLOW === notification.type,
       },
       update: {
         ...notification,
         data: notification.data || Prisma.DbNull,
+        read: NotificationType.FOLLOW === notification.type,
       },
     });
   }
