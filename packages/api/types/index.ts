@@ -6,6 +6,11 @@ export type SignInWithFarcasterRequest = {
   nonce: string;
 };
 
+export type SignInWithPasswordRequest = {
+  username: string;
+  password: string;
+};
+
 export type TokenResponse = {
   fid: string;
   refreshToken: string;
