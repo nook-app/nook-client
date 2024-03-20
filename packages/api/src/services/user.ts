@@ -7,6 +7,8 @@ import {
 import { SignInWithFarcasterRequest, TokenResponse } from "../../types";
 import { PrismaClient } from "@nook/common/prisma/nook";
 
+const DEV_USER_FID = 20716;
+
 export class UserService {
   private farcasterAuthClient: FarcasterAuthClient;
   private jwt: FastifyInstance["jwt"];
@@ -18,6 +20,20 @@ export class UserService {
       ethereum: viemConnector(),
     });
     this.nookClient = fastify.nook.client;
+  }
+
+  async signInWithDev(): Promise<TokenResponse | undefined> {
+    const user = await this.nookClient.user.findFirst({
+      where: {
+        fid: DEV_USER_FID.toString(),
+      },
+    });
+
+    if (!user?.siwfData) return;
+
+    return await this.signInWithFarcaster(
+      user.siwfData as SignInWithFarcasterRequest,
+    );
   }
 
   async signInWithFarcaster(

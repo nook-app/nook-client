@@ -52,9 +52,10 @@ export const userRoutes = async (fastify: FastifyInstance) => {
           return reply.code(401).send({ message: "Unauthorized" });
         }
         try {
-          const data = await userService.signInWithFarcaster(
-            JSON.parse(process.env.DEV_SIWF as string),
-          );
+          const data = await userService.signInWithDev();
+          if (!data) {
+            return reply.code(401).send({ message: "Unauthorized" });
+          }
           return reply.send(data);
         } catch (e) {
           console.error(e);
