@@ -298,17 +298,6 @@ export class FarcasterService {
 
     const whereClause = conditions.join(" AND ");
 
-    console.log(
-      `
-        SELECT c.*, likes
-        FROM "FarcasterCast" c
-        LEFT JOIN "FarcasterCastStats" stats ON c.hash = stats.hash
-        WHERE ${whereClause}
-        ORDER BY stats.likes DESC NULLS LAST, timestamp DESC
-        LIMIT ${MAX_PAGE_SIZE}
-      `,
-    );
-
     const data = await this.client.$queryRaw<
       (DBFarcasterCast & { likes: number })[]
     >(

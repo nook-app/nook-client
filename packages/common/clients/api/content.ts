@@ -47,13 +47,6 @@ export class ContentAPIClient extends BaseAPIClient {
     });
 
     if (!response.ok) {
-      console.log(
-        cast.embeds.map((embed) => embed.uri),
-        cast.parent?.embeds.map((embed) => embed.uri),
-        cast.embedCasts.flatMap((embed) =>
-          embed.embeds.map((embed) => embed.uri),
-        ),
-      );
       throw new Error(response.statusText);
     }
 
