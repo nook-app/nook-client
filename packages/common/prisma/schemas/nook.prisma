@@ -91,3 +91,13 @@ model ListItem {
 
     @@id([listId, id])
 }
+
+
+model LogDump {
+    hash      String      @id 
+    fid       BigInt
+    dump      Json
+    createdAt DateTime    @default(now())
+
+    @@index([fid])
+}

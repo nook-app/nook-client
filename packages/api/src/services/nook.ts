@@ -13,7 +13,7 @@ import {
   UserFilterType,
 } from "@nook/common/types";
 import { randomUUID, createHash } from "crypto";
-import { decodeCursor, encodeCursor } from "@nook/common/utils";
+import { decodeCursor, encodeCursor, hash } from "@nook/common/utils";
 
 const MAX_PAGE_SIZE = 25;
 
@@ -325,10 +325,10 @@ export class NookService {
   }
 
   async getOrCreateFeed(filter: FeedFilter, type: string, fid: string) {
-    const hash = this.hash(filter);
+    const filterHash = hash(filter);
     const feed = await this.nookClient.feed.findUnique({
       where: {
-        hash,
+        hash: filterHash,
       },
     });
 
@@ -339,19 +339,13 @@ export class NookService {
     const newFeed = await this.nookClient.feed.create({
       data: {
         type,
-        hash,
+        hash: filterHash,
         filter,
         creatorFid: fid,
       },
     });
 
     return newFeed;
-  }
-
-  hash(data: object): string {
-    const json = JSON.stringify(data);
-    const hash = createHash("md5").update(json).digest("hex");
-    return hash;
   }
 
   async getNook(nookId: string) {

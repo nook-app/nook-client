@@ -11,6 +11,7 @@ import { notificationsRoutes } from "./routes/notifications";
 import { transactionRoutes } from "./routes/transactions";
 import { listRoutes } from "./routes/lists";
 import { flagRoutes } from "./routes/flags";
+import { loggingRoutes } from "./routes/logging";
 
 const buildApp = () => {
   const app = fastify({
@@ -44,6 +45,7 @@ const buildApp = () => {
   app.register(transactionRoutes, { prefix: "/v0" });
   app.register(notificationsRoutes, { prefix: "/v0" });
   app.register(listRoutes, { prefix: "/v0" });
+  app.register(loggingRoutes, { prefix: "/v0" });
   app.register(flagRoutes, { prefix: "/v0" });
 
   return app;

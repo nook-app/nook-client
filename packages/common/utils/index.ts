@@ -1,3 +1,5 @@
+import { createHash } from "crypto";
+
 export function decodeCursorTimestamp(
   cursor?: string,
 ): { lt: Date } | undefined {
@@ -31,4 +33,10 @@ export function encodeCursor(
   if (!cursor) return;
   const encodedString = JSON.stringify(cursor);
   return Buffer.from(encodedString).toString("base64");
+}
+
+export function hash(data: object): string {
+  const json = JSON.stringify(data);
+  const hash = createHash("md5").update(json).digest("hex");
+  return hash;
 }
