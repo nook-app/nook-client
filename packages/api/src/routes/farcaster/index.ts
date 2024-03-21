@@ -108,6 +108,22 @@ export const farcasterRoutes = async (fastify: FastifyInstance) => {
       },
     );
 
+    fastify.post<{ Body: { fids: string[] } }>(
+      "/farcaster/users",
+      async (request, reply) => {
+        let viewerFid: string | undefined;
+        try {
+          const { fid } = (await request.jwtDecode()) as { fid: string };
+          viewerFid = fid;
+        } catch (e) {}
+        const response = await client.getUsers(
+          { fids: request.body.fids },
+          viewerFid,
+        );
+        reply.send(response);
+      },
+    );
+
     fastify.get<{ Params: { fid: string } }>(
       "/farcaster/users/:fid",
       async (request, reply) => {

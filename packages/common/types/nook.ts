@@ -28,7 +28,7 @@ export type NookShelfBase = {
 export enum NookShelfType {
   FARCASTER_FEED = "FARCASTER_FEED",
   FARCASTER_EVENTS = "FARCASTER_EVENTS",
-  FARCASTER_PROFILE = "FARCASTER_PROFILE",
+  FARCASTER_PROFILES = "FARCASTER_PROFILES",
   TRANSACTION_FEED = "TRANSACTION_FEED",
 }
 
@@ -64,9 +64,9 @@ export type NookShelf =
     })
   | (NookShelfBase & {
       service: "FARCASTER";
-      type: NookShelfType.FARCASTER_PROFILE;
+      type: NookShelfType.FARCASTER_PROFILES;
       data: {
-        fid?: string;
+        fids: string[];
       };
     })
   | (NookShelfBase & {
@@ -171,9 +171,9 @@ export type CreateShelfRequest =
       };
     })
   | (BaseCreateShelfRequest & {
-      type: NookShelfType.FARCASTER_PROFILE;
+      type: NookShelfType.FARCASTER_PROFILES;
       data: {
-        fid?: string;
+        fids: string[];
       };
     })
   | (BaseCreateShelfRequest & {

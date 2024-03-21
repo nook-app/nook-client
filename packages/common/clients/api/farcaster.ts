@@ -97,6 +97,9 @@ export class FarcasterAPIClient extends BaseAPIClient {
     const response = await this.makeRequest("/users", {
       method: "POST",
       body: JSON.stringify(req),
+      headers: {
+        "Content-Type": "application/json",
+      },
       viewerFid,
     });
 

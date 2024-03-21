@@ -239,9 +239,9 @@ export class NookService {
       name: "Profile",
       description: "Your posts and activity",
       service: "FARCASTER",
-      type: NookShelfType.FARCASTER_PROFILE,
+      type: NookShelfType.FARCASTER_PROFILES,
       data: {
-        fid,
+        fids: [fid],
       },
     };
 
@@ -485,7 +485,7 @@ export class NookService {
         };
         break;
       }
-      case NookShelfType.FARCASTER_PROFILE:
+      case NookShelfType.FARCASTER_PROFILES:
         newShelf = {
           ...shelf,
           service: "FARCASTER",
