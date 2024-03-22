@@ -5,7 +5,6 @@ export type ListMetadata = {
   name: string;
   description: string;
   imageUrl: string;
-  type: "USER" | "CHANNEL";
   visibility: "PUBLIC" | "PRIVATE" | "HIDDEN";
 };
 
@@ -19,7 +18,12 @@ export type ChannelList = ListMetadata & {
   channels: Channel[];
 };
 
-export type CreateListRequest = ListMetadata & {
+export type CreateUserListRequest = ListMetadata & {
   id: string;
-  itemIds: string[];
+  fids: string[];
+};
+
+export type CreateChannelListRequest = ListMetadata & {
+  id: string;
+  channelIds: string[];
 };
