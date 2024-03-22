@@ -54,23 +54,35 @@ export class UserService {
     });
 
     const date = new Date();
-    const user = await this.nookClient.user.upsert({
+
+    let user = await this.nookClient.user.findFirst({
       where: {
         fid,
       },
-      create: {
-        fid,
-        signedUpAt: date,
-        loggedInAt: date,
-        refreshToken,
-        siwfData: request,
-      },
-      update: {
-        loggedInAt: date,
-        refreshToken,
-        siwfData: request,
-      },
     });
+
+    if (!user) {
+      user = await this.nookClient.user.create({
+        data: {
+          fid,
+          signedUpAt: date,
+          loggedInAt: date,
+          refreshToken,
+          siwfData: request,
+        },
+      });
+    } else {
+      user = await this.nookClient.user.update({
+        where: {
+          fid,
+        },
+        data: {
+          loggedInAt: date,
+          refreshToken,
+          siwfData: request,
+        },
+      });
+    }
 
     const expiresIn = 60 * 60 * 24 * 7;
     const expiresAt = Math.floor(new Date().getTime() / 1000) + expiresIn;
@@ -86,6 +98,7 @@ export class UserService {
       token,
       refreshToken: user.refreshToken,
       expiresAt,
+      theme: user.theme,
     };
   }
 
@@ -118,6 +131,46 @@ export class UserService {
       refreshToken,
       token,
       expiresAt,
+      theme: user.theme,
+    };
+  }
+
+  async getUser(fid: string) {
+    const user = await this.nookClient.user.findFirst({
+      where: {
+        fid,
+      },
+    });
+
+    if (!user) {
+      return;
+    }
+
+    return {
+      fid: user.fid,
+      signedUpAt: user.signedUpAt,
+      loggedInAt: user.loggedInAt,
+      theme: user.theme,
+    };
+  }
+
+  async updateUser(fid: string, data: { theme: string }) {
+    const user = await this.nookClient.user.update({
+      where: {
+        fid,
+      },
+      data,
+    });
+
+    if (!user) {
+      return;
+    }
+
+    return {
+      fid: user.fid,
+      signedUpAt: user.signedUpAt,
+      loggedInAt: user.loggedInAt,
+      theme: user.theme,
     };
   }
 }

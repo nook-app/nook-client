@@ -16,6 +16,7 @@ export type TokenResponse = {
   refreshToken: string;
   token: string;
   expiresAt: number;
+  theme: string;
 };
 
 export type GetUserResponse = {
