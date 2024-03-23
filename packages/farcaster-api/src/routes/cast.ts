@@ -23,7 +23,16 @@ export const castRoutes = async (fastify: FastifyInstance) => {
         return;
       }
 
-      reply.send(casts[0]);
+      const cast = casts[0];
+      if (cast.parentHash && !cast.ancestors) {
+        const ancestors = await service.getCastAncestors(
+          cast,
+          request.headers["x-viewer-fid"] as string,
+        );
+        cast.ancestors = ancestors;
+      }
+
+      reply.send(cast);
     });
 
     fastify.get<{

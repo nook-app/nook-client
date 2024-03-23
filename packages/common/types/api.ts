@@ -31,6 +31,7 @@ export type FarcasterCastResponse = {
   }[];
   engagement: FarcasterCastEngagement;
   context?: FarcasterCastContext;
+  ancestors?: FarcasterCastResponse[];
   // Temporarily used to identify the primary reference for content requests
   reference?: string;
 };

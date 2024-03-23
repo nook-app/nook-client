@@ -53,6 +53,7 @@ export type BaseFarcasterCast = {
   parentHash?: string;
   rootParentHash?: string;
   parentUrl?: string;
+  ancestors?: string[];
 };
 
 export type FarcasterCast = BaseFarcasterCast & {

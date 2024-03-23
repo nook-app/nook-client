@@ -327,13 +327,47 @@ export class FarcasterService {
     };
   }
 
+  async getCastAncestors(
+    cast: FarcasterCastResponse,
+    viewerFid?: string,
+  ): Promise<FarcasterCastResponse[]> {
+    const ancestorRawCasts: FarcasterCast[] = [];
+    if (!cast.parentHash) return [];
+
+    let hash: string | undefined = cast.parentHash;
+    do {
+      const casts = await this.getRawCasts([hash], viewerFid);
+      if (casts.length === 0 || !casts[0]) continue;
+      ancestorRawCasts.push(casts[0]);
+      hash = casts[0].parentHash;
+    } while (hash);
+
+    const hashes = ancestorRawCasts.map((cast) => cast.hash);
+    await this.cache.setCast(cast.hash, {
+      hash: cast.hash,
+      fid: cast.user.fid.toString(),
+      timestamp: cast.timestamp,
+      text: cast.text,
+      mentions: cast.mentions.map(({ user, position }) => ({
+        fid: user.fid,
+        position,
+      })),
+      embedHashes: cast.embedCasts.map(({ hash }) => hash),
+      embedUrls: cast.embeds.map(({ uri }) => uri),
+      parentHash: cast.parentHash || undefined,
+      parentUrl: cast.parentUrl || undefined,
+      ancestors: hashes,
+    });
+
+    return await this.getCasts(ancestorRawCasts, viewerFid);
+  }
+
   async getCastsFromHashes(
     hashes: string[],
     viewerFid?: string,
   ): Promise<FarcasterCastResponse[]> {
     const casts = await this.getRawCasts(hashes, viewerFid);
-    const x = await this.getCasts(casts, viewerFid);
-    return x;
+    return await this.getCasts(casts, viewerFid);
   }
 
   async getRawCasts(hashes: string[], viewerFid?: string) {
@@ -434,6 +468,11 @@ export class FarcasterService {
       }
       for (const embedHash of rawCast.embedHashes) {
         hashes.add(embedHash);
+      }
+      if (rawCast.ancestors) {
+        for (let i = rawCast.ancestors.length - 1; i >= 0; i--) {
+          hashes.add(rawCast.ancestors[i]);
+        }
       }
     }
 
@@ -558,6 +597,9 @@ export class FarcasterService {
               };
             })
             .filter(Boolean) as { channel: Channel; position: string }[],
+          ancestors: cast.ancestors
+            ? cast.ancestors.map((ancestor) => acc[ancestor])
+            : undefined,
         };
         return acc;
       },
