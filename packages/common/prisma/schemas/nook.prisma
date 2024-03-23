@@ -19,8 +19,7 @@ model User {
     createdAt DateTime @default(now())
     updatedAt DateTime @default(now()) @updatedAt
 
-    createdNooks Nook[]
-    nooks        NookMembership[]
+    nooks NookMembership[]
 }
 
 model NookMembership {
@@ -50,8 +49,7 @@ model Nook {
     deletedAt DateTime?
 
     members NookMembership[]
-    User    User?            @relation(fields: [userFid], references: [fid])
-    userFid String?
+    shelves ShelfInstance[]
 }
 
 model Feed {
@@ -91,4 +89,40 @@ model ListItem {
     list List @relation(fields: [listId], references: [id])
 
     @@id([listId, id])
+}
+
+model Shelf {
+    id          String  @id @default(uuid())
+    creatorFid  String
+    name        String
+    description String?
+    imageUrl    String?
+
+    api      String
+    form     Json
+    renderer String
+
+    createdAt DateTime  @default(now())
+    updatedAt DateTime  @default(now()) @updatedAt
+    deletedAt DateTime?
+
+    instances ShelfInstance[]
+}
+
+model ShelfInstance {
+    id          String  @id @default(uuid())
+    nookId      String
+    shelfId     String
+    creatorFid  String
+    name        String
+    description String?
+    imageUrl    String?
+    data        Json
+
+    createdAt DateTime  @default(now())
+    updatedAt DateTime  @default(now()) @updatedAt
+    deletedAt DateTime?
+
+    nook  Nook  @relation(fields: [nookId], references: [id])
+    shelf Shelf @relation(fields: [shelfId], references: [id])
 }
