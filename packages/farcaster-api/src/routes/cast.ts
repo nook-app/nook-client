@@ -16,6 +16,7 @@ export const castRoutes = async (fastify: FastifyInstance) => {
       const casts = await service.getCastsFromHashes(
         [request.params.hash],
         request.headers["x-viewer-fid"] as string,
+        true,
       );
 
       if (casts.length === 0) {

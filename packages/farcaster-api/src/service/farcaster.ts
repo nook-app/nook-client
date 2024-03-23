@@ -365,9 +365,10 @@ export class FarcasterService {
   async getCastsFromHashes(
     hashes: string[],
     viewerFid?: string,
+    withAncestors?: boolean,
   ): Promise<FarcasterCastResponse[]> {
     const casts = await this.getRawCasts(hashes, viewerFid);
-    return await this.getCasts(casts, viewerFid);
+    return await this.getCasts(casts, viewerFid, withAncestors ? hashes : []);
   }
 
   async getRawCasts(hashes: string[], viewerFid?: string) {
@@ -460,7 +461,11 @@ export class FarcasterService {
     return await this.getCasts(casts, viewerFid);
   }
 
-  async getCasts(casts: FarcasterCast[], viewerFid?: string) {
+  async getCasts(
+    casts: FarcasterCast[],
+    viewerFid?: string,
+    ancestorsFor?: string[],
+  ) {
     const hashes = new Set<string>();
     for (const rawCast of casts) {
       if (rawCast.parentHash) {
@@ -469,7 +474,7 @@ export class FarcasterService {
       for (const embedHash of rawCast.embedHashes) {
         hashes.add(embedHash);
       }
-      if (rawCast.ancestors) {
+      if (ancestorsFor?.includes(rawCast.hash) && rawCast.ancestors) {
         for (let i = rawCast.ancestors.length - 1; i >= 0; i--) {
           hashes.add(rawCast.ancestors[i]);
         }
@@ -597,16 +602,21 @@ export class FarcasterService {
               };
             })
             .filter(Boolean) as { channel: Channel; position: string }[],
-          ancestors: cast.ancestors
-            ? cast.ancestors.map((ancestor) => acc[ancestor])
-            : undefined,
+          ancestors: [],
         };
         return acc;
       },
       {} as Record<string, FarcasterCastResponse>,
     );
 
-    return casts.map((cast) => castMap[cast.hash]);
+    return casts.map((cast) => {
+      if (ancestorsFor?.includes(cast.hash)) {
+        castMap[cast.hash].ancestors = cast.ancestors
+          ?.map((hash) => castMap[hash])
+          .filter(Boolean);
+      }
+      return castMap[cast.hash];
+    });
   }
 
   async searchChannels(query: string, cursor?: string) {
