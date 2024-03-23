@@ -16,6 +16,7 @@
     "db:push:nook": "npx prisma db push --schema ./prisma/schemas/nook.prisma",
     "db:push:signer": "npx prisma db push --schema ./prisma/schemas/signer.prisma",
     "db:push:content": "npx prisma db push --schema ./prisma/schemas/content.prisma",
+    "db:push:lists": "npx prisma db push --schema ./prisma/schemas/lists.prisma",
     "db:push:notifications": "npx prisma db push --schema ./prisma/schemas/notifications.prisma"
   },
   "exports": {
@@ -27,6 +28,7 @@
     "./prisma/notifications": "./dist/prisma/notifications.js",
     "./prisma/content": "./dist/prisma/content.js",
     "./prisma/signer": "./dist/prisma/signer.js",
+    "./prisma/lists": "./dist/prisma/lists.js",
     "./farcaster": "./dist/farcaster/index.js",
     "./onceupon": "./dist/onceupon/index.js",
     "./utils": "./dist/utils/index.js"

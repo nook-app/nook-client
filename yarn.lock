@@ -1488,6 +1488,20 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@nook/lists-api@workspace:packages/lists-api":
+  version: 0.0.0-use.local
+  resolution: "@nook/lists-api@workspace:packages/lists-api"
+  dependencies:
+    "@fastify/jwt": "npm:^8.0.0"
+    "@nook/common": "npm:*"
+    "@types/jest": "npm:^29.5.12"
+    "@types/node": "npm:^20.11.30"
+    fastify: "npm:^4.26.2"
+    jest: "npm:^29.7.0"
+    typescript: "npm:^5.4.3"
+  languageName: unknown
+  linkType: soft
+
 "@nook/notifications-api@workspace:packages/notifications-api":
   version: 0.0.0-use.local
   resolution: "@nook/notifications-api@workspace:packages/notifications-api"
@@ -5168,20 +5182,6 @@ __metadata:
   checksum: 10c0/3da6ee62d4cd9f03f5dc90b4df2540fb85b352081bee77fe4bbcd12c9000ead7f35e0a38b8d09a9bb99b13223446dd8689ff3c4959807620726d788701a83d2d
   languageName: node
   linkType: hard
-
-"lists-api@workspace:packages/lists-api":
-  version: 0.0.0-use.local
-  resolution: "lists-api@workspace:packages/lists-api"
-  dependencies:
-    "@fastify/jwt": "npm:^8.0.0"
-    "@nook/common": "npm:*"
-    "@types/jest": "npm:^29.5.12"
-    "@types/node": "npm:^20.11.30"
-    fastify: "npm:^4.26.2"
-    jest: "npm:^29.7.0"
-    typescript: "npm:^5.4.3"
-  languageName: unknown
-  linkType: soft
 
 "locate-path@npm:^5.0.0":
   version: 5.0.0

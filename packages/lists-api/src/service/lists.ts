@@ -9,7 +9,6 @@ import {
 import { FarcasterAPIClient } from "@nook/common/clients";
 import {
   FarcasterUser,
-  ListMetadata,
   Channel,
   CreateUserListRequest,
   CreateChannelListRequest,
@@ -81,8 +80,11 @@ export class ListsService {
   async createUserList(fid: string, list: CreateUserListRequest) {
     return this.listsClient.userList.create({
       data: {
-        ...list,
         creatorFid: fid,
+        name: list.name,
+        description: list.description,
+        imageUrl: list.imageUrl,
+        visibility: list.visibility,
         items: {
           createMany: {
             data: list.fids.map((fid) => ({
@@ -95,12 +97,31 @@ export class ListsService {
     });
   }
 
-  async updateUserList(listId: string, list: ListMetadata) {
+  async updateUserList(listId: string, list: CreateUserListRequest) {
     return this.listsClient.userList.update({
       where: {
         id: listId,
       },
-      data: list,
+      data: {
+        name: list.name,
+        description: list.description,
+        imageUrl: list.imageUrl,
+        visibility: list.visibility,
+        items: {
+          deleteMany: {
+            userListId: listId,
+            fid: {
+              notIn: list.fids,
+            },
+          },
+          createMany: {
+            data: list.fids.map((fid) => ({
+              fid,
+            })),
+            skipDuplicates: true,
+          },
+        },
+      },
     });
   }
 
@@ -207,8 +228,11 @@ export class ListsService {
   async createChannelList(fid: string, list: CreateChannelListRequest) {
     return this.listsClient.channelList.create({
       data: {
-        ...list,
         creatorFid: fid,
+        name: list.name,
+        description: list.description,
+        imageUrl: list.imageUrl,
+        visibility: list.visibility,
         items: {
           createMany: {
             data: list.channelIds.map((channelId) => ({
@@ -221,12 +245,31 @@ export class ListsService {
     });
   }
 
-  async updateChannelList(listId: string, list: ListMetadata) {
+  async updateChannelList(listId: string, list: CreateChannelListRequest) {
     return this.listsClient.channelList.update({
       where: {
         id: listId,
       },
-      data: list,
+      data: {
+        name: list.name,
+        description: list.description,
+        imageUrl: list.imageUrl,
+        visibility: list.visibility,
+        items: {
+          deleteMany: {
+            channelListId: listId,
+            id: {
+              notIn: list.channelIds,
+            },
+          },
+          createMany: {
+            data: list.channelIds.map((channelId) => ({
+              id: channelId,
+            })),
+            skipDuplicates: true,
+          },
+        },
+      },
     });
   }
 

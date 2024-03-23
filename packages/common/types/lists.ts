@@ -19,11 +19,9 @@ export type ChannelList = ListMetadata & {
 };
 
 export type CreateUserListRequest = ListMetadata & {
-  id: string;
   fids: string[];
 };
 
 export type CreateChannelListRequest = ListMetadata & {
-  id: string;
   channelIds: string[];
 };

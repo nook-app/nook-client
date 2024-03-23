@@ -5,7 +5,7 @@ import {
 } from "@nook/common/types";
 import { ListsService } from "../service/lists";
 
-export const listRoutes = async (fastify: FastifyInstance) => {
+export const listsRoutes = async (fastify: FastifyInstance) => {
   fastify.register(async (fastify: FastifyInstance) => {
     const listService = new ListsService(fastify);
 
@@ -117,7 +117,9 @@ export const listRoutes = async (fastify: FastifyInstance) => {
       async (request, reply) => {
         try {
           const { fid } = (await request.jwtDecode()) as { fid: string };
+          console.log(fid);
           const list = await listService.getUserList(request.params.listId);
+          console.log(list?.creatorFid);
           if (
             !list ||
             list.deletedAt ||
