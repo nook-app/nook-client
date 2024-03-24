@@ -117,6 +117,7 @@ export type FarcasterPostArgs = {
   query?: string;
   muteWords?: string[];
   replies?: "include" | "only";
+  timeWindow?: "1h" | "6h" | "12h" | "24h";
 };
 
 export type FarcasterMediaArgs = {
@@ -198,7 +199,8 @@ export type ShelfFormComponent =
   | ShelfFormComponentSelectChannels
   | ShelfFormComponentInput
   | ShelfFormComponentMultiInput
-  | ShelfFormComponentSwitch;
+  | ShelfFormComponentSwitch
+  | ShelfFormComponentSelect;
 
 export type ShelfFormComponentSelectUsers = {
   type: ShelfFormComponentType.SELECT_USERS;
@@ -233,7 +235,16 @@ export type ShelfFormComponentSwitch = {
   defaultValue?: boolean;
 };
 
+export type ShelfFormComponentSelect = {
+  type: ShelfFormComponentType.SELECT_OPTION;
+  options: {
+    value: string;
+    label: string;
+  }[];
+};
+
 export enum ShelfFormComponentType {
+  SELECT_OPTION = "SELECT_OPTION",
   SELECT_USERS = "SELECT_USERS",
   SELECT_CHANNELS = "SELECT_CHANNELS",
   INPUT = "INPUT",

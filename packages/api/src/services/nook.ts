@@ -123,7 +123,17 @@ export class NookService {
       response.unshift(await this.createDefaultNook(fid));
     }
 
-    return response;
+    return response.sort((a, b) => {
+      const aIsHome = (a.metadata as NookMetadata)?.isHome;
+      const bIsHome = (b.metadata as NookMetadata)?.isHome;
+      if (aIsHome && !bIsHome) {
+        return -1;
+      }
+      if (!aIsHome && bIsHome) {
+        return 1;
+      }
+      return 0;
+    });
   }
 
   async createDefaultNook(fid: string) {
@@ -145,6 +155,28 @@ export class NookService {
         shelves: {
           createMany: {
             data: [
+              {
+                shelfId: "5d347378-58ce-4558-8020-f77847134a0c",
+                name: "Trending Now",
+                description: "Trending in the last hour",
+                creatorFid: fid,
+                type: ShelfType.FARCASTER_POSTS,
+                renderer: ShelfRenderer.POST_DEFAULT,
+                data: {
+                  timeWindow: "1h",
+                },
+              },
+              {
+                shelfId: "5d347378-58ce-4558-8020-f77847134a0c",
+                name: "Trending Today",
+                description: "Trending in the last 24 hours",
+                creatorFid: fid,
+                type: ShelfType.FARCASTER_POSTS,
+                renderer: ShelfRenderer.POST_DEFAULT,
+                data: {
+                  timeWindow: "6h",
+                },
+              },
               {
                 shelfId: "1b1d8924-d10c-444d-aacd-e41873bca312",
                 name: "Following",

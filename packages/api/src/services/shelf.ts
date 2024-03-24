@@ -49,16 +49,41 @@ export class ShelfService {
         break;
       }
       case ShelfType.FARCASTER_POSTS: {
+        const data = body as ShelfDataRequest<FarcasterPostArgs>;
         if (shelf.creatorFid === NOOK_FID) {
-          return await this.farcaster.getNewPosts(
-            body as ShelfDataRequest<FarcasterPostArgs>,
-          );
+          return await this.farcaster.getNewPosts(data);
         }
-        const response = await this.getFarcasterCastHashes(shelf.api, body);
-        const posts = await this.farcaster.getCasts(response.data, viewerFid);
+
+        let hashes: string[] = [];
+        let nextCursor: string | undefined;
+        switch (shelf.api) {
+          case "https://api.neynar.com/v2/farcaster/feed/trending": {
+            const response = await fetch(
+              `${shelf.api}?time_window=${data.data.timeWindow}&cursor=${cursor}`,
+              {
+                headers: {
+                  accept: "application/json",
+                  api_key: process.env.NEYNAR_API_KEY as string,
+                },
+              },
+            );
+            if (!response.ok) return { data: [], nextCursor: undefined };
+            const { casts, next } = await response.json();
+            hashes = casts.map((cast: { hash: string }) => cast.hash);
+            nextCursor = next.cursor;
+            break;
+          }
+          default: {
+            const response = await this.getFarcasterCastHashes(shelf.api, data);
+            hashes = response.data;
+            nextCursor = response.nextCursor;
+          }
+        }
+
+        const posts = await this.farcaster.getCasts(hashes, viewerFid);
         return {
           data: posts.data,
-          nextCursor: response.nextCursor,
+          nextCursor,
         };
       }
       case ShelfType.FARCASTER_MEDIA: {

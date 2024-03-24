@@ -10,6 +10,7 @@ import {
 } from "@nook/common/types";
 
 const NOOK_FID = "262426";
+const NEYNAR_FID = "6131";
 
 const SHELVES: Omit<NookShelf, "id">[] = [
   {
@@ -267,6 +268,50 @@ const SHELVES: Omit<NookShelf, "id">[] = [
       ],
     },
     renderers: [ShelfRenderer.POST_EMBEDS],
+  },
+  {
+    name: "Trending",
+    description: "Trending posts using Neynar's algorithm",
+    protocol: ShelfProtocol.FARCASTER,
+    type: ShelfType.FARCASTER_POSTS,
+    api: "https://api.neynar.com/v2/farcaster/feed/trending",
+    creatorFid: NEYNAR_FID,
+    form: {
+      steps: [
+        {
+          fields: [
+            {
+              name: "Timeframe",
+              description: "Select a timeframe to filter by",
+              field: "timeWindow",
+              required: true,
+              component: {
+                type: ShelfFormComponentType.SELECT_OPTION,
+                options: [
+                  {
+                    value: "1h",
+                    label: "Last Hour",
+                  },
+                  {
+                    value: "6h",
+                    label: "Last 6 Hours",
+                  },
+                  {
+                    value: "12h",
+                    label: "Last 12 Hours",
+                  },
+                  {
+                    value: "24h",
+                    label: "Last 24 Hours",
+                  },
+                ],
+              },
+            },
+          ],
+        },
+      ],
+    },
+    renderers: [ShelfRenderer.POST_DEFAULT],
   },
 ];
 

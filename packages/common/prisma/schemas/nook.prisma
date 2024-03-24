@@ -132,6 +132,6 @@ model ShelfInstance {
     updatedAt DateTime  @default(now()) @updatedAt
     deletedAt DateTime?
 
-    nook  Nook  @relation(fields: [nookId], references: [id])
+    nook  Nook  @relation(fields: [nookId], references: [id], onDelete: Cascade)
     shelf Shelf @relation(fields: [shelfId], references: [id])
 }
