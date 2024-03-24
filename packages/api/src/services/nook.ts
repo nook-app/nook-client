@@ -332,7 +332,11 @@ export class NookService {
   }
 
   async getShelfOptions(): Promise<NookShelf[]> {
-    const shelves = await this.nookClient.shelf.findMany();
+    const shelves = await this.nookClient.shelf.findMany({
+      where: {
+        enabled: true,
+      },
+    });
     return shelves.map((shelf) => ({
       id: shelf.id,
       creatorFid: shelf.creatorFid,
