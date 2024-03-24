@@ -2,7 +2,6 @@ import { FastifyInstance } from "fastify";
 import { ContentService } from "../service/content";
 import {
   FarcasterCastResponse,
-  GetContentReferencesRequest,
   GetContentRequest,
   GetContentsRequest,
 } from "@nook/common/types";
@@ -67,22 +66,6 @@ export const contentRoutes = async (fastify: FastifyInstance) => {
       try {
         await service.removeReferencedContent(request.body);
         reply.send({});
-      } catch (e) {
-        console.error(e);
-        reply.status(500).send({ message: "Internal server error" });
-      }
-    });
-
-    fastify.post<{
-      Body: GetContentReferencesRequest;
-      Querystring: { cursor?: string };
-    }>("/content/references/by-type", async (request, reply) => {
-      try {
-        const data = await service.getContentReferences(
-          request.body,
-          request.query.cursor,
-        );
-        reply.send(data);
       } catch (e) {
         console.error(e);
         reply.status(500).send({ message: "Internal server error" });

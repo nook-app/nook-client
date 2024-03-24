@@ -5,10 +5,11 @@ import {
   GetFarcasterCastsResponse,
   Channel,
   GetFarcasterUsersRequest,
-  FarcasterFeedFilterWithContext,
-  UserFilterWithContext,
   GetFarcasterChannelsRequest,
   GetFarcasterChannelResponse,
+  ShelfDataRequest,
+  FarcasterPostArgs,
+  ShelfDataResponse,
 } from "../../types";
 import { BaseAPIClient } from "./base";
 
@@ -82,6 +83,16 @@ export class FarcasterAPIClient extends BaseAPIClient {
         viewerFid,
       },
     );
+
+    if (!response.ok) {
+      throw new Error(response.statusText);
+    }
+
+    return response.json();
+  }
+
+  async getUserFollowingFids(fid: string): Promise<{ data: string[] }> {
+    const response = await this.makeRequest(`/users/${fid}/following/fids`);
 
     if (!response.ok) {
       throw new Error(response.statusText);
@@ -212,38 +223,6 @@ export class FarcasterAPIClient extends BaseAPIClient {
     return response.json();
   }
 
-  async getFeed(
-    req: FarcasterFeedFilterWithContext,
-    cursor?: string,
-  ): Promise<GetFarcasterCastsResponse> {
-    const response = await this.makeRequest(
-      `/feed${cursor ? `?cursor=${cursor}` : ""}`,
-      {
-        method: "POST",
-        body: JSON.stringify(req),
-      },
-    );
-
-    if (!response.ok) {
-      throw new Error(response.statusText);
-    }
-
-    return response.json();
-  }
-
-  async getAddresses(req: UserFilterWithContext): Promise<{ data: string[] }> {
-    const response = await this.makeRequest("/addresses", {
-      method: "POST",
-      body: JSON.stringify(req),
-    });
-
-    if (!response.ok) {
-      throw new Error(response.statusText);
-    }
-
-    return response.json();
-  }
-
   async searchUsers(
     query: string,
     cursor?: string,
@@ -270,6 +249,21 @@ export class FarcasterAPIClient extends BaseAPIClient {
       `/channels?query=${query}&${cursor ? `&cursor=${cursor}` : ""}`,
       { viewerFid },
     );
+
+    if (!response.ok) {
+      throw new Error(response.statusText);
+    }
+
+    return response.json();
+  }
+
+  async getNewPosts(
+    req: ShelfDataRequest<FarcasterPostArgs>,
+  ): Promise<ShelfDataResponse<FarcasterCastResponse>> {
+    const response = await this.makeRequest("/feed/posts/new", {
+      method: "POST",
+      body: JSON.stringify(req),
+    });
 
     if (!response.ok) {
       throw new Error(response.statusText);

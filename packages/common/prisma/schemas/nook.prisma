@@ -98,26 +98,33 @@ model Shelf {
     description String?
     imageUrl    String?
 
-    api      String
-    form     Json
-    renderer String
+    protocol  String
+    type      String
+    api       String
+    form      Json
+    renderers String
 
     createdAt DateTime  @default(now())
     updatedAt DateTime  @default(now()) @updatedAt
     deletedAt DateTime?
 
     instances ShelfInstance[]
+
+    @@unique([creatorFid, name])
 }
 
 model ShelfInstance {
     id          String  @id @default(uuid())
     nookId      String
-    shelfId     String
     creatorFid  String
     name        String
     description String?
     imageUrl    String?
-    data        Json
+
+    shelfId  String
+    type     String
+    renderer String
+    data     Json
 
     createdAt DateTime  @default(now())
     updatedAt DateTime  @default(now()) @updatedAt

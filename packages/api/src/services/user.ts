@@ -36,6 +36,62 @@ export class UserService {
     );
   }
 
+  async refreshUser(data: {
+    fid: string;
+    token: string;
+    refreshToken: string;
+    expiresAt: number;
+    theme?: string;
+  }): Promise<TokenResponse | undefined> {
+    let user = await this.nookClient.user.findFirst({
+      where: {
+        fid: data.fid,
+      },
+    });
+
+    if (!user) {
+      user = await this.nookClient.user.create({
+        data: {
+          fid: data.fid,
+          refreshToken: data.refreshToken,
+          theme: data.theme,
+          signedUpAt: new Date(),
+          loggedInAt: new Date(),
+          siwfData: {},
+        },
+      });
+    } else {
+      user = await this.nookClient.user.update({
+        where: {
+          fid: data.fid,
+        },
+        data: {
+          fid: data.fid,
+          refreshToken: data.refreshToken,
+          theme: data.theme,
+          loggedInAt: new Date(),
+        },
+      });
+    }
+
+    const expiresIn = 60 * 60 * 24 * 7;
+    const expiresAt = Math.floor(new Date().getTime() / 1000) + expiresIn;
+    const token = this.jwt.sign(
+      {
+        fid: user.fid,
+      },
+      { expiresIn },
+    );
+
+    return {
+      fid: user.fid,
+      refreshToken: user.refreshToken,
+      token,
+      expiresAt,
+      theme: user.theme,
+    };
+  }
+
   async signInWithFarcaster(
     request: SignInWithFarcasterRequest,
   ): Promise<TokenResponse | undefined> {

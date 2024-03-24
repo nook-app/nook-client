@@ -189,4 +189,12 @@ export class FarcasterCacheClient {
   async setChannelById(id: string, channel: Channel) {
     await this.redis.setJson(`${this.CHANNEL_CACHE_PREFIX}:${id}`, channel);
   }
+
+  async getChannelsByIds(ids: string[]): Promise<Channel[]> {
+    return (
+      await this.redis.mgetJson(
+        ids.map((id) => `${this.CHANNEL_CACHE_PREFIX}:${id}`),
+      )
+    ).filter(Boolean);
+  }
 }

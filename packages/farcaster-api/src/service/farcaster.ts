@@ -21,10 +21,6 @@ import {
   GetFarcasterCastsResponse,
   GetFarcasterUsersResponse,
   UrlContentResponse,
-  UserFilterType,
-  UserFilter,
-  FarcasterFeedFilterWithContext,
-  UserFilterWithContext,
 } from "@nook/common/types";
 import {
   getCastEmbeds,
@@ -43,7 +39,6 @@ import { FastifyInstance } from "fastify";
 export const MAX_PAGE_SIZE = 25;
 
 function sanitizeInput(input: string): string {
-  // Basic example: remove non-alphanumeric characters and truncate
   return input.replace(/[^a-zA-Z0-9\s./]/g, "").substring(0, 100);
 }
 
@@ -56,151 +51,6 @@ export class FarcasterService {
     this.client = fastify.farcaster.client;
     this.cache = new FarcasterCacheClient(fastify.redis.client);
     this.contentClient = new ContentAPIClient();
-  }
-
-  async getAddresses({ filter, context }: UserFilterWithContext) {
-    const fids = await this.getFeedFids(filter, context?.viewerFid);
-    if (!fids) return { data: [] };
-
-    const addresses = await this.client.farcasterVerification.findMany({
-      where: {
-        fid: {
-          in: fids.map((fid) => BigInt(fid)),
-        },
-        protocol: 0,
-      },
-    });
-
-    return {
-      data: addresses.map(({ address }) => address),
-    };
-  }
-
-  async getFeed(
-    { filter, context }: FarcasterFeedFilterWithContext,
-    cursor?: string,
-  ): Promise<GetFarcasterCastsResponse> {
-    const fids = filter.userFilter
-      ? await this.getFeedFids(filter.userFilter, context?.viewerFid)
-      : undefined;
-
-    let parentUrls: string[] | undefined;
-    if (filter.channelFilter) {
-      const channels = await this.getChannelsById(
-        filter.channelFilter.channelIds,
-      );
-      parentUrls = channels.map((channel) => channel.url);
-    }
-
-    if (
-      filter.contentFilter?.types ||
-      filter.contentFilter?.urls ||
-      filter.contentFilter?.frames
-    ) {
-      const references = await this.contentClient.getContentReferences(
-        {
-          ...filter.contentFilter,
-          fids,
-          parentUrls,
-          replies: filter.replies,
-        },
-        cursor,
-        context?.viewerFid,
-      );
-      const hashes = references.data.map((i) => i.hash);
-      const casts = await this.getCastsFromHashes(hashes, context?.viewerFid);
-      const castMap = casts.reduce(
-        (acc, cast) => {
-          acc[cast.hash] = cast;
-          return acc;
-        },
-        {} as Record<string, FarcasterCastResponse>,
-      );
-
-      return {
-        data: references.data
-          .map((ref) => {
-            if (!castMap[ref.hash]) return;
-            return {
-              ...castMap[ref.hash],
-              reference: ref.uri,
-            };
-          })
-          .filter(Boolean) as FarcasterCastResponse[],
-        nextCursor: references.nextCursor,
-      };
-    }
-
-    const conditions: string[] = ['"deletedAt" IS NULL'];
-
-    if (filter.textFilter?.query) {
-      conditions.push(
-        `((to_tsvector('english', "text") @@ to_tsquery('english', '${sanitizeInput(
-          filter.textFilter.query,
-        )}')) OR (to_tsvector('english', "text") @@ to_tsquery('english', '/${sanitizeInput(
-          filter.textFilter.query,
-        )}')))`,
-      );
-    }
-    if (fids) {
-      conditions.push(`"fid" IN (${fids.map((fid) => BigInt(fid)).join(",")})`);
-    }
-    if (parentUrls) {
-      conditions.push(`"parentUrl" IN ('${parentUrls.join("','")}')`);
-    }
-    if (cursor) {
-      const cursorTimestamp = decodeCursorTimestamp(cursor)?.lt.toISOString();
-      if (cursorTimestamp)
-        conditions.push(`"timestamp" < '${cursorTimestamp}'`);
-    }
-    if (filter.replies === true) {
-      conditions.push(`"parentHash" IS NOT NULL`);
-    } else if (filter.replies === false) {
-      conditions.push(`"parentHash" IS NULL`);
-    }
-
-    const whereClause = conditions.join(" AND ");
-
-    const rawCasts = await this.client.$queryRaw<DBFarcasterCast[]>(
-      Prisma.sql([
-        `
-          SELECT *
-          FROM "FarcasterCast"
-          WHERE ${whereClause}
-          ORDER BY "timestamp" DESC
-          LIMIT ${MAX_PAGE_SIZE}
-        `,
-      ]),
-    );
-
-    const casts = await this.getCastsFromData(rawCasts, context?.viewerFid);
-
-    return {
-      data: casts,
-      nextCursor:
-        casts.length === MAX_PAGE_SIZE
-          ? encodeCursor({
-              timestamp: casts[casts.length - 1]?.timestamp,
-            })
-          : undefined,
-    };
-  }
-
-  async getFeedFids(
-    filter: UserFilter,
-    viewerFid?: string,
-  ): Promise<string[] | undefined> {
-    switch (filter.type) {
-      case UserFilterType.FIDS:
-        return filter.args.fids;
-      case UserFilterType.FOLLOWING: {
-        const fid = filter.args.fid || viewerFid;
-        if (!fid) return;
-        return await this.getFollowingFids([fid], filter.args.degree);
-      }
-      default:
-        return undefined;
-    }
   }
 
   async getFollowingFids(fids: string[], degree?: number) {
@@ -1096,6 +946,18 @@ export class FarcasterService {
             })
           : undefined,
     };
+  }
+
+  async getUserFollowingFids(fid: string) {
+    const following = await this.client.farcasterLink.findMany({
+      where: {
+        linkType: "follow",
+        fid: BigInt(fid),
+        deletedAt: null,
+      },
+    });
+
+    return following.map((link) => link.targetFid.toString());
   }
 
   async getUserVerifiedAddresses(fid: string) {

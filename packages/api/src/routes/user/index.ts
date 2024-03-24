@@ -72,6 +72,24 @@ export const userRoutes = async (fastify: FastifyInstance) => {
       },
     );
 
+    fastify.post<{
+      Body: {
+        fid: string;
+        token: string;
+        refreshToken: string;
+        expiresAt: number;
+        theme?: string;
+      };
+    }>("/user/refresh", async (request, reply) => {
+      try {
+        const data = await userService.refreshUser(request.body);
+        return reply.send(data);
+      } catch (e) {
+        console.error(e);
+        return reply.code(500).send({ message: (e as Error).message });
+      }
+    });
+
     fastify.post<{ Body: SignInWithPasswordRequest }>(
       "/user/login/dev",
       async (request, reply) => {

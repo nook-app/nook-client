@@ -1,3 +1,6 @@
+import { FarcasterCastResponse } from "./api";
+import { FarcasterUser } from "./farcaster";
+
 export type Nook = {
   id: string;
   creatorFid: string;
@@ -6,79 +9,135 @@ export type Nook = {
   imageUrl?: string;
   visibility: "PUBLIC" | "PRIVATE" | "HIDDEN";
   metadata: NookMetadata;
+  shelves: NookShelfInstance[];
 };
 
 export type NookMetadata = {
-  categories: NookCategory[];
-  shelves: NookShelf[];
+  isHome?: boolean;
 };
 
-export type NookCategory = {
+export type NookShelf = {
   id: string;
-  name: string;
-  shelves: string[];
-};
-
-export type NookShelfBase = {
-  id: string;
+  creatorFid: string;
   name: string;
   description?: string;
+  imageUrl?: string;
+  protocol: ShelfProtocol;
+  type: ShelfType;
+  api: string;
+  form: ShelfForm;
+  renderers: ShelfRenderer[];
 };
 
-export enum NookShelfType {
-  FARCASTER_FEED = "FARCASTER_FEED",
-  FARCASTER_EVENTS = "FARCASTER_EVENTS",
-  FARCASTER_PROFILES = "FARCASTER_PROFILES",
-  TRANSACTION_FEED = "TRANSACTION_FEED",
+export type NookShelfInstance = {
+  id: string;
+  nookId: string;
+  shelfId: string;
+  creatorFid: string;
+  name: string;
+  description?: string;
+  imageUrl?: string;
+  type: ShelfType;
+  renderer: ShelfRenderer;
+  // biome-ignore lint/suspicious/noExplicitAny: data is a shelf-specific field
+  data: Record<string, any>;
+};
+
+export enum ShelfProtocol {
+  FARCASTER = "FARCASTER",
 }
 
-export enum DisplayMode {
-  MEDIA = "MEDIA",
-  FRAME = "FRAME",
-  REPLIES = "REPLIES",
-  GRID = "GRID",
-  DEFAULT = "DEFAULT",
+export enum ShelfType {
+  FARCASTER_USER = "FARCASTER_USER",
+  FARCASTER_USERS = "FARCASTER_USERS",
+  FARCASTER_POSTS = "FARCASTER_POSTS",
+  FARCASTER_MEDIA = "FARCASTER_MEDIA",
+  FARCASTER_FRAMES = "FARCASTER_FRAMES",
+  FARCASTER_EMBEDS = "FARCASTER_EMBEDS",
 }
 
-export type NookShelf =
-  | (NookShelfBase & {
-      service: "FARCASTER";
-      type: NookShelfType.FARCASTER_FEED;
-      data: {
-        api: "/v0/feeds/farcaster";
-        args: {
-          feedId: string;
-        };
-        displayMode: DisplayMode;
-      };
-    })
-  | (NookShelfBase & {
-      service: "FARCASTER";
-      type: NookShelfType.FARCASTER_EVENTS;
-      data: {
-        api: "/v0/feeds/farcaster-events";
-        args: {
-          feedId: string;
-        };
-      };
-    })
-  | (NookShelfBase & {
-      service: "FARCASTER";
-      type: NookShelfType.FARCASTER_PROFILES;
-      data: {
-        fids: string[];
-      };
-    })
-  | (NookShelfBase & {
-      service: "ONCEUPON";
-      type: NookShelfType.TRANSACTION_FEED;
-      data: {
-        api: "/v0/feeds/transactions";
-        args: {
-          feedId: string;
-        };
-      };
-    });
+export enum ShelfRenderer {
+  USER_PROFILE = "USER_PROFILE",
+  USER_LIST = "USER_LIST",
+  POST_DEFAULT = "POST_DEFAULT",
+  POST_MEDIA = "POST_MEDIA",
+  POST_MEDIA_GRID = "POST_MEDIA_GRID",
+  POST_FRAMES = "POST_FRAMES",
+  POST_EMBEDS = "POST_EMBEDS",
+}
+
+export type CreateShelfInstance<T = ShelfArgs> = {
+  shelfId: string;
+  creatorFid: string;
+  name: string;
+  description?: string;
+  imageUrl?: string;
+  type: string;
+  renderer: string;
+  data: T;
+};
+
+export type ShelfDataRequest<T = ShelfArgs> = {
+  data: T;
+  context: {
+    viewerFid?: string;
+  };
+  cursor?: string;
+};
+
+export type ShelfDataResponse<T = ShelfDataResponseItem> = {
+  data: T[];
+  nextCursor?: string;
+};
+
+export type ShelfDataResponseItem =
+  | string
+  | FarcasterCastResponse
+  | FarcasterUser;
+
+export type ShelfArgs =
+  | FarcasterUserArgs
+  | FarcasterUserListArgs
+  | FarcasterPostArgs
+  | FarcasterMediaArgs
+  | FarcasterFrameArgs
+  | FarcasterEmbedArgs;
+
+export type FarcasterUserArgs = {
+  fid: string;
+};
+
+export type FarcasterUserListArgs = {
+  users: UserFilter;
+};
+
+export type FarcasterPostArgs = {
+  channels?: ChannelFilter;
+  users?: UserFilter;
+  query?: string;
+  muteWords?: string[];
+  replies?: "include" | "only";
+};
+
+export type FarcasterMediaArgs = {
+  channels?: ChannelFilter;
+  users?: UserFilter;
+  replies?: "include" | "only";
+};
+
+export type FarcasterFrameArgs = {
+  urls?: string[];
+  channels?: ChannelFilter;
+  users?: UserFilter;
+  replies?: "include" | "only";
+};
+
+export type FarcasterEmbedArgs = {
+  urls?: string[];
+  channels?: ChannelFilter;
+  users?: UserFilter;
+  replies?: "include" | "only";
+};
 
 export enum UserFilterType {
   FOLLOWING = "FOLLOWING",
@@ -88,100 +147,96 @@ export enum UserFilterType {
 export type UserFilter =
   | {
       type: UserFilterType.FOLLOWING;
-      args: {
-        fid?: string;
-        degree: number;
+      data: {
+        fid: string;
       };
     }
   | {
       type: UserFilterType.FIDS;
-      args: {
+      data: {
         fids: string[];
       };
     };
 
-export type ContentFilter = {
-  types?: string[];
-  frames?: boolean;
-  urls?: string[];
+export enum ChannelFilterType {
+  CHANNEL_IDS = "CHANNEL_IDS",
+  CHANNEL_URLS = "CHANNEL_URLS",
+}
+
+export type ChannelFilter =
+  | {
+      type: ChannelFilterType.CHANNEL_IDS;
+      data: {
+        channelIds: string[];
+      };
+    }
+  | {
+      type: ChannelFilterType.CHANNEL_URLS;
+      data: {
+        urls: string[];
+      };
+    };
+
+export type ShelfForm = {
+  steps: ShelfFormStep[];
 };
 
-export type ChannelFilter = {
-  channelIds: string[];
+export type ShelfFormStep = {
+  fields: ShelfFormField[];
 };
 
-export type FarcasterFeedFilter = {
-  userFilter?: UserFilter;
-  contentFilter?: ContentFilter;
-  channelFilter?: ChannelFilter;
-  textFilter?: {
-    query: string;
-  };
-  replies?: boolean;
-};
-
-export type TransactionFeedFilter = {
-  userFilter?: UserFilter;
-};
-
-export type FeedFilter = FarcasterFeedFilter | TransactionFeedFilter;
-
-export type RequestContext = {
-  viewerFid?: string;
-};
-
-export type FarcasterFeedFilterWithContext = {
-  filter: FarcasterFeedFilter;
-  context?: RequestContext;
-};
-
-export type UserFilterWithContext = {
-  filter: UserFilter;
-  context?: RequestContext;
-};
-
-export type TransactionFeedFilterWithContext = {
-  filter: TransactionFeedFilter;
-  context?: RequestContext;
-};
-
-export type BaseCreateShelfRequest = {
+export type ShelfFormField<T = ShelfFormComponent> = {
   name: string;
   description: string;
+  field: string;
+  component: T;
+  required?: boolean;
 };
 
-export type CreateShelfRequest =
-  | (BaseCreateShelfRequest & {
-      type: NookShelfType.FARCASTER_FEED;
-      data: {
-        api: "/v0/feeds/farcaster";
-        args: {
-          filter: FarcasterFeedFilter;
-        };
-        displayMode: DisplayMode;
-      };
-    })
-  | (BaseCreateShelfRequest & {
-      type: NookShelfType.FARCASTER_EVENTS;
-      data: {
-        api: "/v0/feeds/farcaster-events";
-        args: {
-          filter: FarcasterFeedFilter;
-        };
-      };
-    })
-  | (BaseCreateShelfRequest & {
-      type: NookShelfType.FARCASTER_PROFILES;
-      data: {
-        fids: string[];
-      };
-    })
-  | (BaseCreateShelfRequest & {
-      type: NookShelfType.TRANSACTION_FEED;
-      data: {
-        api: "/v0/feeds/transactions";
-        args: {
-          filter: TransactionFeedFilter;
-        };
-      };
-    });
+export type ShelfFormComponent =
+  | ShelfFormComponentSelectUsers
+  | ShelfFormComponentSelectChannels
+  | ShelfFormComponentInput
+  | ShelfFormComponentMultiInput
+  | ShelfFormComponentSwitch;
+
+export type ShelfFormComponentSelectUsers = {
+  type: ShelfFormComponentType.SELECT_USERS;
+  allowed: UserFilterType[];
+  limit?: number;
+};
+
+export type ShelfFormComponentSelectChannels = {
+  type: ShelfFormComponentType.SELECT_CHANNELS;
+  allowed: ChannelFilterType[];
+  limit?: number;
+};
+
+export type ShelfFormComponentInput = {
+  type: ShelfFormComponentType.INPUT;
+  minLength?: number;
+  maxLength?: number;
+  placeholder?: string;
+  defaultValue?: string;
+};
+
+export type ShelfFormComponentMultiInput = {
+  type: ShelfFormComponentType.MULTI_INPUT;
+  minLength?: number;
+  maxLength?: number;
+  placeholder?: string;
+  limit?: number;
+};
+
+export type ShelfFormComponentSwitch = {
+  type: ShelfFormComponentType.SWITCH;
+  defaultValue?: boolean;
+};
+
+export enum ShelfFormComponentType {
+  SELECT_USERS = "SELECT_USERS",
+  SELECT_CHANNELS = "SELECT_CHANNELS",
+  INPUT = "INPUT",
+  MULTI_INPUT = "MULTI_INPUT",
+  SWITCH = "SWITCH",
+}

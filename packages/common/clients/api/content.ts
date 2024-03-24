@@ -1,8 +1,9 @@
 import {
   FarcasterCastResponse,
-  GetContentReferencesRequest,
-  GetContentReferencesResponse,
+  FarcasterMediaArgs,
   GetContentsResponse,
+  ShelfDataRequest,
+  ShelfDataResponse,
   UrlContentResponse,
 } from "../../types";
 import { BaseAPIClient } from "./base";
@@ -66,19 +67,43 @@ export class ContentAPIClient extends BaseAPIClient {
     return response.json();
   }
 
-  async getContentReferences(
-    req: GetContentReferencesRequest,
-    cursor?: string,
-    viewerFid?: string,
-  ): Promise<GetContentReferencesResponse> {
-    const response = await this.makeRequest(
-      `/content/references/by-type${cursor ? `?cursor=${cursor}` : ""}`,
-      {
-        method: "POST",
-        body: JSON.stringify(req),
-        viewerFid,
-      },
-    );
+  async getNewMedia(
+    body: ShelfDataRequest<FarcasterMediaArgs>,
+  ): Promise<ShelfDataResponse<string>> {
+    const response = await this.makeRequest("/feed/media/new", {
+      method: "POST",
+      body: JSON.stringify(body),
+    });
+
+    if (!response.ok) {
+      throw new Error(response.statusText);
+    }
+
+    return response.json();
+  }
+
+  async getNewFrames(
+    body: ShelfDataRequest<FarcasterMediaArgs>,
+  ): Promise<ShelfDataResponse<string>> {
+    const response = await this.makeRequest("/feed/frames/new", {
+      method: "POST",
+      body: JSON.stringify(body),
+    });
+
+    if (!response.ok) {
+      throw new Error(response.statusText);
+    }
+
+    return response.json();
+  }
+
+  async getNewEmbeds(
+    body: ShelfDataRequest<FarcasterMediaArgs>,
+  ): Promise<ShelfDataResponse<string>> {
+    const response = await this.makeRequest("/feed/embeds/new", {
+      method: "POST",
+      body: JSON.stringify(body),
+    });
 
     if (!response.ok) {
       throw new Error(response.statusText);

@@ -1,6 +1,7 @@
 import fastify from "fastify";
 import { contentPlugin, redisPlugin } from "./plugins";
 import { contentRoutes } from "./routes/content";
+import { feedRoutes } from "./routes/feed";
 
 const buildApp = () => {
   const app = fastify({
@@ -22,6 +23,7 @@ const buildApp = () => {
   app.register(redisPlugin);
 
   app.register(contentRoutes);
+  app.register(feedRoutes);
 
   return app;
 };

@@ -1,10 +1,12 @@
 import { FastifyInstance } from "fastify";
 import { NookService } from "../../services/nook";
-import { CreateShelfRequest, Nook } from "@nook/common/types";
+import { CreateShelfInstance, Nook } from "@nook/common/types";
+import { ShelfService } from "../../services/shelf";
 
 export const nookRoutes = async (fastify: FastifyInstance) => {
   fastify.register(async (fastify: FastifyInstance) => {
     const nookService = new NookService(fastify);
+    const shelfService = new ShelfService(fastify);
 
     fastify.get("/nooks", async (request, reply) => {
       const { fid } = (await request.jwtDecode()) as { fid: string };
@@ -27,55 +29,6 @@ export const nookRoutes = async (fastify: FastifyInstance) => {
         return reply.send(nook);
       },
     );
-
-    fastify.put<{ Params: { nookId: string }; Body: CreateShelfRequest }>(
-      "/nooks/:nookId/shelves",
-      async (request, reply) => {
-        try {
-          const { fid } = (await request.jwtDecode()) as { fid: string };
-          const nook = await nookService.getNook(request.params.nookId);
-          if (
-            !nook ||
-            nook.deletedAt ||
-            (nook.visibility === "PRIVATE" && nook.creatorFid !== fid)
-          ) {
-            return reply.code(404).send({ message: "Nook not found" });
-          }
-          if (nook.creatorFid !== fid) {
-            return reply.code(403).send({ message: "Forbidden" });
-          }
-          const response = await nookService.addShelf(nook, request.body, fid);
-          return reply.send(response);
-        } catch (error) {
-          console.error(error);
-          return reply.code(500).send({ message: "Internal Server Error" });
-        }
-      },
-    );
-
-    fastify.delete<{
-      Params: { nookId: string; shelfId: string };
-    }>("/nooks/:nookId/shelves/:shelfId", async (request, reply) => {
-      try {
-        const { fid } = (await request.jwtDecode()) as { fid: string };
-        const nook = await nookService.getNook(request.params.nookId);
-        if (
-          !nook ||
-          nook.deletedAt ||
-          (nook.visibility === "PRIVATE" && nook.creatorFid !== fid)
-        ) {
-          return reply.code(404).send({ message: "Nook not found" });
-        }
-        if (nook.creatorFid !== fid) {
-          return reply.code(403).send({ message: "Forbidden" });
-        }
-        await nookService.removeShelf(nook, request.params.shelfId);
-        return reply.send({});
-      } catch (error) {
-        console.error(error);
-        return reply.code(500).send({ message: "Internal Server Error" });
-      }
-    });
 
     fastify.put<{ Params: { nookId: string } }>(
       "/nooks/:nookId/members",
@@ -193,21 +146,98 @@ export const nookRoutes = async (fastify: FastifyInstance) => {
       },
     );
 
-    fastify.post<{
-      Body: { feedId: string };
-      Querystring: { cursor?: string };
-    }>("/feeds/farcaster", async (request, reply) => {
-      const { fid } = (await request.jwtDecode()) as { fid: string };
-      const feed = await nookService.getFarcasterFeed(
-        request.body.feedId,
-        request.query.cursor,
-        fid,
-      );
-      if (!feed) {
-        reply.status(404);
-        return;
+    fastify.put<{ Params: { nookId: string }; Body: CreateShelfInstance }>(
+      "/nooks/:nookId/shelves",
+      async (request, reply) => {
+        try {
+          const { fid } = (await request.jwtDecode()) as { fid: string };
+          const nook = await nookService.getNook(request.params.nookId);
+          if (
+            !nook ||
+            nook.deletedAt ||
+            (nook.visibility === "PRIVATE" && nook.creatorFid !== fid)
+          ) {
+            return reply.code(404).send({ message: "Nook not found" });
+          }
+          if (nook.creatorFid !== fid) {
+            return reply.code(403).send({ message: "Forbidden" });
+          }
+          const response = await nookService.addShelf(nook, {
+            ...request.body,
+            creatorFid: fid,
+          });
+          return reply.send(response);
+        } catch (error) {
+          console.error(error);
+          return reply.code(500).send({ message: "Internal Server Error" });
+        }
+      },
+    );
+
+    fastify.delete<{
+      Params: { nookId: string; shelfId: string };
+    }>("/nooks/:nookId/shelves/:shelfId", async (request, reply) => {
+      try {
+        const { fid } = (await request.jwtDecode()) as { fid: string };
+        const nook = await nookService.getNook(request.params.nookId);
+        if (
+          !nook ||
+          nook.deletedAt ||
+          (nook.visibility === "PRIVATE" && nook.creatorFid !== fid)
+        ) {
+          return reply.code(404).send({ message: "Nook not found" });
+        }
+        if (nook.creatorFid !== fid) {
+          return reply.code(403).send({ message: "Forbidden" });
+        }
+        await nookService.removeShelf(nook, request.params.shelfId);
+        return reply.send({});
+      } catch (error) {
+        console.error(error);
+        return reply.code(500).send({ message: "Internal Server Error" });
       }
-      return reply.send(feed);
+    });
+
+    fastify.post<{
+      Params: { nookId: string; instanceId: string };
+      Body: { cursor?: string };
+    }>("/nooks/:nookId/shelves/:instanceId/data", async (request, reply) => {
+      try {
+        const { fid } = (await request.jwtDecode()) as { fid: string };
+        const nook = await nookService.getNook(request.params.nookId);
+        if (
+          !nook ||
+          nook.deletedAt ||
+          (nook.visibility === "PRIVATE" && nook.creatorFid !== fid)
+        ) {
+          return reply.code(404).send({ message: "Nook not found" });
+        }
+        const shelfInstance = await nookService.getShelfInstance(
+          request.params.instanceId,
+        );
+        if (!shelfInstance) {
+          return reply.code(404).send({ message: "Shelf instance not found" });
+        }
+        const shelf = await nookService.getShelf(shelfInstance.shelfId);
+        if (!shelf) {
+          return reply.code(404).send({ message: "Shelf not found" });
+        }
+        const data = await shelfService.getData(
+          shelf,
+          shelfInstance,
+          fid,
+          request.body?.cursor,
+        );
+        return reply.send(data);
+      } catch (error) {
+        console.error(error);
+        return reply.code(500).send({ message: "Internal Server Error" });
+      }
+    });
+
+    fastify.get("/shelves", async (request, reply) => {
+      const data = await nookService.getShelfOptions();
+      return reply.send({ data });
     });
   });
 };

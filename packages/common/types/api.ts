@@ -188,20 +188,6 @@ export type SubmitFrameActionResponse = {
   frame?: Frame;
 };
 
-export type GetContentReferencesRequest = {
-  types?: string[];
-  frames?: boolean;
-  fids?: string[];
-  parentUrls?: string[];
-  urls?: string[];
-  replies?: boolean;
-};
-
-export type GetContentReferencesResponse = {
-  data: ContentReferenceResponse[];
-  nextCursor?: string;
-};
-
 export type GetNotificationsRequest = {
   fid: string;
   types?: string[];

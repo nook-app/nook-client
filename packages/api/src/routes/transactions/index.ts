@@ -1,8 +1,5 @@
 import { FastifyInstance } from "fastify";
-import {
-  TransactionFeedFilterWithContext,
-  TransactionResponse,
-} from "@nook/common/types";
+import { TransactionResponse } from "@nook/common/types";
 import {
   TransactionsApi,
   TransactionsControllerGetTransactionsRequest,
@@ -17,18 +14,12 @@ export const transactionRoutes = async (fastify: FastifyInstance) => {
     const client = new TransactionsApi();
 
     fastify.post<{
-      Body: TransactionFeedFilterWithContext;
+      Body: { temp: 1 };
       Querystring: { cursor?: string };
     }>("/transactions", async (request, reply) => {
       await request.jwtVerify();
-      if (!request.body.filter || !request.body.filter.userFilter) {
-        return reply.status(400).send({ message: "Invalid request" });
-      }
 
-      const response = await farcasterClient.getAddresses({
-        filter: request.body.filter.userFilter,
-        context: request.body.context,
-      });
+      const response = { data: [] };
       if (!response?.data || response?.data.length === 0) {
         return reply.status(404).send({ message: "Addresses not found" });
       }

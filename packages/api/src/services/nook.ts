@@ -2,17 +2,17 @@ import { FastifyInstance } from "fastify";
 import { Prisma, PrismaClient, Nook as DBNook } from "@nook/common/prisma/nook";
 import { FarcasterAPIClient } from "@nook/common/clients";
 import {
-  CreateShelfRequest,
-  DisplayMode,
-  FarcasterFeedFilter,
-  FeedFilter,
+  CreateShelfInstance,
   Nook,
   NookMetadata,
   NookShelf,
-  NookShelfType,
+  ShelfForm,
+  ShelfProtocol,
+  ShelfRenderer,
+  ShelfType,
   UserFilterType,
 } from "@nook/common/types";
-import { randomUUID, createHash } from "crypto";
+import { createHash } from "crypto";
 import { decodeCursor, encodeCursor } from "@nook/common/utils";
 
 const MAX_PAGE_SIZE = 25;
@@ -93,259 +93,114 @@ export class NookService {
   }
 
   async getNooks(fid: string) {
-    const nooks = await this.nookClient.nookMembership.findMany({
+    const response = await this.nookClient.nook.findMany({
       where: {
-        user: {
-          fid,
+        members: {
+          some: {
+            fid,
+          },
         },
-        nook: {
-          deletedAt: null,
-          visibility: "PUBLIC",
-        },
+        deletedAt: null,
       },
       include: {
-        nook: true,
+        shelves: {
+          where: {
+            deletedAt: null,
+          },
+        },
       },
       orderBy: {
         createdAt: "asc",
       },
     });
 
-    const response = nooks.map((membership) => membership.nook);
+    const hasDefaultNook = response.some((nook) => {
+      const metadata = nook.metadata as NookMetadata;
+      return metadata?.isHome;
+    });
 
-    if (
-      !nooks.find(
-        (nook) => nook.nook.name === "Home" && nook.nook.creatorFid === fid,
-      )
-    ) {
-      response.unshift(await this.getHomeNook(fid));
+    if (!hasDefaultNook) {
+      response.unshift(await this.createDefaultNook(fid));
     }
-
-    return response.sort((a, b) => {
-      if (a.name === "Home") {
-        return -1;
-      }
-      if (b.name === "Home") {
-        return 1;
-      }
-      return 0;
-    });
-  }
-
-  async getHomeNook(fid: string) {
-    let homeNook = await this.nookClient.nook.findFirst({
-      where: {
-        name: "Home",
-        creatorFid: fid,
-      },
-    });
-
-    if (!homeNook) {
-      const user = await this.farcaster.getUser(fid);
-      if (!user) {
-        throw new Error("User not found");
-      }
-      homeNook = await this.nookClient.nook.create({
-        data: {
-          name: "Home",
-          creatorFid: fid,
-          description: "Your personal nook",
-          imageUrl: user.pfp || null,
-          visibility: "PRIVATE",
-          metadata: await this.getHomeNookMetadata(fid),
-        },
-      });
-    }
-
-    await this.nookClient.nookMembership.upsert({
-      where: {
-        fid_nookId: {
-          nookId: homeNook.id,
-          fid,
-        },
-      },
-      create: {
-        user: {
-          connect: {
-            fid,
-          },
-        },
-        nook: {
-          connect: {
-            id: homeNook.id,
-          },
-        },
-      },
-      update: {},
-    });
-
-    return homeNook;
-  }
-
-  async getHomeNookMetadata(fid: string): Promise<NookMetadata> {
-    const [globalFeedId, discoverFeedId, followingFeedId] = await Promise.all([
-      this.getGlobalFeedId(),
-      this.getDiscoverFeedId(fid),
-      this.getFollowingFeedId(fid),
-    ]);
-
-    const followingShelf: NookShelf = {
-      id: randomUUID(),
-      name: "Posts",
-      description: "Posts from people you follow",
-      service: "FARCASTER",
-      type: NookShelfType.FARCASTER_FEED,
-      data: {
-        api: "/v0/feeds/farcaster",
-        args: {
-          feedId: followingFeedId,
-        },
-        displayMode: DisplayMode.DEFAULT,
-      },
-    };
-
-    const discoverShelf: NookShelf = {
-      id: randomUUID(),
-      name: "Discover",
-      description: "Posts you may like",
-      service: "FARCASTER",
-      type: NookShelfType.FARCASTER_FEED,
-      data: {
-        api: "/v0/feeds/farcaster",
-        args: {
-          feedId: discoverFeedId,
-        },
-        displayMode: DisplayMode.DEFAULT,
-      },
-    };
-
-    const globalShelf: NookShelf = {
-      id: randomUUID(),
-      name: "Global",
-      description: "Posts from everyone",
-      service: "FARCASTER",
-      type: NookShelfType.FARCASTER_FEED,
-      data: {
-        api: "/v0/feeds/farcaster",
-        args: {
-          feedId: globalFeedId,
-        },
-        displayMode: DisplayMode.DEFAULT,
-      },
-    };
-
-    const profileShelf: NookShelf = {
-      id: randomUUID(),
-      name: "Profile",
-      description: "Your posts and activity",
-      service: "FARCASTER",
-      type: NookShelfType.FARCASTER_PROFILES,
-      data: {
-        fids: [fid],
-      },
-    };
-
-    return {
-      categories: [
-        {
-          id: randomUUID(),
-          name: "Following",
-          shelves: [followingShelf.id],
-        },
-        {
-          id: randomUUID(),
-          name: "Explore",
-          shelves: [discoverShelf.id, globalShelf.id],
-        },
-        {
-          id: randomUUID(),
-          name: "You",
-          shelves: [profileShelf.id],
-        },
-      ],
-      shelves: [followingShelf, discoverShelf, globalShelf, profileShelf],
-    };
-  }
-
-  async getGlobalFeedId() {
-    const filter: FarcasterFeedFilter = {};
-    const feed = await this.getOrCreateFeed(filter, "FARCASTER_FEED", "262426");
-    return feed.id;
-  }
-
-  async getDiscoverFeedId(fid: string) {
-    const filter: FarcasterFeedFilter = {
-      userFilter: {
-        type: UserFilterType.FOLLOWING,
-        args: {
-          fid,
-          degree: 2,
-        },
-      },
-    };
-    const feed = await this.getOrCreateFeed(filter, "FARCASTER_FEED", "262426");
-    return feed.id;
-  }
-
-  async getFollowingFeedId(fid: string) {
-    const filter: FarcasterFeedFilter = {
-      userFilter: {
-        type: UserFilterType.FOLLOWING,
-        args: {
-          fid,
-          degree: 1,
-        },
-      },
-    };
-    const feed = await this.getOrCreateFeed(filter, "FARCASTER_FEED", "262426");
-    return feed.id;
-  }
-
-  async getFarcasterFeed(feedId: string, cursor?: string, viewerFid?: string) {
-    const feed = await this.nookClient.feed.findUnique({
-      where: {
-        id: feedId,
-      },
-    });
-    if (!feed) {
-      return;
-    }
-
-    const response = await this.farcaster.getFeed(
-      {
-        filter: feed.filter as FarcasterFeedFilter,
-        context: {
-          viewerFid,
-        },
-      },
-      cursor,
-    );
 
     return response;
   }
 
-  async getOrCreateFeed(filter: FeedFilter, type: string, fid: string) {
-    const hash = this.hash(filter);
-    const feed = await this.nookClient.feed.findUnique({
-      where: {
-        hash,
-      },
-    });
-
-    if (feed) {
-      return feed;
+  async createDefaultNook(fid: string) {
+    const user = await this.farcaster.getUser(fid);
+    if (!user) {
+      throw new Error("User not found");
     }
 
-    const newFeed = await this.nookClient.feed.create({
+    const defaultNook = await this.nookClient.nook.create({
       data: {
-        type,
-        hash,
-        filter,
+        name: `${user.username || `fid:${fid}`}'s Nook`,
         creatorFid: fid,
+        description: "Made just for you",
+        imageUrl: user.pfp || null,
+        visibility: "PRIVATE",
+        metadata: {
+          isHome: true,
+        },
+        shelves: {
+          createMany: {
+            data: [
+              {
+                shelfId: "1b1d8924-d10c-444d-aacd-e41873bca312",
+                name: "Following",
+                description: "Posts from people you follow",
+                creatorFid: fid,
+                type: ShelfType.FARCASTER_POSTS,
+                renderer: ShelfRenderer.POST_DEFAULT,
+                data: {
+                  users: {
+                    type: UserFilterType.FOLLOWING,
+                    data: {
+                      fid,
+                    },
+                  },
+                  replies: "include",
+                },
+              },
+              {
+                shelfId: "1b1d8924-d10c-444d-aacd-e41873bca312",
+                name: "Global",
+                description: "Posts from everyone",
+                creatorFid: fid,
+                type: ShelfType.FARCASTER_POSTS,
+                renderer: ShelfRenderer.POST_DEFAULT,
+                data: {},
+              },
+              {
+                shelfId: "b7c3f089-daf0-49c3-912f-f2a9e4dab618",
+                name: "You",
+                description: "Your posts and activity",
+                creatorFid: fid,
+                type: ShelfType.FARCASTER_USER,
+                renderer: ShelfRenderer.USER_PROFILE,
+                data: {
+                  fid,
+                },
+              },
+            ],
+          },
+        },
+        members: {
+          create: {
+            fid,
+          },
+        },
+      },
+      include: {
+        shelves: {
+          where: {
+            deletedAt: null,
+          },
+        },
       },
     });
 
-    return newFeed;
+    return defaultNook;
   }
 
   hash(data: object): string {
@@ -365,7 +220,11 @@ export class NookService {
   async createNook(fid: string, nookData: Nook) {
     const newNook = await this.nookClient.nook.create({
       data: {
-        ...nookData,
+        name: nookData.name,
+        description: nookData.description,
+        imageUrl: nookData.imageUrl,
+        visibility: nookData.visibility,
+        metadata: nookData.metadata,
         creatorFid: fid,
         members: {
           create: {
@@ -383,7 +242,13 @@ export class NookService {
       where: {
         id: nookId,
       },
-      data: nookData,
+      data: {
+        name: nookData.name,
+        description: nookData.description,
+        imageUrl: nookData.imageUrl,
+        visibility: nookData.visibility,
+        metadata: nookData.metadata,
+      },
     });
 
     return nookData;
@@ -423,122 +288,62 @@ export class NookService {
     });
   }
 
-  async addShelf(nook: DBNook, shelf: CreateShelfRequest, fid: string) {
-    const metadata = nook.metadata as NookMetadata | undefined;
-
-    let newShelf: NookShelf | undefined;
-    switch (shelf.type) {
-      case NookShelfType.TRANSACTION_FEED: {
-        const feed = await this.getOrCreateFeed(
-          shelf.data.args.filter,
-          shelf.type,
-          fid,
-        );
-        newShelf = {
-          ...shelf,
-          id: randomUUID(),
-          service: "ONCEUPON",
-          data: {
-            ...shelf.data,
-            args: {
-              feedId: feed.id,
-            },
-          },
-        };
-        break;
-      }
-      case NookShelfType.FARCASTER_EVENTS: {
-        const feed = await this.getOrCreateFeed(
-          shelf.data.args.filter,
-          shelf.type,
-          fid,
-        );
-        newShelf = {
-          ...shelf,
-          id: randomUUID(),
-          service: "FARCASTER",
-          data: {
-            ...shelf.data,
-            args: {
-              feedId: feed.id,
-            },
-          },
-        };
-        break;
-      }
-      case NookShelfType.FARCASTER_FEED: {
-        const feed = await this.getOrCreateFeed(
-          shelf.data.args.filter,
-          shelf.type,
-          fid,
-        );
-        newShelf = {
-          ...shelf,
-          id: randomUUID(),
-          service: "FARCASTER",
-          data: {
-            ...shelf.data,
-            args: {
-              feedId: feed.id,
-            },
-          },
-        };
-        break;
-      }
-      case NookShelfType.FARCASTER_PROFILES:
-        newShelf = {
-          ...shelf,
-          service: "FARCASTER",
-          id: randomUUID(),
-        };
-        break;
-    }
-
-    if (!newShelf) {
-      throw new Error("Invalid shelf type");
-    }
-
-    const newNook = {
-      ...nook,
-      metadata: {
-        ...metadata,
-        shelves: [...(metadata?.shelves || []), newShelf],
-      },
-    };
-
-    await this.nookClient.nook.update({
-      where: {
-        id: nook.id,
-      },
+  async addShelf(nook: DBNook, instance: CreateShelfInstance) {
+    return await this.nookClient.shelfInstance.create({
       data: {
-        metadata: newNook.metadata,
+        nookId: nook.id,
+        shelfId: instance.shelfId,
+        name: instance.name,
+        creatorFid: instance.creatorFid,
+        description: instance.description,
+        imageUrl: instance.imageUrl,
+        data: instance.data,
+        type: instance.type,
+        renderer: instance.renderer,
       },
     });
-
-    return {
-      nook: newNook,
-      shelf: newShelf,
-    };
   }
 
   async removeShelf(nook: DBNook, shelfId: string) {
-    const metadata = nook.metadata as NookMetadata | undefined;
-    const categories = metadata?.categories?.map((category) => ({
-      ...category,
-      shelves: category.shelves.filter((shelf) => shelf !== shelfId),
-    }));
-
-    await this.nookClient.nook.update({
+    await this.nookClient.shelfInstance.updateMany({
       where: {
-        id: nook.id,
+        id: shelfId,
       },
       data: {
-        metadata: {
-          ...metadata,
-          categories,
-          shelves: metadata?.shelves?.filter((shelf) => shelf.id !== shelfId),
-        },
+        deletedAt: new Date(),
       },
     });
+  }
+
+  async getShelfInstance(shelfId: string) {
+    return await this.nookClient.shelfInstance.findUnique({
+      where: {
+        id: shelfId,
+      },
+    });
+  }
+
+  async getShelf(shelfId: string) {
+    return await this.nookClient.shelf.findUnique({
+      where: {
+        id: shelfId,
+      },
+    });
+  }
+
+  async getShelfOptions(): Promise<NookShelf[]> {
+    const shelves = await this.nookClient.shelf.findMany();
+    return shelves.map((shelf) => ({
+      id: shelf.id,
+      creatorFid: shelf.creatorFid,
+      name: shelf.name,
+      description: shelf.description || undefined,
+      imageUrl: shelf.imageUrl || undefined,
+      protocol: shelf.protocol as ShelfProtocol,
+      type: shelf.type as ShelfType,
+      renderers: shelf.renderers.split(",") as ShelfRenderer[],
+      api: shelf.api,
+      form: shelf.form as ShelfForm,
+    }));
   }
 }

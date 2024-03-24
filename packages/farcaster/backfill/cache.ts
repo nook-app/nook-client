@@ -6,42 +6,42 @@ const run = async () => {
   const farcasterApi = new FarcasterAPIClient();
   const contentApi = new ContentAPIClient();
 
-  const backfillContentForFid = async (fid: string) => {
-    let nextCursor: string | undefined;
-    let count = 0;
-    do {
-      const casts = await farcasterApi.getFeed(
-        {
-          filter: {
-            userFilter: {
-              type: UserFilterType.FIDS,
-              args: {
-                fids: [fid],
-              },
-            },
-          },
-        },
-        nextCursor,
-      );
-      await Promise.all(
-        casts.data.map((cast) => contentApi.addContentReferences(cast)),
-      );
-      console.log(fid, nextCursor);
-      nextCursor = casts.nextCursor;
-      count += casts.data.length;
-    } while (nextCursor);
+  // const backfillContentForFid = async (fid: string) => {
+  //   let nextCursor: string | undefined;
+  //   let count = 0;
+  //   do {
+  //     const casts = await farcasterApi.getFeed(
+  //       {
+  //         filter: {
+  //           users: {
+  //             type: UserFilterType.FIDS,
+  //             args: {
+  //               fids: [fid],
+  //             },
+  //           },
+  //         },
+  //       },
+  //       nextCursor,
+  //     );
+  //     await Promise.all(
+  //       casts.data.map((cast) => contentApi.addContentReferences(cast)),
+  //     );
+  //     console.log(fid, nextCursor);
+  //     nextCursor = casts.nextCursor;
+  //     count += casts.data.length;
+  //   } while (nextCursor);
 
-    console.log(`[${fid}] backfilled ${count} casts`);
-  };
+  //   console.log(`[${fid}] backfilled ${count} casts`);
+  // };
 
-  if (process.argv[2]) {
-    await backfillContentForFid(process.argv[2]);
-    return;
-  }
+  // if (process.argv[2]) {
+  //   await backfillContentForFid(process.argv[2]);
+  //   return;
+  // }
 
   const worker = getWorker(QueueName.Backfill, async (job) => {
     console.log(`[${job.data.fid}] backfilling cache`);
-    await backfillContentForFid(job.data.fid);
+    // await backfillContentForFid(job.data.fid);
     console.log(`[${job.data.fid}] backfilled cache`);
   });
 

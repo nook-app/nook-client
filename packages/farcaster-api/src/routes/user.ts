@@ -84,5 +84,14 @@ export const userRoutes = async (fastify: FastifyInstance) => {
 
       reply.send(response);
     });
+
+    fastify.get<{
+      Params: GetFarcasterUserRequest;
+      Querystring: { cursor?: string };
+    }>("/users/:fid/following/fids", async (request, reply) => {
+      const data = await service.getUserFollowingFids(request.params.fid);
+
+      reply.send({ data });
+    });
   });
 };
