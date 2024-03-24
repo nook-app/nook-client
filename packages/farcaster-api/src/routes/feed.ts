@@ -12,9 +12,7 @@ export const feedRoutes = async (fastify: FastifyInstance) => {
       Body: ShelfDataRequest<FarcasterPostArgs>;
       Querystring: { cursor?: string };
     }>("/feed/posts/new", async (request, reply) => {
-      console.log(request.body);
       const response = await service.getNewPosts(request.body);
-      console.log(response);
       const casts = await farcasterService.getCastsFromHashes(
         response.data,
         request.body.context.viewerFid,

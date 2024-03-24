@@ -187,7 +187,7 @@ export class FarcasterService {
     let hash: string | undefined = cast.parentHash;
     do {
       const casts = await this.getRawCasts([hash], viewerFid);
-      if (casts.length === 0 || !casts[0]) continue;
+      if (casts.length === 0 || !casts[0]) break;
       ancestorRawCasts.push(casts[0]);
       hash = casts[0].parentHash;
     } while (hash);
