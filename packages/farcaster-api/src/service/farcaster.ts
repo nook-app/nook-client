@@ -1193,23 +1193,19 @@ export class FarcasterService {
       (signer) => !cachedAppFids[signer],
     );
 
-    for (const signer of uncachedSigners) {
-      cachedAppFids[signer] = await this.getAppFidForSigner(
-        signerToFid[signer],
-        signer,
-      );
-    }
+    await Promise.all(
+      uncachedSigners.map(async (signer) => {
+        cachedAppFids[signer] = await this.fetchAppFidForSigner(
+          signerToFid[signer],
+          signer,
+        );
+      }),
+    );
 
     return cachedAppFids as { [key: string]: string };
   }
 
-  async getAppFidForSigner(userFid: string, signer: string): Promise<string> {
-    // try to load client using signer as key
-    const appFid = await this.cache.getAppFidBySigner(signer);
-    if (appFid != null) {
-      return appFid;
-    }
-
+  async fetchAppFidForSigner(userFid: string, signer: string): Promise<string> {
     // query rpc to get signer fid
     const response = await this.hub.getOnChainSigner({
       fid: parseInt(userFid),
