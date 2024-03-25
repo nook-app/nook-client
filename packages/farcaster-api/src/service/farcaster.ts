@@ -1229,9 +1229,8 @@ export class FarcasterService {
     const metadata = event.signerEventBody.metadata;
     // metadata is abi-encoded; skip the first 32 bytes which contain the pointer
     // to start of struct
-    const clientFid = parseInt(
-      Buffer.from(metadata.subarray(32, 64)).toString("hex"),
-      16,
+    const clientFid = BigInt(
+      `0x${Buffer.from(metadata.subarray(32, 64)).toString("hex")}`,
     );
 
     if (!clientFid) {
