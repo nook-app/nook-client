@@ -1,4 +1,5 @@
 import {
+  GetFarcasterCastClientRequest,
   GetFarcasterCastRepliesRequest,
   GetFarcasterCastRequest,
   GetFarcasterCastsRequest,
@@ -92,6 +93,13 @@ export const castRoutes = async (fastify: FastifyInstance) => {
         request.headers["x-viewer-fid"] as string,
       );
       reply.send({ data: casts });
+    });
+
+    fastify.get<{
+      Params: GetFarcasterCastClientRequest;
+    }>("/casts/:hash/client", async (request, reply) => {
+      const fid = await service.getCastAppFidByHash(request.params.hash);
+      reply.send({ fid });
     });
   });
 };

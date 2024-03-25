@@ -32,7 +32,11 @@ import {
   decodeCursor,
   encodeCursor,
 } from "@nook/common/utils";
-import { UserDataType } from "@farcaster/hub-nodejs";
+import {
+  getSSLHubRpcClient,
+  HubRpcClient,
+  UserDataType,
+} from "@farcaster/hub-nodejs";
 import { ContentAPIClient, FarcasterCacheClient } from "@nook/common/clients";
 import { FastifyInstance } from "fastify";
 
@@ -46,11 +50,13 @@ export class FarcasterService {
   private client: PrismaClient;
   private cache: FarcasterCacheClient;
   private contentClient: ContentAPIClient;
+  private hub: HubRpcClient;
 
   constructor(fastify: FastifyInstance) {
     this.client = fastify.farcaster.client;
     this.cache = new FarcasterCacheClient(fastify.redis.client);
     this.contentClient = new ContentAPIClient();
+    this.hub = getSSLHubRpcClient(process.env.HUB_RPC_ENDPOINT as string);
   }
 
   async getFollowingFids(fids: string[], degree?: number) {
@@ -193,6 +199,7 @@ export class FarcasterService {
     } while (hash);
 
     const hashes = ancestorRawCasts.map((cast) => cast.hash);
+
     await this.cache.setCast(cast.hash, {
       hash: cast.hash,
       fid: cast.user.fid.toString(),
@@ -207,6 +214,8 @@ export class FarcasterService {
       parentHash: cast.parentHash || undefined,
       parentUrl: cast.parentUrl || undefined,
       ancestors: hashes,
+      // signer: cast.signer,
+      appFid: cast.appFid,
     });
 
     return await this.getCasts(ancestorRawCasts, viewerFid);
@@ -221,7 +230,10 @@ export class FarcasterService {
     return await this.getCasts(casts, viewerFid, withAncestors ? hashes : []);
   }
 
-  async getRawCasts(hashes: string[], viewerFid?: string) {
+  async getRawCasts(
+    hashes: string[],
+    viewerFid?: string,
+  ): Promise<FarcasterCast[]> {
     if (hashes.length === 0) return [];
 
     const casts = await this.cache.getCasts(hashes);
@@ -245,17 +257,21 @@ export class FarcasterService {
         },
       });
 
-      const uncachedCasts = data.map((cast) => ({
-        hash: cast.hash,
-        fid: cast.fid.toString(),
-        timestamp: cast.timestamp.getTime(),
-        text: cast.text,
-        mentions: getMentions(cast),
-        embedHashes: getCastEmbeds(cast).map(({ hash }) => hash),
-        embedUrls: getEmbedUrls(cast),
-        parentHash: cast.parentHash || undefined,
-        parentUrl: cast.parentUrl || undefined,
-      }));
+      const uncachedCasts = await Promise.all(
+        data.map(async (cast) => ({
+          hash: cast.hash,
+          fid: cast.fid.toString(),
+          timestamp: cast.timestamp.getTime(),
+          text: cast.text,
+          mentions: getMentions(cast),
+          embedHashes: getCastEmbeds(cast).map(({ hash }) => hash),
+          embedUrls: getEmbedUrls(cast),
+          parentHash: cast.parentHash || undefined,
+          parentUrl: cast.parentUrl || undefined,
+          signer: cast.signer,
+          appFid: await this.getCastAppFid(cast.fid.toString(), cast.signer),
+        })),
+      );
 
       await this.cache.setCasts(uncachedCasts);
 
@@ -410,54 +426,56 @@ export class FarcasterService {
       {} as Record<string, UrlContentResponse>,
     );
 
-    const castMap = allCasts.reduce(
-      (acc, cast) => {
-        const potentialChannelMentions = cast.text.split(" ").reduce(
-          (acc, word, index) => {
-            if (word.startsWith("/")) {
-              const position = cast.text.indexOf(word, acc.lastIndex);
-              acc.mentions.push({ word, position });
-              acc.lastIndex = position + word.length;
-            }
-            return acc;
-          },
-          { mentions: [], lastIndex: 0 } as {
-            mentions: { word: string; position: number }[];
-            lastIndex: number;
-          },
-        ).mentions;
+    const castMap = await allCasts.reduce(async (accPromise, cast) => {
+      const acc = await accPromise;
+      const potentialChannelMentions = cast.text.split(" ").reduce(
+        (acc, word, index) => {
+          if (word.startsWith("/")) {
+            const position = cast.text.indexOf(word, acc.lastIndex);
+            acc.mentions.push({ word, position });
+            acc.lastIndex = position + word.length;
+          }
+          return acc;
+        },
+        { mentions: [], lastIndex: 0 } as {
+          mentions: { word: string; position: number }[];
+          lastIndex: number;
+        },
+      ).mentions;
 
-        acc[cast.hash] = {
-          ...cast,
-          user: userMap[cast.fid],
-          embeds: cast.embedUrls
-            .map((embed) => embedMap[embed])
-            .filter(Boolean),
-          mentions: cast.mentions.map((mention) => ({
-            user: userMap[mention.fid],
-            position: mention.position,
-          })),
-          embedCasts: cast.embedHashes.map((hash) => acc[hash]).filter(Boolean),
-          parent: cast.parentHash ? acc[cast.parentHash] : undefined,
-          channel: cast.parentUrl ? channelByUrlMap[cast.parentUrl] : undefined,
-          channelMentions: potentialChannelMentions
-            .map((mention) => {
-              const channel = channelByIdMap[mention.word.slice(1)];
-              if (!channel) return;
-              return {
-                channel,
-                position: Buffer.from(
-                  cast.text.slice(0, mention.position),
-                ).length.toString(),
-              };
-            })
-            .filter(Boolean) as { channel: Channel; position: string }[],
-          ancestors: [],
-        };
-        return acc;
-      },
-      {} as Record<string, FarcasterCastResponse>,
-    );
+      acc[cast.hash] = await {
+        ...cast,
+        user: userMap[cast.fid],
+        embeds: cast.embedUrls.map((embed) => embedMap[embed]).filter(Boolean),
+        mentions: cast.mentions.map((mention) => ({
+          user: userMap[mention.fid],
+          position: mention.position,
+        })),
+        embedCasts: cast.embedHashes.map((hash) => acc[hash]).filter(Boolean),
+        parent: cast.parentHash ? acc[cast.parentHash] : undefined,
+        channel: cast.parentUrl ? channelByUrlMap[cast.parentUrl] : undefined,
+        channelMentions: potentialChannelMentions
+          .map((mention) => {
+            const channel = channelByIdMap[mention.word.slice(1)];
+            if (!channel) return;
+            return {
+              channel,
+              position: Buffer.from(
+                cast.text.slice(0, mention.position),
+              ).length.toString(),
+            };
+          })
+          .filter(Boolean) as { channel: Channel; position: string }[],
+        ancestors: [],
+        appFid:
+          cast.appFid ||
+          (await this.getCastAppFid(
+            cast.fid.toString(),
+            await this.getSigner(cast.hash),
+          )),
+      };
+      return acc;
+    }, Promise.resolve({} as Record<string, FarcasterCastResponse>));
 
     return casts.map((cast) => {
       if (ancestorsFor?.includes(cast.hash)) {
@@ -1149,5 +1167,77 @@ export class FarcasterService {
             })
           : undefined,
     };
+  }
+
+  async getSigner(hash: string) {
+    const cast = await this.client.farcasterCast.findUnique({
+      where: { hash },
+    });
+
+    if (!cast) {
+      throw new Error(`Cast not found: ${hash}`);
+    }
+
+    return cast.signer;
+  }
+
+  async getCastAppFid(fid: string, signer: string) {
+    if (!signer) {
+      return;
+    }
+    const buf = Buffer.from(signer, "hex");
+    // try to load client using signer as key
+    const client = await this.cache.getClientBySigner(signer);
+    if (client == null) {
+      // query rpc to get signer fid
+      const response = await this.hub.getOnChainSigner({
+        fid: parseInt(fid),
+        signer: Buffer.from(signer.replace("0x", ""), "hex"),
+      });
+      if (response.isErr()) {
+        return undefined;
+      }
+      const event = response.value;
+      if (!event?.signerEventBody?.metadata) {
+        return undefined;
+      }
+      const metadata = event.signerEventBody.metadata;
+      // metadata is abi-encoded; skip the first 32 bytes which contain the pointer
+      // to start of struct
+      const clientFid = parseInt(
+        Buffer.from(metadata.subarray(32, 64)).toString("hex"),
+        16,
+      );
+      if (!clientFid) {
+        return undefined;
+      }
+      const fetched = await this.getUsers([clientFid.toString()]);
+      if (!fetched || fetched.length === 0) {
+        return undefined;
+      }
+      const client = fetched[0];
+      return client.fid;
+    }
+    return client.fid;
+  }
+
+  async getCastAppFidByHash(hash: string) {
+    const casts = await this.cache.getCasts([hash]);
+    if (casts.length !== 0) {
+      const cast = casts[0];
+      if (cast.appFid) {
+        return casts[0].appFid;
+      }
+
+      const appFid = await this.getCastAppFid(
+        cast.fid,
+        await this.getSigner(cast.hash),
+      );
+      if (appFid) {
+        await this.cache.setCast(hash, { ...cast, appFid });
+      }
+      return appFid;
+    }
+    return (await this.getRawCasts([hash]))[0].appFid;
   }
 }

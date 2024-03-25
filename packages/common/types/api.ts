@@ -34,6 +34,7 @@ export type FarcasterCastResponse = {
   ancestors?: FarcasterCastResponse[];
   // Temporarily used to identify the primary reference for content requests
   reference?: string;
+  appFid?: string;
 };
 
 export type GetFarcasterChannelRequest = {
@@ -64,6 +65,10 @@ export type GetFarcasterCastRequest = {
 };
 
 export type GetFarcasterCastRepliesRequest = {
+  hash: string;
+};
+
+export type GetFarcasterCastClientRequest = {
   hash: string;
 };
 

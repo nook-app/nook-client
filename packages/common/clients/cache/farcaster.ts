@@ -5,6 +5,7 @@ import {
   CastContextType,
   CastEngagementType,
   Channel,
+  FarcasterUser,
   UserContextType,
   UserEngagementType,
 } from "../../types";
@@ -15,6 +16,7 @@ export class FarcasterCacheClient {
   CAST_CACHE_PREFIX = "farcaster:cast";
   USER_CACHE_PREFIX = "farcaster:user";
   CHANNEL_CACHE_PREFIX = "farcaster:channel";
+  CLIENT_CACHE_PREFIX = "farcaster:client";
 
   constructor(redis: RedisClient) {
     this.redis = redis;
@@ -196,5 +198,29 @@ export class FarcasterCacheClient {
         ids.map((id) => `${this.CHANNEL_CACHE_PREFIX}:${id}`),
       )
     ).filter(Boolean);
+  }
+
+  async getClientByHash(hash: string): Promise<FarcasterUser | undefined> {
+    return await this.redis.getJson(`${this.CLIENT_CACHE_PREFIX}:${hash}`);
+  }
+
+  async getClientBySigner(signer: string): Promise<FarcasterUser | undefined> {
+    return await this.redis.getJson(`${this.CLIENT_CACHE_PREFIX}:${signer}`);
+  }
+
+  async setClientBySigner(pubkey: string, user: FarcasterUser) {
+    await this.redis.setJson(`${this.CLIENT_CACHE_PREFIX}:${pubkey}`, user);
+  }
+
+  async setClientByHash(hash: string, user: FarcasterUser) {
+    await this.redis.setJson(`${this.CLIENT_CACHE_PREFIX}:${hash}`, user);
+  }
+
+  async removeClientByHash(hash: string) {
+    await this.redis.del(`${this.CLIENT_CACHE_PREFIX}:${hash}`);
+  }
+
+  async removeClientBySigner(pubkey: string) {
+    await this.redis.del(`${this.CLIENT_CACHE_PREFIX}:${pubkey}`);
   }
 }
