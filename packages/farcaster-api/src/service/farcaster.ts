@@ -1190,33 +1190,35 @@ export class FarcasterService {
     }
     // try to load client using signer as key
     const appFid = await this.cache.getAppFidBySigner(signer);
-    if (appFid == null) {
-      // query rpc to get signer fid
-      const response = await this.hub.getOnChainSigner({
-        fid: parseInt(fid),
-        signer: Buffer.from(signer.replace("0x", ""), "hex"),
-      });
-      if (response.isErr()) {
-        return undefined;
-      }
-      const event = response.value;
-      if (!event?.signerEventBody?.metadata) {
-        return undefined;
-      }
-      const metadata = event.signerEventBody.metadata;
-      // metadata is abi-encoded; skip the first 32 bytes which contain the pointer
-      // to start of struct
-      const clientFid = parseInt(
-        Buffer.from(metadata.subarray(32, 64)).toString("hex"),
-        16,
-      );
-      if (!clientFid) {
-        return undefined;
-      }
-
-      return clientFid.toString();
+    if (appFid != null) {
+      return appFid;
     }
-    return appFid;
+
+    // query rpc to get signer fid
+    const response = await this.hub.getOnChainSigner({
+      fid: parseInt(fid),
+      signer: Buffer.from(signer.replace("0x", ""), "hex"),
+    });
+    if (response.isErr()) {
+      return undefined;
+    }
+    const event = response.value;
+    if (!event.signerEventBody?.metadata) {
+      return undefined;
+    }
+    const metadata = event.signerEventBody.metadata;
+    // metadata is abi-encoded; skip the first 32 bytes which contain the pointer
+    // to start of struct
+    const clientFid = parseInt(
+      Buffer.from(metadata.subarray(32, 64)).toString("hex"),
+      16,
+    );
+
+    if (!clientFid) {
+      return undefined;
+    }
+
+    return clientFid.toString();
   }
 
   /**
