@@ -54,7 +54,6 @@ export type BaseFarcasterCast = {
   rootParentHash?: string;
   parentUrl?: string;
   ancestors?: string[];
-  // signer?: string;
   appFid?: string;
 };
 
