@@ -15,6 +15,7 @@ export class FarcasterCacheClient {
   CAST_CACHE_PREFIX = "farcaster:cast";
   USER_CACHE_PREFIX = "farcaster:user";
   CHANNEL_CACHE_PREFIX = "farcaster:channel";
+  CLIENT_CACHE_PREFIX = "farcaster:client";
 
   constructor(redis: RedisClient) {
     this.redis = redis;
@@ -196,5 +197,29 @@ export class FarcasterCacheClient {
         ids.map((id) => `${this.CHANNEL_CACHE_PREFIX}:${id}`),
       )
     ).filter(Boolean);
+  }
+
+  async getAppFidBySigner(signer: string): Promise<string | null> {
+    return await this.redis.get(`${this.CLIENT_CACHE_PREFIX}:${signer}`);
+  }
+
+  async getAppFidsBySigners(
+    signers: string[],
+  ): Promise<{ [key: string]: string | null }> {
+    const results = await this.redis.mget(
+      signers.map((signer) => `${this.CLIENT_CACHE_PREFIX}:${signer}`),
+    );
+    return results.reduce((acc, result, i) => {
+      acc[signers[i]] = result;
+      return acc;
+    }, {} as { [key: string]: string | null });
+  }
+
+  async setAppFidBySigner(pubkey: string, user: string) {
+    await this.redis.set(`${this.CLIENT_CACHE_PREFIX}:${pubkey}`, user);
+  }
+
+  async removeAppFidBySigner(pubkey: string) {
+    await this.redis.del(`${this.CLIENT_CACHE_PREFIX}:${pubkey}`);
   }
 }

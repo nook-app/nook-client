@@ -32,7 +32,11 @@ import {
   decodeCursor,
   encodeCursor,
 } from "@nook/common/utils";
-import { UserDataType } from "@farcaster/hub-nodejs";
+import {
+  getSSLHubRpcClient,
+  HubRpcClient,
+  UserDataType,
+} from "@farcaster/hub-nodejs";
 import { ContentAPIClient, FarcasterCacheClient } from "@nook/common/clients";
 import { FastifyInstance } from "fastify";
 
@@ -46,11 +50,13 @@ export class FarcasterService {
   private client: PrismaClient;
   private cache: FarcasterCacheClient;
   private contentClient: ContentAPIClient;
+  private hub: HubRpcClient;
 
   constructor(fastify: FastifyInstance) {
     this.client = fastify.farcaster.client;
     this.cache = new FarcasterCacheClient(fastify.redis.client);
     this.contentClient = new ContentAPIClient();
+    this.hub = getSSLHubRpcClient(process.env.HUB_RPC_ENDPOINT as string);
   }
 
   async getFollowingFids(fids: string[], degree?: number) {
@@ -193,6 +199,7 @@ export class FarcasterService {
     } while (hash);
 
     const hashes = ancestorRawCasts.map((cast) => cast.hash);
+
     await this.cache.setCast(cast.hash, {
       hash: cast.hash,
       fid: cast.user.fid.toString(),
@@ -207,6 +214,8 @@ export class FarcasterService {
       parentHash: cast.parentHash || undefined,
       parentUrl: cast.parentUrl || undefined,
       ancestors: hashes,
+      appFid: cast.appFid,
+      signer: cast.signer,
     });
 
     return await this.getCasts(ancestorRawCasts, viewerFid);
@@ -221,13 +230,19 @@ export class FarcasterService {
     return await this.getCasts(casts, viewerFid, withAncestors ? hashes : []);
   }
 
-  async getRawCasts(hashes: string[], viewerFid?: string) {
+  async getRawCasts(
+    hashes: string[],
+    viewerFid?: string,
+  ): Promise<FarcasterCast[]> {
     if (hashes.length === 0) return [];
 
     const casts = await this.cache.getCasts(hashes);
     const cacheMap = casts.reduce(
       (acc, cast) => {
-        acc[cast.hash] = cast;
+        // todo: remove this check once all cached casts have appFid?
+        if (cast.appFid != null) {
+          acc[cast.hash] = cast;
+        }
         return acc;
       },
       {} as Record<string, BaseFarcasterCast>,
@@ -245,17 +260,23 @@ export class FarcasterService {
         },
       });
 
-      const uncachedCasts = data.map((cast) => ({
-        hash: cast.hash,
-        fid: cast.fid.toString(),
-        timestamp: cast.timestamp.getTime(),
-        text: cast.text,
-        mentions: getMentions(cast),
-        embedHashes: getCastEmbeds(cast).map(({ hash }) => hash),
-        embedUrls: getEmbedUrls(cast),
-        parentHash: cast.parentHash || undefined,
-        parentUrl: cast.parentUrl || undefined,
-      }));
+      const appFidsBySigner = await this.getCastSignerAppFids(data);
+
+      const uncachedCasts = await Promise.all(
+        data.map(async (cast) => ({
+          hash: cast.hash,
+          fid: cast.fid.toString(),
+          timestamp: cast.timestamp.getTime(),
+          text: cast.text,
+          mentions: getMentions(cast),
+          embedHashes: getCastEmbeds(cast).map(({ hash }) => hash),
+          embedUrls: getEmbedUrls(cast),
+          parentHash: cast.parentHash || undefined,
+          parentUrl: cast.parentUrl || undefined,
+          signer: cast.signer,
+          appFid: appFidsBySigner[cast.signer],
+        })),
+      );
 
       await this.cache.setCasts(uncachedCasts);
 
@@ -303,6 +324,7 @@ export class FarcasterService {
             parentUrl: cast.parentUrl || undefined,
             engagement,
             context,
+            signer: cast.signer,
           };
         }),
       )
@@ -371,6 +393,8 @@ export class FarcasterService {
       }
     }
 
+    const appFidsBySigner = await this.getCastSignerAppFids(allCasts);
+
     const [users, embeds, channelsByUrl, channelsById] = await Promise.all([
       this.getUsers(Array.from(fids), viewerFid),
       this.contentClient.getContents(Array.from(embedUrls)),
@@ -410,54 +434,51 @@ export class FarcasterService {
       {} as Record<string, UrlContentResponse>,
     );
 
-    const castMap = allCasts.reduce(
-      (acc, cast) => {
-        const potentialChannelMentions = cast.text.split(" ").reduce(
-          (acc, word, index) => {
-            if (word.startsWith("/")) {
-              const position = cast.text.indexOf(word, acc.lastIndex);
-              acc.mentions.push({ word, position });
-              acc.lastIndex = position + word.length;
-            }
-            return acc;
-          },
-          { mentions: [], lastIndex: 0 } as {
-            mentions: { word: string; position: number }[];
-            lastIndex: number;
-          },
-        ).mentions;
+    const castMap = await allCasts.reduce(async (accPromise, cast) => {
+      const acc = await accPromise;
+      const potentialChannelMentions = cast.text.split(" ").reduce(
+        (acc, word, index) => {
+          if (word.startsWith("/")) {
+            const position = cast.text.indexOf(word, acc.lastIndex);
+            acc.mentions.push({ word, position });
+            acc.lastIndex = position + word.length;
+          }
+          return acc;
+        },
+        { mentions: [], lastIndex: 0 } as {
+          mentions: { word: string; position: number }[];
+          lastIndex: number;
+        },
+      ).mentions;
 
-        acc[cast.hash] = {
-          ...cast,
-          user: userMap[cast.fid],
-          embeds: cast.embedUrls
-            .map((embed) => embedMap[embed])
-            .filter(Boolean),
-          mentions: cast.mentions.map((mention) => ({
-            user: userMap[mention.fid],
-            position: mention.position,
-          })),
-          embedCasts: cast.embedHashes.map((hash) => acc[hash]).filter(Boolean),
-          parent: cast.parentHash ? acc[cast.parentHash] : undefined,
-          channel: cast.parentUrl ? channelByUrlMap[cast.parentUrl] : undefined,
-          channelMentions: potentialChannelMentions
-            .map((mention) => {
-              const channel = channelByIdMap[mention.word.slice(1)];
-              if (!channel) return;
-              return {
-                channel,
-                position: Buffer.from(
-                  cast.text.slice(0, mention.position),
-                ).length.toString(),
-              };
-            })
-            .filter(Boolean) as { channel: Channel; position: string }[],
-          ancestors: [],
-        };
-        return acc;
-      },
-      {} as Record<string, FarcasterCastResponse>,
-    );
+      acc[cast.hash] = await {
+        ...cast,
+        user: userMap[cast.fid],
+        embeds: cast.embedUrls.map((embed) => embedMap[embed]).filter(Boolean),
+        mentions: cast.mentions.map((mention) => ({
+          user: userMap[mention.fid],
+          position: mention.position,
+        })),
+        embedCasts: cast.embedHashes.map((hash) => acc[hash]).filter(Boolean),
+        parent: cast.parentHash ? acc[cast.parentHash] : undefined,
+        channel: cast.parentUrl ? channelByUrlMap[cast.parentUrl] : undefined,
+        channelMentions: potentialChannelMentions
+          .map((mention) => {
+            const channel = channelByIdMap[mention.word.slice(1)];
+            if (!channel) return;
+            return {
+              channel,
+              position: Buffer.from(
+                cast.text.slice(0, mention.position),
+              ).length.toString(),
+            };
+          })
+          .filter(Boolean) as { channel: Channel; position: string }[],
+        ancestors: [],
+        appFid: appFidsBySigner[cast.signer],
+      };
+      return acc;
+    }, Promise.resolve({} as Record<string, FarcasterCastResponse>));
 
     return casts.map((cast) => {
       if (ancestorsFor?.includes(cast.hash)) {
@@ -1149,5 +1170,84 @@ export class FarcasterService {
             })
           : undefined,
     };
+  }
+
+  /**
+   * Get the appFids for all signers in a list of casts. Results are keyed by signer, not cast.
+   * @param casts A list of casts, with signer and fid.
+   * @returns A map of signer to appFid.
+   */
+  async getCastSignerAppFids(
+    casts: { fid: string | bigint; signer: string }[],
+  ): Promise<{ [key: string]: string }> {
+    // dedupe
+    const signerToFid: { [key: string]: string } = casts.reduce((prev, acc) => {
+      prev[acc.signer] = acc.fid.toString();
+      return prev;
+    }, {} as { [key: string]: string });
+    const cachedAppFids = await this.cache.getAppFidsBySigners(
+      Object.keys(signerToFid),
+    );
+
+    const uncachedSigners = Object.keys(signerToFid).filter(
+      (signer) => !cachedAppFids[signer],
+    );
+
+    await Promise.all(
+      uncachedSigners.map(async (signer) => {
+        cachedAppFids[signer] = await this.fetchAppFidForSigner(
+          signerToFid[signer],
+          signer,
+        );
+      }),
+    );
+
+    return cachedAppFids as { [key: string]: string };
+  }
+
+  async fetchAppFidForSigner(userFid: string, signer: string): Promise<string> {
+    // query rpc to get signer fid
+    const response = await this.hub.getOnChainSigner({
+      fid: parseInt(userFid),
+      signer: Buffer.from(signer.replace("0x", ""), "hex"),
+    });
+    if (response.isErr()) {
+      throw new Error(
+        `Failed to get signer appId. userId: ${userFid} signer: ${signer}`,
+      );
+    }
+    const event = response.value;
+    if (!event.signerEventBody?.metadata) {
+      throw new Error(
+        `No signerEventBody or metadata for signer event. userId: ${userFid} signer: ${signer}`,
+      );
+    }
+    const metadata = event.signerEventBody.metadata;
+    // metadata is abi-encoded; skip the first 32 bytes which contain the pointer
+    // to start of struct
+    const clientFid = BigInt(
+      `0x${Buffer.from(metadata.subarray(32, 64)).toString("hex")}`,
+    );
+
+    if (!clientFid) {
+      throw new Error(
+        `Failed to parse event metadata. userId: ${userFid} signer: ${signer}`,
+      );
+    }
+
+    const clientFidString = clientFid.toString();
+    this.cache.setAppFidBySigner(signer, clientFidString);
+    return clientFidString;
+  }
+
+  /**
+   * Get the appFid for a cast by hash. Mostly for testing.
+   * @param hash
+   * @returns
+   */
+  async getCastAppFidByHash(hash: string) {
+    const casts = await this.getRawCasts([hash]);
+    this.cache.removeAppFidBySigner(casts[0].signer);
+    return casts[0].appFid;
   }
 }

@@ -90,6 +90,10 @@ export class RedisClient {
     return await this.redis.get(key);
   }
 
+  async mget(keys: string[]) {
+    return await this.redis.mget(keys);
+  }
+
   async set(key: string, value: string) {
     await this.redis.set(key, value);
   }
