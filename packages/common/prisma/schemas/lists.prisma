@@ -1,0 +1,63 @@
+generator client {
+    provider = "prisma-client-js"
+    output   = "../generated/lists"
+}
+
+datasource db {
+    provider = "postgresql"
+    url      = env("LISTS_DATABASE_URL")
+}
+
+model UserList {
+    id          String  @id @default(uuid())
+    creatorFid  String
+    name        String
+    description String?
+    imageUrl    String?
+    visibility  String
+
+    items UserListItem[]
+
+    createdAt DateTime  @default(now())
+    updatedAt DateTime  @default(now()) @updatedAt
+    deletedAt DateTime?
+}
+
+model UserListItem {
+    userListId String
+    fid     String
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @default(now()) @updatedAt
+
+    list UserList @relation(fields: [userListId], references: [id])
+
+    @@id([userListId, fid])
+}
+
+model ChannelList {
+    id          String  @id @default(uuid())
+    creatorFid  String
+    name        String
+    description String?
+    imageUrl    String?
+    visibility  String
+
+    items ChannelListItem[]
+
+    createdAt DateTime  @default(now())
+    updatedAt DateTime  @default(now()) @updatedAt
+    deletedAt DateTime?
+}
+
+model ChannelListItem {
+    channelListId String
+    id     String
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @default(now()) @updatedAt
+
+    list ChannelList @relation(fields: [channelListId], references: [id])
+
+    @@id([channelListId, id])
+}
