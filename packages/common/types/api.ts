@@ -34,7 +34,8 @@ export type FarcasterCastResponse = {
   ancestors?: FarcasterCastResponse[];
   // Temporarily used to identify the primary reference for content requests
   reference?: string;
-  appFid?: string;
+  signer: string;
+  appFid: string;
 };
 
 export type GetFarcasterChannelRequest = {

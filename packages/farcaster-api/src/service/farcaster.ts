@@ -214,8 +214,8 @@ export class FarcasterService {
       parentHash: cast.parentHash || undefined,
       parentUrl: cast.parentUrl || undefined,
       ancestors: hashes,
-      // signer: cast.signer,
       appFid: cast.appFid,
+      signer: cast.signer,
     });
 
     return await this.getCasts(ancestorRawCasts, viewerFid);
@@ -260,6 +260,8 @@ export class FarcasterService {
         },
       });
 
+      const appFidsBySigner = await this.getCastSignerAppFids(data);
+
       const uncachedCasts = await Promise.all(
         data.map(async (cast) => ({
           hash: cast.hash,
@@ -272,7 +274,7 @@ export class FarcasterService {
           parentHash: cast.parentHash || undefined,
           parentUrl: cast.parentUrl || undefined,
           signer: cast.signer,
-          appFid: await this.getCastAppFid(cast.fid.toString(), cast.signer),
+          appFid: appFidsBySigner[cast.signer],
         })),
       );
 
@@ -322,6 +324,7 @@ export class FarcasterService {
             parentUrl: cast.parentUrl || undefined,
             engagement,
             context,
+            signer: cast.signer,
           };
         }),
       )
@@ -389,6 +392,8 @@ export class FarcasterService {
         embedUrls.add(embedUrl);
       }
     }
+
+    const appFidsBySigner = await this.getCastSignerAppFids(allCasts);
 
     const [users, embeds, channelsByUrl, channelsById] = await Promise.all([
       this.getUsers(Array.from(fids), viewerFid),
@@ -470,12 +475,7 @@ export class FarcasterService {
           })
           .filter(Boolean) as { channel: Channel; position: string }[],
         ancestors: [],
-        appFid:
-          cast.appFid ||
-          (await this.getCastAppFid(
-            cast.fid.toString(),
-            await this.getSigner(cast.hash),
-          )),
+        appFid: appFidsBySigner[cast.signer],
       };
       return acc;
     }, Promise.resolve({} as Record<string, FarcasterCastResponse>));
@@ -1172,22 +1172,38 @@ export class FarcasterService {
     };
   }
 
-  async getSigner(hash: string) {
-    const cast = await this.client.farcasterCast.findUnique({
-      where: { hash },
-    });
+  /**
+   * Get the appFids for all signers in a list of casts. Results are keyed by signer, not cast.
+   * @param casts A list of casts, with signer and fid.
+   * @returns A map of signer to appFid.
+   */
+  async getCastSignerAppFids(
+    casts: { fid: string | bigint; signer: string }[],
+  ): Promise<{ [key: string]: string }> {
+    // dedupe
+    const signerToFid: { [key: string]: string } = casts.reduce((prev, acc) => {
+      prev[acc.signer] = acc.fid.toString();
+      return prev;
+    }, {} as { [key: string]: string });
+    const cachedAppFids = await this.cache.getAppFidsBySigners(
+      Object.keys(signerToFid),
+    );
 
-    if (!cast) {
-      throw new Error(`Cast not found: ${hash}`);
+    const uncachedSigners = Object.keys(signerToFid).filter(
+      (signer) => !cachedAppFids[signer],
+    );
+
+    for (const signer of uncachedSigners) {
+      cachedAppFids[signer] = await this.getAppFidForSigner(
+        signerToFid[signer],
+        signer,
+      );
     }
 
-    return cast.signer;
+    return cachedAppFids as { [key: string]: string };
   }
 
-  async getCastAppFid(fid: string, signer: string) {
-    if (!signer) {
-      return;
-    }
+  async getAppFidForSigner(userFid: string, signer: string): Promise<string> {
     // try to load client using signer as key
     const appFid = await this.cache.getAppFidBySigner(signer);
     if (appFid != null) {
@@ -1196,15 +1212,19 @@ export class FarcasterService {
 
     // query rpc to get signer fid
     const response = await this.hub.getOnChainSigner({
-      fid: parseInt(fid),
+      fid: parseInt(userFid),
       signer: Buffer.from(signer.replace("0x", ""), "hex"),
     });
     if (response.isErr()) {
-      return undefined;
+      throw new Error(
+        `Failed to get signer appId. userId: ${userFid} signer: ${signer}`,
+      );
     }
     const event = response.value;
     if (!event.signerEventBody?.metadata) {
-      return undefined;
+      throw new Error(
+        `No signerEventBody or metadata for signer event. userId: ${userFid} signer: ${signer}`,
+      );
     }
     const metadata = event.signerEventBody.metadata;
     // metadata is abi-encoded; skip the first 32 bytes which contain the pointer
@@ -1215,10 +1235,14 @@ export class FarcasterService {
     );
 
     if (!clientFid) {
-      return undefined;
+      throw new Error(
+        `Failed to parse event metadata. userId: ${userFid} signer: ${signer}`,
+      );
     }
 
-    return clientFid.toString();
+    const clientFidString = clientFid.toString();
+    this.cache.setAppFidBySigner(signer, clientFidString);
+    return clientFidString;
   }
 
   /**
@@ -1227,22 +1251,8 @@ export class FarcasterService {
    * @returns
    */
   async getCastAppFidByHash(hash: string) {
-    const casts = await this.cache.getCasts([hash]);
-    if (casts.length !== 0) {
-      const cast = casts[0];
-      if (cast.appFid) {
-        return casts[0].appFid;
-      }
-
-      const appFid = await this.getCastAppFid(
-        cast.fid,
-        await this.getSigner(cast.hash),
-      );
-      if (appFid) {
-        await this.cache.setCast(hash, { ...cast, appFid });
-      }
-      return appFid;
-    }
-    return (await this.getRawCasts([hash]))[0].appFid;
+    const casts = await this.getRawCasts([hash]);
+    this.cache.removeAppFidBySigner(casts[0].signer);
+    return casts[0].appFid;
   }
 }
