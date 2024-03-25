@@ -239,7 +239,10 @@ export class FarcasterService {
     const casts = await this.cache.getCasts(hashes);
     const cacheMap = casts.reduce(
       (acc, cast) => {
-        acc[cast.hash] = cast;
+        // todo: remove this check once all cached casts have appFid?
+        if (cast.appFid != null) {
+          acc[cast.hash] = cast;
+        }
         return acc;
       },
       {} as Record<string, BaseFarcasterCast>,
@@ -1185,10 +1188,9 @@ export class FarcasterService {
     if (!signer) {
       return;
     }
-    const buf = Buffer.from(signer, "hex");
     // try to load client using signer as key
-    const client = await this.cache.getClientBySigner(signer);
-    if (client == null) {
+    const appFid = await this.cache.getAppFidBySigner(signer);
+    if (appFid == null) {
       // query rpc to get signer fid
       const response = await this.hub.getOnChainSigner({
         fid: parseInt(fid),
@@ -1211,16 +1213,17 @@ export class FarcasterService {
       if (!clientFid) {
         return undefined;
       }
-      const fetched = await this.getUsers([clientFid.toString()]);
-      if (!fetched || fetched.length === 0) {
-        return undefined;
-      }
-      const client = fetched[0];
-      return client.fid;
+
+      return clientFid.toString();
     }
-    return client.fid;
+    return appFid;
   }
 
+  /**
+   * Get the appFid for a cast by hash. Mostly for testing.
+   * @param hash
+   * @returns
+   */
   async getCastAppFidByHash(hash: string) {
     const casts = await this.cache.getCasts([hash]);
     if (casts.length !== 0) {
