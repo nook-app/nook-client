@@ -5,7 +5,6 @@ import {
   CastContextType,
   CastEngagementType,
   Channel,
-  FarcasterUser as string,
   UserContextType,
   UserEngagementType,
 } from "../../types";
