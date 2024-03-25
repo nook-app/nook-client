@@ -2,7 +2,7 @@ import { Prisma, PrismaClient } from "@nook/common/prisma/nook";
 import {
   ChannelFilterType,
   NookShelf,
-  ShelfFormComponentType,
+  FormComponentType,
   ShelfProtocol,
   ShelfRenderer,
   ShelfType,
@@ -30,9 +30,36 @@ const SHELVES: Omit<NookShelf, "id">[] = [
               field: "users",
               required: true,
               component: {
-                type: ShelfFormComponentType.SELECT_USERS,
+                type: FormComponentType.SELECT_USERS,
                 allowed: [UserFilterType.FIDS],
                 limit: 20,
+              },
+            },
+          ],
+        },
+      ],
+    },
+    renderers: [ShelfRenderer.USER_LIST],
+  },
+  {
+    name: "User Profile",
+    description: "Pin a user's profile",
+    protocol: ShelfProtocol.FARCASTER,
+    type: ShelfType.FARCASTER_USER,
+    api: `${process.env.FARCASTER_API_ENDPOINT}/users`,
+    creatorFid: NOOK_FID,
+    form: {
+      steps: [
+        {
+          fields: [
+            {
+              name: "Users",
+              description: "Select a user to pin",
+              field: "users",
+              required: true,
+              component: {
+                type: FormComponentType.SELECT_USERS,
+                allowed: [UserFilterType.FIDS],
               },
             },
           ],
@@ -57,7 +84,7 @@ const SHELVES: Omit<NookShelf, "id">[] = [
               description: "Select a list of channels to filter by",
               field: "channels",
               component: {
-                type: ShelfFormComponentType.SELECT_CHANNELS,
+                type: FormComponentType.SELECT_CHANNELS,
                 allowed: [ChannelFilterType.CHANNEL_URLS],
                 limit: 20,
               },
@@ -67,7 +94,7 @@ const SHELVES: Omit<NookShelf, "id">[] = [
               description: "Select a list of users to filter by",
               field: "users",
               component: {
-                type: ShelfFormComponentType.SELECT_USERS,
+                type: FormComponentType.SELECT_USERS,
                 allowed: [UserFilterType.FIDS],
                 limit: 20,
               },
@@ -77,7 +104,7 @@ const SHELVES: Omit<NookShelf, "id">[] = [
               description: "Search for posts by keyword",
               field: "query",
               component: {
-                type: ShelfFormComponentType.INPUT,
+                type: FormComponentType.INPUT,
                 maxLength: 50,
                 placeholder: "Search...",
               },
@@ -87,7 +114,7 @@ const SHELVES: Omit<NookShelf, "id">[] = [
               description: "List of words to mute",
               field: "muteWords",
               component: {
-                type: ShelfFormComponentType.MULTI_INPUT,
+                type: FormComponentType.MULTI_INPUT,
                 maxLength: 50,
                 placeholder: "word",
                 limit: 10,
@@ -96,9 +123,9 @@ const SHELVES: Omit<NookShelf, "id">[] = [
             {
               name: "With Replies",
               description: "Include replies in the feed",
-              field: "replies",
+              field: "includeReplies",
               component: {
-                type: ShelfFormComponentType.SWITCH,
+                type: FormComponentType.SWITCH,
                 defaultValue: false,
               },
             },
@@ -124,7 +151,7 @@ const SHELVES: Omit<NookShelf, "id">[] = [
               description: "Select a list of channels to filter by",
               field: "channels",
               component: {
-                type: ShelfFormComponentType.SELECT_CHANNELS,
+                type: FormComponentType.SELECT_CHANNELS,
                 allowed: [ChannelFilterType.CHANNEL_URLS],
                 limit: 20,
               },
@@ -134,7 +161,7 @@ const SHELVES: Omit<NookShelf, "id">[] = [
               description: "Select a list of users to filter by",
               field: "users",
               component: {
-                type: ShelfFormComponentType.SELECT_USERS,
+                type: FormComponentType.SELECT_USERS,
                 allowed: [UserFilterType.FIDS],
                 limit: 20,
               },
@@ -142,9 +169,9 @@ const SHELVES: Omit<NookShelf, "id">[] = [
             {
               name: "With Replies",
               description: "Include replies in the feed",
-              field: "replies",
+              field: "includeReplies",
               component: {
-                type: ShelfFormComponentType.SWITCH,
+                type: FormComponentType.SWITCH,
                 defaultValue: false,
               },
             },
@@ -170,7 +197,7 @@ const SHELVES: Omit<NookShelf, "id">[] = [
               description: "Enter a list of urls to filter by",
               field: "urls",
               component: {
-                type: ShelfFormComponentType.MULTI_INPUT,
+                type: FormComponentType.MULTI_INPUT,
                 placeholder: "https://example.com",
                 maxLength: 150,
                 limit: 10,
@@ -181,7 +208,7 @@ const SHELVES: Omit<NookShelf, "id">[] = [
               description: "Select a list of channels to filter by",
               field: "channels",
               component: {
-                type: ShelfFormComponentType.SELECT_CHANNELS,
+                type: FormComponentType.SELECT_CHANNELS,
                 allowed: [ChannelFilterType.CHANNEL_URLS],
                 limit: 20,
               },
@@ -191,7 +218,7 @@ const SHELVES: Omit<NookShelf, "id">[] = [
               description: "Select a list of users to filter by",
               field: "users",
               component: {
-                type: ShelfFormComponentType.SELECT_USERS,
+                type: FormComponentType.SELECT_USERS,
                 allowed: [UserFilterType.FIDS],
                 limit: 20,
               },
@@ -199,9 +226,9 @@ const SHELVES: Omit<NookShelf, "id">[] = [
             {
               name: "With Replies",
               description: "Include replies in the feed",
-              field: "replies",
+              field: "includeReplies",
               component: {
-                type: ShelfFormComponentType.SWITCH,
+                type: FormComponentType.SWITCH,
                 defaultValue: false,
               },
             },
@@ -228,7 +255,7 @@ const SHELVES: Omit<NookShelf, "id">[] = [
               field: "urls",
               required: true,
               component: {
-                type: ShelfFormComponentType.MULTI_INPUT,
+                type: FormComponentType.MULTI_INPUT,
                 placeholder: "https://example.com",
                 maxLength: 150,
                 limit: 10,
@@ -239,7 +266,7 @@ const SHELVES: Omit<NookShelf, "id">[] = [
               description: "Select a list of channels to filter by",
               field: "channels",
               component: {
-                type: ShelfFormComponentType.SELECT_CHANNELS,
+                type: FormComponentType.SELECT_CHANNELS,
                 allowed: [ChannelFilterType.CHANNEL_URLS],
                 limit: 20,
               },
@@ -249,7 +276,7 @@ const SHELVES: Omit<NookShelf, "id">[] = [
               description: "Select a list of users to filter by",
               field: "users",
               component: {
-                type: ShelfFormComponentType.SELECT_USERS,
+                type: FormComponentType.SELECT_USERS,
                 allowed: [UserFilterType.FIDS],
                 limit: 20,
               },
@@ -257,9 +284,9 @@ const SHELVES: Omit<NookShelf, "id">[] = [
             {
               name: "With Replies",
               description: "Include replies in the feed",
-              field: "replies",
+              field: "includeReplies",
               component: {
-                type: ShelfFormComponentType.SWITCH,
+                type: FormComponentType.SWITCH,
                 defaultValue: false,
               },
             },
@@ -286,7 +313,7 @@ const SHELVES: Omit<NookShelf, "id">[] = [
               field: "timeWindow",
               required: true,
               component: {
-                type: ShelfFormComponentType.SELECT_OPTION,
+                type: FormComponentType.SELECT_OPTION,
                 options: [
                   {
                     value: "1h",

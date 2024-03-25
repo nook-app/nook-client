@@ -33,6 +33,9 @@ export class FarcasterAPIClient extends BaseAPIClient {
     const response = await this.makeRequest("/channels", {
       method: "POST",
       body: JSON.stringify(req),
+      headers: {
+        "Content-Type": "application/json",
+      },
       viewerFid,
     });
 

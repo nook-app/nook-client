@@ -178,7 +178,7 @@ export const farcasterRoutes = async (fastify: FastifyInstance) => {
                 fids: [request.params.fid],
               },
             },
-            replies: "only",
+            onlyReplies: true,
           },
           cursor: request.query.cursor,
           context: { viewerFid },
@@ -294,6 +294,19 @@ export const farcasterRoutes = async (fastify: FastifyInstance) => {
       },
     );
 
+    fastify.post<{ Body: { channelIds?: string[]; parentUrls?: string[] } }>(
+      "/farcaster/channels",
+      async (request, reply) => {
+        let viewerFid: string | undefined;
+        try {
+          const { fid } = (await request.jwtDecode()) as { fid: string };
+          viewerFid = fid;
+        } catch (e) {}
+        const response = await client.getChannels(request.body, viewerFid);
+        reply.send(response);
+      },
+    );
+
     fastify.get<{
       Params: { channelId: string };
       Querystring: { cursor?: string };
@@ -311,7 +324,7 @@ export const farcasterRoutes = async (fastify: FastifyInstance) => {
               channelIds: [request.params.channelId],
             },
           },
-          replies: "include",
+          includeReplies: true,
         },
         cursor: request.query.cursor,
         context: { viewerFid },

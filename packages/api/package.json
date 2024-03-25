@@ -6,7 +6,8 @@
     "build": "tsc",
     "start": "node dist/src/index.js",
     "dev": "ts-node src/index.ts --inspect=9229",
-    "scripts:seed-shelves": "ts-node scripts/seed-shelves.ts"
+    "scripts:seed-shelves": "ts-node scripts/seed-shelves.ts",
+    "scripts:seed-templates": "ts-node scripts/seed-templates.ts"
   },
   "exports": {
     "types": "./dist/types/index.js"

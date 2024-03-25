@@ -64,7 +64,7 @@ export class FeedService {
     baseConditions: string[],
   ) {
     const { data, context, cursor } = req;
-    const { users, channels, replies } = data;
+    const { users, channels, includeReplies, onlyReplies } = data;
 
     const conditions: string[] = [
       ...baseConditions,
@@ -88,9 +88,9 @@ export class FeedService {
       }
     }
 
-    if (replies === "only") {
+    if (onlyReplies) {
       conditions.push(`"parentHash" IS NOT NULL`);
-    } else if (replies !== "include") {
+    } else if (!includeReplies) {
       conditions.push(`"parentHash" IS NULL`);
     }
 

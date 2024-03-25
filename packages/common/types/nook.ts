@@ -25,7 +25,7 @@ export type NookShelf = {
   protocol: ShelfProtocol;
   type: ShelfType;
   api: string;
-  form: ShelfForm;
+  form: Form;
   renderers: ShelfRenderer[];
 };
 
@@ -116,28 +116,32 @@ export type FarcasterPostArgs = {
   users?: UserFilter;
   query?: string;
   muteWords?: string[];
-  replies?: "include" | "only";
+  includeReplies?: boolean;
+  onlyReplies?: boolean;
   timeWindow?: "1h" | "6h" | "12h" | "24h";
 };
 
 export type FarcasterMediaArgs = {
   channels?: ChannelFilter;
   users?: UserFilter;
-  replies?: "include" | "only";
+  includeReplies?: boolean;
+  onlyReplies?: boolean;
 };
 
 export type FarcasterFrameArgs = {
   urls?: string[];
   channels?: ChannelFilter;
   users?: UserFilter;
-  replies?: "include" | "only";
+  includeReplies?: boolean;
+  onlyReplies?: boolean;
 };
 
 export type FarcasterEmbedArgs = {
   urls?: string[];
   channels?: ChannelFilter;
   users?: UserFilter;
-  replies?: "include" | "only";
+  includeReplies?: boolean;
+  onlyReplies?: boolean;
 };
 
 export enum UserFilterType {
@@ -178,15 +182,15 @@ export type ChannelFilter =
       };
     };
 
-export type ShelfForm = {
-  steps: ShelfFormStep[];
+export type Form = {
+  steps: FormStep[];
 };
 
-export type ShelfFormStep = {
-  fields: ShelfFormField[];
+export type FormStep = {
+  fields: FormField[];
 };
 
-export type ShelfFormField<T = ShelfFormComponent> = {
+export type FormField<T = FormComponent> = {
   name: string;
   description: string;
   field: string;
@@ -194,60 +198,96 @@ export type ShelfFormField<T = ShelfFormComponent> = {
   required?: boolean;
 };
 
-export type ShelfFormComponent =
-  | ShelfFormComponentSelectUsers
-  | ShelfFormComponentSelectChannels
-  | ShelfFormComponentInput
-  | ShelfFormComponentMultiInput
-  | ShelfFormComponentSwitch
-  | ShelfFormComponentSelect;
+export type FormComponent =
+  | FormComponentSelectUsers
+  | FormComponentSelectChannels
+  | FormComponentInput
+  | FormComponentMultiInput
+  | FormComponentSwitch
+  | FormComponentSelect
+  | FormComponentIconPicker;
 
-export type ShelfFormComponentSelectUsers = {
-  type: ShelfFormComponentType.SELECT_USERS;
+export type FormComponentSelectUsers = {
+  type: FormComponentType.SELECT_USERS;
   allowed: UserFilterType[];
   limit?: number;
 };
 
-export type ShelfFormComponentSelectChannels = {
-  type: ShelfFormComponentType.SELECT_CHANNELS;
+export type FormComponentSelectChannels = {
+  type: FormComponentType.SELECT_CHANNELS;
   allowed: ChannelFilterType[];
   limit?: number;
 };
 
-export type ShelfFormComponentInput = {
-  type: ShelfFormComponentType.INPUT;
+export type FormComponentInput = {
+  type: FormComponentType.INPUT;
   minLength?: number;
   maxLength?: number;
   placeholder?: string;
   defaultValue?: string;
 };
 
-export type ShelfFormComponentMultiInput = {
-  type: ShelfFormComponentType.MULTI_INPUT;
+export type FormComponentMultiInput = {
+  type: FormComponentType.MULTI_INPUT;
   minLength?: number;
   maxLength?: number;
   placeholder?: string;
   limit?: number;
 };
 
-export type ShelfFormComponentSwitch = {
-  type: ShelfFormComponentType.SWITCH;
+export type FormComponentSwitch = {
+  type: FormComponentType.SWITCH;
   defaultValue?: boolean;
 };
 
-export type ShelfFormComponentSelect = {
-  type: ShelfFormComponentType.SELECT_OPTION;
+export type FormComponentSelect = {
+  type: FormComponentType.SELECT_OPTION;
   options: {
     value: string;
     label: string;
   }[];
 };
 
-export enum ShelfFormComponentType {
+export type FormComponentIconPicker = {
+  type: FormComponentType.ICON_PICKER;
+};
+
+export enum FormComponentType {
   SELECT_OPTION = "SELECT_OPTION",
   SELECT_USERS = "SELECT_USERS",
   SELECT_CHANNELS = "SELECT_CHANNELS",
   INPUT = "INPUT",
   MULTI_INPUT = "MULTI_INPUT",
   SWITCH = "SWITCH",
+  ICON_PICKER = "ICON_PICKER",
 }
+
+export type NookTemplate = {
+  id: string;
+  creatorFid: string;
+  name: string;
+  description?: string;
+  imageUrl?: string;
+  form: Form;
+};
+
+export type CreateNook<T = NookArgs> = {
+  creatorFid: string;
+  name: string;
+  templateId?: string;
+  description?: string;
+  imageUrl?: string;
+  visibility: "PUBLIC" | "PRIVATE" | "HIDDEN";
+  data: T;
+};
+
+export type NookFarcasterChannelArgs = {
+  channel: ChannelFilter;
+};
+
+export type NookTeamArgs = {
+  users: UserFilter;
+  channels: ChannelFilter;
+};
+
+export type NookArgs = NookFarcasterChannelArgs | NookTeamArgs;

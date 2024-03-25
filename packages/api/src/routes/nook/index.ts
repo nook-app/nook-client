@@ -1,6 +1,11 @@
 import { FastifyInstance } from "fastify";
 import { NookService } from "../../services/nook";
-import { CreateShelfInstance, Nook } from "@nook/common/types";
+import {
+  CreateNook,
+  CreateShelfInstance,
+  Nook,
+  NookShelfInstance,
+} from "@nook/common/types";
 import { ShelfService } from "../../services/shelf";
 
 export const nookRoutes = async (fastify: FastifyInstance) => {
@@ -85,7 +90,7 @@ export const nookRoutes = async (fastify: FastifyInstance) => {
       },
     );
 
-    fastify.put<{ Body: Nook }>("/nooks", async (request, reply) => {
+    fastify.put<{ Body: CreateNook }>("/nooks", async (request, reply) => {
       try {
         const { fid } = (await request.jwtDecode()) as { fid: string };
         const data = await nookService.createNook(fid, request.body);
@@ -198,6 +203,31 @@ export const nookRoutes = async (fastify: FastifyInstance) => {
       }
     });
 
+    fastify.patch<{
+      Params: { nookId: string; shelfId: string };
+      Body: NookShelfInstance;
+    }>("/nooks/:nookId/shelves/:shelfId", async (request, reply) => {
+      try {
+        const { fid } = (await request.jwtDecode()) as { fid: string };
+        const nook = await nookService.getNook(request.params.nookId);
+        if (
+          !nook ||
+          nook.deletedAt ||
+          (nook.visibility === "PRIVATE" && nook.creatorFid !== fid)
+        ) {
+          return reply.code(404).send({ message: "Nook not found" });
+        }
+        if (nook.creatorFid !== fid) {
+          return reply.code(403).send({ message: "Forbidden" });
+        }
+        await nookService.updateShelf(request.params.shelfId, request.body);
+        return reply.send({});
+      } catch (error) {
+        console.error(error);
+        return reply.code(500).send({ message: "Internal Server Error" });
+      }
+    });
+
     fastify.post<{
       Params: { nookId: string; instanceId: string };
       Body: { cursor?: string };
@@ -237,6 +267,11 @@ export const nookRoutes = async (fastify: FastifyInstance) => {
 
     fastify.get("/shelves", async (request, reply) => {
       const data = await nookService.getShelfOptions();
+      return reply.send({ data });
+    });
+
+    fastify.get("/nooks/templates", async (request, reply) => {
+      const data = await nookService.getNookTemplates();
       return reply.send({ data });
     });
   });

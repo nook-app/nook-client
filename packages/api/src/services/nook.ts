@@ -6,11 +6,18 @@ import {
   Nook,
   NookMetadata,
   NookShelf,
-  ShelfForm,
+  Form,
   ShelfProtocol,
   ShelfRenderer,
   ShelfType,
   UserFilterType,
+  NookTemplate,
+  CreateNook,
+  NookTeamArgs,
+  ChannelFilterType,
+  Channel,
+  NookFarcasterChannelArgs,
+  NookShelfInstance,
 } from "@nook/common/types";
 import { createHash } from "crypto";
 import { decodeCursor, encodeCursor } from "@nook/common/utils";
@@ -80,8 +87,20 @@ export class NookService {
       ]),
     );
 
+    const shelves = await this.nookClient.shelfInstance.findMany({
+      where: {
+        deletedAt: null,
+        nookId: {
+          in: nooks.map((nook) => nook.id),
+        },
+      },
+    });
+
     return {
-      data: nooks,
+      data: nooks.map((nook) => ({
+        ...nook,
+        shelves: shelves.filter((shelf) => shelf.nookId === nook.id),
+      })),
       nextCursor:
         nooks.length === MAX_PAGE_SIZE
           ? encodeCursor({
@@ -157,7 +176,7 @@ export class NookService {
             data: [
               {
                 shelfId: "5d347378-58ce-4558-8020-f77847134a0c",
-                name: "Trending Now",
+                name: "Trending",
                 description: "Trending in the last hour",
                 creatorFid: fid,
                 type: ShelfType.FARCASTER_POSTS,
@@ -168,8 +187,8 @@ export class NookService {
               },
               {
                 shelfId: "5d347378-58ce-4558-8020-f77847134a0c",
-                name: "Trending Today",
-                description: "Trending in the last 24 hours",
+                name: "Popular",
+                description: "Popular in the last 24 hours",
                 creatorFid: fid,
                 type: ShelfType.FARCASTER_POSTS,
                 renderer: ShelfRenderer.POST_DEFAULT,
@@ -191,7 +210,7 @@ export class NookService {
                       fid,
                     },
                   },
-                  replies: "include",
+                  replies: true,
                 },
               },
               {
@@ -204,14 +223,19 @@ export class NookService {
                 data: {},
               },
               {
-                shelfId: "b7c3f089-daf0-49c3-912f-f2a9e4dab618",
+                shelfId: "7e6eba52-4595-49ab-b55a-eaee152724bd",
                 name: "You",
                 description: "Your posts and activity",
                 creatorFid: fid,
                 type: ShelfType.FARCASTER_USER,
                 renderer: ShelfRenderer.USER_PROFILE,
                 data: {
-                  fid,
+                  users: {
+                    type: UserFilterType.FIDS,
+                    data: {
+                      fids: [fid],
+                    },
+                  },
                 },
               },
             ],
@@ -246,27 +270,216 @@ export class NookService {
       where: {
         id: nookId,
       },
-    });
-  }
-
-  async createNook(fid: string, nookData: Nook) {
-    const newNook = await this.nookClient.nook.create({
-      data: {
-        name: nookData.name,
-        description: nookData.description,
-        imageUrl: nookData.imageUrl,
-        visibility: nookData.visibility,
-        metadata: nookData.metadata,
-        creatorFid: fid,
-        members: {
-          create: {
-            fid: fid,
+      include: {
+        shelves: {
+          where: {
+            deletedAt: null,
           },
         },
       },
     });
+  }
 
-    return newNook;
+  async createNook(fid: string, nookData: CreateNook) {
+    switch (nookData.templateId) {
+      // Farcaster Channel
+      case "a51a8c5f-4b37-4bf5-a4f5-6d5a9d266c09": {
+        const data = nookData.data as NookFarcasterChannelArgs;
+        return await this.nookClient.nook.create({
+          data: {
+            name: nookData.name,
+            description: nookData.description,
+            imageUrl: nookData.imageUrl,
+            visibility: nookData.visibility,
+            metadata: {},
+            creatorFid: fid,
+            members: {
+              create: {
+                fid: fid,
+              },
+            },
+            shelves: {
+              createMany: {
+                skipDuplicates: true,
+                data: [
+                  {
+                    shelfId: "1b1d8924-d10c-444d-aacd-e41873bca312",
+                    name: "Posts",
+                    description: "Newly posted in this channel",
+                    creatorFid: fid,
+                    type: ShelfType.FARCASTER_POSTS,
+                    renderer: ShelfRenderer.POST_DEFAULT,
+                    data: {
+                      channels: data.channel,
+                    },
+                  },
+                  {
+                    shelfId: "1b1d8924-d10c-444d-aacd-e41873bca312",
+                    name: "Media",
+                    description: "Only images and videos",
+                    creatorFid: fid,
+                    type: ShelfType.FARCASTER_MEDIA,
+                    renderer: ShelfRenderer.POST_MEDIA,
+                    data: {
+                      channels: data.channel,
+                    },
+                  },
+                  {
+                    shelfId: "1b1d8924-d10c-444d-aacd-e41873bca312",
+                    name: "Frames",
+                    description: "Only frames",
+                    creatorFid: fid,
+                    type: ShelfType.FARCASTER_FRAMES,
+                    renderer: ShelfRenderer.POST_FRAMES,
+                    data: {
+                      channels: data.channel,
+                    },
+                  },
+                ],
+              },
+            },
+          },
+          include: {
+            shelves: {
+              where: {
+                deletedAt: null,
+              },
+            },
+          },
+        });
+      }
+      // Project / Team
+      case "b8726fe8-f491-44ba-87a6-97564382bf40": {
+        const data = nookData.data as NookTeamArgs;
+
+        let channels: Channel[] = [];
+        if (data.channels.type === ChannelFilterType.CHANNEL_IDS) {
+          const response = await this.farcaster.getChannels(
+            { channelIds: data.channels.data.channelIds },
+            fid,
+          );
+          channels = response.data;
+        } else if (data.channels.type === ChannelFilterType.CHANNEL_URLS) {
+          const response = await this.farcaster.getChannels(
+            { parentUrls: data.channels.data.urls },
+            fid,
+          );
+          channels = response.data;
+        }
+
+        const shelves = [];
+
+        shelves.push(
+          {
+            shelfId: "1b1d8924-d10c-444d-aacd-e41873bca312",
+            name: "Team Posts",
+            description: "Posts from the team",
+            creatorFid: fid,
+            type: ShelfType.FARCASTER_POSTS,
+            renderer: ShelfRenderer.POST_DEFAULT,
+            data: {
+              users: data.users,
+            },
+          },
+          {
+            shelfId: "b7c3f089-daf0-49c3-912f-f2a9e4dab618",
+            name: "Team",
+            description: "List of team members",
+            creatorFid: fid,
+            type: ShelfType.FARCASTER_USERS,
+            renderer: ShelfRenderer.USER_LIST,
+            data: {
+              users: data.users,
+            },
+          },
+        );
+
+        if (channels.length > 1) {
+          shelves.push({
+            shelfId: "1b1d8924-d10c-444d-aacd-e41873bca312",
+            name: "Channel Posts",
+            description: "Posts in our channel(s)",
+            creatorFid: fid,
+            type: ShelfType.FARCASTER_POSTS,
+            renderer: ShelfRenderer.POST_DEFAULT,
+            data: {
+              channels: data.channels,
+            },
+          });
+        }
+
+        for (const channel of channels) {
+          shelves.push({
+            shelfId: "1b1d8924-d10c-444d-aacd-e41873bca312",
+            name: channel.name,
+            description: channel.description,
+            creatorFid: fid,
+            type: ShelfType.FARCASTER_POSTS,
+            renderer: ShelfRenderer.POST_DEFAULT,
+            data: {
+              channels: {
+                type: ChannelFilterType.CHANNEL_URLS,
+                data: {
+                  urls: [channel.url],
+                },
+              },
+            },
+          });
+        }
+
+        return await this.nookClient.nook.create({
+          data: {
+            name: nookData.name,
+            description: nookData.description,
+            imageUrl: nookData.imageUrl,
+            visibility: nookData.visibility,
+            metadata: {},
+            creatorFid: fid,
+            members: {
+              create: {
+                fid: fid,
+              },
+            },
+            shelves: {
+              createMany: {
+                skipDuplicates: true,
+                data: shelves,
+              },
+            },
+          },
+          include: {
+            shelves: {
+              where: {
+                deletedAt: null,
+              },
+            },
+          },
+        });
+      }
+      default:
+        return await this.nookClient.nook.create({
+          data: {
+            name: nookData.name,
+            description: nookData.description,
+            imageUrl: nookData.imageUrl,
+            visibility: nookData.visibility,
+            metadata: {},
+            creatorFid: fid,
+            members: {
+              create: {
+                fid: fid,
+              },
+            },
+          },
+          include: {
+            shelves: {
+              where: {
+                deletedAt: null,
+              },
+            },
+          },
+        });
+    }
   }
 
   async updateNook(nookId: string, nookData: Nook) {
@@ -347,6 +560,22 @@ export class NookService {
     });
   }
 
+  async updateShelf(shelfId: string, instance: NookShelfInstance) {
+    await this.nookClient.shelfInstance.update({
+      where: {
+        id: shelfId,
+      },
+      data: {
+        name: instance.name,
+        description: instance.description,
+        imageUrl: instance.imageUrl,
+        data: instance.data,
+        type: instance.type,
+        renderer: instance.renderer,
+      },
+    });
+  }
+
   async getShelfInstance(shelfId: string) {
     return await this.nookClient.shelfInstance.findUnique({
       where: {
@@ -379,7 +608,24 @@ export class NookService {
       type: shelf.type as ShelfType,
       renderers: shelf.renderers.split(",") as ShelfRenderer[],
       api: shelf.api,
-      form: shelf.form as ShelfForm,
+      form: shelf.form as Form,
+    }));
+  }
+
+  async getNookTemplates(): Promise<NookTemplate[]> {
+    const templates = await this.nookClient.nookTemplate.findMany({
+      where: {
+        enabled: true,
+      },
+    });
+
+    return templates.map((template) => ({
+      id: template.id,
+      creatorFid: template.creatorFid,
+      name: template.name,
+      description: template.description || undefined,
+      imageUrl: template.imageUrl || undefined,
+      form: template.form as Form,
     }));
   }
 }

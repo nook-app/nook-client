@@ -28,7 +28,8 @@ export class FeedService {
 
   async getNewPosts(req: ShelfDataRequest<FarcasterPostArgs>) {
     const { data, context, cursor } = req;
-    const { users, channels, query, replies, muteWords } = data;
+    const { users, channels, query, includeReplies, onlyReplies, muteWords } =
+      data;
 
     const conditions: string[] = ['"deletedAt" IS NULL'];
 
@@ -70,9 +71,9 @@ export class FeedService {
       }
     }
 
-    if (replies === "only") {
+    if (onlyReplies) {
       conditions.push(`"parentHash" IS NOT NULL`);
-    } else if (replies !== "include") {
+    } else if (!includeReplies) {
       conditions.push(`"parentHash" IS NULL`);
     }
 

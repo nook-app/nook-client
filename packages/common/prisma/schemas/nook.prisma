@@ -135,3 +135,19 @@ model ShelfInstance {
     nook  Nook  @relation(fields: [nookId], references: [id], onDelete: Cascade)
     shelf Shelf @relation(fields: [shelfId], references: [id])
 }
+
+model NookTemplate {
+    id          String  @id @default(uuid())
+    creatorFid  String
+    name        String  @unique
+    description String?
+    imageUrl    String?
+
+    form Json
+
+    enabled Boolean @default(false)
+
+    createdAt DateTime  @default(now())
+    updatedAt DateTime  @default(now()) @updatedAt
+    deletedAt DateTime?
+}
