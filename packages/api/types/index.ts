@@ -17,6 +17,7 @@ export type TokenResponse = {
   token: string;
   expiresAt: number;
   theme: string;
+  isNewUser?: boolean;
 };
 
 export type GetUserResponse = {

@@ -49,6 +49,7 @@ export class UserService {
       },
     });
 
+    const isNewUser = !user;
     if (!user) {
       user = await this.nookClient.user.create({
         data: {
@@ -89,6 +90,7 @@ export class UserService {
       token,
       expiresAt,
       theme: user.theme,
+      isNewUser,
     };
   }
 
@@ -117,6 +119,7 @@ export class UserService {
       },
     });
 
+    const isNewUser = !user;
     if (!user) {
       user = await this.nookClient.user.create({
         data: {
@@ -155,6 +158,7 @@ export class UserService {
       refreshToken: user.refreshToken,
       expiresAt,
       theme: user.theme,
+      isNewUser,
     };
   }
 

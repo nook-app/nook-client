@@ -281,6 +281,10 @@ export type CreateNook<T = NookArgs> = {
   data: T;
 };
 
+export type NookOnboardingArgs = {
+  shelves: CreateShelfInstance[];
+};
+
 export type NookFarcasterChannelArgs = {
   channel: ChannelFilter;
 };
@@ -290,4 +294,7 @@ export type NookTeamArgs = {
   channels: ChannelFilter;
 };
 
-export type NookArgs = NookFarcasterChannelArgs | NookTeamArgs;
+export type NookArgs =
+  | NookFarcasterChannelArgs
+  | NookTeamArgs
+  | NookOnboardingArgs;
