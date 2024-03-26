@@ -91,6 +91,7 @@ export class RedisClient {
   }
 
   async mget(keys: string[]) {
+    if (keys.length === 0) return [];
     return await this.redis.mget(keys);
   }
 
