@@ -8,6 +8,7 @@ import { farcasterSignerRoutes } from "./routes/farcaster/signer";
 import { frameRoutes } from "./routes/frames";
 import { contentRoutes } from "./routes/content";
 import { notificationsRoutes } from "./routes/notifications";
+import { degenRoutes } from "./routes/degen";
 import { transactionRoutes } from "./routes/transactions";
 import { flagRoutes } from "./routes/flags";
 
@@ -43,6 +44,7 @@ const buildApp = () => {
   app.register(transactionRoutes, { prefix: "/v0" });
   app.register(notificationsRoutes, { prefix: "/v0" });
   app.register(flagRoutes, { prefix: "/v0" });
+  app.register(degenRoutes, { prefix: "/v0" });
 
   return app;
 };

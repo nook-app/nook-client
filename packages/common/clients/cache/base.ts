@@ -134,6 +134,39 @@ export class RedisClient {
     await pipeline.exec();
   }
 
+  async addMembers(key: string, members: string[]) {
+    await this.redis.sadd(key, members);
+  }
+
+  async addMembersWithTtl(key: string, members: string[], ttl: number) {
+    const pipeline = this.redis.pipeline();
+    pipeline.sadd(key, members);
+    pipeline.expire(key, ttl);
+    await pipeline.exec();
+  }
+
+  async checkMember(key: string, member: string) {
+    return await this.redis.sismember(key, member);
+  }
+
+  async checkMembers(key: string, members: string[]) {
+    if (members.length === 0) return [];
+    return await this.redis.smismember(key, members);
+  }
+
+  async getMembers(key: string) {
+    return await this.redis.smembers(key);
+  }
+
+  async removeMembers(key: string, members: string[]) {
+    if (members.length === 0) return;
+    await this.redis.srem(key, members);
+  }
+
+  async removeMember(key: string, member: string) {
+    await this.redis.srem(key, member);
+  }
+
   // biome-ignore lint/suspicious/noExplicitAny: generic setter
   async addToSet(key: string, value: any, timestamp: number) {
     const pipeline = this.redis.pipeline();
