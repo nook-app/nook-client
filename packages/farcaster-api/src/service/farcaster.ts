@@ -393,8 +393,6 @@ export class FarcasterService {
       }
     }
 
-    const appFidsBySigner = await this.getCastSignerAppFids(allCasts);
-
     const [users, embeds, channelsByUrl, channelsById] = await Promise.all([
       this.getUsers(Array.from(fids), viewerFid),
       this.contentClient.getContents(Array.from(embedUrls)),
@@ -475,7 +473,8 @@ export class FarcasterService {
           })
           .filter(Boolean) as { channel: Channel; position: string }[],
         ancestors: [],
-        appFid: appFidsBySigner[cast.signer],
+        // getRawCasts should always populate appFid
+        appFid: cast.appFid as string,
       };
       return acc;
     }, Promise.resolve({} as Record<string, FarcasterCastResponse>));

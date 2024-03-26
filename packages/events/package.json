@@ -5,7 +5,8 @@
   "scripts": {
     "build": "tsc",
     "start": "node dist/worker.js",
-    "start:manual": "tsc && node --enable-source-maps dist/manual.js"
+    "start:manual": "tsc && node --enable-source-maps dist/manual.js",
+    "dev:manual": "ts-node dist/manual.ts --inspect=9229"
   },
   "exports": {
     "./processors": "./dist/processors/index.js"
