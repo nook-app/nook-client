@@ -14,12 +14,15 @@ export class DegenCacheClient {
   }
 
   async checkHasAllowance(fid: string) {
-    return await this.redis.checkMember(this.DEGEN_CACHE_PREFIX, fid);
+    return await this.redis.checkMember(
+      `${this.DEGEN_CACHE_PREFIX}:hasAllowance`,
+      fid,
+    );
   }
 
   async setFidsWithAllowances(fids: string[]) {
     await this.redis.addMembersWithTtl(
-      this.DEGEN_CACHE_PREFIX,
+      `${this.DEGEN_CACHE_PREFIX}:hasAllowance`,
       fids,
       // 12h
       43200,
