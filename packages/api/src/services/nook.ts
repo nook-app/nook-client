@@ -17,6 +17,7 @@ import {
   NookFarcasterChannelArgs,
   NookShelfInstance,
   NookOnboardingArgs,
+  NookMetadata,
 } from "@nook/common/types";
 import { createHash } from "crypto";
 import { decodeCursor, encodeCursor } from "@nook/common/utils";
@@ -111,6 +112,15 @@ export class NookService {
   }
 
   async getNooks(fid: string) {
+    const user = await this.nookClient.user.findUnique({
+      where: {
+        fid,
+      },
+      select: {
+        metadata: true,
+      },
+    });
+
     const response = await this.nookClient.nook.findMany({
       where: {
         members: {
@@ -132,7 +142,25 @@ export class NookService {
       },
     });
 
-    return response;
+    const sortedShelves = response.map((nook) => {
+      const metadata = nook.metadata as NookMetadata | undefined;
+      if (!metadata?.shelfOrder) return nook;
+      return {
+        ...nook,
+        shelves: metadata.shelfOrder.map((shelfId) =>
+          nook.shelves.find((shelf) => shelf.id === shelfId),
+        ),
+      };
+    });
+
+    const metadata = user?.metadata as { nookOrder: string[] } | undefined;
+    if (metadata?.nookOrder) {
+      return metadata.nookOrder.map((nookId) =>
+        sortedShelves.find((nook) => nook.id === nookId),
+      );
+    }
+
+    return sortedShelves;
   }
 
   hash(data: object): string {
@@ -230,7 +258,7 @@ export class NookService {
                     },
                   },
                   {
-                    shelfId: "1b1d8924-d10c-444d-aacd-e41873bca312",
+                    shelfId: "5e255324-33ad-47a9-b76b-27bca844cc97",
                     name: "Media",
                     description: "Only images and videos",
                     creatorFid: fid,
@@ -241,7 +269,7 @@ export class NookService {
                     },
                   },
                   {
-                    shelfId: "1b1d8924-d10c-444d-aacd-e41873bca312",
+                    shelfId: "6f0c5b0b-3144-41f3-8786-598be640d144",
                     name: "Frames",
                     description: "Only frames",
                     creatorFid: fid,
@@ -429,6 +457,15 @@ export class NookService {
         deletedAt: new Date(),
       },
     });
+
+    await this.nookClient.shelfInstance.updateMany({
+      where: {
+        nookId,
+      },
+      data: {
+        deletedAt: new Date(),
+      },
+    });
   }
 
   async joinNook(nookId: string, fid: string) {
@@ -543,5 +580,31 @@ export class NookService {
       imageUrl: template.imageUrl || undefined,
       form: template.form as Form,
     }));
+  }
+
+  async reorderNooks(fid: string, nookIds: string[]) {
+    await this.nookClient.user.update({
+      where: {
+        fid,
+      },
+      data: {
+        metadata: {
+          nookOrder: nookIds,
+        },
+      },
+    });
+  }
+
+  async reorderShelves(nook: DBNook, shelfIds: string[]) {
+    await this.nookClient.nook.update({
+      where: {
+        id: nook.id,
+      },
+      data: {
+        metadata: {
+          shelfOrder: shelfIds,
+        },
+      },
+    });
   }
 }

@@ -19,6 +19,20 @@ export const nookRoutes = async (fastify: FastifyInstance) => {
       return reply.send({ data });
     });
 
+    fastify.post<{ Body: { nookIds: string[] } }>(
+      "/nooks",
+      async (request, reply) => {
+        const { fid } = (await request.jwtDecode()) as { fid: string };
+        try {
+          await nookService.reorderNooks(fid, request.body.nookIds);
+          return reply.send({});
+        } catch (error) {
+          console.error(error);
+          return reply.code(500).send({ message: "Internal Server Error" });
+        }
+      },
+    );
+
     fastify.get<{ Params: { nookId: string } }>(
       "/nooks/:nookId",
       async (request, reply) => {
@@ -178,6 +192,31 @@ export const nookRoutes = async (fastify: FastifyInstance) => {
         }
       },
     );
+
+    fastify.post<{
+      Params: { nookId: string };
+      Body: { shelfIds: string[] };
+    }>("/nooks/:nookId/shelves", async (request, reply) => {
+      try {
+        const { fid } = (await request.jwtDecode()) as { fid: string };
+        const nook = await nookService.getNook(request.params.nookId);
+        if (
+          !nook ||
+          nook.deletedAt ||
+          (nook.visibility === "PRIVATE" && nook.creatorFid !== fid)
+        ) {
+          return reply.code(404).send({ message: "Nook not found" });
+        }
+        if (nook.creatorFid !== fid) {
+          return reply.code(403).send({ message: "Forbidden" });
+        }
+        await nookService.reorderShelves(nook, request.body.shelfIds);
+        return reply.send({});
+      } catch (error) {
+        console.error(error);
+        return reply.code(500).send({ message: "Internal Server Error" });
+      }
+    });
 
     fastify.delete<{
       Params: { nookId: string; shelfId: string };

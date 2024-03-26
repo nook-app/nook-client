@@ -87,7 +87,9 @@ export class ShelfService {
         };
       }
       case ShelfType.FARCASTER_MEDIA: {
-        const response = await this.getFarcasterCastHashes(shelf.api, body);
+        const response = await this.content.getNewMedia(
+          body as ShelfDataRequest<FarcasterMediaArgs>,
+        );
         const media = await this.farcaster.getCasts(response.data, viewerFid);
         return {
           data: media.data,
@@ -95,7 +97,9 @@ export class ShelfService {
         };
       }
       case ShelfType.FARCASTER_FRAMES: {
-        const response = await this.getFarcasterCastHashes(shelf.api, body);
+        const response = await this.content.getNewFrames(
+          body as ShelfDataRequest<FarcasterFrameArgs>,
+        );
         const frames = await this.farcaster.getCasts(response.data, viewerFid);
         return {
           data: frames.data,
@@ -103,7 +107,9 @@ export class ShelfService {
         };
       }
       case ShelfType.FARCASTER_EMBEDS: {
-        const response = await this.getFarcasterCastHashes(shelf.api, body);
+        const response = await this.content.getNewEmbeds(
+          body as ShelfDataRequest<FarcasterEmbedArgs>,
+        );
         const embeds = await this.farcaster.getCasts(response.data, viewerFid);
         return {
           data: embeds.data,

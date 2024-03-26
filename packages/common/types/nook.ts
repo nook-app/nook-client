@@ -13,7 +13,7 @@ export type Nook = {
 };
 
 export type NookMetadata = {
-  isHome?: boolean;
+  shelfOrder: string[];
 };
 
 export type NookShelf = {

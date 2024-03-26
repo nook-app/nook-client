@@ -16,6 +16,8 @@ model User {
     siwfData     Json
     theme        String   @default("mauve")
 
+    metadata Json?
+
     createdAt DateTime @default(now())
     updatedAt DateTime @default(now()) @updatedAt
 
