@@ -101,9 +101,7 @@ model FarcasterCast {
     @@index([fid, deletedAt, parentHash, timestamp(sort: Desc)])
     @@index([parentUrl, deletedAt, parentHash, timestamp(sort: Desc)])
     @@index([timestamp(sort: Desc), fid, deletedAt, parentHash])
-    @@index([timestamp(sort: Desc), deletedAt, fid, parentHash])
     @@index([timestamp(sort: Desc), parentUrl, deletedAt, parentHash])
-    @@index([timestamp(sort: Desc), deletedAt, parentUrl, parentHash])
     @@index([timestamp(sort: Desc), deletedAt, parentHash])
 }
 
@@ -120,7 +118,6 @@ model FarcasterCastMention {
     cast FarcasterCast @relation(fields: [hash], references: [hash], onDelete: Cascade)
 
     @@id([hash, mention, mentionPosition])
-    @@index([fid])
 }
 
 model FarcasterCastEmbedCast {
@@ -136,8 +133,6 @@ model FarcasterCastEmbedCast {
     cast FarcasterCast @relation(fields: [hash], references: [hash], onDelete: Cascade)
 
     @@id([hash, embedHash])
-    @@index([embedFid, embedHash])
-    @@index([fid])
     @@index([embedHash])
 }
 
@@ -153,7 +148,6 @@ model FarcasterCastEmbedUrl {
     cast FarcasterCast @relation(fields: [hash], references: [hash], onDelete: Cascade)
 
     @@id([hash, url])
-    @@index([fid])
 }
 
 model FarcasterCastReaction {
@@ -173,11 +167,6 @@ model FarcasterCastReaction {
     deletedAt DateTime?
 
     @@id([targetHash, reactionType, fid])
-    @@index([fid])
-    @@index([timestamp, targetHash, deletedAt, reactionType])
-    @@index([timestamp, fid, deletedAt, reactionType])
-    @@index([fid, reactionType, deletedAt])
-    @@index([targetFid, reactionType, deletedAt])
 }
 
 model FarcasterUrlReaction {
@@ -195,7 +184,6 @@ model FarcasterUrlReaction {
     deletedAt DateTime?
 
     @@id([targetUrl, reactionType, fid])
-    @@index([fid])
 }
 
 model FarcasterLink {
@@ -214,8 +202,6 @@ model FarcasterLink {
 
     @@id([fid, linkType, targetFid])
     @@index([targetFid, linkType])
-    @@index([timestamp, fid, deletedAt, linkType])
-    @@index([timestamp, targetFid, deletedAt, linkType])
 }
 
 model FarcasterParentUrl {
