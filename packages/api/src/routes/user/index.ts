@@ -20,6 +20,14 @@ export const userRoutes = async (fastify: FastifyInstance) => {
           return reply.code(404).send({ message: "User not found" });
         }
         const nooks = await nookService.getNooks(fid);
+        await userService.updateMetadata(fid, {
+          actionBar: (data.metadata as UserMetadata)?.actionBar || [
+            "reply",
+            "recast",
+            "like",
+          ],
+          nookOrder: nooks.map((nook) => nook.id),
+        });
         return reply.send({
           ...data,
           nooks,

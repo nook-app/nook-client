@@ -60,6 +60,9 @@ export class UserService {
           signedUpAt: new Date(),
           loggedInAt: new Date(),
           siwfData: {},
+          metadata: {
+            actionBar: ["reply", "recast", "like"],
+          },
         },
       });
     } else {
@@ -129,6 +132,9 @@ export class UserService {
           loggedInAt: date,
           refreshToken,
           siwfData: request,
+          metadata: {
+            actionBar: ["reply", "recast", "like"],
+          },
         },
       });
     } else {
@@ -205,21 +211,6 @@ export class UserService {
 
     if (!user) {
       return;
-    }
-
-    const metadata = user.metadata as UserMetadata | undefined;
-    if (!metadata?.actionBar) {
-      await this.nookClient.user.update({
-        where: {
-          fid,
-        },
-        data: {
-          metadata: {
-            ...(metadata || {}),
-            actionBar: ["reply", "recast", "like"],
-          },
-        },
-      });
     }
 
     return {

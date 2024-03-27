@@ -178,22 +178,8 @@ export class NookService {
         ...sortedShelves.filter(
           (nook) => !metadata.nookOrder?.includes(nook.id),
         ),
-      ];
+      ] as DBNook[];
     }
-
-    const actionBar = metadata?.actionBar || ["reply", "recast", "like"];
-
-    await this.nookClient.user.update({
-      where: {
-        fid,
-      },
-      data: {
-        metadata: {
-          actionBar,
-          nookOrder: sortedShelves.map((nook) => nook.id),
-        },
-      },
-    });
 
     return sortedShelves;
   }
@@ -516,6 +502,7 @@ export class NookService {
         },
         data: {
           metadata: {
+            ...metadata,
             nookOrder: metadata.nookOrder.filter((id) => id !== nookId),
           },
         },
@@ -545,6 +532,7 @@ export class NookService {
         },
         data: {
           metadata: {
+            ...metadata,
             nookOrder: [...metadata.nookOrder, nookId],
           },
         },
@@ -574,6 +562,7 @@ export class NookService {
         },
         data: {
           metadata: {
+            ...metadata,
             nookOrder: metadata.nookOrder.filter((id) => id !== nookId),
           },
         },
@@ -604,6 +593,7 @@ export class NookService {
         },
         data: {
           metadata: {
+            ...metadata,
             shelfOrder: [...metadata.shelfOrder, shelf.id],
           },
         },
@@ -631,6 +621,7 @@ export class NookService {
         },
         data: {
           metadata: {
+            ...metadata,
             shelfOrder: metadata.shelfOrder.filter((id) => id !== shelfId),
           },
         },
@@ -714,7 +705,25 @@ export class NookService {
       },
       data: {
         metadata: {
+          ...(nook.metadata as NookMetadata),
           shelfOrder: shelfIds,
+        },
+      },
+    });
+  }
+
+  async getRecommendedNooks(fid: string) {
+    return await this.nookClient.nook.findMany({
+      where: {
+        visibility: "PUBLIC",
+        creatorFid: "262426",
+        deletedAt: null,
+      },
+      include: {
+        shelves: {
+          where: {
+            deletedAt: null,
+          },
         },
       },
     });

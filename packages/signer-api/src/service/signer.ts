@@ -149,18 +149,31 @@ export class SignerService {
       };
     }
 
-    const parsedMentions = [];
-    const mentionRegex = /@(\w+)(?=\s|$|\W(?!\w))/g;
-    let match = mentionRegex.exec(req.text);
-    while (match !== null) {
-      parsedMentions.push({ name: match[1], position: match.index });
-      match = mentionRegex.exec(req.text);
+    const mentionRegex = /(^|\s|\.)(@[a-z0-9][a-z0-9-]{0,15}(?:\.eth)?)/gi;
+    const rawMentions = [...req.text.matchAll(mentionRegex)].map((match) => ({
+      name: match[2],
+      position: (match.index || 0) + match[1].length,
+    }));
+
+    const formattedMentions = [];
+
+    let replacedText = "";
+    let lastPosition = 0;
+    for (const mention of rawMentions) {
+      replacedText += req.text.slice(lastPosition, mention.position);
+      const formattedPosition = new TextEncoder().encode(replacedText).length;
+      formattedMentions.push({
+        name: mention.name,
+        position: formattedPosition,
+      });
+      lastPosition = mention.position + mention.name.length;
     }
+    replacedText += req.text.slice(lastPosition);
 
     const mentions = (
       await Promise.all(
-        parsedMentions.map(async ({ name, position }) => {
-          const fid = await this.getUsernameProof(name);
+        formattedMentions.map(async ({ name, position }) => {
+          const fid = await this.getUsernameProof(name.slice(1));
           return {
             name,
             mention: fid,
@@ -173,12 +186,6 @@ export class SignerService {
       mention: number;
       position: number;
     }[];
-
-    const namesToReplace = mentions.map((mention) => mention.name);
-    const text = req.text.replace(
-      new RegExp(`@(${namesToReplace.join("|")})\\b`, "g"),
-      "",
-    );
 
     let parentCastId: CastId | undefined;
     if (req.parentFid && req.parentHash) {
@@ -202,7 +209,7 @@ export class SignerService {
 
     const castAddMessage = await makeCastAdd(
       {
-        text,
+        text: replacedText,
         mentions: mentions.map(({ mention }) => mention),
         mentionsPositions: mentions.map(({ position }) => position),
         embeds,

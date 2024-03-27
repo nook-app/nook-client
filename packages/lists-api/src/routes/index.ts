@@ -117,9 +117,7 @@ export const listsRoutes = async (fastify: FastifyInstance) => {
       async (request, reply) => {
         try {
           const { fid } = (await request.jwtDecode()) as { fid: string };
-          console.log(fid);
           const list = await listService.getUserList(request.params.listId);
-          console.log(list?.creatorFid);
           if (
             !list ||
             list.deletedAt ||
