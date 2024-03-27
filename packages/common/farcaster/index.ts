@@ -7,6 +7,7 @@ import {
 } from "../prisma/farcaster";
 export * from "./events";
 export * from "./notifications";
+export * from "./message";
 
 export const timestampToDate = (timestamp: number) =>
   new Date(timestamp * 1000 + FARCASTER_EPOCH);

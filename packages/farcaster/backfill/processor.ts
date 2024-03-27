@@ -18,7 +18,7 @@ import {
   messageToUserData,
   messageToUsernameProof,
   messageToVerification,
-} from "../src/utils";
+} from "@nook/common/farcaster";
 import {
   FarcasterCast,
   FarcasterCastEmbedCast,
@@ -45,7 +45,7 @@ export class FarcasterBackfillProcessor {
 
   async backfillFid(fid: number) {
     console.log(`[${fid}] backfilling...`);
-    
+
     await Promise.all([
       this.handleCastAdd(fid),
       this.handleLinkAdd(fid),
@@ -92,7 +92,7 @@ export class FarcasterBackfillProcessor {
     await this.backfillUsernameProofAdd(usernameProofs.value.proofs);
     console.log(
       `[${fid}] backfilled ${usernameProofs.value.proofs.length} username proofs`,
-    )
+    );
   }
 
   async handleUserDataAdd(fid: number) {
@@ -116,7 +116,6 @@ export class FarcasterBackfillProcessor {
       `[${fid}] backfilled ${verificationMessages.length} verifications`,
     );
   }
-
 
   async getMessagesFromHub(
     fid: number,

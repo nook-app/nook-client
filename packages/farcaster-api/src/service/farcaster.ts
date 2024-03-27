@@ -26,6 +26,8 @@ import {
   getCastEmbeds,
   getEmbedUrls,
   getMentions,
+  hexToBuffer,
+  messageToCast,
 } from "@nook/common/farcaster";
 import {
   decodeCursorTimestamp,
@@ -259,6 +261,26 @@ export class FarcasterService {
           deletedAt: null,
         },
       });
+
+      const missingHashes = uncachedHashes.filter(
+        (hash) => !data.find((cast) => cast.hash === hash),
+      );
+      if (missingHashes.length > 0 && viewerFid) {
+        const missingCasts = await Promise.all(
+          missingHashes.map(async (hash) => {
+            const message = await this.hub.getCast({
+              fid: Number(viewerFid),
+              hash: hexToBuffer(hash),
+            });
+            if (message.isErr()) return;
+            const cast = messageToCast(message.value);
+            if (!cast) return;
+            return cast;
+          }),
+        );
+        data.push(...(missingCasts.filter(Boolean) as DBFarcasterCast[]));
+      }
+      if (data.length === 0) return [];
 
       const appFidsBySigner = await this.getCastSignerAppFids(data);
 

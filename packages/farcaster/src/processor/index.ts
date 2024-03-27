@@ -17,7 +17,7 @@ import {
   messageToUserData,
   messageToUsernameProof,
   messageToVerification,
-} from "../utils";
+} from "@nook/common/farcaster";
 import {
   bufferToHex,
   bufferToHexAddress,
