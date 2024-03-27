@@ -280,7 +280,6 @@ export class FarcasterService {
         );
         data.push(...(missingCasts.filter(Boolean) as DBFarcasterCast[]));
       }
-      if (data.length === 0) return [];
 
       const appFidsBySigner = await this.getCastSignerAppFids(data);
 
