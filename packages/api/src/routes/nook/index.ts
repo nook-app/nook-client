@@ -19,20 +19,6 @@ export const nookRoutes = async (fastify: FastifyInstance) => {
       return reply.send({ data });
     });
 
-    fastify.post<{ Body: { nookIds: string[] } }>(
-      "/nooks",
-      async (request, reply) => {
-        const { fid } = (await request.jwtDecode()) as { fid: string };
-        try {
-          await nookService.reorderNooks(fid, request.body.nookIds);
-          return reply.send({});
-        } catch (error) {
-          console.error(error);
-          return reply.code(500).send({ message: "Internal Server Error" });
-        }
-      },
-    );
-
     fastify.get<{ Params: { nookId: string } }>(
       "/nooks/:nookId",
       async (request, reply) => {
@@ -156,7 +142,7 @@ export const nookRoutes = async (fastify: FastifyInstance) => {
           if (nook.creatorFid !== fid) {
             return reply.code(403).send({ message: "Forbidden" });
           }
-          await nookService.deleteNook(request.params.nookId);
+          await nookService.deleteNook(fid, request.params.nookId);
           return reply.send({});
         } catch (error) {
           console.error(error);

@@ -6,6 +6,7 @@ import {
 } from "@farcaster/auth-client";
 import { SignInWithFarcasterRequest, TokenResponse } from "../../types";
 import { PrismaClient } from "@nook/common/prisma/nook";
+import { UserMetadata } from "@nook/common/types";
 
 const DEV_USER_FID = 20716;
 
@@ -206,11 +207,25 @@ export class UserService {
       return;
     }
 
+    const metadata = user.metadata as UserMetadata | undefined;
+    if (!metadata?.actionBar) {
+      await this.nookClient.user.update({
+        where: {
+          fid,
+        },
+        data: {
+          metadata: {
+            ...(metadata || {}),
+            actionBar: ["reply", "recast", "like"],
+          },
+        },
+      });
+    }
+
     return {
-      fid: user.fid,
-      signedUpAt: user.signedUpAt,
-      loggedInAt: user.loggedInAt,
-      theme: user.theme,
+      ...user,
+      siwfData: undefined,
+      refreshToken: undefined,
     };
   }
 
@@ -232,5 +247,31 @@ export class UserService {
       loggedInAt: user.loggedInAt,
       theme: user.theme,
     };
+  }
+
+  async updateMetadata(fid: string, metadata: UserMetadata) {
+    const user = await this.nookClient.user.findFirst({
+      where: {
+        fid,
+      },
+    });
+
+    if (!user) {
+      return;
+    }
+
+    const existingMetadata = user.metadata as UserMetadata | undefined;
+
+    await this.nookClient.user.update({
+      where: {
+        fid,
+      },
+      data: {
+        metadata: {
+          ...existingMetadata,
+          ...metadata,
+        },
+      },
+    });
   }
 }

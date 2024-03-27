@@ -4,10 +4,13 @@ import {
   SignInWithPasswordRequest,
 } from "../../../types";
 import { UserService } from "../../services/user";
+import { UserMetadata } from "@nook/common/types";
+import { NookService } from "../../services/nook";
 
 export const userRoutes = async (fastify: FastifyInstance) => {
   fastify.register(async (fastify: FastifyInstance) => {
     const userService = new UserService(fastify);
+    const nookService = new NookService(fastify);
 
     fastify.get("/user", async (request, reply) => {
       const { fid } = (await request.jwtDecode()) as { fid: string };
@@ -16,7 +19,11 @@ export const userRoutes = async (fastify: FastifyInstance) => {
         if (!data) {
           return reply.code(404).send({ message: "User not found" });
         }
-        return reply.send(data);
+        const nooks = await nookService.getNooks(fid);
+        return reply.send({
+          ...data,
+          nooks,
+        });
       } catch (e) {
         console.error(e);
         return reply.code(500).send({ message: (e as Error).message });
@@ -106,6 +113,20 @@ export const userRoutes = async (fastify: FastifyInstance) => {
             return reply.code(401).send({ message: "Unauthorized" });
           }
           return reply.send(data);
+        } catch (e) {
+          console.error(e);
+          return reply.code(500).send({ message: (e as Error).message });
+        }
+      },
+    );
+
+    fastify.patch<{ Body: UserMetadata }>(
+      "/user/metadata",
+      async (request, reply) => {
+        const { fid } = (await request.jwtDecode()) as { fid: string };
+        try {
+          await userService.updateMetadata(fid, request.body);
+          return reply.send({});
         } catch (e) {
           console.error(e);
           return reply.code(500).send({ message: (e as Error).message });

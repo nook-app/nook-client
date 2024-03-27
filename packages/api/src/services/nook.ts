@@ -18,6 +18,7 @@ import {
   NookShelfInstance,
   NookOnboardingArgs,
   NookMetadata,
+  UserMetadata,
 } from "@nook/common/types";
 import { createHash } from "crypto";
 import { decodeCursor, encodeCursor } from "@nook/common/utils";
@@ -142,23 +143,57 @@ export class NookService {
       },
     });
 
-    const sortedShelves = response.map((nook) => {
-      const metadata = nook.metadata as NookMetadata | undefined;
-      if (!metadata?.shelfOrder) return nook;
-      return {
-        ...nook,
-        shelves: metadata.shelfOrder.map((shelfId) =>
-          nook.shelves.find((shelf) => shelf.id === shelfId),
-        ),
-      };
-    });
+    const sortedShelves = await Promise.all(
+      response.map(async (nook) => {
+        const metadata = nook.metadata as NookMetadata | undefined;
+        if (!metadata?.shelfOrder) {
+          await this.nookClient.nook.update({
+            where: {
+              id: nook.id,
+            },
+            data: {
+              metadata: {
+                ...metadata,
+                shelfOrder: nook.shelves.map((shelf) => shelf.id),
+              },
+            },
+          });
+          return nook;
+        }
+        return {
+          ...nook,
+          shelves: metadata.shelfOrder.map((shelfId) =>
+            nook.shelves.find((shelf) => shelf.id === shelfId),
+          ),
+        };
+      }),
+    );
 
-    const metadata = user?.metadata as { nookOrder: string[] } | undefined;
+    const metadata = user?.metadata as UserMetadata | undefined;
     if (metadata?.nookOrder) {
-      return metadata.nookOrder.map((nookId) =>
-        sortedShelves.find((nook) => nook.id === nookId),
-      );
+      return [
+        ...metadata.nookOrder
+          .map((nookId) => sortedShelves.find((nook) => nook.id === nookId))
+          .filter((nook) => nook),
+        ...sortedShelves.filter(
+          (nook) => !metadata.nookOrder?.includes(nook.id),
+        ),
+      ];
     }
+
+    const actionBar = metadata?.actionBar || ["reply", "recast", "like"];
+
+    await this.nookClient.user.update({
+      where: {
+        fid,
+      },
+      data: {
+        metadata: {
+          actionBar,
+          nookOrder: sortedShelves.map((nook) => nook.id),
+        },
+      },
+    });
 
     return sortedShelves;
   }
@@ -443,7 +478,7 @@ export class NookService {
     return nookData;
   }
 
-  async deleteNook(nookId: string) {
+  async deleteNook(fid: string, nookId: string) {
     await this.nookClient.nookMembership.deleteMany({
       where: {
         nookId,
@@ -466,6 +501,26 @@ export class NookService {
         deletedAt: new Date(),
       },
     });
+
+    const user = await this.nookClient.user.findUnique({
+      where: {
+        fid,
+      },
+    });
+
+    const metadata = user?.metadata as UserMetadata | undefined;
+    if (metadata?.nookOrder) {
+      await this.nookClient.user.update({
+        where: {
+          fid,
+        },
+        data: {
+          metadata: {
+            nookOrder: metadata.nookOrder.filter((id) => id !== nookId),
+          },
+        },
+      });
+    }
   }
 
   async joinNook(nookId: string, fid: string) {
@@ -475,6 +530,26 @@ export class NookService {
         fid,
       },
     });
+
+    const user = await this.nookClient.user.findUnique({
+      where: {
+        fid,
+      },
+    });
+
+    const metadata = user?.metadata as UserMetadata | undefined;
+    if (metadata?.nookOrder && !metadata.nookOrder.includes(nookId)) {
+      await this.nookClient.user.update({
+        where: {
+          fid,
+        },
+        data: {
+          metadata: {
+            nookOrder: [...metadata.nookOrder, nookId],
+          },
+        },
+      });
+    }
   }
 
   async leaveNook(nookId: string, fid: string) {
@@ -484,10 +559,30 @@ export class NookService {
         fid,
       },
     });
+
+    const user = await this.nookClient.user.findUnique({
+      where: {
+        fid,
+      },
+    });
+
+    const metadata = user?.metadata as UserMetadata | undefined;
+    if (metadata?.nookOrder) {
+      await this.nookClient.user.update({
+        where: {
+          fid,
+        },
+        data: {
+          metadata: {
+            nookOrder: metadata.nookOrder.filter((id) => id !== nookId),
+          },
+        },
+      });
+    }
   }
 
   async addShelf(nook: DBNook, instance: CreateShelfInstance) {
-    return await this.nookClient.shelfInstance.create({
+    const shelf = await this.nookClient.shelfInstance.create({
       data: {
         nookId: nook.id,
         shelfId: instance.shelfId,
@@ -500,6 +595,22 @@ export class NookService {
         renderer: instance.renderer,
       },
     });
+
+    const metadata = nook.metadata as NookMetadata | undefined;
+    if (metadata?.shelfOrder) {
+      await this.nookClient.nook.update({
+        where: {
+          id: nook.id,
+        },
+        data: {
+          metadata: {
+            shelfOrder: [...metadata.shelfOrder, shelf.id],
+          },
+        },
+      });
+    }
+
+    return shelf;
   }
 
   async removeShelf(nook: DBNook, shelfId: string) {
@@ -511,6 +622,20 @@ export class NookService {
         deletedAt: new Date(),
       },
     });
+
+    const metadata = nook.metadata as NookMetadata | undefined;
+    if (metadata?.shelfOrder) {
+      await this.nookClient.nook.update({
+        where: {
+          id: nook.id,
+        },
+        data: {
+          metadata: {
+            shelfOrder: metadata.shelfOrder.filter((id) => id !== shelfId),
+          },
+        },
+      });
+    }
   }
 
   async updateShelf(shelfId: string, instance: NookShelfInstance) {
@@ -580,19 +705,6 @@ export class NookService {
       imageUrl: template.imageUrl || undefined,
       form: template.form as Form,
     }));
-  }
-
-  async reorderNooks(fid: string, nookIds: string[]) {
-    await this.nookClient.user.update({
-      where: {
-        fid,
-      },
-      data: {
-        metadata: {
-          nookOrder: nookIds,
-        },
-      },
-    });
   }
 
   async reorderShelves(nook: DBNook, shelfIds: string[]) {

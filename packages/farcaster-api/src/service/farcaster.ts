@@ -1156,7 +1156,7 @@ export class FarcasterService {
     });
 
     const casts = await this.getCastsFromHashes(
-      embeds.map(({ embedHash }) => embedHash),
+      embeds.map(({ hash }) => hash),
       viewerFid,
     );
 

@@ -1,7 +1,6 @@
 import {
   AllTipAllowancesResponse,
   IndividualTipAllowance,
-  TipAllowanceResponse,
 } from "../../types/degen";
 import { BaseAPIClient } from "./base";
 
@@ -9,7 +8,7 @@ export class DegenAPIClient extends BaseAPIClient {
   API_ENDPOINT = process.env.DEGEN_API_ENDPOINT;
 
   async getAllAllowances(): Promise<AllTipAllowancesResponse> {
-    const response = await this.makeRequest("airdrop2/tip-allowances");
+    const response = await this.makeRequest("/airdrop2/tip-allowances");
 
     if (!response.ok) {
       throw new Error(response.statusText);
@@ -22,7 +21,7 @@ export class DegenAPIClient extends BaseAPIClient {
     fid: string,
   ): Promise<IndividualTipAllowance | null> {
     const response = await this.makeRequest(
-      `airdrop2/tip-allowance?fid=${fid}`,
+      `/airdrop2/tip-allowance?fid=${fid}`,
     );
 
     if (!response.ok) {

@@ -5,17 +5,14 @@ export const degenRoutes = async (fastify: FastifyInstance) => {
   fastify.register(async (fastify: FastifyInstance) => {
     const client = new DegenService(fastify);
 
-    fastify.get<{ Params: { fid: string } }>(
-      "/tips/degen/allowance/:fid",
-      async (request, reply) => {
-        await request.jwtVerify();
-        const data = await client.getAllowance(request.params.fid);
-        if (!data) {
-          reply.status(404).send({ message: "Allowance not found" });
-          return;
-        }
-        return reply.send(data);
-      },
-    );
+    fastify.get("/tips/degen/allowance", async (request, reply) => {
+      const { fid } = (await request.jwtDecode()) as { fid: string };
+      const data = await client.getAllowance("4525");
+      if (!data) {
+        reply.status(404).send({ message: "Allowance not found" });
+        return;
+      }
+      return reply.send(data);
+    });
   });
 };
