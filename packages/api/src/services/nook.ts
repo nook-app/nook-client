@@ -163,9 +163,16 @@ export class NookService {
         }
         return {
           ...nook,
-          shelves: metadata.shelfOrder.map((shelfId) =>
-            nook.shelves.find((shelf) => shelf.id === shelfId),
-          ),
+          shelves: [
+            ...metadata.shelfOrder
+              .map((shelfId) =>
+                nook.shelves.find((shelf) => shelf.id === shelfId),
+              )
+              .filter((shelf) => shelf),
+            ...nook.shelves.filter(
+              (shelf) => !metadata.shelfOrder.includes(shelf.id),
+            ),
+          ],
         };
       }),
     );
