@@ -7,7 +7,7 @@ export const degenRoutes = async (fastify: FastifyInstance) => {
 
     fastify.get("/tips/degen/allowance", async (request, reply) => {
       const { fid } = (await request.jwtDecode()) as { fid: string };
-      const data = await client.getAllowance("4525");
+      const data = await client.getAllowance(fid);
       if (!data) {
         reply.status(404).send({ message: "Allowance not found" });
         return;
