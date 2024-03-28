@@ -95,7 +95,11 @@ export class RedisClient {
     return await this.redis.mget(keys);
   }
 
-  async set(key: string, value: string) {
+  async set(key: string, value: string, ex?: number) {
+    if (ex) {
+      await this.redis.set(key, value, "EX", ex);
+      return;
+    }
     await this.redis.set(key, value);
   }
 
@@ -120,7 +124,11 @@ export class RedisClient {
   }
 
   // biome-ignore lint/suspicious/noExplicitAny: generic setter
-  async setJson(key: string, value: any) {
+  async setJson(key: string, value: any, ex?: number) {
+    if (ex) {
+      await this.redis.set(key, JSON.stringify(value, replacer), "EX", ex);
+      return;
+    }
     await this.redis.set(key, JSON.stringify(value, replacer));
   }
 

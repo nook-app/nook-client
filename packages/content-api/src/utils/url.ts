@@ -89,7 +89,7 @@ export const getUrlContent = async (
     return;
   }
 
-  if (!content.metadata) {
+  if (!content.type) {
     return;
   }
 

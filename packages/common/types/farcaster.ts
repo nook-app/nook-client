@@ -3,6 +3,10 @@ export type CastContextType = "likes" | "recasts";
 export type UserEngagementType = "followers" | "following";
 export type UserContextType = "following";
 
+export type FarcasterUserBadges = {
+  powerBadge: boolean;
+};
+
 export type FarcasterUserEngagement = {
   followers: number;
   following: number;
@@ -25,6 +29,7 @@ export type BaseFarcasterUser = {
 export type FarcasterUser = BaseFarcasterUser & {
   engagement: FarcasterUserEngagement;
   context?: FarcasterUserContext;
+  badges?: FarcasterUserBadges;
 };
 
 export type FarcasterCastEngagement = {

@@ -16,6 +16,7 @@ export class FarcasterCacheClient {
   USER_CACHE_PREFIX = "farcaster:user";
   CHANNEL_CACHE_PREFIX = "farcaster:channel";
   CLIENT_CACHE_PREFIX = "farcaster:client";
+  POWER_BADGE_CACHE_PREFIX = "warpcast:power-badge";
 
   constructor(redis: RedisClient) {
     this.redis = redis;
@@ -221,5 +222,32 @@ export class FarcasterCacheClient {
 
   async removeAppFidBySigner(pubkey: string) {
     await this.redis.del(`${this.CLIENT_CACHE_PREFIX}:${pubkey}`);
+  }
+
+  async setPowerBadgeUsers(users: string[]) {
+    await this.redis.setJson(this.POWER_BADGE_CACHE_PREFIX, users);
+  }
+
+  async getPowerBadgeUsers(): Promise<string[]> {
+    return await this.redis.getJson(this.POWER_BADGE_CACHE_PREFIX);
+  }
+
+  async getUserPowerBadge(fid: string): Promise<boolean> {
+    const powerBadge = await this.redis.get(
+      `${this.USER_CACHE_PREFIX}:${fid}:power-badge`,
+    );
+    if (powerBadge === "1") return true;
+    if (powerBadge === "0") return false;
+
+    const powerBadges = await this.getPowerBadgeUsers();
+    if (!powerBadges) return false;
+
+    const hasPowerBadge = powerBadges.includes(fid);
+    await this.redis.set(
+      `${this.USER_CACHE_PREFIX}:${fid}:power-badge`,
+      hasPowerBadge ? "1" : "0",
+      60 * 60 * 24,
+    );
+    return hasPowerBadge;
   }
 }

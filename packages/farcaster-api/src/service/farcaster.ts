@@ -21,6 +21,7 @@ import {
   GetFarcasterCastsResponse,
   GetFarcasterUsersResponse,
   UrlContentResponse,
+  FarcasterUserBadges,
 } from "@nook/common/types";
 import {
   getCastEmbeds,
@@ -848,14 +849,16 @@ export class FarcasterService {
 
     const response = await Promise.all(
       users.map(async (user) => {
-        const [engagement, context] = await Promise.all([
+        const [engagement, context, badges] = await Promise.all([
           this.getUserEngagement(user.fid),
           this.getUserContext(user.fid, viewerFid),
+          this.getUserBadges(user.fid),
         ]);
         return {
           ...user,
           engagement,
           context,
+          badges,
         };
       }),
     );
@@ -870,6 +873,11 @@ export class FarcasterService {
     ]);
 
     return { followers, following };
+  }
+
+  async getUserBadges(fid: string): Promise<FarcasterUserBadges> {
+    const powerBadge = await this.cache.getUserPowerBadge(fid);
+    return { powerBadge };
   }
 
   async getUserEngagementItem(
