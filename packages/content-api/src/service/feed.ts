@@ -43,14 +43,17 @@ export class FeedService {
   }
 
   async getNewFrames(req: ShelfDataRequest<FarcasterFrameArgs>) {
-    const conditions: string[] = [`"content"."hasFrame"`];
+    const conditions: string[] = [];
 
     if (req.data.urls) {
       for (const filter of req.data.urls) {
         conditions.push(`"content"."uri" ILIKE '%${sanitizeInput(filter)}%'`);
       }
     }
-    return this.getNewContent(req, [`(${conditions.join(" OR ")})`]);
+    return this.getNewContent(req, [
+      `"content"."hasFrame"`,
+      `(${conditions.join(" OR ")})`,
+    ]);
   }
 
   async getNewMedia(req: ShelfDataRequest<FarcasterMediaArgs>) {
