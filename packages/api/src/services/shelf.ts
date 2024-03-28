@@ -67,7 +67,9 @@ export class ShelfService {
                 },
               },
             );
-            if (!response.ok) return { data: [], nextCursor: undefined };
+            if (!response.ok) {
+              return { data: [], nextCursor: undefined };
+            }
             const { casts, next } = await response.json();
             hashes = casts.map((cast: { hash: string }) => cast.hash);
             nextCursor = next.cursor;

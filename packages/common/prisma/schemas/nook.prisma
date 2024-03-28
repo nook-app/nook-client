@@ -105,6 +105,7 @@ model Shelf {
     api       String
     form      Json
     renderers String
+    tags      String?
 
     enabled Boolean @default(false)
 

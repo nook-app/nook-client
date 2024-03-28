@@ -8,7 +8,7 @@
   },
   "dependencies": {
     "@farcaster/fishery": "^2.2.3",
-    "@farcaster/hub-nodejs": "^0.11.3",
+    "@farcaster/hub-nodejs": "^0.11.8",
     "@fastify/jwt": "^8.0.0",
     "@nook/common": "*",
     "fastify": "^4.25.2"

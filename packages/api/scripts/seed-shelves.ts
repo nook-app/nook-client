@@ -7,6 +7,7 @@ import {
   ShelfRenderer,
   ShelfType,
   UserFilterType,
+  NookShelfTag,
 } from "@nook/common/types";
 
 const NOOK_FID = "262426";
@@ -40,6 +41,7 @@ const SHELVES: Omit<NookShelf, "id">[] = [
       ],
     },
     renderers: [ShelfRenderer.USER_LIST],
+    tags: [NookShelfTag.Users],
   },
   {
     name: "User Profile",
@@ -67,6 +69,7 @@ const SHELVES: Omit<NookShelf, "id">[] = [
       ],
     },
     renderers: [ShelfRenderer.USER_LIST],
+    tags: [NookShelfTag.Users],
   },
   {
     name: "Post Feed",
@@ -134,6 +137,7 @@ const SHELVES: Omit<NookShelf, "id">[] = [
       ],
     },
     renderers: [ShelfRenderer.POST_DEFAULT],
+    tags: [NookShelfTag.Feeds],
   },
   {
     name: "Media Feed",
@@ -180,6 +184,7 @@ const SHELVES: Omit<NookShelf, "id">[] = [
       ],
     },
     renderers: [ShelfRenderer.POST_MEDIA],
+    tags: [NookShelfTag.Feeds],
   },
   {
     name: "Frame Feed",
@@ -237,6 +242,7 @@ const SHELVES: Omit<NookShelf, "id">[] = [
       ],
     },
     renderers: [ShelfRenderer.POST_FRAMES],
+    tags: [NookShelfTag.Feeds, NookShelfTag.Frames],
   },
   {
     name: "Embed Feed",
@@ -295,6 +301,7 @@ const SHELVES: Omit<NookShelf, "id">[] = [
       ],
     },
     renderers: [ShelfRenderer.POST_EMBEDS],
+    tags: [NookShelfTag.Feeds],
   },
   {
     name: "Trending",
@@ -339,6 +346,36 @@ const SHELVES: Omit<NookShelf, "id">[] = [
       ],
     },
     renderers: [ShelfRenderer.POST_DEFAULT],
+    tags: [NookShelfTag.Feeds],
+  },
+  {
+    name: "Pin Frame",
+    description: "Display a frame on a standalone screen",
+    protocol: ShelfProtocol.FARCASTER,
+    type: ShelfType.PIN_FRAME,
+    api: `${process.env.CONTENT_API_ENDPOINT}/content`,
+    creatorFid: NOOK_FID,
+    form: {
+      steps: [
+        {
+          fields: [
+            {
+              name: "URL",
+              description: "Enter a URL hosting a frame",
+              field: "url",
+              required: true,
+              component: {
+                type: FormComponentType.URL,
+                hasFrame: true,
+                placeholder: "Enter a frame URL...",
+              },
+            },
+          ],
+        },
+      ],
+    },
+    renderers: [ShelfRenderer.PIN_FRAME],
+    tags: [NookShelfTag.Frames],
   },
 ];
 
@@ -363,6 +400,7 @@ const run = async () => {
         data: {
           ...shelf,
           renderers: shelf.renderers.join(","),
+          tags: shelf.tags ? shelf.tags.join(",") : undefined,
           form: shelf.form as Prisma.InputJsonValue,
         },
       });
@@ -374,6 +412,7 @@ const run = async () => {
       data: {
         ...shelf,
         form: shelf.form as Prisma.InputJsonValue,
+        tags: shelf.tags ? shelf.tags.join(",") : undefined,
         renderers: shelf.renderers.join(","),
       },
     });

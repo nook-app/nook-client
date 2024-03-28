@@ -16,6 +16,12 @@ export type NookMetadata = {
   shelfOrder: string[];
 };
 
+export enum NookShelfTag {
+  Frames = "Frames",
+  Users = "Users",
+  Feeds = "Feeds",
+}
+
 export type NookShelf = {
   id: string;
   creatorFid: string;
@@ -27,6 +33,7 @@ export type NookShelf = {
   api: string;
   form: Form;
   renderers: ShelfRenderer[];
+  tags?: NookShelfTag[];
 };
 
 export type NookShelfInstance = {
@@ -54,6 +61,7 @@ export enum ShelfType {
   FARCASTER_MEDIA = "FARCASTER_MEDIA",
   FARCASTER_FRAMES = "FARCASTER_FRAMES",
   FARCASTER_EMBEDS = "FARCASTER_EMBEDS",
+  PIN_FRAME = "PIN_FRAME",
 }
 
 export enum ShelfRenderer {
@@ -64,6 +72,7 @@ export enum ShelfRenderer {
   POST_MEDIA_GRID = "POST_MEDIA_GRID",
   POST_FRAMES = "POST_FRAMES",
   POST_EMBEDS = "POST_EMBEDS",
+  PIN_FRAME = "PIN_FRAME",
 }
 
 export type CreateShelfInstance<T = ShelfArgs> = {
@@ -101,7 +110,8 @@ export type ShelfArgs =
   | FarcasterPostArgs
   | FarcasterMediaArgs
   | FarcasterFrameArgs
-  | FarcasterEmbedArgs;
+  | FarcasterEmbedArgs
+  | PinFrameArgs;
 
 export type FarcasterUserArgs = {
   fid: string;
@@ -142,6 +152,10 @@ export type FarcasterEmbedArgs = {
   users?: UserFilter;
   includeReplies?: boolean;
   onlyReplies?: boolean;
+};
+
+export type PinFrameArgs = {
+  url: string;
 };
 
 export enum UserFilterType {
@@ -205,7 +219,9 @@ export type FormComponent =
   | FormComponentMultiInput
   | FormComponentSwitch
   | FormComponentSelect
-  | FormComponentIconPicker;
+  | FormComponentIconPicker
+  | FormComponentMultiUrl
+  | FormComponentUrl;
 
 export type FormComponentSelectUsers = {
   type: FormComponentType.SELECT_USERS;
@@ -252,6 +268,20 @@ export type FormComponentIconPicker = {
   type: FormComponentType.ICON_PICKER;
 };
 
+export type FormComponentMultiUrl = {
+  type: FormComponentType.MULTI_URL;
+  placeholder?: string;
+  defaultValue?: string;
+  hasFrame?: boolean;
+};
+
+export type FormComponentUrl = {
+  type: FormComponentType.URL;
+  placeholder?: string;
+  defaultValue?: string;
+  hasFrame?: boolean;
+};
+
 export enum FormComponentType {
   SELECT_OPTION = "SELECT_OPTION",
   SELECT_USERS = "SELECT_USERS",
@@ -260,6 +290,8 @@ export enum FormComponentType {
   MULTI_INPUT = "MULTI_INPUT",
   SWITCH = "SWITCH",
   ICON_PICKER = "ICON_PICKER",
+  URL = "URL",
+  MULTI_URL = "MULTI_URL",
 }
 
 export type NookTemplate = {

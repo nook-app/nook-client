@@ -27,7 +27,9 @@
     "dev:farcaster:api": " nodemon --exec 'yarn workspace @nook/farcaster-api dev' --config ./packages/farcaster-api/nodemon.json",
     "generate:onceupon": "openapi-generator-cli generate -i onceupon_1_0.json -g typescript-fetch -o packages/common/onceupon --skip-validate-spec"
   },
-  "workspaces": ["packages/*"],
+  "workspaces": [
+    "packages/*"
+  ],
   "devDependencies": {
     "@biomejs/biome": "1.4.1",
     "@types/jest": "^29.5.11",

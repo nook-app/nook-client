@@ -19,6 +19,7 @@ import {
   NookOnboardingArgs,
   NookMetadata,
   UserMetadata,
+  NookShelfTag,
 } from "@nook/common/types";
 import { createHash } from "crypto";
 import { decodeCursor, encodeCursor } from "@nook/common/utils";
@@ -676,6 +677,7 @@ export class NookService {
       protocol: shelf.protocol as ShelfProtocol,
       type: shelf.type as ShelfType,
       renderers: shelf.renderers.split(",") as ShelfRenderer[],
+      tags: shelf.tags ? (shelf.tags.split(",") as NookShelfTag[]) : undefined,
       api: shelf.api,
       form: shelf.form as Form,
     }));

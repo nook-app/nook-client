@@ -167,6 +167,8 @@ export type SubmitFrameActionRequest = {
   inputText?: string;
   buttonIndex: number;
   state?: string;
+  address?: string;
+  transactionId?: string;
 };
 
 export type FramePayload = {

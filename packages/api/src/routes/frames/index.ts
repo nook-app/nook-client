@@ -53,16 +53,22 @@ export const frameRoutes = async (fastify: FastifyInstance) => {
             },
             body: JSON.stringify(payload),
           }) as Promise<Response>,
-          new Promise((_, reject) =>
-            setTimeout(
-              () => reject(new Error("Timed out getting frame")),
-              10000,
-            ),
-          ) as Promise<Error>,
+          new Promise((resolve) =>
+            setTimeout(() => resolve({ timeout: true }), 5000),
+          ) as Promise<{ timeout: boolean }>,
         ]);
 
-        if (result instanceof Error) {
-          return reply.code(500).send({ message: result.message });
+        if ("timeout" in result) {
+          return reply.code(200).send({ message: "Request timed out" });
+        }
+
+        if (!result.ok) {
+          try {
+            const { message } = await result.json();
+            return reply.code(200).send({ message });
+          } catch (e) {
+            return reply.code(200).send({ message: "Failed to get frame" });
+          }
         }
 
         if (result.status === 302) {
@@ -71,14 +77,16 @@ export const frameRoutes = async (fastify: FastifyInstance) => {
             .send({ location: result.headers.get("Location") });
         }
 
+        if (request.body.action === "tx") {
+          const response = await result.json();
+          return reply.send({ transaction: response });
+        }
+
         const htmlString = await result.text();
-        const { frame, errors } = getFrame({
+        const { frame } = getFrame({
           htmlString,
           url: request.body.postUrl,
         });
-        if (errors) {
-          return reply.code(400).send({ errors });
-        }
 
         return reply.send({ frame });
       },

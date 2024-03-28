@@ -265,6 +265,7 @@ export class FarcasterService {
       const missingHashes = uncachedHashes.filter(
         (hash) => !data.find((cast) => cast.hash === hash),
       );
+
       if (missingHashes.length > 0 && viewerFid) {
         const missingCasts = await Promise.all(
           missingHashes.map(async (hash) => {
