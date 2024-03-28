@@ -1,6 +1,11 @@
 import { FastifyInstance } from "fastify";
 import { ContentAPIClient, FarcasterAPIClient } from "@nook/common/clients";
-import { ChannelFilterType, UserFilterType } from "@nook/common/types";
+import {
+  ChannelFilterType,
+  FarcasterPostArgs,
+  ShelfDataRequest,
+  UserFilterType,
+} from "@nook/common/types";
 
 export const farcasterRoutes = async (fastify: FastifyInstance) => {
   fastify.register(async (fastify: FastifyInstance) => {
@@ -399,6 +404,22 @@ export const farcasterRoutes = async (fastify: FastifyInstance) => {
         const urls = channels.map((channel: { url: string }) => channel.url);
         const data = await client.getChannels({ parentUrls: urls });
         reply.send(data);
+      },
+    );
+
+    fastify.post<{ Body: ShelfDataRequest<FarcasterPostArgs> }>(
+      "/farcaster/casts/new",
+      async (request, reply) => {
+        let viewerFid: string | undefined;
+        try {
+          const { fid } = (await request.jwtDecode()) as { fid: string };
+          viewerFid = fid;
+        } catch (e) {}
+        const response = await client.getNewPosts({
+          ...request.body,
+          context: { viewerFid },
+        });
+        reply.send(response);
       },
     );
   });
