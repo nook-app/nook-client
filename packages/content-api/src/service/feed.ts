@@ -39,7 +39,10 @@ export class FeedService {
       }
     }
 
-    return this.getNewContent(req, [`(${conditions.join(" OR ")})`]);
+    return this.getNewContent(
+      req,
+      conditions.length > 0 ? [`(${conditions.join(" OR ")})`] : [],
+    );
   }
 
   async getNewFrames(req: ShelfDataRequest<FarcasterFrameArgs>) {
@@ -50,10 +53,13 @@ export class FeedService {
         conditions.push(`"content"."uri" ILIKE '%${sanitizeInput(filter)}%'`);
       }
     }
-    return this.getNewContent(req, [
-      `"content"."hasFrame"`,
-      `(${conditions.join(" OR ")})`,
-    ]);
+
+    const finalConditions = [`"content"."hasFrame"`];
+    if (conditions.length > 0) {
+      finalConditions.push(`(${conditions.join(" OR ")})`);
+    }
+
+    return this.getNewContent(req, finalConditions);
   }
 
   async getNewMedia(req: ShelfDataRequest<FarcasterMediaArgs>) {
