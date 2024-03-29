@@ -13,7 +13,8 @@ import {
 } from "@nook/common/types";
 import { FastifyInstance } from "fastify";
 import { decodeCursorTimestamp, encodeCursor } from "@nook/common/utils";
-export const MAX_PAGE_SIZE = 200;
+export const DB_MAX_PAGE_SIZE = 1000;
+export const MAX_PAGE_SIZE = 25;
 
 export class NotificationsService {
   private client: PrismaClient;
@@ -113,7 +114,7 @@ export class NotificationsService {
       orderBy: {
         timestamp: "desc",
       },
-      take: MAX_PAGE_SIZE,
+      take: DB_MAX_PAGE_SIZE,
     });
 
     const mentions = data.filter(
@@ -134,34 +135,6 @@ export class NotificationsService {
     const follows = data.filter(
       (notification) => notification.type === NotificationType.FOLLOW,
     ) as unknown as FarcasterFollowNotification[];
-
-    const castsToFetch = new Set<string>();
-    for (const notification of mentions) {
-      castsToFetch.add(notification.data.hash);
-    }
-    for (const notification of replies) {
-      castsToFetch.add(notification.data.hash);
-    }
-    for (const notification of likes) {
-      castsToFetch.add(notification.data.targetHash);
-    }
-    for (const notification of recasts) {
-      castsToFetch.add(notification.data.targetHash);
-    }
-    for (const notification of quotes) {
-      castsToFetch.add(notification.data.hash);
-    }
-
-    const usersToFetch = new Set<string>();
-    for (const notification of likes) {
-      usersToFetch.add(notification.sourceFid);
-    }
-    for (const notification of recasts) {
-      usersToFetch.add(notification.sourceFid);
-    }
-    for (const notification of follows) {
-      usersToFetch.add(notification.sourceFid);
-    }
 
     const likeMap = likes.reduce(
       (acc, like) => {
@@ -255,12 +228,14 @@ export class NotificationsService {
       [] as RawNotificationResponse[],
     );
 
+    const sliced = allResponsesMergedFollows.slice(0, MAX_PAGE_SIZE);
+
     return {
-      data: allResponsesMergedFollows,
+      data: sliced,
       nextCursor:
-        data.length === MAX_PAGE_SIZE
+        sliced.length === MAX_PAGE_SIZE
           ? encodeCursor({
-              timestamp: data[data.length - 1]?.timestamp.getTime(),
+              timestamp: sliced[sliced.length - 1]?.timestamp,
             })
           : undefined,
     };
