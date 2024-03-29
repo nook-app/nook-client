@@ -39,6 +39,8 @@ export const frameRoutes = async (fastify: FastifyInstance) => {
               fid: parseInt(request.body.castFid, 10),
               hash: request.body.castHash,
             },
+            address: request.body.address,
+            transactionId: request.body.transactionId,
           },
           trustedData: {
             messageBytes: response.trustedBytes?.slice(2) || "",

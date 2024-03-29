@@ -35,6 +35,7 @@ import {
   SubmitReactionRemoveRequest,
   ValidateSignerResponse,
 } from "@nook/common/types";
+import { hexToBytes } from "viem";
 
 export class SignerService {
   private client: PrismaClient;
@@ -454,11 +455,9 @@ export class SignerService {
           ? new Uint8Array(Buffer.from(req.inputText))
           : undefined,
         state: req.state ? new Uint8Array(Buffer.from(req.state)) : undefined,
-        address: req.address
-          ? new Uint8Array(Buffer.from(req.address))
-          : undefined,
+        address: req.address ? hexToBytes(req.address) : undefined,
         transactionId: req.transactionId
-          ? new Uint8Array(Buffer.from(req.transactionId))
+          ? hexToBytes(req.transactionId)
           : undefined,
       }),
       {

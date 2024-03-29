@@ -167,8 +167,8 @@ export type SubmitFrameActionRequest = {
   inputText?: string;
   buttonIndex: number;
   state?: string;
-  address?: string;
-  transactionId?: string;
+  address?: `0x${string}`;
+  transactionId?: `0x${string}`;
 };
 
 export type FramePayload = {
@@ -185,6 +185,8 @@ export type FramePayload = {
       fid: number;
       hash: string;
     };
+    address?: `0x${string}`;
+    transactionId?: `0x${string}`;
   };
   trustedData: {
     messageBytes: string;
