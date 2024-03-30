@@ -513,7 +513,11 @@ export class FarcasterService {
   }
 
   async searchChannels(query: string, cursor?: string) {
-    const conditions: string[] = [`name ILIKE '%${sanitizeInput(query)}%'`];
+    const conditions: string[] = [
+      `(name ILIKE '%${sanitizeInput(
+        query,
+      )}%' OR "channelId" ILIKE '%${sanitizeInput(query)}%')`,
+    ];
 
     if (cursor) {
       const decodedCursor = decodeCursor(cursor);
