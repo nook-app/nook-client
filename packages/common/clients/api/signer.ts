@@ -69,6 +69,25 @@ export class SignerAPIClient extends BaseAPIClient {
     return await response.json();
   }
 
+  async submitCastAddThread(
+    token: string,
+    data: { data: SubmitCastAddRequest[] },
+  ): Promise<SubmitMessageResponse | SubmitMessageError> {
+    const response = await this.makeRequest("/signer/cast-add/thread", {
+      method: "POST",
+      headers: {
+        Authorization: token,
+      },
+      body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+      throw new Error(response.statusText);
+    }
+
+    return await response.json();
+  }
+
   async submitCastRemove(
     token: string,
     data: SubmitCastRemoveRequest,

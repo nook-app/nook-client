@@ -1,5 +1,5 @@
 import { FastifyInstance } from "fastify";
-import { SignerAPIClient } from "@nook/common/clients";
+import { FarcasterAPIClient, SignerAPIClient } from "@nook/common/clients";
 import {
   SubmitCastAddRequest,
   SubmitCastRemoveRequest,
@@ -12,6 +12,7 @@ import {
 export const farcasterSignerRoutes = async (fastify: FastifyInstance) => {
   fastify.register(async (fastify: FastifyInstance) => {
     const client = new SignerAPIClient();
+    const farcaster = new FarcasterAPIClient();
 
     fastify.get("/signer", async (request, reply) => {
       if (!request.headers.authorization) {
@@ -45,6 +46,25 @@ export const farcasterSignerRoutes = async (fastify: FastifyInstance) => {
       },
     );
 
+    fastify.post<{ Body: { data: SubmitCastAddRequest[] } }>(
+      "/signer/cast-add/thread",
+      async (request, reply) => {
+        if (!request.headers.authorization) {
+          return reply.code(401).send({ message: "Unauthorized" });
+        }
+        try {
+          const response = await client.submitCastAddThread(
+            request.headers.authorization,
+            request.body,
+          );
+          return reply.send(response);
+        } catch (e) {
+          console.error(e);
+          return reply.code(500).send({ message: (e as Error).message });
+        }
+      },
+    );
+
     fastify.post<{ Body: SubmitCastAddRequest }>(
       "/signer/cast-add",
       async (request, reply) => {
@@ -56,6 +76,14 @@ export const farcasterSignerRoutes = async (fastify: FastifyInstance) => {
             request.headers.authorization,
             request.body,
           );
+          if ("message" in response) {
+            return reply.code(400).send(response);
+          }
+          if (response.hashes && response.hashes.length > 0) {
+            await farcaster.getCast(
+              response.hashes[response.hashes.length - 1],
+            );
+          }
           return reply.send(response);
         } catch (e) {
           console.error(e);

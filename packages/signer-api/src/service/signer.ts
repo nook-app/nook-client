@@ -14,9 +14,10 @@ import {
   makeFrameAction,
   FrameActionBody,
   Embed,
+  CastAddMessage,
 } from "@farcaster/hub-nodejs";
 import { bufferToHex, hexToBuffer } from "@nook/common/farcaster";
-import { PrismaClient } from "@nook/common/prisma/signer";
+import { PrismaClient, Signer } from "@nook/common/prisma/signer";
 import {
   generateKeyPair,
   getWarpcastDeeplink,
@@ -139,9 +140,9 @@ export class SignerService {
     return { state: "completed" };
   }
 
-  async submitCastAdd(
+  async submitCastAddThread(
     fid: string,
-    req: SubmitCastAddRequest,
+    data: SubmitCastAddRequest[],
   ): Promise<SubmitMessageResponse | SubmitMessageError> {
     const signer = await this.getActiveSigner(fid);
     if (!signer) {
@@ -150,6 +151,42 @@ export class SignerService {
       };
     }
 
+    let lastParentFid: string | undefined;
+    let lastParentHash: string | undefined;
+
+    const castAddMessages: CastAddMessage[] = [];
+    for (const req of data) {
+      const castAddMessage = await this.formatCastAdd(fid, signer, {
+        ...req,
+        parentFid: req.parentFid || lastParentFid,
+        parentHash: req.parentHash || lastParentHash,
+      });
+      if (castAddMessage.isErr()) {
+        return {
+          message: castAddMessage.error.message,
+        };
+      }
+
+      const value = castAddMessage.value;
+      castAddMessages.push(value);
+
+      lastParentFid = value.data.fid.toString();
+      lastParentHash = bufferToHex(value.hash);
+    }
+
+    const result = await Promise.all(
+      castAddMessages.map((message) => this.submitMessage(message)),
+    );
+
+    const hashes = result.map((r) => bufferToHex(r.hash));
+
+    return {
+      hashes,
+      hash: hashes[hashes.length - 1],
+    };
+  }
+
+  async formatCastAdd(fid: string, signer: Signer, req: SubmitCastAddRequest) {
     const mentionRegex = /(^|\s|\.)(@[a-z0-9][a-z0-9-]{0,15}(?:\.eth)?)/gi;
     const rawMentions = [...req.text.matchAll(mentionRegex)].map((match) => ({
       name: match[2],
@@ -208,7 +245,7 @@ export class SignerService {
       });
     }
 
-    const castAddMessage = await makeCastAdd(
+    return await makeCastAdd(
       {
         text: replacedText,
         mentions: mentions.map(({ mention }) => mention),
@@ -226,7 +263,20 @@ export class SignerService {
         Buffer.from(signer.privateKey.substring(2), "hex"),
       ),
     );
+  }
 
+  async submitCastAdd(
+    fid: string,
+    req: SubmitCastAddRequest,
+  ): Promise<SubmitMessageResponse | SubmitMessageError> {
+    const signer = await this.getActiveSigner(fid);
+    if (!signer) {
+      return {
+        message: "Signer not found",
+      };
+    }
+
+    const castAddMessage = await this.formatCastAdd(fid, signer, req);
     if (castAddMessage.isErr()) {
       return {
         message: castAddMessage.error.message,

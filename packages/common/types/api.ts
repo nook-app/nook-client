@@ -151,6 +151,7 @@ export type SubmitLinkRemoveRequest = {
 };
 
 export type SubmitMessageResponse = {
+  hashes?: string[];
   hash: string;
   trustedBytes?: string;
 };

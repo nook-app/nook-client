@@ -55,6 +55,23 @@ export const signerRoutes = async (fastify: FastifyInstance) => {
       },
     );
 
+    fastify.post<{ Body: { data: SubmitCastAddRequest[] } }>(
+      "/signer/cast-add/thread",
+      async (request, reply) => {
+        const { fid } = (await request.jwtDecode()) as { fid: string };
+        try {
+          const response = await signerService.submitCastAddThread(
+            fid,
+            request.body.data,
+          );
+          return reply.send(response);
+        } catch (e) {
+          console.error(e);
+          return reply.code(500).send({ message: (e as Error).message });
+        }
+      },
+    );
+
     fastify.post<{ Body: SubmitCastRemoveRequest }>(
       "/signer/cast-remove",
       async (request, reply) => {
