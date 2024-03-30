@@ -1,14 +1,13 @@
 {
-  "name": "@nook/api",
+  "name": "@nook/scripts",
   "version": "0.0.1",
   "private": true,
   "scripts": {
     "build": "tsc",
-    "start": "node dist/src/index.js",
-    "dev": "ts-node src/index.ts --inspect=9229"
-  },
-  "exports": {
-    "types": "./dist/types/index.js"
+    "seed-shelves": "ts-node src/seed-shelves.ts",
+    "seed-templates": "ts-node src/seed-templates.ts",
+    "seed-power-badge": "ts-node src/seed-power-badge.ts",
+    "daily-active-users": "ts-node src/daily-active-users.ts"
   },
   "dependencies": {
     "@farcaster/auth-client": "^0.1.0",

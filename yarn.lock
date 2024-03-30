@@ -1542,6 +1542,21 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@nook/scripts@workspace:packages/scripts":
+  version: 0.0.0-use.local
+  resolution: "@nook/scripts@workspace:packages/scripts"
+  dependencies:
+    "@farcaster/auth-client": "npm:^0.1.0"
+    "@farcaster/hub-nodejs": "npm:^0.11.3"
+    "@fastify/jwt": "npm:^8.0.0"
+    "@nook/common": "npm:*"
+    "@types/node": "npm:^20.10.5"
+    fastify: "npm:^4.25.2"
+    typescript: "npm:^5.3.3"
+    viem: "npm:^2.7.10"
+  languageName: unknown
+  linkType: soft
+
 "@nook/signer-api@workspace:packages/signer-api":
   version: 0.0.0-use.local
   resolution: "@nook/signer-api@workspace:packages/signer-api"

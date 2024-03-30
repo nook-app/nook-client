@@ -170,15 +170,14 @@ export class SignerService {
       const value = castAddMessage.value;
       castAddMessages.push(value);
 
+      await this.submitMessage(value);
+      await new Promise((resolve) => setTimeout(resolve, 3000));
+
       lastParentFid = value.data.fid.toString();
       lastParentHash = bufferToHex(value.hash);
     }
 
-    const result = await Promise.all(
-      castAddMessages.map((message) => this.submitMessage(message)),
-    );
-
-    const hashes = result.map((r) => bufferToHex(r.hash));
+    const hashes = castAddMessages.map((r) => bufferToHex(r.hash));
 
     return {
       hashes,
