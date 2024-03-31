@@ -7,7 +7,7 @@ export class BaseAPIClient {
   ) {
     const headers = {
       ...options.headers,
-      "Content-Type": "application/json",
+      ...(options.body ? { "Content-Type": "application/json" } : {}),
       ...(options.viewerFid ? { "X-Viewer-Fid": options.viewerFid } : {}),
     };
 

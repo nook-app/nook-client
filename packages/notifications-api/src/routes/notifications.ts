@@ -3,11 +3,14 @@ import { NotificationsService } from "../service/notifications";
 import {
   GetNotificationsRequest,
   NotificationPreferences,
+  ShelfNotification,
 } from "@nook/common/types";
+import { ShelfNotificationsService } from "../service/shelf";
 
 export const notificationsRoutes = async (fastify: FastifyInstance) => {
   fastify.register(async (fastify: FastifyInstance) => {
     const service = new NotificationsService(fastify);
+    const shelfService = new ShelfNotificationsService(fastify);
 
     fastify.get("/user", async (request, reply) => {
       const { fid } = (await request.jwtDecode()) as { fid: string };
@@ -99,5 +102,70 @@ export const notificationsRoutes = async (fastify: FastifyInstance) => {
         reply.code(500).send({ message: (e as Error).message });
       }
     });
+
+    fastify.post<{ Body: ShelfNotification; Params: { shelfId: string } }>(
+      "/notifications/shelves/:shelfId",
+      async (request, reply) => {
+        try {
+          await shelfService.upsertShelfNotificationData(
+            request.params.shelfId,
+            request.body,
+          );
+          return reply.send({});
+        } catch (e) {
+          console.error(e);
+          reply.code(500).send({ message: (e as Error).message });
+        }
+      },
+    );
+
+    fastify.delete<{ Params: { shelfId: string } }>(
+      "/notifications/shelves/:shelfId",
+      async (request, reply) => {
+        try {
+          await shelfService.deleteShelfNotificationData(
+            request.params.shelfId,
+          );
+          return reply.send({});
+        } catch (e) {
+          console.error(e);
+          reply.code(500).send({ message: (e as Error).message });
+        }
+      },
+    );
+
+    fastify.put<{ Params: { shelfId: string } }>(
+      "/notifications/shelves/:shelfId/subscription",
+      async (request, reply) => {
+        const { fid } = (await request.jwtDecode()) as { fid: string };
+        try {
+          await shelfService.subscribeToShelfNotifications(
+            fid,
+            request.params.shelfId,
+          );
+          return reply.send({});
+        } catch (e) {
+          console.error(e);
+          reply.code(500).send({ message: (e as Error).message });
+        }
+      },
+    );
+
+    fastify.delete<{ Params: { shelfId: string } }>(
+      "/notifications/shelves/:shelfId/subscription",
+      async (request, reply) => {
+        const { fid } = (await request.jwtDecode()) as { fid: string };
+        try {
+          await shelfService.unsubscribeFromShelfNotifications(
+            fid,
+            request.params.shelfId,
+          );
+          return reply.send({});
+        } catch (e) {
+          console.error(e);
+          reply.code(500).send({ message: (e as Error).message });
+        }
+      },
+    );
   });
 };

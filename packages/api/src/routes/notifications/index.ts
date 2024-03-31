@@ -7,13 +7,16 @@ import {
   FarcasterCastResponse,
   FarcasterUser,
   GetNotificationsRequest,
+  NookShelfInstance,
   NotificationPreferences,
 } from "@nook/common/types";
+import { NookService } from "../../services/nook";
 
 export const notificationsRoutes = async (fastify: FastifyInstance) => {
   fastify.register(async (fastify: FastifyInstance) => {
     const client = new NotificationsAPIClient();
     const farcaster = new FarcasterAPIClient();
+    const nookService = new NookService(fastify);
 
     fastify.get("/notifications/user", async (request, reply) => {
       if (!request.headers.authorization) {
@@ -157,5 +160,56 @@ export const notificationsRoutes = async (fastify: FastifyInstance) => {
         return reply.code(500).send({ message: (e as Error).message });
       }
     });
+
+    fastify.put<{ Params: { shelfId: string } }>(
+      "/notifications/shelves/:shelfId/subscription",
+      async (request, reply) => {
+        if (!request.headers.authorization) {
+          return reply.code(401).send({ message: "Unauthorized" });
+        }
+
+        const shelf = await nookService.getShelfInstance(
+          request.params.shelfId,
+        );
+        if (!shelf) {
+          return reply.code(404).send({ message: "Shelf not found" });
+        }
+
+        await nookService.updateShelfNotification(
+          shelf.id,
+          shelf as NookShelfInstance,
+        );
+
+        try {
+          await client.subscribeToShelfNotifications(
+            request.headers.authorization,
+            request.params.shelfId,
+          );
+          return reply.send({});
+        } catch (e) {
+          console.error(e);
+          reply.code(500).send({ message: (e as Error).message });
+        }
+      },
+    );
+
+    fastify.delete<{ Params: { shelfId: string } }>(
+      "/notifications/shelves/:shelfId/subscription",
+      async (request, reply) => {
+        if (!request.headers.authorization) {
+          return reply.code(401).send({ message: "Unauthorized" });
+        }
+        try {
+          await client.unsubscribeFromShelfNotifications(
+            request.headers.authorization,
+            request.params.shelfId,
+          );
+          return reply.send({});
+        } catch (e) {
+          console.error(e);
+          reply.code(500).send({ message: (e as Error).message });
+        }
+      },
+    );
   });
 };

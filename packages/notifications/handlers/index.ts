@@ -1,13 +1,23 @@
 import { Prisma, PrismaClient } from "@nook/common/prisma/notifications";
-import { Notification, NotificationType } from "@nook/common/types";
+import {
+  FarcasterPostData,
+  Notification,
+  NotificationType,
+} from "@nook/common/types";
 import { Job } from "bullmq";
-import { pushNotification } from "./push";
-import { FarcasterCacheClient, RedisClient } from "@nook/common/clients";
+import { formatCastText, pushMessages, pushNotification } from "./push";
+import {
+  FarcasterAPIClient,
+  FarcasterCacheClient,
+  RedisClient,
+} from "@nook/common/clients";
+import { ExpoPushMessage } from "expo-server-sdk";
 
 export const getNotificationsHandler = async () => {
   const client = new PrismaClient();
   const redis = new RedisClient();
   const farcasterCache = new FarcasterCacheClient(redis);
+  const farcasterApi = new FarcasterAPIClient();
 
   return async (job: Job<Notification>) => {
     const notification = job.data;
@@ -61,7 +71,164 @@ export const getNotificationsHandler = async () => {
       },
     });
 
-    if (notification.type === NotificationType.POST || !powerBadge) {
+    if (!powerBadge) return;
+
+    if (notification.type === NotificationType.POST) {
+      const post = notification as FarcasterPostData;
+      const cast = await farcasterApi.getCast(post.data.hash);
+      if (!cast) return;
+
+      const conditions = [];
+      conditions.push({
+        OR: [
+          {
+            users: {
+              some: {
+                fid: cast.user.fid.toString(),
+              },
+            },
+          },
+          {
+            users: {
+              none: {},
+            },
+          },
+        ],
+      });
+
+      if (cast.parentUrl) {
+        conditions.push({
+          OR: [
+            {
+              parentUrls: {
+                some: {
+                  url: cast.parentUrl,
+                },
+              },
+            },
+            {
+              parentUrls: {
+                none: {},
+              },
+            },
+          ],
+        });
+      }
+
+      const words = cast.text?.toLowerCase().split(" ") || [];
+      if (words.length > 0) {
+        conditions.push({
+          AND: [
+            {
+              OR: [
+                ...words.map((word) => ({
+                  keywords: {
+                    some: {
+                      keyword: word,
+                    },
+                  },
+                })),
+                {
+                  keywords: {
+                    none: {},
+                  },
+                },
+              ],
+            },
+            {
+              mutedKeywords: {
+                none: {
+                  keyword: {
+                    in: words,
+                  },
+                },
+              },
+            },
+          ],
+        });
+      }
+
+      if (cast.embeds.length > 0) {
+        conditions.push({
+          OR: [
+            {
+              embedUrls: {
+                some: {
+                  url: {
+                    in: cast.embeds.map((embed) => embed.uri),
+                  },
+                },
+              },
+            },
+            {
+              embedUrls: {
+                none: {},
+              },
+            },
+          ],
+        });
+      }
+
+      console.log(JSON.stringify(conditions, null, 2));
+
+      const shelves = await client.shelfNotification.findMany({
+        where: {
+          AND: conditions,
+        },
+        include: {
+          users: true,
+          parentUrls: true,
+          keywords: true,
+          embedUrls: true,
+          mutedKeywords: true,
+        },
+      });
+
+      const tokens = await client.user.findMany({
+        where: {
+          subscriptions: {
+            some: {
+              shelfId: {
+                in: shelves.map((shelf) => shelf.shelfId),
+              },
+            },
+          },
+        },
+      });
+
+      if (tokens.length === 0) return;
+
+      const data: ExpoPushMessage[] = await Promise.all(
+        tokens.map(async (token) => ({
+          to: token.token,
+          title: `${cast.user?.username || cast.user.fid} liked`,
+          body: formatCastText(cast),
+          badge: await client.notification.count({
+            where: {
+              fid: token.fid,
+              read: false,
+            },
+          }),
+          data: {
+            service: notification.service,
+            type: notification.type,
+            sourceId: notification.sourceId,
+            sourceFid: notification.sourceFid,
+            data: notification.data,
+          },
+          categoryId: "farcasterPost",
+        })),
+      );
+
+      const tickets = await pushMessages(data);
+
+      for (const ticket of tickets) {
+        redis.setJson(`expoPushTicket:${ticket}`, ticket, 60 * 60 * 24);
+      }
+
+      console.log(
+        `[push-notification] [${notification.fid}] ${notification.type}`,
+      );
       return;
     }
 

@@ -125,6 +125,7 @@ export type FarcasterPostArgs = {
   channels?: ChannelFilter;
   users?: UserFilter;
   query?: string;
+  queries?: string[];
   muteWords?: string[];
   includeReplies?: boolean;
   onlyReplies?: boolean;

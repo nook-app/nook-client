@@ -17,6 +17,8 @@ model User {
 
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
+
+    subscriptions ShelfNotificationSubscription[]
 }
 
 model Notification {
@@ -42,4 +44,95 @@ model Notification {
     @@index([sourceFid, type, timestamp])
     @@index([powerBadge, fid, timestamp])
     @@index([powerBadge, fid, type, timestamp])
+}
+
+model ShelfNotification {
+    shelfId String @id
+
+    includeReplies Boolean @default(false)
+    onlyReplies    Boolean @default(false)
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    users         ShelfNotificationUserTopic[]
+    parentUrls    ShelfNotificationParentUrlTopic[]
+    keywords      ShelfNotificationKeywordTopic[]
+    embedUrls     ShelfNotificationEmbedUrlTopic[]
+    mutedKeywords ShelfNotificationMutedKeywordTopic[]
+
+    subscriptions ShelfNotificationSubscription[]
+}
+
+model ShelfNotificationUserTopic {
+    shelfId String
+    fid     String
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    shelfNotification ShelfNotification @relation(fields: [shelfId], references: [shelfId], onDelete: Cascade)
+
+    @@id([shelfId, fid])
+}
+
+model ShelfNotificationParentUrlTopic {
+    shelfId String
+    url     String
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    shelfNotification ShelfNotification @relation(fields: [shelfId], references: [shelfId], onDelete: Cascade)
+
+    @@id([shelfId, url])
+}
+
+model ShelfNotificationKeywordTopic {
+    shelfId String
+    keyword String
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    shelfNotification ShelfNotification @relation(fields: [shelfId], references: [shelfId], onDelete: Cascade)
+
+    @@id([shelfId, keyword])
+}
+
+model ShelfNotificationEmbedUrlTopic {
+    shelfId String
+    url     String
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    shelfNotification ShelfNotification @relation(fields: [shelfId], references: [shelfId], onDelete: Cascade)
+
+    @@id([shelfId, url])
+}
+
+model ShelfNotificationMutedKeywordTopic {
+    shelfId String
+    keyword String
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    shelfNotification ShelfNotification @relation(fields: [shelfId], references: [shelfId], onDelete: Cascade)
+
+    @@id([shelfId, keyword])
+}
+
+model ShelfNotificationSubscription {
+    shelfId String
+    fid     String
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    shelfNotification ShelfNotification @relation(fields: [shelfId], references: [shelfId], onDelete: Cascade)
+    user              User              @relation(fields: [fid], references: [fid])
+
+    @@id([shelfId, fid])
 }

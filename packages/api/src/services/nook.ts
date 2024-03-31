@@ -1,6 +1,9 @@
 import { FastifyInstance } from "fastify";
 import { Prisma, PrismaClient, Nook as DBNook } from "@nook/common/prisma/nook";
-import { FarcasterAPIClient } from "@nook/common/clients";
+import {
+  FarcasterAPIClient,
+  NotificationsAPIClient,
+} from "@nook/common/clients";
 import {
   CreateShelfInstance,
   Nook,
@@ -20,6 +23,12 @@ import {
   NookMetadata,
   UserMetadata,
   NookShelfTag,
+  FarcasterPostArgs,
+  UserFilterType,
+  ShelfNotification,
+  FarcasterMediaArgs,
+  FarcasterFrameArgs,
+  FarcasterEmbedArgs,
 } from "@nook/common/types";
 import { createHash } from "crypto";
 import { decodeCursor, encodeCursor } from "@nook/common/utils";
@@ -34,10 +43,12 @@ function sanitizeInput(input: string): string {
 export class NookService {
   private nookClient: PrismaClient;
   private farcaster: FarcasterAPIClient;
+  private notifications: NotificationsAPIClient;
 
   constructor(fastify: FastifyInstance) {
     this.nookClient = fastify.nook.client;
     this.farcaster = new FarcasterAPIClient();
+    this.notifications = new NotificationsAPIClient();
   }
 
   async searchNooks(query?: string, cursor?: string) {
@@ -608,6 +619,7 @@ export class NookService {
       });
     }
 
+    await this.updateShelfNotification(shelf.id, shelf as NookShelfInstance);
     return shelf;
   }
 
@@ -635,6 +647,8 @@ export class NookService {
         },
       });
     }
+
+    await this.notifications.deleteNotificationShelf(shelfId);
   }
 
   async updateShelf(shelfId: string, instance: NookShelfInstance) {
@@ -651,6 +665,120 @@ export class NookService {
         renderer: instance.renderer,
       },
     });
+    await this.updateShelfNotification(shelfId, instance);
+  }
+
+  async updateShelfNotification(shelfId: string, instance: NookShelfInstance) {
+    if (
+      ![
+        ShelfType.FARCASTER_POSTS,
+        ShelfType.FARCASTER_MEDIA,
+        ShelfType.FARCASTER_FRAMES,
+        ShelfType.FARCASTER_EMBEDS,
+      ].includes(instance.type)
+    ) {
+      return;
+    }
+
+    const shelfNotification: ShelfNotification = {};
+
+    switch (instance.type) {
+      case ShelfType.FARCASTER_POSTS: {
+        const data = instance.data as FarcasterPostArgs;
+        if (data.users && data.users.type === UserFilterType.FIDS) {
+          shelfNotification.users = data.users.data.fids;
+        }
+        if (
+          data.channels &&
+          data.channels.type === ChannelFilterType.CHANNEL_URLS
+        ) {
+          shelfNotification.parentUrls = data.channels.data.urls;
+        }
+        if (data.queries) {
+          shelfNotification.keywords = data.queries;
+        } else if (data.query) {
+          shelfNotification.keywords = [data.query];
+        }
+        if (data.muteWords) {
+          shelfNotification.mutedKeywords = data.muteWords;
+        }
+        if (data.includeReplies) {
+          shelfNotification.includeReplies = data.includeReplies;
+        }
+        if (data.onlyReplies) {
+          shelfNotification.onlyReplies = data.onlyReplies;
+        }
+        break;
+      }
+      case ShelfType.FARCASTER_MEDIA: {
+        const data = instance.data as FarcasterMediaArgs;
+        if (data.users && data.users.type === UserFilterType.FIDS) {
+          shelfNotification.users = data.users.data.fids;
+        }
+        if (
+          data.channels &&
+          data.channels.type === ChannelFilterType.CHANNEL_URLS
+        ) {
+          shelfNotification.parentUrls = data.channels.data.urls;
+        }
+        if (data.includeReplies) {
+          shelfNotification.includeReplies = data.includeReplies;
+        }
+        if (data.onlyReplies) {
+          shelfNotification.onlyReplies = data.onlyReplies;
+        }
+        break;
+      }
+      case ShelfType.FARCASTER_FRAMES: {
+        const data = instance.data as FarcasterFrameArgs;
+        if (data.users && data.users.type === UserFilterType.FIDS) {
+          shelfNotification.users = data.users.data.fids;
+        }
+        if (
+          data.channels &&
+          data.channels.type === ChannelFilterType.CHANNEL_URLS
+        ) {
+          shelfNotification.parentUrls = data.channels.data.urls;
+        }
+        if (data.includeReplies) {
+          shelfNotification.includeReplies = data.includeReplies;
+        }
+        if (data.onlyReplies) {
+          shelfNotification.onlyReplies = data.onlyReplies;
+        }
+        if (data.urls) {
+          shelfNotification.embedUrls = data.urls;
+        }
+        break;
+      }
+      case ShelfType.FARCASTER_EMBEDS: {
+        const data = instance.data as FarcasterEmbedArgs;
+        if (data.users && data.users.type === UserFilterType.FIDS) {
+          shelfNotification.users = data.users.data.fids;
+        }
+        if (
+          data.channels &&
+          data.channels.type === ChannelFilterType.CHANNEL_URLS
+        ) {
+          shelfNotification.parentUrls = data.channels.data.urls;
+        }
+        if (data.includeReplies) {
+          shelfNotification.includeReplies = data.includeReplies;
+        }
+        if (data.onlyReplies) {
+          shelfNotification.onlyReplies = data.onlyReplies;
+        }
+        if (data.urls) {
+          shelfNotification.embedUrls = data.urls;
+        }
+        break;
+      }
+    }
+
+    await this.notifications.updateNotificationShelf(
+      shelfId,
+      shelfNotification,
+    );
   }
 
   async getShelfInstance(shelfId: string) {

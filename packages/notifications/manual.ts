@@ -24,23 +24,10 @@ export const run = async () => {
       throw new Error("No fid provided");
     }
 
-    const user = await client.user.findFirst({
-      where: {
-        fid,
-      },
-    });
-
-    if (!user || user?.disabled || !user?.receive) {
-      throw new Error(
-        "User not found or disabled or not receiving notifications",
-      );
-    }
-
     const notification = await client.notification.findFirst({
       where: {
         fid,
         type: type?.toUpperCase(),
-        powerBadge: true,
         deletedAt: null,
       },
       orderBy: {

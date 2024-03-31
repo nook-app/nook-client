@@ -31,6 +31,9 @@ export class NotificationsService {
       where: {
         fid,
       },
+      include: {
+        subscriptions: true,
+      },
     });
 
     if (!data) return;
@@ -39,6 +42,7 @@ export class NotificationsService {
       disabled: data.disabled,
       receive: data.receive,
       onlyPowerBadge: data.onlyPowerBadge,
+      subscriptions: data.subscriptions.map((sub) => sub.shelfId),
     };
   }
 
@@ -47,7 +51,11 @@ export class NotificationsService {
       where: {
         fid,
       },
-      data,
+      data: {
+        disabled: data.disabled,
+        receive: data.receive,
+        onlyPowerBadge: data.onlyPowerBadge,
+      },
     });
   }
 

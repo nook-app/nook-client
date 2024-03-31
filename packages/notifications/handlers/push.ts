@@ -19,6 +19,10 @@ const farcasterApi = new FarcasterAPIClient();
 export const DB_MAX_PAGE_SIZE = 1000;
 export const MAX_PAGE_SIZE = 25;
 
+export const pushMessages = async (messages: ExpoPushMessage[]) => {
+  return await expo.sendPushNotificationsAsync(messages);
+};
+
 export const pushNotification = async (
   users: { fid: string; token: string; unread: number }[],
   notification: Notification,
@@ -185,7 +189,7 @@ const formatPushNotification = async (
   }
 };
 
-const formatCastText = (cast: FarcasterCastResponse) => {
+export const formatCastText = (cast: FarcasterCastResponse) => {
   const parts = [];
   const textBuffer = Buffer.from(cast.text.replaceAll(/\uFFFC/g, ""), "utf-8");
   let index = textBuffer.length;

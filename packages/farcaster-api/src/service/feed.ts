@@ -28,12 +28,29 @@ export class FeedService {
 
   async getNewPosts(req: ShelfDataRequest<FarcasterPostArgs>) {
     const { data, context, cursor } = req;
-    const { users, channels, query, includeReplies, onlyReplies, muteWords } =
-      data;
+    const {
+      users,
+      channels,
+      query,
+      queries,
+      includeReplies,
+      onlyReplies,
+      muteWords,
+    } = data;
 
     const conditions: string[] = ['"deletedAt" IS NULL'];
 
-    if (query) {
+    if (queries) {
+      const queryConditions = queries.map(
+        (q) =>
+          `((to_tsvector('english', "text") @@ to_tsquery('english', '${sanitizeInput(
+            q,
+          )}')) OR (to_tsvector('english', "text") @@ to_tsquery('english', '/${sanitizeInput(
+            q,
+          )}')))`,
+      );
+      conditions.push(`(${queryConditions.join(" OR ")})`);
+    } else if (query) {
       conditions.push(
         `((to_tsvector('english', "text") @@ to_tsquery('english', '${sanitizeInput(
           query,
