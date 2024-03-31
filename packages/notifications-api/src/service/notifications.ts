@@ -3,6 +3,7 @@ import {
   FarcasterFollowNotification,
   FarcasterLikeNotification,
   FarcasterMentionNotification,
+  FarcasterPostNotification,
   FarcasterQuoteNotification,
   FarcasterRecastNotification,
   FarcasterReplyNotification,
@@ -84,6 +85,30 @@ export class NotificationsService {
         token,
       },
     });
+  }
+
+  async getPostNotifications(
+    req: GetNotificationsRequest,
+    cursor?: string,
+  ): Promise<RawNotificationResponse[]> {
+    const data = await this.client.notification.findMany({
+      where: {
+        fid: req.fid,
+        type: NotificationType.POST,
+        deletedAt: null,
+        timestamp: decodeCursorTimestamp(cursor),
+      },
+      orderBy: {
+        timestamp: "desc",
+      },
+      take: DB_MAX_PAGE_SIZE,
+    });
+
+    return data.map((notification) => ({
+      type: NotificationType.POST,
+      hash: (notification as unknown as FarcasterPostNotification).data.hash,
+      timestamp: new Date(notification.timestamp).getTime(),
+    }));
   }
 
   async getNotifications(req: GetNotificationsRequest, cursor?: string) {

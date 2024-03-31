@@ -226,12 +226,14 @@ export const getNotificationsHandler = async () => {
             },
             create: {
               ...notification,
+              fid: token.fid,
               powerBadge,
               data: notification.data || Prisma.DbNull,
               read: false,
             },
             update: {
               ...notification,
+              fid: token.fid,
               powerBadge,
               data: notification.data || Prisma.DbNull,
               read: false,
