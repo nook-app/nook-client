@@ -169,8 +169,6 @@ export const getNotificationsHandler = async () => {
         });
       }
 
-      console.log(JSON.stringify(conditions, null, 2));
-
       const shelves = await client.shelfNotification.findMany({
         where: {
           AND: conditions,
