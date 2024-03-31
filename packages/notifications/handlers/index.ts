@@ -214,25 +214,50 @@ export const getNotificationsHandler = async () => {
       if (tokens.length === 0) return;
 
       const data: ExpoPushMessage[] = await Promise.all(
-        tokens.map(async (token) => ({
-          to: token.token,
-          title: `${cast.user?.username || cast.user.fid} posted`,
-          body: formatCastText(cast),
-          badge: await client.notification.count({
+        tokens.map(async (token) => {
+          await client.notification.upsert({
             where: {
-              fid: token.fid,
+              fid_service_type_sourceId: {
+                fid: token.fid,
+                service: notification.service,
+                type: notification.type,
+                sourceId: notification.sourceId,
+              },
+            },
+            create: {
+              ...notification,
+              powerBadge,
+              data: notification.data || Prisma.DbNull,
               read: false,
             },
-          }),
-          data: {
-            service: notification.service,
-            type: notification.type,
-            sourceId: notification.sourceId,
-            sourceFid: notification.sourceFid,
-            data: notification.data,
-          },
-          categoryId: "farcasterPost",
-        })),
+            update: {
+              ...notification,
+              powerBadge,
+              data: notification.data || Prisma.DbNull,
+              read: false,
+            },
+          });
+
+          return {
+            to: token.token,
+            title: `${cast.user?.username || cast.user.fid} posted`,
+            body: formatCastText(cast),
+            badge: await client.notification.count({
+              where: {
+                fid: token.fid,
+                read: false,
+              },
+            }),
+            data: {
+              service: notification.service,
+              type: notification.type,
+              sourceId: notification.sourceId,
+              sourceFid: notification.sourceFid,
+              data: notification.data,
+            },
+            categoryId: "farcasterPost",
+          };
+        }),
       );
 
       const tickets = await pushMessages(data);

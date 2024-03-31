@@ -27,18 +27,16 @@ export class ShelfNotificationsService {
     fid: string,
     shelfId: string,
   ): Promise<void> {
-    await this.client.shelfNotificationSubscription.delete({
+    await this.client.shelfNotificationSubscription.deleteMany({
       where: {
-        shelfId_fid: {
-          shelfId,
-          fid,
-        },
+        shelfId,
+        fid,
       },
     });
   }
 
   async deleteShelfNotificationData(shelfId: string) {
-    await this.client.shelfNotification.delete({
+    await this.client.shelfNotification.deleteMany({
       where: {
         shelfId,
       },

@@ -104,12 +104,13 @@ const SHELVES: Omit<NookShelf, "id">[] = [
             },
             {
               name: "Search Term",
-              description: "Search for posts by keyword",
-              field: "query",
+              description: "List of words to search for",
+              field: "queries",
               component: {
-                type: FormComponentType.INPUT,
+                type: FormComponentType.MULTI_INPUT,
                 maxLength: 50,
-                placeholder: "Search...",
+                placeholder: "word",
+                limit: 10,
               },
             },
             {
