@@ -1528,6 +1528,20 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@nook/nft-api@workspace:packages/nft-api":
+  version: 0.0.0-use.local
+  resolution: "@nook/nft-api@workspace:packages/nft-api"
+  dependencies:
+    "@fastify/jwt": "npm:^8.0.0"
+    "@nook/common": "npm:*"
+    "@types/jest": "npm:^29.5.12"
+    "@types/node": "npm:^20.11.30"
+    fastify: "npm:^4.26.2"
+    jest: "npm:^29.7.0"
+    typescript: "npm:^5.4.3"
+  languageName: unknown
+  linkType: soft
+
 "@nook/notifications-api@workspace:packages/notifications-api":
   version: 0.0.0-use.local
   resolution: "@nook/notifications-api@workspace:packages/notifications-api"
