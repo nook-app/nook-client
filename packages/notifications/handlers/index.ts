@@ -29,7 +29,9 @@ export const getNotificationsHandler = async () => {
 
     let powerBadge = notification.powerBadge;
     if (powerBadge === undefined) {
-      powerBadge = await farcasterCache.getUserPowerBadge(notification.fid);
+      powerBadge = await farcasterCache.getUserPowerBadge(
+        notification.sourceFid,
+      );
     }
 
     await client.notification.upsert({

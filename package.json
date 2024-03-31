@@ -16,6 +16,7 @@
     "start:farcaster:consumer": "yarn workspace @nook/farcaster start:consumer",
     "start:farcaster:publisher": "yarn workspace @nook/farcaster start:publisher",
     "start:events": "yarn workspace @nook/events start",
+    "start:notifications": "yarn workspace @nook/notifications start",
     "start:farcaster:api": "yarn workspace @nook/farcaster-api start",
     "start:content:api": "yarn workspace @nook/content-api start",
     "start:signer:api": "yarn workspace @nook/signer-api start",
@@ -27,9 +28,7 @@
     "dev:farcaster:api": " nodemon --exec 'yarn workspace @nook/farcaster-api dev' --config ./packages/farcaster-api/nodemon.json",
     "generate:onceupon": "openapi-generator-cli generate -i onceupon_1_0.json -g typescript-fetch -o packages/common/onceupon --skip-validate-spec"
   },
-  "workspaces": [
-    "packages/*"
-  ],
+  "workspaces": ["packages/*"],
   "devDependencies": {
     "@biomejs/biome": "1.4.1",
     "@types/jest": "^29.5.11",
