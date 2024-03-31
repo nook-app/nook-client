@@ -1,68 +1,80 @@
-import { getCastEmbeds, getMentions } from ".";
+import { FarcasterCastReaction, FarcasterLink } from "../prisma/farcaster";
 import {
-  FarcasterCast,
-  FarcasterCastReaction,
-  FarcasterLink,
-} from "../prisma/farcaster";
-import { Notification, NotificationService, NotificationType } from "../types";
+  FarcasterCastResponse,
+  FarcasterUser,
+  Notification,
+  NotificationService,
+  NotificationType,
+} from "../types";
 
 export const parseNotificationsFromCast = (
-  data: FarcasterCast,
+  data: FarcasterCastResponse,
 ): Notification[] => {
   const notifications: Notification[] = [];
   notifications.push({
-    fid: data.fid.toString(),
+    fid: data.user.fid.toString(),
     service: NotificationService.FARCASTER,
     type: NotificationType.POST,
     sourceId: data.hash,
-    timestamp: data.timestamp,
-    sourceFid: data.fid.toString(),
+    timestamp: new Date(data.timestamp),
+    sourceFid: data.user.fid.toString(),
     data: {
       hash: data.hash,
+      isReply: !!data.parentHash,
     },
+    powerBadge: data.user.badges?.powerBadge ?? false,
   });
 
-  if (data.parentHash && data.parentFid) {
+  if (
+    data.parentHash &&
+    data.parent &&
+    data.parent.user.fid !== data.user.fid
+  ) {
     notifications.push({
-      fid: data.parentFid.toString(),
+      fid: data.parent.user.fid.toString(),
       service: NotificationService.FARCASTER,
       type: NotificationType.REPLY,
       sourceId: data.hash,
-      timestamp: data.timestamp,
-      sourceFid: data.fid.toString(),
+      timestamp: new Date(data.timestamp),
+      sourceFid: data.user.fid.toString(),
       data: {
         hash: data.hash,
         parentHash: data.parentHash,
       },
+      powerBadge: data.parent.user.badges?.powerBadge ?? false,
     });
   }
 
-  for (const { fid, hash } of getCastEmbeds(data)) {
+  for (const { user, hash } of data.embedCasts) {
+    if (user.fid === data.user.fid) continue;
     notifications.push({
-      fid: fid.toString(),
+      fid: user.fid.toString(),
       service: NotificationService.FARCASTER,
       type: NotificationType.QUOTE,
       sourceId: data.hash,
-      timestamp: data.timestamp,
-      sourceFid: data.fid.toString(),
+      timestamp: new Date(data.timestamp),
+      sourceFid: data.user.fid.toString(),
       data: {
         hash: data.hash,
         embedHash: hash,
       },
+      powerBadge: user.badges?.powerBadge ?? false,
     });
   }
 
-  for (const { fid } of getMentions(data)) {
+  for (const { user } of data.mentions) {
+    if (user.fid === data.user.fid) continue;
     notifications.push({
-      fid: fid.toString(),
+      fid: user.fid.toString(),
       service: NotificationService.FARCASTER,
       type: NotificationType.MENTION,
       sourceId: data.hash,
-      timestamp: data.timestamp,
-      sourceFid: data.fid.toString(),
+      timestamp: new Date(data.timestamp),
+      sourceFid: data.user.fid.toString(),
       data: {
         hash: data.hash,
       },
+      powerBadge: user.badges?.powerBadge ?? false,
     });
   }
 
@@ -71,6 +83,7 @@ export const parseNotificationsFromCast = (
 
 export const parseNotificationsFromReaction = (
   data: FarcasterCastReaction,
+  user: FarcasterUser,
 ): Notification[] => {
   if (data.reactionType === 1 && data.targetFid !== data.fid) {
     return [
@@ -84,6 +97,7 @@ export const parseNotificationsFromReaction = (
         data: {
           targetHash: data.targetHash,
         },
+        powerBadge: user.badges?.powerBadge ?? false,
       },
     ];
   }
@@ -100,6 +114,7 @@ export const parseNotificationsFromReaction = (
         data: {
           targetHash: data.targetHash,
         },
+        powerBadge: user.badges?.powerBadge ?? false,
       },
     ];
   }
@@ -109,6 +124,7 @@ export const parseNotificationsFromReaction = (
 
 export const parseNotificationsFromLink = (
   data: FarcasterLink,
+  user: FarcasterUser,
 ): Notification[] => {
   if (data.linkType === "follow" && data.targetFid !== data.fid) {
     return [
@@ -120,6 +136,7 @@ export const parseNotificationsFromLink = (
         timestamp: data.timestamp,
         sourceFid: data.fid.toString(),
         data: undefined,
+        powerBadge: user.badges?.powerBadge ?? false,
       },
     ];
   }

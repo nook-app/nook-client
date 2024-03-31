@@ -9,9 +9,11 @@ datasource db {
 }
 
 model User {
-    fid      String  @id
-    token    String
-    disabled Boolean @default(false)
+    fid            String  @id
+    token          String
+    disabled       Boolean @default(false)
+    receive        Boolean @default(false)
+    onlyPowerBadge Boolean @default(true)
 
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
@@ -26,6 +28,8 @@ model Notification {
     timestamp DateTime
     data      Json?
     read      Boolean  @default(false)
+
+    powerBadge Boolean @default(false)
 
     createdAt DateTime  @default(now())
     updatedAt DateTime  @updatedAt

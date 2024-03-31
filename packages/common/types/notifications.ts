@@ -7,6 +7,7 @@ export type BaseNotification = {
   sourceFid: string;
   sourceId: string;
   timestamp: Date;
+  powerBadge: boolean;
 };
 
 export enum NotificationService {
@@ -27,6 +28,7 @@ export type FarcasterPostData = {
   type: NotificationType.POST;
   data: {
     hash: string;
+    isReply?: boolean;
   };
 };
 

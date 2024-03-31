@@ -13,6 +13,7 @@ import {
 } from "@nook/common/types";
 import { FastifyInstance } from "fastify";
 import { decodeCursorTimestamp, encodeCursor } from "@nook/common/utils";
+
 export const DB_MAX_PAGE_SIZE = 1000;
 export const MAX_PAGE_SIZE = 25;
 
@@ -260,5 +261,37 @@ export class NotificationsService {
         read: true,
       },
     });
+  }
+
+  async getNotificationTokens(
+    notification: Notification,
+  ): Promise<{ fid: string; token: string; unread: number }[]> {
+    const fids = await this.getRelevantFids(notification);
+    if (fids.length === 0) return [];
+
+    const users = await this.client.user.findMany({
+      where: {
+        fid: {
+          in: fids,
+        },
+        receive: true,
+        disabled: false,
+      },
+    });
+
+    return await Promise.all(
+      users.map(async (user) => {
+        const unread = await this.getUnreadNotifications(user.fid);
+        return { fid: user.fid, token: user.token, unread };
+      }),
+    );
+  }
+
+  async getRelevantFids(notification: Notification): Promise<string[]> {
+    if (notification.type === NotificationType.POST) {
+      return [];
+    }
+
+    return [notification.fid];
   }
 }

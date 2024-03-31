@@ -108,7 +108,7 @@ export class FarcasterProcessor {
       promises.push(this.cacheClient.resetCastEngagement(hash, "quotes"));
     }
 
-    const notifications = parseNotificationsFromCast(data);
+    const notifications = parseNotificationsFromCast(cast);
     promises.push(
       ...notifications.map((n) =>
         this.notificationClient.publishNotification(n),
@@ -136,7 +136,7 @@ export class FarcasterProcessor {
       promises.push(this.cacheClient.resetCastEngagement(hash, "quotes"));
     }
 
-    const notifications = parseNotificationsFromCast(data);
+    const notifications = parseNotificationsFromCast(cast);
     promises.push(
       ...notifications.map((n) =>
         this.notificationClient.deleteNotification(n),
@@ -147,6 +147,8 @@ export class FarcasterProcessor {
   }
 
   async processCastReactionAdd(data: FarcasterCastReaction) {
+    const user = await this.farcasterClient.getUser(data.fid.toString());
+
     const promises = [];
     if (data.reactionType === 1) {
       promises.push(
@@ -174,7 +176,7 @@ export class FarcasterProcessor {
       );
     }
 
-    const notifications = parseNotificationsFromReaction(data);
+    const notifications = parseNotificationsFromReaction(data, user);
     promises.push(
       ...notifications.map((n) =>
         this.notificationClient.publishNotification(n),
@@ -185,6 +187,8 @@ export class FarcasterProcessor {
   }
 
   async processCastReactionRemove(data: FarcasterCastReaction) {
+    const user = await this.farcasterClient.getUser(data.fid.toString());
+
     const promises = [];
     if (data.reactionType === 1) {
       promises.push(
@@ -212,7 +216,7 @@ export class FarcasterProcessor {
       );
     }
 
-    const notifications = parseNotificationsFromReaction(data);
+    const notifications = parseNotificationsFromReaction(data, user);
     promises.push(
       ...notifications.map((n) =>
         this.notificationClient.deleteNotification(n),
@@ -223,6 +227,8 @@ export class FarcasterProcessor {
   }
 
   async processLinkAdd(data: FarcasterLink) {
+    const user = await this.farcasterClient.getUser(data.fid.toString());
+
     const promises = [];
     if (data.linkType === "follow") {
       promises.push(
@@ -247,7 +253,7 @@ export class FarcasterProcessor {
       );
     }
 
-    const notifications = parseNotificationsFromLink(data);
+    const notifications = parseNotificationsFromLink(data, user);
     promises.push(
       ...notifications.map((n) =>
         this.notificationClient.publishNotification(n),
@@ -258,6 +264,8 @@ export class FarcasterProcessor {
   }
 
   async processLinkRemove(data: FarcasterLink) {
+    const user = await this.farcasterClient.getUser(data.fid.toString());
+
     const promises = [];
     if (data.linkType === "follow") {
       promises.push(
@@ -282,7 +290,7 @@ export class FarcasterProcessor {
       );
     }
 
-    const notifications = parseNotificationsFromLink(data);
+    const notifications = parseNotificationsFromLink(data, user);
     promises.push(
       ...notifications.map((n) =>
         this.notificationClient.deleteNotification(n),

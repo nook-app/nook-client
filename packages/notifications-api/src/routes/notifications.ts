@@ -1,10 +1,12 @@
 import { FastifyInstance } from "fastify";
 import { NotificationsService } from "../service/notifications";
 import { GetNotificationsRequest, Notification } from "@nook/common/types";
+import { PushService } from "../service/push";
 
 export const notificationsRoutes = async (fastify: FastifyInstance) => {
   fastify.register(async (fastify: FastifyInstance) => {
     const service = new NotificationsService(fastify);
+    const pushService = new PushService(fastify);
 
     fastify.get("/user", async (request, reply) => {
       const { fid } = (await request.jwtDecode()) as { fid: string };
@@ -48,6 +50,8 @@ export const notificationsRoutes = async (fastify: FastifyInstance) => {
     fastify.post<{ Body: Notification }>("/publish", async (request, reply) => {
       try {
         await service.publishNotification(request.body);
+        const users = await service.getNotificationTokens(request.body);
+        await pushService.pushNotification(users, request.body);
         reply.code(201).send();
       } catch (e) {
         console.error(e);

@@ -5,11 +5,13 @@
   "scripts": {
     "build": "tsc",
     "start": "node dist/src/index.js",
-    "start:manual": "tsc && node dist/src/manual.js"
+    "start:manual": "tsc && node dist/src/manual.js",
+    "script:push-notification": "ts-node scripts/push-notification.ts"
   },
   "dependencies": {
     "@fastify/jwt": "^8.0.0",
     "@nook/common": "*",
+    "expo-server-sdk": "^3.9.0",
     "fastify": "^4.25.2"
   },
   "devDependencies": {
