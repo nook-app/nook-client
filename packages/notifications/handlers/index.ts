@@ -96,6 +96,23 @@ export const getNotificationsHandler = async () => {
         ],
       });
 
+      if (cast.parentHash) {
+        conditions.push({
+          OR: [
+            {
+              includeReplies: true,
+            },
+            {
+              onlyReplies: true,
+            },
+          ],
+        });
+      } else {
+        conditions.push({
+          onlyReplies: false,
+        });
+      }
+
       if (cast.parentUrl) {
         conditions.push({
           OR: [
@@ -199,7 +216,7 @@ export const getNotificationsHandler = async () => {
       const data: ExpoPushMessage[] = await Promise.all(
         tokens.map(async (token) => ({
           to: token.token,
-          title: `${cast.user?.username || cast.user.fid} liked`,
+          title: `${cast.user?.username || cast.user.fid} posted`,
           body: formatCastText(cast),
           badge: await client.notification.count({
             where: {
