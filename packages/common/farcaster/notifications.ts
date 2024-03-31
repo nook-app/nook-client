@@ -1,7 +1,6 @@
 import { FarcasterCastReaction, FarcasterLink } from "../prisma/farcaster";
 import {
   FarcasterCastResponse,
-  FarcasterUser,
   Notification,
   NotificationService,
   NotificationType,
@@ -83,7 +82,7 @@ export const parseNotificationsFromCast = (
 
 export const parseNotificationsFromReaction = (
   data: FarcasterCastReaction,
-  user: FarcasterUser,
+  powerBadge: boolean,
 ): Notification[] => {
   if (data.reactionType === 1 && data.targetFid !== data.fid) {
     return [
@@ -97,7 +96,7 @@ export const parseNotificationsFromReaction = (
         data: {
           targetHash: data.targetHash,
         },
-        powerBadge: user.badges?.powerBadge ?? false,
+        powerBadge,
       },
     ];
   }
@@ -114,7 +113,7 @@ export const parseNotificationsFromReaction = (
         data: {
           targetHash: data.targetHash,
         },
-        powerBadge: user.badges?.powerBadge ?? false,
+        powerBadge,
       },
     ];
   }
@@ -124,7 +123,7 @@ export const parseNotificationsFromReaction = (
 
 export const parseNotificationsFromLink = (
   data: FarcasterLink,
-  user: FarcasterUser,
+  powerBadge: boolean,
 ): Notification[] => {
   if (data.linkType === "follow" && data.targetFid !== data.fid) {
     return [
@@ -136,7 +135,7 @@ export const parseNotificationsFromLink = (
         timestamp: data.timestamp,
         sourceFid: data.fid.toString(),
         data: undefined,
-        powerBadge: user.badges?.powerBadge ?? false,
+        powerBadge,
       },
     ];
   }

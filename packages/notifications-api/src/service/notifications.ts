@@ -292,6 +292,10 @@ export class NotificationsService {
       return [];
     }
 
+    if (!notification.powerBadge) {
+      return [];
+    }
+
     return [notification.fid];
   }
 }
