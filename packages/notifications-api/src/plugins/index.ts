@@ -7,9 +7,6 @@ declare module "fastify" {
     notifications: {
       client: PrismaClient;
     };
-    redis: {
-      client: RedisClient;
-    };
   }
 }
 
@@ -19,14 +16,5 @@ export const notificationsPlugin = fp(async (fastify, opts) => {
   fastify.decorate("notifications", { client });
   fastify.addHook("onClose", async (fastify) => {
     await fastify.notifications.client.$disconnect();
-  });
-});
-
-export const redisPlugin = fp(async (fastify, opts) => {
-  const client = new RedisClient();
-  await client.connect();
-  fastify.decorate("redis", { client });
-  fastify.addHook("onClose", async (fastify) => {
-    await fastify.redis.client.close();
   });
 });
