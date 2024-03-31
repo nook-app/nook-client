@@ -174,6 +174,10 @@ export const notificationsRoutes = async (fastify: FastifyInstance) => {
           request.query.cursor,
         );
 
+        if (data.data.length === 0) {
+          return reply.send({ data: [] });
+        }
+
         const hashes = data.data.map((n) => n.hash).filter(Boolean) as string[];
 
         const casts = await farcaster.getCasts(hashes);

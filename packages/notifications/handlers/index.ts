@@ -130,6 +130,12 @@ export const getNotificationsHandler = async () => {
             },
           ],
         });
+      } else {
+        conditions.push({
+          parentUrls: {
+            none: {},
+          },
+        });
       }
 
       const words = cast.text?.toLowerCase().split(" ") || [];
@@ -163,6 +169,12 @@ export const getNotificationsHandler = async () => {
             },
           ],
         });
+      } else {
+        conditions.push({
+          parentUrls: {
+            none: {},
+          },
+        });
       }
 
       if (cast.embeds.length > 0) {
@@ -184,7 +196,16 @@ export const getNotificationsHandler = async () => {
             },
           ],
         });
+      } else {
+        conditions.push({
+          embedUrls: {
+            none: {},
+          },
+        });
       }
+
+      console.log(JSON.stringify(cast, null, 2));
+      console.log(JSON.stringify(conditions, null, 2));
 
       const shelves = await client.shelfNotification.findMany({
         where: {

@@ -8,6 +8,7 @@ import {
   FarcasterRecastNotification,
   FarcasterReplyNotification,
   GetNotificationsRequest,
+  GetNotificationsResponse,
   NotificationPreferences,
   NotificationType,
   RawNotificationResponse,
@@ -90,25 +91,36 @@ export class NotificationsService {
   async getPostNotifications(
     req: GetNotificationsRequest,
     cursor?: string,
-  ): Promise<RawNotificationResponse[]> {
+  ): Promise<GetNotificationsResponse> {
     const data = await this.client.notification.findMany({
       where: {
         fid: req.fid,
         type: NotificationType.POST,
         deletedAt: null,
         timestamp: decodeCursorTimestamp(cursor),
+        sourceFid: {
+          not: req.fid,
+        },
       },
       orderBy: {
         timestamp: "desc",
       },
-      take: DB_MAX_PAGE_SIZE,
+      take: MAX_PAGE_SIZE,
     });
 
-    return data.map((notification) => ({
-      type: NotificationType.POST,
-      hash: (notification as unknown as FarcasterPostNotification).data.hash,
-      timestamp: new Date(notification.timestamp).getTime(),
-    }));
+    return {
+      data: data.map((notification) => ({
+        type: NotificationType.POST,
+        hash: (notification as unknown as FarcasterPostNotification).data.hash,
+        timestamp: new Date(notification.timestamp).getTime(),
+      })),
+      nextCursor:
+        data.length === MAX_PAGE_SIZE
+          ? encodeCursor({
+              timestamp: data[data.length - 1].timestamp.getTime(),
+            })
+          : undefined,
+    };
   }
 
   async getNotifications(req: GetNotificationsRequest, cursor?: string) {
