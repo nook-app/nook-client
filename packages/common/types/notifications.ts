@@ -108,3 +108,9 @@ export type NotificationResponse = {
   timestamp: number;
   users?: FarcasterUser[];
 };
+
+export type NotificationPreferences = {
+  disabled: boolean;
+  receive: boolean;
+  onlyPowerBadge: boolean;
+};

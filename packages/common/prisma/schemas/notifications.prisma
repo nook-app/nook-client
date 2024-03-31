@@ -40,4 +40,6 @@ model Notification {
     @@index([fid, timestamp])
     @@index([fid, type, timestamp])
     @@index([sourceFid, type, timestamp])
+    @@index([powerBadge, fid, timestamp])
+    @@index([powerBadge, fid, type, timestamp])
 }

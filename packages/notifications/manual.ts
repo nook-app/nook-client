@@ -40,6 +40,8 @@ export const run = async () => {
       where: {
         fid,
         type: type?.toUpperCase(),
+        powerBadge: true,
+        deletedAt: null,
       },
       orderBy: {
         timestamp: "desc",

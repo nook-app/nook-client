@@ -2,6 +2,7 @@ import {
   GetNotificationsRequest,
   GetNotificationsResponse,
   Notification,
+  NotificationPreferences,
 } from "../../types";
 import { BaseAPIClient } from "./base";
 
@@ -26,6 +27,23 @@ export class NotificationsAPIClient extends BaseAPIClient {
     }
 
     return await response.json();
+  }
+
+  async updateNotificationUser(
+    token: string,
+    preferences: NotificationPreferences,
+  ): Promise<void> {
+    const response = await this.makeRequest("/user", {
+      method: "PATCH",
+      headers: {
+        Authorization: token,
+      },
+      body: JSON.stringify(preferences),
+    });
+
+    if (!response.ok) {
+      throw new Error(response.statusText);
+    }
   }
 
   async deleteNotificationUser(token: string): Promise<void> {

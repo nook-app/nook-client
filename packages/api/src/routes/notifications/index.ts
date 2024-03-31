@@ -7,8 +7,7 @@ import {
   FarcasterCastResponse,
   FarcasterUser,
   GetNotificationsRequest,
-  NotificationResponse,
-  NotificationType,
+  NotificationPreferences,
 } from "@nook/common/types";
 
 export const notificationsRoutes = async (fastify: FastifyInstance) => {
@@ -32,6 +31,24 @@ export const notificationsRoutes = async (fastify: FastifyInstance) => {
         return reply.code(500).send({ message: (e as Error).message });
       }
     });
+
+    fastify.patch<{ Body: NotificationPreferences }>(
+      "/notifications/user",
+      async (request, reply) => {
+        if (!request.headers.authorization) {
+          return reply.code(401).send({ message: "Unauthorized" });
+        }
+        try {
+          await client.updateNotificationUser(
+            request.headers.authorization,
+            request.body,
+          );
+          return reply.send({});
+        } catch (e) {
+          return reply.code(500).send({ message: (e as Error).message });
+        }
+      },
+    );
 
     fastify.delete("/notifications/user", async (request, reply) => {
       if (!request.headers.authorization) {

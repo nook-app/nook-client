@@ -7,6 +7,7 @@ import {
   FarcasterRecastNotification,
   FarcasterReplyNotification,
   GetNotificationsRequest,
+  NotificationPreferences,
   NotificationType,
   RawNotificationResponse,
 } from "@nook/common/types";
@@ -23,11 +24,30 @@ export class NotificationsService {
     this.client = fastify.notifications.client;
   }
 
-  async getNotificationUser(fid: string) {
-    return await this.client.user.findUnique({
+  async getNotificationUser(
+    fid: string,
+  ): Promise<NotificationPreferences | undefined> {
+    const data = await this.client.user.findUnique({
       where: {
         fid,
       },
+    });
+
+    if (!data) return;
+
+    return {
+      disabled: data.disabled,
+      receive: data.receive,
+      onlyPowerBadge: data.onlyPowerBadge,
+    };
+  }
+
+  async updateNotificationUser(fid: string, data: NotificationPreferences) {
+    await this.client.user.update({
+      where: {
+        fid,
+      },
+      data,
     });
   }
 

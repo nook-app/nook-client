@@ -1,6 +1,9 @@
 import { FastifyInstance } from "fastify";
 import { NotificationsService } from "../service/notifications";
-import { GetNotificationsRequest } from "@nook/common/types";
+import {
+  GetNotificationsRequest,
+  NotificationPreferences,
+} from "@nook/common/types";
 
 export const notificationsRoutes = async (fastify: FastifyInstance) => {
   fastify.register(async (fastify: FastifyInstance) => {
@@ -9,16 +12,30 @@ export const notificationsRoutes = async (fastify: FastifyInstance) => {
     fastify.get("/user", async (request, reply) => {
       const { fid } = (await request.jwtDecode()) as { fid: string };
       try {
-        const user = await service.getNotificationUser(fid);
-        if (!user) {
+        const data = await service.getNotificationUser(fid);
+        if (!data) {
           return reply.code(404).send({ message: "User not found" });
         }
-        return reply.send({ fid: user.fid, disabled: user.disabled });
+        return reply.send(data);
       } catch (e) {
         console.error(e);
         reply.code(500).send({ message: (e as Error).message });
       }
     });
+
+    fastify.patch<{ Body: NotificationPreferences }>(
+      "/user",
+      async (request, reply) => {
+        const { fid } = (await request.jwtDecode()) as { fid: string };
+        try {
+          await service.updateNotificationUser(fid, request.body);
+          reply.code(204).send({ fid });
+        } catch (e) {
+          console.error(e);
+          reply.code(500).send({ message: (e as Error).message });
+        }
+      },
+    );
 
     fastify.delete("/user", async (request, reply) => {
       const { fid } = (await request.jwtDecode()) as { fid: string };
