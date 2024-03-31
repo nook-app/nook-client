@@ -7,7 +7,8 @@ export type BaseNotification = {
   sourceFid: string;
   sourceId: string;
   timestamp: Date;
-  powerBadge: boolean;
+  powerBadge?: boolean;
+  deletedAt?: Date;
 };
 
 export enum NotificationService {

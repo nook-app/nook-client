@@ -4,9 +4,7 @@
   "private": true,
   "scripts": {
     "build": "tsc",
-    "start": "node dist/src/index.js",
-    "start:manual": "tsc && node dist/src/manual.js",
-    "script:push-notification": "ts-node scripts/push-notification.ts"
+    "start": "node dist/src/index.js"
   },
   "dependencies": {
     "@fastify/jwt": "^8.0.0",

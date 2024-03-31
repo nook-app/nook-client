@@ -1543,6 +1543,20 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@nook/notifications@workspace:packages/notifications":
+  version: 0.0.0-use.local
+  resolution: "@nook/notifications@workspace:packages/notifications"
+  dependencies:
+    "@farcaster/hub-nodejs": "npm:^0.11.4"
+    "@nook/common": "npm:*"
+    "@types/jest": "npm:^29.5.11"
+    "@types/node": "npm:^20.10.5"
+    bullmq: "npm:^5.1.0"
+    jest: "npm:^29.7.0"
+    typescript: "npm:^5.3.3"
+  languageName: unknown
+  linkType: soft
+
 "@nook/scripts@workspace:packages/scripts":
   version: 0.0.0-use.local
   resolution: "@nook/scripts@workspace:packages/scripts"

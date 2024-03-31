@@ -3,7 +3,6 @@ import {
   ContentAPIClient,
   FarcasterAPIClient,
   FarcasterCacheClient,
-  NotificationsAPIClient,
 } from "@nook/common/clients";
 import { RedisClient } from "@nook/common/clients";
 import {
@@ -14,29 +13,23 @@ import {
   FarcasterUsernameProof,
   FarcasterVerification,
 } from "@nook/common/prisma/farcaster";
-import {
-  EntityEvent,
-  FarcasterEventType,
-  NotificationService,
-  NotificationType,
-} from "@nook/common/types";
+import { EntityEvent, FarcasterEventType } from "@nook/common/types";
 import {
   parseNotificationsFromCast,
   parseNotificationsFromLink,
   parseNotificationsFromReaction,
 } from "@nook/common/farcaster";
+import { publishNotification } from "@nook/common/queues";
 
 export class FarcasterProcessor {
   private farcasterClient: FarcasterAPIClient;
   private cacheClient: FarcasterCacheClient;
   private contentClient: ContentAPIClient;
-  private notificationClient: NotificationsAPIClient;
 
   constructor() {
     this.farcasterClient = new FarcasterAPIClient();
     this.cacheClient = new FarcasterCacheClient(new RedisClient());
     this.contentClient = new ContentAPIClient();
-    this.notificationClient = new NotificationsAPIClient();
   }
 
   async process(event: EntityEvent) {
@@ -109,11 +102,7 @@ export class FarcasterProcessor {
     }
 
     const notifications = parseNotificationsFromCast(cast);
-    promises.push(
-      ...notifications.map((n) =>
-        this.notificationClient.publishNotification(n),
-      ),
-    );
+    promises.push(...notifications.map((n) => publishNotification(n)));
 
     await Promise.all(promises);
   }
@@ -139,7 +128,7 @@ export class FarcasterProcessor {
     const notifications = parseNotificationsFromCast(cast);
     promises.push(
       ...notifications.map((n) =>
-        this.notificationClient.deleteNotification(n),
+        publishNotification({ ...n, deletedAt: new Date() }),
       ),
     );
 
@@ -147,10 +136,6 @@ export class FarcasterProcessor {
   }
 
   async processCastReactionAdd(data: FarcasterCastReaction) {
-    const powerBadge = await this.cacheClient.getUserPowerBadge(
-      data.fid.toString(),
-    );
-
     const promises = [];
     if (data.reactionType === 1) {
       promises.push(
@@ -178,12 +163,8 @@ export class FarcasterProcessor {
       );
     }
 
-    const notifications = parseNotificationsFromReaction(data, powerBadge);
-    promises.push(
-      ...notifications.map((n) =>
-        this.notificationClient.publishNotification(n),
-      ),
-    );
+    const notifications = parseNotificationsFromReaction(data);
+    promises.push(...notifications.map((n) => publishNotification(n)));
 
     await Promise.all(promises);
   }
@@ -220,10 +201,10 @@ export class FarcasterProcessor {
       );
     }
 
-    const notifications = parseNotificationsFromReaction(data, powerBadge);
+    const notifications = parseNotificationsFromReaction(data);
     promises.push(
       ...notifications.map((n) =>
-        this.notificationClient.deleteNotification(n),
+        publishNotification({ ...n, deletedAt: new Date() }),
       ),
     );
 
@@ -259,12 +240,8 @@ export class FarcasterProcessor {
       );
     }
 
-    const notifications = parseNotificationsFromLink(data, powerBadge);
-    promises.push(
-      ...notifications.map((n) =>
-        this.notificationClient.publishNotification(n),
-      ),
-    );
+    const notifications = parseNotificationsFromLink(data);
+    promises.push(...notifications.map((n) => publishNotification(n)));
 
     await Promise.all(promises);
   }
@@ -298,10 +275,10 @@ export class FarcasterProcessor {
       );
     }
 
-    const notifications = parseNotificationsFromLink(data, powerBadge);
+    const notifications = parseNotificationsFromLink(data);
     promises.push(
       ...notifications.map((n) =>
-        this.notificationClient.deleteNotification(n),
+        publishNotification({ ...n, deletedAt: new Date() }),
       ),
     );
 

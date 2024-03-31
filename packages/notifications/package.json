@@ -1,0 +1,25 @@
+{
+  "name": "@nook/notifications",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/worker.js",
+    "start:manual": "tsc && node --enable-source-maps dist/manual.js",
+    "dev:manual": "ts-node dist/manual.ts --inspect=9229"
+  },
+  "exports": {
+    "./processors": "./dist/processors/index.js"
+  },
+  "dependencies": {
+    "@farcaster/hub-nodejs": "^0.11.4",
+    "@nook/common": "*",
+    "bullmq": "^5.1.0"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.5.11",
+    "@types/node": "^20.10.5",
+    "jest": "^29.7.0",
+    "typescript": "^5.3.3"
+  }
+}

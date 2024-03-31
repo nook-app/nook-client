@@ -1,4 +1,4 @@
-import { Prisma, PrismaClient } from "@nook/common/prisma/notifications";
+import { PrismaClient } from "@nook/common/prisma/notifications";
 import {
   FarcasterFollowNotification,
   FarcasterLikeNotification,
@@ -7,7 +7,6 @@ import {
   FarcasterRecastNotification,
   FarcasterReplyNotification,
   GetNotificationsRequest,
-  Notification,
   NotificationType,
   RawNotificationResponse,
 } from "@nook/common/types";
@@ -55,47 +54,6 @@ export class NotificationsService {
       create: {
         fid,
         token,
-      },
-    });
-  }
-
-  async publishNotification(notification: Notification) {
-    await this.client.notification.upsert({
-      where: {
-        fid_service_type_sourceId: {
-          fid: notification.fid,
-          service: notification.service,
-          type: notification.type,
-          sourceId: notification.sourceId,
-        },
-      },
-      create: {
-        ...notification,
-        data: notification.data || Prisma.DbNull,
-        read:
-          NotificationType.FOLLOW === notification.type ||
-          NotificationType.POST === notification.type,
-      },
-      update: {
-        ...notification,
-        data: notification.data || Prisma.DbNull,
-        read:
-          NotificationType.FOLLOW === notification.type ||
-          NotificationType.POST === notification.type,
-      },
-    });
-  }
-
-  async deleteNotification(notification: Notification) {
-    await this.client.notification.updateMany({
-      where: {
-        fid: notification.fid,
-        service: notification.service,
-        type: notification.type,
-        sourceId: notification.sourceId,
-      },
-      data: {
-        deletedAt: new Date(),
       },
     });
   }
@@ -261,41 +219,5 @@ export class NotificationsService {
         read: true,
       },
     });
-  }
-
-  async getNotificationTokens(
-    notification: Notification,
-  ): Promise<{ fid: string; token: string; unread: number }[]> {
-    const fids = await this.getRelevantFids(notification);
-    if (fids.length === 0) return [];
-
-    const users = await this.client.user.findMany({
-      where: {
-        fid: {
-          in: fids,
-        },
-        receive: true,
-        disabled: false,
-      },
-    });
-
-    return await Promise.all(
-      users.map(async (user) => {
-        const unread = await this.getUnreadNotifications(user.fid);
-        return { fid: user.fid, token: user.token, unread };
-      }),
-    );
-  }
-
-  async getRelevantFids(notification: Notification): Promise<string[]> {
-    if (notification.type === NotificationType.POST) {
-      return [];
-    }
-
-    if (!notification.powerBadge) {
-      return [];
-    }
-
-    return [notification.fid];
   }
 }

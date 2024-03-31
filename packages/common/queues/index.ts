@@ -1,19 +1,21 @@
 export * from "./enqueue";
 import Redis from "ioredis";
 import { Job, Queue, QueueOptions, Worker } from "bullmq";
-import { EntityEventData, EntityEvent } from "../types";
+import { EntityEventData, EntityEvent, Notification } from "../types";
 import { Message } from "@farcaster/hub-nodejs";
 
 export enum QueueName {
   Farcaster = "farcaster",
   Backfill = "backfill",
   Events = "events",
+  Notifications = "notifications",
 }
 
 type QueueType = {
   [QueueName.Backfill]: { fid: string };
   [QueueName.Farcaster]: Message;
   [QueueName.Events]: EntityEvent<EntityEventData>;
+  [QueueName.Notifications]: Notification;
 };
 
 const connection = new Redis({
