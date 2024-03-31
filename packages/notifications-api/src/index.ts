@@ -1,5 +1,5 @@
 import fastify from "fastify";
-import { notificationsPlugin } from "./plugins";
+import { notificationsPlugin, redisPlugin } from "./plugins";
 import { notificationsRoutes } from "./routes/notifications";
 import fastifyJwt from "@fastify/jwt";
 
@@ -24,6 +24,7 @@ const buildApp = () => {
   });
 
   app.register(notificationsPlugin);
+  app.register(redisPlugin);
 
   app.register(notificationsRoutes);
 
