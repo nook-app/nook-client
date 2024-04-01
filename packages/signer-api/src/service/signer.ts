@@ -95,7 +95,7 @@ export class SignerService {
       signer = await this.createSigner(fid);
     } else if (
       signer.state === "pending" &&
-      signer.updatedAt.getTime() < Date.now() - 86400
+      signer.updatedAt.getTime() < Date.now() - 86400 * 1000
     ) {
       // tokens expire after 1 day; update if expired
       signer = await this.updateSignerToken(
