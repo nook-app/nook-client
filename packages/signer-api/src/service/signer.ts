@@ -63,6 +63,22 @@ export class SignerService {
     });
   }
 
+  async updateSignerToken(signer: { fid: string; publicKey: `0x${string}` }) {
+    const { token, deeplinkUrl, state } = await getWarpcastDeeplink(
+      signer.publicKey,
+    );
+    return await this.client.signer.update({
+      where: {
+        fid_publicKey: { fid: signer.fid, publicKey: signer.publicKey },
+      },
+      data: {
+        token,
+        deeplinkUrl,
+        state,
+      },
+    });
+  }
+
   async getSigner(fid: string): Promise<GetSignerResponse> {
     let signer = await this.client.signer.findFirst({
       where: {
@@ -77,6 +93,14 @@ export class SignerService {
     });
     if (!signer) {
       signer = await this.createSigner(fid);
+    } else if (
+      signer.state === "pending" &&
+      signer.updatedAt.getTime() < Date.now() - 86400
+    ) {
+      // tokens expire after 1 day; update if expired
+      signer = await this.updateSignerToken(
+        signer as { fid: string; publicKey: `0x${string}` },
+      );
     }
 
     return {
