@@ -1238,16 +1238,21 @@ export class FarcasterService {
     return cachedAppFids as { [key: string]: string };
   }
 
-  async fetchAppFidForSigner(userFid: string, signer: string): Promise<string> {
+  async fetchAppFidForSigner(
+    userFid: string,
+    signer: string,
+  ): Promise<string | undefined> {
     // query rpc to get signer fid
     const response = await this.hub.getOnChainSigner({
       fid: parseInt(userFid),
       signer: Buffer.from(signer.replace("0x", ""), "hex"),
     });
     if (response.isErr()) {
-      throw new Error(
-        `Failed to get signer appId. userId: ${userFid} signer: ${signer}`,
+      console.error(
+        `ERROR: Failed to get signer appId. userId: ${userFid} signer: ${signer}`,
+        response.error,
       );
+      return;
     }
     const event = response.value;
     if (!event.signerEventBody?.metadata) {

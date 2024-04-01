@@ -206,14 +206,14 @@ export class FarcasterCacheClient {
 
   async getAppFidsBySigners(
     signers: string[],
-  ): Promise<{ [key: string]: string | null }> {
+  ): Promise<{ [key: string]: string | undefined }> {
     const results = await this.redis.mget(
       signers.map((signer) => `${this.CLIENT_CACHE_PREFIX}:${signer}`),
     );
     return results.reduce((acc, result, i) => {
-      acc[signers[i]] = result;
+      acc[signers[i]] = result || undefined;
       return acc;
-    }, {} as { [key: string]: string | null });
+    }, {} as { [key: string]: string | undefined });
   }
 
   async setAppFidBySigner(pubkey: string, user: string) {
