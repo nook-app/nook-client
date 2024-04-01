@@ -234,42 +234,10 @@ export class NookService {
           creatorFid: fid,
           description: shelf.description,
           imageUrl: shelf.imageUrl,
-          data:
-            "channels" in shelf.data
-              ? {
-                  ...shelf.data,
-                  users: {
-                    type: UserFilterType.POWER_BADGE,
-                    data: {
-                      badge: true,
-                    },
-                  },
-                }
-              : shelf.data,
+          data: shelf.data,
           type: shelf.type,
           renderer: shelf.renderer,
         }));
-
-        if (!shelves.some((shelf) => shelf.name === "Global")) {
-          shelves.push({
-            shelfId: "1b1d8924-d10c-444d-aacd-e41873bca312",
-            name: "Global",
-            description: "Posts from power badge users",
-            imageUrl: undefined,
-            creatorFid: fid,
-            type: ShelfType.FARCASTER_POSTS,
-            renderer: ShelfRenderer.POST_DEFAULT,
-            data: {
-              users: {
-                type: UserFilterType.POWER_BADGE,
-                data: {
-                  badge: true,
-                },
-              },
-              includeReplies: true,
-            },
-          });
-        }
 
         return await this.nookClient.nook.create({
           data: {
