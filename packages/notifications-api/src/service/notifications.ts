@@ -189,7 +189,7 @@ export class NotificationsService {
           };
         }
 
-        acc[recast.data.targetHash].fids?.unshift(recast.sourceFid);
+        acc[recast.data.targetHash].fids?.push(recast.sourceFid);
         return acc;
       },
       {} as Record<string, RawNotificationResponse>,
