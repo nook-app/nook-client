@@ -45,24 +45,24 @@ export class FeedService {
         (q) =>
           `((to_tsvector('english', "text") @@ to_tsquery('english', '${sanitizeInput(
             q,
-          ).replace(
+          ).replaceAll(
             " ",
             "<->",
           )}')) OR (to_tsvector('english', "text") @@ to_tsquery('english', '/${sanitizeInput(
             q,
-          ).replace(" ", "<->")}')))`,
+          ).replaceAll(" ", "<->")}')))`,
       );
       conditions.push(`(${queryConditions.join(" OR ")})`);
     } else if (query) {
       conditions.push(
         `((to_tsvector('english', "text") @@ to_tsquery('english', '${sanitizeInput(
           query,
-        ).replace(
+        ).replaceAll(
           " ",
           "<->",
         )}')) OR (to_tsvector('english', "text") @@ to_tsquery('english', '/${sanitizeInput(
           query,
-        ).replace(" ", "<->")}')))`,
+        ).replaceAll(" ", "<->")}')))`,
       );
     }
 
@@ -81,7 +81,7 @@ export class FeedService {
             (word) =>
               `to_tsvector('english', "text") @@ to_tsquery('english', '${sanitizeInput(
                 word,
-              ).replace(" ", "<->")}')`,
+              ).replaceAll(" ", "<->")}')`,
           )
           .join(" OR ")})`,
       );
