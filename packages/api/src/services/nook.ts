@@ -250,7 +250,18 @@ export class NookService {
                   creatorFid: fid,
                   description: shelf.description,
                   imageUrl: shelf.imageUrl,
-                  data: shelf.data,
+                  data:
+                    "channels" in shelf.data
+                      ? {
+                          ...shelf.data,
+                          users: {
+                            type: UserFilterType.POWER_BADGE,
+                            data: {
+                              badge: true,
+                            },
+                          },
+                        }
+                      : shelf.data,
                   type: shelf.type,
                   renderer: shelf.renderer,
                 })),
