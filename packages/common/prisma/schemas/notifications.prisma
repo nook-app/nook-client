@@ -51,6 +51,7 @@ model ShelfNotification {
 
     includeReplies Boolean @default(false)
     onlyReplies    Boolean @default(false)
+    powerBadge     Boolean @default(false)
 
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt

@@ -125,4 +125,5 @@ export type ShelfNotification = {
   mutedKeywords?: string[];
   includeReplies?: boolean;
   onlyReplies?: boolean;
+  powerBadge?: boolean;
 };

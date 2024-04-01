@@ -1,4 +1,8 @@
-import { ContentCacheClient, FarcasterAPIClient } from "@nook/common/clients";
+import {
+  ContentCacheClient,
+  FarcasterAPIClient,
+  FarcasterCacheClient,
+} from "@nook/common/clients";
 import { Prisma, PrismaClient } from "@nook/common/prisma/content";
 import {
   ChannelFilter,
@@ -23,11 +27,13 @@ export class FeedService {
   private client: PrismaClient;
   private cache: ContentCacheClient;
   private farcaster: FarcasterAPIClient;
+  private farcasterCache: FarcasterCacheClient;
 
   constructor(fastify: FastifyInstance) {
     this.client = fastify.content.client;
     this.cache = new ContentCacheClient(fastify.redis.client);
     this.farcaster = new FarcasterAPIClient();
+    this.farcasterCache = new FarcasterCacheClient(fastify.redis.client);
   }
 
   async getNewEmbeds(req: ShelfDataRequest<FarcasterEmbedArgs>) {
@@ -144,6 +150,13 @@ export class FeedService {
           `"fid" IN (${users.data.fids.map((fid) => BigInt(fid)).join(",")})`,
         );
         break;
+      case UserFilterType.POWER_BADGE: {
+        const holders = await this.farcasterCache.getPowerBadgeUsers();
+        conditions.push(
+          `"fid" IN (${holders.map((fid) => BigInt(fid)).join(",")})`,
+        );
+        break;
+      }
     }
     return conditions;
   }

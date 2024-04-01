@@ -685,8 +685,12 @@ export class NookService {
     switch (instance.type) {
       case ShelfType.FARCASTER_POSTS: {
         const data = instance.data as FarcasterPostArgs;
-        if (data.users && data.users.type === UserFilterType.FIDS) {
-          shelfNotification.users = data.users.data.fids;
+        if (data.users) {
+          if (data.users.type === UserFilterType.FIDS) {
+            shelfNotification.users = data.users.data.fids;
+          } else if (data.users.type === UserFilterType.POWER_BADGE) {
+            shelfNotification.powerBadge = true;
+          }
         }
         if (
           data.channels &&
@@ -712,8 +716,12 @@ export class NookService {
       }
       case ShelfType.FARCASTER_MEDIA: {
         const data = instance.data as FarcasterMediaArgs;
-        if (data.users && data.users.type === UserFilterType.FIDS) {
-          shelfNotification.users = data.users.data.fids;
+        if (data.users) {
+          if (data.users.type === UserFilterType.FIDS) {
+            shelfNotification.users = data.users.data.fids;
+          } else if (data.users.type === UserFilterType.POWER_BADGE) {
+            shelfNotification.powerBadge = true;
+          }
         }
         if (
           data.channels &&
@@ -731,8 +739,12 @@ export class NookService {
       }
       case ShelfType.FARCASTER_FRAMES: {
         const data = instance.data as FarcasterFrameArgs;
-        if (data.users && data.users.type === UserFilterType.FIDS) {
-          shelfNotification.users = data.users.data.fids;
+        if (data.users) {
+          if (data.users.type === UserFilterType.FIDS) {
+            shelfNotification.users = data.users.data.fids;
+          } else if (data.users.type === UserFilterType.POWER_BADGE) {
+            shelfNotification.powerBadge = true;
+          }
         }
         if (
           data.channels &&
@@ -753,8 +765,12 @@ export class NookService {
       }
       case ShelfType.FARCASTER_EMBEDS: {
         const data = instance.data as FarcasterEmbedArgs;
-        if (data.users && data.users.type === UserFilterType.FIDS) {
-          shelfNotification.users = data.users.data.fids;
+        if (data.users) {
+          if (data.users.type === UserFilterType.FIDS) {
+            shelfNotification.users = data.users.data.fids;
+          } else if (data.users.type === UserFilterType.POWER_BADGE) {
+            shelfNotification.powerBadge = true;
+          }
         }
         if (
           data.channels &&

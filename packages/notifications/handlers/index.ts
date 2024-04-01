@@ -79,22 +79,44 @@ export const getNotificationsHandler = async () => {
       if (!cast) return;
 
       const conditions = [];
-      conditions.push({
-        OR: [
-          {
-            users: {
-              some: {
-                fid: cast.user.fid.toString(),
+      if (cast.user.badges?.powerBadge) {
+        conditions.push({
+          OR: [
+            {
+              users: {
+                some: {
+                  fid: cast.user.fid.toString(),
+                },
               },
             },
-          },
-          {
-            users: {
-              none: {},
+            {
+              users: {
+                none: {},
+              },
             },
-          },
-        ],
-      });
+            {
+              powerBadge: true,
+            },
+          ],
+        });
+      } else {
+        conditions.push({
+          OR: [
+            {
+              users: {
+                some: {
+                  fid: cast.user.fid.toString(),
+                },
+              },
+            },
+            {
+              users: {
+                none: {},
+              },
+            },
+          ],
+        });
+      }
 
       if (cast.parentHash) {
         conditions.push({

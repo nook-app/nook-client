@@ -142,6 +142,13 @@ export class FeedService {
           `"fid" IN (${users.data.fids.map((fid) => BigInt(fid)).join(",")})`,
         );
         break;
+      case UserFilterType.POWER_BADGE: {
+        const holders = await this.cache.getPowerBadgeUsers();
+        conditions.push(
+          `"fid" IN (${holders.map((fid) => BigInt(fid)).join(",")})`,
+        );
+        break;
+      }
     }
     return conditions;
   }

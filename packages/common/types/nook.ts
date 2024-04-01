@@ -162,6 +162,7 @@ export type PinFrameArgs = {
 export enum UserFilterType {
   FOLLOWING = "FOLLOWING",
   FIDS = "FIDS",
+  POWER_BADGE = "POWER_BADGE",
 }
 
 export type UserFilter =
@@ -175,6 +176,12 @@ export type UserFilter =
       type: UserFilterType.FIDS;
       data: {
         fids: string[];
+      };
+    }
+  | {
+      type: UserFilterType.POWER_BADGE;
+      data: {
+        badge: boolean;
       };
     };
 

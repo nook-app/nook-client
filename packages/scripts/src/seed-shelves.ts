@@ -98,7 +98,7 @@ const SHELVES: Omit<NookShelf, "id">[] = [
               field: "users",
               component: {
                 type: FormComponentType.SELECT_USERS,
-                allowed: [UserFilterType.FIDS],
+                allowed: [UserFilterType.FIDS, UserFilterType.POWER_BADGE],
                 limit: 20,
               },
             },
@@ -167,7 +167,7 @@ const SHELVES: Omit<NookShelf, "id">[] = [
               field: "users",
               component: {
                 type: FormComponentType.SELECT_USERS,
-                allowed: [UserFilterType.FIDS],
+                allowed: [UserFilterType.FIDS, UserFilterType.POWER_BADGE],
                 limit: 20,
               },
             },
@@ -225,7 +225,7 @@ const SHELVES: Omit<NookShelf, "id">[] = [
               field: "users",
               component: {
                 type: FormComponentType.SELECT_USERS,
-                allowed: [UserFilterType.FIDS],
+                allowed: [UserFilterType.FIDS, UserFilterType.POWER_BADGE],
                 limit: 20,
               },
             },
@@ -284,7 +284,7 @@ const SHELVES: Omit<NookShelf, "id">[] = [
               field: "users",
               component: {
                 type: FormComponentType.SELECT_USERS,
-                allowed: [UserFilterType.FIDS],
+                allowed: [UserFilterType.FIDS, UserFilterType.POWER_BADGE],
                 limit: 20,
               },
             },
