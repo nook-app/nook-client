@@ -20,7 +20,7 @@ import { FastifyInstance } from "fastify";
 export const MAX_PAGE_SIZE = 25;
 
 function sanitizeInput(input: string): string {
-  return input.replace(/[^a-zA-Z0-9\s./]/g, "").substring(0, 100);
+  return input.replace(/[^a-zA-Z0-9\s./:]/g, "").substring(0, 100);
 }
 
 export class FeedService {
