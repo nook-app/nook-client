@@ -250,4 +250,19 @@ export class FarcasterCacheClient {
     );
     return hasPowerBadge;
   }
+
+  async setCastThread(hash: string, thread: string[]) {
+    await this.redis.setJson(
+      `${this.CAST_CACHE_PREFIX}:${hash}:thread`,
+      thread,
+    );
+  }
+
+  async getCastThread(hash: string): Promise<string[]> {
+    return await this.redis.getJson(`${this.CAST_CACHE_PREFIX}:${hash}:thread`);
+  }
+
+  async resetCastThread(hash: string) {
+    await this.redis.del(`${this.CAST_CACHE_PREFIX}:${hash}:thread`);
+  }
 }

@@ -5,7 +5,8 @@
   "scripts": {
     "build": "tsc",
     "start": "node dist/src/index.js",
-    "start:manual": "tsc && node dist/src/manual.js"
+    "start:manual": "tsc && node dist/src/manual.js",
+    "refresh-embeds": "ts-node src/refresh-embeds.ts"
   },
   "dependencies": {
     "@ethersproject/abstract-signer": "^5.7.0",

@@ -91,6 +91,13 @@ export class FarcasterProcessor {
     const promises = [];
     promises.push(this.contentClient.addContentReferences(cast));
 
+    if (
+      cast.user.fid === cast.rootParentFid &&
+      (!cast.parentFid || cast.parentFid === cast.user.fid)
+    ) {
+      promises.push(this.cacheClient.resetCastThread(cast.hash));
+    }
+
     if (cast.parentHash && data.parentFid) {
       promises.push(
         this.cacheClient.resetCastEngagement(cast.parentHash, "replies"),

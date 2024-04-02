@@ -55,10 +55,13 @@ export type BaseFarcasterCast = {
   }[];
   embedHashes: string[];
   embedUrls: string[];
+  parentFid?: string;
   parentHash?: string;
+  rootParentFid?: string;
   rootParentHash?: string;
   parentUrl?: string;
   ancestors?: string[];
+  thread?: string[];
   signer: string;
   appFid?: string;
 };

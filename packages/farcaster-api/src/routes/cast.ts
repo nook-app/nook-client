@@ -34,6 +34,14 @@ export const castRoutes = async (fastify: FastifyInstance) => {
         cast.ancestors = ancestors;
       }
 
+      if (!cast.thread) {
+        const thread = await service.getCastThread(
+          cast,
+          request.headers["x-viewer-fid"] as string,
+        );
+        cast.thread = thread;
+      }
+
       reply.send(cast);
     });
 

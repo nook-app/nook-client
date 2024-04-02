@@ -21,6 +21,9 @@ export type FarcasterCastResponse = {
   }[];
   embedCasts: FarcasterCastResponse[];
   embeds: UrlContentResponse[];
+  rootParentFid?: string;
+  rootParentHash?: string;
+  parentFid?: string;
   parentHash?: string;
   parent?: FarcasterCastResponse;
   parentUrl?: string;
@@ -32,8 +35,7 @@ export type FarcasterCastResponse = {
   engagement: FarcasterCastEngagement;
   context?: FarcasterCastContext;
   ancestors?: FarcasterCastResponse[];
-  // Temporarily used to identify the primary reference for content requests
-  reference?: string;
+  thread?: FarcasterCastResponse[];
   signer: string;
   appFid: string;
 };

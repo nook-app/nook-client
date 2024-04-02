@@ -107,6 +107,11 @@ export class RedisClient {
     await this.redis.del(key);
   }
 
+  async batchDel(keys: string[]) {
+    if (keys.length === 0) return;
+    await this.redis.del(keys);
+  }
+
   async getJson(key: string) {
     try {
       const json = await this.redis.get(key);

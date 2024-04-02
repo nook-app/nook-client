@@ -217,6 +217,9 @@ export class FarcasterService {
       })),
       embedHashes: cast.embedCasts.map(({ hash }) => hash),
       embedUrls: cast.embeds.map(({ uri }) => uri),
+      rootParentFid: cast.rootParentFid?.toString(),
+      rootParentHash: cast.rootParentHash || undefined,
+      parentFid: cast.parentFid?.toString(),
       parentHash: cast.parentHash || undefined,
       parentUrl: cast.parentUrl || undefined,
       ancestors: hashes,
@@ -225,6 +228,41 @@ export class FarcasterService {
     });
 
     return await this.getCasts(ancestorRawCasts, viewerFid);
+  }
+
+  async getCastThread(
+    cast: FarcasterCastResponse,
+    viewerFid?: string,
+  ): Promise<FarcasterCastResponse[]> {
+    if (!cast.rootParentHash) return [];
+
+    const threadCasts = await this.client.farcasterCast.findMany({
+      where: {
+        fid: BigInt(cast.user.fid),
+        rootParentHash: cast.rootParentHash,
+        deletedAt: null,
+      },
+      orderBy: {
+        timestamp: "asc",
+      },
+    });
+
+    const threadRawCasts: DBFarcasterCast[] = [];
+
+    let hash: string | undefined = cast.hash;
+    do {
+      const cast = threadCasts.find((c) => c.parentHash === hash);
+      if (!cast) break;
+      threadRawCasts.push(cast);
+      hash = cast.hash;
+    } while (hash);
+
+    await this.cache.setCastThread(
+      cast.hash,
+      threadRawCasts.map((cast) => cast.hash),
+    );
+
+    return await this.getCastsFromData(threadRawCasts, viewerFid);
   }
 
   async getCastsFromHashes(
@@ -246,7 +284,11 @@ export class FarcasterService {
     const cacheMap = casts.reduce(
       (acc, cast) => {
         // todo: remove this check once all cached casts have appFid?
-        if (cast.appFid != null) {
+        const hasAppFid = !!cast.appFid;
+        const hasRootParentHash = !!cast.rootParentHash;
+        const hasParentFid =
+          !cast.parentHash || (!!cast.parentHash && !!cast.parentFid);
+        if (hasAppFid && hasRootParentHash && hasParentFid) {
           acc[cast.hash] = cast;
         }
         return acc;
@@ -297,6 +339,9 @@ export class FarcasterService {
           mentions: getMentions(cast),
           embedHashes: getCastEmbeds(cast).map(({ hash }) => hash),
           embedUrls: getEmbedUrls(cast),
+          rootParentFid: cast.rootParentFid?.toString(),
+          rootParentHash: cast.rootParentHash || undefined,
+          parentFid: cast.parentFid?.toString(),
           parentHash: cast.parentHash || undefined,
           parentUrl: cast.parentUrl || undefined,
           signer: cast.signer,
@@ -364,6 +409,8 @@ export class FarcasterService {
     viewerFid?: string,
     ancestorsFor?: string[],
   ) {
+    let thread: string[] = [];
+
     const hashes = new Set<string>();
     for (const rawCast of casts) {
       if (rawCast.parentHash) {
@@ -372,9 +419,27 @@ export class FarcasterService {
       for (const embedHash of rawCast.embedHashes) {
         hashes.add(embedHash);
       }
-      if (ancestorsFor?.includes(rawCast.hash) && rawCast.ancestors) {
-        for (let i = rawCast.ancestors.length - 1; i >= 0; i--) {
-          hashes.add(rawCast.ancestors[i]);
+      if (ancestorsFor?.includes(rawCast.hash)) {
+        if (rawCast.ancestors) {
+          for (let i = rawCast.ancestors.length - 1; i >= 0; i--) {
+            hashes.add(rawCast.ancestors[i]);
+          }
+        }
+        if (
+          rawCast.rootParentHash &&
+          rawCast.fid === rawCast.rootParentFid &&
+          (!rawCast.parentFid || rawCast.parentFid === rawCast.fid)
+        ) {
+          const rawThread = await this.cache.getCastThread(
+            rawCast.rootParentHash,
+          );
+          if (rawThread) {
+            const indexOfCast = rawThread.indexOf(rawCast.hash) + 1;
+            thread = rawThread.slice(indexOfCast);
+            for (const hash of thread) {
+              hashes.add(hash);
+            }
+          }
         }
       }
     }
@@ -475,7 +540,7 @@ export class FarcasterService {
         },
       ).mentions;
 
-      acc[cast.hash] = await {
+      acc[cast.hash] = {
         ...cast,
         user: userMap[cast.fid],
         embeds: cast.embedUrls.map((embed) => embedMap[embed]).filter(Boolean),
@@ -499,6 +564,7 @@ export class FarcasterService {
           })
           .filter(Boolean) as { channel: Channel; position: string }[],
         ancestors: [],
+        thread: [],
         // getRawCasts should always populate appFid
         appFid: cast.appFid as string,
       };
@@ -510,7 +576,11 @@ export class FarcasterService {
         castMap[cast.hash].ancestors = cast.ancestors
           ?.map((hash) => castMap[hash])
           .filter(Boolean);
+        castMap[cast.hash].thread = thread
+          ?.map((hash) => castMap[hash])
+          .filter(Boolean);
       }
+
       return castMap[cast.hash];
     });
   }
