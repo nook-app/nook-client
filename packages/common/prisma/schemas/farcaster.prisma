@@ -202,6 +202,8 @@ model FarcasterLink {
 
     @@id([fid, linkType, targetFid])
     @@index([targetFid, linkType])
+    @@index([timestamp(sort: Desc), fid, linkType])
+    @@index([timestamp(sort: Desc), targetFid, linkType])
 }
 
 model FarcasterParentUrl {
