@@ -967,6 +967,15 @@ export class FarcasterService {
     let count = 0;
     switch (type) {
       case "followers":
+        count =
+          (
+            await this.client.farcasterUserStats.findFirst({
+              where: { fid: BigInt(fid) },
+            })
+          )?.followers || 0;
+
+        if (count > 0) return count;
+
         count = await this.client.farcasterLink.count({
           where: {
             linkType: "follow",
@@ -976,6 +985,15 @@ export class FarcasterService {
         });
         break;
       case "following":
+        count =
+          (
+            await this.client.farcasterUserStats.findFirst({
+              where: { fid: BigInt(fid) },
+            })
+          )?.following || 0;
+
+        if (count > 0) return count;
+
         count = await this.client.farcasterLink.count({
           where: { linkType: "follow", fid: BigInt(fid), deletedAt: null },
         });
