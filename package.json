@@ -22,10 +22,12 @@
     "start:signer:api": "yarn workspace @nook/signer-api start",
     "start:notifications:api": "yarn workspace @nook/notifications-api start",
     "start:lists:api": "yarn workspace @nook/lists-api start",
+    "start:nft:api": "yarn workspace @nook/nft-api start",
     "start:api": "yarn workspace @nook/api start",
     "dev:api": " nodemon --exec 'yarn workspace @nook/api dev' --config ./packages/api/nodemon.json",
     "dev:lists:api": " nodemon --exec 'yarn workspace @nook/lists-api dev' --config ./packages/lists-api/nodemon.json",
     "dev:farcaster:api": " nodemon --exec 'yarn workspace @nook/farcaster-api dev' --config ./packages/farcaster-api/nodemon.json",
+    "dev:nft:api": "nodemon --exec 'yarn workspace @nook/nft-api dev' --config ./packages/nft-api/nodemon.json",
     "generate:onceupon": "openapi-generator-cli generate -i onceupon_1_0.json -g typescript-fetch -o packages/common/onceupon --skip-validate-spec"
   },
   "workspaces": ["packages/*"],

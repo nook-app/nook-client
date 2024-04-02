@@ -216,6 +216,34 @@ export type GetTransactionsResponse = {
   nextCursor?: string;
 };
 
+export type GetNftsRequest = {
+  fid: string;
+};
+
+export type GetNftRequest = {
+  chain: string;
+  address: string;
+  identifier: string;
+};
+
+export type GetNftCollectionRequest = {
+  chain: string;
+  address: string;
+};
+
+export type NftsByIdsOrRangeRequest = {
+  ids?: string[];
+  range?: {
+    start: number;
+    end: number;
+  };
+};
+
+export type GetNftsResponse = {
+  nfts: TransactionDto[];
+  next_cursor?: string;
+};
+
 export type GetNooksResponse = {
   data: Nook[];
   nextCursor?: string;
