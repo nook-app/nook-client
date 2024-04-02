@@ -35,12 +35,13 @@ export class FarcasterCacheClient {
   }
 
   async setCast(hash: string, cast: BaseFarcasterCast) {
-    await this.redis.setJson(`${this.CAST_CACHE_PREFIX}:${hash}`, cast);
+    await this.redis.setJson(`${this.CAST_CACHE_PREFIX}:${hash}`, cast, 86400);
   }
 
   async setCasts(casts: BaseFarcasterCast[]) {
     await this.redis.msetJson(
       casts.map((cast) => [`${this.CAST_CACHE_PREFIX}:${cast.hash}`, cast]),
+      86400,
     );
   }
 
@@ -65,6 +66,7 @@ export class FarcasterCacheClient {
     await this.redis.setNumber(
       `${this.CAST_CACHE_PREFIX}:${hash}:${type}`,
       value,
+      86400,
     );
   }
 
@@ -89,6 +91,7 @@ export class FarcasterCacheClient {
     await this.redis.set(
       `${this.CAST_CACHE_PREFIX}:${hash}:${type}:${fid}`,
       value ? "1" : "0",
+      86400,
     );
   }
 
@@ -105,12 +108,13 @@ export class FarcasterCacheClient {
   }
 
   async setUser(fid: string, user: BaseFarcasterUser) {
-    await this.redis.setJson(`${this.USER_CACHE_PREFIX}:${fid}`, user);
+    await this.redis.setJson(`${this.USER_CACHE_PREFIX}:${fid}`, user, 86400);
   }
 
   async setUsers(users: BaseFarcasterUser[]) {
     await this.redis.msetJson(
       users.map((user) => [`${this.USER_CACHE_PREFIX}:${user.fid}`, user]),
+      86400,
     );
   }
 
@@ -131,6 +135,7 @@ export class FarcasterCacheClient {
     await this.redis.setNumber(
       `${this.USER_CACHE_PREFIX}:${fid}:${type}`,
       value,
+      86400,
     );
   }
 
@@ -155,6 +160,7 @@ export class FarcasterCacheClient {
     await this.redis.set(
       `${this.USER_CACHE_PREFIX}:${fid}:${type}:${targetFid}`,
       value ? "1" : "0",
+      86400,
     );
   }
 
@@ -181,7 +187,11 @@ export class FarcasterCacheClient {
   }
 
   async setChannel(url: string, channel: Channel) {
-    await this.redis.setJson(`${this.CHANNEL_CACHE_PREFIX}:${url}`, channel);
+    await this.redis.setJson(
+      `${this.CHANNEL_CACHE_PREFIX}:${url}`,
+      channel,
+      86400,
+    );
   }
 
   async getChannelById(id: string): Promise<Channel | undefined> {
@@ -189,7 +199,11 @@ export class FarcasterCacheClient {
   }
 
   async setChannelById(id: string, channel: Channel) {
-    await this.redis.setJson(`${this.CHANNEL_CACHE_PREFIX}:${id}`, channel);
+    await this.redis.setJson(
+      `${this.CHANNEL_CACHE_PREFIX}:${id}`,
+      channel,
+      86400,
+    );
   }
 
   async getChannelsByIds(ids: string[]): Promise<Channel[]> {
@@ -217,7 +231,7 @@ export class FarcasterCacheClient {
   }
 
   async setAppFidBySigner(pubkey: string, user: string) {
-    await this.redis.set(`${this.CLIENT_CACHE_PREFIX}:${pubkey}`, user);
+    await this.redis.set(`${this.CLIENT_CACHE_PREFIX}:${pubkey}`, user, 86400);
   }
 
   async removeAppFidBySigner(pubkey: string) {
@@ -255,6 +269,7 @@ export class FarcasterCacheClient {
     await this.redis.setJson(
       `${this.CAST_CACHE_PREFIX}:${hash}:thread`,
       thread,
+      86400,
     );
   }
 

@@ -15,6 +15,10 @@ export class ContentCacheClient {
   }
 
   async setContent(url: string, content: UrlContentResponse) {
-    await this.redis.setJson(`${this.CONTENT_CACHE_PREFIX}:${url}`, content);
+    await this.redis.setJson(
+      `${this.CONTENT_CACHE_PREFIX}:${url}`,
+      content,
+      86400,
+    );
   }
 }

@@ -177,10 +177,6 @@ export class FarcasterProcessor {
   }
 
   async processCastReactionRemove(data: FarcasterCastReaction) {
-    const powerBadge = await this.cacheClient.getUserPowerBadge(
-      data.fid.toString(),
-    );
-
     const promises = [];
     if (data.reactionType === 1) {
       promises.push(
@@ -219,10 +215,6 @@ export class FarcasterProcessor {
   }
 
   async processLinkAdd(data: FarcasterLink) {
-    const powerBadge = await this.cacheClient.getUserPowerBadge(
-      data.fid.toString(),
-    );
-
     const promises = [];
     if (data.linkType === "follow") {
       promises.push(
@@ -254,10 +246,6 @@ export class FarcasterProcessor {
   }
 
   async processLinkRemove(data: FarcasterLink) {
-    const powerBadge = await this.cacheClient.getUserPowerBadge(
-      data.fid.toString(),
-    );
-
     const promises = [];
     if (data.linkType === "follow") {
       promises.push(

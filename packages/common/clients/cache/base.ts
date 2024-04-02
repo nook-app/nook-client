@@ -70,7 +70,11 @@ export class RedisClient {
     return;
   }
 
-  async setNumber(key: string, value: number) {
+  async setNumber(key: string, value: number, ex?: number) {
+    if (ex) {
+      await this.redis.set(key, value, "EX", ex);
+      return;
+    }
     await this.redis.set(key, value);
   }
 
@@ -138,11 +142,15 @@ export class RedisClient {
   }
 
   // biome-ignore lint/suspicious/noExplicitAny: generic setter
-  async msetJson(pairs: [string, any][]) {
+  async msetJson(pairs: [string, any][], ex?: number) {
     if (pairs.length === 0) return;
     const pipeline = this.redis.pipeline();
     for (const [key, value] of pairs) {
-      pipeline.set(key, JSON.stringify(value, replacer));
+      if (ex) {
+        pipeline.set(key, JSON.stringify(value, replacer), "EX", ex);
+      } else {
+        pipeline.set(key, JSON.stringify(value, replacer));
+      }
     }
     await pipeline.exec();
   }
