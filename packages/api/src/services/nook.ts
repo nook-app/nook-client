@@ -29,6 +29,7 @@ import {
   FarcasterMediaArgs,
   FarcasterFrameArgs,
   FarcasterEmbedArgs,
+  NookRecreateOnboardingArgs,
 } from "@nook/common/types";
 import { createHash } from "crypto";
 import { decodeCursor, encodeCursor } from "@nook/common/utils";
@@ -256,6 +257,146 @@ export class NookService {
               createMany: {
                 skipDuplicates: true,
                 data: shelves,
+              },
+            },
+          },
+          include: {
+            shelves: {
+              where: {
+                deletedAt: null,
+              },
+            },
+          },
+        });
+      }
+      case "62f27d00-dc13-4cd6-a718-b54fdbf1fbcc": {
+        const data = nookData.data as NookRecreateOnboardingArgs;
+        return await this.nookClient.nook.create({
+          data: {
+            name: nookData.name,
+            description: nookData.description,
+            imageUrl: nookData.imageUrl,
+            visibility: nookData.visibility,
+            metadata: {},
+            creatorFid: fid,
+            members: {
+              create: {
+                fid: fid,
+              },
+            },
+            shelves: {
+              createMany: {
+                skipDuplicates: true,
+                data: [
+                  {
+                    shelfId: "1b1d8924-d10c-444d-aacd-e41873bca312",
+                    name: "Following",
+                    description: "Posts from people you follow",
+                    creatorFid: fid,
+                    type: ShelfType.FARCASTER_POSTS,
+                    renderer: ShelfRenderer.POST_DEFAULT,
+                    data: {
+                      users: {
+                        type: UserFilterType.FOLLOWING,
+                        data: {
+                          fid: fid,
+                        },
+                      },
+                      includeReplies: true,
+                    },
+                  },
+                  {
+                    shelfId: "5d347378-58ce-4558-8020-f77847134a0c",
+                    name: "Trending",
+                    description: "Trending in the last hour",
+                    creatorFid: fid,
+                    type: ShelfType.FARCASTER_POSTS,
+                    renderer: ShelfRenderer.POST_DEFAULT,
+                    data: {
+                      timeWindow: "1h",
+                    },
+                  },
+                  {
+                    shelfId: "5d347378-58ce-4558-8020-f77847134a0c",
+                    name: "Popular",
+                    description: "Popular in the last 24 hours",
+                    creatorFid: fid,
+                    type: ShelfType.FARCASTER_POSTS,
+                    renderer: ShelfRenderer.POST_DEFAULT,
+                    data: {
+                      timeWindow: "6h",
+                    },
+                  },
+                  {
+                    shelfId: "1b1d8924-d10c-444d-aacd-e41873bca312",
+                    name: "Favorite Channels",
+                    description: "Posts from your favorite channels",
+                    creatorFid: fid,
+                    type: ShelfType.FARCASTER_POSTS,
+                    renderer: ShelfRenderer.POST_DEFAULT,
+                    data: {
+                      users: {
+                        type: UserFilterType.POWER_BADGE,
+                        data: {
+                          badge: true,
+                        },
+                      },
+                      channels: data.channels,
+                    },
+                  },
+                  {
+                    shelfId: "5e255324-33ad-47a9-b76b-27bca844cc97",
+                    name: "Media Feed",
+                    description: "Media from your favorite channels",
+                    creatorFid: fid,
+                    type: ShelfType.FARCASTER_MEDIA,
+                    renderer: ShelfRenderer.POST_MEDIA,
+                    data: {
+                      users: {
+                        type: UserFilterType.POWER_BADGE,
+                        data: {
+                          badge: true,
+                        },
+                      },
+                      channels: data.channels,
+                    },
+                  },
+                  {
+                    shelfId: "6f0c5b0b-3144-41f3-8786-598be640d144",
+                    name: "Frames Feed",
+                    description: "Frames from your favorite channels",
+                    creatorFid: fid,
+                    type: ShelfType.FARCASTER_FRAMES,
+                    renderer: ShelfRenderer.POST_FRAMES,
+                    data: {
+                      users: {
+                        type: UserFilterType.POWER_BADGE,
+                        data: {
+                          badge: true,
+                        },
+                      },
+                      channels: data.channels,
+                    },
+                  },
+                  {
+                    shelfId: "1b1d8924-d10c-444d-aacd-e41873bca312",
+                    name: "Global",
+                    description: "Posts from power badge users",
+                    imageUrl: undefined,
+                    creatorFid: fid,
+                    type: ShelfType.FARCASTER_POSTS,
+                    renderer: ShelfRenderer.POST_DEFAULT,
+                    data: {
+                      users: {
+                        type: UserFilterType.POWER_BADGE,
+                        data: {
+                          badge: true,
+                        },
+                      },
+                      includeReplies: true,
+                    },
+                  },
+                ],
               },
             },
           },

@@ -334,7 +334,12 @@ export type NookTeamArgs = {
   channels: ChannelFilter;
 };
 
+export type NookRecreateOnboardingArgs = {
+  channels: ChannelFilter;
+};
+
 export type NookArgs =
+  | NookRecreateOnboardingArgs
   | NookFarcasterChannelArgs
   | NookTeamArgs
   | NookOnboardingArgs;

@@ -11,6 +11,30 @@ const NEYNAR_FID = "6131";
 
 const TEMPLATES: Omit<NookTemplate, "id">[] = [
   {
+    name: "Onboarding",
+    description: "Recreate the nook from onboarding",
+    creatorFid: NOOK_FID,
+    form: {
+      steps: [
+        {
+          fields: [
+            {
+              name: "Channels",
+              description: "Select your channels",
+              field: "channels",
+              required: true,
+              component: {
+                type: FormComponentType.SELECT_CHANNELS,
+                allowed: [ChannelFilterType.CHANNEL_URLS],
+                limit: 20,
+              },
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
     name: "Farcaster Channel",
     description: "Create a nook from a channel",
     creatorFid: NOOK_FID,
