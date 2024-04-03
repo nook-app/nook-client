@@ -7,6 +7,8 @@
     "seed-shelves": "ts-node src/seed-shelves.ts",
     "seed-templates": "ts-node src/seed-templates.ts",
     "seed-power-badge": "ts-node src/seed-power-badge.ts",
+    "seed-cashtags": "ts-node src/seed-cashtags.ts",
+    "update-trending": "ts-node src/update-trending.ts",
     "daily-active-users": "ts-node src/daily-active-users.ts"
   },
   "dependencies": {

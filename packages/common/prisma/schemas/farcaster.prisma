@@ -257,3 +257,12 @@ model FarcasterParentUrlStats {
 
     @@index([casts])
 }
+
+model FarcasterCashtagStats {
+    timestamp       DateTime
+    cashtag         String
+    count           Int
+    powerBadgeCount Int
+
+    @@id([timestamp, cashtag])
+}

@@ -5,6 +5,7 @@ import {
   CastContextType,
   CastEngagementType,
   Channel,
+  FarcasterTrendingCashtag,
   UserContextType,
   UserEngagementType,
 } from "../../types";
@@ -279,5 +280,9 @@ export class FarcasterCacheClient {
 
   async resetCastThread(hash: string) {
     await this.redis.del(`${this.CAST_CACHE_PREFIX}:${hash}:thread`);
+  }
+
+  async setTrendingCashtags(data: FarcasterTrendingCashtag[]) {
+    await this.redis.setJson("farcaster:trending-cashtags", data);
   }
 }

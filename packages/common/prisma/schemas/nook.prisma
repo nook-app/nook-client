@@ -154,3 +154,20 @@ model NookTemplate {
     updatedAt DateTime  @default(now()) @updatedAt
     deletedAt DateTime?
 }
+
+model Cashtag {
+    cashtag     String  @id
+    name        String?
+    description String?
+    imageUrl    String?
+    channelId   String?
+
+    chainId String?
+    address String?
+
+    coingeckoId String?
+    priceUsd    Float?
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @default(now()) @updatedAt
+}

@@ -435,7 +435,7 @@ export class FarcasterService {
           );
           if (rawThread) {
             const indexOfCast = rawThread.indexOf(rawCast.hash) + 1;
-            thread = rawThread.slice(indexOfCast);
+            thread = rawThread.slice(indexOfCast, indexOfCast + 10);
             for (const hash of thread) {
               hashes.add(hash);
             }

@@ -248,3 +248,14 @@ export type GetNooksResponse = {
   data: Nook[];
   nextCursor?: string;
 };
+
+export type FarcasterTrendingCashtag = {
+  cashtag: string;
+  score: number;
+  count6h: number;
+  powerBadgeCount6h: number;
+  count3h: number;
+  powerBadgeCount3h: number;
+  count1h: number;
+  powerBadgeCount1h: number;
+};
