@@ -518,7 +518,7 @@ export class SignerService {
 
     const frameActionMessage = await makeFrameAction(
       FrameActionBody.create({
-        url: new Uint8Array(Buffer.from(req.postUrl)),
+        url: new Uint8Array(Buffer.from(req.url)),
         buttonIndex: req.buttonIndex,
         castId: {
           fid: parseInt(req.castFid, 10),

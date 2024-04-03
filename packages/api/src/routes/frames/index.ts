@@ -28,9 +28,9 @@ export const frameRoutes = async (fastify: FastifyInstance) => {
         const payload: FramePayload = {
           untrustedData: {
             fid: parseInt(fid, 10),
-            url: request.body.postUrl,
+            url: request.body.url || request.body.postUrl,
             messageHash: response.hash,
-            timestamp: Date.now(),
+            timestamp: Date.now() / 1000,
             network: 1,
             buttonIndex: request.body.buttonIndex,
             inputText: request.body.inputText,
@@ -52,7 +52,10 @@ export const frameRoutes = async (fastify: FastifyInstance) => {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
+              Accept: "application/json",
             },
+            redirect:
+              request.body.action === "post_redirect" ? "manual" : undefined,
             body: JSON.stringify(payload),
           }) as Promise<Response>,
           new Promise((resolve) =>
@@ -64,6 +67,12 @@ export const frameRoutes = async (fastify: FastifyInstance) => {
           return reply.code(200).send({ message: "Request timed out" });
         }
 
+        if (result.status === 302) {
+          return reply
+            .code(200)
+            .send({ location: result.headers.get("Location") });
+        }
+
         if (!result.ok) {
           try {
             const { message } = await result.json();
@@ -71,12 +80,6 @@ export const frameRoutes = async (fastify: FastifyInstance) => {
           } catch (e) {
             return reply.code(200).send({ message: "Failed to get frame" });
           }
-        }
-
-        if (result.status === 302) {
-          return reply
-            .code(302)
-            .send({ location: result.headers.get("Location") });
         }
 
         if (request.body.action === "tx") {

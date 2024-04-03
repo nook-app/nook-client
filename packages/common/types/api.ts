@@ -163,6 +163,7 @@ export type SubmitMessageError = {
 };
 
 export type SubmitFrameActionRequest = {
+  url: string;
   castFid: string;
   castHash: string;
   postUrl: string;
