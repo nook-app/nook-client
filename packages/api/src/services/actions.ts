@@ -97,7 +97,10 @@ export class ActionsService {
 
     let action = await this.client.castAction.findUnique({
       where: {
-        actionType_postUrl: request,
+        actionType_postUrl: {
+          actionType: request.actionType,
+          postUrl: request.postUrl,
+        },
       },
     });
 
