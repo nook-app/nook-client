@@ -11,6 +11,7 @@ import { notificationsRoutes } from "./routes/notifications";
 import { degenRoutes } from "./routes/degen";
 import { transactionRoutes } from "./routes/transactions";
 import { flagRoutes } from "./routes/flags";
+import { discoverRoutes } from "./routes/discover";
 
 const buildApp = () => {
   const app = fastify({
@@ -45,6 +46,7 @@ const buildApp = () => {
   app.register(notificationsRoutes, { prefix: "/v0" });
   app.register(flagRoutes, { prefix: "/v0" });
   app.register(degenRoutes, { prefix: "/v0" });
+  app.register(discoverRoutes, { prefix: "/v0" });
 
   return app;
 };

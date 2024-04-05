@@ -29,6 +29,9 @@ export const run = async () => {
         fid,
         type: type?.toUpperCase(),
         deletedAt: null,
+        sourceFid: {
+          not: fid,
+        },
       },
       orderBy: {
         timestamp: "desc",

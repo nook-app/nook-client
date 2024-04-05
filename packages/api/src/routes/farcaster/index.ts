@@ -387,8 +387,9 @@ export const farcasterRoutes = async (fastify: FastifyInstance) => {
     fastify.get<{ Params: { fid: string } }>(
       "/farcaster/users/:fid/recommended-channels",
       async (request, reply) => {
+        const { fid } = (await request.jwtDecode()) as { fid: string };
         const response = await fetch(
-          `https://api.neynar.com/v2/farcaster/channel/user?fid=${request.params.fid}`,
+          `https://api.neynar.com/v2/farcaster/channel/user?fid=${fid}`,
           {
             headers: {
               accept: "application/json",

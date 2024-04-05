@@ -343,3 +343,10 @@ export type NookArgs =
   | NookFarcasterChannelArgs
   | NookTeamArgs
   | NookOnboardingArgs;
+
+export type CastActionRequest = {
+  name: string;
+  icon: string;
+  postUrl: string;
+  actionType: string;
+};

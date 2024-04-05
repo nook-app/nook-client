@@ -21,7 +21,8 @@ model User {
     createdAt DateTime @default(now())
     updatedAt DateTime @default(now()) @updatedAt
 
-    nooks NookMembership[]
+    nooks   NookMembership[]
+    actions UserCastAction[]
 }
 
 model NookMembership {
@@ -170,4 +171,37 @@ model Cashtag {
 
     createdAt DateTime @default(now())
     updatedAt DateTime @default(now()) @updatedAt
+}
+
+model UserCastAction {
+    fid   String
+    index Int
+
+    actionId String
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @default(now()) @updatedAt
+
+    user   User       @relation(fields: [fid], references: [fid])
+    action CastAction @relation(fields: [actionId], references: [id], onDelete: Cascade)
+
+    @@id([fid, index])
+}
+
+model CastAction {
+    id         String @id @default(uuid())
+    actionType String
+    postUrl    String
+
+    name       String
+    icon       String
+    creatorFid String?
+    hidden     Boolean @default(false)
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @default(now()) @updatedAt
+
+    users UserCastAction[]
+
+    @@unique([actionType, postUrl])
 }

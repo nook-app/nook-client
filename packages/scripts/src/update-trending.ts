@@ -175,6 +175,8 @@ export const run = async () => {
   const stats = await runForDate(backfillStartDate);
   const trendingCashtags = calculateTrendingCashtags(stats);
   await client.setTrendingCashtags(trendingCashtags.slice(0, 50));
+
+  console.log(trendingCashtags.slice(0, 10));
 };
 
 run()
