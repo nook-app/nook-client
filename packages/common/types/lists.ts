@@ -1,4 +1,5 @@
 import { Channel, FarcasterUser } from "./farcaster";
+import { ERC20 } from "reverse-mirage";
 
 export type ListMetadata = {
   creatorFid: string;

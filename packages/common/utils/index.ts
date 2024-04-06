@@ -32,3 +32,7 @@ export function encodeCursor(
   const encodedString = JSON.stringify(cursor);
   return Buffer.from(encodedString).toString("base64");
 }
+
+export function camelToSnakeCase(str: string) {
+  return str.replace(/[A-Z]/g, (letter) => `_${letter.toLowerCase()}`);
+}
