@@ -30,7 +30,6 @@ export const getNotificationsHandler = async () => {
 
   return async (job: Job<Notification>) => {
     const notification = job.data;
-    console.log(notification);
 
     if (notification.deletedAt) {
       await client.notification.updateMany({

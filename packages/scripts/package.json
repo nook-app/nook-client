@@ -11,7 +11,8 @@
     "seed-cashtags": "ts-node src/seed-cashtags.ts",
     "update-trending": "ts-node src/update-trending.ts",
     "daily-active-users": "ts-node src/daily-active-users.ts",
-    "users-per-client": "ts-node src/users-per-client.ts"
+    "users-per-client": "ts-node src/users-per-client.ts",
+    "fix-power-badge-notifications": "ts-node src/fix-power-badge-notifications.ts"
   },
   "dependencies": {
     "@farcaster/auth-client": "^0.1.0",

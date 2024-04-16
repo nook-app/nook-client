@@ -43,6 +43,7 @@ model Notification {
     @@index([fid, timestamp, type])
     @@index([timestamp(sort: Desc), fid, type])
     @@index([timestamp(sort: Desc), powerBadge, type])
+    @@index([sourceFid, powerBadge])
 }
 
 model ShelfNotification {

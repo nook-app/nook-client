@@ -717,6 +717,9 @@ export class FarcasterService {
       conditions.push(
         `((to_tsvector('english', "value") @@ to_tsquery('english', '${sanitizeInput(
           query,
+        ).replaceAll(
+          " ",
+          "<->",
         )}')) OR (type = 6 AND value LIKE '${sanitizeInput(
           query,
         ).toLowerCase()}%'))`,

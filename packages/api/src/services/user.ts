@@ -149,9 +149,6 @@ export class UserService {
           loggedInAt: date,
           refreshToken,
           siwfData: request,
-          metadata: {
-            actionBar: ["reply", "recast", "like"],
-          },
         },
       });
     } else {
@@ -179,7 +176,7 @@ export class UserService {
     return {
       fid,
       token,
-      refreshToken: user.refreshToken,
+      refreshToken,
       expiresAt,
       theme: user.theme,
       isNewUser,
