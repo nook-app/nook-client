@@ -1,5 +1,5 @@
 import { Frame } from "frames.js";
-import { ContentReferenceResponse, UrlContentResponse } from "./content";
+import { UrlContentResponse } from "./content";
 import {
   Channel,
   FarcasterCastContext,
@@ -49,7 +49,7 @@ export type GetFarcasterChannelsRequest = {
   parentUrls?: string[];
 };
 
-export type GetFarcasterChannelResponse = {
+export type GetFarcasterChannelsResponse = {
   data: Channel[];
   nextCursor?: string;
 };
@@ -205,6 +205,7 @@ export type SubmitFrameActionResponse = {
 export type GetNotificationsRequest = {
   fid: string;
   types?: string[];
+  priority?: boolean;
 };
 
 export type GetNotificationsResponse = {

@@ -12,10 +12,7 @@ export const channelRoutes = async (fastify: FastifyInstance) => {
     fastify.get<{
       Params: GetFarcasterChannelRequest;
     }>("/channels/:id", async (request, reply) => {
-      const channel = await service.getChannelById(
-        request.params.id,
-        request.headers["x-viewer-fid"] as string,
-      );
+      const channel = (await service.getChannels([], [request.params.id]))[0];
 
       if (!channel) {
         reply.status(404).send({ message: "Channel not found" });
@@ -25,32 +22,39 @@ export const channelRoutes = async (fastify: FastifyInstance) => {
       reply.send(channel);
     });
 
-    fastify.get<{ Querystring: { query: string; cursor?: string } }>(
-      "/channels",
-      async (request, reply) => {
-        const data = await service.searchChannels(
-          request.query.query,
-          request.query.cursor,
-        );
+    fastify.get<{
+      Params: { url: string };
+    }>("/channels/by-url/:url", async (request, reply) => {
+      const channel = (await service.getChannels([request.params.url]))[0];
 
-        reply.send(data);
-      },
-    );
+      if (!channel) {
+        reply.status(404).send({ message: "Channel not found" });
+        return;
+      }
+
+      reply.send(channel);
+    });
+
+    fastify.get<{
+      Querystring: { query: string; limit?: number; cursor?: string };
+    }>("/channels", async (request, reply) => {
+      const data = await service.searchChannels(
+        request.query.query,
+        request.query.limit,
+        request.query.cursor,
+      );
+
+      reply.send(data);
+    });
 
     fastify.post<{ Body: GetFarcasterChannelsRequest }>(
       "/channels",
       async (request, reply) => {
-        if (request.body.channelIds) {
-          const channels = await service.getChannelsById(
-            request.body.channelIds,
-          );
-          reply.send({ data: channels });
-        } else if (request.body.parentUrls) {
-          const channels = await service.getChannels(request.body.parentUrls);
-          reply.send({ data: channels });
-        } else {
-          reply.status(400).send({ message: "Invalid request" });
-        }
+        const channels = await service.getChannels(
+          request.body.parentUrls,
+          request.body.channelIds,
+        );
+        reply.send({ data: channels });
       },
     );
   });

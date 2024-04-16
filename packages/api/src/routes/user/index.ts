@@ -5,12 +5,10 @@ import {
 } from "../../../types";
 import { UserService } from "../../services/user";
 import { UserMetadata } from "@nook/common/types";
-import { NookService } from "../../services/nook";
 
 export const userRoutes = async (fastify: FastifyInstance) => {
   fastify.register(async (fastify: FastifyInstance) => {
     const userService = new UserService(fastify);
-    const nookService = new NookService(fastify);
 
     fastify.get("/user", async (request, reply) => {
       const { fid } = (await request.jwtDecode()) as { fid: string };
@@ -19,19 +17,7 @@ export const userRoutes = async (fastify: FastifyInstance) => {
         if (!data) {
           return reply.code(404).send({ message: "User not found" });
         }
-        const nooks = await nookService.getNooks(fid);
-        await userService.updateMetadata(fid, {
-          actionBar: (data.metadata as UserMetadata)?.actionBar || [
-            "reply",
-            "recast",
-            "like",
-          ],
-          nookOrder: nooks.map((nook) => nook.id),
-        });
-        return reply.send({
-          ...data,
-          nooks,
-        });
+        return reply.send(data);
       } catch (e) {
         console.error(e);
         return reply.code(500).send({ message: (e as Error).message });

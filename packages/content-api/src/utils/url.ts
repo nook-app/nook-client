@@ -73,6 +73,7 @@ export const getUrlContent = async (
 
       // If CloudFlare error, don't save the metadata
       if (metadata?.metadata?.title === "Just a moment...") {
+        console.log(`[metadata] [${uri}] failed due to cloudflare`);
         return;
       }
 
@@ -86,10 +87,12 @@ export const getUrlContent = async (
       }
     }
   } catch (e) {
+    console.log(`[metadata] [${uri}] failed due to ${e}`);
     return;
   }
 
   if (!content.type) {
+    console.log(`[metadata] [${uri}] failed due to missing type`);
     return;
   }
 
@@ -165,6 +168,7 @@ const fetchUrlMetadata = async (url: string) => {
       url,
       htmlString: html,
     });
+
     if (frame?.image && new Blob([frame?.image]).size < 256000) {
       urlMetadata.frame = frame;
     }

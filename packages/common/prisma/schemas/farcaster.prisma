@@ -100,8 +100,13 @@ model FarcasterCast {
     @@index([parentHash, deletedAt, timestamp(sort: Desc)])
     @@index([fid, deletedAt, parentHash, timestamp(sort: Desc)])
     @@index([parentUrl, deletedAt, parentHash, timestamp(sort: Desc)])
+    @@index([fid, rootParentUrl, deletedAt, parentHash, timestamp(sort: Desc)])
+    @@index([rootParentUrl, fid, deletedAt, parentHash, timestamp(sort: Desc)])
     @@index([timestamp(sort: Desc), fid, deletedAt, parentHash])
     @@index([timestamp(sort: Desc), parentUrl, deletedAt, parentHash])
+    @@index([timestamp(sort: Desc), rootParentUrl, deletedAt, parentHash])
+    @@index([timestamp(sort: Desc), rootParentUrl, fid, deletedAt, parentHash])
+    @@index([timestamp(sort: Desc), fid, rootParentUrl, deletedAt, parentHash])
     @@index([timestamp(sort: Desc), deletedAt, parentHash])
 }
 

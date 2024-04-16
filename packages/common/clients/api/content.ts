@@ -6,6 +6,7 @@ import {
   ShelfDataResponse,
   UrlContentResponse,
 } from "../../types";
+import { FarcasterFeedRequest } from "../../types/feed";
 import { BaseAPIClient } from "./base";
 
 export class ContentAPIClient extends BaseAPIClient {
@@ -101,6 +102,21 @@ export class ContentAPIClient extends BaseAPIClient {
     body: ShelfDataRequest<FarcasterMediaArgs>,
   ): Promise<ShelfDataResponse<string>> {
     const response = await this.makeRequest("/feed/embeds/new", {
+      method: "POST",
+      body: JSON.stringify(body),
+    });
+
+    if (!response.ok) {
+      throw new Error(response.statusText);
+    }
+
+    return response.json();
+  }
+
+  async getContentFeed(
+    body: FarcasterFeedRequest,
+  ): Promise<{ data: string[]; nextCursor: string | undefined }> {
+    const response = await this.makeRequest("/feed/content", {
       method: "POST",
       body: JSON.stringify(body),
     });

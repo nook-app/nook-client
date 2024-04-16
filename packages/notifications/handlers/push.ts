@@ -58,8 +58,10 @@ const formatPushNotification = async (
           sourceId: n.sourceId,
           sourceFid: n.sourceFid,
           data: n.data,
+          image: user?.pfp,
         },
         categoryId: "farcasterLike",
+        mutableContent: true,
       }));
     }
     case NotificationType.RECAST: {
@@ -79,8 +81,10 @@ const formatPushNotification = async (
           sourceId: n.sourceId,
           sourceFid: n.sourceFid,
           data: n.data,
+          image: user?.pfp,
         },
         categoryId: "farcasterRecast",
+        mutableContent: true,
       }));
     }
     case NotificationType.REPLY: {
@@ -100,8 +104,10 @@ const formatPushNotification = async (
           sourceId: n.sourceId,
           sourceFid: n.sourceFid,
           data: n.data,
+          image: user?.pfp,
         },
         categoryId: "farcasterReply",
+        mutableContent: true,
       }));
     }
     case NotificationType.MENTION: {
@@ -121,8 +127,10 @@ const formatPushNotification = async (
           sourceId: n.sourceId,
           sourceFid: n.sourceFid,
           data: n.data,
+          image: user?.pfp,
         },
         categoryId: "farcasterMention",
+        mutableContent: true,
       }));
     }
     case NotificationType.QUOTE: {
@@ -142,8 +150,10 @@ const formatPushNotification = async (
           sourceId: n.sourceId,
           sourceFid: n.sourceFid,
           data: n.data,
+          image: user?.pfp,
         },
         categoryId: "farcasterQuote",
+        mutableContent: true,
       }));
     }
     case NotificationType.FOLLOW: {
@@ -159,8 +169,10 @@ const formatPushNotification = async (
           sourceId: n.sourceId,
           sourceFid: n.sourceFid,
           data: n.data,
+          image: user?.pfp,
         },
         categoryId: "farcasterFollow",
+        mutableContent: true,
       }));
     }
     case NotificationType.POST: {
@@ -180,8 +192,10 @@ const formatPushNotification = async (
           sourceId: n.sourceId,
           sourceFid: n.sourceFid,
           data: n.data,
+          image: user?.pfp,
         },
         categoryId: "farcasterPost",
+        mutableContent: true,
       }));
     }
     default:

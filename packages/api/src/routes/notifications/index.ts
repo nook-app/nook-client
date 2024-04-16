@@ -161,47 +161,6 @@ export const notificationsRoutes = async (fastify: FastifyInstance) => {
       }
     });
 
-    fastify.post<{
-      Body: GetNotificationsRequest;
-      Querystring: { cursor?: string };
-    }>("/notifications/posts", async (request, reply) => {
-      if (!request.headers.authorization) {
-        return reply.code(401).send({ message: "Unauthorized" });
-      }
-      try {
-        const data = await client.getPostNotifications(
-          request.body,
-          request.query.cursor,
-        );
-
-        if (data.data.length === 0) {
-          return reply.send({ data: [] });
-        }
-
-        const hashes = data.data.map((n) => n.hash).filter(Boolean) as string[];
-
-        const casts = await farcaster.getCasts(hashes);
-
-        const castMap = casts.data.reduce(
-          (acc, cast) => {
-            acc[cast.hash] = cast;
-            return acc;
-          },
-          {} as Record<string, FarcasterCastResponse>,
-        );
-
-        return reply.send({
-          data: data.data.map((n) => ({
-            ...n,
-            cast: n.hash ? castMap[n.hash] : undefined,
-          })),
-          nextCursor: data.nextCursor,
-        });
-      } catch (e) {
-        return reply.code(500).send({ message: (e as Error).message });
-      }
-    });
-
     fastify.put<{ Params: { shelfId: string } }>(
       "/notifications/shelves/:shelfId/subscription",
       async (request, reply) => {

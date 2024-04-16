@@ -1,5 +1,5 @@
 import { CastAction, Prisma, PrismaClient } from "@nook/common/prisma/nook";
-import { CastActionRequest } from "@nook/common/types";
+import { CastActionV1Request, CastActionV2Request } from "@nook/common/types";
 import { decodeCursor, encodeCursor } from "@nook/common/utils";
 import { FastifyInstance } from "fastify";
 
@@ -21,9 +21,9 @@ export class ActionsService {
     const decodedCursor = decodeCursor(cursor);
     if (decodedCursor) {
       conditions.push(
-        `("Nook".users < ${decodedCursor.users} OR ("Nook".users = ${
+        `(users < ${decodedCursor.users} OR (users = ${
           decodedCursor.users
-        } AND "Nook"."createdAt" < '${new Date(
+        } AND "createdAt" < '${new Date(
           decodedCursor.createdAt,
         ).toISOString()}'))`,
       );
@@ -36,19 +36,19 @@ export class ActionsService {
     >(
       Prisma.sql([
         `
-      WITH RankedActions AS (
-        SELECT "CastAction".*, COUNT(*) AS users,
-          ROW_NUMBER() OVER (ORDER BY COUNT(DISTINCT "UserCastAction"."fid") DESC, "CastAction"."createdAt" DESC) AS rn
-        FROM "CastAction"
-        LEFT JOIN "UserCastAction" ON "CastAction"."id" = "UserCastAction"."actionId"
-        GROUP BY "CastAction".id
-      )
-      SELECT *
-      FROM RankedActions
-      WHERE ${whereClause}
-      ORDER BY users DESC, "createdAt" DESC
-      LIMIT ${MAX_PAGE_SIZE}
-    `,
+          WITH RankedActions AS (
+            SELECT "CastAction".*, COUNT(*) AS users,
+              ROW_NUMBER() OVER (ORDER BY COUNT(DISTINCT "UserCastAction"."fid") DESC, "CastAction"."createdAt" DESC) AS rn
+            FROM "CastAction"
+            LEFT JOIN "UserCastAction" ON "CastAction"."id" = "UserCastAction"."actionId"
+            GROUP BY "CastAction".id
+          )
+          SELECT *
+          FROM RankedActions
+          WHERE ${whereClause}
+          ORDER BY users DESC, "createdAt" DESC
+          LIMIT ${MAX_PAGE_SIZE}
+        `,
       ]),
     );
 
@@ -81,7 +81,7 @@ export class ActionsService {
   async addUserAction(
     fid: string,
     index: number,
-    request: CastActionRequest | null,
+    request: CastActionV1Request | CastActionV2Request | null,
   ) {
     if (request === null) {
       await this.client.userCastAction.delete({
@@ -92,6 +92,59 @@ export class ActionsService {
           },
         },
       });
+      return;
+    }
+
+    if ("url" in request) {
+      let action = await this.client.castAction.findFirst({
+        where: {
+          postUrl: request.url,
+        },
+      });
+
+      if (!action) {
+        try {
+          const response = await fetch(request.url);
+          const {
+            name,
+            icon,
+            description,
+            aboutUrl,
+            action: { type },
+          } = await response.json();
+
+          action = await this.client.castAction.create({
+            data: {
+              postUrl: request.url,
+              name,
+              icon,
+              description,
+              aboutUrl,
+              actionType: type,
+            },
+          });
+        } catch (e) {
+          return;
+        }
+      }
+
+      await this.client.userCastAction.upsert({
+        where: {
+          fid_index: {
+            fid,
+            index,
+          },
+        },
+        update: {
+          actionId: action.id,
+        },
+        create: {
+          fid,
+          index,
+          actionId: action.id,
+        },
+      });
+
       return;
     }
 

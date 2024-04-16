@@ -18,6 +18,7 @@ export class FarcasterCacheClient {
   CHANNEL_CACHE_PREFIX = "farcaster:channel";
   CLIENT_CACHE_PREFIX = "farcaster:client";
   POWER_BADGE_CACHE_PREFIX = "warpcast:power-badge";
+  USER_FOLLOWING_FIDS_CACHE_PREFIX = "farcaster:user:following:fids";
 
   constructor(redis: RedisClient) {
     this.redis = redis;
@@ -50,48 +51,55 @@ export class FarcasterCacheClient {
     await this.redis.del(`${this.CAST_CACHE_PREFIX}:${hash}`);
   }
 
-  async getCastEngagement(
-    hash: string,
+  async getCastEngagements(
     type: CastEngagementType,
-  ): Promise<number | undefined> {
-    return await this.redis.getNumber(
-      `${this.CAST_CACHE_PREFIX}:${hash}:${type}`,
+    hashes: string[],
+  ): Promise<(number | undefined)[]> {
+    return await this.redis.mgetNumber(
+      hashes.map((hash) => `${this.CAST_CACHE_PREFIX}:${hash}:${type}`),
     );
   }
 
-  async setCastEngagement(
-    hash: string,
+  async setCastEngagements(
     type: CastEngagementType,
-    value: number,
+    hashes: string[],
+    values: number[],
   ) {
-    await this.redis.setNumber(
-      `${this.CAST_CACHE_PREFIX}:${hash}:${type}`,
-      value,
+    await this.redis.msetNumber(
+      hashes.map((hash, i) => [
+        `${this.CAST_CACHE_PREFIX}:${hash}:${type}`,
+        values[i],
+      ]),
       86400,
     );
   }
 
-  async getCastContext(
-    hash: string,
+  async getCastContexts(
     type: CastContextType,
     fid: string,
-  ): Promise<boolean | undefined> {
-    const result = await this.redis.get(
-      `${this.CAST_CACHE_PREFIX}:${hash}:${type}:${fid}`,
+    hashes: string[],
+  ): Promise<(boolean | undefined)[]> {
+    const result = await this.redis.mget(
+      hashes.map((hash) => `${this.CAST_CACHE_PREFIX}:${hash}:${type}:${fid}`),
     );
-    if (result === "1") return true;
-    if (result === "0") return false;
+    return result.map((value) => {
+      if (value === "1") return true;
+      if (value === "0") return false;
+      return undefined;
+    });
   }
 
-  async setCastContext(
-    hash: string,
+  async setCastContexts(
     type: CastContextType,
     fid: string,
-    value: boolean,
+    hashes: string[],
+    values: boolean[],
   ) {
-    await this.redis.set(
-      `${this.CAST_CACHE_PREFIX}:${hash}:${type}:${fid}`,
-      value ? "1" : "0",
+    await this.redis.mset(
+      hashes.map((hash, i) => [
+        `${this.CAST_CACHE_PREFIX}:${hash}:${type}:${fid}`,
+        values[i] ? "1" : "0",
+      ]),
       86400,
     );
   }
@@ -119,54 +127,73 @@ export class FarcasterCacheClient {
     );
   }
 
-  async getUserEngagement(
-    fid: string,
+  async getUserEngagements(
     type: UserEngagementType,
-  ): Promise<number | undefined> {
-    return await this.redis.getNumber(
-      `${this.USER_CACHE_PREFIX}:${fid}:${type}`,
+    fids: string[],
+  ): Promise<(number | undefined)[]> {
+    return await this.redis.mgetNumber(
+      fids.map((fid) => `${this.USER_CACHE_PREFIX}:${fid}:${type}`),
     );
   }
 
-  async setUserEngagement(
-    fid: string,
+  async setUserEngagements(
     type: UserEngagementType,
-    value: number,
+    fids: string[],
+    values: number[],
   ) {
-    await this.redis.setNumber(
-      `${this.USER_CACHE_PREFIX}:${fid}:${type}`,
-      value,
+    await this.redis.msetNumber(
+      fids.map((fid, i) => [
+        `${this.USER_CACHE_PREFIX}:${fid}:${type}`,
+        values[i],
+      ]),
       86400,
     );
   }
 
-  async getUserContext(
-    fid: string,
+  async getUserContexts(
     type: UserContextType,
-    targetFid: string,
-  ): Promise<boolean | undefined> {
-    const result = await this.redis.get(
-      `${this.USER_CACHE_PREFIX}:${fid}:${type}:${targetFid}`,
+    fid: string,
+    targetFids: string[],
+  ): Promise<(boolean | undefined)[]> {
+    const result = await this.redis.mget(
+      targetFids.map(
+        (targetFid) => `${this.USER_CACHE_PREFIX}:${fid}:${type}:${targetFid}`,
+      ),
     );
-    if (result === "1") return true;
-    if (result === "0") return false;
+    return result.map((value) => {
+      if (value === "1") return true;
+      if (value === "0") return false;
+      return undefined;
+    });
   }
 
-  async setUserContext(
-    fid: string,
+  async setUserContexts(
     type: UserContextType,
-    targetFid: string,
-    value: boolean,
+    fid: string,
+    targetFids: string[],
+    values: boolean[],
   ) {
-    await this.redis.set(
-      `${this.USER_CACHE_PREFIX}:${fid}:${type}:${targetFid}`,
-      value ? "1" : "0",
+    await this.redis.mset(
+      targetFids.map((targetFid, i) => [
+        `${this.USER_CACHE_PREFIX}:${fid}:${type}:${targetFid}`,
+        values[i] ? "1" : "0",
+      ]),
       86400,
     );
   }
 
-  async resetCastEngagement(hash: string, type: CastEngagementType) {
-    await this.redis.del(`${this.CAST_CACHE_PREFIX}:${hash}:${type}`);
+  async incrementCastEngagement(hash: string, type: CastEngagementType) {
+    const key = `${this.CAST_CACHE_PREFIX}:${hash}:${type}`;
+    if (await this.redis.exists(key)) {
+      await this.redis.increment(key);
+    }
+  }
+
+  async decrementCastEngagement(hash: string, type: CastEngagementType) {
+    const key = `${this.CAST_CACHE_PREFIX}:${hash}:${type}`;
+    if (await this.redis.exists(key)) {
+      await this.redis.decrement(key);
+    }
   }
 
   async incrementUserEngagement(fid: string, type: UserEngagementType) {
@@ -183,36 +210,20 @@ export class FarcasterCacheClient {
     }
   }
 
-  async getChannel(url: string): Promise<Channel | undefined> {
-    return await this.redis.getJson(`${this.CHANNEL_CACHE_PREFIX}:${url}`);
-  }
-
-  async setChannel(url: string, channel: Channel) {
-    await this.redis.setJson(
-      `${this.CHANNEL_CACHE_PREFIX}:${url}`,
-      channel,
-      86400,
+  async getChannels(keys: string[]): Promise<(Channel | undefined)[]> {
+    return await this.redis.mgetJson(
+      keys.map((key) => `${this.CHANNEL_CACHE_PREFIX}:${key}`),
     );
   }
 
-  async getChannelById(id: string): Promise<Channel | undefined> {
-    return await this.redis.getJson(`${this.CHANNEL_CACHE_PREFIX}:${id}`);
-  }
-
-  async setChannelById(id: string, channel: Channel) {
-    await this.redis.setJson(
-      `${this.CHANNEL_CACHE_PREFIX}:${id}`,
-      channel,
+  async setChannels(channels: Channel[]) {
+    await this.redis.msetJson(
+      channels.flatMap((channel) => [
+        [`${this.CHANNEL_CACHE_PREFIX}:${channel.url}`, channel],
+        [`${this.CHANNEL_CACHE_PREFIX}:${channel.channelId}`, channel],
+      ]),
       86400,
     );
-  }
-
-  async getChannelsByIds(ids: string[]): Promise<Channel[]> {
-    return (
-      await this.redis.mgetJson(
-        ids.map((id) => `${this.CHANNEL_CACHE_PREFIX}:${id}`),
-      )
-    ).filter(Boolean);
   }
 
   async getAppFidBySigner(signer: string): Promise<string | null> {
@@ -237,6 +248,34 @@ export class FarcasterCacheClient {
 
   async removeAppFidBySigner(pubkey: string) {
     await this.redis.del(`${this.CLIENT_CACHE_PREFIX}:${pubkey}`);
+  }
+
+  async getUserFollowingFids(fid: string): Promise<string[]> {
+    return await this.redis.getMembers(
+      `${this.USER_FOLLOWING_FIDS_CACHE_PREFIX}:${fid}`,
+    );
+  }
+
+  async setUserFollowingFids(fid: string, fids: string[]) {
+    await this.redis.addMembers(
+      `${this.USER_FOLLOWING_FIDS_CACHE_PREFIX}:${fid}`,
+      fids,
+      60 * 60,
+    );
+  }
+
+  async addUserFollowingFid(fid: string, targetFid: string) {
+    await this.redis.addMember(
+      `${this.USER_FOLLOWING_FIDS_CACHE_PREFIX}:${fid}`,
+      targetFid,
+    );
+  }
+
+  async removeUserFollowingFid(fid: string, targetFid: string) {
+    await this.redis.removeMember(
+      `${this.USER_FOLLOWING_FIDS_CACHE_PREFIX}:${fid}`,
+      targetFid,
+    );
   }
 
   async setPowerBadgeUsers(users: string[]) {
@@ -264,6 +303,42 @@ export class FarcasterCacheClient {
       60 * 60 * 24,
     );
     return hasPowerBadge;
+  }
+
+  async getUserPowerBadges(fids: string[]): Promise<boolean[]> {
+    const result = await this.redis.mget(
+      fids.map((fid) => `${this.USER_CACHE_PREFIX}:${fid}:power-badge`),
+    );
+
+    const resultMap = result.reduce((acc, value, i) => {
+      let hasPowerBadge: boolean | null = null;
+      if (value === "1") hasPowerBadge = true;
+      if (value === "0") hasPowerBadge = false;
+      if (hasPowerBadge !== null) {
+        acc[fids[i]] = hasPowerBadge;
+      }
+      return acc;
+    }, {} as { [key: string]: boolean });
+
+    const missing = fids.filter((fid) => resultMap[fid] === undefined);
+    if (missing.length > 0) {
+      const powerBadges = await this.getPowerBadgeUsers();
+      if (powerBadges) {
+        const missingResults = missing.map((fid) => powerBadges.includes(fid));
+        await this.redis.mset(
+          missing.map((fid, i) => [
+            `${this.USER_CACHE_PREFIX}:${fid}:power-badge`,
+            missingResults[i] ? "1" : "0",
+          ]),
+          60 * 60 * 24,
+        );
+        for (const [fid, result] of missingResults.entries()) {
+          resultMap[missing[fid]] = result;
+        }
+      }
+    }
+
+    return fids.map((fid) => resultMap[fid]);
   }
 
   async setCastThread(hash: string, thread: string[]) {

@@ -7,17 +7,9 @@ import {
 import {
   BaseFarcasterCast,
   BaseFarcasterUser,
-  CastContextType,
-  CastEngagementType,
   Channel,
-  FarcasterCast,
-  FarcasterCastContext,
-  FarcasterCastEngagement,
   FarcasterCastResponse,
   FarcasterUser,
-  FarcasterUserContext,
-  FarcasterUserEngagement,
-  UserEngagementType,
   GetFarcasterCastsResponse,
   GetFarcasterUsersResponse,
   UrlContentResponse,
@@ -65,63 +57,21 @@ export class FarcasterService {
     this.hub = getSSLHubRpcClient(process.env.HUB_RPC_ENDPOINT as string);
   }
 
-  async getFollowingFids(fids: string[], degree?: number) {
+  async getUserFollowingFids(fid: string) {
+    const cachedFollowing = await this.cache.getUserFollowingFids(fid);
+    if (cachedFollowing.length > 0) return cachedFollowing;
+
     const following = await this.client.farcasterLink.findMany({
       where: {
         linkType: "follow",
-        fid: {
-          in: fids.map((fid) => BigInt(fid)),
-        },
+        fid: BigInt(fid),
         deletedAt: null,
       },
     });
 
-    const followingFids = following.map((link) => link.targetFid.toString());
-
-    if (!degree || degree === 1) {
-      return followingFids;
-    }
-
-    const followingOfFollowing = await this.client.farcasterLink.findMany({
-      where: {
-        linkType: "follow",
-        fid: {
-          in: following.map((link) => link.targetFid),
-        },
-        deletedAt: null,
-      },
-    });
-
-    const followingOfFollowingFids = followingOfFollowing.map((link) =>
-      link.targetFid.toString(),
-    );
-
-    if (degree === 2) {
-      return followingOfFollowingFids.filter(
-        (fid) => !followingFids.includes(fid.toString()) && !fids.includes(fid),
-      );
-    }
-
-    const followingOfFollowingOfFollowing =
-      await this.client.farcasterLink.findMany({
-        where: {
-          linkType: "follow",
-          fid: {
-            in: followingOfFollowing.map((link) => link.targetFid),
-          },
-          deletedAt: null,
-        },
-      });
-
-    const followingOfFollowingOfFollowingFids =
-      followingOfFollowingOfFollowing.map((link) => link.targetFid.toString());
-
-    return followingOfFollowingOfFollowingFids.filter(
-      (fid) =>
-        !followingFids.includes(fid.toString()) &&
-        !followingOfFollowingFids.includes(fid.toString()) &&
-        !fids.includes(fid),
-    );
+    const fids = following.map((link) => link.targetFid.toString());
+    await this.cache.setUserFollowingFids(fid, fids);
+    return fids;
   }
 
   async getCastReplies(
@@ -193,7 +143,7 @@ export class FarcasterService {
     cast: FarcasterCastResponse,
     viewerFid?: string,
   ): Promise<FarcasterCastResponse[]> {
-    const ancestorRawCasts: FarcasterCast[] = [];
+    const ancestorRawCasts: BaseFarcasterCast[] = [];
     if (!cast.parentHash) return [];
 
     let hash: string | undefined = cast.parentHash;
@@ -277,7 +227,7 @@ export class FarcasterService {
   async getRawCasts(
     hashes: string[],
     viewerFid?: string,
-  ): Promise<FarcasterCast[]> {
+  ): Promise<BaseFarcasterCast[]> {
     if (hashes.length === 0) return [];
 
     const casts = await this.cache.getCasts(hashes);
@@ -329,83 +279,53 @@ export class FarcasterService {
       }
 
       const appFidsBySigner = await this.getCastSignerAppFids(data);
-
-      const uncachedCasts = await Promise.all(
-        data.map(async (cast) => ({
-          hash: cast.hash,
-          fid: cast.fid.toString(),
-          timestamp: cast.timestamp.getTime(),
-          text: cast.text,
-          mentions: getMentions(cast),
-          embedHashes: getCastEmbeds(cast).map(({ hash }) => hash),
-          embedUrls: getEmbedUrls(cast),
-          rootParentFid: cast.rootParentFid?.toString(),
-          rootParentHash: cast.rootParentHash || undefined,
-          parentFid: cast.parentFid?.toString(),
-          parentHash: cast.parentHash || undefined,
-          parentUrl: cast.parentUrl || undefined,
-          signer: cast.signer,
-          appFid: appFidsBySigner[cast.signer],
-        })),
-      );
+      const uncachedCasts = data.map((cast) => ({
+        hash: cast.hash,
+        fid: cast.fid.toString(),
+        timestamp: cast.timestamp.getTime(),
+        text: cast.text,
+        mentions: getMentions(cast),
+        embedHashes: getCastEmbeds(cast).map(({ hash }) => hash),
+        embedUrls: getEmbedUrls(cast),
+        rootParentFid: cast.rootParentFid?.toString(),
+        rootParentHash: cast.rootParentHash || undefined,
+        parentFid: cast.parentFid?.toString(),
+        parentHash: cast.parentHash || undefined,
+        parentUrl: cast.parentUrl || undefined,
+        signer: cast.signer,
+        appFid: appFidsBySigner[cast.signer],
+      }));
 
       await this.cache.setCasts(uncachedCasts);
 
       casts.push(...uncachedCasts);
     }
 
-    const response: FarcasterCast[] = await Promise.all(
-      casts.map(async (cast) => {
-        const [engagement, context] = await Promise.all([
-          this.getCastEngagement(cast.hash),
-          this.getCastContext(cast.hash, viewerFid),
-        ]);
-
-        return {
-          ...cast,
-          engagement,
-          context,
-        };
-      }),
-    );
-
-    return response;
+    return casts;
   }
 
   async getCastsFromData(
     data: DBFarcasterCast[],
     viewerFid?: string,
   ): Promise<FarcasterCastResponse[]> {
-    const casts = (
-      await Promise.all(
-        data.map(async (cast) => {
-          const [engagement, context] = await Promise.all([
-            this.getCastEngagement(cast.hash),
-            this.getCastContext(cast.hash, viewerFid),
-          ]);
-          return {
-            hash: cast.hash,
-            fid: cast.fid.toString(),
-            timestamp: cast.timestamp.getTime(),
-            text: cast.text,
-            mentions: getMentions(cast),
-            embedHashes: getCastEmbeds(cast).map(({ hash }) => hash),
-            embedUrls: getEmbedUrls(cast),
-            parentHash: cast.parentHash || undefined,
-            parentUrl: cast.parentUrl || undefined,
-            engagement,
-            context,
-            signer: cast.signer,
-          };
-        }),
-      )
-    ).filter(Boolean) as FarcasterCast[];
+    const casts = data.map((cast, i) => ({
+      hash: cast.hash,
+      fid: cast.fid.toString(),
+      timestamp: cast.timestamp.getTime(),
+      text: cast.text,
+      mentions: getMentions(cast),
+      embedHashes: getCastEmbeds(cast).map(({ hash }) => hash),
+      embedUrls: getEmbedUrls(cast),
+      parentHash: cast.parentHash || undefined,
+      parentUrl: cast.parentUrl || undefined,
+      signer: cast.signer,
+    }));
 
     return await this.getCasts(casts, viewerFid);
   }
 
   async getCasts(
-    casts: FarcasterCast[],
+    casts: BaseFarcasterCast[],
     viewerFid?: string,
     ancestorsFor?: string[],
   ) {
@@ -484,12 +404,43 @@ export class FarcasterService {
       }
     }
 
-    const [users, embeds, channelsByUrl, channelsById] = await Promise.all([
+    const [
+      isLiked,
+      isRecasted,
+      appFids,
+      likes,
+      recasts,
+      replies,
+      quotes,
+      users,
+      embeds,
+      channels,
+    ] = await Promise.all([
+      this.getCastIsLiked(
+        allCasts.map((cast) => cast.hash),
+        viewerFid,
+      ),
+      this.getCastIsRecasted(
+        allCasts.map((cast) => cast.hash),
+        viewerFid,
+      ),
+      this.getCastSignerAppFids(allCasts),
+      this.getCastLikeCounts(allCasts.map((cast) => cast.hash)),
+      this.getCastRecastCounts(allCasts.map((cast) => cast.hash)),
+      this.getCastReplyCounts(allCasts.map((cast) => cast.hash)),
+      this.getCastQuoteCounts(allCasts.map((cast) => cast.hash)),
       this.getUsers(Array.from(fids), viewerFid),
       this.contentClient.getContents(Array.from(embedUrls)),
-      this.getChannels(Array.from(channelUrls)),
-      this.getChannelsById(Array.from(channelIds)),
+      this.getChannels(Array.from(channelUrls), Array.from(channelIds)),
     ]);
+
+    const castToIndex = allCasts.reduce(
+      (acc, cast, index) => {
+        acc[cast.hash] = index;
+        return acc;
+      },
+      {} as Record<string, number>,
+    );
 
     const userMap = users.reduce(
       (acc, user) => {
@@ -499,17 +450,11 @@ export class FarcasterService {
       {} as Record<string, FarcasterUser>,
     );
 
-    const channelByIdMap = channelsById.reduce(
+    const channelMap = channels.reduce(
       (acc, channel) => {
-        acc[channel.channelId] = channel;
-        return acc;
-      },
-      {} as Record<string, Channel>,
-    );
-
-    const channelByUrlMap = channelsByUrl.reduce(
-      (acc, channel) => {
+        if (!channel) return acc;
         acc[channel.url] = channel;
+        acc[channel.channelId] = channel;
         return acc;
       },
       {} as Record<string, Channel>,
@@ -523,53 +468,66 @@ export class FarcasterService {
       {} as Record<string, UrlContentResponse>,
     );
 
-    const castMap = await allCasts.reduce(async (accPromise, cast) => {
-      const acc = await accPromise;
-      const potentialChannelMentions = cast.text.split(" ").reduce(
-        (acc, word, index) => {
-          if (word.startsWith("/")) {
-            const position = cast.text.indexOf(word, acc.lastIndex);
-            acc.mentions.push({ word, position });
-            acc.lastIndex = position + word.length;
-          }
-          return acc;
-        },
-        { mentions: [], lastIndex: 0 } as {
-          mentions: { word: string; position: number }[];
-          lastIndex: number;
-        },
-      ).mentions;
+    const castMap = allCasts.reduce(
+      (acc, cast) => {
+        const potentialChannelMentions = cast.text.split(" ").reduce(
+          (acc, word) => {
+            if (word.startsWith("/")) {
+              const position = cast.text.indexOf(word, acc.lastIndex);
+              acc.mentions.push({ word, position });
+              acc.lastIndex = position + word.length;
+            }
+            return acc;
+          },
+          { mentions: [], lastIndex: 0 } as {
+            mentions: { word: string; position: number }[];
+            lastIndex: number;
+          },
+        ).mentions;
 
-      acc[cast.hash] = {
-        ...cast,
-        user: userMap[cast.fid],
-        embeds: cast.embedUrls.map((embed) => embedMap[embed]).filter(Boolean),
-        mentions: cast.mentions.map((mention) => ({
-          user: userMap[mention.fid],
-          position: mention.position,
-        })),
-        embedCasts: cast.embedHashes.map((hash) => acc[hash]).filter(Boolean),
-        parent: cast.parentHash ? acc[cast.parentHash] : undefined,
-        channel: cast.parentUrl ? channelByUrlMap[cast.parentUrl] : undefined,
-        channelMentions: potentialChannelMentions
-          .map((mention) => {
-            const channel = channelByIdMap[mention.word.slice(1)];
-            if (!channel) return;
-            return {
-              channel,
-              position: Buffer.from(
-                cast.text.slice(0, mention.position),
-              ).length.toString(),
-            };
-          })
-          .filter(Boolean) as { channel: Channel; position: string }[],
-        ancestors: [],
-        thread: [],
-        // getRawCasts should always populate appFid
-        appFid: cast.appFid as string,
-      };
-      return acc;
-    }, Promise.resolve({} as Record<string, FarcasterCastResponse>));
+        acc[cast.hash] = {
+          ...cast,
+          user: userMap[cast.fid],
+          embeds: cast.embedUrls
+            .map((embed) => embedMap[embed])
+            .filter(Boolean),
+          mentions: cast.mentions.map((mention) => ({
+            user: userMap[mention.fid],
+            position: mention.position,
+          })),
+          embedCasts: cast.embedHashes.map((hash) => acc[hash]).filter(Boolean),
+          parent: cast.parentHash ? acc[cast.parentHash] : undefined,
+          channel: cast.parentUrl ? channelMap[cast.parentUrl] : undefined,
+          channelMentions: potentialChannelMentions
+            .map((mention) => {
+              const channel = channelMap[mention.word.slice(1)];
+              if (!channel) return;
+              return {
+                channel,
+                position: Buffer.from(
+                  cast.text.slice(0, mention.position),
+                ).length.toString(),
+              };
+            })
+            .filter(Boolean) as { channel: Channel; position: string }[],
+          ancestors: [],
+          thread: [],
+          appFid: cast.appFid || appFids[cast.signer],
+          context: {
+            liked: isLiked[castToIndex[cast.hash]],
+            recasted: isRecasted[castToIndex[cast.hash]],
+          },
+          engagement: {
+            likes: likes[castToIndex[cast.hash]],
+            recasts: recasts[castToIndex[cast.hash]],
+            replies: replies[castToIndex[cast.hash]],
+            quotes: quotes[castToIndex[cast.hash]],
+          },
+        };
+        return acc;
+      },
+      {} as Record<string, FarcasterCastResponse>,
+    );
 
     return casts.map((cast) => {
       if (ancestorsFor?.includes(cast.hash)) {
@@ -585,7 +543,7 @@ export class FarcasterService {
     });
   }
 
-  async searchChannels(query: string, cursor?: string) {
+  async searchChannels(query: string, limit?: number, cursor?: string) {
     const conditions: string[] = [
       `(name ILIKE '%${sanitizeInput(
         query,
@@ -610,186 +568,148 @@ export class FarcasterService {
           JOIN "FarcasterParentUrlStats" stats ON u.url = stats.url
           WHERE ${whereClause}
           ORDER BY casts DESC
-          LIMIT ${MAX_PAGE_SIZE}
+          LIMIT ${limit || MAX_PAGE_SIZE}
         `,
       ]),
     );
 
-    const channels = rawChannels.map((channel) => ({
-      ...channel,
-      creatorId: channel.creatorId?.toString(),
-    }));
-
     return {
-      data: channels,
+      data: await this.getChannels(rawChannels.map((channel) => channel.url)),
       nextCursor:
-        channels.length === MAX_PAGE_SIZE
+        rawChannels.length === MAX_PAGE_SIZE
           ? encodeCursor({
-              casts: channels[channels.length - 1].casts,
+              casts: rawChannels[rawChannels.length - 1].casts,
             })
           : undefined,
     };
   }
 
-  async getChannels(urls: string[]) {
-    const channels = await Promise.all(urls.map((url) => this.getChannel(url)));
-    return channels.filter(Boolean) as Channel[];
-  }
-
-  async getChannel(
-    url: string,
-    viewerFid?: string,
-  ): Promise<Channel | undefined> {
-    const cached = await this.cache.getChannel(url);
-    if (cached) return cached;
-
-    const existingChannel = await this.client.farcasterParentUrl.findUnique({
-      where: { url },
-    });
-    if (existingChannel) {
-      const channel: Channel = {
-        ...existingChannel,
-        creatorId: existingChannel.creatorId?.toString(),
-      };
-      await this.cache.setChannel(url, channel);
-      return channel;
-    }
-
-    const channel = await this.fetchChannel(url);
-    if (!channel) return;
-
-    await this.cache.setChannel(url, channel);
-    return channel;
-  }
-
-  async fetchChannel(url: string) {
-    const response = await fetch("https://api.warpcast.com/v2/all-channels");
-    if (!response.ok) {
-      return;
-    }
-
-    const data = await response.json();
-    const channels: {
-      id: string;
-      url: string;
-      name: string;
-      description: string;
-      imageUrl: string;
-      leadFid?: number;
-      createdAt: number;
-    }[] = data?.result?.channels;
-    if (!channels) {
-      return;
-    }
-
-    const channelData = channels.find((channel) => channel.url === url);
-    if (!channelData) {
-      return;
-    }
-
-    const channel: Channel = {
-      url: channelData.url,
-      channelId: channelData.id,
-      name: channelData.name,
-      description: channelData.description,
-      imageUrl: channelData.imageUrl,
-      createdAt: new Date(channelData.createdAt * 1000),
-      updatedAt: new Date(),
-      creatorId: channelData.leadFid?.toString(),
-    };
-
-    await this.client.farcasterParentUrl.upsert({
-      where: {
-        url,
+  async getChannels(urls?: string[], ids?: string[]) {
+    const keys = (urls || []).concat(ids || []);
+    const channels = await this.cache.getChannels(keys);
+    const channelMap = channels.reduce(
+      (acc, channel) => {
+        if (!channel) return acc;
+        acc[channel.url] = channel;
+        acc[channel.channelId] = channel;
+        return acc;
       },
-      update: channel,
-      create: channel,
-    });
-
-    return channel;
-  }
-
-  async getChannelsById(ids: string[]): Promise<Channel[]> {
-    const channels = await Promise.all(
-      ids.map((id) => this.getChannelById(id)),
+      {} as Record<string, Channel>,
     );
-    return channels.filter(Boolean) as Channel[];
+
+    const missingUrls = urls?.filter((url) => !channelMap[url]) || [];
+    const missingIds = ids?.filter((id) => !channelMap[id]) || [];
+
+    if (missingUrls.length > 0 || missingIds.length > 0) {
+      const data = await this.client.farcasterParentUrl.findMany({
+        where: {
+          OR: [
+            {
+              channelId: {
+                in: missingIds,
+              },
+            },
+            {
+              url: {
+                in: missingUrls,
+              },
+            },
+          ],
+        },
+      });
+
+      const fetchedChannels = data.map((channel) => ({
+        ...channel,
+        creatorId: channel.creatorId?.toString(),
+      }));
+
+      await this.cache.setChannels(fetchedChannels);
+
+      for (const channel of fetchedChannels) {
+        channelMap[channel.url] = channel;
+        channelMap[channel.channelId] = channel;
+      }
+    }
+
+    const stillMissingUrls = missingUrls.filter((url) => !channelMap[url]);
+    const stillMissingIds = missingIds.filter((id) => !channelMap[id]);
+    const missingFollowerCount = Object.values(channelMap)
+      .filter((channel) => !channel.followerCount)
+      .map((channel) => channel.channelId);
+
+    if (
+      stillMissingUrls.length > 0 ||
+      stillMissingIds.length > 0 ||
+      missingFollowerCount.length > 0
+    ) {
+      const response = await fetch("https://api.warpcast.com/v2/all-channels");
+      const data = await response.json();
+      const channelsFromWarpcast: {
+        id: string;
+        url: string;
+        name: string;
+        description: string;
+        imageUrl: string;
+        leadFid?: number;
+        createdAt: number;
+        followerCount: number;
+        hostFids: number[];
+      }[] = data?.result?.channels || [];
+
+      const channelsToUpsert = channelsFromWarpcast.filter((channel) => {
+        return (
+          stillMissingUrls.includes(channel.url) ||
+          stillMissingIds.includes(channel.id) ||
+          missingFollowerCount.includes(channel.id)
+        );
+      });
+
+      const upsertedChannels = await Promise.all(
+        channelsToUpsert.map(async (channel) => {
+          const channelData = {
+            url: channel.url,
+            channelId: channel.id,
+            name: channel.name,
+            description: channel.description,
+            imageUrl: channel.imageUrl,
+            createdAt: new Date(channel.createdAt * 1000),
+            updatedAt: new Date(),
+            creatorId: channel.leadFid?.toString(),
+          };
+
+          await this.client.farcasterParentUrl.upsert({
+            where: {
+              url: channel.url,
+            },
+            update: channelData,
+            create: channelData,
+          });
+
+          return {
+            ...channelData,
+            followerCount: channel.followerCount,
+            hostFids: channel.hostFids?.map((h: number) => h.toString()),
+          };
+        }),
+      );
+
+      for (const channel of upsertedChannels) {
+        channelMap[channel.url] = channel;
+        channelMap[channel.channelId] = channel;
+      }
+
+      await this.cache.setChannels(upsertedChannels);
+    }
+
+    return keys.map((key) => channelMap[key]);
   }
 
-  async getChannelById(
-    id: string,
+  async searchUsers(
+    query?: string,
+    limit?: number,
+    cursor?: string,
     viewerFid?: string,
-  ): Promise<Channel | undefined> {
-    const cached = await this.cache.getChannelById(id);
-    if (cached) return cached;
-
-    const existingChannel = await this.client.farcasterParentUrl.findFirst({
-      where: { channelId: id },
-    });
-    if (existingChannel) {
-      const channel: Channel = {
-        ...existingChannel,
-        creatorId: existingChannel.creatorId?.toString(),
-      };
-      await this.cache.setChannelById(id, channel);
-      return channel;
-    }
-
-    const channel = await this.fetchChannelById(id);
-    if (!channel) return;
-
-    await this.cache.setChannelById(id, channel);
-    return channel;
-  }
-
-  async fetchChannelById(id: string) {
-    const response = await fetch("https://api.warpcast.com/v2/all-channels");
-    if (!response.ok) {
-      return;
-    }
-
-    const data = await response.json();
-    const channels: {
-      id: string;
-      url: string;
-      name: string;
-      description: string;
-      imageUrl: string;
-      leadFid?: number;
-      createdAt: number;
-    }[] = data?.result?.channels;
-    if (!channels) {
-      return;
-    }
-
-    const channelData = channels.find((channel) => channel.id === id);
-    if (!channelData) {
-      return;
-    }
-
-    const channel: Channel = {
-      url: channelData.url,
-      channelId: channelData.id,
-      name: channelData.name,
-      description: channelData.description,
-      imageUrl: channelData.imageUrl,
-      createdAt: new Date(channelData.createdAt * 1000),
-      updatedAt: new Date(),
-      creatorId: channelData.leadFid?.toString(),
-    };
-
-    await this.client.farcasterParentUrl.upsert({
-      where: {
-        url: channel.url,
-      },
-      update: channel,
-      create: channel,
-    });
-
-    return channel;
-  }
-
-  async searchUsers(query?: string, cursor?: string, viewerFid?: string) {
+  ) {
     const decodedCursor = decodeCursor(cursor);
 
     const conditions: string[] = [];
@@ -804,7 +724,7 @@ export class FarcasterService {
     }
 
     if (decodedCursor?.followers) {
-      conditions.push(`"stats.followers" < ${decodedCursor.followers}`);
+      conditions.push(`stats.followers < ${decodedCursor.followers}`);
     }
 
     const whereClause =
@@ -820,7 +740,7 @@ export class FarcasterService {
           JOIN "FarcasterUserStats" stats ON u.fid = stats.fid
           WHERE ${whereClause}
           ORDER BY stats.followers DESC
-          LIMIT ${MAX_PAGE_SIZE}
+          LIMIT ${limit || MAX_PAGE_SIZE}
         `,
       ]),
     );
@@ -859,6 +779,29 @@ export class FarcasterService {
   async getUsers(fids: string[], viewerFid?: string): Promise<FarcasterUser[]> {
     if (fids.length === 0) return [];
 
+    const [users, powerBadges, followers, following, isFollowing] =
+      await Promise.all([
+        this.getUserDatas(fids),
+        this.getUserBadges(fids),
+        this.getUserFollowerCounts(fids),
+        this.getUserFollowingCounts(fids),
+        this.getUserIsFollowing(fids, viewerFid),
+      ]);
+
+    return users.map((user, i) => ({
+      ...user,
+      engagement: {
+        followers: followers[i],
+        following: following[i],
+      },
+      context: {
+        following: isFollowing[i],
+      },
+      badges: powerBadges[i] || { powerBadge: false },
+    }));
+  }
+
+  async getUserDatas(fids: string[]) {
     const users = await this.cache.getUsers(fids);
     const cacheMap = users.reduce(
       (acc, user) => {
@@ -924,109 +867,137 @@ export class FarcasterService {
       users.push(...uncachedUsers);
     }
 
-    const response = await Promise.all(
-      users.map(async (user) => {
-        const [engagement, context, badges] = await Promise.all([
-          this.getUserEngagement(user.fid),
-          this.getUserContext(user.fid, viewerFid),
-          this.getUserBadges(user.fid),
-        ]);
-        return {
-          ...user,
-          engagement,
-          context,
-          badges,
-        };
-      }),
+    return users;
+  }
+
+  async getUserFollowerCounts(fids: string[]): Promise<number[]> {
+    const counts = await this.cache.getUserEngagements("followers", fids);
+    const countMap = counts.reduce(
+      (acc, count, i) => {
+        if (count === undefined) return acc;
+        acc[fids[i]] = count;
+        return acc;
+      },
+      {} as Record<string, number>,
     );
 
-    return response;
-  }
+    const missing = fids.filter((fid) => countMap[fid] === undefined);
 
-  async getUserEngagement(fid: string): Promise<FarcasterUserEngagement> {
-    const [followers, following] = await Promise.all([
-      this.getUserEngagementItem(fid, "followers"),
-      this.getUserEngagementItem(fid, "following"),
-    ]);
+    if (missing.length > 0) {
+      const fetchedCounts = await this.client.farcasterUserStats.findMany({
+        where: { fid: { in: missing.map((fid) => BigInt(fid)) } },
+      });
 
-    return { followers, following };
-  }
+      await this.cache.setUserEngagements(
+        "followers",
+        fetchedCounts.map((count) => count.fid.toString()),
+        fetchedCounts.map((count) => count.followers),
+      );
 
-  async getUserBadges(fid: string): Promise<FarcasterUserBadges> {
-    const powerBadge = await this.cache.getUserPowerBadge(fid);
-    return { powerBadge };
-  }
-
-  async getUserEngagementItem(
-    fid: string,
-    type: UserEngagementType,
-  ): Promise<number> {
-    const cached = await this.cache.getUserEngagement(fid, type);
-    if (cached !== undefined) return cached;
-
-    let count = 0;
-    switch (type) {
-      case "followers":
-        count =
-          (
-            await this.client.farcasterUserStats.findFirst({
-              where: { fid: BigInt(fid) },
-            })
-          )?.followers || 0;
-
-        if (count > 0) return count;
-
-        count = await this.client.farcasterLink.count({
-          where: {
-            linkType: "follow",
-            targetFid: BigInt(fid),
-            deletedAt: null,
-          },
-        });
-        break;
-      case "following":
-        count =
-          (
-            await this.client.farcasterUserStats.findFirst({
-              where: { fid: BigInt(fid) },
-            })
-          )?.following || 0;
-
-        if (count > 0) return count;
-
-        count = await this.client.farcasterLink.count({
-          where: { linkType: "follow", fid: BigInt(fid), deletedAt: null },
-        });
-        break;
+      for (const count of fetchedCounts) {
+        countMap[count.fid.toString()] = count.followers;
+      }
     }
 
-    await this.cache.setUserEngagement(fid, type, count);
-
-    return count;
+    return fids.map((fid) => countMap[fid] || 0);
   }
 
-  async getUserContext(
-    fid: string,
-    viewerFid?: string,
-  ): Promise<FarcasterUserContext | undefined> {
-    if (!viewerFid) return;
-
-    const cached = await this.cache.getUserContext(viewerFid, "following", fid);
-
-    if (cached !== undefined) return { following: cached };
-
-    const link = await this.client.farcasterLink.findFirst({
-      where: {
-        linkType: "follow",
-        fid: BigInt(viewerFid),
-        targetFid: BigInt(fid),
-        deletedAt: null,
+  async getUserFollowingCounts(fids: string[]): Promise<number[]> {
+    const counts = await this.cache.getUserEngagements("following", fids);
+    const countMap = counts.reduce(
+      (acc, count, i) => {
+        if (count === undefined) return acc;
+        acc[fids[i]] = count;
+        return acc;
       },
-    });
+      {} as Record<string, number>,
+    );
 
-    const linked = !!link;
-    await this.cache.setUserContext(viewerFid, "following", fid, linked);
-    return { following: linked };
+    const missing = fids.filter((fid) => countMap[fid] === undefined);
+
+    if (missing.length > 0) {
+      const fetchedCounts = await this.client.farcasterUserStats.findMany({
+        where: { fid: { in: missing.map((fid) => BigInt(fid)) } },
+      });
+
+      await this.cache.setUserEngagements(
+        "following",
+        fetchedCounts.map((count) => count.fid.toString()),
+        fetchedCounts.map((count) => count.following),
+      );
+
+      for (const count of fetchedCounts) {
+        countMap[count.fid.toString()] = count.following;
+      }
+    }
+
+    return fids.map((fid) => countMap[fid] || 0);
+  }
+
+  async getUserBadges(fids: string[]): Promise<FarcasterUserBadges[]> {
+    const powerBadges = await this.cache.getUserPowerBadges(fids);
+    return powerBadges.map((powerBadge) => ({ powerBadge }));
+  }
+
+  async getUserIsFollowing(
+    fids: string[],
+    viewerFid?: string,
+  ): Promise<boolean[]> {
+    if (!viewerFid) return [];
+
+    const isFollowing = await this.cache.getUserContexts(
+      "following",
+      viewerFid,
+      fids,
+    );
+    const isFollowingMap = isFollowing.reduce(
+      (acc, following, i) => {
+        if (following === undefined) return acc;
+        acc[fids[i]] = following;
+        return acc;
+      },
+      {} as Record<string, boolean>,
+    );
+
+    const missing = fids.filter((fid) => isFollowingMap[fid] === undefined);
+
+    if (missing.length > 0) {
+      const fetchedIsFollowing = await this.client.farcasterLink.findMany({
+        where: {
+          linkType: "follow",
+          fid: BigInt(viewerFid),
+          targetFid: {
+            in: missing.map((fid) => BigInt(fid)),
+          },
+          deletedAt: null,
+        },
+      });
+
+      await this.cache.setUserContexts(
+        "following",
+        viewerFid,
+        fetchedIsFollowing.map((link) => link.targetFid.toString()),
+        fetchedIsFollowing.map(() => true),
+      );
+
+      for (const link of fetchedIsFollowing) {
+        isFollowingMap[link.targetFid.toString()] = true;
+      }
+    }
+
+    const stillMissing = fids.filter(
+      (fid) => isFollowingMap[fid] === undefined,
+    );
+    if (stillMissing.length > 0) {
+      await this.cache.setUserContexts(
+        "following",
+        viewerFid,
+        stillMissing,
+        stillMissing.map(() => false),
+      );
+    }
+
+    return fids.map((fid) => isFollowingMap[fid] || false);
   }
 
   async getUserFollowers(
@@ -1093,18 +1064,6 @@ export class FarcasterService {
     };
   }
 
-  async getUserFollowingFids(fid: string) {
-    const following = await this.client.farcasterLink.findMany({
-      where: {
-        linkType: "follow",
-        fid: BigInt(fid),
-        deletedAt: null,
-      },
-    });
-
-    return following.map((link) => link.targetFid.toString());
-  }
-
   async getUserVerifiedAddresses(fid: string) {
     const addresses = await this.client.farcasterVerification.findMany({
       where: { fid: BigInt(fid), deletedAt: null },
@@ -1113,90 +1072,268 @@ export class FarcasterService {
     return addresses.map((address) => address.address);
   }
 
-  async getCastEngagement(hash: string): Promise<FarcasterCastEngagement> {
-    const [likes, recasts, replies, quotes] = await Promise.all([
-      this.getCastEngagementItem(hash, "likes"),
-      this.getCastEngagementItem(hash, "recasts"),
-      this.getCastEngagementItem(hash, "replies"),
-      this.getCastEngagementItem(hash, "quotes"),
-    ]);
+  async getCastLikeCounts(hashes: string[]): Promise<number[]> {
+    const counts = await this.cache.getCastEngagements("likes", hashes);
+    const countMap = counts.reduce(
+      (acc, count, i) => {
+        if (count === undefined) return acc;
+        acc[hashes[i]] = count;
+        return acc;
+      },
+      {} as Record<string, number>,
+    );
 
-    return { likes, recasts, replies, quotes };
-  }
+    const missing = hashes.filter((hash) => countMap[hash] === undefined);
 
-  async getCastEngagementItem(
-    hash: string,
-    type: CastEngagementType,
-  ): Promise<number> {
-    const cached = await this.cache.getCastEngagement(hash, type);
-    if (cached !== undefined) return cached;
+    if (missing.length > 0) {
+      const fetchedCounts = await this.client.farcasterCastStats.findMany({
+        where: {
+          hash: {
+            in: missing,
+          },
+        },
+      });
 
-    let count = 0;
-    switch (type) {
-      case "likes":
-        count = await this.client.farcasterCastReaction.count({
-          where: { targetHash: hash, reactionType: 1, deletedAt: null },
-        });
-        break;
-      case "recasts":
-        count = await this.client.farcasterCastReaction.count({
-          where: { targetHash: hash, reactionType: 2, deletedAt: null },
-        });
-        break;
-      case "replies":
-        count = await this.client.farcasterCast.count({
-          where: { parentHash: hash, deletedAt: null },
-        });
-        break;
-      case "quotes":
-        count = await this.client.farcasterCastEmbedCast.count({
-          where: { embedHash: hash, deletedAt: null },
-        });
-        break;
+      await this.cache.setCastEngagements(
+        "likes",
+        fetchedCounts.map((count) => count.hash),
+        fetchedCounts.map((count) => count.likes),
+      );
+
+      for (const count of fetchedCounts) {
+        countMap[count.hash] = count.likes;
+      }
     }
 
-    await this.cache.setCastEngagement(hash, type, count);
-
-    return count;
+    return hashes.map((hash) => countMap[hash] || 0);
   }
 
-  async getCastContext(
-    hash: string,
-    viewerFid?: string,
-  ): Promise<FarcasterCastContext | undefined> {
-    if (!viewerFid) return;
-
-    const [liked, recasted] = await Promise.all([
-      this.getCastContextItem(hash, "likes", viewerFid),
-      this.getCastContextItem(hash, "recasts", viewerFid),
-    ]);
-
-    return {
-      liked,
-      recasted,
-    };
-  }
-
-  async getCastContextItem(
-    hash: string,
-    type: CastContextType,
-    viewerFid: string,
-  ) {
-    const cached = await this.cache.getCastContext(hash, type, viewerFid);
-    if (cached !== undefined) return cached;
-
-    const reaction = await this.client.farcasterCastReaction.findFirst({
-      where: {
-        reactionType: type === "likes" ? 1 : 2,
-        fid: BigInt(viewerFid),
-        targetHash: hash,
-        deletedAt: null,
+  async getCastRecastCounts(hashes: string[]): Promise<number[]> {
+    const counts = await this.cache.getCastEngagements("recasts", hashes);
+    const countMap = counts.reduce(
+      (acc, count, i) => {
+        if (count === undefined) return acc;
+        acc[hashes[i]] = count;
+        return acc;
       },
-    });
+      {} as Record<string, number>,
+    );
 
-    const reacted = !!reaction;
-    await this.cache.setCastContext(hash, type, viewerFid, reacted);
-    return reacted;
+    const missing = hashes.filter((hash) => countMap[hash] === undefined);
+
+    if (missing.length > 0) {
+      const fetchedCounts = await this.client.farcasterCastStats.findMany({
+        where: {
+          hash: {
+            in: missing,
+          },
+        },
+      });
+
+      await this.cache.setCastEngagements(
+        "recasts",
+        fetchedCounts.map((count) => count.hash),
+        fetchedCounts.map((count) => count.recasts),
+      );
+
+      for (const count of fetchedCounts) {
+        countMap[count.hash] = count.recasts;
+      }
+    }
+
+    return hashes.map((hash) => countMap[hash] || 0);
+  }
+
+  async getCastReplyCounts(hashes: string[]): Promise<number[]> {
+    const counts = await this.cache.getCastEngagements("replies", hashes);
+    const countMap = counts.reduce(
+      (acc, count, i) => {
+        if (count === undefined) return acc;
+        acc[hashes[i]] = count;
+        return acc;
+      },
+      {} as Record<string, number>,
+    );
+
+    const missing = hashes.filter((hash) => countMap[hash] === undefined);
+
+    if (missing.length > 0) {
+      const fetchedCounts = await this.client.farcasterCastStats.findMany({
+        where: {
+          hash: {
+            in: missing,
+          },
+        },
+      });
+
+      await this.cache.setCastEngagements(
+        "replies",
+        fetchedCounts.map((count) => count.hash),
+        fetchedCounts.map((count) => count.replies),
+      );
+
+      for (const count of fetchedCounts) {
+        countMap[count.hash] = count.replies;
+      }
+    }
+
+    return hashes.map((hash) => countMap[hash] || 0);
+  }
+
+  async getCastQuoteCounts(hashes: string[]): Promise<number[]> {
+    const counts = await this.cache.getCastEngagements("quotes", hashes);
+    const countMap = counts.reduce(
+      (acc, count, i) => {
+        if (count === undefined) return acc;
+        acc[hashes[i]] = count;
+        return acc;
+      },
+      {} as Record<string, number>,
+    );
+
+    const missing = hashes.filter((hash) => countMap[hash] === undefined);
+
+    if (missing.length > 0) {
+      const fetchedCounts = await this.client.farcasterCastStats.findMany({
+        where: {
+          hash: {
+            in: missing,
+          },
+        },
+      });
+
+      await this.cache.setCastEngagements(
+        "quotes",
+        fetchedCounts.map((count) => count.hash),
+        fetchedCounts.map((count) => count.quotes),
+      );
+
+      for (const count of fetchedCounts) {
+        countMap[count.hash] = count.quotes;
+      }
+    }
+
+    return hashes.map((hash) => countMap[hash] || 0);
+  }
+
+  async getCastIsLiked(
+    hashes: string[],
+    viewerFid?: string,
+  ): Promise<boolean[]> {
+    if (!viewerFid) return [];
+
+    const isLiked = await this.cache.getCastContexts(
+      "likes",
+      viewerFid,
+      hashes,
+    );
+    const isLikedMap = isLiked.reduce(
+      (acc, liked, i) => {
+        if (liked === undefined) return acc;
+        acc[hashes[i]] = liked;
+        return acc;
+      },
+      {} as Record<string, boolean>,
+    );
+
+    const missing = hashes.filter((hash) => isLikedMap[hash] === undefined);
+    if (missing.length > 0) {
+      const fetchedIsLiked = await this.client.farcasterCastReaction.findMany({
+        where: {
+          reactionType: 1,
+          fid: BigInt(viewerFid),
+          targetHash: {
+            in: missing,
+          },
+          deletedAt: null,
+        },
+      });
+
+      await this.cache.setCastContexts(
+        "likes",
+        viewerFid,
+        fetchedIsLiked.map((reaction) => reaction.targetHash),
+        fetchedIsLiked.map(() => true),
+      );
+
+      for (const reaction of fetchedIsLiked) {
+        isLikedMap[reaction.targetHash] = true;
+      }
+    }
+
+    const stillMissing = hashes.filter(
+      (hash) => isLikedMap[hash] === undefined,
+    );
+    if (stillMissing.length > 0) {
+      await this.cache.setCastContexts(
+        "likes",
+        viewerFid,
+        stillMissing,
+        stillMissing.map(() => false),
+      );
+    }
+
+    return hashes.map((hash) => isLikedMap[hash] || false);
+  }
+
+  async getCastIsRecasted(
+    hashes: string[],
+    viewerFid?: string,
+  ): Promise<boolean[]> {
+    if (!viewerFid) return [];
+
+    const isRecasted = await this.cache.getCastContexts(
+      "recasts",
+      viewerFid,
+      hashes,
+    );
+    const isRecastedMap = isRecasted.reduce(
+      (acc, recasted, i) => {
+        if (recasted === undefined) return acc;
+        acc[hashes[i]] = recasted;
+        return acc;
+      },
+      {} as Record<string, boolean>,
+    );
+
+    const missing = hashes.filter((hash) => isRecastedMap[hash] === undefined);
+    if (missing.length > 0) {
+      const fetchedIsLiked = await this.client.farcasterCastReaction.findMany({
+        where: {
+          reactionType: 1,
+          fid: BigInt(viewerFid),
+          targetHash: {
+            in: missing,
+          },
+          deletedAt: null,
+        },
+      });
+
+      await this.cache.setCastContexts(
+        "recasts",
+        viewerFid,
+        fetchedIsLiked.map((reaction) => reaction.targetHash),
+        fetchedIsLiked.map(() => true),
+      );
+
+      for (const reaction of fetchedIsLiked) {
+        isRecastedMap[reaction.targetHash] = true;
+      }
+    }
+
+    const stillMissing = hashes.filter(
+      (hash) => isRecastedMap[hash] === undefined,
+    );
+    if (stillMissing.length > 0) {
+      await this.cache.setCastContexts(
+        "recasts",
+        viewerFid,
+        stillMissing,
+        stillMissing.map(() => false),
+      );
+    }
+
+    return hashes.map((hash) => isRecastedMap[hash] || false);
   }
 
   async getCastLikes(
@@ -1365,7 +1502,7 @@ export class FarcasterService {
     }
 
     const clientFidString = clientFid.toString();
-    this.cache.setAppFidBySigner(signer, clientFidString);
+    await this.cache.setAppFidBySigner(signer, clientFidString);
     return clientFidString;
   }
 

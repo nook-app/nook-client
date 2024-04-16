@@ -6,11 +6,12 @@ import {
   Channel,
   GetFarcasterUsersRequest,
   GetFarcasterChannelsRequest,
-  GetFarcasterChannelResponse,
+  GetFarcasterChannelsResponse,
   ShelfDataRequest,
   FarcasterPostArgs,
   ShelfDataResponse,
 } from "../../types";
+import { FarcasterFeedRequest } from "../../types/feed";
 import { BaseAPIClient } from "./base";
 
 export class FarcasterAPIClient extends BaseAPIClient {
@@ -26,10 +27,25 @@ export class FarcasterAPIClient extends BaseAPIClient {
     return response.json();
   }
 
+  async getChannelByUrl(url: string, viewerFid?: string): Promise<Channel> {
+    const response = await this.makeRequest(
+      `/channels/by-url/${encodeURIComponent(url)}`,
+      {
+        viewerFid,
+      },
+    );
+
+    if (!response.ok) {
+      throw new Error(response.statusText);
+    }
+
+    return response.json();
+  }
+
   async getChannels(
     req: GetFarcasterChannelsRequest,
     viewerFid?: string,
-  ): Promise<GetFarcasterChannelResponse> {
+  ): Promise<GetFarcasterChannelsResponse> {
     const response = await this.makeRequest("/channels", {
       method: "POST",
       body: JSON.stringify(req),
@@ -228,11 +244,14 @@ export class FarcasterAPIClient extends BaseAPIClient {
 
   async searchUsers(
     query: string,
+    limit?: number,
     cursor?: string,
     viewerFid?: string,
   ): Promise<GetFarcasterUsersResponse> {
     const response = await this.makeRequest(
-      `/users?query=${query}&${cursor ? `&cursor=${cursor}` : ""}`,
+      `/users?query=${query}${limit ? `&limit=${limit}` : ""}${
+        cursor ? `&cursor=${cursor}` : ""
+      }`,
       { viewerFid },
     );
 
@@ -245,11 +264,14 @@ export class FarcasterAPIClient extends BaseAPIClient {
 
   async searchChannels(
     query: string,
+    limit?: number,
     cursor?: string,
     viewerFid?: string,
-  ): Promise<Channel[]> {
+  ): Promise<GetFarcasterChannelsResponse> {
     const response = await this.makeRequest(
-      `/channels?query=${query}&${cursor ? `&cursor=${cursor}` : ""}`,
+      `/channels?query=${query}${limit ? `&limit=${limit}` : ""}${
+        cursor ? `&cursor=${cursor}` : ""
+      }`,
       { viewerFid },
     );
 
@@ -264,6 +286,21 @@ export class FarcasterAPIClient extends BaseAPIClient {
     req: ShelfDataRequest<FarcasterPostArgs>,
   ): Promise<ShelfDataResponse<FarcasterCastResponse>> {
     const response = await this.makeRequest("/feed/posts/new", {
+      method: "POST",
+      body: JSON.stringify(req),
+    });
+
+    if (!response.ok) {
+      throw new Error(response.statusText);
+    }
+
+    return response.json();
+  }
+
+  async getCastFeed(
+    req: FarcasterFeedRequest,
+  ): Promise<ShelfDataResponse<FarcasterCastResponse>> {
+    const response = await this.makeRequest("/feed/casts", {
       method: "POST",
       body: JSON.stringify(req),
     });

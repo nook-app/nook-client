@@ -12,6 +12,9 @@ import { degenRoutes } from "./routes/degen";
 import { transactionRoutes } from "./routes/transactions";
 import { flagRoutes } from "./routes/flags";
 import { discoverRoutes } from "./routes/discover";
+import { muteRoutes } from "./routes/user/mute";
+import { panelRoutes } from "./routes/panel";
+import { feedRoutes } from "./routes/feed";
 
 const buildApp = () => {
   const app = fastify({
@@ -47,6 +50,9 @@ const buildApp = () => {
   app.register(flagRoutes, { prefix: "/v0" });
   app.register(degenRoutes, { prefix: "/v0" });
   app.register(discoverRoutes, { prefix: "/v0" });
+  app.register(muteRoutes, { prefix: "/v0" });
+  app.register(panelRoutes, { prefix: "/v0" });
+  app.register(feedRoutes, { prefix: "/v0" });
 
   return app;
 };

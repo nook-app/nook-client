@@ -78,6 +78,34 @@ export class RedisClient {
     await this.redis.set(key, value);
   }
 
+  async mgetNumber(keys: string[]) {
+    if (keys.length === 0) return [];
+    const values = await this.redis.mget(keys);
+    return values.map((value, index) => {
+      if (value) {
+        const num = Number(value);
+        if (Number.isNaN(num)) {
+          throw new Error(`Value for ${keys[index]} is not a number`);
+        }
+        return num;
+      }
+      return;
+    });
+  }
+
+  async msetNumber(pairs: [string, number][], ex?: number) {
+    if (pairs.length === 0) return;
+    const pipeline = this.redis.pipeline();
+    for (const [key, value] of pairs) {
+      if (ex) {
+        pipeline.set(key, value, "EX", ex);
+      } else {
+        pipeline.set(key, value);
+      }
+    }
+    await pipeline.exec();
+  }
+
   async exists(key: string) {
     return await this.redis.exists(key);
   }
@@ -105,6 +133,19 @@ export class RedisClient {
       return;
     }
     await this.redis.set(key, value);
+  }
+
+  async mset(pairs: [string, string][], ex?: number) {
+    if (pairs.length === 0) return;
+    const pipeline = this.redis.pipeline();
+    for (const [key, value] of pairs) {
+      if (ex) {
+        pipeline.set(key, value, "EX", ex);
+      } else {
+        pipeline.set(key, value);
+      }
+    }
+    await pipeline.exec();
   }
 
   async del(key: string) {
@@ -155,15 +196,22 @@ export class RedisClient {
     await pipeline.exec();
   }
 
-  async addMembers(key: string, members: string[]) {
+  async addMembers(key: string, members: string[], ex?: number) {
+    if (members.length === 0) return;
+    if (ex) {
+      const pipeline = this.redis.pipeline();
+      pipeline.sadd(key, members);
+      pipeline.expire(key, ex);
+      await pipeline.exec();
+      return;
+    }
     await this.redis.sadd(key, members);
   }
 
-  async addMembersWithTtl(key: string, members: string[], ttl: number) {
-    const pipeline = this.redis.pipeline();
-    pipeline.sadd(key, members);
-    pipeline.expire(key, ttl);
-    await pipeline.exec();
+  async addMember(key: string, member: string) {
+    const exists = await this.exists(key);
+    if (!exists) return;
+    await this.redis.sadd(key, member);
   }
 
   async checkMember(key: string, member: string) {

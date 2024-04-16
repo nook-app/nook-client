@@ -37,12 +37,17 @@ export const getNotificationsHandler = async () => {
       return;
     }
 
-    let powerBadge = notification.powerBadge;
-    if (powerBadge === undefined) {
-      powerBadge = await farcasterCache.getUserPowerBadge(
+    const following = await farcasterApi.getUserFollowingFids(notification.fid);
+    const isFollowing = following.data.includes(notification.sourceFid);
+
+    let isPowerBadge = notification.powerBadge;
+    if (isPowerBadge === undefined) {
+      isPowerBadge = await farcasterCache.getUserPowerBadge(
         notification.sourceFid,
       );
     }
+
+    const ignoreMessage = !isFollowing && !isPowerBadge;
 
     await client.notification.upsert({
       where: {
@@ -55,23 +60,19 @@ export const getNotificationsHandler = async () => {
       },
       create: {
         ...notification,
-        powerBadge,
+        powerBadge: isPowerBadge,
         data: notification.data || Prisma.DbNull,
-        read:
-          NotificationType.FOLLOW === notification.type ||
-          NotificationType.POST === notification.type,
+        read: ignoreMessage,
       },
       update: {
         ...notification,
-        powerBadge,
+        powerBadge: isPowerBadge,
         data: notification.data || Prisma.DbNull,
-        read:
-          NotificationType.FOLLOW === notification.type ||
-          NotificationType.POST === notification.type,
+        read: ignoreMessage,
       },
     });
 
-    if (!powerBadge) return;
+    if (ignoreMessage) return;
 
     if (notification.type === NotificationType.POST) {
       const post = notification as FarcasterPostData;
@@ -267,14 +268,14 @@ export const getNotificationsHandler = async () => {
             create: {
               ...notification,
               fid: token.fid,
-              powerBadge,
+              powerBadge: isPowerBadge,
               data: notification.data || Prisma.DbNull,
               read: false,
             },
             update: {
               ...notification,
               fid: token.fid,
-              powerBadge,
+              powerBadge: isPowerBadge,
               data: notification.data || Prisma.DbNull,
               read: false,
             },

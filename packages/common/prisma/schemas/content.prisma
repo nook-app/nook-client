@@ -25,6 +25,15 @@ model FarcasterContentReference {
     @@id([uri, fid, hash, type])
     @@index([timestamp, type])
     @@index([fid, timestamp])
+    @@index([fid, type, parentHash, timestamp(sort: Desc)])
+    @@index([parentUrl, type, parentHash, timestamp(sort: Desc)])
+    @@index([fid, parentUrl, type, parentHash, timestamp(sort: Desc)])
+    @@index([parentUrl, fid, type, parentHash, timestamp(sort: Desc)])
+    @@index([timestamp(sort: Desc), fid, type, parentHash])
+    @@index([timestamp(sort: Desc), parentUrl, type, parentHash])
+    @@index([timestamp(sort: Desc), parentUrl, fid, type, parentHash])
+    @@index([timestamp(sort: Desc), fid, parentUrl, type, parentHash])
+    @@index([timestamp(sort: Desc), type, parentHash])
 }
 
 model UrlContent {

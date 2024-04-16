@@ -118,25 +118,6 @@ export class NotificationsAPIClient extends BaseAPIClient {
     return await response.json();
   }
 
-  async getPostNotifications(
-    req: GetNotificationsRequest,
-    cursor?: string,
-  ): Promise<GetNotificationsResponse> {
-    const response = await this.makeRequest(
-      `/notifications/posts${cursor ? `?cursor=${cursor}` : ""}`,
-      {
-        method: "POST",
-        body: JSON.stringify(req),
-      },
-    );
-
-    if (!response.ok) {
-      throw new Error(response.statusText);
-    }
-
-    return await response.json();
-  }
-
   async getNotificationCount(token: string): Promise<{ count: number }> {
     const response = await this.makeRequest("/notifications/count", {
       method: "GET",

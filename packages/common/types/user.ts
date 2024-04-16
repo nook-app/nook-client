@@ -3,6 +3,6 @@ export type User = {
 };
 
 export type UserMetadata = {
-  nookOrder?: string[];
-  actionBar?: string[];
+  enableDegenTip?: boolean;
+  order?: [string, string[]][];
 };

@@ -189,18 +189,6 @@ export class NookService {
       }),
     );
 
-    const metadata = user?.metadata as UserMetadata | undefined;
-    if (metadata?.nookOrder) {
-      return [
-        ...metadata.nookOrder
-          .map((nookId) => sortedShelves.find((nook) => nook.id === nookId))
-          .filter((nook) => nook),
-        ...sortedShelves.filter(
-          (nook) => !metadata.nookOrder?.includes(nook.id),
-        ),
-      ] as DBNook[];
-    }
-
     return sortedShelves;
   }
 
@@ -649,27 +637,6 @@ export class NookService {
         deletedAt: new Date(),
       },
     });
-
-    const user = await this.nookClient.user.findUnique({
-      where: {
-        fid,
-      },
-    });
-
-    const metadata = user?.metadata as UserMetadata | undefined;
-    if (metadata?.nookOrder) {
-      await this.nookClient.user.update({
-        where: {
-          fid,
-        },
-        data: {
-          metadata: {
-            ...metadata,
-            nookOrder: metadata.nookOrder.filter((id) => id !== nookId),
-          },
-        },
-      });
-    }
   }
 
   async joinNook(nookId: string, fid: string) {
@@ -679,27 +646,6 @@ export class NookService {
         fid,
       },
     });
-
-    const user = await this.nookClient.user.findUnique({
-      where: {
-        fid,
-      },
-    });
-
-    const metadata = user?.metadata as UserMetadata | undefined;
-    if (metadata?.nookOrder && !metadata.nookOrder.includes(nookId)) {
-      await this.nookClient.user.update({
-        where: {
-          fid,
-        },
-        data: {
-          metadata: {
-            ...metadata,
-            nookOrder: [...metadata.nookOrder, nookId],
-          },
-        },
-      });
-    }
   }
 
   async leaveNook(nookId: string, fid: string) {
@@ -709,27 +655,6 @@ export class NookService {
         fid,
       },
     });
-
-    const user = await this.nookClient.user.findUnique({
-      where: {
-        fid,
-      },
-    });
-
-    const metadata = user?.metadata as UserMetadata | undefined;
-    if (metadata?.nookOrder) {
-      await this.nookClient.user.update({
-        where: {
-          fid,
-        },
-        data: {
-          metadata: {
-            ...metadata,
-            nookOrder: metadata.nookOrder.filter((id) => id !== nookId),
-          },
-        },
-      });
-    }
   }
 
   async addShelf(nook: DBNook, instance: CreateShelfInstance) {

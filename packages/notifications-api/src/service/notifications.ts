@@ -15,15 +15,18 @@ import {
 } from "@nook/common/types";
 import { FastifyInstance } from "fastify";
 import { decodeCursorTimestamp, encodeCursor } from "@nook/common/utils";
+import { FarcasterAPIClient } from "@nook/common/clients";
 
-export const DB_MAX_PAGE_SIZE = 1000;
+export const DB_MAX_PAGE_SIZE = 100;
 export const MAX_PAGE_SIZE = 25;
 
 export class NotificationsService {
   private client: PrismaClient;
+  private farcaster: FarcasterAPIClient;
 
   constructor(fastify: FastifyInstance) {
     this.client = fastify.notifications.client;
+    this.farcaster = new FarcasterAPIClient();
   }
 
   async getNotificationUser(
@@ -88,53 +91,35 @@ export class NotificationsService {
     });
   }
 
-  async getPostNotifications(
-    req: GetNotificationsRequest,
-    cursor?: string,
-  ): Promise<GetNotificationsResponse> {
-    const data = await this.client.notification.findMany({
-      where: {
-        fid: req.fid,
-        type: NotificationType.POST,
-        deletedAt: null,
-        timestamp: decodeCursorTimestamp(cursor),
-        sourceFid: {
-          not: req.fid,
-        },
-      },
-      orderBy: {
-        timestamp: "desc",
-      },
-      take: MAX_PAGE_SIZE,
-    });
-
-    return {
-      data: data.map((notification) => ({
-        type: NotificationType.POST,
-        hash: (notification as unknown as FarcasterPostNotification).data.hash,
-        timestamp: new Date(notification.timestamp).getTime(),
-      })),
-      nextCursor:
-        data.length === MAX_PAGE_SIZE
-          ? encodeCursor({
-              timestamp: data[data.length - 1].timestamp.getTime(),
-            })
-          : undefined,
-    };
-  }
-
   async getNotifications(req: GetNotificationsRequest, cursor?: string) {
-    const data = await this.client.notification.findMany({
-      where: {
-        fid: req.fid,
-        type: req.types
-          ? {
-              in: req.types,
-            }
-          : undefined,
-        timestamp: decodeCursorTimestamp(cursor),
-        deletedAt: null,
+    const baseFilter = {
+      fid: req.fid,
+      type: req.types
+        ? {
+            in: req.types,
+          }
+        : undefined,
+      timestamp: decodeCursorTimestamp(cursor),
+      deletedAt: null,
+      sourceFid: {
+        not: req.fid,
       },
+    };
+
+    const data = await this.client.notification.findMany({
+      where: req.priority
+        ? {
+            OR: [
+              { ...baseFilter, powerBadge: true },
+              {
+                ...baseFilter,
+                sourceFid: {
+                  in: (await this.farcaster.getUserFollowingFids(req.fid)).data,
+                },
+              },
+            ],
+          }
+        : baseFilter,
       orderBy: {
         timestamp: "desc",
       },
@@ -159,6 +144,9 @@ export class NotificationsService {
     const follows = data.filter(
       (notification) => notification.type === NotificationType.FOLLOW,
     ) as unknown as FarcasterFollowNotification[];
+    const posts = data.filter(
+      (notification) => notification.type === NotificationType.POST,
+    ) as unknown as FarcasterPostNotification[];
 
     const likeMap = likes.reduce(
       (acc, like) => {
@@ -224,6 +212,12 @@ export class NotificationsService {
       }),
     );
 
+    const postResponses: RawNotificationResponse[] = posts.map((post) => ({
+      type: NotificationType.POST,
+      hash: post.data.hash,
+      timestamp: new Date(post.timestamp).getTime(),
+    }));
+
     const allResponses = [
       ...mentionResponses,
       ...replyResponses,
@@ -231,6 +225,7 @@ export class NotificationsService {
       ...recastResponse,
       ...quoteResponses,
       ...followResponses,
+      ...postResponses,
     ];
 
     const allResponsesSorted = allResponses.sort(

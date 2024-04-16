@@ -21,11 +21,10 @@ export class DegenCacheClient {
   }
 
   async setFidsWithAllowances(fids: string[]) {
-    await this.redis.addMembersWithTtl(
+    await this.redis.addMembers(
       `${this.DEGEN_CACHE_PREFIX}:hasAllowance`,
       fids,
-      // 12h
-      43200,
+      43200, // 12 hours
     );
   }
 }

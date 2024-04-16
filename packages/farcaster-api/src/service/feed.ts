@@ -1,6 +1,11 @@
-import { FarcasterCacheClient } from "@nook/common/clients";
-import { Prisma, PrismaClient } from "@nook/common/prisma/farcaster";
+import { ContentAPIClient, FarcasterCacheClient } from "@nook/common/clients";
 import {
+  FarcasterCast,
+  Prisma,
+  PrismaClient,
+} from "@nook/common/prisma/farcaster";
+import {
+  Channel,
   ChannelFilter,
   ChannelFilterType,
   FarcasterPostArgs,
@@ -8,6 +13,7 @@ import {
   UserFilter,
   UserFilterType,
 } from "@nook/common/types";
+import { FarcasterFeedRequest } from "@nook/common/types/feed";
 import { decodeCursor, encodeCursor } from "@nook/common/utils";
 import { FastifyInstance } from "fastify";
 
@@ -20,10 +26,133 @@ function sanitizeInput(input: string): string {
 export class FeedService {
   private client: PrismaClient;
   private cache: FarcasterCacheClient;
+  private content: ContentAPIClient;
 
   constructor(fastify: FastifyInstance) {
     this.client = fastify.farcaster.client;
     this.cache = new FarcasterCacheClient(fastify.redis.client);
+    this.content = new ContentAPIClient();
+  }
+
+  async getCastFeed(req: FarcasterFeedRequest) {
+    const { filter, context, cursor } = req;
+    const {
+      channels,
+      users,
+      text,
+      embeds,
+      contentTypes,
+      includeReplies,
+      onlyReplies,
+      onlyFrames,
+    } = filter;
+
+    if (
+      onlyFrames ||
+      (contentTypes && contentTypes.length > 0) ||
+      (embeds && embeds.length > 0)
+    ) {
+      const response = await this.content.getContentFeed(req);
+      const casts = await this.client.farcasterCast.findMany({
+        where: {
+          hash: {
+            in: response.data,
+          },
+        },
+        orderBy: {
+          timestamp: "desc",
+        },
+      });
+      return {
+        data: casts,
+        nextCursor: response.nextCursor,
+      };
+    }
+
+    const conditions: string[] = ['"deletedAt" IS NULL'];
+
+    if (text) {
+      const queryConditions = text.map(
+        (q) =>
+          `(to_tsvector('english', "text") @@ to_tsquery('english', '${sanitizeInput(
+            q,
+          ).replaceAll(" ", "<->")}'))`,
+      );
+      conditions.push(`(${queryConditions.join(" OR ")})`);
+    }
+
+    if (users) {
+      conditions.push(...(await this.getUserFilter(users)));
+    }
+
+    if (channels) {
+      conditions.push(...(await this.getChannelFilter(channels)));
+    }
+
+    if (cursor) {
+      const decodedCursor = decodeCursor(cursor);
+      if (decodedCursor) {
+        conditions.push(
+          `"timestamp" < '${new Date(decodedCursor.timestamp).toISOString()}'`,
+        );
+      }
+    }
+
+    if (onlyReplies) {
+      conditions.push(`"parentHash" IS NOT NULL`);
+    } else if (!includeReplies) {
+      conditions.push(`"parentHash" IS NULL`);
+    }
+
+    if (context?.mutedWords && context.mutedWords.length > 0) {
+      conditions.push(
+        `NOT (${context.mutedWords
+          .map(
+            (word) =>
+              `to_tsvector('english', "text") @@ to_tsquery('english', '${sanitizeInput(
+                word,
+              ).replaceAll(" ", "<->")}')`,
+          )
+          .join(" OR ")})`,
+      );
+    }
+
+    if (context?.mutedUsers && context.mutedUsers.length > 0) {
+      conditions.push(
+        `"fid" NOT IN (${context.mutedUsers
+          .map((fid) => BigInt(fid))
+          .join(",")})`,
+      );
+    }
+
+    if (context?.mutedChannels && context.mutedChannels.length > 0) {
+      if (onlyReplies)
+        conditions.push(
+          `"rootParentUrl" NOT IN ('${context.mutedChannels.join("','")}')`,
+        );
+    }
+
+    const casts = await this.client.$queryRaw<FarcasterCast[]>(
+      Prisma.sql([
+        `
+            SELECT *
+            FROM "FarcasterCast"
+            WHERE ${conditions.join(" AND ")}
+            ORDER BY "timestamp" DESC
+            LIMIT ${MAX_PAGE_SIZE}
+          `,
+      ]),
+    );
+
+    return {
+      data: casts,
+      nextCursor:
+        casts.length === MAX_PAGE_SIZE
+          ? encodeCursor({
+              timestamp: casts[casts.length - 1]?.timestamp.getTime(),
+            })
+          : undefined,
+    };
   }
 
   async getNewPosts(req: ShelfDataRequest<FarcasterPostArgs>) {
@@ -131,18 +260,8 @@ export class FeedService {
     const conditions: string[] = [];
     switch (users.type) {
       case UserFilterType.FOLLOWING: {
-        const following = await this.client.farcasterLink.findMany({
-          where: {
-            linkType: "follow",
-            fid: BigInt(users.data.fid),
-            deletedAt: null,
-          },
-        });
-        conditions.push(
-          `"fid" IN (${following
-            .map((link) => BigInt(link.targetFid))
-            .join(",")})`,
-        );
+        const fids = await this.getFollowingFids(users.data.fid);
+        conditions.push(`"fid" IN (${fids.join(",")})`);
         break;
       }
       case UserFilterType.FIDS:
@@ -151,30 +270,58 @@ export class FeedService {
         );
         break;
       case UserFilterType.POWER_BADGE: {
-        const holders = await this.cache.getPowerBadgeUsers();
-        conditions.push(
-          `"fid" IN (${holders.map((fid) => BigInt(fid)).join(",")})`,
-        );
+        const [following, holders] = await Promise.all([
+          users.data.fid ? this.getFollowingFids(users.data.fid) : [],
+          this.cache.getPowerBadgeUsers(),
+        ]);
+
+        const set = new Set(following);
+        for (const fid of holders) {
+          set.add(BigInt(fid));
+        }
+
+        conditions.push(`"fid" IN (${Array.from(set).join(",")})`);
         break;
       }
     }
     return conditions;
   }
 
+  async getFollowingFids(fid: string) {
+    const cachedFollowing = await this.cache.getUserFollowingFids(fid);
+    if (cachedFollowing.length > 0) {
+      return cachedFollowing.map((fid) => BigInt(fid));
+    }
+    const following = await this.client.farcasterLink.findMany({
+      where: {
+        linkType: "follow",
+        fid: BigInt(fid),
+        deletedAt: null,
+      },
+    });
+    await this.cache.setUserFollowingFids(
+      fid,
+      following.map((link) => link.targetFid.toString()),
+    );
+    return following.map((link) => link.targetFid);
+  }
+
   async getChannelFilter(channels: ChannelFilter) {
     const conditions: string[] = [];
     switch (channels.type) {
       case ChannelFilterType.CHANNEL_IDS: {
-        const response = await this.cache.getChannelsByIds(
-          channels.data.channelIds,
-        );
+        const response = (
+          await this.cache.getChannels(channels.data.channelIds)
+        ).filter(Boolean) as Channel[];
         conditions.push(
-          `"parentUrl" IN ('${response.map((c) => c.url).join("','")}')`,
+          `"rootParentUrl" IN ('${response.map((c) => c.url).join("','")}')`,
         );
         break;
       }
       case ChannelFilterType.CHANNEL_URLS: {
-        conditions.push(`"parentUrl" IN ('${channels.data.urls.join("','")}')`);
+        conditions.push(
+          `"rootParentUrl" IN ('${channels.data.urls.join("','")}')`,
+        );
         break;
       }
     }

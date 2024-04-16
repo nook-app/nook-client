@@ -40,7 +40,7 @@ export const parseNotificationsFromCast = (
         hash: data.hash,
         parentHash: data.parentHash,
       },
-      powerBadge: data.parent.user.badges?.powerBadge ?? false,
+      powerBadge: data.user.badges?.powerBadge ?? false,
     });
   }
 
@@ -57,7 +57,7 @@ export const parseNotificationsFromCast = (
         hash: data.hash,
         embedHash: hash,
       },
-      powerBadge: user.badges?.powerBadge ?? false,
+      powerBadge: data.user.badges?.powerBadge ?? false,
     });
   }
 
@@ -73,7 +73,7 @@ export const parseNotificationsFromCast = (
       data: {
         hash: data.hash,
       },
-      powerBadge: user.badges?.powerBadge ?? false,
+      powerBadge: data.user.badges?.powerBadge ?? false,
     });
   }
 

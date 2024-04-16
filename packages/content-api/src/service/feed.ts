@@ -1,8 +1,4 @@
-import {
-  ContentCacheClient,
-  FarcasterAPIClient,
-  FarcasterCacheClient,
-} from "@nook/common/clients";
+import { FarcasterAPIClient, FarcasterCacheClient } from "@nook/common/clients";
 import { Prisma, PrismaClient } from "@nook/common/prisma/content";
 import {
   ChannelFilter,
@@ -14,6 +10,7 @@ import {
   UserFilter,
   UserFilterType,
 } from "@nook/common/types";
+import { FarcasterFeedRequest } from "@nook/common/types/feed";
 import { decodeCursor, encodeCursor } from "@nook/common/utils";
 import { FastifyInstance } from "fastify";
 
@@ -25,13 +22,11 @@ function sanitizeInput(input: string): string {
 
 export class FeedService {
   private client: PrismaClient;
-  private cache: ContentCacheClient;
   private farcaster: FarcasterAPIClient;
   private farcasterCache: FarcasterCacheClient;
 
   constructor(fastify: FastifyInstance) {
     this.client = fastify.content.client;
-    this.cache = new ContentCacheClient(fastify.redis.client);
     this.farcaster = new FarcasterAPIClient();
     this.farcasterCache = new FarcasterCacheClient(fastify.redis.client);
   }
@@ -72,6 +67,101 @@ export class FeedService {
     return this.getNewContent(req, [
       `("content"."type" ILIKE 'image%' OR "content"."type" ILIKE 'video%')`,
     ]);
+  }
+
+  async getContentFeed(req: FarcasterFeedRequest) {
+    const { filter, context, cursor } = req;
+    const {
+      channels,
+      users,
+      embeds,
+      contentTypes,
+      includeReplies,
+      onlyReplies,
+      onlyFrames,
+    } = filter;
+
+    const conditions: string[] = [`"reference"."type" = 'EMBED'`];
+
+    if (onlyFrames) {
+      conditions.push(`"content"."hasFrame"`);
+    }
+
+    if (contentTypes && contentTypes.length > 0) {
+      const types = contentTypes.map(
+        (type) => `"content"."type" ILIKE '${type}%'`,
+      );
+      conditions.push(`(${types.join(" OR ")})`);
+    }
+
+    if (embeds) {
+      const embedConditions = embeds.map(
+        (embed) => `"content"."uri" ILIKE '%${sanitizeInput(embed)}%'`,
+      );
+      conditions.push(`(${embedConditions.join(" OR ")})`);
+    }
+
+    if (users) {
+      conditions.push(...(await this.getUserFilter(users)));
+    }
+
+    if (channels) {
+      conditions.push(...(await this.getChannelFilter(channels)));
+    }
+
+    if (cursor) {
+      const decodedCursor = decodeCursor(cursor);
+      if (decodedCursor) {
+        conditions.push(
+          `"timestamp" < '${new Date(decodedCursor.timestamp).toISOString()}'`,
+        );
+      }
+    }
+
+    if (onlyReplies) {
+      conditions.push(`"parentHash" IS NOT NULL`);
+    } else if (!includeReplies) {
+      conditions.push(`"parentHash" IS NULL`);
+    }
+
+    if (context?.mutedUsers && context.mutedUsers.length > 0) {
+      conditions.push(
+        `"fid" NOT IN (${context.mutedUsers
+          .map((fid) => BigInt(fid))
+          .join(",")})`,
+      );
+    }
+
+    if (context?.mutedChannels && context.mutedChannels.length > 0) {
+      conditions.push(
+        `"parentUrl" NOT IN ('${context.mutedChannels.join("','")}')`,
+      );
+    }
+
+    const casts = await this.client.$queryRaw<
+      { hash: string; timestamp: Date }[]
+    >(
+      Prisma.sql([
+        `
+            SELECT DISTINCT "reference".hash, "reference".timestamp
+            FROM "FarcasterContentReference" AS "reference"
+            LEFT JOIN "UrlContent" AS "content" ON "reference"."uri" = "content"."uri"
+            WHERE ${conditions.join(" AND ")}
+            ORDER BY "reference"."timestamp" DESC
+            LIMIT ${MAX_PAGE_SIZE}
+          `,
+      ]),
+    );
+
+    return {
+      data: casts.map((cast) => cast.hash),
+      nextCursor:
+        casts.length === MAX_PAGE_SIZE
+          ? encodeCursor({
+              timestamp: casts[casts.length - 1]?.timestamp.getTime(),
+            })
+          : undefined,
+    };
   }
 
   async getNewContent(
@@ -139,10 +229,10 @@ export class FeedService {
     const conditions: string[] = [];
     switch (users.type) {
       case UserFilterType.FOLLOWING: {
-        const following = await this.farcaster.getUserFollowingFids(
-          users.data.fid,
+        const fids = await this.farcaster.getUserFollowingFids(users.data.fid);
+        conditions.push(
+          `"fid" IN (${fids.data.map((fid) => BigInt(fid)).join(",")})`,
         );
-        conditions.push(`"fid" IN (${following.data.join(",")})`);
         break;
       }
       case UserFilterType.FIDS:
@@ -151,10 +241,19 @@ export class FeedService {
         );
         break;
       case UserFilterType.POWER_BADGE: {
-        const holders = await this.farcasterCache.getPowerBadgeUsers();
-        conditions.push(
-          `"fid" IN (${holders.map((fid) => BigInt(fid)).join(",")})`,
-        );
+        const [following, holders] = await Promise.all([
+          users.data.fid
+            ? this.farcaster.getUserFollowingFids(users.data.fid)
+            : { data: [] },
+          this.farcasterCache.getPowerBadgeUsers(),
+        ]);
+
+        const set = new Set(following.data.map((fid) => BigInt(fid)));
+        for (const fid of holders) {
+          set.add(BigInt(fid));
+        }
+
+        conditions.push(`"fid" IN (${Array.from(set).join(",")})`);
         break;
       }
     }

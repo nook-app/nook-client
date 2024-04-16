@@ -6,9 +6,32 @@ import {
   NotificationType,
 } from "@nook/common/types";
 import { getNotificationsHandler } from "./handlers";
+import { pushMessages } from "./handlers/push";
 
 export const run = async () => {
   const client = new PrismaClient();
+
+  if (process.argv[2] === "raw") {
+    const token = await client.user.findFirst({
+      where: {
+        fid: process.argv[3],
+      },
+    });
+    if (!token?.token || !token.receive || token.disabled) return;
+    await pushMessages([
+      {
+        to: token.token,
+        title: "Kartik tested",
+        body: "This is a test notification",
+        data: {
+          image: "https://i.imgur.com/B9BuItx.jpeg",
+        },
+        categoryId: "test",
+        mutableContent: true,
+      },
+    ]);
+    return;
+  }
 
   const queue = getQueue(QueueName.Notifications);
   console.log(`Running for notification ${process.argv[2]}`);

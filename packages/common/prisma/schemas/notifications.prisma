@@ -40,10 +40,9 @@ model Notification {
     @@id([fid, service, type, sourceId])
     @@index([fid, read])
     @@index([fid, timestamp])
-    @@index([fid, type, timestamp])
-    @@index([sourceFid, type, timestamp])
-    @@index([powerBadge, fid, timestamp])
-    @@index([powerBadge, fid, type, timestamp])
+    @@index([fid, timestamp, type])
+    @@index([timestamp(sort: Desc), fid, type])
+    @@index([timestamp(sort: Desc), powerBadge, type])
 }
 
 model ShelfNotification {

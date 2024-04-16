@@ -1,6 +1,7 @@
 import { FastifyInstance } from "fastify";
 import {
-  CastActionRequest,
+  CastActionV1Request,
+  CastActionV2Request,
   FramePayload,
   SubmitFrameActionRequest,
 } from "@nook/common/types";
@@ -29,7 +30,7 @@ export const frameRoutes = async (fastify: FastifyInstance) => {
       Body: {
         index: number;
         actionId?: string;
-        action: CastActionRequest | null;
+        action: CastActionV1Request | CastActionV2Request | null;
       };
     }>("/user/actions", async (request, reply) => {
       const { fid } = (await request.jwtDecode()) as { fid: string };
@@ -79,7 +80,7 @@ export const frameRoutes = async (fastify: FastifyInstance) => {
             fid: parseInt(fid, 10),
             url: request.body.url || request.body.postUrl,
             messageHash: response.hash,
-            timestamp: Date.now() / 1000,
+            timestamp: Math.floor(Date.now() / 1000),
             network: 1,
             buttonIndex: request.body.buttonIndex,
             inputText: request.body.inputText,
@@ -101,7 +102,6 @@ export const frameRoutes = async (fastify: FastifyInstance) => {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
-              Accept: "application/json",
             },
             redirect:
               request.body.action === "post_redirect" ? "manual" : undefined,

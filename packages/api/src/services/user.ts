@@ -10,6 +10,23 @@ import { UserMetadata } from "@nook/common/types";
 
 const DEV_USER_FID = 20716;
 
+const DEFAULT_NOOKS = [
+  {
+    name: "Home",
+    icon: "home",
+    panels: ["following", "trending", "latest"],
+  },
+  {
+    name: "Frames",
+    icon: "square-mouse-pointer",
+    panels: ["frames-following", "frames-latest"],
+  },
+  {
+    name: "Media",
+    icon: "image",
+    panels: ["media-following", "media-latest", "videos-latest"],
+  },
+];
 export class UserService {
   private farcasterAuthClient: FarcasterAuthClient;
   private jwt: FastifyInstance["jwt"];
@@ -207,14 +224,165 @@ export class UserService {
       where: {
         fid,
       },
+      include: {
+        mutedUsers: true,
+        mutedParentUrls: true,
+        mutedWords: true,
+        feeds: {
+          where: {
+            deletedAt: null,
+          },
+        },
+        groups: {
+          where: {
+            deletedAt: null,
+          },
+          include: {
+            panels: {
+              include: {
+                panel: true,
+              },
+            },
+          },
+        },
+      },
     });
 
     if (!user) {
       return;
     }
 
+    const missingHomeNook = !user.groups.find(
+      (g) => g.name === "Home" && g.type === "default",
+    );
+
+    const missingNooks = missingHomeNook
+      ? DEFAULT_NOOKS.filter(({ name }) =>
+          user.groups.every((g) => g.name !== name),
+        )
+      : [];
+
+    if (missingNooks.length > 0) {
+      const defaultPanels = await this.nookClient.panel.findMany({
+        where: {
+          type: "default",
+        },
+      });
+
+      const groups = await Promise.all(
+        missingNooks.map((nook) =>
+          this.nookClient.userPanelGroup.create({
+            data: {
+              name: nook.name,
+              icon: nook.icon,
+              type: "default",
+              user: {
+                connect: {
+                  fid,
+                },
+              },
+              panels: {
+                connectOrCreate: defaultPanels
+                  .filter((panel) => nook.panels.includes(panel.key))
+                  .map((panel) => ({
+                    where: {
+                      fid_panelId: {
+                        fid,
+                        panelId: panel.id,
+                      },
+                    },
+                    create: {
+                      fid,
+                      panelId: panel.id,
+                    },
+                  })),
+              },
+            },
+            include: {
+              panels: {
+                include: {
+                  panel: true,
+                },
+              },
+            },
+          }),
+        ),
+      );
+
+      user.groups = [...user.groups, ...groups];
+    }
+
+    let formattedNooks = user.groups.map((g) => ({
+      ...g,
+      panels: g.panels.map((p) => p.panel),
+    }));
+
+    const metadata = user.metadata as UserMetadata | undefined;
+
+    if (metadata?.order && metadata.order.length > 0) {
+      const newOrderedNooks: typeof formattedNooks = [];
+      for (const [groupId, panelIds] of metadata.order) {
+        const group = formattedNooks.find((g) => g.id === groupId);
+        if (group) {
+          const newPanels: typeof group.panels = [];
+          for (const panelId of panelIds) {
+            const panel = group.panels.find((p) => p.id === panelId);
+            if (panel) {
+              newPanels.push(panel);
+            }
+          }
+          newOrderedNooks.push({
+            ...group,
+            panels: newPanels,
+          });
+        }
+      }
+
+      for (const group of formattedNooks.filter(
+        (g) => !newOrderedNooks.some((n) => n.id === g.id),
+      )) {
+        newOrderedNooks.push(group);
+      }
+
+      formattedNooks = newOrderedNooks;
+    } else {
+      const newOrderedNooks: typeof formattedNooks = [];
+      for (const nook of DEFAULT_NOOKS) {
+        const group = formattedNooks.find((g) => g.name === nook.name);
+        if (group) {
+          newOrderedNooks.push(group);
+        }
+      }
+
+      for (const group of formattedNooks.filter(
+        (g) => !DEFAULT_NOOKS.some((n) => n.name === g.name),
+      )) {
+        newOrderedNooks.push(group);
+      }
+
+      await this.nookClient.user.update({
+        where: {
+          fid,
+        },
+        data: {
+          metadata: {
+            ...metadata,
+            order: newOrderedNooks.map((g) => [
+              g.id,
+              g.panels.map((p) => p.id),
+            ]),
+          },
+        },
+      });
+      formattedNooks = newOrderedNooks;
+    }
+
     return {
       ...user,
+      nooks: formattedNooks,
+      mutedUsers: user.mutedUsers.map((m) => m.mutedFid),
+      mutedChannels: user.mutedParentUrls.map((m) => m.mutedParentUrl),
+      mutedWords: user.mutedWords.map((m) => m.mutedWord),
       siwfData: undefined,
       refreshToken: undefined,
     };

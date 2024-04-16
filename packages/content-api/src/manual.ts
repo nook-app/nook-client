@@ -1,8 +1,13 @@
 import { Prisma, PrismaClient } from "@nook/common/prisma/content";
 import { getUrlContent } from "./utils";
+import { ContentCacheClient, RedisClient } from "@nook/common/clients";
+import { UrlContentResponse } from "@nook/common/types";
+import { Frame } from "frames.js";
+import { Metadata } from "metascraper";
 
 const run = async () => {
   const client = new PrismaClient();
+  const cache = new ContentCacheClient(new RedisClient());
   const url = process.argv[2];
 
   const content = await getUrlContent(url);
@@ -25,6 +30,12 @@ const run = async () => {
       frame: (content.frame || Prisma.DbNull) as Prisma.InputJsonValue,
     },
   });
+
+  await cache.setContent(content.uri, {
+    ...content,
+    metadata: content.metadata as Metadata,
+    frame: content.frame as Frame,
+  } as UrlContentResponse);
 };
 
 run()

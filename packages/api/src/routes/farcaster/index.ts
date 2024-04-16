@@ -6,6 +6,7 @@ import {
   ShelfDataRequest,
   UserFilterType,
 } from "@nook/common/types";
+import { FarcasterFeedRequest } from "@nook/common/types/feed";
 
 export const farcasterRoutes = async (fastify: FastifyInstance) => {
   fastify.register(async (fastify: FastifyInstance) => {
@@ -107,6 +108,7 @@ export const farcasterRoutes = async (fastify: FastifyInstance) => {
         } catch (e) {}
         const response = await client.searchUsers(
           request.query.query,
+          undefined,
           request.query.cursor,
           viewerFid,
         );
@@ -292,6 +294,7 @@ export const farcasterRoutes = async (fastify: FastifyInstance) => {
         } catch (e) {}
         const response = await client.searchChannels(
           request.query.query,
+          undefined,
           request.query.cursor,
           viewerFid,
         );
@@ -311,6 +314,36 @@ export const farcasterRoutes = async (fastify: FastifyInstance) => {
         reply.send(response);
       },
     );
+
+    fastify.get<{
+      Params: { channelId: string };
+    }>("/farcaster/channels/:channelId", async (request, reply) => {
+      let viewerFid: string | undefined;
+      try {
+        const { fid } = (await request.jwtDecode()) as { fid: string };
+        viewerFid = fid;
+      } catch (e) {}
+      const response = await client.getChannel(
+        request.params.channelId,
+        viewerFid,
+      );
+      reply.send(response);
+    });
+
+    fastify.get<{
+      Params: { url: string };
+    }>("/farcaster/channels/by-url/:url", async (request, reply) => {
+      let viewerFid: string | undefined;
+      try {
+        const { fid } = (await request.jwtDecode()) as { fid: string };
+        viewerFid = fid;
+      } catch (e) {}
+      const response = await client.getChannelByUrl(
+        request.params.url,
+        viewerFid,
+      );
+      reply.send(response);
+    });
 
     fastify.get<{
       Params: { channelId: string };
@@ -420,6 +453,19 @@ export const farcasterRoutes = async (fastify: FastifyInstance) => {
           ...request.body,
           context: { viewerFid },
         });
+        reply.send(response);
+      },
+    );
+
+    fastify.post<{ Body: FarcasterFeedRequest }>(
+      "/farcaster/casts/feed",
+      async (request, reply) => {
+        let viewerFid: string | undefined;
+        try {
+          const { fid } = (await request.jwtDecode()) as { fid: string };
+          viewerFid = fid;
+        } catch (e) {}
+        const response = await client.getCastFeed(request.body);
         reply.send(response);
       },
     );

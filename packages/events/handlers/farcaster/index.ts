@@ -100,12 +100,12 @@ export class FarcasterProcessor {
 
     if (cast.parentHash && data.parentFid) {
       promises.push(
-        this.cacheClient.resetCastEngagement(cast.parentHash, "replies"),
+        this.cacheClient.incrementCastEngagement(cast.parentHash, "replies"),
       );
     }
 
     for (const { hash } of cast.embedCasts) {
-      promises.push(this.cacheClient.resetCastEngagement(hash, "quotes"));
+      promises.push(this.cacheClient.incrementCastEngagement(hash, "quotes"));
     }
 
     const notifications = parseNotificationsFromCast(cast);
@@ -124,12 +124,12 @@ export class FarcasterProcessor {
 
     if (cast.parentHash && data.parentFid) {
       promises.push(
-        this.cacheClient.resetCastEngagement(cast.parentHash, "replies"),
+        this.cacheClient.decrementCastEngagement(cast.parentHash, "replies"),
       );
     }
 
     for (const { hash } of cast.embedCasts) {
-      promises.push(this.cacheClient.resetCastEngagement(hash, "quotes"));
+      promises.push(this.cacheClient.decrementCastEngagement(hash, "quotes"));
     }
 
     const notifications = parseNotificationsFromCast(cast);
@@ -146,26 +146,26 @@ export class FarcasterProcessor {
     const promises = [];
     if (data.reactionType === 1) {
       promises.push(
-        this.cacheClient.resetCastEngagement(data.targetHash, "likes"),
+        this.cacheClient.incrementCastEngagement(data.targetHash, "likes"),
       );
       promises.push(
-        this.cacheClient.setCastContext(
-          data.targetHash,
+        this.cacheClient.setCastContexts(
           "likes",
-          data.fid.toString(),
-          true,
+          data.targetHash,
+          [data.fid.toString()],
+          [true],
         ),
       );
     } else if (data.reactionType === 2) {
       promises.push(
-        this.cacheClient.resetCastEngagement(data.targetHash, "recasts"),
+        this.cacheClient.incrementCastEngagement(data.targetHash, "recasts"),
       );
       promises.push(
-        this.cacheClient.setCastContext(
-          data.targetHash,
+        this.cacheClient.setCastContexts(
           "recasts",
-          data.fid.toString(),
-          true,
+          data.targetHash,
+          [data.fid.toString()],
+          [true],
         ),
       );
     }
@@ -180,26 +180,26 @@ export class FarcasterProcessor {
     const promises = [];
     if (data.reactionType === 1) {
       promises.push(
-        this.cacheClient.resetCastEngagement(data.targetHash, "likes"),
+        this.cacheClient.decrementCastEngagement(data.targetHash, "likes"),
       );
       promises.push(
-        this.cacheClient.setCastContext(
-          data.targetHash,
+        this.cacheClient.setCastContexts(
           "likes",
-          data.fid.toString(),
-          false,
+          data.targetHash,
+          [data.fid.toString()],
+          [false],
         ),
       );
     } else if (data.reactionType === 2) {
       promises.push(
-        this.cacheClient.resetCastEngagement(data.targetHash, "recasts"),
+        this.cacheClient.decrementCastEngagement(data.targetHash, "recasts"),
       );
       promises.push(
-        this.cacheClient.setCastContext(
-          data.targetHash,
+        this.cacheClient.setCastContexts(
           "recasts",
-          data.fid.toString(),
-          false,
+          data.targetHash,
+          [data.fid.toString()],
+          [false],
         ),
       );
     }
@@ -230,11 +230,17 @@ export class FarcasterProcessor {
         ),
       );
       promises.push(
-        this.cacheClient.setUserContext(
-          data.fid.toString(),
+        this.cacheClient.setUserContexts(
           "following",
+          data.fid.toString(),
+          [data.targetFid.toString()],
+          [true],
+        ),
+      );
+      promises.push(
+        this.cacheClient.addUserFollowingFid(
+          data.fid.toString(),
           data.targetFid.toString(),
-          true,
         ),
       );
     }
@@ -261,11 +267,17 @@ export class FarcasterProcessor {
         ),
       );
       promises.push(
-        this.cacheClient.setUserContext(
-          data.fid.toString(),
+        this.cacheClient.setUserContexts(
           "following",
+          data.fid.toString(),
+          [data.targetFid.toString()],
+          [false],
+        ),
+      );
+      promises.push(
+        this.cacheClient.removeUserFollowingFid(
+          data.fid.toString(),
           data.targetFid.toString(),
-          false,
         ),
       );
     }

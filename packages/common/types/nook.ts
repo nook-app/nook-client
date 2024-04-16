@@ -1,5 +1,6 @@
 import { FarcasterCastResponse } from "./api";
 import { FarcasterUser } from "./farcaster";
+import { PanelDisplay } from "./feed";
 
 export type Nook = {
   id: string;
@@ -163,6 +164,7 @@ export enum UserFilterType {
   FOLLOWING = "FOLLOWING",
   FIDS = "FIDS",
   POWER_BADGE = "POWER_BADGE",
+  USER_LIST = "USER_LIST",
 }
 
 export type UserFilter =
@@ -182,15 +184,30 @@ export type UserFilter =
       type: UserFilterType.POWER_BADGE;
       data: {
         badge: boolean;
+        fid?: string;
+      };
+    }
+  | {
+      type: UserFilterType.USER_LIST;
+      data: {
+        listId: string;
       };
     };
 
 export enum ChannelFilterType {
+  FOLLOWING = "FOLLOWING",
   CHANNEL_IDS = "CHANNEL_IDS",
   CHANNEL_URLS = "CHANNEL_URLS",
+  CHANNEL_LIST = "CHANNEL_LIST",
 }
 
 export type ChannelFilter =
+  | {
+      type: ChannelFilterType.FOLLOWING;
+      data: {
+        fid: string;
+      };
+    }
   | {
       type: ChannelFilterType.CHANNEL_IDS;
       data: {
@@ -201,6 +218,12 @@ export type ChannelFilter =
       type: ChannelFilterType.CHANNEL_URLS;
       data: {
         urls: string[];
+      };
+    }
+  | {
+      type: ChannelFilterType.CHANNEL_LIST;
+      data: {
+        listId: string;
       };
     };
 
@@ -344,9 +367,27 @@ export type NookArgs =
   | NookTeamArgs
   | NookOnboardingArgs;
 
-export type CastActionRequest = {
+export type CastActionV1Request = {
   name: string;
   icon: string;
   postUrl: string;
   actionType: string;
+};
+
+export type CastActionV2Request = {
+  url: string;
+};
+
+export type CreateNookRequest = {
+  name: string;
+  icon?: string;
+  panels: Panel[];
+};
+
+export type Panel = {
+  id: string;
+  type: string;
+  key: string;
+  name: string;
+  display?: PanelDisplay;
 };

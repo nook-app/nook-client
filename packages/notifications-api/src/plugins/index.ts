@@ -1,6 +1,5 @@
 import fp from "fastify-plugin";
 import { PrismaClient } from "@nook/common/prisma/notifications";
-import { RedisClient } from "@nook/common/clients";
 
 declare module "fastify" {
   interface FastifyInstance {

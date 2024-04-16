@@ -23,6 +23,77 @@ model User {
 
     nooks   NookMembership[]
     actions UserCastAction[]
+    groups  UserPanelGroup[]
+    panels  UserPanel[]
+    feeds   Feed[]
+
+    mutedUsers      UserMutedUser[]
+    mutedWords      UserMutedWord[]
+    mutedParentUrls UserMutedParentUrl[]
+}
+
+model UserPanelGroup {
+    id   String  @id @default(uuid())
+    fid  String
+    name String
+    icon String?
+    type String
+
+    createdAt DateTime  @default(now())
+    updatedAt DateTime  @default(now()) @updatedAt
+    deletedAt DateTime?
+
+    panels UserPanel[]
+    user   User        @relation(fields: [fid], references: [fid])
+}
+
+model UserPanel {
+    fid     String
+    panelId String
+    groupId String
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @default(now()) @updatedAt
+
+    user  User           @relation(fields: [fid], references: [fid])
+    panel Panel          @relation(fields: [panelId], references: [id], onDelete: Cascade)
+    group UserPanelGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+    @@id([fid, panelId])
+}
+
+model Panel {
+    id   String @id @default(uuid())
+    type String
+    key  String
+
+    name    String
+    display String?
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @default(now()) @updatedAt
+
+    users UserPanel[]
+
+    @@unique([type, key])
+}
+
+model Feed {
+    id  String @id @default(uuid())
+    fid String
+
+    type    String  @default("default")
+    name    String
+    filter  Json
+    icon    String?
+    api     String?
+    display String?
+
+    createdAt DateTime  @default(now())
+    updatedAt DateTime  @default(now()) @updatedAt
+    deletedAt DateTime?
+
+    user User @relation(fields: [fid], references: [fid])
 }
 
 model NookMembership {
@@ -53,45 +124,6 @@ model Nook {
 
     members NookMembership[]
     shelves ShelfInstance[]
-}
-
-model Feed {
-    id         String @id @default(uuid())
-    type       String
-    creatorFid String
-    hash       String @unique
-    filter     Json
-
-    createdAt DateTime @default(now())
-    updatedAt DateTime @default(now()) @updatedAt
-}
-
-model List {
-    id          String  @id @default(uuid())
-    creatorFid  String
-    name        String
-    description String?
-    type        String
-    imageUrl    String?
-    visibility  String
-
-    items ListItem[]
-
-    createdAt DateTime  @default(now())
-    updatedAt DateTime  @default(now()) @updatedAt
-    deletedAt DateTime?
-}
-
-model ListItem {
-    listId String
-    id     String
-
-    createdAt DateTime @default(now())
-    updatedAt DateTime @default(now()) @updatedAt
-
-    list List @relation(fields: [listId], references: [id])
-
-    @@id([listId, id])
 }
 
 model Shelf {
@@ -198,10 +230,49 @@ model CastAction {
     creatorFid String?
     hidden     Boolean @default(false)
 
+    description String?
+    aboutUrl    String?
+
     createdAt DateTime @default(now())
     updatedAt DateTime @default(now()) @updatedAt
 
     users UserCastAction[]
 
     @@unique([actionType, postUrl])
+}
+
+model UserMutedUser {
+    fid      String
+    mutedFid String
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @default(now()) @updatedAt
+
+    user User @relation(fields: [fid], references: [fid])
+
+    @@id([fid, mutedFid])
+}
+
+model UserMutedWord {
+    fid       String
+    mutedWord String
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @default(now()) @updatedAt
+
+    user User @relation(fields: [fid], references: [fid])
+
+    @@id([fid, mutedWord])
+}
+
+model UserMutedParentUrl {
+    fid            String
+    mutedParentUrl String
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @default(now()) @updatedAt
+
+    user User @relation(fields: [fid], references: [fid])
+
+    @@id([fid, mutedParentUrl])
 }

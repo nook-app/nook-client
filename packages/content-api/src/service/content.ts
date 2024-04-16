@@ -23,66 +23,85 @@ export class ContentService {
   }
 
   async getContents(uris: string[]): Promise<UrlContentResponse[]> {
-    const contents = await Promise.all(uris.map((uri) => this.getContent(uri)));
-    return contents.filter(Boolean) as UrlContentResponse[];
-  }
-
-  async getContent(uri: string): Promise<UrlContentResponse | undefined> {
-    if (uri.includes(" ")) return;
-
-    const cached = await this.cache.getContent(uri);
-    if (cached) return cached;
-
-    const content = await this.client.urlContent.findUnique({
-      where: {
-        uri,
+    const contents = await this.cache.getContents(uris);
+    const contentMap = contents.reduce(
+      (acc, content, index) => {
+        if (!content) return acc;
+        acc[uris[index]] = content;
+        return acc;
       },
-    });
-    if (content) {
-      const response = {
-        ...content,
-        metadata: content.metadata as Metadata,
-        frame: content.frame as Frame,
-      } as UrlContentResponse;
-      await this.cache.setContent(uri, response);
-      return response;
+      {} as Record<string, UrlContentResponse>,
+    );
+
+    const missing = uris.filter((uri) => !contentMap[uri]);
+    if (missing.length > 0) {
+      const fetchedContent = await this.client.urlContent.findMany({
+        where: {
+          uri: {
+            in: missing,
+          },
+        },
+      });
+
+      for (const content of fetchedContent) {
+        contentMap[content.uri] = {
+          ...content,
+          metadata: content.metadata as Metadata,
+          frame: content.frame as Frame,
+        } as UrlContentResponse;
+      }
+
+      await this.cache.setContents(Object.values(contentMap));
     }
 
-    return await this.refreshContent(uri);
+    const stillMissing = uris.filter((uri) => !contentMap[uri]);
+    if (stillMissing.length > 0) {
+      const missingContent = await this.refreshContents(stillMissing);
+      for (const content of missingContent) {
+        contentMap[content.uri] = content;
+      }
+    }
+
+    return uris
+      .map((uri) => contentMap[uri])
+      .filter(Boolean) as UrlContentResponse[];
   }
 
   async refreshContents(uris: string[]): Promise<UrlContentResponse[]> {
-    return (
-      await Promise.all(uris.map((uri) => this.refreshContent(uri)))
-    ).filter(Boolean) as UrlContentResponse[];
-  }
+    const result = await Promise.all(uris.map((uri) => getUrlContent(uri)));
+    const content = result
+      .map((content) =>
+        content
+          ? ({
+              ...content,
+              metadata: content.metadata as Metadata,
+              frame: content.frame as Frame,
+            } as UrlContentResponse)
+          : undefined,
+      )
+      .filter(Boolean) as UrlContentResponse[];
 
-  async refreshContent(uri: string): Promise<UrlContentResponse | undefined> {
-    const content = await getUrlContent(uri);
-    if (!content) return;
-    await this.client.urlContent.upsert({
-      where: {
-        uri,
-      },
-      create: {
-        ...content,
-        metadata: (content.metadata || Prisma.DbNull) as Prisma.InputJsonValue,
-        frame: (content.frame || Prisma.DbNull) as Prisma.InputJsonValue,
-      },
-      update: {
-        ...content,
-        metadata: (content.metadata || Prisma.DbNull) as Prisma.InputJsonValue,
-        frame: (content.frame || Prisma.DbNull) as Prisma.InputJsonValue,
-      },
-    });
+    for (const c of content) {
+      await this.client.urlContent.upsert({
+        where: {
+          uri: c.uri,
+        },
+        create: {
+          ...c,
+          metadata: (c.metadata || Prisma.DbNull) as Prisma.InputJsonValue,
+          frame: (c.frame || Prisma.DbNull) as Prisma.InputJsonValue,
+        },
+        update: {
+          ...c,
+          metadata: (c.metadata || Prisma.DbNull) as Prisma.InputJsonValue,
+          frame: (c.frame || Prisma.DbNull) as Prisma.InputJsonValue,
+        },
+      });
+    }
 
-    const response = {
-      ...content,
-      metadata: content.metadata as Metadata,
-      frame: content.frame as Frame,
-    } as UrlContentResponse;
-    await this.cache.setContent(uri, response);
-    return response;
+    await this.cache.setContents(content);
+
+    return content;
   }
 
   async addReferencedContent(cast: FarcasterCastResponse) {
