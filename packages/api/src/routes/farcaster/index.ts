@@ -460,13 +460,46 @@ export const farcasterRoutes = async (fastify: FastifyInstance) => {
     fastify.post<{ Body: FarcasterFeedRequest }>(
       "/farcaster/casts/feed",
       async (request, reply) => {
-        let viewerFid: string | undefined;
         try {
-          const { fid } = (await request.jwtDecode()) as { fid: string };
-          viewerFid = fid;
-        } catch (e) {}
-        const response = await client.getCastFeed(request.body);
-        reply.send(response);
+          if (request.body.api) {
+            const response = await fetch(request.body.api, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                ...request.body,
+                context: {
+                  viewerFid: "432047203974",
+                },
+                api: undefined,
+              }),
+            });
+            if (!response.ok) {
+              console.error(await response.text());
+              reply.status(500);
+              return;
+            }
+            const {
+              data,
+              nextCursor,
+            }: { data: string[]; nextCursor?: number | string } =
+              await response.json();
+            const casts = await client.getCasts(
+              data,
+              request.body.context.viewerFid,
+            );
+            return reply.send({
+              data: casts.data,
+              nextCursor,
+            });
+          }
+          const response = await client.getCastFeed(request.body);
+          reply.send(response);
+        } catch (e) {
+          console.error(e);
+          reply.status(500);
+        }
       },
     );
   });

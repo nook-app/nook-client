@@ -8,7 +8,7 @@ import { SignInWithFarcasterRequest, TokenResponse } from "../../types";
 import { PrismaClient } from "@nook/common/prisma/nook";
 import { UserMetadata } from "@nook/common/types";
 
-const DEV_USER_FID = 20716;
+const DEV_USER_FID = 18586;
 
 const DEFAULT_NOOKS = [
   {

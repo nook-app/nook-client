@@ -239,6 +239,7 @@ export class NotificationsService {
           acc[acc.length - 1]?.type === NotificationType.FOLLOW
         ) {
           acc[acc.length - 1].fids?.push(...(notification.fids || []));
+          acc[acc.length - 1].timestamp = notification.timestamp;
         } else {
           acc.push(notification);
         }
@@ -251,12 +252,9 @@ export class NotificationsService {
 
     return {
       data: sliced,
-      nextCursor:
-        sliced.length === MAX_PAGE_SIZE
-          ? encodeCursor({
-              timestamp: sliced[sliced.length - 1]?.timestamp,
-            })
-          : undefined,
+      nextCursor: encodeCursor({
+        timestamp: sliced[sliced.length - 1]?.timestamp,
+      }),
     };
   }
 
