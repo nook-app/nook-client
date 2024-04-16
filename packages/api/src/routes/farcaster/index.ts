@@ -469,9 +469,6 @@ export const farcasterRoutes = async (fastify: FastifyInstance) => {
               },
               body: JSON.stringify({
                 ...request.body,
-                context: {
-                  viewerFid: "432047203974",
-                },
                 api: undefined,
               }),
             });

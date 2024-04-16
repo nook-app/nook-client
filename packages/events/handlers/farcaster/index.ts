@@ -13,13 +13,8 @@ import {
   FarcasterUsernameProof,
   FarcasterVerification,
 } from "@nook/common/prisma/farcaster";
+import { EntityEvent, FarcasterEventType } from "@nook/common/types";
 import {
-  BaseFarcasterCast,
-  EntityEvent,
-  FarcasterEventType,
-} from "@nook/common/types";
-import {
-  getCastEmbeds,
   parseNotificationsFromCast,
   parseNotificationsFromLink,
   parseNotificationsFromReaction,
