@@ -1,17 +1,12 @@
 import { Prisma, PrismaClient } from "@nook/common/prisma/notifications";
-import {
-  FarcasterPostData,
-  Notification,
-  NotificationType,
-} from "@nook/common/types";
+import { Notification, NotificationType } from "@nook/common/types";
 import { Job } from "bullmq";
-import { formatCastText, pushMessages, pushNotification } from "./push";
+import { pushNotification } from "./push";
 import {
   FarcasterAPIClient,
   FarcasterCacheClient,
   RedisClient,
 } from "@nook/common/clients";
-import { ExpoPushMessage } from "expo-server-sdk";
 
 export const getNotificationsHandler = async () => {
   const client = new PrismaClient();
@@ -19,8 +14,23 @@ export const getNotificationsHandler = async () => {
   const farcasterCache = new FarcasterCacheClient(redis);
   const farcasterApi = new FarcasterAPIClient();
 
+  const getFollowingFids = async (fid: string) => {
+    const cached = await farcasterCache.getUserFollowingFids(fid);
+    if (cached) return cached;
+
+    const following = (await farcasterApi.getUserFollowingFids(fid)).data;
+    return following;
+  };
+
+  const getPowerBadge = async (fid: string, powerBadge?: boolean) => {
+    if (powerBadge) return powerBadge;
+
+    return await farcasterCache.getUserPowerBadge(fid);
+  };
+
   return async (job: Job<Notification>) => {
     const notification = job.data;
+    console.log(notification);
 
     if (notification.deletedAt) {
       await client.notification.updateMany({
@@ -37,16 +47,12 @@ export const getNotificationsHandler = async () => {
       return;
     }
 
-    const following = await farcasterApi.getUserFollowingFids(notification.fid);
-    const isFollowing = following.data.includes(notification.sourceFid);
+    const [following, isPowerBadge] = await Promise.all([
+      getFollowingFids(notification.fid),
+      getPowerBadge(notification.sourceFid, notification.powerBadge),
+    ]);
 
-    let isPowerBadge = notification.powerBadge;
-    if (isPowerBadge === undefined) {
-      isPowerBadge = await farcasterCache.getUserPowerBadge(
-        notification.sourceFid,
-      );
-    }
-
+    const isFollowing = following.includes(notification.sourceFid);
     const ignoreMessage = !isFollowing && !isPowerBadge;
 
     await client.notification.upsert({
@@ -72,248 +78,7 @@ export const getNotificationsHandler = async () => {
       },
     });
 
-    if (ignoreMessage) return;
-
-    if (notification.type === NotificationType.POST) {
-      const post = notification as FarcasterPostData;
-      const cast = await farcasterApi.getCast(post.data.hash);
-      if (!cast) return;
-
-      const conditions = [];
-      if (cast.user.badges?.powerBadge) {
-        conditions.push({
-          OR: [
-            {
-              users: {
-                some: {
-                  fid: cast.user.fid.toString(),
-                },
-              },
-            },
-            {
-              users: {
-                none: {},
-              },
-            },
-            {
-              powerBadge: true,
-            },
-          ],
-        });
-      } else {
-        conditions.push({
-          OR: [
-            {
-              users: {
-                some: {
-                  fid: cast.user.fid.toString(),
-                },
-              },
-            },
-            {
-              users: {
-                none: {},
-              },
-            },
-          ],
-        });
-      }
-
-      if (cast.parentHash) {
-        conditions.push({
-          OR: [
-            {
-              includeReplies: true,
-            },
-            {
-              onlyReplies: true,
-            },
-          ],
-        });
-      } else {
-        conditions.push({
-          onlyReplies: false,
-        });
-      }
-
-      if (cast.parentUrl) {
-        conditions.push({
-          OR: [
-            {
-              parentUrls: {
-                some: {
-                  url: cast.parentUrl,
-                },
-              },
-            },
-            {
-              parentUrls: {
-                none: {},
-              },
-            },
-          ],
-        });
-      } else {
-        conditions.push({
-          parentUrls: {
-            none: {},
-          },
-        });
-      }
-
-      const words = cast.text?.toLowerCase().split(" ") || [];
-      if (words.length > 0) {
-        conditions.push({
-          AND: [
-            {
-              OR: [
-                ...words.map((word) => ({
-                  keywords: {
-                    some: {
-                      keyword: word,
-                    },
-                  },
-                })),
-                {
-                  keywords: {
-                    none: {},
-                  },
-                },
-              ],
-            },
-            {
-              mutedKeywords: {
-                none: {
-                  keyword: {
-                    in: words,
-                  },
-                },
-              },
-            },
-          ],
-        });
-      } else {
-        conditions.push({
-          parentUrls: {
-            none: {},
-          },
-        });
-      }
-
-      if (cast.embeds.length > 0) {
-        conditions.push({
-          OR: [
-            {
-              embedUrls: {
-                some: {
-                  url: {
-                    in: cast.embeds.map((embed) => embed.uri),
-                  },
-                },
-              },
-            },
-            {
-              embedUrls: {
-                none: {},
-              },
-            },
-          ],
-        });
-      } else {
-        conditions.push({
-          embedUrls: {
-            none: {},
-          },
-        });
-      }
-
-      const shelves = await client.shelfNotification.findMany({
-        where: {
-          AND: conditions,
-        },
-        include: {
-          users: true,
-          parentUrls: true,
-          keywords: true,
-          embedUrls: true,
-          mutedKeywords: true,
-        },
-      });
-
-      const tokens = await client.user.findMany({
-        where: {
-          subscriptions: {
-            some: {
-              shelfId: {
-                in: shelves.map((shelf) => shelf.shelfId),
-              },
-            },
-          },
-        },
-      });
-
-      if (tokens.length === 0) return;
-
-      const data: ExpoPushMessage[] = await Promise.all(
-        tokens.map(async (token) => {
-          await client.notification.upsert({
-            where: {
-              fid_service_type_sourceId: {
-                fid: token.fid,
-                service: notification.service,
-                type: notification.type,
-                sourceId: notification.sourceId,
-              },
-            },
-            create: {
-              ...notification,
-              fid: token.fid,
-              powerBadge: isPowerBadge,
-              data: notification.data || Prisma.DbNull,
-              read: false,
-            },
-            update: {
-              ...notification,
-              fid: token.fid,
-              powerBadge: isPowerBadge,
-              data: notification.data || Prisma.DbNull,
-              read: false,
-            },
-          });
-
-          return {
-            to: token.token,
-            title: `${cast.user?.username || cast.user.fid} posted`,
-            body: formatCastText(cast),
-            badge: await client.notification.count({
-              where: {
-                fid: token.fid,
-                read: false,
-              },
-            }),
-            data: {
-              service: notification.service,
-              type: notification.type,
-              sourceId: notification.sourceId,
-              sourceFid: notification.sourceFid,
-              data: notification.data,
-            },
-            categoryId: "farcasterPost",
-          };
-        }),
-      );
-
-      const tickets = await pushMessages(data);
-
-      for (const ticket of tickets) {
-        redis.setJson(`expoPushTicket:${ticket}`, ticket, 60 * 60 * 24);
-      }
-
-      console.log(
-        `[push-notification] [${notification.fid}] ${notification.type}`,
-      );
-      return;
-    }
+    if (ignoreMessage || notification.type === NotificationType.POST) return;
 
     const token = await client.user.findUnique({
       where: {
