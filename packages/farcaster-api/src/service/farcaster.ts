@@ -230,7 +230,9 @@ export class FarcasterService {
   ): Promise<BaseFarcasterCast[]> {
     if (hashes.length === 0) return [];
 
-    const casts = await this.cache.getCasts(hashes);
+    const casts = (await this.cache.getCasts(hashes)).filter(
+      Boolean,
+    ) as BaseFarcasterCast[];
     const cacheMap = casts.reduce(
       (acc, cast) => {
         // todo: remove this check once all cached casts have appFid?

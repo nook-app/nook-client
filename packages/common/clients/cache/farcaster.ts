@@ -28,12 +28,10 @@ export class FarcasterCacheClient {
     return await this.redis.getJson(`${this.CAST_CACHE_PREFIX}:${hash}`);
   }
 
-  async getCasts(hashes: string[]): Promise<BaseFarcasterCast[]> {
-    return (
-      await this.redis.mgetJson(
-        hashes.map((hash) => `${this.CAST_CACHE_PREFIX}:${hash}`),
-      )
-    ).filter(Boolean);
+  async getCasts(hashes: string[]): Promise<(BaseFarcasterCast | undefined)[]> {
+    return await this.redis.mgetJson(
+      hashes.map((hash) => `${this.CAST_CACHE_PREFIX}:${hash}`),
+    );
   }
 
   async setCast(hash: string, cast: BaseFarcasterCast) {

@@ -13,8 +13,13 @@ import {
   FarcasterUsernameProof,
   FarcasterVerification,
 } from "@nook/common/prisma/farcaster";
-import { EntityEvent, FarcasterEventType } from "@nook/common/types";
 import {
+  BaseFarcasterCast,
+  EntityEvent,
+  FarcasterEventType,
+} from "@nook/common/types";
+import {
+  getCastEmbeds,
   parseNotificationsFromCast,
   parseNotificationsFromLink,
   parseNotificationsFromReaction,
@@ -85,6 +90,19 @@ export class FarcasterProcessor {
   }
 
   async processCastAdd(data: FarcasterCast) {
+    const relatedHashes = [
+      data.parentHash,
+      ...getCastEmbeds(data).map((c) => c.hash),
+    ].filter(Boolean) as string[];
+    const existsInCache = await this.cacheClient.getCasts(relatedHashes);
+    const existenceMap = relatedHashes.reduce(
+      (acc, hash, i) => {
+        acc[hash] = !!existsInCache[i];
+        return acc;
+      },
+      {} as Record<string, boolean>,
+    );
+
     const cast = await this.farcasterClient.getCast(data.hash);
     if (!cast) return;
 
@@ -98,14 +116,16 @@ export class FarcasterProcessor {
       promises.push(this.cacheClient.resetCastThread(cast.hash));
     }
 
-    if (cast.parentHash && data.parentFid) {
+    if (cast.parentHash && existenceMap[cast.parentHash]) {
       promises.push(
         this.cacheClient.incrementCastEngagement(cast.parentHash, "replies"),
       );
     }
 
     for (const { hash } of cast.embedCasts) {
-      promises.push(this.cacheClient.incrementCastEngagement(hash, "quotes"));
+      if (existenceMap[hash]) {
+        promises.push(this.cacheClient.incrementCastEngagement(hash, "quotes"));
+      }
     }
 
     const notifications = parseNotificationsFromCast(cast);
@@ -115,6 +135,23 @@ export class FarcasterProcessor {
   }
 
   async processCastRemove(data: FarcasterCast) {
+    const relatedHashes = [
+      data.parentHash,
+      ...getCastEmbeds(data).map((c) => c.hash),
+    ].filter(Boolean) as string[];
+    const existsInCache = await this.cacheClient.getCasts(relatedHashes);
+    const existenceMap = relatedHashes.reduce(
+      (acc, hash, i) => {
+        acc[hash] = !!existsInCache[i];
+        return acc;
+      },
+      {} as Record<string, boolean>,
+    );
+
+    const parentExistsInCache = data.parentHash
+      ? await this.cacheClient.getCast(data.parentHash)
+      : false;
+
     const cast = await this.farcasterClient.getCast(data.hash);
     if (!cast) return;
 
@@ -122,14 +159,16 @@ export class FarcasterProcessor {
     promises.push(this.cacheClient.removeCast(data.hash));
     promises.push(this.contentClient.removeContentReferences(cast));
 
-    if (cast.parentHash && data.parentFid) {
+    if (cast.parentHash && existenceMap[cast.parentHash]) {
       promises.push(
         this.cacheClient.decrementCastEngagement(cast.parentHash, "replies"),
       );
     }
 
     for (const { hash } of cast.embedCasts) {
-      promises.push(this.cacheClient.decrementCastEngagement(hash, "quotes"));
+      if (existenceMap[hash]) {
+        promises.push(this.cacheClient.decrementCastEngagement(hash, "quotes"));
+      }
     }
 
     const notifications = parseNotificationsFromCast(cast);
