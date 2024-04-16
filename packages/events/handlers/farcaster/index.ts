@@ -90,19 +90,6 @@ export class FarcasterProcessor {
   }
 
   async processCastAdd(data: FarcasterCast) {
-    const relatedHashes = [
-      data.parentHash,
-      ...getCastEmbeds(data).map((c) => c.hash),
-    ].filter(Boolean) as string[];
-    const existsInCache = await this.cacheClient.getCasts(relatedHashes);
-    const existenceMap = relatedHashes.reduce(
-      (acc, hash, i) => {
-        acc[hash] = !!existsInCache[i];
-        return acc;
-      },
-      {} as Record<string, boolean>,
-    );
-
     const cast = await this.farcasterClient.getCast(data.hash);
     if (!cast) return;
 
@@ -116,16 +103,14 @@ export class FarcasterProcessor {
       promises.push(this.cacheClient.resetCastThread(cast.hash));
     }
 
-    if (cast.parentHash && existenceMap[cast.parentHash]) {
+    if (cast.parentHash) {
       promises.push(
-        this.cacheClient.incrementCastEngagement(cast.parentHash, "replies"),
+        this.cacheClient.resetCastEngagement(cast.parentHash, "replies"),
       );
     }
 
     for (const { hash } of cast.embedCasts) {
-      if (existenceMap[hash]) {
-        promises.push(this.cacheClient.incrementCastEngagement(hash, "quotes"));
-      }
+      promises.push(this.cacheClient.resetCastEngagement(hash, "quotes"));
     }
 
     const notifications = parseNotificationsFromCast(cast);
@@ -135,23 +120,6 @@ export class FarcasterProcessor {
   }
 
   async processCastRemove(data: FarcasterCast) {
-    const relatedHashes = [
-      data.parentHash,
-      ...getCastEmbeds(data).map((c) => c.hash),
-    ].filter(Boolean) as string[];
-    const existsInCache = await this.cacheClient.getCasts(relatedHashes);
-    const existenceMap = relatedHashes.reduce(
-      (acc, hash, i) => {
-        acc[hash] = !!existsInCache[i];
-        return acc;
-      },
-      {} as Record<string, boolean>,
-    );
-
-    const parentExistsInCache = data.parentHash
-      ? await this.cacheClient.getCast(data.parentHash)
-      : false;
-
     const cast = await this.farcasterClient.getCast(data.hash);
     if (!cast) return;
 
@@ -159,16 +127,14 @@ export class FarcasterProcessor {
     promises.push(this.cacheClient.removeCast(data.hash));
     promises.push(this.contentClient.removeContentReferences(cast));
 
-    if (cast.parentHash && existenceMap[cast.parentHash]) {
+    if (cast.parentHash) {
       promises.push(
-        this.cacheClient.decrementCastEngagement(cast.parentHash, "replies"),
+        this.cacheClient.resetCastEngagement(cast.parentHash, "replies"),
       );
     }
 
     for (const { hash } of cast.embedCasts) {
-      if (existenceMap[hash]) {
-        promises.push(this.cacheClient.decrementCastEngagement(hash, "quotes"));
-      }
+      promises.push(this.cacheClient.resetCastEngagement(hash, "quotes"));
     }
 
     const notifications = parseNotificationsFromCast(cast);
@@ -185,7 +151,7 @@ export class FarcasterProcessor {
     const promises = [];
     if (data.reactionType === 1) {
       promises.push(
-        this.cacheClient.incrementCastEngagement(data.targetHash, "likes"),
+        this.cacheClient.resetCastEngagement(data.targetHash, "likes"),
       );
       promises.push(
         this.cacheClient.setCastContexts(
@@ -197,7 +163,7 @@ export class FarcasterProcessor {
       );
     } else if (data.reactionType === 2) {
       promises.push(
-        this.cacheClient.incrementCastEngagement(data.targetHash, "recasts"),
+        this.cacheClient.resetCastEngagement(data.targetHash, "recasts"),
       );
       promises.push(
         this.cacheClient.setCastContexts(
@@ -219,7 +185,7 @@ export class FarcasterProcessor {
     const promises = [];
     if (data.reactionType === 1) {
       promises.push(
-        this.cacheClient.decrementCastEngagement(data.targetHash, "likes"),
+        this.cacheClient.resetCastEngagement(data.targetHash, "likes"),
       );
       promises.push(
         this.cacheClient.setCastContexts(
@@ -231,7 +197,7 @@ export class FarcasterProcessor {
       );
     } else if (data.reactionType === 2) {
       promises.push(
-        this.cacheClient.decrementCastEngagement(data.targetHash, "recasts"),
+        this.cacheClient.resetCastEngagement(data.targetHash, "recasts"),
       );
       promises.push(
         this.cacheClient.setCastContexts(
