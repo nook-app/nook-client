@@ -82,7 +82,9 @@ export class GroupService {
 
     return {
       ...result,
-      panels: result.panels.map((p) => p.panel),
+      panels: panels.map(
+        (p) => result.panels.find((up) => up.panelId === p.id)?.panel || p,
+      ),
     };
   }
 
@@ -149,7 +151,9 @@ export class GroupService {
 
     return {
       ...result,
-      panels: result.panels.map((p) => p.panel),
+      panels: panels.map(
+        (p) => result.panels.find((up) => up.panelId === p.id)?.panel || p,
+      ),
     };
   }
 

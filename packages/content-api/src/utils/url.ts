@@ -69,9 +69,7 @@ export const getUrlContent = async (
 
   try {
     if (uri.startsWith("http://") || uri.startsWith("https://")) {
-      const metadata = await fetchUrlMetadata(
-        uri.endsWith("?") ? uri.slice(0, -1) : uri,
-      );
+      const metadata = await fetchUrlMetadata(uri.split("?")[0]);
 
       // If CloudFlare error, don't save the metadata
       if (metadata?.metadata?.title === "Just a moment...") {
