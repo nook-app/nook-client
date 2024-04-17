@@ -1364,25 +1364,26 @@ export class FarcasterService {
 
     const missing = hashes.filter((hash) => isRecastedMap[hash] === undefined);
     if (missing.length > 0) {
-      const fetchedIsLiked = await this.client.farcasterCastReaction.findMany({
-        where: {
-          reactionType: 1,
-          fid: BigInt(viewerFid),
-          targetHash: {
-            in: missing,
+      const fetchedIsRecasted =
+        await this.client.farcasterCastReaction.findMany({
+          where: {
+            reactionType: 2,
+            fid: BigInt(viewerFid),
+            targetHash: {
+              in: missing,
+            },
+            deletedAt: null,
           },
-          deletedAt: null,
-        },
-      });
+        });
 
       await this.cache.setCastContexts(
         "recasts",
         viewerFid,
-        fetchedIsLiked.map((reaction) => reaction.targetHash),
-        fetchedIsLiked.map(() => true),
+        fetchedIsRecasted.map((reaction) => reaction.targetHash),
+        fetchedIsRecasted.map(() => true),
       );
 
-      for (const reaction of fetchedIsLiked) {
+      for (const reaction of fetchedIsRecasted) {
         isRecastedMap[reaction.targetHash] = true;
       }
     }

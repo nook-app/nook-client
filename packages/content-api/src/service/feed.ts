@@ -88,10 +88,18 @@ export class FeedService {
     }
 
     if (contentTypes && contentTypes.length > 0) {
-      const types = contentTypes.map(
-        (type) => `"content"."type" ILIKE '${type}%'`,
-      );
-      conditions.push(`(${types.join(" OR ")})`);
+      const formattedTypes = [];
+      if (contentTypes.includes("application/x-mpegURL")) {
+        formattedTypes.push("'application/x-mpegURL'");
+      }
+      if (contentTypes.includes("image")) {
+        formattedTypes.push("'image/jpeg'");
+        formattedTypes.push("'image/png'");
+        formattedTypes.push("'image/gif'");
+        formattedTypes.push("'image/webp'");
+      }
+
+      conditions.push(`("content"."type" IN (${formattedTypes.join(",")}))`);
     }
 
     if (embeds) {
@@ -145,7 +153,7 @@ export class FeedService {
         `
             SELECT DISTINCT "reference".hash, "reference".timestamp
             FROM "FarcasterContentReference" AS "reference"
-            LEFT JOIN "UrlContent" AS "content" ON "reference"."uri" = "content"."uri"
+            JOIN "UrlContent" AS "content" ON "reference"."uri" = "content"."uri"
             WHERE ${conditions.join(" AND ")}
             ORDER BY "reference"."timestamp" DESC
             LIMIT ${MAX_PAGE_SIZE}
