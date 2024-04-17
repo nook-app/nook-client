@@ -98,23 +98,22 @@ export const farcasterRoutes = async (fastify: FastifyInstance) => {
       },
     );
 
-    fastify.get<{ Querystring: { query: string; cursor?: string } }>(
-      "/farcaster/users",
-      async (request, reply) => {
-        let viewerFid: string | undefined;
-        try {
-          const { fid } = (await request.jwtDecode()) as { fid: string };
-          viewerFid = fid;
-        } catch (e) {}
-        const response = await client.searchUsers(
-          request.query.query,
-          undefined,
-          request.query.cursor,
-          viewerFid,
-        );
-        reply.send(response);
-      },
-    );
+    fastify.get<{
+      Querystring: { query: string; cursor?: string; limit?: number };
+    }>("/farcaster/users", async (request, reply) => {
+      let viewerFid: string | undefined;
+      try {
+        const { fid } = (await request.jwtDecode()) as { fid: string };
+        viewerFid = fid;
+      } catch (e) {}
+      const response = await client.searchUsers(
+        request.query.query,
+        request.query.limit,
+        request.query.cursor,
+        viewerFid,
+      );
+      reply.send(response);
+    });
 
     fastify.post<{ Body: { fids: string[] } }>(
       "/farcaster/users",
@@ -284,23 +283,22 @@ export const farcasterRoutes = async (fastify: FastifyInstance) => {
       },
     );
 
-    fastify.get<{ Querystring: { query: string; cursor?: string } }>(
-      "/farcaster/channels",
-      async (request, reply) => {
-        let viewerFid: string | undefined;
-        try {
-          const { fid } = (await request.jwtDecode()) as { fid: string };
-          viewerFid = fid;
-        } catch (e) {}
-        const response = await client.searchChannels(
-          request.query.query,
-          undefined,
-          request.query.cursor,
-          viewerFid,
-        );
-        reply.send(response);
-      },
-    );
+    fastify.get<{
+      Querystring: { query: string; cursor?: string; limit?: number };
+    }>("/farcaster/channels", async (request, reply) => {
+      let viewerFid: string | undefined;
+      try {
+        const { fid } = (await request.jwtDecode()) as { fid: string };
+        viewerFid = fid;
+      } catch (e) {}
+      const response = await client.searchChannels(
+        request.query.query,
+        request.query.limit,
+        request.query.cursor,
+        viewerFid,
+      );
+      reply.send(response);
+    });
 
     fastify.post<{ Body: { channelIds?: string[]; parentUrls?: string[] } }>(
       "/farcaster/channels",
