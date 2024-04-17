@@ -77,9 +77,6 @@ export class UserService {
           signedUpAt: new Date(),
           loggedInAt: new Date(),
           siwfData: {},
-          metadata: {
-            actionBar: ["reply", "recast", "like"],
-          },
         },
       });
     } else {

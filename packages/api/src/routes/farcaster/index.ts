@@ -461,38 +461,44 @@ export const farcasterRoutes = async (fastify: FastifyInstance) => {
       "/farcaster/casts/feed",
       async (request, reply) => {
         try {
-          if (request.body.api) {
-            const response = await fetch(request.body.api, {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({
-                ...request.body,
-                api: undefined,
-              }),
-            });
-            if (!response.ok) {
-              console.error(await response.text());
-              reply.status(500);
-              return;
-            }
-            const {
-              data,
-              nextCursor,
-            }: { data: string[]; nextCursor?: number | string } =
-              await response.json();
-            const casts = await client.getCasts(
-              data,
-              request.body.context.viewerFid,
-            );
-            return reply.send({
-              data: casts.data,
-              nextCursor,
-            });
+          if (!request.body.api) {
+            const response = await client.getCastFeed(request.body);
+            return reply.send(response);
           }
-          const response = await client.getCastFeed(request.body);
-          reply.send(response);
+
+          if (request.body.api === "nook://cast-feed/top") {
+            const response = await client.getTopCastFeed(request.body);
+            return reply.send(response);
+          }
+
+          const response = await fetch(request.body.api, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              ...request.body,
+              api: undefined,
+            }),
+          });
+          if (!response.ok) {
+            console.error(await response.text());
+            reply.status(500);
+            return;
+          }
+          const {
+            data,
+            nextCursor,
+          }: { data: string[]; nextCursor?: number | string } =
+            await response.json();
+          const casts = await client.getCasts(
+            data,
+            request.body.context.viewerFid,
+          );
+          return reply.send({
+            data: casts.data,
+            nextCursor,
+          });
         } catch (e) {
           console.error(e);
           reply.status(500);

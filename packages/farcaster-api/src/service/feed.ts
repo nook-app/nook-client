@@ -34,6 +34,137 @@ export class FeedService {
     this.content = new ContentAPIClient();
   }
 
+  async getTopCastFeed(req: FarcasterFeedRequest) {
+    const { filter, context, cursor } = req;
+    const {
+      channels,
+      users,
+      text,
+      embeds,
+      contentTypes,
+      includeReplies,
+      onlyReplies,
+      onlyFrames,
+    } = filter;
+
+    if (
+      onlyFrames ||
+      (contentTypes && contentTypes.length > 0) ||
+      (embeds && embeds.length > 0)
+    ) {
+      const response = await this.content.getContentFeed(req);
+      const casts = await this.client.farcasterCast.findMany({
+        where: {
+          hash: {
+            in: response.data,
+          },
+        },
+        orderBy: {
+          timestamp: "desc",
+        },
+      });
+      return {
+        data: casts,
+        nextCursor: response.nextCursor,
+      };
+    }
+
+    const conditions: string[] = ['"deletedAt" IS NULL'];
+
+    if (text) {
+      const queryConditions = text.map(
+        (q) =>
+          `(to_tsvector('english', "text") @@ to_tsquery('english', '${sanitizeInput(
+            q,
+          ).replaceAll(" ", "<->")}'))`,
+      );
+      conditions.push(`(${queryConditions.join(" OR ")})`);
+    }
+
+    if (users) {
+      conditions.push(...(await this.getUserFilter(users)));
+    }
+
+    if (channels) {
+      conditions.push(...(await this.getChannelFilter(channels)));
+    }
+
+    if (cursor) {
+      const decodedCursor = decodeCursor(cursor);
+      if (decodedCursor) {
+        conditions.push(
+          `(COALESCE(likes, 0) < ${
+            decodedCursor.likes
+          } OR (COALESCE(likes, 0) = ${
+            decodedCursor.likes
+          } AND "timestamp" < '${new Date(
+            decodedCursor.timestamp,
+          ).toISOString()}'))`,
+        );
+      }
+    }
+
+    if (onlyReplies) {
+      conditions.push(`"parentHash" IS NOT NULL`);
+    } else if (!includeReplies) {
+      conditions.push(`"parentHash" IS NULL`);
+    }
+
+    if (context?.mutedWords && context.mutedWords.length > 0) {
+      conditions.push(
+        `NOT (${context.mutedWords
+          .map(
+            (word) =>
+              `to_tsvector('english', "text") @@ to_tsquery('english', '${sanitizeInput(
+                word,
+              ).replaceAll(" ", "<->")}')`,
+          )
+          .join(" OR ")})`,
+      );
+    }
+
+    if (context?.mutedUsers && context.mutedUsers.length > 0) {
+      conditions.push(
+        `"FarcasterCast"."fid" NOT IN (${context.mutedUsers
+          .map((fid) => BigInt(fid))
+          .join(",")})`,
+      );
+    }
+
+    if (context?.mutedChannels && context.mutedChannels.length > 0) {
+      if (onlyReplies)
+        conditions.push(
+          `"rootParentUrl" NOT IN ('${context.mutedChannels.join("','")}')`,
+        );
+    }
+
+    const casts = await this.client.$queryRaw<
+      (FarcasterCast & { likes: number })[]
+    >(
+      Prisma.sql([
+        `
+            SELECT "FarcasterCast".*, "FarcasterCastStats".likes AS likes
+            FROM "FarcasterCast"
+            LEFT JOIN "FarcasterCastStats" ON "FarcasterCast"."hash" = "FarcasterCastStats"."hash"
+            WHERE ${conditions.join(" AND ")}
+            ORDER BY "likes" DESC NULLS LAST, "timestamp" DESC
+            LIMIT ${MAX_PAGE_SIZE}
+          `,
+      ]),
+    );
+
+    return {
+      data: casts,
+      nextCursor:
+        casts.length === MAX_PAGE_SIZE
+          ? encodeCursor({
+              likes: casts[casts.length - 1]?.likes,
+              timestamp: casts[casts.length - 1]?.timestamp.getTime(),
+            })
+          : undefined,
+    };
+  }
+
   async getCastFeed(req: FarcasterFeedRequest) {
     const { filter, context, cursor } = req;
     const {
@@ -261,12 +392,14 @@ export class FeedService {
     switch (users.type) {
       case UserFilterType.FOLLOWING: {
         const fids = await this.getFollowingFids(users.data.fid);
-        conditions.push(`"fid" IN (${fids.join(",")})`);
+        conditions.push(`"FarcasterCast"."fid" IN (${fids.join(",")})`);
         break;
       }
       case UserFilterType.FIDS:
         conditions.push(
-          `"fid" IN (${users.data.fids.map((fid) => BigInt(fid)).join(",")})`,
+          `"FarcasterCast"."fid" IN (${users.data.fids
+            .map((fid) => BigInt(fid))
+            .join(",")})`,
         );
         break;
       case UserFilterType.POWER_BADGE: {
@@ -280,7 +413,9 @@ export class FeedService {
           set.add(BigInt(fid));
         }
 
-        conditions.push(`"fid" IN (${Array.from(set).join(",")})`);
+        conditions.push(
+          `"FarcasterCast"."fid" IN (${Array.from(set).join(",")})`,
+        );
         break;
       }
     }

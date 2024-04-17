@@ -19,6 +19,7 @@ export class FarcasterCacheClient {
   CLIENT_CACHE_PREFIX = "farcaster:client";
   POWER_BADGE_CACHE_PREFIX = "warpcast:power-badge";
   USER_FOLLOWING_FIDS_CACHE_PREFIX = "farcaster:user:following:fids";
+  USER_FOLLOWERS_FIDS_CACHE_PREFIX = "farcaster:user:followers:fids";
 
   constructor(redis: RedisClient) {
     this.redis = redis;
@@ -155,7 +156,10 @@ export class FarcasterCacheClient {
   ): Promise<(boolean | undefined)[]> {
     const result = await this.redis.mget(
       targetFids.map(
-        (targetFid) => `${this.USER_CACHE_PREFIX}:${fid}:${type}:${targetFid}`,
+        (targetFid) =>
+          `${this.USER_CACHE_PREFIX}:${
+            type === "following" ? fid : targetFid
+          }:following:${type === "following" ? targetFid : fid}`,
       ),
     );
     return result.map((value) => {
@@ -173,7 +177,9 @@ export class FarcasterCacheClient {
   ) {
     await this.redis.mset(
       targetFids.map((targetFid, i) => [
-        `${this.USER_CACHE_PREFIX}:${fid}:${type}:${targetFid}`,
+        `${this.USER_CACHE_PREFIX}:${
+          type === "following" ? fid : targetFid
+        }:following:${type === "following" ? targetFid : fid}`,
         values[i] ? "1" : "0",
       ]),
       86400,
@@ -277,6 +283,20 @@ export class FarcasterCacheClient {
     await this.redis.removeMember(
       `${this.USER_FOLLOWING_FIDS_CACHE_PREFIX}:${fid}`,
       targetFid,
+    );
+  }
+
+  async addUserFollowerFid(fid: string, targetFid: string) {
+    await this.redis.addMember(
+      `${this.USER_FOLLOWERS_FIDS_CACHE_PREFIX}:${targetFid}`,
+      fid,
+    );
+  }
+
+  async removeUserFollowerFid(fid: string, targetFid: string) {
+    await this.redis.removeMember(
+      `${this.USER_FOLLOWERS_FIDS_CACHE_PREFIX}:${targetFid}`,
+      fid,
     );
   }
 

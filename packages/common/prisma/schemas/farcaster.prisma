@@ -250,7 +250,7 @@ model FarcasterCastStats {
     replies Int @default(0)
     quotes  Int @default(0)
 
-    @@index([likes])
+    @@index([likes(sort: Desc)])
     @@index([fid])
 }
 

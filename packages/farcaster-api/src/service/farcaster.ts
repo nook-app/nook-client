@@ -115,7 +115,7 @@ export class FarcasterService {
     >(
       Prisma.sql([
         `
-          SELECT c.*, likes
+          SELECT c.*, "stats".likes
           FROM "FarcasterCast" c
           LEFT JOIN "FarcasterCastStats" stats ON c.hash = stats.hash
           WHERE ${whereClause}
@@ -784,13 +784,14 @@ export class FarcasterService {
   async getUsers(fids: string[], viewerFid?: string): Promise<FarcasterUser[]> {
     if (fids.length === 0) return [];
 
-    const [users, powerBadges, followers, following, isFollowing] =
+    const [users, powerBadges, followers, following, isFollowing, isFollower] =
       await Promise.all([
         this.getUserDatas(fids),
         this.getUserBadges(fids),
         this.getUserFollowerCounts(fids),
         this.getUserFollowingCounts(fids),
         this.getUserIsFollowing(fids, viewerFid),
+        this.getUserIsFollower(fids, viewerFid),
       ]);
 
     return users.map((user, i) => ({
@@ -801,6 +802,7 @@ export class FarcasterService {
       },
       context: {
         following: isFollowing[i],
+        followers: isFollower[i],
       },
       badges: powerBadges[i] || { powerBadge: false },
     }));
@@ -942,6 +944,65 @@ export class FarcasterService {
   async getUserBadges(fids: string[]): Promise<FarcasterUserBadges[]> {
     const powerBadges = await this.cache.getUserPowerBadges(fids);
     return powerBadges.map((powerBadge) => ({ powerBadge }));
+  }
+
+  async getUserIsFollower(
+    fids: string[],
+    viewerFid?: string,
+  ): Promise<boolean[]> {
+    if (!viewerFid) return [];
+
+    const isFollower = await this.cache.getUserContexts(
+      "followers",
+      viewerFid,
+      fids,
+    );
+    const isFollowerMap = isFollower.reduce(
+      (acc, follower, i) => {
+        if (follower === undefined) return acc;
+        acc[fids[i]] = follower;
+        return acc;
+      },
+      {} as Record<string, boolean>,
+    );
+
+    const missing = fids.filter((fid) => isFollowerMap[fid] === undefined);
+
+    if (missing.length > 0) {
+      const fetchedIsFollower = await this.client.farcasterLink.findMany({
+        where: {
+          linkType: "follow",
+          targetFid: BigInt(viewerFid),
+          fid: {
+            in: missing.map((fid) => BigInt(fid)),
+          },
+          deletedAt: null,
+        },
+      });
+
+      await this.cache.setUserContexts(
+        "followers",
+        viewerFid,
+        fetchedIsFollower.map((link) => link.fid.toString()),
+        fetchedIsFollower.map(() => true),
+      );
+
+      for (const link of fetchedIsFollower) {
+        isFollowerMap[link.fid.toString()] = true;
+      }
+    }
+
+    const stillMissing = fids.filter((fid) => isFollowerMap[fid] === undefined);
+    if (stillMissing.length > 0) {
+      await this.cache.setUserContexts(
+        "followers",
+        viewerFid,
+        stillMissing,
+        stillMissing.map(() => false),
+      );
+    }
+
+    return fids.map((fid) => isFollowerMap[fid] || false);
   }
 
   async getUserIsFollowing(

@@ -38,5 +38,20 @@ export const feedRoutes = async (fastify: FastifyInstance) => {
         nextCursor: response.nextCursor,
       });
     });
+
+    fastify.post<{
+      Body: FarcasterFeedRequest;
+      Querystring: { cursor?: string };
+    }>("/feed/casts/top", async (request, reply) => {
+      const response = await service.getTopCastFeed(request.body);
+      const casts = await farcasterService.getCastsFromData(
+        response.data,
+        request.body.context?.viewerFid,
+      );
+      reply.send({
+        data: casts,
+        nextCursor: response.nextCursor,
+      });
+    });
   });
 };

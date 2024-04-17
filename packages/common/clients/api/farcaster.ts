@@ -311,4 +311,19 @@ export class FarcasterAPIClient extends BaseAPIClient {
 
     return response.json();
   }
+
+  async getTopCastFeed(
+    req: FarcasterFeedRequest,
+  ): Promise<ShelfDataResponse<FarcasterCastResponse>> {
+    const response = await this.makeRequest("/feed/casts/top", {
+      method: "POST",
+      body: JSON.stringify(req),
+    });
+
+    if (!response.ok) {
+      throw new Error(response.statusText);
+    }
+
+    return response.json();
+  }
 }

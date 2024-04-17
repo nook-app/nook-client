@@ -151,8 +151,8 @@ export class FarcasterProcessor {
       promises.push(
         this.cacheClient.setCastContexts(
           "likes",
-          data.targetHash,
-          [data.fid.toString()],
+          data.fid.toString(),
+          [data.targetHash],
           [true],
         ),
       );
@@ -163,8 +163,8 @@ export class FarcasterProcessor {
       promises.push(
         this.cacheClient.setCastContexts(
           "recasts",
-          data.targetHash,
-          [data.fid.toString()],
+          data.fid.toString(),
+          [data.targetHash],
           [true],
         ),
       );
@@ -185,8 +185,8 @@ export class FarcasterProcessor {
       promises.push(
         this.cacheClient.setCastContexts(
           "likes",
-          data.targetHash,
-          [data.fid.toString()],
+          data.fid.toString(),
+          [data.targetHash],
           [false],
         ),
       );
@@ -197,8 +197,8 @@ export class FarcasterProcessor {
       promises.push(
         this.cacheClient.setCastContexts(
           "recasts",
-          data.targetHash,
-          [data.fid.toString()],
+          data.fid.toString(),
+          [data.targetHash],
           [false],
         ),
       );
