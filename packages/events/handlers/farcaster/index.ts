@@ -104,7 +104,7 @@ export class FarcasterProcessor {
 
     if (cast.parentHash) {
       promises.push(
-        this.cacheClient.resetCastEngagement(cast.parentHash, "replies"),
+        this.cacheClient.incrementCastEngagement(cast.parentHash, "replies"),
       );
       promises.push(
         this.cacheClient.updateCastReplyScore(
