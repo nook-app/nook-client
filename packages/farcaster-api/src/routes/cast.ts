@@ -49,7 +49,7 @@ export const castRoutes = async (fastify: FastifyInstance) => {
       Params: GetFarcasterCastRepliesRequest;
       Querystring: { cursor?: string };
     }>("/casts/:hash/replies", async (request, reply) => {
-      const response = await service.getCastReplies(
+      const response = await service.getCastRepliesV2(
         request.params.hash,
         request.query.cursor,
         request.headers["x-viewer-fid"] as string,

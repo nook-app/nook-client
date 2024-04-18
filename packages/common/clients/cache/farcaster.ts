@@ -20,6 +20,7 @@ export class FarcasterCacheClient {
   POWER_BADGE_CACHE_PREFIX = "warpcast:power-badge";
   USER_FOLLOWING_FIDS_CACHE_PREFIX = "farcaster:user:following:fids";
   USER_FOLLOWERS_FIDS_CACHE_PREFIX = "farcaster:user:followers:fids";
+  CAST_REPLIES_CACHE_PREFIX = "farcaster:cast:replies";
 
   constructor(redis: RedisClient) {
     this.redis = redis;
@@ -385,5 +386,45 @@ export class FarcasterCacheClient {
 
   async getTrendingCashtags(): Promise<FarcasterTrendingCashtag[]> {
     return await this.redis.getJson("farcaster:trending-cashtags");
+  }
+
+  async addCastReplies(
+    hash: string,
+    replies: { hash: string; score: number }[],
+  ) {
+    await this.redis.batchAddToSet(
+      `${this.CAST_REPLIES_CACHE_PREFIX}:${hash}`,
+      replies.map(({ hash, score }) => ({ value: hash, score })),
+    );
+  }
+
+  async getCastReplies(
+    hash: string,
+    cursor?: number,
+  ): Promise<{ hash: string; score: number }[]> {
+    const rawData = await this.redis.getSet(
+      `${this.CAST_REPLIES_CACHE_PREFIX}:${hash}`,
+      cursor,
+    );
+    const replies = [];
+    for (let i = 0; i < rawData.length; i += 2) {
+      replies.push({
+        hash: rawData[i],
+        score: parseInt(rawData[i + 1], 10),
+      });
+    }
+    return replies;
+  }
+
+  async updateCastReplyScore(
+    hash: string,
+    parentHash: string,
+    adjustment: number,
+  ) {
+    await this.redis.incrementScore(
+      `${this.CAST_REPLIES_CACHE_PREFIX}:${parentHash}`,
+      hash,
+      adjustment,
+    );
   }
 }

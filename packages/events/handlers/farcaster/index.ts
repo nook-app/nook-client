@@ -85,23 +85,52 @@ export class FarcasterProcessor {
   }
 
   async processCastAdd(data: FarcasterCast) {
-    const cast = await this.farcasterClient.getCast(data.hash);
+    if (
+      data.fid === data.rootParentFid &&
+      (!data.parentFid || data.parentFid === data.fid)
+    ) {
+      await this.cacheClient.resetCastThread(data.hash);
+    }
+
+    const cast = await this.farcasterClient.getCast(
+      data.hash,
+      data.parentFid?.toString(),
+    );
     if (!cast) return;
 
     const promises = [];
     promises.push(this.contentClient.addContentReferences(cast));
 
-    if (
-      cast.user.fid === cast.rootParentFid &&
-      (!cast.parentFid || cast.parentFid === cast.user.fid)
-    ) {
-      promises.push(this.cacheClient.resetCastThread(cast.hash));
-    }
-
     if (cast.parentHash) {
       promises.push(
         this.cacheClient.resetCastEngagement(cast.parentHash, "replies"),
       );
+      if (cast.parent?.parentHash && cast.user.fid === cast.parent?.parentFid) {
+        promises.push(
+          this.cacheClient.updateCastReplyScore(
+            cast.parentHash,
+            cast.parent.parentHash,
+            4_000_000,
+          ),
+        );
+      }
+      if (cast.user.context?.following) {
+        promises.push(
+          this.cacheClient.updateCastReplyScore(
+            cast.hash,
+            cast.parentHash,
+            2_000_000,
+          ),
+        );
+      } else if (cast.user.badges?.powerBadge) {
+        promises.push(
+          this.cacheClient.updateCastReplyScore(
+            cast.hash,
+            cast.parentHash,
+            1_000_000,
+          ),
+        );
+      }
     }
 
     for (const { hash } of cast.embedCasts) {
@@ -126,6 +155,32 @@ export class FarcasterProcessor {
       promises.push(
         this.cacheClient.resetCastEngagement(cast.parentHash, "replies"),
       );
+      if (cast.parent?.parentHash && cast.user.fid === cast.parent?.parentFid) {
+        promises.push(
+          this.cacheClient.updateCastReplyScore(
+            cast.parentHash,
+            cast.parent.parentHash,
+            -4_000_000,
+          ),
+        );
+      }
+      if (cast.user.context?.following) {
+        promises.push(
+          this.cacheClient.updateCastReplyScore(
+            cast.hash,
+            cast.parentHash,
+            -2_000_000,
+          ),
+        );
+      } else if (cast.user.badges?.powerBadge) {
+        promises.push(
+          this.cacheClient.updateCastReplyScore(
+            cast.hash,
+            cast.parentHash,
+            -1_000_000,
+          ),
+        );
+      }
     }
 
     for (const { hash } of cast.embedCasts) {
@@ -145,6 +200,21 @@ export class FarcasterProcessor {
   async processCastReactionAdd(data: FarcasterCastReaction) {
     const promises = [];
     if (data.reactionType === 1) {
+      const cast = await this.farcasterClient.getCast(
+        data.targetHash,
+        data.fid.toString(),
+      );
+      if (cast?.parentHash) {
+        const isOp = cast.user.fid === cast.parent?.parentFid;
+        promises.push(
+          this.cacheClient.updateCastReplyScore(
+            cast.hash,
+            cast.parentHash,
+            isOp ? 3_000_000 : 1,
+          ),
+        );
+      }
+
       promises.push(
         this.cacheClient.resetCastEngagement(data.targetHash, "likes"),
       );
@@ -179,6 +249,21 @@ export class FarcasterProcessor {
   async processCastReactionRemove(data: FarcasterCastReaction) {
     const promises = [];
     if (data.reactionType === 1) {
+      const cast = await this.farcasterClient.getCast(
+        data.targetHash,
+        data.fid.toString(),
+      );
+      if (cast?.parentHash) {
+        const isOp = cast.user.fid === cast.parent?.parentFid;
+        promises.push(
+          this.cacheClient.updateCastReplyScore(
+            cast.hash,
+            cast.parentHash,
+            isOp ? -3_000_000 : -1,
+          ),
+        );
+      }
+
       promises.push(
         this.cacheClient.resetCastEngagement(data.targetHash, "likes"),
       );

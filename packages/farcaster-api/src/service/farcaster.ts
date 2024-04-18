@@ -1,5 +1,6 @@
 import {
   FarcasterCast as DBFarcasterCast,
+  FarcasterCastStats,
   FarcasterParentUrl,
   Prisma,
   PrismaClient,
@@ -134,6 +135,187 @@ export class FarcasterService {
           ? encodeCursor({
               likes: data[data.length - 1]?.likes || 0,
               timestamp: casts[casts.length - 1]?.timestamp,
+            })
+          : undefined,
+    };
+  }
+
+  async getCastRepliesV2(hash: string, cursor?: string, viewerFid?: string) {
+    const decodedCursor = decodeCursor(cursor);
+
+    const cached = await this.cache.getCastReplies(
+      hash,
+      decodedCursor?.score ? Number(decodedCursor.score) : undefined,
+    );
+
+    if (cached.length > 0) {
+      const data = await this.getCastsFromHashes(
+        cached.map((reply) => reply.hash),
+        viewerFid,
+      );
+      return {
+        data,
+        nextCursor:
+          data.length === MAX_PAGE_SIZE
+            ? encodeCursor({ score: cached[cached.length - 1].score })
+            : undefined,
+      };
+    }
+
+    const [cast, replies] = await Promise.all([
+      await this.client.farcasterCast.findUnique({
+        where: {
+          hash,
+        },
+      }),
+      await this.client.farcasterCast.findMany({
+        where: {
+          parentHash: hash,
+          deletedAt: null,
+        },
+        orderBy: {
+          timestamp: "desc",
+        },
+      }),
+    ]);
+
+    if (!cast) {
+      throw new Error("Cast not found");
+    }
+
+    const op = cast.fid;
+    const replyHashes = replies.map((reply) => reply.hash);
+    const replyFids = replies.map((reply) => reply.fid.toString());
+
+    const [opLikes, opReplies, opFollows, powerBadges, stats] =
+      await Promise.all([
+        await this.client.farcasterCastReaction.findMany({
+          where: {
+            fid: BigInt(op),
+            targetHash: {
+              in: replyHashes,
+            },
+          },
+        }),
+        await this.client.farcasterCast.findMany({
+          where: {
+            fid: BigInt(op),
+            parentHash: {
+              in: replyHashes,
+            },
+          },
+        }),
+        await this.client.farcasterLink.findMany({
+          where: {
+            fid: BigInt(op),
+            linkType: "follow",
+            targetFid: {
+              in: replyFids.map((fid) => BigInt(fid)),
+            },
+          },
+        }),
+        await this.getUserBadges(replyFids),
+        await this.client.farcasterCastStats.findMany({
+          where: {
+            hash: {
+              in: replyHashes,
+            },
+          },
+        }),
+      ]);
+
+    const opLikeMap = opLikes.reduce(
+      (acc, like) => {
+        acc[like.targetHash] = true;
+        return acc;
+      },
+      {} as Record<string, boolean>,
+    );
+
+    const opReplyMap = opReplies.reduce(
+      (acc, reply) => {
+        if (!reply.parentHash) return acc;
+        acc[reply.parentHash] = true;
+        return acc;
+      },
+      {} as Record<string, boolean>,
+    );
+
+    const opFollowMap = opFollows.reduce(
+      (acc, follow) => {
+        acc[follow.targetFid.toString()] = true;
+        return acc;
+      },
+      {} as Record<string, boolean>,
+    );
+
+    const badgesMap = powerBadges.reduce(
+      (acc, badge, i) => {
+        acc[replyFids[i]] = true;
+        return acc;
+      },
+      {} as Record<string, boolean>,
+    );
+
+    const statsMap = stats.reduce(
+      (acc, stat) => {
+        acc[stat.hash] = stat;
+        return acc;
+      },
+      {} as Record<string, FarcasterCastStats>,
+    );
+
+    const scoredReplies = replies.map((reply) => {
+      let score = statsMap[reply.hash]?.likes || 0;
+      if (opReplyMap[reply.hash]) {
+        score += 4_000_000;
+      } else if (opLikeMap[reply.hash]) {
+        score += 3_000_000;
+      } else if (opFollowMap[reply.fid.toString()]) {
+        score += 2_000_000;
+      } else if (badgesMap[reply.fid.toString()]) {
+        score += 1_000_000;
+      }
+      return {
+        reply,
+        score,
+      };
+    });
+
+    await this.cache.addCastReplies(
+      hash,
+      scoredReplies.map((reply) => ({
+        hash: reply.reply.hash,
+        score: reply.score,
+      })),
+    );
+
+    const sortedReplies = scoredReplies.sort(
+      (a, b) => b.score - a.score || a.reply.hash.localeCompare(b.reply.hash),
+    );
+
+    let filteredReplies = sortedReplies;
+    if (decodedCursor?.score && decodedCursor?.hash) {
+      filteredReplies = sortedReplies.filter(
+        (reply) =>
+          reply.score < Number(decodedCursor.score) ||
+          (reply.score === Number(decodedCursor.score) &&
+            reply.reply.hash.localeCompare(decodedCursor.hash) < 0),
+      );
+    }
+
+    const slicedReplies = filteredReplies.slice(0, MAX_PAGE_SIZE);
+
+    return {
+      data: await this.getCastsFromData(
+        slicedReplies.map((reply) => reply.reply),
+        viewerFid,
+      ),
+      nextCursor:
+        slicedReplies.length === MAX_PAGE_SIZE
+          ? encodeCursor({
+              score: slicedReplies[slicedReplies.length - 1].score,
+              hash: slicedReplies[slicedReplies.length - 1].reply.hash,
             })
           : undefined,
     };

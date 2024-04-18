@@ -237,31 +237,28 @@ export class RedisClient {
   }
 
   // biome-ignore lint/suspicious/noExplicitAny: generic setter
-  async addToSet(key: string, value: any, timestamp: number) {
+  async addToSet(key: string, value: any, score: number) {
     const pipeline = this.redis.pipeline();
-    pipeline.zadd(key, timestamp, JSON.stringify(value));
+    pipeline.zadd(key, score, JSON.stringify(value));
     pipeline.zremrangebyrank(key, 0, -1000);
+    pipeline.expire(key, 60 * 60 * 24);
     await pipeline.exec();
   }
 
-  async batchAddToSet(
-    key: string,
-    // biome-ignore lint/suspicious/noExplicitAny: generic setter
-    values: { value: any; timestamp: number }[],
-  ) {
+  async batchAddToSet(key: string, values: { value: string; score: number }[]) {
     const pipeline = this.redis.pipeline();
     for (const value of values) {
-      pipeline.zadd(key, value.timestamp, JSON.stringify(value.value));
-      pipeline.zremrangebyrank(key, 0, -1000);
+      pipeline.zadd(key, value.score, value.value);
     }
+    pipeline.expire(key, 60 * 60 * 24);
     await pipeline.exec();
   }
 
   // biome-ignore lint/suspicious/noExplicitAny: generic setter
-  async addToSets(keys: string[], value: any, timestamp: number) {
+  async addToSets(keys: string[], value: any, score: number) {
     const pipeline = this.redis.pipeline();
     for (const key of keys) {
-      pipeline.zadd(key, timestamp, JSON.stringify(value));
+      pipeline.zadd(key, score, JSON.stringify(value));
       pipeline.zremrangebyrank(key, 0, -1000);
     }
     await pipeline.exec();
@@ -291,5 +288,9 @@ export class RedisClient {
       0,
       25,
     );
+  }
+
+  async incrementScore(key: string, value: string, adjustment: number) {
+    return await this.redis.zincrby(key, adjustment, value);
   }
 }

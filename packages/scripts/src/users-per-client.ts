@@ -67,6 +67,8 @@ export const run = async () => {
   }
 
   console.log(relevantApps);
+  console.log(signersByApp["193137"].length);
+  console.log(signersByApp["262426"].length);
 
   const dates = [];
   for (let i = 0; i < 7; i++) {
@@ -84,7 +86,7 @@ export const run = async () => {
   );
 
   console.log("getting supercast counts");
-  const nookCounts = await Promise.all(
+  const supercastCounts = await Promise.all(
     dates.map(async (date) => {
       return await getCountForSignersOnDate(
         client,
@@ -94,12 +96,24 @@ export const run = async () => {
     }),
   );
 
+  console.log("getting nook counts");
+  const nookCounts = await Promise.all(
+    dates.map(async (date) => {
+      return await getCountForSignersOnDate(
+        client,
+        date,
+        signersByApp["262426"],
+      );
+    }),
+  );
+
   for (let i = 0; i < dates.length; i++) {
     console.log(
-      `${dates[i].toISOString().split("T")[0]} - ${(
-        (nookCounts[i] / totalCounts[i]) *
-        100
-      ).toFixed(6)}% all:${totalCounts[i]}, nook:${nookCounts[i]}`,
+      `${dates[i].toISOString().split("T")[0]} - all:${totalCounts[i]}, nook:${
+        nookCounts[i]
+      } (${((nookCounts[i] / totalCounts[i]) * 100).toFixed(6)}%), supercast:${
+        supercastCounts[i]
+      } (${((supercastCounts[i] / totalCounts[i]) * 100).toFixed(6)}%)`,
     );
   }
 };
