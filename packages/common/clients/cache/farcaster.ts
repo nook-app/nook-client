@@ -420,6 +420,10 @@ export class FarcasterCacheClient {
     adjustment: number,
     type: "new" | "top" | "best",
   ) {
+    const exists = await this.redis.exists(
+      `${this.getCastReplyPrefix(type)}:${parentHash}`,
+    );
+    if (!exists) return;
     await this.redis.incrementScore(
       `${this.getCastReplyPrefix(type)}:${parentHash}`,
       hash,
