@@ -5,10 +5,15 @@ import {
 } from "../../../types";
 import { UserService } from "../../services/user";
 import { UserMetadata } from "@nook/common/types";
+import { PrivyClient } from "@privy-io/server-auth";
 
 export const userRoutes = async (fastify: FastifyInstance) => {
   fastify.register(async (fastify: FastifyInstance) => {
     const userService = new UserService(fastify);
+    const privy = new PrivyClient(
+      process.env.PRIVY_APP_ID as string,
+      process.env.PRIVY_APP_SECRET as string,
+    );
 
     fastify.get("/user", async (request, reply) => {
       const { fid } = (await request.jwtDecode()) as { fid: string };
@@ -72,6 +77,40 @@ export const userRoutes = async (fastify: FastifyInstance) => {
         }
       },
     );
+
+    fastify.get("/user/login/privy", async (request, reply) => {
+      try {
+        const authHeader = request.headers.authorization;
+        if (!authHeader || !authHeader.startsWith("Bearer ")) {
+          return reply
+            .code(401)
+            .send({ message: "Unauthorized: No token provided" });
+        }
+
+        let did: string;
+        try {
+          const verifiedClaims = await privy.verifyAuthToken(
+            authHeader.substring(7),
+          );
+          did = verifiedClaims.userId;
+        } catch (error) {
+          return reply.code(401).send({ message: "Unauthorized" });
+        }
+
+        const user = await privy.getUser(did);
+        if (!user?.farcaster) {
+          return reply.code(401).send({ message: "Unauthorized" });
+        }
+
+        const data = await userService.signInWithPrivy(
+          user.farcaster.fid.toString(),
+        );
+        return reply.send(data);
+      } catch (e) {
+        console.error(e);
+        return reply.code(500).send({ message: (e as Error).message });
+      }
+    });
 
     fastify.post<{
       Body: {

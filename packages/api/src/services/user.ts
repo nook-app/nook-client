@@ -112,6 +112,60 @@ export class UserService {
     };
   }
 
+  async signInWithPrivy(fid: string) {
+    const refreshToken = this.jwt.sign({
+      fid,
+    });
+
+    const date = new Date();
+
+    let user = await this.nookClient.user.findFirst({
+      where: {
+        fid,
+      },
+    });
+
+    const isNewUser = !user;
+    if (!user) {
+      user = await this.nookClient.user.create({
+        data: {
+          fid,
+          signedUpAt: date,
+          loggedInAt: date,
+          refreshToken,
+        },
+      });
+    } else {
+      user = await this.nookClient.user.update({
+        where: {
+          fid,
+        },
+        data: {
+          loggedInAt: date,
+          refreshToken,
+        },
+      });
+    }
+
+    const expiresIn = 60 * 60 * 24 * 7;
+    const expiresAt = Math.floor(new Date().getTime() / 1000) + expiresIn;
+    const token = this.jwt.sign(
+      {
+        fid,
+      },
+      { expiresIn },
+    );
+
+    return {
+      fid,
+      token,
+      refreshToken,
+      expiresAt,
+      theme: user.theme,
+      isNewUser,
+    };
+  }
+
   async signInWithFarcaster(
     request: SignInWithFarcasterRequest,
   ): Promise<TokenResponse | undefined> {

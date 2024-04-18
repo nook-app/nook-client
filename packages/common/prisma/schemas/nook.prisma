@@ -13,7 +13,7 @@ model User {
     signedUpAt   DateTime
     loggedInAt   DateTime
     refreshToken String
-    siwfData     Json
+    siwfData     Json?
     theme        String   @default("mauve")
 
     metadata Json?
