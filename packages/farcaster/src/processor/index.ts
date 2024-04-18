@@ -285,7 +285,10 @@ export class FarcasterEventProcessor {
 
     console.log(`[cast-add] [${cast.fid}] added ${cast.hash}`);
 
-    publishEvent(transformToCastEvent(FarcasterEventType.CAST_ADD, cast));
+    await publishEvent(
+      transformToCastEvent(FarcasterEventType.CAST_ADD, cast),
+      true,
+    );
 
     return cast;
   }
@@ -425,7 +428,9 @@ export class FarcasterEventProcessor {
 
     console.log(`[cast-remove] [${message.data?.fid}] removed ${hash}`);
 
-    publishEvent(transformToCastEvent(FarcasterEventType.CAST_REMOVE, cast));
+    await publishEvent(
+      transformToCastEvent(FarcasterEventType.CAST_REMOVE, cast),
+    );
 
     return cast;
   }
@@ -497,7 +502,7 @@ export class FarcasterEventProcessor {
       `[link-add] [${link.fid}] added ${link.linkType} to ${link.targetFid}`,
     );
 
-    publishEvent(transformToLinkEvent(FarcasterEventType.LINK_ADD, link));
+    await publishEvent(transformToLinkEvent(FarcasterEventType.LINK_ADD, link));
 
     return link;
   }
@@ -561,7 +566,9 @@ export class FarcasterEventProcessor {
     );
 
     if (existingLink) {
-      publishEvent(transformToLinkEvent(FarcasterEventType.LINK_REMOVE, link));
+      await publishEvent(
+        transformToLinkEvent(FarcasterEventType.LINK_REMOVE, link),
+      );
     }
 
     return link;
@@ -652,7 +659,7 @@ export class FarcasterEventProcessor {
       `[reaction-add] [${reaction.fid}] added ${reaction.reactionType} from ${reaction.targetHash}`,
     );
 
-    publishEvent(
+    await publishEvent(
       transformToCastReactionEvent(
         FarcasterEventType.CAST_REACTION_ADD,
         reaction,
@@ -734,7 +741,7 @@ export class FarcasterEventProcessor {
     );
 
     if (existingReaction) {
-      publishEvent(
+      await publishEvent(
         transformToCastReactionEvent(
           FarcasterEventType.CAST_REACTION_REMOVE,
           existingReaction,
@@ -779,7 +786,7 @@ export class FarcasterEventProcessor {
       `[reaction-add] [${reaction.fid}] added ${reaction.reactionType} from ${reaction.targetUrl}`,
     );
 
-    publishEvent(
+    await publishEvent(
       transformToUrlReactionEvent(
         FarcasterEventType.URL_REACTION_ADD,
         reaction,
@@ -823,7 +830,7 @@ export class FarcasterEventProcessor {
     );
 
     if (existingReaction) {
-      publishEvent(
+      await publishEvent(
         transformToUrlReactionEvent(
           FarcasterEventType.URL_REACTION_REMOVE,
           existingReaction,
@@ -853,7 +860,7 @@ export class FarcasterEventProcessor {
       `[verification-add] [${verification.fid}] added ${verification.address}`,
     );
 
-    publishEvent(
+    await publishEvent(
       transformToVerificationEvent(
         FarcasterEventType.VERIFICATION_ADD,
         verification,
@@ -889,7 +896,7 @@ export class FarcasterEventProcessor {
     });
 
     if (verification) {
-      publishEvent(
+      await publishEvent(
         transformToVerificationEvent(
           FarcasterEventType.VERIFICATION_REMOVE,
           verification,
@@ -919,7 +926,7 @@ export class FarcasterEventProcessor {
       `[user-data-add] [${userData.fid}] added ${userData.type} with value ${userData.value}`,
     );
 
-    publishEvent(transformToUserDataEvent(userData));
+    await publishEvent(transformToUserDataEvent(userData));
 
     return userData;
   }
@@ -938,7 +945,7 @@ export class FarcasterEventProcessor {
 
     console.log(`[username-proof-add] [${proof.fid}] added ${proof.username}`);
 
-    publishEvent(transformToUsernameProofEvent(proof));
+    await publishEvent(transformToUsernameProofEvent(proof));
 
     return proof;
   }

@@ -2,7 +2,11 @@ import { QueueName, getWorker } from "@nook/common/queues";
 import { getEventsHandler } from "./handlers";
 
 const run = async () => {
-  const worker = getWorker(QueueName.Events, await getEventsHandler());
+  const isPriority = process.argv.includes("--priority");
+  const worker = getWorker(
+    isPriority ? QueueName.EventsPriority : QueueName.Events,
+    await getEventsHandler(),
+  );
 
   worker.on("failed", (job, err) => {
     if (job) {

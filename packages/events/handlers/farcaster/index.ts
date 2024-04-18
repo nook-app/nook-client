@@ -86,10 +86,11 @@ export class FarcasterProcessor {
 
   async processCastAdd(data: FarcasterCast) {
     if (
+      data.parentHash &&
       data.fid === data.rootParentFid &&
-      (!data.parentFid || data.parentFid === data.fid)
+      data.parentFid === data.fid
     ) {
-      await this.cacheClient.resetCastThread(data.hash);
+      await this.cacheClient.resetCastThread(data.rootParentHash);
     }
 
     const cast = await this.farcasterClient.getCast(
@@ -212,24 +213,31 @@ export class FarcasterProcessor {
   async processCastReactionAdd(data: FarcasterCastReaction) {
     const promises = [];
     if (data.reactionType === 1) {
-      const cast = await this.farcasterClient.getCast(
-        data.targetHash,
-        data.fid.toString(),
-      );
-      if (cast?.parentHash) {
-        const isOp = cast.user.fid === cast.parent?.parentFid;
+      const cached = await this.cacheClient.getCast(data.targetHash);
+      let parentFid = cached?.parentFid;
+      let parentHash = cached?.parentHash;
+      if (!cached || (cached && !cached.parentFid)) {
+        const cast = await this.farcasterClient.getCast(
+          data.targetHash,
+          data.fid.toString(),
+        );
+        parentFid = cast?.parentFid;
+        parentHash = cast?.parentHash;
+      }
+      if (parentHash) {
+        const isOp = data.fid.toString() === parentFid;
         promises.push(
           this.cacheClient.updateCastReplyScore(
-            cast.hash,
-            cast.parentHash,
+            data.targetHash,
+            parentHash,
             isOp ? 3_000_000 : 1,
             "best",
           ),
         );
         promises.push(
           this.cacheClient.updateCastReplyScore(
-            cast.hash,
-            cast.parentHash,
+            data.targetHash,
+            parentHash,
             1,
             "top",
           ),

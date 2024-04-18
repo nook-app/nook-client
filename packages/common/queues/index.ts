@@ -8,6 +8,7 @@ export enum QueueName {
   Farcaster = "farcaster",
   Backfill = "backfill",
   Events = "events",
+  EventsPriority = "events-priority",
   Notifications = "notifications",
 }
 
@@ -15,6 +16,7 @@ type QueueType = {
   [QueueName.Backfill]: { fid: string };
   [QueueName.Farcaster]: Message;
   [QueueName.Events]: EntityEvent<EntityEventData>;
+  [QueueName.EventsPriority]: EntityEvent<EntityEventData>;
   [QueueName.Notifications]: Notification;
 };
 

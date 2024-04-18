@@ -10,13 +10,18 @@ export const toJobId = (source: EventSource) => {
   return `${source.service}-${source.type}-${source.id}`;
 };
 
-export const publishEvent = async (event: EntityEvent<EntityEventData>) => {
+export const publishEvent = async (
+  event: EntityEvent<EntityEventData>,
+  priority = false,
+) => {
   const jobId = toJobId(event.source);
   const eventData = JSON.parse(
     JSON.stringify(event, (_, v) => (typeof v === "bigint" ? v.toString() : v)),
   );
 
-  const queue = getQueue(QueueName.Events);
+  const queue = getQueue(
+    priority ? QueueName.EventsPriority : QueueName.Events,
+  );
   await queue.add(jobId, eventData, {
     jobId,
     removeOnComplete: {
