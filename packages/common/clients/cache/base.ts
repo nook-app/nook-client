@@ -240,7 +240,6 @@ export class RedisClient {
   async addToSet(key: string, value: any, score: number) {
     const pipeline = this.redis.pipeline();
     pipeline.zadd(key, score, JSON.stringify(value));
-    pipeline.zremrangebyrank(key, 0, -1000);
     pipeline.expire(key, 60 * 60 * 24);
     await pipeline.exec();
   }
@@ -279,6 +278,7 @@ export class RedisClient {
   }
 
   async getSet(key: string, cursor?: number) {
+    console.log(key, cursor);
     return await this.redis.zrevrangebyscore(
       key,
       cursor ? cursor - 1 : "+inf",
@@ -288,6 +288,20 @@ export class RedisClient {
       0,
       25,
     );
+  }
+  async getAllSetData(key: string) {
+    const results = await this.redis.zrange(key, 0, -1, "WITHSCORES");
+
+    // Parse results into a more friendly format
+    const items = [];
+    for (let i = 0; i < results.length; i += 2) {
+      items.push({
+        value: results[i],
+        score: parseFloat(results[i + 1]),
+      });
+    }
+
+    return items;
   }
 
   async incrementScore(key: string, value: string, adjustment: number) {

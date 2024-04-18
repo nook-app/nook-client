@@ -191,6 +191,40 @@ export class FarcasterAPIClient extends BaseAPIClient {
     return response.json();
   }
 
+  async getNewCastReplies(
+    hash: string,
+    cursor?: string,
+    viewerFid?: string,
+  ): Promise<GetFarcasterCastsResponse> {
+    const response = await this.makeRequest(
+      `/casts/${hash}/replies/new${cursor ? `?cursor=${cursor}` : ""}`,
+      { viewerFid },
+    );
+
+    if (!response.ok) {
+      throw new Error(response.statusText);
+    }
+
+    return response.json();
+  }
+
+  async getTopCastReplies(
+    hash: string,
+    cursor?: string,
+    viewerFid?: string,
+  ): Promise<GetFarcasterCastsResponse> {
+    const response = await this.makeRequest(
+      `/casts/${hash}/replies/top${cursor ? `?cursor=${cursor}` : ""}`,
+      { viewerFid },
+    );
+
+    if (!response.ok) {
+      throw new Error(response.statusText);
+    }
+
+    return response.json();
+  }
+
   async getCastQuotes(
     hash: string,
     cursor?: string,

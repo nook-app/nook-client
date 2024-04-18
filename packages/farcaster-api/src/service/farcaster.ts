@@ -75,12 +75,144 @@ export class FarcasterService {
     return fids;
   }
 
-  async getCastReplies(
+  async getNewCastReplies(
     hash: string,
     cursor?: string,
     viewerFid?: string,
   ): Promise<GetFarcasterCastsResponse> {
     const decodedCursor = decodeCursor(cursor);
+
+    const cached = await this.cache.getCastReplies(hash, "new");
+
+    const sortedCached = cached.sort(
+      (a, b) => b.score - a.score || a.hash.localeCompare(b.hash),
+    );
+
+    let filteredCached = sortedCached;
+    if (decodedCursor?.score && decodedCursor?.hash) {
+      filteredCached = sortedCached.filter(
+        (reply) =>
+          reply.score < Number(decodedCursor.score) ||
+          (reply.score === Number(decodedCursor.score) &&
+            reply.hash.localeCompare(decodedCursor.hash) > 0),
+      );
+    }
+    const slicedCached = filteredCached.slice(0, MAX_PAGE_SIZE);
+
+    if (slicedCached.length > 0) {
+      const data = await this.getCastsFromHashes(
+        slicedCached.map((reply) => reply.hash),
+        viewerFid,
+      );
+
+      return {
+        data,
+        nextCursor:
+          data.length === MAX_PAGE_SIZE
+            ? encodeCursor({
+                hash: slicedCached[slicedCached.length - 1].hash,
+                score: slicedCached[slicedCached.length - 1].score,
+              })
+            : undefined,
+      };
+    }
+
+    const data = await this.client.farcasterCast.findMany({
+      where: {
+        parentHash: hash,
+        deletedAt: null,
+      },
+      orderBy: {
+        timestamp: "desc",
+      },
+    });
+
+    const scoredReplies = data.map((reply) => ({
+      reply,
+      score: reply.timestamp.getTime(),
+    }));
+
+    await this.cache.addCastReplies(
+      hash,
+      scoredReplies.map((reply) => ({
+        hash: reply.reply.hash,
+        score: reply.score,
+      })),
+      "new",
+    );
+
+    const sortedReplies = scoredReplies.sort(
+      (a, b) => b.score - a.score || a.reply.hash.localeCompare(b.reply.hash),
+    );
+
+    let filteredReplies = sortedReplies;
+    if (decodedCursor?.score && decodedCursor?.hash) {
+      filteredReplies = sortedReplies.filter(
+        (reply) =>
+          reply.score < Number(decodedCursor.score) ||
+          (reply.score === Number(decodedCursor.score) &&
+            reply.reply.hash.localeCompare(decodedCursor.hash) < 0),
+      );
+    }
+
+    const slicedReplies = filteredReplies.slice(0, MAX_PAGE_SIZE);
+
+    return {
+      data: await this.getCastsFromData(
+        slicedReplies.map((reply) => reply.reply),
+        viewerFid,
+      ),
+      nextCursor:
+        slicedReplies.length === MAX_PAGE_SIZE
+          ? encodeCursor({
+              hash: slicedReplies[slicedReplies.length - 1].reply.hash,
+              score: slicedReplies[slicedReplies.length - 1].score,
+            })
+          : undefined,
+    };
+  }
+
+  async getTopCastReplies(
+    hash: string,
+    cursor?: string,
+    viewerFid?: string,
+  ): Promise<GetFarcasterCastsResponse> {
+    const decodedCursor = decodeCursor(cursor);
+
+    const cached = await this.cache.getCastReplies(hash, "top");
+
+    const sortedCached = cached.sort(
+      (a, b) => b.score - a.score || a.hash.localeCompare(b.hash),
+    );
+
+    let filteredCached = sortedCached;
+    if (decodedCursor?.score && decodedCursor?.hash) {
+      filteredCached = sortedCached.filter(
+        (reply) =>
+          reply.score < Number(decodedCursor.score) ||
+          (reply.score === Number(decodedCursor.score) &&
+            reply.hash.localeCompare(decodedCursor.hash) > 0),
+      );
+    }
+    const slicedCached = filteredCached.slice(0, MAX_PAGE_SIZE);
+
+    if (slicedCached.length > 0) {
+      const data = await this.getCastsFromHashes(
+        slicedCached.map((reply) => reply.hash),
+        viewerFid,
+      );
+
+      return {
+        data,
+        nextCursor:
+          data.length === MAX_PAGE_SIZE
+            ? encodeCursor({
+                hash: slicedCached[slicedCached.length - 1].hash,
+                score: slicedCached[slicedCached.length - 1].score,
+              })
+            : undefined,
+      };
+    }
 
     const conditions: string[] = [
       `"parentHash" = '${sanitizeInput(hash)}'`,
@@ -121,43 +253,89 @@ export class FarcasterService {
           LEFT JOIN "FarcasterCastStats" stats ON c.hash = stats.hash
           WHERE ${whereClause}
           ORDER BY stats.likes DESC NULLS LAST, timestamp DESC
-          LIMIT ${MAX_PAGE_SIZE}
         `,
       ]),
     );
 
-    const casts = await this.getCastsFromData(data, viewerFid);
+    const scoredReplies = data.map((reply) => ({
+      reply,
+      score: reply.likes || 0,
+    }));
+
+    await this.cache.addCastReplies(
+      hash,
+      scoredReplies.map((reply) => ({
+        hash: reply.reply.hash,
+        score: reply.score,
+      })),
+      "top",
+    );
+
+    const sortedReplies = scoredReplies.sort(
+      (a, b) => b.score - a.score || a.reply.hash.localeCompare(b.reply.hash),
+    );
+
+    let filteredReplies = sortedReplies;
+    if (decodedCursor?.score && decodedCursor?.hash) {
+      filteredReplies = sortedReplies.filter(
+        (reply) =>
+          reply.score < Number(decodedCursor.score) ||
+          (reply.score === Number(decodedCursor.score) &&
+            reply.reply.hash.localeCompare(decodedCursor.hash) < 0),
+      );
+    }
+
+    const slicedReplies = filteredReplies.slice(0, MAX_PAGE_SIZE);
 
     return {
-      data: casts,
+      data: await this.getCastsFromData(
+        slicedReplies.map((reply) => reply.reply),
+        viewerFid,
+      ),
       nextCursor:
-        casts.length === MAX_PAGE_SIZE
+        slicedReplies.length === MAX_PAGE_SIZE
           ? encodeCursor({
-              likes: data[data.length - 1]?.likes || 0,
-              timestamp: casts[casts.length - 1]?.timestamp,
+              hash: slicedReplies[slicedReplies.length - 1].reply.hash,
+              score: slicedReplies[slicedReplies.length - 1].score,
             })
           : undefined,
     };
   }
 
-  async getCastRepliesV2(hash: string, cursor?: string, viewerFid?: string) {
+  async getCastReplies(hash: string, cursor?: string, viewerFid?: string) {
     const decodedCursor = decodeCursor(cursor);
 
-    const cached = await this.cache.getCastReplies(
-      hash,
-      decodedCursor?.score ? Number(decodedCursor.score) : undefined,
+    const cached = await this.cache.getCastReplies(hash, "best");
+
+    const sortedCached = cached.sort(
+      (a, b) => b.score - a.score || a.hash.localeCompare(b.hash),
     );
 
-    if (cached.length > 0) {
+    let filteredCached = sortedCached;
+    if (decodedCursor?.score && decodedCursor?.hash) {
+      filteredCached = sortedCached.filter(
+        (reply) =>
+          reply.score < Number(decodedCursor.score) ||
+          (reply.score === Number(decodedCursor.score) &&
+            reply.hash.localeCompare(decodedCursor.hash) > 0),
+      );
+    }
+    const slicedCached = filteredCached.slice(0, MAX_PAGE_SIZE);
+
+    if (slicedCached.length > 0) {
       const data = await this.getCastsFromHashes(
-        cached.map((reply) => reply.hash),
+        slicedCached.map((reply) => reply.hash),
         viewerFid,
       );
+
       return {
         data,
         nextCursor:
           data.length === MAX_PAGE_SIZE
-            ? encodeCursor({ score: cached[cached.length - 1].score })
+            ? encodeCursor({
+                hash: slicedCached[slicedCached.length - 1].hash,
+                score: slicedCached[slicedCached.length - 1].score,
+              })
             : undefined,
       };
     }
@@ -267,7 +445,9 @@ export class FarcasterService {
 
     const scoredReplies = replies.map((reply) => {
       let score = statsMap[reply.hash]?.likes || 0;
-      if (opReplyMap[reply.hash]) {
+      if (reply.fid === reply.parentFid) {
+        score += 5_000_000;
+      } else if (opReplyMap[reply.hash]) {
         score += 4_000_000;
       } else if (opLikeMap[reply.hash]) {
         score += 3_000_000;
@@ -288,6 +468,7 @@ export class FarcasterService {
         hash: reply.reply.hash,
         score: reply.score,
       })),
+      "best",
     );
 
     const sortedReplies = scoredReplies.sort(
@@ -314,8 +495,8 @@ export class FarcasterService {
       nextCursor:
         slicedReplies.length === MAX_PAGE_SIZE
           ? encodeCursor({
-              score: slicedReplies[slicedReplies.length - 1].score,
               hash: slicedReplies[slicedReplies.length - 1].reply.hash,
+              score: slicedReplies[slicedReplies.length - 1].score,
             })
           : undefined,
     };

@@ -49,12 +49,36 @@ export const castRoutes = async (fastify: FastifyInstance) => {
       Params: GetFarcasterCastRepliesRequest;
       Querystring: { cursor?: string };
     }>("/casts/:hash/replies", async (request, reply) => {
-      const response = await service.getCastRepliesV2(
+      const response = await service.getCastReplies(
         request.params.hash,
         request.query.cursor,
         request.headers["x-viewer-fid"] as string,
       );
       reply.send(response);
+    });
+
+    fastify.get<{
+      Params: GetFarcasterCastRepliesRequest;
+      Querystring: { cursor?: string };
+    }>("/casts/:hash/replies/new", async (request, reply) => {
+      const response = await service.getNewCastReplies(
+        request.params.hash,
+        request.query.cursor,
+        request.headers["x-viewer-fid"] as string,
+      );
+      return reply.send(response);
+    });
+
+    fastify.get<{
+      Params: GetFarcasterCastRepliesRequest;
+      Querystring: { cursor?: string };
+    }>("/casts/:hash/replies/top", async (request, reply) => {
+      const response = await service.getTopCastReplies(
+        request.params.hash,
+        request.query.cursor,
+        request.headers["x-viewer-fid"] as string,
+      );
+      return reply.send(response);
     });
 
     fastify.get<{

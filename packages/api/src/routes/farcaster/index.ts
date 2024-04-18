@@ -48,6 +48,40 @@ export const farcasterRoutes = async (fastify: FastifyInstance) => {
     );
 
     fastify.get<{ Params: { hash: string }; Querystring: { cursor?: string } }>(
+      "/farcaster/casts/:hash/replies/new",
+      async (request, reply) => {
+        let viewerFid: string | undefined;
+        try {
+          const { fid } = (await request.jwtDecode()) as { fid: string };
+          viewerFid = fid;
+        } catch (e) {}
+        const response = await client.getNewCastReplies(
+          request.params.hash,
+          request.query.cursor,
+          viewerFid,
+        );
+        reply.send(response);
+      },
+    );
+
+    fastify.get<{ Params: { hash: string }; Querystring: { cursor?: string } }>(
+      "/farcaster/casts/:hash/replies/top",
+      async (request, reply) => {
+        let viewerFid: string | undefined;
+        try {
+          const { fid } = (await request.jwtDecode()) as { fid: string };
+          viewerFid = fid;
+        } catch (e) {}
+        const response = await client.getTopCastReplies(
+          request.params.hash,
+          request.query.cursor,
+          viewerFid,
+        );
+        reply.send(response);
+      },
+    );
+
+    fastify.get<{ Params: { hash: string }; Querystring: { cursor?: string } }>(
       "/farcaster/casts/:hash/quotes",
       async (request, reply) => {
         let viewerFid: string | undefined;

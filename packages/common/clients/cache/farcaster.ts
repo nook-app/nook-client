@@ -21,6 +21,8 @@ export class FarcasterCacheClient {
   USER_FOLLOWING_FIDS_CACHE_PREFIX = "farcaster:user:following:fids";
   USER_FOLLOWERS_FIDS_CACHE_PREFIX = "farcaster:user:followers:fids";
   CAST_REPLIES_CACHE_PREFIX = "farcaster:cast:replies";
+  CAST_REPLIES_NEW_CACHE_PREFIX = "farcaster:cast:replies:new";
+  CAST_REPLIES_TOP_CACHE_PREFIX = "farcaster:cast:replies:top";
 
   constructor(redis: RedisClient) {
     this.redis = redis;
@@ -391,40 +393,54 @@ export class FarcasterCacheClient {
   async addCastReplies(
     hash: string,
     replies: { hash: string; score: number }[],
+    type: "new" | "top" | "best",
   ) {
     await this.redis.batchAddToSet(
-      `${this.CAST_REPLIES_CACHE_PREFIX}:${hash}`,
+      `${this.getCastReplyPrefix(type)}:${hash}`,
       replies.map(({ hash, score }) => ({ value: hash, score })),
     );
   }
 
   async getCastReplies(
     hash: string,
-    cursor?: number,
+    type: "new" | "top" | "best",
   ): Promise<{ hash: string; score: number }[]> {
-    const rawData = await this.redis.getSet(
-      `${this.CAST_REPLIES_CACHE_PREFIX}:${hash}`,
-      cursor,
+    const data = await this.redis.getAllSetData(
+      `${this.getCastReplyPrefix(type)}:${hash}`,
     );
-    const replies = [];
-    for (let i = 0; i < rawData.length; i += 2) {
-      replies.push({
-        hash: rawData[i],
-        score: parseInt(rawData[i + 1], 10),
-      });
-    }
-    return replies;
+    return data.map((item) => ({
+      hash: item.value,
+      score: item.score,
+    }));
   }
 
   async updateCastReplyScore(
     hash: string,
     parentHash: string,
     adjustment: number,
+    type: "new" | "top" | "best",
   ) {
     await this.redis.incrementScore(
-      `${this.CAST_REPLIES_CACHE_PREFIX}:${parentHash}`,
+      `${this.getCastReplyPrefix(type)}:${parentHash}`,
       hash,
       adjustment,
     );
+  }
+
+  async removeCastReply(
+    hash: string,
+    parentHash: string,
+    type: "new" | "top" | "best",
+  ) {
+    await this.redis.removeFromSet(
+      `${this.getCastReplyPrefix(type)}:${parentHash}`,
+      hash,
+    );
+  }
+
+  getCastReplyPrefix(type: "new" | "top" | "best") {
+    if (type === "new") return this.CAST_REPLIES_NEW_CACHE_PREFIX;
+    if (type === "top") return this.CAST_REPLIES_TOP_CACHE_PREFIX;
+    return this.CAST_REPLIES_CACHE_PREFIX;
   }
 }

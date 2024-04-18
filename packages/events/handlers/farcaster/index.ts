@@ -105,12 +105,29 @@ export class FarcasterProcessor {
       promises.push(
         this.cacheClient.resetCastEngagement(cast.parentHash, "replies"),
       );
+      promises.push(
+        this.cacheClient.updateCastReplyScore(
+          cast.hash,
+          cast.parentHash,
+          cast.timestamp,
+          "new",
+        ),
+      );
+      promises.push(
+        this.cacheClient.updateCastReplyScore(
+          cast.hash,
+          cast.parentHash,
+          0,
+          "top",
+        ),
+      );
       if (cast.parent?.parentHash && cast.user.fid === cast.parent?.parentFid) {
         promises.push(
           this.cacheClient.updateCastReplyScore(
             cast.parentHash,
             cast.parent.parentHash,
             4_000_000,
+            "best",
           ),
         );
       }
@@ -120,6 +137,7 @@ export class FarcasterProcessor {
             cast.hash,
             cast.parentHash,
             2_000_000,
+            "best",
           ),
         );
       } else if (cast.user.badges?.powerBadge) {
@@ -128,6 +146,7 @@ export class FarcasterProcessor {
             cast.hash,
             cast.parentHash,
             1_000_000,
+            "best",
           ),
         );
       }
@@ -161,26 +180,19 @@ export class FarcasterProcessor {
             cast.parentHash,
             cast.parent.parentHash,
             -4_000_000,
+            "best",
           ),
         );
       }
-      if (cast.user.context?.following) {
-        promises.push(
-          this.cacheClient.updateCastReplyScore(
-            cast.hash,
-            cast.parentHash,
-            -2_000_000,
-          ),
-        );
-      } else if (cast.user.badges?.powerBadge) {
-        promises.push(
-          this.cacheClient.updateCastReplyScore(
-            cast.hash,
-            cast.parentHash,
-            -1_000_000,
-          ),
-        );
-      }
+      promises.push(
+        this.cacheClient.removeCastReply(cast.hash, cast.parentHash, "best"),
+      );
+      promises.push(
+        this.cacheClient.removeCastReply(cast.hash, cast.parentHash, "top"),
+      );
+      promises.push(
+        this.cacheClient.removeCastReply(cast.hash, cast.parentHash, "new"),
+      );
     }
 
     for (const { hash } of cast.embedCasts) {
@@ -211,6 +223,15 @@ export class FarcasterProcessor {
             cast.hash,
             cast.parentHash,
             isOp ? 3_000_000 : 1,
+            "best",
+          ),
+        );
+        promises.push(
+          this.cacheClient.updateCastReplyScore(
+            cast.hash,
+            cast.parentHash,
+            1,
+            "top",
           ),
         );
       }
@@ -260,6 +281,15 @@ export class FarcasterProcessor {
             cast.hash,
             cast.parentHash,
             isOp ? -3_000_000 : -1,
+            "best",
+          ),
+        );
+        promises.push(
+          this.cacheClient.updateCastReplyScore(
+            cast.hash,
+            cast.parentHash,
+            -1,
+            "top",
           ),
         );
       }
