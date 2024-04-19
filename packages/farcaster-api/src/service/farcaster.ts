@@ -587,6 +587,21 @@ export class FarcasterService {
     return await this.getCasts(casts, viewerFid, withAncestors ? hashes : []);
   }
 
+  async getCastFromHub(
+    hash: string,
+    viewerFid?: string,
+  ): Promise<FarcasterCastResponse | undefined> {
+    const message = await this.hub.getCast({
+      fid: Number(viewerFid),
+      hash: hexToBuffer(hash),
+    });
+    if (message.isErr()) return;
+    const cast = messageToCast(message.value);
+    if (!cast) return;
+
+    return (await this.getCastsFromData([cast], viewerFid))[0];
+  }
+
   async getRawCasts(
     hashes: string[],
     viewerFid?: string,

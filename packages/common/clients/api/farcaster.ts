@@ -157,6 +157,25 @@ export class FarcasterAPIClient extends BaseAPIClient {
     return response.json();
   }
 
+  async getCastFromHub(
+    hash: string,
+    viewerFid?: string,
+  ): Promise<FarcasterCastResponse | undefined> {
+    const response = await this.makeRequest(`/casts/${hash}/hub`, {
+      viewerFid,
+    });
+
+    if (response.status === 404) {
+      return;
+    }
+
+    if (!response.ok) {
+      throw new Error(response.statusText);
+    }
+
+    return response.json();
+  }
+
   async getCasts(
     hashes: string[],
     viewerFid?: string,

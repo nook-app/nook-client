@@ -30,6 +30,23 @@ export const farcasterRoutes = async (fastify: FastifyInstance) => {
       },
     );
 
+    fastify.get<{ Params: { hash: string } }>(
+      "/farcaster/casts/:hash/hub",
+      async (request, reply) => {
+        let viewerFid: string | undefined;
+        try {
+          const { fid } = (await request.jwtDecode()) as { fid: string };
+          viewerFid = fid;
+        } catch (e) {}
+        const response = await client.getCast(request.params.hash, viewerFid);
+        if (!response) {
+          reply.status(404);
+          return;
+        }
+        reply.send(response);
+      },
+    );
+
     fastify.get<{ Params: { hash: string }; Querystring: { cursor?: string } }>(
       "/farcaster/casts/:hash/replies",
       async (request, reply) => {
