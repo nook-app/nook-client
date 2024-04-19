@@ -298,24 +298,34 @@ export class FarcasterProcessor {
   async processCastReactionRemove(data: FarcasterCastReaction) {
     const promises = [];
     if (data.reactionType === 1) {
-      const cast = await this.farcasterClient.getCast(
-        data.targetHash,
-        data.fid.toString(),
-      );
-      if (cast?.parentHash) {
-        const isOp = cast.user.fid === cast.parent?.parentFid;
+      const cast = await this.hub.getCast({
+        fid: Number(data.targetFid),
+        hash: hexToBuffer(data.targetHash),
+      });
+
+      let parentFid;
+      let parentHash;
+
+      if (cast.isOk() && cast.value.data?.castAddBody) {
+        const rawParentHash = cast.value.data?.castAddBody.parentCastId?.hash;
+        parentFid = cast.value.data?.castAddBody.parentCastId?.fid.toString();
+        parentHash = rawParentHash ? bufferToHex(rawParentHash) : undefined;
+      }
+
+      if (parentFid && parentHash) {
+        const isOp = data.fid.toString() === parentFid;
         promises.push(
           this.cacheClient.updateCastReplyScore(
-            cast.hash,
-            cast.parentHash,
+            data.targetHash,
+            parentHash,
             isOp ? -3_000_000 : -1,
             "best",
           ),
         );
         promises.push(
           this.cacheClient.updateCastReplyScore(
-            cast.hash,
-            cast.parentHash,
+            data.targetHash,
+            parentHash,
             -1,
             "top",
           ),
