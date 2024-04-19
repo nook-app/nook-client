@@ -189,22 +189,8 @@ export class FarcasterCacheClient {
     );
   }
 
-  async incrementCastEngagement(hash: string, type: CastEngagementType) {
-    const key = `${this.CAST_CACHE_PREFIX}:${hash}:${type}`;
-    if (await this.redis.exists(key)) {
-      await this.redis.increment(key);
-    }
-  }
-
   async resetCastEngagement(hash: string, type: CastEngagementType) {
     await this.redis.del(`${this.CAST_CACHE_PREFIX}:${hash}:${type}`);
-  }
-
-  async decrementCastEngagement(hash: string, type: CastEngagementType) {
-    const key = `${this.CAST_CACHE_PREFIX}:${hash}:${type}`;
-    if (await this.redis.exists(key)) {
-      await this.redis.decrement(key);
-    }
   }
 
   async incrementUserEngagement(fid: string, type: UserEngagementType) {

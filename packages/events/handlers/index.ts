@@ -14,16 +14,9 @@ export const getEventsHandler = async () => {
   return async (job: Job<EntityEvent<EntityEventData>>) => {
     const event = job.data;
 
-    const isPriority = job.queueName === QueueName.EventsPriority;
-
     switch (event.source.service) {
       case EventService.FARCASTER: {
-        // Move non-priority events to the priority queue
-        if (event.source.type === FarcasterEventType.CAST_ADD && !isPriority) {
-          await publishEvent(event, true);
-        } else {
-          await farcasterProcessor.process(event);
-        }
+        await farcasterProcessor.process(event);
         break;
       }
       default:

@@ -2,7 +2,7 @@ import { QueueName, getQueue } from "@nook/common/queues";
 import { getEventsHandler } from "./handlers";
 
 const run = async () => {
-  const queue = getQueue(QueueName.Events);
+  const queue = getQueue(QueueName.EventsPriority);
   console.log(`Running for event ${process.argv[2]}`);
   const job = await queue.getJob(process.argv[2]);
   if (job) {
