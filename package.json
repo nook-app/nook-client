@@ -28,7 +28,9 @@
     "dev:lists:api": " nodemon --exec 'yarn workspace @nook/lists-api dev' --config ./packages/lists-api/nodemon.json",
     "dev:farcaster:api": " nodemon --exec 'yarn workspace @nook/farcaster-api dev' --config ./packages/farcaster-api/nodemon.json",
     "dev:nft:api": "nodemon --exec 'yarn workspace @nook/nft-api dev' --config ./packages/nft-api/nodemon.json",
-    "generate:onceupon": "openapi-generator-cli generate -i onceupon_1_0.json -g typescript-fetch -o packages/common/onceupon --skip-validate-spec"
+    "generate:onceupon": "openapi-generator-cli generate -i onceupon_1_0.json -g typescript-fetch -o packages/common/onceupon --skip-validate-spec",
+    "native": "cd packages/expo && yarn start",
+    "next": "yarn workspace @nook/next dev"
   },
   "workspaces": [
     "packages/*"
