@@ -1,4 +1,8 @@
-import { UserDataType } from "@farcaster/hub-nodejs";
+import {
+  HubRpcClient,
+  UserDataType,
+  getSSLHubRpcClient,
+} from "@farcaster/hub-nodejs";
 import {
   ContentAPIClient,
   FarcasterAPIClient,
@@ -15,6 +19,8 @@ import {
 } from "@nook/common/prisma/farcaster";
 import { EntityEvent, FarcasterEventType } from "@nook/common/types";
 import {
+  bufferToHex,
+  hexToBuffer,
   parseNotificationsFromCast,
   parseNotificationsFromLink,
   parseNotificationsFromReaction,
@@ -25,11 +31,13 @@ export class FarcasterProcessor {
   private farcasterClient: FarcasterAPIClient;
   private cacheClient: FarcasterCacheClient;
   private contentClient: ContentAPIClient;
+  private hub: HubRpcClient;
 
   constructor() {
     this.farcasterClient = new FarcasterAPIClient();
     this.cacheClient = new FarcasterCacheClient(new RedisClient());
     this.contentClient = new ContentAPIClient();
+    this.hub = getSSLHubRpcClient(process.env.HUB_RPC_ENDPOINT as string);
   }
 
   async process(event: EntityEvent) {
@@ -85,14 +93,6 @@ export class FarcasterProcessor {
   }
 
   async processCastAdd(data: FarcasterCast) {
-    if (
-      data.parentHash &&
-      data.fid === data.rootParentFid &&
-      data.parentFid === data.fid
-    ) {
-      await this.cacheClient.resetCastThread(data.rootParentHash);
-    }
-
     const cast = await this.farcasterClient.getCast(
       data.hash,
       data.parentFid?.toString(),
@@ -101,6 +101,14 @@ export class FarcasterProcessor {
 
     const promises = [];
     promises.push(this.contentClient.addContentReferences(cast));
+
+    if (
+      data.parentHash &&
+      data.fid === data.rootParentFid &&
+      data.parentFid === data.fid
+    ) {
+      promises.push(this.cacheClient.resetCastThread(data.rootParentHash));
+    }
 
     if (cast.parentHash) {
       promises.push(
@@ -147,6 +155,15 @@ export class FarcasterProcessor {
             cast.hash,
             cast.parentHash,
             1_000_000,
+            "best",
+          ),
+        );
+      } else {
+        promises.push(
+          this.cacheClient.updateCastReplyScore(
+            cast.hash,
+            cast.parentHash,
+            0,
             "best",
           ),
         );
@@ -213,18 +230,21 @@ export class FarcasterProcessor {
   async processCastReactionAdd(data: FarcasterCastReaction) {
     const promises = [];
     if (data.reactionType === 1) {
-      const cached = await this.cacheClient.getCast(data.targetHash);
-      let parentFid = cached?.parentFid;
-      let parentHash = cached?.parentHash;
-      if (!cached || (cached && !cached.parentFid)) {
-        const cast = await this.farcasterClient.getCast(
-          data.targetHash,
-          data.fid.toString(),
-        );
-        parentFid = cast?.parentFid;
-        parentHash = cast?.parentHash;
+      const cast = await this.hub.getCast({
+        fid: Number(data.targetFid),
+        hash: hexToBuffer(data.targetHash),
+      });
+
+      let parentFid;
+      let parentHash;
+
+      if (cast.isOk() && cast.value.data?.castAddBody) {
+        const rawParentHash = cast.value.data?.castAddBody.parentCastId?.hash;
+        parentFid = cast.value.data?.castAddBody.parentCastId?.fid.toString();
+        parentHash = rawParentHash ? bufferToHex(rawParentHash) : undefined;
       }
-      if (parentHash) {
+
+      if (parentFid && parentHash) {
         const isOp = data.fid.toString() === parentFid;
         promises.push(
           this.cacheClient.updateCastReplyScore(
