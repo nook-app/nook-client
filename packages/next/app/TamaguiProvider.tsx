@@ -3,9 +3,13 @@
 import "@tamagui/core/reset.css";
 import "@tamagui/polyfill-dev";
 
-import { NextThemeProvider, useRootTheme } from "@tamagui/next-theme";
+import {
+  ColorScheme,
+  NextThemeProvider,
+  useRootTheme,
+} from "@tamagui/next-theme";
 import { useServerInsertedHTML } from "next/navigation";
-import React from "react";
+import React, { useMemo } from "react";
 import { StyleSheet } from "react-native";
 import { config, TamaguiProvider as TamaguiProviderOG } from "@nook/ui";
 
@@ -37,19 +41,19 @@ export const TamaguiProvider = ({
     );
   });
 
+  const contents = useMemo(() => {
+    return <>{children}</>;
+  }, [children]);
+
   return (
-    <NextThemeProvider
-      skipNextHead
-      onChangeTheme={(next) => {
-        setTheme(next as any);
-      }}
-    >
+    <NextThemeProvider onChangeTheme={(t) => setTheme(t as ColorScheme)}>
       <TamaguiProviderOG
         config={config}
-        themeClassNameOnRoot
+        disableInjectCSS
+        disableRootThemeClass
         defaultTheme={theme}
       >
-        {children}
+        {contents}
       </TamaguiProviderOG>
     </NextThemeProvider>
   );

@@ -8,7 +8,8 @@
     "dev": "ts-node src/index.ts --inspect=9229"
   },
   "exports": {
-    "types": "./dist/types/index.js"
+    "types": "./dist/types/index.js",
+    "trpc": "./dist/trpc/index.js"
   },
   "dependencies": {
     "@farcaster/auth-client": "^0.1.0",
@@ -16,6 +17,7 @@
     "@fastify/jwt": "^8.0.0",
     "@nook/common": "*",
     "@privy-io/server-auth": "^1.7.3",
+    "@trpc/server": "^11.0.0-rc.342",
     "fastify": "^4.25.2",
     "viem": "^2.7.10"
   },

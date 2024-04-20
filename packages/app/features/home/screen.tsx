@@ -11,7 +11,7 @@ import {
 } from "@nook/ui";
 import { ChevronDown, ChevronUp } from "@tamagui/lucide-icons";
 import { useState } from "react";
-import { useLink } from "solito/link";
+import { useLink } from "solito/navigation";
 
 export function HomeScreen() {
   const linkProps = useLink({

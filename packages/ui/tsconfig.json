@@ -1,6 +1,6 @@
 {
   "extends": "../../tsconfig.json",
-  "include": ["**/*.ts", "**/*.tsx", "../config/src/tamagui.config.ts"],
+  "include": ["**/*.ts", "**/*.tsx", "src/tamagui.config.ts"],
   "compilerOptions": {
     "composite": true,
     "jsx": "react-jsx"
