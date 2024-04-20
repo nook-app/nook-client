@@ -1,0 +1,30 @@
+{
+  "name": "@nook/swap-api",
+  "private": true,
+  "packageManager": "yarn@4.1.0",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/src/index.js",
+    "dev": "ts-node src/index.ts --inspect=9229",
+    "manual": "ts-node src/manual.ts"
+  },
+  "dependencies": {
+    "@0x/contract-addresses": "^8.13.0",
+    "@fastify/jwt": "^8.0.0",
+    "@nook/common": "*",
+    "coingecko-api-v3": "^0.0.29",
+    "fastify": "^4.26.2",
+    "reverse-mirage": "^1.1.0",
+    "uuid": "^9.0.1",
+    "viem": "^2.9.23"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.5.12",
+    "@types/node": "^20.11.30",
+    "@types/uuid": "^9",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.1.2",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.3"
+  }
+}
