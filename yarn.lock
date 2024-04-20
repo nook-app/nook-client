@@ -3285,7 +3285,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@farcaster/core@npm:0.14.10, @farcaster/core@npm:^0.14.7":
+"@farcaster/core@npm:0.14.10":
   version: 0.14.10
   resolution: "@farcaster/core@npm:0.14.10"
   dependencies:
@@ -4571,7 +4571,7 @@ __metadata:
     "@types/node": "npm:^20.10.5"
     fastify: "npm:^4.25.2"
     typescript: "npm:^5.3.3"
-    viem: "npm:^2.7.10"
+    viem: "npm:^2.9.23"
   languageName: unknown
   linkType: soft
 
@@ -4606,7 +4606,7 @@ __metadata:
     "@types/node": "npm:^20.10.5"
     bullmq: "npm:^5.1.0"
     coingecko-api-v3: "npm:^0.0.29"
-    frames.js: "npm:^0.8.2"
+    frames.js: "npm:^0.14.0"
     jest: "npm:^29.7.0"
     prisma: "npm:5.7.1"
     prisma-json-types-generator: "npm:^3.0.3"
@@ -4629,7 +4629,7 @@ __metadata:
     bullmq: "npm:^5.1.0"
     ethers: "npm:^6.9.1"
     fastify: "npm:^4.25.2"
-    frames.js: "npm:^0.8.2"
+    frames.js: "npm:^0.14.0"
     jest: "npm:^29.7.0"
     metascraper: "npm:^5.45.0"
     metascraper-audio: "npm:^5.45.0"
@@ -4898,7 +4898,7 @@ __metadata:
     "@types/node": "npm:^20.10.5"
     fastify: "npm:^4.25.2"
     typescript: "npm:^5.3.3"
-    viem: "npm:^2.7.10"
+    viem: "npm:^2.9.23"
   languageName: unknown
   linkType: soft
 
@@ -4915,7 +4915,7 @@ __metadata:
     fastify: "npm:^4.25.2"
     jest: "npm:^29.7.0"
     typescript: "npm:^5.3.3"
-    viem: "npm:^2.7.10"
+    viem: "npm:^2.9.23"
   languageName: unknown
   linkType: soft
 
@@ -4937,7 +4937,7 @@ __metadata:
     ts-node: "npm:^10.9.2"
     typescript: "npm:^5.3.3"
     uuid: "npm:^9.0.1"
-    viem: "npm:^2.9.6"
+    viem: "npm:^2.9.23"
   languageName: unknown
   linkType: soft
 
@@ -14888,21 +14888,23 @@ __metadata:
   languageName: node
   linkType: hard
 
-"frames.js@npm:^0.8.2":
-  version: 0.8.5
-  resolution: "frames.js@npm:0.8.5"
+"frames.js@npm:^0.14.0":
+  version: 0.14.0
+  resolution: "frames.js@npm:0.14.0"
   dependencies:
-    "@farcaster/core": "npm:^0.14.7"
     "@vercel/og": "npm:^0.6.2"
     cheerio: "npm:^1.0.0-rc.12"
     protobufjs: "npm:^7.2.6"
-    viem: "npm:^2.7.1"
+    viem: "npm:^2.7.8"
   peerDependencies:
-    "@xmtp/frames-validator": ^0.5.1
-    next: 14.1.0
+    "@cloudflare/workers-types": ^4.20240320.1
+    "@types/express": ^4.17.21
+    "@xmtp/frames-validator": ^0.5.2
+    "@xmtp/proto": 3.45.0
+    next: ^14.1.0
     react: ^18.2.0
     react-dom: ^18.2.0
-  checksum: 10c0/9cfce1c79e998258deac76a346131219b3469ef154f8748559a35312c632a263f1cac5a85ee3187d6b08a32aa3bc1c120cfb1107488934132bad49b44afc6f15
+  checksum: 10c0/0a15941523b7c42a036ad0eace6ff8b92f0f2f28c92c6e31ca93503ecd483e4541bd152b581cc40b3978e0b13bb3ab0d60ed99cc5f96ebae272df6d1b854fd2e
   languageName: node
   linkType: hard
 
@@ -25350,7 +25352,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"viem@npm:^2.7.1, viem@npm:^2.7.10, viem@npm:^2.9.6":
+"viem@npm:^2.7.8, viem@npm:^2.9.23":
   version: 2.9.23
   resolution: "viem@npm:2.9.23"
   dependencies:

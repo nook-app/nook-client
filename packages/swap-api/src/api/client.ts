@@ -31,7 +31,13 @@ export const CHAIN_RPC_URLS: Record<string, string | undefined> = {
   base: process.env.BASE_RPC_URL,
 };
 
-export function getClient(name: ZeroXSupportedChain) {
+export function getClient(name: ZeroXSupportedChain): ReturnType<
+  typeof createPublicClient
+> &
+  ReturnType<typeof publicActionReverseMirage> & {
+    chainName: string;
+    chainId: number;
+  } {
   const chain = chainsByName[name];
 
   if (chain === undefined) {

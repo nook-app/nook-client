@@ -15,17 +15,27 @@ export const swapRoutes = async (fastify: FastifyInstance) => {
       async (request, reply) => {
         await request.jwtVerify();
         const requestId = uuidv4();
-        const quote = await client.getSwap(
-          request.body.chain as ZeroXSupportedChain,
-          request.body.buyToken,
-          request.body.sellToken,
-          Number(request.body.maxSlippageBps),
-          Number(request.body.maxPriceImpactBps),
-          request.body.from,
+        const quote = await client.getSwap({
+          buyToken: {
+            chain: request.body.chain as ZeroXSupportedChain,
+            address: request.body.buyToken,
+            amount: request.body.buyAmount
+              ? BigInt(request.body.buyAmount)
+              : undefined,
+          },
+          sellToken: {
+            chain: request.body.chain as ZeroXSupportedChain,
+            address: request.body.sellToken,
+            amount: request.body.sellAmount
+              ? BigInt(request.body.sellAmount)
+              : undefined,
+          },
+          maxSlippageBps: Number(request.body.maxSlippageBps),
+          maxPriceImpactBps: Number(request.body.maxPriceImpactBps),
+          taker: request.body.taker,
           requestId,
-          request.body.buyAmount ? BigInt(request.body.buyAmount) : undefined,
-          request.body.sellAmount ? BigInt(request.body.sellAmount) : undefined,
-        );
+          affiliate: request.body.affiliate,
+        });
         return reply.send({ ...quote, requestId });
       },
     );

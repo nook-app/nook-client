@@ -17,7 +17,7 @@ import { Frame, getFrame } from "frames.js";
 
 export type UrlMetadata = {
   metadata?: Metadata;
-  frame?: Frame;
+  frame?: Frame | Partial<Frame>;
   contentType?: string;
   contentLength?: number;
 };

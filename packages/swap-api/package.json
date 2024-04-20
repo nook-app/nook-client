@@ -16,7 +16,7 @@
     "fastify": "^4.26.2",
     "reverse-mirage": "^1.1.0",
     "uuid": "^9.0.1",
-    "viem": "^2.9.6"
+    "viem": "^2.9.23"
   },
   "devDependencies": {
     "@types/jest": "^29.5.12",

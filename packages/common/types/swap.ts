@@ -147,7 +147,8 @@ export type SwapQuoteRequest = {
   sellAmount?: string;
   maxSlippageBps: string;
   maxPriceImpactBps: string;
-  from: `0x${string}`;
+  taker: `0x${string}`;
+  affiliate?: `0x${string}`;
 };
 
 export type SwapQuoteResponse = {
