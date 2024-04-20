@@ -1,8 +1,8 @@
-import { createAnimations } from '@tamagui/animations-react-native'
+import { createAnimations } from "@tamagui/animations-react-native";
 
 export const animations = createAnimations({
-  '100ms': {
-    type: 'timing',
+  "100ms": {
+    type: "timing",
     duration: 100,
   },
   bouncy: {
@@ -33,4 +33,4 @@ export const animations = createAnimations({
     mass: 0.9,
     stiffness: 100,
   },
-})
+});

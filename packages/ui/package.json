@@ -1,26 +1,37 @@
 {
   "name": "@nook/ui",
-  "version": "0.0.1",
-  "sideEffects": [
-    "*.css"
-  ],
+  "version": "0.3.1",
   "private": true,
+  "main": "./src/index.tsx",
   "types": "./src",
-  "main": "src/index.tsx",
-  "module:jsx": "src",
+  "module:jsx": "./src",
   "files": [
     "types",
     "dist"
   ],
+  "sideEffects": [
+    "*.css"
+  ],
   "scripts": {
-    "build": "tamagui-build --skip-types",
-    "watch": "tamagui-build --skip-types --watch"
+    "ui:build": "tamagui-build --skip-types",
+    "ui:watch": "tamagui-build --skip-types --watch"
   },
   "dependencies": {
-    "@tamagui/toast": "^1.94.5",
-    "tamagui": "^1.94.5"
+    "@tamagui/animations-moti": "latest",
+    "@tamagui/font-inter": "latest",
+    "@tamagui/font-silkscreen": "latest",
+    "@tamagui/react-native-media-driver": "latest",
+    "@tamagui/shorthands": "latest",
+    "@tamagui/themes": "latest",
+    "@tamagui/toast": "latest",
+    "expo-constants": "~14.4.2",
+    "moti": "^0.28.1",
+    "react": "^18.2.0",
+    "react-native-reanimated": "~3.6.3",
+    "solito": "^4.2.2",
+    "tamagui": "latest"
   },
   "devDependencies": {
-    "@tamagui/build": "^1.94.5"
+    "@tamagui/build": "latest"
   }
 }
