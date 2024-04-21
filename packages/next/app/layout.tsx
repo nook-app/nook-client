@@ -1,13 +1,21 @@
-'use client'
+import { RootNavigation } from "components/RootNavigation";
+import { Providers } from "./providers";
 
-import { TamaguiProvider } from './TamaguiProvider'
-
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({
+  children,
+}: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body>
-        <TamaguiProvider>{children}</TamaguiProvider>
+      <body
+        style={{
+          overscrollBehaviorY: "none",
+          overscrollBehaviorX: "none",
+        }}
+      >
+        <Providers>
+          <RootNavigation>{children}</RootNavigation>
+        </Providers>
       </body>
     </html>
-  )
+  );
 }

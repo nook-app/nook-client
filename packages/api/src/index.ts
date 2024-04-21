@@ -3,6 +3,7 @@ import { redisPlugin, nookPlugin } from "./plugins";
 import { nookRoutes } from "./routes/nook";
 import { userRoutes } from "./routes/user";
 import fastifyJwt from "@fastify/jwt";
+import fastifyCors from "@fastify/cors";
 import { farcasterRoutes } from "./routes/farcaster";
 import { farcasterSignerRoutes } from "./routes/farcaster/signer";
 import { frameRoutes } from "./routes/frames";
@@ -15,8 +16,6 @@ import { discoverRoutes } from "./routes/discover";
 import { muteRoutes } from "./routes/user/mute";
 import { panelRoutes } from "./routes/panel";
 import { feedRoutes } from "./routes/feed";
-import { fastifyTRPCPlugin } from "@trpc/server/adapters/fastify";
-import { appRouter } from "../trpc";
 
 const buildApp = () => {
   const app = fastify({
@@ -38,9 +37,12 @@ const buildApp = () => {
     secret: process.env.JWT_SECRET as string,
   });
 
-  app.register(fastifyTRPCPlugin, {
-    prefix: "/trpc",
-    trpcOptions: { router: appRouter, createContext: () => null },
+  app.register(fastifyCors, {
+    origin: [
+      "http://localhost:3100",
+      "https://nook.social",
+      "https://nook-next.vercel.app",
+    ],
   });
 
   app.register(nookPlugin);
