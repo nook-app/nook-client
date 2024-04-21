@@ -2,7 +2,7 @@ import { Linking } from "react-native";
 import { Text } from "tamagui";
 import { GetThemeValueForKey } from "@tamagui/core";
 import { Buffer } from "buffer";
-import { FarcasterCastResponse } from "@nook/common/types";
+import { FarcasterCast } from "../../types";
 import { TextLink } from "solito/link";
 
 export const FarcasterCastText = ({
@@ -12,7 +12,7 @@ export const FarcasterCastText = ({
   fontSize = 15,
   selectable,
 }: {
-  cast: FarcasterCastResponse;
+  cast: FarcasterCast;
   disableLinks?: boolean;
   color?: string;
   fontSize?: string | number;

@@ -1,4 +1,4 @@
-import { UrlContentResponse } from "@nook/common/types";
+import { UrlContentResponse } from "../../types";
 import { Linking } from "react-native";
 import { TapGestureHandler } from "react-native-gesture-handler";
 import { Text, View, XStack, YStack, Image } from "tamagui";

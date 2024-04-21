@@ -1,4 +1,4 @@
-import { UrlContentResponse } from "@nook/common/types";
+import { UrlContentResponse } from "../../types";
 import { View } from "@nook/ui";
 import ReactPlayer from "react-player";
 

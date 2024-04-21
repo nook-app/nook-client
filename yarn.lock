@@ -4735,7 +4735,6 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@nook/app@workspace:packages/app"
   dependencies:
-    "@nook/common": "npm:*"
     "@nook/ui": "npm:*"
     "@tamagui/animations-react-native": "npm:^1.94.5"
     "@tamagui/colors": "npm:^1.94.5"

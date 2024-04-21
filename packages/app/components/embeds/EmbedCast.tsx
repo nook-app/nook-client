@@ -6,12 +6,12 @@ import { CdnAvatar } from "../CdnAvatar";
 import { FarcasterUserDisplay } from "../farcaster/FarcasterUserDisplay";
 import { formatTimeAgo } from "../../utils";
 import { FarcasterChannelDisplay } from "../farcaster/FarcasterChannelDisplay";
-import { FarcasterCastResponse } from "@nook/common/types";
+import { FarcasterCast } from "../../types";
 
 export const EmbedCast = ({
   cast,
 }: {
-  cast: FarcasterCastResponse;
+  cast: FarcasterCast;
 }) => {
   return (
     <Link href={`/casts/${cast.hash}`}>

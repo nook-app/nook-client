@@ -5,7 +5,7 @@ import { EmbedTwitter } from "./EmbedTwitter";
 import { Linking } from "react-native";
 import { Text, View, XStack, YStack, useTheme } from "@nook/ui";
 import { EmbedNook } from "./EmbedNook";
-import { FarcasterCastResponse, UrlContentResponse } from "@nook/common/types";
+import { FarcasterCast, UrlContentResponse } from "../../types";
 import { formatToCDN } from "../../utils";
 import { EmbedCast } from "./EmbedCast";
 import { Link } from "@tamagui/lucide-icons";
@@ -15,7 +15,7 @@ export const Embed = ({
   cast,
 }: {
   content: UrlContentResponse;
-  cast?: FarcasterCastResponse;
+  cast?: FarcasterCast;
 }) => {
   if (
     content.uri.startsWith("nook://") ||
@@ -53,7 +53,7 @@ export const Embed = ({
 export const Embeds = ({
   cast,
 }: {
-  cast: FarcasterCastResponse;
+  cast: FarcasterCast;
 }) => {
   const isAllImages = cast.embeds.every(
     (embed) =>

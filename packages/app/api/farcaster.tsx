@@ -1,10 +1,10 @@
 import {
   Channel,
-  FarcasterCastResponse,
+  FarcasterCast,
   FarcasterFeedFilter,
   FarcasterFeedRequest,
   FarcasterUser,
-} from "@nook/common/types";
+} from "../types";
 import { makeRequest } from "./utils";
 import {
   InfiniteData,
@@ -14,7 +14,7 @@ import {
 } from "@tanstack/react-query";
 
 type FarcasterFeedResponse = {
-  data: FarcasterCastResponse[];
+  data: FarcasterCast[];
   nextCursor?: string;
 };
 
@@ -29,10 +29,7 @@ export const hasChannelDiff = (channel1: Channel, channel2: Channel) => {
   return false;
 };
 
-export const hasCastDiff = (
-  cast1: FarcasterCastResponse,
-  cast2: FarcasterCastResponse,
-) => {
+export const hasCastDiff = (cast1: FarcasterCast, cast2: FarcasterCast) => {
   return (
     cast1.engagement.likes !== cast2.engagement.likes ||
     cast1.engagement.recasts !== cast2.engagement.recasts ||
@@ -47,10 +44,7 @@ export const fetchCast = async (hash: string, requestInit?: RequestInit) => {
 
 export const useCast = (hash: string) => {
   const queryClient = useQueryClient();
-  const initialData = queryClient.getQueryData<FarcasterCastResponse>([
-    "cast",
-    hash,
-  ]);
+  const initialData = queryClient.getQueryData<FarcasterCast>(["cast", hash]);
   return useQuery({
     queryKey: ["cast", hash],
     queryFn: async () => {
@@ -97,7 +91,7 @@ export const useCastFeed = (filter: FarcasterFeedFilter) => {
       });
       if (data?.data) {
         for (const cast of data.data) {
-          const existingCast = queryClient.getQueryData<FarcasterCastResponse>([
+          const existingCast = queryClient.getQueryData<FarcasterCast>([
             "cast",
             cast.hash,
           ]);
@@ -143,22 +137,20 @@ export const useCastFeed = (filter: FarcasterFeedFilter) => {
           }
 
           for (const embed of cast.embedCasts) {
-            const existingCast =
-              queryClient.getQueryData<FarcasterCastResponse>([
-                "cast",
-                embed.hash,
-              ]);
+            const existingCast = queryClient.getQueryData<FarcasterCast>([
+              "cast",
+              embed.hash,
+            ]);
             if (!existingCast || hasCastDiff(existingCast, embed)) {
               queryClient.setQueryData(["cast", embed.hash], embed);
             }
           }
 
           if (cast.parent) {
-            const existingCast =
-              queryClient.getQueryData<FarcasterCastResponse>([
-                "cast",
-                cast.parent.hash,
-              ]);
+            const existingCast = queryClient.getQueryData<FarcasterCast>([
+              "cast",
+              cast.parent.hash,
+            ]);
             if (!existingCast || hasCastDiff(existingCast, cast.parent)) {
               queryClient.setQueryData(["cast", cast.parent.hash], cast.parent);
             }
@@ -204,11 +196,10 @@ export const useCastFeed = (filter: FarcasterFeedFilter) => {
             }
 
             for (const embed of cast.parent.embedCasts) {
-              const existingCast =
-                queryClient.getQueryData<FarcasterCastResponse>([
-                  "cast",
-                  embed.hash,
-                ]);
+              const existingCast = queryClient.getQueryData<FarcasterCast>([
+                "cast",
+                embed.hash,
+              ]);
               if (!existingCast || hasCastDiff(existingCast, embed)) {
                 queryClient.setQueryData(["cast", embed.hash], embed);
               }

@@ -1,4 +1,4 @@
-import { UrlContentResponse } from "@nook/common/types";
+import { UrlContentResponse } from "../../types";
 import { EmbedCast } from "./EmbedCast";
 import { useCast } from "../../api/farcaster";
 

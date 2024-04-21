@@ -1,5 +1,5 @@
 import { Text, View, XStack } from "@nook/ui";
-import { Channel } from "@nook/common/types";
+import { Channel } from "../../types";
 import { Link } from "solito/link";
 import { CdnAvatar } from "../CdnAvatar";
 

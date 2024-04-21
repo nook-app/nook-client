@@ -2,13 +2,13 @@ import { EmbedImage, EmbedImages } from "./EmbedImage";
 import { EmbedVideo } from "./EmbedVideo";
 import { EmbedTwitter } from "./EmbedTwitter";
 import { Text } from "tamagui";
-import { FarcasterCastResponse, UrlContentResponse } from "@nook/common/types";
+import { FarcasterCast, UrlContentResponse } from "../../types";
 import { formatToCDN } from "../../utils";
 
 export const EmbedMedia = ({
   cast,
 }: {
-  cast: FarcasterCastResponse;
+  cast: FarcasterCast;
 }) => {
   const isAllImages = cast.embeds.every(
     (embed) =>

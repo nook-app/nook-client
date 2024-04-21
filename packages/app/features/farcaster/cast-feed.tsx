@@ -1,8 +1,4 @@
-import {
-  FarcasterCastResponse,
-  FarcasterFeedFilter,
-  UserFilterType,
-} from "@nook/common/types";
+import { FarcasterCast, UserFilterType } from "../../types";
 import { Spinner, View, XStack, YStack } from "@nook/ui";
 import { FarcasterUserDisplay } from "../../components/farcaster/FarcasterUserDisplay";
 import { useCastFeed } from "../../api/farcaster";
@@ -33,13 +29,13 @@ export const FarcasterCastFeed = () => {
   return (
     <YStack>
       {casts.map((cast) => (
-        <FarcasterCast key={cast.hash} cast={cast} />
+        <FarcasterCastFeedItem key={cast.hash} cast={cast} />
       ))}
     </YStack>
   );
 };
 
-const FarcasterCast = ({ cast }: { cast: FarcasterCastResponse }) => {
+const FarcasterCastFeedItem = ({ cast }: { cast: FarcasterCast }) => {
   const renderText = cast.text || cast.mentions.length > 0;
   const renderEmbeds = cast.embeds.length > 0;
   return (
