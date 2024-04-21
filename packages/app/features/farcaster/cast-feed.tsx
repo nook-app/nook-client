@@ -1,4 +1,8 @@
-import { FarcasterCastResponse, FarcasterFeedFilter } from "@nook/common/types";
+import {
+  FarcasterCastResponse,
+  FarcasterFeedFilter,
+  UserFilterType,
+} from "@nook/common/types";
 import { Spinner, View, XStack, YStack } from "@nook/ui";
 import { FarcasterUserDisplay } from "../../components/farcaster/FarcasterUserDisplay";
 import { useCastFeed } from "../../api/farcaster";
@@ -6,10 +10,15 @@ import { CdnAvatar } from "../../components/CdnAvatar";
 import { FarcasterCastText } from "../../components/farcaster/FarcasterCastText";
 import { Embeds } from "../../components/embeds/Embed";
 
-export const FarcasterCastFeed = ({
-  filter,
-}: { filter: FarcasterFeedFilter }) => {
-  const { data, isLoading } = useCastFeed(filter);
+export const FarcasterCastFeed = () => {
+  const { data, isLoading } = useCastFeed({
+    users: {
+      type: UserFilterType.FOLLOWING,
+      data: {
+        fid: "3887",
+      },
+    },
+  });
 
   if (isLoading) {
     return (

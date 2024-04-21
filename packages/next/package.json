@@ -10,7 +10,7 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@nook/app": "0.0.0",
+    "@nook/app": "*",
     "@tamagui/config": "^1.94.5",
     "@tamagui/next-theme": "^1.94.5",
     "@tanstack/react-query": "^5.29.2",

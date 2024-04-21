@@ -4731,7 +4731,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@nook/app@npm:0.0.0, @nook/app@workspace:packages/app":
+"@nook/app@npm:*, @nook/app@workspace:packages/app":
   version: 0.0.0-use.local
   resolution: "@nook/app@workspace:packages/app"
   dependencies:
@@ -4983,7 +4983,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@nook/next@workspace:packages/next"
   dependencies:
-    "@nook/app": "npm:0.0.0"
+    "@nook/app": "npm:*"
     "@tamagui/config": "npm:^1.94.5"
     "@tamagui/next-plugin": "npm:^1.94.5"
     "@tamagui/next-theme": "npm:^1.94.5"
