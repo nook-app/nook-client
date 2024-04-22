@@ -1159,6 +1159,41 @@ export class FarcasterService {
     );
   }
 
+  async getFidsForUsernames(usernames: string[]) {
+    const cached = await this.cache.getFidsForUsernames(usernames);
+    const cacheMap = cached.reduce(
+      (acc, fid, i) => {
+        if (!usernames[i] || !fid) return acc;
+        acc[usernames[i]] = fid;
+        return acc;
+      },
+      {} as Record<string, string>,
+    );
+
+    const missing = usernames.filter((username) => !cacheMap[username]);
+    if (missing.length > 0) {
+      const fetched = await this.client.farcasterUserData.findMany({
+        where: {
+          type: UserDataType.USERNAME,
+          value: {
+            in: missing,
+          },
+        },
+      });
+
+      for (const user of fetched) {
+        cacheMap[user.value] = user.fid.toString();
+      }
+
+      await this.cache.setFidsForUsernames(
+        missing.map((username) => cacheMap[username]),
+        missing,
+      );
+    }
+
+    return usernames.map((username) => cacheMap[username]);
+  }
+
   async getUsers(fids: string[], viewerFid?: string): Promise<FarcasterUser[]> {
     if (fids.length === 0) return [];
 

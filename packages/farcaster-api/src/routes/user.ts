@@ -46,8 +46,13 @@ export const userRoutes = async (fastify: FastifyInstance) => {
     fastify.get<{
       Params: GetFarcasterUserRequest;
     }>("/users/:fid", async (request, reply) => {
+      let fid = request.params.fid;
+      if (Number.isNaN(Number(fid))) {
+        fid = (await service.getFidsForUsernames([fid]))[0];
+      }
+
       const users = await service.getUsers(
-        [request.params.fid],
+        [fid],
         request.headers["x-viewer-fid"] as string,
       );
 
