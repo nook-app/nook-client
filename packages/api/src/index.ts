@@ -38,11 +38,18 @@ const buildApp = () => {
   });
 
   app.register(fastifyCors, {
-    origin: [
-      "http://localhost:3100",
-      "https://nook-next.vercel.app",
-      "https://nook.social",
-    ],
+    origin: (origin, callback) => {
+      if (
+        !origin ||
+        origin.startsWith("http://localhost") ||
+        origin.startsWith("https://localhost") ||
+        ["https://nook-next.vercel.app", "https://nook.social"].includes(origin)
+      ) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"), false);
+      }
+    },
   });
 
   app.register(nookPlugin);

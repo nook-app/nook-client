@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "clean": "find . -type d \\( -name \"dist\" -o -name \"node_modules\" \\) -exec rm -rf {} +",
-    "build": "yarn workspaces foreach --all --topological-dev run build",
+    "build": "yarn workspaces foreach --all --exclude @nook/next --topological-dev run build",
     "test": "yarn workspaces foreach --all run jest",
     "test:api": "yarn workspace @nook/api run jest",
     "test:common": "yarn workspace @nook/common run jest",
@@ -32,9 +32,7 @@
     "native": "cd packages/expo && yarn start",
     "next": "yarn workspace @nook/next dev"
   },
-  "workspaces": [
-    "packages/*"
-  ],
+  "workspaces": ["packages/*"],
   "devDependencies": {
     "@biomejs/biome": "1.4.1",
     "@types/jest": "^29.5.11",

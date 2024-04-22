@@ -31,12 +31,7 @@ const TamaguiProvider = ({ children }: { children: React.ReactNode }) => {
       <style
         // biome-ignore lint/security/noDangerouslySetInnerHtml: <explanation>
         dangerouslySetInnerHTML={{
-          __html: config.getCSS({
-            // if you are using "outputCSS" option, you should use this "exclude"
-            // if not, then you can leave the option out
-            exclude:
-              process.env.NODE_ENV === "production" ? "design-system" : null,
-          }),
+          __html: config.getCSS(),
         }}
       />
     );
@@ -51,7 +46,7 @@ const TamaguiProvider = ({ children }: { children: React.ReactNode }) => {
       <TamaguiProviderOG
         config={config}
         disableInjectCSS
-        disableRootThemeClass
+        themeClassNameOnRoot
         defaultTheme={colorScheme}
       >
         <Theme name="pink">{contents}</Theme>
