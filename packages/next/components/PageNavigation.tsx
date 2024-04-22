@@ -7,6 +7,7 @@ export const PageNavigation = ({ children }: { children: ReactNode }) => {
   return (
     <XStack>
       <View
+        minHeight="100vh"
         flex={1}
         borderLeftColor="$color4"
         borderLeftWidth="$0.5"

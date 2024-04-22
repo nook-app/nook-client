@@ -1,9 +1,8 @@
-import { Linking } from "react-native";
 import { Text } from "tamagui";
 import { GetThemeValueForKey } from "@tamagui/core";
 import { Buffer } from "buffer";
 import { FarcasterCast } from "../../types";
-import { TextLink } from "solito/link";
+import { Link, TextLink } from "solito/link";
 
 export const FarcasterCastText = ({
   cast,
@@ -46,16 +45,23 @@ export const FarcasterCastText = ({
 
       if (/https?:\/\/[^\s]+/.test(part) && !disableLinks) {
         splitParts.push(
-          <Text
-            key={`${cast.hash}-${index}-${i}-${part}`}
-            color="$color11"
-            onPress={() => Linking.openURL(part)}
-            fontSize={
-              fontSize as "unset" | GetThemeValueForKey<"fontSize"> | undefined
-            }
-          >
-            {part}
-          </Text>,
+          <TextLink key={`${cast.hash}-${index}-${i}-${part}`} href={part}>
+            <Text
+              color="$color11"
+              fontSize={
+                fontSize as
+                  | "unset"
+                  | GetThemeValueForKey<"fontSize">
+                  | undefined
+              }
+              hoverStyle={{
+                // @ts-ignore
+                textDecoration: "underline",
+              }}
+            >
+              {part}
+            </Text>
+          </TextLink>,
         );
       } else {
         splitParts.push(
@@ -103,6 +109,10 @@ export const FarcasterCastText = ({
             fontSize={
               fontSize as "unset" | GetThemeValueForKey<"fontSize"> | undefined
             }
+            hoverStyle={{
+              // @ts-ignore
+              textDecoration: "underline",
+            }}
           >
             {label}
           </Text>
@@ -119,13 +129,17 @@ export const FarcasterCastText = ({
       textParts.push(
         <TextLink
           key={`${cast.hash}-${mention.position}-${label}`}
-          href={`/users/${mention.user.username}`}
+          href={`/${mention.user.username}`}
         >
           <Text
             color="$color11"
             fontSize={
               fontSize as "unset" | GetThemeValueForKey<"fontSize"> | undefined
             }
+            hoverStyle={{
+              // @ts-ignore
+              textDecoration: "underline",
+            }}
           >
             {label}
           </Text>

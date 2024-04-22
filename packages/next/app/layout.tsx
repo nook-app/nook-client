@@ -1,4 +1,4 @@
-import { RootNavigation } from "components/RootNavigation";
+import { RootNavigation } from "../components/RootNavigation";
 import { Providers } from "./providers";
 
 export default function RootLayout({

@@ -4,12 +4,11 @@ import {
   FarcasterFeedFilter,
   FarcasterFeedRequest,
   FarcasterUser,
-} from "../types";
-import { makeRequest } from "./utils";
+} from "../../types";
+import { makeRequest } from "../utils";
 import {
   InfiniteData,
   useInfiniteQuery,
-  useQuery,
   useQueryClient,
 } from "@tanstack/react-query";
 
@@ -36,24 +35,6 @@ export const hasCastDiff = (cast1: FarcasterCast, cast2: FarcasterCast) => {
     cast1.engagement.replies !== cast2.engagement.replies ||
     cast1.engagement.quotes !== cast2.engagement.quotes
   );
-};
-
-export const fetchCast = async (hash: string, requestInit?: RequestInit) => {
-  return await makeRequest(`/farcaster/casts/${hash}`, requestInit);
-};
-
-export const useCast = (hash: string) => {
-  const queryClient = useQueryClient();
-  const initialData = queryClient.getQueryData<FarcasterCast>(["cast", hash]);
-  return useQuery({
-    queryKey: ["cast", hash],
-    queryFn: async () => {
-      const cast = await fetchCast(hash);
-      return cast;
-    },
-    initialData,
-    enabled: !initialData && !!hash,
-  });
 };
 
 export const fetchCastFeed = async (

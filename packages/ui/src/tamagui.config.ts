@@ -4,6 +4,16 @@ import { themes } from "./themes";
 
 export const config = createTamagui({
   ...configBase,
+  tokens: {
+    ...configBase.tokens,
+    size: {
+      ...configBase.tokens.size,
+      0.8: 12,
+      0.85: 14,
+      0.9: 16,
+      0.95: 18,
+    },
+  },
   fonts: {
     ...configBase.fonts,
     heading: {
