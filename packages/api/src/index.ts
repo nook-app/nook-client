@@ -3,6 +3,7 @@ import { redisPlugin, nookPlugin } from "./plugins";
 import { nookRoutes } from "./routes/nook";
 import { userRoutes } from "./routes/user";
 import fastifyJwt from "@fastify/jwt";
+import fastifyCors from "@fastify/cors";
 import { farcasterRoutes } from "./routes/farcaster";
 import { farcasterSignerRoutes } from "./routes/farcaster/signer";
 import { frameRoutes } from "./routes/frames";
@@ -34,6 +35,14 @@ const buildApp = () => {
 
   app.register(fastifyJwt, {
     secret: process.env.JWT_SECRET as string,
+  });
+
+  app.register(fastifyCors, {
+    origin: [
+      "http://localhost:3100",
+      "https://nook-next.vercel.app",
+      "https://nook.social",
+    ],
   });
 
   app.register(nookPlugin);

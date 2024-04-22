@@ -1,4 +1,4 @@
-import { config } from "@nook/ui/config";
+import { config } from "./tamagui.config";
 
 export type Conf = typeof config;
 

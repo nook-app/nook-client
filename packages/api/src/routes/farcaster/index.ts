@@ -515,11 +515,6 @@ export const farcasterRoutes = async (fastify: FastifyInstance) => {
             return reply.send(response);
           }
 
-          if (request.body.api === "nook://cast-feed/top") {
-            const response = await client.getTopCastFeed(request.body);
-            return reply.send(response);
-          }
-
           const response = await fetch(request.body.api, {
             method: "POST",
             headers: {

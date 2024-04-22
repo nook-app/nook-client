@@ -1,0 +1,58 @@
+import { FarcasterCast, UserFilterType } from "../../types";
+import { Spinner, View, XStack, YStack } from "@nook/ui";
+import { useCastFeed } from "../../api/farcaster";
+import { CdnAvatar } from "../../components/CdnAvatar";
+import { FarcasterCastText } from "../../components/components/FarcasterCastText";
+import { FarcasterUserDisplay } from "../../components/components/FarcasterUserDisplay";
+
+export const FarcasterCastFeed = () => {
+  const { data, isLoading } = useCastFeed({
+    users: {
+      type: UserFilterType.FOLLOWING,
+      data: {
+        fid: "3887",
+      },
+    },
+  });
+
+  if (isLoading) {
+    return (
+      <View width="$3" height="$3">
+        <Spinner size="large" />
+      </View>
+    );
+  }
+
+  const casts = data?.pages.flatMap((page) => page.data) ?? [];
+
+  return (
+    <YStack>
+      {casts.map((cast) => (
+        <FarcasterCastFeedItem key={cast.hash} cast={cast} />
+      ))}
+    </YStack>
+  );
+};
+
+const FarcasterCastFeedItem = ({ cast }: { cast: FarcasterCast }) => {
+  const renderText = cast.text || cast.mentions.length > 0;
+  const renderEmbeds = cast.embeds.length > 0;
+  return (
+    <XStack
+      gap="$2"
+      borderBottomWidth="$0.5"
+      borderBottomColor="$color4"
+      padding="$3"
+    >
+      <YStack alignItems="center" width="$4" marginTop="$1">
+        <View>
+          <CdnAvatar src={cast.user.pfp} size="$4" />
+        </View>
+      </YStack>
+      <YStack flex={1}>
+        <FarcasterUserDisplay user={cast.user} orientation="vertical" />
+        {renderText && <FarcasterCastText cast={cast} />}
+      </YStack>
+    </XStack>
+  );
+};

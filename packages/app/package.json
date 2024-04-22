@@ -7,7 +7,7 @@
     "*.css"
   ],
   "dependencies": {
-    "@nook/ui": "0.0.1",
+    "@nook/ui": "*",
     "@tamagui/animations-react-native": "^1.94.5",
     "@tamagui/colors": "^1.94.5",
     "@tamagui/font-inter": "^1.94.5",

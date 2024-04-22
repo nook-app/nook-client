@@ -1,4 +1,4 @@
-import { config } from "@nook/ui/config";
+import { config } from "@nook/ui";
 
 export type Conf = typeof config;
 
