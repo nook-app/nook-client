@@ -433,4 +433,20 @@ export class FarcasterCacheClient {
     if (type === "top") return this.CAST_REPLIES_TOP_CACHE_PREFIX;
     return this.CAST_REPLIES_CACHE_PREFIX;
   }
+
+  async getFidsForUsernames(usernames: string[]): Promise<(string | null)[]> {
+    return await this.redis.mget(
+      usernames.map((username) => `farcaster:username:${username}`),
+    );
+  }
+
+  async setFidsForUsernames(usernames: string[], fids: string[]) {
+    await this.redis.mset(
+      usernames.map((username, i) => [
+        `farcaster:username:${username}`,
+        fids[i],
+      ]),
+      86400,
+    );
+  }
 }
