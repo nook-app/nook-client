@@ -1,5 +1,4 @@
-import { View, XStack, Image } from "@nook/ui";
-import { useEffect, useState } from "react";
+import { View, XStack } from "@nook/ui";
 import { ZoomableImage } from "../zoomable-image";
 
 export const EmbedImages = ({ uris }: { uris: string[] }) => {

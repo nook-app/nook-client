@@ -20,20 +20,8 @@ import {
   FarcasterReplyActionButton,
   FarcasterShareButton,
 } from "../../../components/farcaster/casts/cast-actions";
-import {
-  AutoSizer,
-  InfiniteLoader,
-  List,
-  WindowScroller,
-  CellMeasurer,
-  CellMeasurerCache,
-} from "react-virtualized";
 import { CSSProperties, useEffect } from "react";
-
-const cache = new CellMeasurerCache({
-  fixedWidth: true,
-  defaultHeight: 100,
-});
+import { InfiniteScrollList } from "../../../components/infinite-scroll-list";
 
 export const FarcasterInfiniteFeed = ({
   casts,
@@ -47,78 +35,17 @@ export const FarcasterInfiniteFeed = ({
   hasNextPage: boolean;
 }) => {
   return (
-    <AutoSizer disableHeight={true}>
-      {({ width }) => (
-        <WindowScroller>
-          {({ height, isScrolling, onChildScroll, scrollTop }) => (
-            <InfiniteLoader
-              isRowLoaded={({ index }) => !!casts[index]}
-              // @ts-ignore
-              loadMoreRows={
-                isFetchingNextPage ? () => {} : () => fetchNextPage()
-              }
-              rowCount={casts.length + (hasNextPage ? 1 : 0)}
-            >
-              {({ onRowsRendered, registerChild }) => (
-                <List
-                  autoHeight
-                  height={height}
-                  width={width}
-                  onRowsRendered={onRowsRendered}
-                  ref={registerChild}
-                  rowCount={casts.length}
-                  rowHeight={cache.rowHeight}
-                  rowRenderer={({ index, key, style, parent }) => {
-                    console.log(index, casts.length, hasNextPage);
-                    if (hasNextPage && index + 1 === casts.length) {
-                      return (
-                        <View
-                          style={style}
-                          key={`${key}-loading`}
-                          justifyContent="center"
-                          alignItems="center"
-                        >
-                          <Spinner color="$color9" />
-                        </View>
-                      );
-                    }
-
-                    return (
-                      <CellMeasurer
-                        key={key}
-                        cache={cache}
-                        parent={parent}
-                        columnIndex={0}
-                        rowIndex={index}
-                      >
-                        {({ measure }) => (
-                          <FarcasterCastDisplay
-                            cast={casts[index]}
-                            style={style}
-                            measure={measure}
-                          />
-                        )}
-                      </CellMeasurer>
-                    );
-                  }}
-                  isScrolling={isScrolling}
-                  onScroll={onChildScroll}
-                  scrollTop={scrollTop}
-                />
-              )}
-            </InfiniteLoader>
-          )}
-        </WindowScroller>
+    <InfiniteScrollList
+      data={casts}
+      renderItem={({ item, index }) => (
+        <FarcasterCastDisplay cast={item as FarcasterCast} />
       )}
-    </AutoSizer>
+      onEndReached={fetchNextPage}
+    />
   );
 };
 
-const FarcasterCastDisplay = ({
-  cast,
-  style,
-  measure,
-}: { cast: FarcasterCast; style: CSSProperties; measure: () => void }) => {
+const FarcasterCastDisplay = ({ cast }: { cast: FarcasterCast }) => {
   const renderText = cast.text || cast.mentions.length > 0;
   const renderEmbeds = cast.embeds.length > 0 || cast.embedCasts.length > 0;
   const { push } = useRouter();
@@ -129,14 +56,6 @@ const FarcasterCastDisplay = ({
       push(`/casts/${cast.hash}`);
     }
   };
-
-  useEffect(() => {
-    setTimeout(() => {
-      try {
-        measure();
-      } catch (e) {}
-    }, 300);
-  }, [measure]);
 
   return (
     <XStack
@@ -153,7 +72,6 @@ const FarcasterCastDisplay = ({
       }}
       onPress={handlePress}
       cursor="pointer"
-      style={style}
     >
       <YStack alignItems="center" width="$4" marginTop="$1">
         <FarcasterUserAvatar user={cast.user} size="$4" asLink />

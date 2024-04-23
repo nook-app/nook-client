@@ -18,7 +18,7 @@ export const UserFollowBadge = ({ user }: { user: FarcasterUser }) => {
       paddingVertical="$1"
       paddingHorizontal="$2"
       borderRadius="$2"
-      backgroundColor="$color3"
+      backgroundColor="$color5"
     >
       <NookText fontSize="$2" fontWeight="500">
         {badge}

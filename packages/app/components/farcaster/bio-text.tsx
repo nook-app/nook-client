@@ -70,11 +70,14 @@ export const FarcasterBioText = ({
       const matchWord = word.match(/^\//)?.[0];
       const cleanWord = word.match(/^\/([\w-]+)/)?.[0];
       if (matchWord && cleanWord) {
-        const position = Buffer.from(
-          text.slice(0, text.indexOf(cleanWord, acc.lastIndex)),
-        ).length;
-        acc.mentions.push({ word: cleanWord, position });
-        acc.lastIndex = position + matchWord.length;
+        const regex = new RegExp(`(?:^|\\s)${cleanWord}`);
+        const match = text.slice(acc.lastIndex).match(regex);
+        if (match?.index) {
+          const position =
+            acc.lastIndex + Buffer.from(text.slice(0, match.index + 1)).length;
+          acc.mentions.push({ word: cleanWord, position });
+          acc.lastIndex = position + matchWord.length;
+        }
       }
       return acc;
     },
