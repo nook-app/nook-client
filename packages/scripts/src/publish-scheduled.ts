@@ -1,5 +1,5 @@
 import { SignerAPIClient } from "@nook/common/clients";
-import { Prisma, PrismaClient } from "@nook/common/prisma/nook";
+import { PrismaClient } from "@nook/common/prisma/nook";
 
 const BATCH_SIZE = 100;
 
