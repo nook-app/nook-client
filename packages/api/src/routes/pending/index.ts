@@ -7,30 +7,30 @@ export const pendingCastRoutes = async (fastify: FastifyInstance) => {
     const service = new PendingCastService(fastify);
 
     fastify.get<{
-      Params: { fid: string; cursor: string };
+      Querystring: { fid: string; cursor: string };
       Reply: PendingCastResponse | { error: string };
     }>("/drafts", async (request, reply) => {
       const { fid } = (await request.jwtDecode()) as { fid: string };
-      if (fid !== request.params.fid) {
-        // send 403 forbidden
+      if (fid !== request.query.fid) {
+        // 403 forbidden
         return reply.status(403).send({ error: "Forbidden" });
       }
-      const response = await service.getDraftCasts(fid, request.params.cursor);
+      const response = await service.getDraftCasts(fid, request.query.cursor);
       return reply.send(response);
     });
 
     fastify.get<{
-      Params: { fid: string; cursor: string };
+      Querystring: { fid: string; cursor: string };
       Reply: PendingCastResponse | { error: string };
     }>("/scheduled", async (request, reply) => {
       const { fid } = (await request.jwtDecode()) as { fid: string };
-      if (fid !== request.params.fid) {
+      if (fid !== request.query.fid) {
         // send 403 forbidden
         return reply.status(403).send({ error: "Forbidden" });
       }
       const response = await service.getScheduledCasts(
         fid,
-        request.params.cursor,
+        request.query.cursor,
       );
       return reply.send(response);
     });
