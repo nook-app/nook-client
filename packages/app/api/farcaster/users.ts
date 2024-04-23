@@ -12,17 +12,12 @@ export const fetchUser = async (fid: string): Promise<FarcasterUser> => {
 };
 
 export const useUser = (fid: string) => {
-  const queryClient = useQueryClient();
-  const initialData = queryClient.getQueryData<FarcasterUser>(["user", fid]);
   return useQuery<FarcasterUser>({
     queryKey: ["user", fid],
     queryFn: async () => {
       const user = await fetchUser(fid);
-      queryClient.setQueryData(["user", fid], user);
       return user;
     },
-    initialData,
-    enabled: !initialData && !!fid,
   });
 };
 

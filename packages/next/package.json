@@ -19,6 +19,7 @@
     "raf": "^3.4.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "react-intersection-observer": "^9.8.2",
     "react-native": "0.73.5",
     "react-native-web": "~0.19.9",
     "react-native-web-lite": "^1.94.5",

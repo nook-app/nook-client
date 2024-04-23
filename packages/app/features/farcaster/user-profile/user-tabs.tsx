@@ -1,101 +1,57 @@
 "use client";
 
-import { NookText, View, XStack, useTheme } from "@nook/ui";
+import { View } from "@nook/ui";
 import {
   FarcasterFeedFilter,
   FarcasterUser,
   UserFilterType,
 } from "../../../types";
-import { ReactNode } from "react";
-import { Link } from "solito/link";
-import { FarcasterCastFeed } from "../cast-feed";
-
-export type UserTabs = "casts" | "replies" | "media" | "frames";
+import { FarcasterFilteredFeed } from "../cast-feed/filtered-feed";
+import { Tabs } from "../../../components/tabs/tabs";
+import { useUser } from "../../../api/farcaster";
 
 export const UserTabs = ({
-  user,
-  activeTab,
-}: { user: FarcasterUser; activeTab: UserTabs }) => {
+  username,
+  activeIndex,
+}: { username: string; activeIndex: number }) => {
+  const { data: user } = useUser(username);
+  if (!user) return null;
+
   return (
     <View>
-      <XStack
-        flexGrow={1}
-        justifyContent="space-around"
-        alignItems="center"
-        borderBottomWidth="$0.5"
-        borderBottomColor="$color5"
-      >
-        <UserTab href={`/${user.username}`} isActive={activeTab === "casts"}>
-          Casts
-        </UserTab>
-        <UserTab
-          href={`/${user.username}/replies`}
-          isActive={activeTab === "replies"}
-        >
-          Replies
-        </UserTab>
-        <UserTab
-          href={`/${user.username}/media`}
-          isActive={activeTab === "media"}
-        >
-          Media
-        </UserTab>
-        <UserTab
-          href={`/${user.username}/frames`}
-          isActive={activeTab === "frames"}
-        >
-          Frames
-        </UserTab>
-      </XStack>
-      <UserFeed user={user} activeTab={activeTab} />
+      <Tabs
+        tabs={[
+          {
+            label: "Casts",
+            href: `/users/${user.username}`,
+          },
+          {
+            label: "Replies",
+            href: `/users/${user.username}/replies`,
+          },
+          {
+            label: "Media",
+            href: `/users/${user.username}/media`,
+          },
+          {
+            label: "Frames",
+            href: `/users/${user.username}/frames`,
+          },
+        ]}
+        activeIndex={activeIndex}
+      />
+      <UserFeed user={user} activeIndex={activeIndex} />
     </View>
-  );
-};
-
-const UserTab = ({
-  children,
-  href,
-  isActive,
-}: { children: ReactNode; href: string; isActive: boolean }) => {
-  return (
-    <Link
-      href={href}
-      viewProps={{
-        style: {
-          flex: 1,
-          flexGrow: 1,
-          height: "100%",
-          width: "100%",
-          justifyContent: "center",
-          alignItems: "center",
-        },
-      }}
-    >
-      <View paddingHorizontal="$2" paddingVertical="$4">
-        <NookText fontWeight={isActive ? "700" : "500"} muted={!isActive}>
-          {children}
-        </NookText>
-        <View
-          position="absolute"
-          bottom={0}
-          left={0}
-          width="100%"
-          height="$0.5"
-          borderRadius="$4"
-          backgroundColor={isActive ? "$color11" : "transparent"}
-        />
-      </View>
-    </Link>
   );
 };
 
 export const UserFeed = ({
   user,
-  activeTab,
-}: { user: FarcasterUser; activeTab: UserTabs }) => {
+  activeIndex,
+}: { user: FarcasterUser; activeIndex: number }) => {
   let filter: FarcasterFeedFilter = {};
-  switch (activeTab) {
-    case "casts":
+  switch (activeIndex) {
+    case 0:
       filter = {
         users: {
           type: UserFilterType.FIDS,
@@ -105,7 +61,7 @@ export const UserFeed = ({
         },
       };
       break;
-    case "replies":
+    case 1:
       filter = {
         users: {
           type: UserFilterType.FIDS,
@@ -116,7 +72,7 @@ export const UserFeed = ({
         onlyReplies: true,
       };
       break;
-    case "media":
+    case 2:
       filter = {
         users: {
           type: UserFilterType.FIDS,
@@ -127,7 +83,7 @@ export const UserFeed = ({
         contentTypes: ["image", "video"],
       };
       break;
-    case "frames":
+    case 3:
       filter = {
         users: {
           type: UserFilterType.FIDS,
@@ -139,5 +95,5 @@ export const UserFeed = ({
       };
       break;
   }
-  return <FarcasterCastFeed filter={filter} />;
+  return <FarcasterFilteredFeed filter={filter} />;
 };

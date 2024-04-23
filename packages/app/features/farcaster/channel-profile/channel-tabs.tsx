@@ -1,93 +1,54 @@
 "use client";
 
-import { NookText, View, XStack } from "@nook/ui";
+import { View } from "@nook/ui";
 import {
   Channel,
   ChannelFilterType,
   FarcasterFeedFilter,
   UserFilterType,
 } from "../../../types";
-import { ReactNode } from "react";
-import { Link } from "solito/link";
-import { FarcasterCastFeed } from "../cast-feed";
-
-export type ChannelTabs = "latest" | "media";
+import { FarcasterFilteredFeed } from "../cast-feed/filtered-feed";
+import { Tabs } from "../../../components/tabs/tabs";
+import { useChannel } from "../../../api/farcaster";
 
 export const ChannelTabs = ({
-  channel,
-  activeTab,
-}: { channel: Channel; activeTab: ChannelTabs }) => {
+  channelId,
+  activeIndex,
+}: { channelId: string; activeIndex: number }) => {
+  const { data: channel } = useChannel(channelId);
+  if (!channel) return null;
+
   return (
     <View>
-      <XStack
-        flexGrow={1}
-        justifyContent="space-around"
-        alignItems="center"
-        borderBottomWidth="$0.5"
-        borderBottomColor="$color5"
-      >
-        <ChannelTab
-          href={`/channels/${channel.channelId}`}
-          isActive={activeTab === "latest"}
-        >
-          Latest
-        </ChannelTab>
-        <ChannelTab
-          href={`/channels/${channel.channelId}/media`}
-          isActive={activeTab === "media"}
-        >
-          Media
-        </ChannelTab>
-      </XStack>
-      <ChannelFeed channel={channel} activeTab={activeTab} />
+      <Tabs
+        tabs={[
+          {
+            label: "Relevant",
+            href: `/channels/${channel.channelId}`,
+          },
+          {
+            label: "Media",
+            href: `/channels/${channel.channelId}/media`,
+          },
+          {
+            label: "Recent",
+            href: `/channels/${channel.channelId}/all`,
+          },
+        ]}
+        activeIndex={activeIndex}
+      />
+      <ChannelFeed channel={channel} activeIndex={activeIndex} />
     </View>
-  );
-};
-
-const ChannelTab = ({
-  children,
-  href,
-  isActive,
-}: { children: ReactNode; href: string; isActive: boolean }) => {
-  return (
-    <Link
-      href={href}
-      viewProps={{
-        style: {
-          flex: 1,
-          flexGrow: 1,
-          height: "100%",
-          width: "100%",
-          justifyContent: "center",
-          alignItems: "center",
-        },
-      }}
-    >
-      <View paddingHorizontal="$2" paddingVertical="$4">
-        <NookText fontWeight={isActive ? "700" : "500"} muted={!isActive}>
-          {children}
-        </NookText>
-        <View
-          position="absolute"
-          bottom={0}
-          left={0}
-          width="100%"
-          height="$0.5"
-          borderRadius="$4"
-          backgroundColor={isActive ? "$color11" : "transparent"}
-        />
-      </View>
-    </Link>
   );
 };
 
 export const ChannelFeed = ({
   channel,
-  activeTab,
-}: { channel: Channel; activeTab: ChannelTabs }) => {
+  activeIndex,
+}: { channel: Channel; activeIndex: number }) => {
   let filter: FarcasterFeedFilter = {};
-  switch (activeTab) {
-    case "latest":
+  switch (activeIndex) {
+    case 0:
       filter = {
         users: {
           type: UserFilterType.POWER_BADGE,
@@ -103,7 +64,7 @@ export const ChannelFeed = ({
         },
       };
       break;
-    case "media":
+    case 1:
       filter = {
         users: {
           type: UserFilterType.POWER_BADGE,
@@ -120,6 +81,16 @@ export const ChannelFeed = ({
         contentTypes: ["image", "video"],
       };
       break;
+    case 2:
+      filter = {
+        channels: {
+          type: ChannelFilterType.CHANNEL_URLS,
+          data: {
+            urls: [channel.url],
+          },
+        },
+      };
+      break;
   }
-  return <FarcasterCastFeed filter={filter} />;
+  return <FarcasterFilteredFeed filter={filter} />;
 };

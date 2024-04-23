@@ -1,20 +1,23 @@
 "use client";
 
 import { NookText, View, XStack, YStack } from "@nook/ui";
-import { FarcasterUser } from "../../../types";
 import { ZoomableImage } from "../../../components/zoomable-image";
 import { CdnAvatar } from "../../../components/cdn-avatar";
 import { FarcasterBioText } from "../../../components/farcaster/bio-text";
 import { Link } from "solito/link";
 import { formatNumber } from "../../../utils";
-import { FarcasterPowerBadge } from "../../../components/farcaster/power-badge";
-import { FarcasterUserFollowButton } from "../../../components/farcaster/user-follow-button";
-import { UserFollowBadge } from "../../../components/farcaster/user-follow-badge";
+import { FarcasterPowerBadge } from "../../../components/farcaster/users/power-badge";
+import { FarcasterUserFollowButton } from "../../../components/farcaster/users/user-follow-button";
+import { UserFollowBadge } from "../../../components/farcaster/users/user-follow-badge";
+import { useUser } from "../../../api/farcaster";
 
-export const UserHeader = ({ user }: { user: FarcasterUser }) => {
+export const UserHeader = ({ username }: { username: string }) => {
+  const { data: user } = useUser(username);
+  if (!user) return null;
+
   const bio = user?.bio?.trim().replace(/\n\s*\n/g, "\n");
   return (
-    <YStack gap="$3" backgroundColor="$color1" padding="$4">
+    <YStack gap="$3" padding="$4">
       <View flexDirection="row" justifyContent="space-between">
         <YStack gap="$2">
           <ZoomableImage aspectRatio={1} uri={user.pfp}>

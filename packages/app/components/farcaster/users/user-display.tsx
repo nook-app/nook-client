@@ -1,7 +1,7 @@
-import { FarcasterUser } from "../../types";
+import { FarcasterUser } from "../../../types";
 import { NookText, View, XStack, YStack } from "@nook/ui";
 import { FarcasterPowerBadge } from "./power-badge";
-import { CdnAvatar } from "../cdn-avatar";
+import { CdnAvatar } from "../../cdn-avatar";
 import { Link } from "solito/link";
 
 export const FarcasterUserTextDisplay = ({
@@ -41,7 +41,7 @@ export const FarcasterUserTextDisplay = ({
           e.stopPropagation();
         }}
       >
-        <Link href={`/${user.username}`}>{Component}</Link>
+        <Link href={`/users/${user.username}`}>{Component}</Link>
       </View>
     );
   }
@@ -78,7 +78,7 @@ export const FarcasterUserAvatar = ({
           e.stopPropagation();
         }}
       >
-        <Link href={`/${user.username}`}>{Component}</Link>
+        <Link href={`/users/${user.username}`}>{Component}</Link>
       </View>
     );
   }
@@ -99,7 +99,7 @@ export const FarcasterUserBadge = ({
       borderRadius="$6"
       paddingHorizontal="$2"
       paddingVertical="$1.5"
-      borderColor="$color7"
+      borderColor="$borderColor"
       borderWidth="$0.5"
       hoverStyle={{
         // @ts-ignore
@@ -129,7 +129,7 @@ export const FarcasterUserBadge = ({
           e.stopPropagation();
         }}
       >
-        <Link href={`/${user.username}`}>{Component}</Link>
+        <Link href={`/users/${user.username}`}>{Component}</Link>
       </View>
     );
   }

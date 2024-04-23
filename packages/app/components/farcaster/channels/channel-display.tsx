@@ -1,7 +1,7 @@
 import { NookText, View, XStack, YStack } from "@nook/ui";
-import { Channel } from "../../types";
+import { Channel } from "../../../types";
 import { Link } from "solito/link";
-import { CdnAvatar } from "../cdn-avatar";
+import { CdnAvatar } from "../../cdn-avatar";
 
 export const FarcasterChannelTextDisplay = ({
   channel,
@@ -17,10 +17,10 @@ export const FarcasterChannelTextDisplay = ({
     <Stack gap={orientation === "horizontal" ? "$1.5" : "$1"} flexShrink={1}>
       <XStack gap="$1.5" alignItems="center" flexShrink={1}>
         <NookText
-          fontWeight="600"
           flexShrink={1}
           numberOfLines={1}
           ellipsizeMode="tail"
+          variant="label"
         >
           {`${channel.name} `}
         </NookText>
@@ -97,7 +97,7 @@ export const FarcasterChannelBadge = ({
       borderRadius="$6"
       paddingHorizontal="$2"
       paddingVertical="$1.5"
-      borderColor="$color7"
+      borderColor="$borderColor"
       borderWidth="$0.5"
       hoverStyle={{
         // @ts-ignore

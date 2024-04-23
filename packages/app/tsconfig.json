@@ -1,6 +1,9 @@
 {
   "extends": "../../tsconfig.json",
-  "include": ["**/*.ts", "**/*.tsx"],
+  "include": [
+    "**/*.ts",
+    "**/*.tsx",
+  ],
   "compilerOptions": {
     "composite": true,
     "jsx": "react-jsx"

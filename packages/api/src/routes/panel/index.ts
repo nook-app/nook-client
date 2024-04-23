@@ -73,8 +73,6 @@ export const panelRoutes = async (fastify: FastifyInstance) => {
     );
 
     fastify.post<{ Body: PanelRequest }>("/panels", async (request, reply) => {
-      await request.jwtVerify();
-
       try {
         const response = await service.getPanel(request.body);
 

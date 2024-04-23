@@ -1,5 +1,5 @@
 import { View, XStack, Image } from "@nook/ui";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ZoomableImage } from "../zoomable-image";
 
 export const EmbedImages = ({ uris }: { uris: string[] }) => {
@@ -20,15 +20,17 @@ export const EmbedImages = ({ uris }: { uris: string[] }) => {
 
 export const EmbedImage = ({ uri }: { uri: string }) => {
   const [aspectRatio, setAspectRatio] = useState(1);
+
+  useEffect(() => {
+    Image.getSize(uri, (w, h) => {
+      if (w > 0) {
+        setAspectRatio(w / h);
+      }
+    });
+  }, [uri]);
+
   return (
     <View
-      onLayout={() => {
-        Image.getSize(uri, (w, h) => {
-          if (w > 0) {
-            setAspectRatio(w / h);
-          }
-        });
-      }}
       maxHeight={500}
       borderRadius="$4"
       overflow="hidden"

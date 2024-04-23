@@ -1,8 +1,8 @@
 import { EmbedMedia } from "./EmbedMedia";
 import { CdnAvatar } from "../cdn-avatar";
-import { FarcasterUserTextDisplay } from "../farcaster/user-display";
+import { FarcasterUserTextDisplay } from "../farcaster/users/user-display";
 import { NookText, View, XStack, YStack } from "@nook/ui";
-import { FarcasterCastText } from "../farcaster/cast-text";
+import { FarcasterCastText } from "../farcaster/casts/cast-text";
 import { FarcasterCast } from "../../types";
 import { formatTimeAgo } from "../../utils";
 import { useRouter } from "solito/navigation";
@@ -22,8 +22,8 @@ export const EmbedCast = ({
       }}
     >
       <YStack
-        borderWidth="$0.25"
-        borderColor="$borderColor"
+        borderWidth="$0.5"
+        borderColor="rgba(256, 256, 256, 0.1)"
         borderRadius="$4"
         padding="$2.5"
         gap="$1"

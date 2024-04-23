@@ -6,12 +6,13 @@ import {
   Home,
   MoreHorizontal,
   Search,
+  Settings,
   Sparkle,
   User,
 } from "@tamagui/lucide-icons";
 import { useAuth } from "@nook/app/context/auth";
 import { useUser } from "@nook/app/api/farcaster";
-import { FarcasterUserDisplay } from "@nook/app/components/farcaster/user-display";
+import { FarcasterUserDisplay } from "@nook/app/components/farcaster/users/user-display";
 import { CreateCastDialog } from "@nook/app/features/farcaster/create-cast/disalog";
 import { AccountSwitcher } from "@nook/app/features/auth/account-switcher";
 import Link from "next/link";
@@ -39,22 +40,27 @@ export const RootNavigation = ({ children }: { children: React.ReactNode }) => {
             </View>
             <RootNavigationItem label="Home" Icon={Home} href="/" />
             <RootNavigationItem label="Explore" Icon={Search} href="/search" />
-            <RootNavigationItem
-              label="Notifications"
-              Icon={Bell}
-              href="/notifications"
-            />
             {user && (
-              <RootNavigationItem
-                label="Profile"
-                Icon={User}
-                href={`/${user?.username}`}
-              />
-            )}
-            {user && (
-              <View marginTop="$4">
-                <CreateCastDialog />
-              </View>
+              <>
+                <RootNavigationItem
+                  label="Notifications"
+                  Icon={Bell}
+                  href="/notifications"
+                />
+                <RootNavigationItem
+                  label="Profile"
+                  Icon={User}
+                  href={`/${user?.username}`}
+                />
+                <RootNavigationItem
+                  label="Settings"
+                  Icon={Settings}
+                  href="/settings"
+                />
+                <View marginTop="$4">
+                  <CreateCastDialog />
+                </View>
+              </>
             )}
           </YStack>
           <SessionItem />

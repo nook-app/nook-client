@@ -16,12 +16,12 @@ import { useSearchPreview } from "../../api/discover";
 import {
   FarcasterUserBadge,
   FarcasterUserDisplay,
-} from "../../components/farcaster/user-display";
+} from "../../components/farcaster/users/user-display";
 import { Link } from "solito/link";
 import {
   FarcasterChannelBadge,
   FarcasterChannelDisplay,
-} from "../../components/farcaster/channel-display";
+} from "../../components/farcaster/channels/channel-display";
 import { useParams } from "solito/navigation";
 import { useChannel, useUser } from "../../api/farcaster";
 
@@ -111,7 +111,7 @@ const SearchResults = ({ value }: { value: string }) => {
       </Link>
       <Separator />
       {data.users.map((user) => (
-        <Link key={user.fid} href={`/${user.username}`}>
+        <Link key={user.fid} href={`/users/${user.username}`}>
           <View
             padding="$3"
             hoverStyle={{

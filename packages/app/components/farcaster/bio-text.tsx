@@ -1,4 +1,3 @@
-import { Linking } from "react-native";
 import { Buffer } from "buffer";
 import { TextLink } from "solito/link";
 import { NookText } from "@nook/ui";
@@ -33,14 +32,18 @@ export const FarcasterBioText = ({
       }
 
       result.push(
-        <NookText
-          key={`${index}-${i}-${url}`}
-          color="$color11"
-          fontWeight="500"
-          onPress={() => Linking.openURL(url)}
-        >
-          {url}
-        </NookText>,
+        <TextLink key={`${index}-${i}-${url}`} href={url}>
+          <NookText
+            color="$color11"
+            fontWeight="500"
+            hoverStyle={{
+              // @ts-ignore
+              textDecoration: "underline",
+            }}
+          >
+            {url}
+          </NookText>
+        </TextLink>,
       );
 
       endIndex = index - url.length;

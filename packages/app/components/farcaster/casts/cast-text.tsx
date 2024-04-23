@@ -1,7 +1,7 @@
 import { Text } from "tamagui";
 import { GetThemeValueForKey } from "@tamagui/core";
 import { Buffer } from "buffer";
-import { FarcasterCast } from "../../types";
+import { FarcasterCast } from "../../../types";
 import { Link, TextLink } from "solito/link";
 
 export const FarcasterCastText = ({
@@ -150,7 +150,7 @@ export const FarcasterCastText = ({
             e.stopPropagation();
           }}
         >
-          <TextLink href={`/${mention.user.username}`}>
+          <TextLink href={`/users/${mention.user.username}`}>
             <Text
               color="$color11"
               fontSize={

@@ -1,6 +1,5 @@
 import { NookText, XStack } from "@nook/ui";
-import { FarcasterCast } from "../../types";
-import { useCast } from "../../api/farcaster";
+import { FarcasterCast } from "../../../types";
 
 export type CastEngagementTypes = "replies" | "likes" | "quotes" | "recasts";
 
@@ -12,11 +11,9 @@ const singular = {
 };
 
 export const FarcasterCastEngagement = ({
-  hash,
+  cast,
   types,
-}: { hash: string; types: CastEngagementTypes[] }) => {
-  const { data: cast } = useCast(hash);
-
+}: { cast: FarcasterCast; types: CastEngagementTypes[] }) => {
   return (
     <XStack gap="$2" alignItems="center">
       {types.map((type) => {

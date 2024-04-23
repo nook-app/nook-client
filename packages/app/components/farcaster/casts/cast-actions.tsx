@@ -1,5 +1,4 @@
-import { NookText, Text, View, XStack } from "@nook/ui";
-import { useCast } from "../../api/farcaster";
+import { View } from "@nook/ui";
 import {
   Heart,
   LayoutGrid,
@@ -8,25 +7,7 @@ import {
   Share,
 } from "@tamagui/lucide-icons";
 
-export const FarcasterCastActions = ({ hash }: { hash: string }) => {
-  const { data: cast } = useCast(hash);
-
-  return (
-    <XStack alignItems="center" justifyContent="space-between" marginLeft="$-2">
-      <XStack gap="$2" alignItems="center">
-        <FarcasterReplyActionButton />
-        <FarcasterRecastActionButton />
-        <FarcasterLikeActionButton />
-      </XStack>
-      <XStack gap="$2" alignItems="center">
-        <FarcasterCustomActionButton />
-        <FarcasterShareButton />
-      </XStack>
-    </XStack>
-  );
-};
-
-const FarcasterReplyActionButton = () => {
+export const FarcasterReplyActionButton = () => {
   return (
     <View
       cursor="pointer"
@@ -58,7 +39,7 @@ const FarcasterReplyActionButton = () => {
   );
 };
 
-const FarcasterRecastActionButton = () => {
+export const FarcasterRecastActionButton = () => {
   return (
     <View
       cursor="pointer"
@@ -91,7 +72,7 @@ const FarcasterRecastActionButton = () => {
   );
 };
 
-const FarcasterLikeActionButton = () => {
+export const FarcasterLikeActionButton = () => {
   return (
     <View
       cursor="pointer"
@@ -123,7 +104,7 @@ const FarcasterLikeActionButton = () => {
   );
 };
 
-const FarcasterCustomActionButton = () => {
+export const FarcasterCustomActionButton = () => {
   return (
     <View
       cursor="pointer"
@@ -155,7 +136,7 @@ const FarcasterCustomActionButton = () => {
   );
 };
 
-const FarcasterShareButton = () => {
+export const FarcasterShareButton = () => {
   return (
     <View
       cursor="pointer"

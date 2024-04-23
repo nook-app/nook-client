@@ -3,7 +3,7 @@ import { ReactNode } from "react";
 import { useAuth } from "../../context/auth";
 import { Session } from "../../types";
 import { useUsers } from "../../api/farcaster";
-import { FarcasterUserDisplay } from "../../components/farcaster/user-display";
+import { FarcasterUserDisplay } from "../../components/farcaster/users/user-display";
 import { Check } from "@tamagui/lucide-icons";
 
 export const AccountSwitcher = ({ children }: { children: ReactNode }) => {
