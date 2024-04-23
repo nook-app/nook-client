@@ -7,7 +7,7 @@ export const pendingCastRoutes = async (fastify: FastifyInstance) => {
     const service = new PendingCastService(fastify);
 
     fastify.get<{
-      Querystring: { fid: string; cursor: string };
+      Querystring: { fid: string; cursor?: string };
       Reply: PendingCastResponse | { error: string };
     }>("/drafts", async (request, reply) => {
       const { fid } = (await request.jwtDecode()) as { fid: string };
@@ -20,7 +20,7 @@ export const pendingCastRoutes = async (fastify: FastifyInstance) => {
     });
 
     fastify.get<{
-      Querystring: { fid: string; cursor: string };
+      Querystring: { fid: string; cursor?: string };
       Reply: PendingCastResponse | { error: string };
     }>("/scheduled", async (request, reply) => {
       const { fid } = (await request.jwtDecode()) as { fid: string };

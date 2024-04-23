@@ -14,23 +14,29 @@ export class PendingCastService {
 
   async getDraftCasts(
     fid: string,
-    cursor: string,
+    cursor?: string,
   ): Promise<PendingCastResponse> {
     return this._getPendingCasts(fid, cursor, true);
   }
 
-  async getScheduledCasts(fid: string, cursor: string) {
+  async getScheduledCasts(fid: string, cursor?: string) {
     return this._getPendingCasts(fid, cursor, false);
   }
 
-  async _getPendingCasts(fid: string, cursor: string, drafts: boolean) {
-    const cursorObj = decodeCursor(cursor) as unknown as { createdAt: number };
+  async _getPendingCasts(
+    fid: string,
+    cursor: string | undefined,
+    drafts: boolean,
+  ) {
+    const cursorObj = decodeCursor(cursor) as unknown as
+      | { createdAt: number }
+      | undefined;
     const data = await this.client.pendingCast.findMany({
       where: {
         fid,
         scheduledFor: drafts ? null : { not: null },
         createdAt: {
-          lt: cursorObj.createdAt ? new Date(cursorObj.createdAt) : undefined,
+          lt: cursorObj ? new Date(cursorObj.createdAt) : undefined,
         },
         deletedAt: null,
       },
