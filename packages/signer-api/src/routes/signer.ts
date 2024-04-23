@@ -1,6 +1,7 @@
 import { FastifyInstance } from "fastify";
 import { SignerService } from "../service/signer";
 import {
+  PendingCastRequest,
   SubmitCastAddRequest,
   SubmitCastRemoveRequest,
   SubmitFrameActionRequest,
@@ -9,6 +10,7 @@ import {
   SubmitReactionAddRequest,
   SubmitReactionRemoveRequest,
 } from "@nook/common/types";
+import { PendingCast } from "@nook/common/prisma/nook";
 
 export const signerRoutes = async (fastify: FastifyInstance) => {
   fastify.register(async (fastify: FastifyInstance) => {
@@ -71,6 +73,21 @@ export const signerRoutes = async (fastify: FastifyInstance) => {
         }
       },
     );
+
+    fastify.post<{
+      Body: { data: PendingCast[] };
+      Reply: [string, string | null][] | { message: string };
+    }>("/signer/cast-add/scheduled", async (request, reply) => {
+      try {
+        const response = await signerService.submitPendingCasts(
+          request.body.data,
+        );
+        return reply.send(response);
+      } catch (e) {
+        console.error(e);
+        return reply.code(500).send({ message: (e as Error).message });
+      }
+    });
 
     fastify.post<{ Body: SubmitCastRemoveRequest }>(
       "/signer/cast-remove",

@@ -9,6 +9,7 @@ import {
 import { RawNotificationResponse } from "./notifications";
 import { TransactionDto } from "../onceupon";
 import { Nook } from "./nook";
+import { PendingCast } from "../prisma/nook";
 
 export type FarcasterCastResponse = {
   hash: string;
@@ -124,6 +125,16 @@ export type SubmitCastAddRequest = {
   castEmbedFid?: string;
   castEmbedHash?: string;
   embeds?: string[];
+};
+
+export type PendingCastRequest = SubmitCastAddRequest & {
+  id: string;
+  scheduledFor: Date | null;
+};
+
+export type PendingCastResponse = {
+  data: PendingCast[];
+  nextCursor?: string;
 };
 
 export type SubmitCastRemoveRequest = {
