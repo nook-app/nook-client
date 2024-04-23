@@ -32,7 +32,6 @@ export const NookButton = styled(Button, {
       action: {
         backgroundColor: "$mauve12",
         borderRadius: "$10",
-        size: "$3",
         paddingHorizontal: "$3",
         color: "$color1",
         borderWidth: "$0",
@@ -47,7 +46,6 @@ export const NookButton = styled(Button, {
         backgroundColor: "transparent",
         borderColor: "$color6",
         borderRadius: "$10",
-        size: "$3",
         height: "$3",
         paddingHorizontal: "$3",
         color: "$color12",

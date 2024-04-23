@@ -92,6 +92,6 @@ export const useFollowUser = (fid: string) => {
     isFollowing: data?.context?.following,
     isFollower: data?.context?.followers,
     isMutual: data?.context?.following && data?.context?.followers,
-    isViewer: data?.fid === user?.fid,
+    isViewer: !user || data?.fid === user?.fid,
   };
 };

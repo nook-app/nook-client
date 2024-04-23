@@ -45,23 +45,31 @@ export const FarcasterCastText = ({
 
       if (/https?:\/\/[^\s]+/.test(part) && !disableLinks) {
         splitParts.push(
-          <TextLink key={`${cast.hash}-${index}-${i}-${part}`} href={part}>
-            <Text
-              color="$color11"
-              fontSize={
-                fontSize as
-                  | "unset"
-                  | GetThemeValueForKey<"fontSize">
-                  | undefined
-              }
-              hoverStyle={{
-                // @ts-ignore
-                textDecoration: "underline",
-              }}
-            >
-              {part}
-            </Text>
-          </TextLink>,
+          <Text
+            key={`${cast.hash}-${index}-${i}-${part}`}
+            onPress={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+            }}
+          >
+            <TextLink href={part}>
+              <Text
+                color="$color11"
+                fontSize={
+                  fontSize as
+                    | "unset"
+                    | GetThemeValueForKey<"fontSize">
+                    | undefined
+                }
+                hoverStyle={{
+                  // @ts-ignore
+                  textDecoration: "underline",
+                }}
+              >
+                {part}
+              </Text>
+            </TextLink>{" "}
+          </Text>,
         );
       } else {
         splitParts.push(
@@ -100,23 +108,31 @@ export const FarcasterCastText = ({
         ),
       );
       textParts.push(
-        <TextLink
+        <Text
           key={`${cast.hash}-${mention.position}-${label}`}
-          href={`/channels/${mention.channel.channelId}`}
+          onPress={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+          }}
         >
-          <Text
-            color="$color11"
-            fontSize={
-              fontSize as "unset" | GetThemeValueForKey<"fontSize"> | undefined
-            }
-            hoverStyle={{
-              // @ts-ignore
-              textDecoration: "underline",
-            }}
-          >
-            {label}
-          </Text>
-        </TextLink>,
+          <TextLink href={`/channels/${mention.channel.channelId}`}>
+            <Text
+              color="$color11"
+              fontSize={
+                fontSize as
+                  | "unset"
+                  | GetThemeValueForKey<"fontSize">
+                  | undefined
+              }
+              hoverStyle={{
+                // @ts-ignore
+                textDecoration: "underline",
+              }}
+            >
+              {label}
+            </Text>
+          </TextLink>
+        </Text>,
       );
     } else {
       const label = `@${mention.user.username || "unknown"}`;
@@ -127,23 +143,32 @@ export const FarcasterCastText = ({
         ),
       );
       textParts.push(
-        <TextLink
+        <Text
           key={`${cast.hash}-${mention.position}-${label}`}
-          href={`/${mention.user.username}`}
+          onPress={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+          }}
         >
-          <Text
-            color="$color11"
-            fontSize={
-              fontSize as "unset" | GetThemeValueForKey<"fontSize"> | undefined
-            }
-            hoverStyle={{
-              // @ts-ignore
-              textDecoration: "underline",
-            }}
-          >
-            {label}
-          </Text>
-        </TextLink>,
+          <TextLink href={`/${mention.user.username}`}>
+            <Text
+              color="$color11"
+              fontSize={
+                fontSize as
+                  | "unset"
+                  | GetThemeValueForKey<"fontSize">
+                  | undefined
+              }
+              hoverStyle={{
+                // @ts-ignore
+                textDecoration: "underline",
+              }}
+            >
+              {label}
+            </Text>
+          </TextLink>
+          ,
+        </Text>,
       );
     }
     index = Number(mention.position);

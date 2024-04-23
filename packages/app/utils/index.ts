@@ -33,18 +33,18 @@ export function formatTimeAgo(timestamp: number) {
     })} ${dateObj.getDate()}`;
   }
   if (interval > 1) {
-    return `${Math.floor(interval)}d ago`;
+    return `${Math.floor(interval)}d`;
   }
   interval = seconds / 3600; // Hours
   if (interval > 1) {
-    return `${Math.floor(interval)}h ago`;
+    return `${Math.floor(interval)}h`;
   }
   interval = seconds / 60; // Minutes
   if (interval > 1) {
-    return `${Math.floor(interval)}m ago`;
+    return `${Math.floor(interval)}m`;
   }
 
-  return `${Math.floor(seconds)}s ago`; // Seconds
+  return `${Math.floor(seconds)}s`; // Seconds
 }
 
 export function formatNumber(num: number): string {

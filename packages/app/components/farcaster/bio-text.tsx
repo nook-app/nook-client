@@ -3,7 +3,7 @@ import { Buffer } from "buffer";
 import { TextLink } from "solito/link";
 import { NookText } from "@nook/ui";
 
-export const FarcasterUserBioText = ({
+export const FarcasterBioText = ({
   text,
   selectable,
 }: { text: string; selectable?: boolean }) => {

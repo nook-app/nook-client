@@ -3,7 +3,10 @@
 import { View, XStack } from "@nook/ui";
 import { ReactNode } from "react";
 
-export const PageNavigation = ({ children }: { children: ReactNode }) => {
+export const PageNavigation = ({
+  children,
+  sidebar,
+}: { children: ReactNode; sidebar?: ReactNode }) => {
   return (
     <XStack>
       <View
@@ -16,7 +19,7 @@ export const PageNavigation = ({ children }: { children: ReactNode }) => {
       >
         {children}
       </View>
-      <View width={400} />
+      <View width={400}>{sidebar}</View>
     </XStack>
   );
 };

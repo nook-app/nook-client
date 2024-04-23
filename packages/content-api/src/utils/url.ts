@@ -125,6 +125,10 @@ const fetchUrlMetadata = async (url: string) => {
         "user-agent":
           USER_AGENT_OVERRIDES[new URL(url).hostname] ||
           "Mozilla/5.0 (compatible; TelegramBot/1.0; +https://core.telegram.org/bots/webhooks)",
+        "Sec-Fetch-Dest": "document",
+        "Sec-Fetch-Mode": "navigate",
+        "Sec-Fetch-Site": "same-origin",
+        "Sec-Fetch-User": "?1",
       },
     }) as Promise<Response>,
     new Promise((_, reject) =>

@@ -9,5 +9,12 @@ export const NookText = styled(Text, {
         color: "$mauve11",
       },
     },
+    variant: {
+      label: {
+        color: "$mauve12",
+        fontWeight: "700",
+        fontSize: "$7",
+      },
+    },
   } as const,
 });

@@ -5,6 +5,7 @@ import {
   Bell,
   Home,
   MoreHorizontal,
+  Search,
   Sparkle,
   User,
 } from "@tamagui/lucide-icons";
@@ -27,10 +28,8 @@ export const RootNavigation = ({ children }: { children: React.ReactNode }) => {
           }}
           justifyContent="space-between"
           width="100%"
-          paddingTop="$4"
-          paddingBottom="$5"
           minHeight="100vh"
-          paddingHorizontal="$3"
+          padding="$3"
         >
           <YStack>
             <View paddingHorizontal="$3" marginBottom="$4">
@@ -39,11 +38,7 @@ export const RootNavigation = ({ children }: { children: React.ReactNode }) => {
               </NookText>
             </View>
             <RootNavigationItem label="Home" Icon={Home} href="/" />
-            <RootNavigationItem
-              label="Discover"
-              Icon={Sparkle}
-              href="/discover"
-            />
+            <RootNavigationItem label="Explore" Icon={Search} href="/search" />
             <RootNavigationItem
               label="Notifications"
               Icon={Bell}

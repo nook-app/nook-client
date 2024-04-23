@@ -1,7 +1,7 @@
 import { Linking } from "react-native";
 import { formatToCDN } from "../../utils";
 import { UrlContentResponse } from "../../types";
-import { Image, Text, View, XStack, YStack } from "@nook/ui";
+import { Image, NookText, Text, View, XStack, YStack } from "@nook/ui";
 import { Link } from "@tamagui/lucide-icons";
 
 export const EmbedUrl = ({ content }: { content: UrlContentResponse }) => {
@@ -33,7 +33,7 @@ export const EmbedUrl = ({ content }: { content: UrlContentResponse }) => {
             <Link size={48} color="$mauve12" />
           </View>
           <Image
-            source={{ uri: formatToCDN(content.metadata.image) }}
+            source={{ uri: content.metadata.image }}
             style={{
               width: "100%",
               height: "100%",
@@ -49,13 +49,15 @@ export const EmbedUrl = ({ content }: { content: UrlContentResponse }) => {
         borderTopWidth="$0.25"
         backgroundColor="$color3"
       >
-        <Text numberOfLines={1} fontSize="$2">
-          {content.host}
-        </Text>
-        <Text fontWeight="600" numberOfLines={1}>
+        <NookText fontWeight="600" numberOfLines={1}>
           {content.metadata.title}
-        </Text>
-        <Text numberOfLines={2}>{content.metadata.description}</Text>
+        </NookText>
+        <NookText numberOfLines={2} fontSize="$4">
+          {content.metadata.description}
+        </NookText>
+        <NookText numberOfLines={1} fontSize="$2" muted>
+          {content.host?.replace("www.", "")}
+        </NookText>
       </YStack>
     </YStack>
   );
@@ -77,18 +79,18 @@ const EmbedUrlSmall = ({ content }: { content: UrlContentResponse }) => {
         <Link size={24} color="$mauve12" />
       </View>
       <YStack gap="$1" paddingHorizontal="$3" flexShrink={1}>
-        <Text fontSize="$3" numberOfLines={1}>
+        <NookText fontSize="$3" numberOfLines={1}>
           {content.host}
-        </Text>
+        </NookText>
         {content.metadata.title && (
-          <Text
+          <NookText
             fontWeight="600"
             fontSize="$3"
             numberOfLines={1}
             ellipsizeMode="tail"
           >
             {content.metadata.title}
-          </Text>
+          </NookText>
         )}
       </YStack>
     </XStack>

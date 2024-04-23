@@ -4,11 +4,12 @@ import { NookText, View, XStack, YStack } from "@nook/ui";
 import { FarcasterUser } from "../../../types";
 import { ZoomableImage } from "../../../components/zoomable-image";
 import { CdnAvatar } from "../../../components/cdn-avatar";
-import { FarcasterUserBioText } from "./bio-text";
+import { FarcasterBioText } from "../../../components/farcaster/bio-text";
 import { Link } from "solito/link";
 import { formatNumber } from "../../../utils";
 import { FarcasterPowerBadge } from "../../../components/farcaster/power-badge";
 import { FarcasterUserFollowButton } from "../../../components/farcaster/user-follow-button";
+import { UserFollowBadge } from "../../../components/farcaster/user-follow-badge";
 
 export const UserHeader = ({ user }: { user: FarcasterUser }) => {
   const bio = user?.bio?.trim().replace(/\n\s*\n/g, "\n");
@@ -33,18 +34,7 @@ export const UserHeader = ({ user }: { user: FarcasterUser }) => {
                 {user.username ? `@${user.username}` : `!${user.fid}`}
               </NookText>
               <NookText muted>{`#${user.fid}`}</NookText>
-              {user.context?.followers && (
-                <View
-                  paddingVertical="$1"
-                  paddingHorizontal="$2"
-                  borderRadius="$2"
-                  backgroundColor="$color3"
-                >
-                  <NookText fontSize="$2" fontWeight="500">
-                    Follows you
-                  </NookText>
-                </View>
-              )}
+              <UserFollowBadge user={user} />
             </XStack>
           </YStack>
         </YStack>
@@ -52,7 +42,7 @@ export const UserHeader = ({ user }: { user: FarcasterUser }) => {
           <FarcasterUserFollowButton fid={user.fid} />
         </View>
       </View>
-      {bio && <FarcasterUserBioText text={bio} selectable />}
+      {bio && <FarcasterBioText text={bio} selectable />}
       <XStack gap="$2">
         <Link href={`/users/${user.fid}/following`}>
           <View flexDirection="row" alignItems="center" gap="$1">

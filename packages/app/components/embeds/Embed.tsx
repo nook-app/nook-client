@@ -3,7 +3,7 @@ import { EmbedVideo } from "./EmbedVideo";
 import { EmbedUrl } from "./EmbedUrl";
 import { EmbedTwitter } from "./EmbedTwitter";
 import { Linking } from "react-native";
-import { Text, View, XStack, YStack, useTheme } from "tamagui";
+import { Text, View, XStack, YStack } from "tamagui";
 import { EmbedNook } from "./EmbedNook";
 import { FarcasterCast, UrlContentResponse } from "../../types";
 import { formatToCDN } from "../../utils";
@@ -62,9 +62,14 @@ export const Embeds = ({
   );
   if (isAllImages) {
     return (
-      <EmbedImages
-        uris={cast.embeds.map(({ uri, type }) => formatToCDN(uri, { type }))}
-      />
+      <>
+        <EmbedImages
+          uris={cast.embeds.map(({ uri, type }) => formatToCDN(uri, { type }))}
+        />
+        {cast.embedCasts.map((embedCast) => (
+          <EmbedCast key={embedCast.hash} cast={embedCast} />
+        ))}
+      </>
     );
   }
 
