@@ -126,6 +126,7 @@ export class ContentService {
   }
 
   async upsertReferencedContent(reference: ContentReferenceResponse) {
+    const referencedContent = (await this.getContents([reference.uri]))[0];
     await this.client.farcasterContentReference.upsert({
       where: {
         uri_fid_hash_type: {
@@ -141,6 +142,21 @@ export class ContentService {
         parentFid: reference.parentFid
           ? BigInt(reference.parentFid)
           : undefined,
+        rootParentFid: reference.rootParentFid
+          ? BigInt(reference.rootParentFid)
+          : undefined,
+        protocol: referencedContent?.protocol,
+        host: referencedContent?.host,
+        path: referencedContent?.path,
+        query: referencedContent?.query,
+        fragment: referencedContent?.fragment,
+        contentType: referencedContent?.type,
+        length: referencedContent?.length,
+        hasFrame: referencedContent?.hasFrame,
+        metadata: (referencedContent?.metadata ||
+          Prisma.DbNull) as Prisma.InputJsonValue,
+        frame: (referencedContent?.frame ||
+          Prisma.DbNull) as Prisma.InputJsonValue,
       },
       update: {
         ...reference,
@@ -148,6 +164,21 @@ export class ContentService {
         parentFid: reference.parentFid
           ? BigInt(reference.parentFid)
           : undefined,
+        rootParentFid: reference.rootParentFid
+          ? BigInt(reference.rootParentFid)
+          : undefined,
+        protocol: referencedContent?.protocol,
+        host: referencedContent?.host,
+        path: referencedContent?.path,
+        query: referencedContent?.query,
+        fragment: referencedContent?.fragment,
+        contentType: referencedContent?.type,
+        length: referencedContent?.length,
+        hasFrame: referencedContent?.hasFrame,
+        metadata: (referencedContent?.metadata ||
+          Prisma.DbNull) as Prisma.InputJsonValue,
+        frame: (referencedContent?.frame ||
+          Prisma.DbNull) as Prisma.InputJsonValue,
       },
     });
   }
@@ -165,6 +196,10 @@ export class ContentService {
         uri: url.uri,
         type: ContentReferenceType.Embed,
         timestamp,
+        text: cast.text,
+        rootParentFid: cast.rootParentFid,
+        rootParentHash: cast.rootParentHash,
+        rootParentUrl: cast.rootParentUrl,
       });
     }
 
@@ -179,6 +214,10 @@ export class ContentService {
           uri: url.uri,
           type: ContentReferenceType.Quote,
           timestamp,
+          text: cast.text,
+          rootParentFid: cast.rootParentFid,
+          rootParentHash: cast.rootParentHash,
+          rootParentUrl: cast.rootParentUrl,
         });
       }
     }
@@ -194,6 +233,10 @@ export class ContentService {
           uri: url.uri,
           type: ContentReferenceType.Quote,
           timestamp,
+          text: cast.text,
+          rootParentFid: cast.rootParentFid,
+          rootParentHash: cast.rootParentHash,
+          rootParentUrl: cast.rootParentUrl,
         });
       }
     }

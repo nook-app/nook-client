@@ -60,6 +60,7 @@ export type BaseFarcasterCast = {
   parentHash?: string;
   rootParentFid?: string;
   rootParentHash?: string;
+  rootParentUrl?: string;
   parentUrl?: string;
   ancestors?: string[];
   thread?: string[];

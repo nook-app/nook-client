@@ -17,6 +17,22 @@ model FarcasterContentReference {
     uri        String
     type       String // embed, reply, quote
 
+    text           String?
+    rootParentFid  BigInt?
+    rootParentHash String?
+    rootParentUrl  String?
+
+    protocol    String?
+    host        String?
+    path        String?
+    query       String?
+    fragment    String?
+    contentType String?
+    length      Int?
+    metadata    Json?
+    hasFrame    Boolean @default(false)
+    frame       Json?
+
     timestamp DateTime
 
     createdAt DateTime @default(now())

@@ -19,19 +19,8 @@ export const EmbedImages = ({ uris }: { uris: string[] }) => {
 };
 
 export const EmbedImage = ({ uri }: { uri: string }) => {
-  const [aspectRatio, setAspectRatio] = useState(1);
-
-  useEffect(() => {
-    Image.getSize(uri, (w, h) => {
-      if (w > 0) {
-        setAspectRatio(w / h);
-      }
-    });
-  }, [uri]);
-
   return (
     <View
-      maxHeight={500}
       borderRadius="$4"
       overflow="hidden"
       onPress={(e) => {
@@ -39,14 +28,8 @@ export const EmbedImage = ({ uri }: { uri: string }) => {
         e.stopPropagation();
       }}
     >
-      <ZoomableImage uri={uri} aspectRatio={aspectRatio}>
-        <Image
-          source={{ uri }}
-          style={{
-            aspectRatio,
-            objectFit: "contain",
-          }}
-        />
+      <ZoomableImage uri={uri}>
+        <img src={uri} alt="" />
       </ZoomableImage>
     </View>
   );

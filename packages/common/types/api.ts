@@ -24,6 +24,7 @@ export type FarcasterCastResponse = {
   embeds: UrlContentResponse[];
   rootParentFid?: string;
   rootParentHash?: string;
+  rootParentUrl?: string;
   parentFid?: string;
   parentHash?: string;
   parent?: FarcasterCastResponse;

@@ -28,11 +28,15 @@ export const feedRoutes = async (fastify: FastifyInstance) => {
       Body: FarcasterFeedRequest;
       Querystring: { cursor?: string };
     }>("/feed/casts", async (request, reply) => {
+      console.time("1");
       const response = await service.getCastFeed(request.body);
+      console.timeEnd("1");
+      console.time("2");
       const casts = await farcasterService.getCastsFromData(
         response.data,
         request.body.context?.viewerFid,
       );
+      console.timeEnd("2");
       reply.send({
         data: casts,
         nextCursor: response.nextCursor,

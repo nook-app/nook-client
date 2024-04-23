@@ -669,6 +669,7 @@ export class FarcasterService {
         embedUrls: getEmbedUrls(cast),
         rootParentFid: cast.rootParentFid?.toString(),
         rootParentHash: cast.rootParentHash || undefined,
+        rootParentUrl: cast.rootParentUrl || undefined,
         parentFid: cast.parentFid?.toString(),
         parentHash: cast.parentHash || undefined,
         parentUrl: cast.parentUrl || undefined,

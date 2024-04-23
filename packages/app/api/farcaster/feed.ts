@@ -43,6 +43,5 @@ export const useCastFeed = (filter: FarcasterFeedFilter) => {
     },
     getNextPageParam: (lastPage) => lastPage.nextCursor,
     initialPageParam: undefined,
-    staleTime: Infinity,
   });
 };

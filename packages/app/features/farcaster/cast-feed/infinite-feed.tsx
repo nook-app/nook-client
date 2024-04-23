@@ -1,7 +1,7 @@
 "use client";
 
 import { FarcasterCast } from "../../../types";
-import { NookText, View, XStack, YStack } from "@nook/ui";
+import { NookText, Spinner, View, XStack, YStack } from "@nook/ui";
 import { useCast } from "../../../api/farcaster";
 import { FarcasterCastText } from "../../../components/farcaster/casts/cast-text";
 import {
@@ -68,23 +68,39 @@ export const FarcasterInfiniteFeed = ({
                   ref={registerChild}
                   rowCount={casts.length}
                   rowHeight={cache.rowHeight}
-                  rowRenderer={({ index, key, style, parent }) => (
-                    <CellMeasurer
-                      key={key}
-                      cache={cache}
-                      parent={parent}
-                      columnIndex={0}
-                      rowIndex={index}
-                    >
-                      {({ measure }) => (
-                        <FarcasterCastDisplay
-                          cast={casts[index]}
+                  rowRenderer={({ index, key, style, parent }) => {
+                    console.log(index, casts.length, hasNextPage);
+                    if (hasNextPage && index + 1 === casts.length) {
+                      return (
+                        <View
                           style={style}
-                          measure={measure}
-                        />
-                      )}
-                    </CellMeasurer>
-                  )}
+                          key={`${key}-loading`}
+                          justifyContent="center"
+                          alignItems="center"
+                        >
+                          <Spinner color="$color9" />
+                        </View>
+                      );
+                    }
+
+                    return (
+                      <CellMeasurer
+                        key={key}
+                        cache={cache}
+                        parent={parent}
+                        columnIndex={0}
+                        rowIndex={index}
+                      >
+                        {({ measure }) => (
+                          <FarcasterCastDisplay
+                            cast={casts[index]}
+                            style={style}
+                            measure={measure}
+                          />
+                        )}
+                      </CellMeasurer>
+                    );
+                  }}
                   isScrolling={isScrolling}
                   onScroll={onChildScroll}
                   scrollTop={scrollTop}
@@ -119,7 +135,7 @@ const FarcasterCastDisplay = ({
       try {
         measure();
       } catch (e) {}
-    }, 500);
+    }, 300);
   }, [measure]);
 
   return (

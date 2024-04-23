@@ -4,11 +4,9 @@ import { ReactNode } from "react";
 export const ZoomableImage = ({
   uri,
   children,
-  aspectRatio,
 }: {
   uri?: string;
   children: ReactNode;
-  aspectRatio: number;
 }) => {
   if (!uri) return children;
 
@@ -42,15 +40,16 @@ export const ZoomableImage = ({
           $platform-web={{
             boxShadow: "none",
           }}
-          height={600}
-          width={600 * aspectRatio}
           borderRadius="$4"
           overflow="hidden"
         >
-          <Image
-            source={{ uri }}
-            resizeMode="contain"
-            aspectRatio={aspectRatio}
+          <img
+            src={uri}
+            alt=""
+            style={{
+              maxHeight: "75vh",
+              maxWidth: "100vw",
+            }}
           />
         </Dialog.Content>
       </Dialog.Portal>

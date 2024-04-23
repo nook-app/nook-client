@@ -12,6 +12,7 @@ export type UrlContentResponse = {
   length?: number;
   metadata?: Metadata;
   frame?: Frame;
+  hasFrame?: boolean;
 };
 
 export enum ContentReferenceType {
@@ -29,4 +30,8 @@ export type ContentReferenceResponse = {
   uri: string;
   type: ContentReferenceType;
   timestamp: Date;
+  text?: string;
+  rootParentFid?: string;
+  rootParentHash?: string;
+  rootParentUrl?: string;
 };
