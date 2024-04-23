@@ -16,6 +16,7 @@ import { discoverRoutes } from "./routes/discover";
 import { muteRoutes } from "./routes/user/mute";
 import { panelRoutes } from "./routes/panel";
 import { feedRoutes } from "./routes/feed";
+import { pendingCastRoutes } from "./routes/pending";
 
 const buildApp = () => {
   const app = fastify({
@@ -69,6 +70,7 @@ const buildApp = () => {
   app.register(muteRoutes, { prefix: "/v0" });
   app.register(panelRoutes, { prefix: "/v0" });
   app.register(feedRoutes, { prefix: "/v0" });
+  app.register(pendingCastRoutes, { prefix: "/v0" });
 
   return app;
 };

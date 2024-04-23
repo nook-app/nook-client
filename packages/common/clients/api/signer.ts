@@ -1,3 +1,4 @@
+import { PendingCast } from "../../prisma/nook";
 import {
   GetSignerResponse,
   SubmitCastAddRequest,
@@ -86,6 +87,19 @@ export class SignerAPIClient extends BaseAPIClient {
     }
 
     return await response.json();
+  }
+
+  async submitScheduledCasts(data: PendingCast[]) {
+    const response = await this.makeRequest("/signer/cast-add/scheduled", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+      throw new Error(response.statusText);
+    }
+
+    return (await response.json()) as [string, string | null][];
   }
 
   async submitCastRemove(

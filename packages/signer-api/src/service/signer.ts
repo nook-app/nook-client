@@ -37,6 +37,7 @@ import {
   ValidateSignerResponse,
 } from "@nook/common/types";
 import { hexToBytes } from "viem";
+import { PendingCast } from "@nook/common/prisma/nook";
 
 export class SignerService {
   private client: PrismaClient;
@@ -310,6 +311,35 @@ export class SignerService {
     return {
       hash: bufferToHex(result.hash),
     };
+  }
+
+  async submitPendingCasts(
+    casts: PendingCast[],
+  ): Promise<[string, string | null][]> {
+    return await Promise.all(
+      casts.map(async (cast) => {
+        const fid = cast.fid;
+        const signer = await this.getActiveSigner(fid);
+        if (!signer) return [cast.id, null];
+
+        const castAddMessage = await this.formatCastAdd(fid, signer, {
+          text: cast.text,
+          parentUrl: cast.parentUrl || undefined,
+          parentFid: cast.parentFid || undefined,
+          parentHash: cast.parentHash || undefined,
+          castEmbedFid: cast.castEmbedFid || undefined,
+          castEmbedHash: cast.castEmbedHash || undefined,
+          embeds: cast.embeds || undefined,
+        });
+
+        if (castAddMessage.isErr()) {
+          return [cast.id, null];
+        }
+
+        const response = await this.submitMessage(castAddMessage.value);
+        return [cast.id, bufferToHex(response.hash)];
+      }),
+    );
   }
 
   async submitCastRemove(

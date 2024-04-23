@@ -22,7 +22,8 @@
     "@fastify/jwt": "^8.0.0",
     "@nook/common": "*",
     "fastify": "^4.25.2",
-    "viem": "^2.7.10"
+    "viem": "^2.7.10",
+    "@nook/clients": "*"
   },
   "devDependencies": {
     "@types/node": "^20.10.5",
