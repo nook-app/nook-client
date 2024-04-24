@@ -6,6 +6,7 @@ const BATCH_SIZE = 100;
 const publishScheduledCasts = async () => {
   const signerService = new SignerAPIClient();
   const prismaClient = new PrismaClient();
+  await prismaClient.$connect();
 
   let batchNum = 0;
   let numProcessed = 0;

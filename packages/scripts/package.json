@@ -14,7 +14,9 @@
     "daily-active-users": "ts-node src/daily-active-users.ts",
     "users-per-client": "ts-node src/users-per-client.ts",
     "fix-power-badge-notifications": "ts-node src/fix-power-badge-notifications.ts",
-    "migrate-shelves-to-feeds": "ts-node src/migrate-shelves-to-feeds.ts"
+    "migrate-shelves-to-feeds": "ts-node src/migrate-shelves-to-feeds.ts",
+    "generate-token": "ts-node src/generate-token.ts",
+    "publish-scheduled": "ts-node src/publish-scheduled.ts"
   },
   "dependencies": {
     "@farcaster/auth-client": "^0.1.0",
