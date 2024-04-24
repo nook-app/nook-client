@@ -130,7 +130,7 @@ export type SubmitCastAddRequest = {
 
 export type PendingCastRequest = SubmitCastAddRequest & {
   id: string;
-  scheduledFor: Date | null;
+  scheduledFor: string | null;
 };
 
 export type PendingCastResponse = {

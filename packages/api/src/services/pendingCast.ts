@@ -55,7 +55,7 @@ export class PendingCastService {
   }
 
   async addPendingCast(fid: string, pendingCast: PendingCastRequest) {
-    this._validateScheduledFor(pendingCast.scheduledFor);
+    const scheduledFor = this._validateScheduledFor(pendingCast.scheduledFor);
     return this.client.pendingCast.create({
       data: {
         fid,
@@ -66,14 +66,13 @@ export class PendingCastService {
         castEmbedFid: pendingCast.castEmbedFid,
         castEmbedHash: pendingCast.castEmbedHash,
         embeds: pendingCast.embeds,
-        scheduledFor: pendingCast.scheduledFor,
+        scheduledFor: scheduledFor,
       },
     });
   }
 
   async updatePendingCast(pendingCast: PendingCastRequest) {
-    this._validateScheduledFor(pendingCast.scheduledFor);
-    // todo: will this fail if not exists?
+    const scheduledFor = this._validateScheduledFor(pendingCast.scheduledFor);
     return this.client.pendingCast.update({
       where: { id: pendingCast.id },
       data: {
@@ -84,7 +83,7 @@ export class PendingCastService {
         castEmbedFid: pendingCast.castEmbedFid,
         castEmbedHash: pendingCast.castEmbedHash,
         embeds: pendingCast.embeds,
-        scheduledFor: pendingCast.scheduledFor,
+        scheduledFor: scheduledFor,
       },
     });
   }
@@ -95,9 +94,11 @@ export class PendingCastService {
     });
   }
 
-  _validateScheduledFor(scheduledFor: Date | null) {
-    if (scheduledFor && scheduledFor.getTime() < Date.now()) {
+  _validateScheduledFor(scheduledFor: string | null) {
+    const date = scheduledFor ? new Date(scheduledFor) : null;
+    if (date === null || date.getTime() < Date.now()) {
       throw new Error("Scheduled for date is in the past");
     }
+    return date;
   }
 }
