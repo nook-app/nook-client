@@ -88,12 +88,12 @@ export const getUrlContent = async (
     }
   } catch (e) {
     console.log(`[metadata] [${uri}] failed due to ${e}`);
-    return;
+    return content;
   }
 
   if (!content.type) {
     console.log(`[metadata] [${uri}] failed due to missing type`);
-    return;
+    return content;
   }
 
   return content;

@@ -69,19 +69,24 @@ export class ContentService {
 
   async refreshContents(uris: string[]): Promise<UrlContentResponse[]> {
     const result = await Promise.all(uris.map((uri) => getUrlContent(uri)));
-    const content = result
-      .map((content) =>
-        content
-          ? ({
-              ...content,
-              metadata: content.metadata as Metadata,
-              frame: content.frame as Frame,
-            } as UrlContentResponse)
-          : undefined,
-      )
-      .filter(Boolean) as UrlContentResponse[];
+    const resultMap = result.reduce(
+      (acc, content) => {
+        if (!content) return acc;
+        acc[content.uri] = {
+          ...content,
+          metadata: content?.metadata as Metadata,
+          frame: content?.frame as Frame,
+        } as UrlContentResponse;
+        return acc;
+      },
+      {} as Record<string, UrlContentResponse>,
+    );
 
-    for (const c of content) {
+    const toUpsert = Object.values(resultMap).filter(
+      (content) => content.metadata,
+    );
+
+    for (const c of toUpsert) {
       await this.client.urlContent.upsert({
         where: {
           uri: c.uri,
@@ -99,9 +104,11 @@ export class ContentService {
       });
     }
 
-    await this.cache.setContents(content);
+    await this.cache.setContents(Object.values(resultMap));
 
-    return content;
+    return uris
+      .map((uri) => resultMap[uri])
+      .filter(Boolean) as UrlContentResponse[];
   }
 
   async addReferencedContent(cast: FarcasterCastResponse) {
