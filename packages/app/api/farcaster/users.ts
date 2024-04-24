@@ -1,3 +1,4 @@
+import { getServerSession } from "../../server/actions";
 import { FarcasterUser } from "../../types";
 import { makeRequest } from "../utils";
 import {
@@ -27,6 +28,7 @@ export const useUser = (username: string) => {
     queryFn: async () => {
       const user = await fetchUser(username);
       queryClient.setQueryData(["user", username], user);
+      queryClient.setQueryData(["users", user.fid], user);
       return user;
     },
     initialData,
@@ -111,6 +113,34 @@ export const useUserFollowing = (username: string) => {
     queryKey: ["user-following", username],
     queryFn: async ({ pageParam }) => {
       const data = await fetchUserFollowing(username, pageParam);
+      for (const user of data.data) {
+        queryClient.setQueryData(["user", user.username], user);
+      }
+      return data;
+    },
+    getNextPageParam: (lastPage) => lastPage.nextCursor,
+    initialPageParam: undefined,
+  });
+};
+
+export const fetchUserMutuals = async (username: string, cursor?: string) => {
+  return await makeRequest(
+    `/farcaster/users/${username}/mutuals${cursor ? `?cursor=${cursor}` : ""}`,
+  );
+};
+
+export const useUserMutuals = (username: string) => {
+  const queryClient = useQueryClient();
+  return useInfiniteQuery<
+    FarcasterUsersResponse,
+    unknown,
+    InfiniteData<FarcasterUsersResponse>,
+    string[],
+    string | undefined
+  >({
+    queryKey: ["user-mutuals", username],
+    queryFn: async ({ pageParam }) => {
+      const data = await fetchUserMutuals(username, pageParam);
       for (const user of data.data) {
         queryClient.setQueryData(["user", user.username], user);
       }

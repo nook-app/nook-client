@@ -7,20 +7,21 @@ import {
   MoreHorizontal,
   Search,
   Settings,
-  Sparkle,
   User,
 } from "@tamagui/lucide-icons";
 import { useAuth } from "@nook/app/context/auth";
-import { useUser } from "@nook/app/api/farcaster";
 import { FarcasterUserDisplay } from "@nook/app/components/farcaster/users/user-display";
 import { CreateCastDialog } from "@nook/app/features/farcaster/create-cast/disalog";
 import { AccountSwitcher } from "@nook/app/features/auth/account-switcher";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { NotificationsCount } from "@nook/app/features/notifications/notifications-count";
+import { FarcasterUser } from "@nook/app/types";
 
-export const RootNavigation = ({ children }: { children: React.ReactNode }) => {
-  const { user } = useAuth();
+export const RootNavigation = ({
+  children,
+  user,
+}: { children: React.ReactNode; user?: FarcasterUser }) => {
   return (
     <XStack justifyContent="center" flex={1} backgroundColor="$color1">
       <View width={280} maxWidth={280} alignItems="flex-end">
@@ -53,7 +54,7 @@ export const RootNavigation = ({ children }: { children: React.ReactNode }) => {
                 <RootNavigationItem
                   label="Profile"
                   Icon={User}
-                  href={`/${user?.username}`}
+                  href={`/users/${user?.username}`}
                 />
                 <RootNavigationItem
                   label="Settings"
@@ -66,7 +67,7 @@ export const RootNavigation = ({ children }: { children: React.ReactNode }) => {
               </>
             )}
           </YStack>
-          <SessionItem />
+          <SessionItem user={user} />
         </View>
       </View>
       <View width={1000} maxWidth={1000}>
@@ -124,29 +125,15 @@ const RootNavigationItem = ({
   );
 };
 
-const SessionItem = () => {
-  const { session, isLoading, login } = useAuth();
+const SessionItem = ({ user }: { user?: FarcasterUser }) => {
+  const { login } = useAuth();
 
-  if (isLoading) {
-    return null;
-  }
-
-  if (!session?.fid) {
+  if (!user?.fid) {
     return (
       <NookButton variant="primary" onPress={login}>
         Sign in
       </NookButton>
     );
-  }
-
-  return <SessionUser fid={session.fid} />;
-};
-
-const SessionUser = ({ fid }: { fid: string }) => {
-  const { data: user } = useUser(fid);
-
-  if (!user) {
-    return null;
   }
 
   return (

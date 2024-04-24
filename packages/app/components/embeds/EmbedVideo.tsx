@@ -7,7 +7,6 @@ export const EmbedVideo = ({
 }: {
   content: UrlContentResponse;
 }) => {
-  console.log(uri);
   return (
     <View
       overflow="hidden"

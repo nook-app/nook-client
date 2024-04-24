@@ -93,7 +93,10 @@ const FarcasterExpandedCastHeader = ({
         {renderText && <FarcasterCastText cast={cast} fontSize="$6" />}
         {renderEmbeds && <Embeds cast={cast} />}
         <XStack justifyContent="space-between" alignItems="center">
-          <FarcasterCastEngagement cast={cast} types={["likes", "replies"]} />
+          <FarcasterCastEngagement
+            cast={cast}
+            types={["likes", "replies", "quotes", "recasts"]}
+          />
           <XStack alignItems="center" gap="$2">
             <NookText muted>{formatTimestamp(cast.timestamp)}</NookText>
             {cast.channel && (

@@ -51,17 +51,22 @@ export const userRoutes = async (fastify: FastifyInstance) => {
         fid = (await service.getFidsForUsernames([fid]))[0];
       }
 
-      const users = await service.getUsers(
-        [fid],
-        request.headers["x-viewer-fid"] as string,
-      );
+      const [users, mutuals] = await Promise.all([
+        service.getUsers([fid], request.headers["x-viewer-fid"] as string),
+        request.headers["x-viewer-fid"]
+          ? service.getUserMutualsPreview(
+              request.headers["x-viewer-fid"] as string,
+              fid,
+            )
+          : undefined,
+      ]);
 
       if (users.length === 0) {
         reply.status(404).send({ message: "User not found" });
         return;
       }
 
-      reply.send(users[0]);
+      reply.send({ ...users[0], context: { ...users[0].context, mutuals } });
     });
 
     fastify.get<{
@@ -95,6 +100,24 @@ export const userRoutes = async (fastify: FastifyInstance) => {
         fid,
         request.query.cursor,
         request.headers["x-viewer-fid"] as string,
+      );
+
+      reply.send(response);
+    });
+
+    fastify.get<{
+      Params: GetFarcasterUserRequest;
+      Querystring: { cursor?: string };
+    }>("/users/:fid/mutuals", async (request, reply) => {
+      let fid = request.params.fid;
+      if (Number.isNaN(Number(fid))) {
+        fid = (await service.getFidsForUsernames([fid]))[0];
+      }
+
+      const response = await service.getUserMutuals(
+        request.headers["x-viewer-fid"] as string,
+        fid,
+        request.query.cursor,
       );
 
       reply.send(response);

@@ -12,9 +12,15 @@ export type FarcasterUserEngagement = {
   following: number;
 };
 
+export type FarcasterUserMutualsPreview = {
+  preview: BaseFarcasterUser[];
+  total: number;
+};
+
 export type FarcasterUserContext = {
   following: boolean;
   followers: boolean;
+  mutuals?: FarcasterUserMutualsPreview;
 };
 
 export type BaseFarcasterUser = {

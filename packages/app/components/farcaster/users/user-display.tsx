@@ -20,7 +20,11 @@ export const FarcasterUserTextDisplay = ({
   const bio = user?.bio?.trim().replace(/\n\s*\n/g, "\n");
   const Component = (
     <YStack flexShrink={1} gap="$1">
-      <Stack gap={orientation === "horizontal" ? "$1.5" : "$1"} flexShrink={1}>
+      <Stack
+        gap={orientation === "horizontal" ? "$1.5" : "$1"}
+        flexShrink={1}
+        alignItems={orientation === "horizontal" ? "center" : "flex-start"}
+      >
         <XStack gap="$1.5" alignItems="center" flexShrink={1}>
           <NookText
             fontWeight="600"

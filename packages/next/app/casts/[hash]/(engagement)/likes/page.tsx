@@ -3,5 +3,5 @@ import { CastEngagementTabs } from "@nook/app/features/farcaster/cast-screen/cas
 export default async function CastLikes({
   params,
 }: { params: { hash: string } }) {
-  return <CastEngagementTabs hash={params.hash} activeIndex={2} />;
+  return <CastEngagementTabs hash={params.hash} activeTab="likes" />;
 }

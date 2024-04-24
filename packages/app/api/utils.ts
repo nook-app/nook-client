@@ -1,3 +1,4 @@
+import { getServerSession } from "../server/actions";
 import { Channel, FarcasterCast, FarcasterUser, Session } from "../types";
 
 export const makeRequest = async (path: string, requestInit?: RequestInit) => {
@@ -7,11 +8,18 @@ export const makeRequest = async (path: string, requestInit?: RequestInit) => {
 
   const headers = new Headers(requestInit?.headers);
 
-  if (!headers.has("Authorization") && typeof window !== "undefined") {
-    const rawSession = localStorage.getItem("session");
-    if (rawSession) {
-      const session: Session = JSON.parse(rawSession);
-      headers.set("Authorization", `Bearer ${session.token}`);
+  if (!headers.has("Authorization")) {
+    if (typeof window !== "undefined") {
+      const rawSession = localStorage.getItem("session");
+      if (rawSession) {
+        const session: Session = JSON.parse(rawSession);
+        headers.set("Authorization", `Bearer ${session.token}`);
+      }
+    } else {
+      const session = await getServerSession();
+      if (session) {
+        headers.set("Authorization", `Bearer ${session.token}`);
+      }
     }
   }
 

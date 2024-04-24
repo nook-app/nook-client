@@ -8,42 +8,45 @@ import { FarcasterCastLikes } from "./cast-likes";
 
 export const CastEngagementTabs = ({
   hash,
-  activeIndex,
-}: { hash: string; activeIndex: number }) => {
+  activeTab,
+}: { hash: string; activeTab: string }) => {
   return (
     <View>
       <Tabs
         tabs={[
           {
+            id: "quotes",
             label: "Quotes",
             href: `/casts/${hash}/quotes`,
           },
           {
+            id: "recasts",
             label: "Recasts",
             href: `/casts/${hash}/recasts`,
           },
           {
+            id: "likes",
             label: "Likes",
             href: `/casts/${hash}/likes`,
           },
         ]}
-        activeIndex={activeIndex}
+        activeTab={activeTab}
       />
-      <CastEngagementTab hash={hash} activeIndex={activeIndex} />
+      <CastEngagementTab hash={hash} activeTab={activeTab} />
     </View>
   );
 };
 
 export const CastEngagementTab = ({
   hash,
-  activeIndex,
-}: { hash: string; activeIndex: number }) => {
-  switch (activeIndex) {
-    case 0:
+  activeTab,
+}: { hash: string; activeTab: string }) => {
+  switch (activeTab) {
+    case "quotes":
       return <FarcasterCastQuotes hash={hash} />;
-    case 1:
+    case "recasts":
       return <FarcasterCastRecasts hash={hash} />;
-    case 2:
+    case "likes":
       return <FarcasterCastLikes hash={hash} />;
   }
 };

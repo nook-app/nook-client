@@ -9,24 +9,48 @@ import {
 } from "react";
 import { loginUser } from "@nook/app/api/auth";
 import { FarcasterUser, Session } from "@nook/app/types";
-import { useUser } from "@nook/app/api/farcaster";
+import { fetchUser, useUser } from "@nook/app/api/farcaster";
+import { loginServer, logoutServer, setActiveUser } from "../server/actions";
 
 type AuthContextType = {
   session?: Session;
   isLoading: boolean;
   login: () => void;
   logout: () => void;
-  setSession: (session: Session) => void;
+  setSession: (session: Session) => Promise<void>;
   user?: FarcasterUser;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [session, setSession] = useState<Session>();
+export const AuthProvider = ({
+  children,
+  defaultSession,
+  defaultUser,
+}: {
+  children: ReactNode;
+  defaultSession?: Session;
+  defaultUser?: FarcasterUser;
+}) => {
+  const [session, setSession] = useState<Session | undefined>(defaultSession);
   const [isLoading, setIsLoading] = useState(true);
   const { getAccessToken, logout: logoutPrivy } = usePrivy();
-  const { data: user } = useUser(session?.fid || "");
+  const [user, setUser] = useState<FarcasterUser | undefined>(defaultUser);
+
+  const updateUser = useCallback(async (fid: string) => {
+    const user = await fetchUser(fid);
+    setUser(user);
+    setActiveUser(user);
+  }, []);
+
+  useEffect(() => {
+    if (session?.fid) {
+      updateUser(session.fid);
+    } else {
+      setUser(undefined);
+      setActiveUser(undefined);
+    }
+  }, [session, updateUser]);
 
   useEffect(() => {
     const init = async () => {
@@ -61,6 +85,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   });
 
   const handleSessionChange = useCallback(async (session: Session) => {
+    await loginServer(session);
     setSession(session);
     localStorage.setItem("session", JSON.stringify(session));
     const sessions = JSON.parse(localStorage.getItem("sessions") || "[]");
@@ -85,8 +110,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     );
     localStorage.setItem("sessions", JSON.stringify(remainingSessions));
     if (remainingSessions.length > 0) {
+      await loginServer(remainingSessions[0]);
       await handleSessionChange(remainingSessions[0]);
     } else {
+      await logoutServer();
       setSession(undefined);
     }
   }, [session, handleSessionChange]);

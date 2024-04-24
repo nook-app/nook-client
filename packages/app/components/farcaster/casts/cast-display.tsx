@@ -116,8 +116,6 @@ export const FarcasterCastDefaultDisplay = ({
   cast,
   isConnected,
 }: { cast: FarcasterCast; isConnected?: boolean }) => {
-  const renderText = cast.text || cast.mentions.length > 0;
-  const renderEmbeds = cast.embeds.length > 0 || cast.embedCasts.length > 0;
   const { push } = useRouter();
 
   const handlePress = () => {
@@ -126,6 +124,12 @@ export const FarcasterCastDefaultDisplay = ({
       push(`/casts/${cast.hash}`);
     }
   };
+
+  const renderText = cast.text || cast.mentions.length > 0;
+  const renderEmbeds = cast.embeds.length > 0 || cast.embedCasts.length > 0;
+  const renderEngagementBar =
+    !!cast.channel ||
+    Object.values(cast.engagement || {}).some((value) => value > 0);
 
   return (
     <XStack
@@ -139,7 +143,7 @@ export const FarcasterCastDefaultDisplay = ({
       onPress={handlePress}
       cursor="pointer"
       paddingHorizontal="$3"
-      paddingVertical="$2"
+      paddingVertical="$3"
     >
       <YStack alignItems="center" width="$4" marginTop="$1">
         <FarcasterUserAvatar user={cast.user} size="$4" asLink />
@@ -163,14 +167,16 @@ export const FarcasterCastDefaultDisplay = ({
         </YStack>
         {renderEmbeds && <Embeds cast={cast} />}
         <FarcasterCastActions hash={cast.hash} />
-        <XStack justifyContent="space-between" alignItems="center">
-          <FarcasterCastEngagement cast={cast} types={["likes", "replies"]} />
-          <View>
-            {cast.channel && (
-              <FarcasterChannelBadge channel={cast.channel} asLink />
-            )}
-          </View>
-        </XStack>
+        {renderEngagementBar && (
+          <XStack justifyContent="space-between" alignItems="center">
+            <FarcasterCastEngagement cast={cast} types={["likes", "replies"]} />
+            <View>
+              {cast.channel && (
+                <FarcasterChannelBadge channel={cast.channel} asLink />
+              )}
+            </View>
+          </XStack>
+        )}
       </YStack>
     </XStack>
   );

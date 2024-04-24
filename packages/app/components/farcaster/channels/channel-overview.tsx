@@ -19,7 +19,7 @@ export const ChannelOverview = ({
       borderColor="$color4"
       borderWidth="$0.5"
     >
-      <FarcasterChannelDisplay channel={channel} asLink={asLink} />
+      <FarcasterChannelDisplay channel={channel} asLink={asLink} asLabel />
       {bio && <FarcasterBioText text={bio} />}
       <XStack alignItems="center" justifyContent="space-between">
         <View flexDirection="row" alignItems="center" gap="$1.5">

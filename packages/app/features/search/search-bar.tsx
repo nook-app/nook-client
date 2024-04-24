@@ -11,7 +11,7 @@ import {
 } from "@nook/ui";
 import { Search } from "@tamagui/lucide-icons";
 import { SearchInput } from "./search-input";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useSearchPreview } from "../../api/discover";
 import {
   FarcasterUserBadge,
@@ -27,13 +27,44 @@ import { useChannel, useUser } from "../../api/farcaster";
 
 export const SearchBar = () => {
   const [value, setValue] = useState<string>("");
+  const [open, setOpen] = useState<boolean>(false);
+  const closeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const debouncedValue = useDebounceValue(value, 300);
 
+  const handleFocus = () => {
+    if (closeTimeoutRef.current) {
+      clearTimeout(closeTimeoutRef.current);
+      closeTimeoutRef.current = null;
+    }
+    setOpen(true);
+  };
+
+  const handleBlur = () => {
+    // Delay closing the popover to allow click events to be processed
+    closeTimeoutRef.current = setTimeout(() => {
+      setOpen(false);
+    }, 200); // 200ms delay
+  };
+
+  // Cleanup timeout on component unmount
+  useEffect(() => {
+    return () => {
+      if (closeTimeoutRef.current) {
+        clearTimeout(closeTimeoutRef.current);
+      }
+    };
+  }, []);
+
   return (
-    <Popover placement="bottom" size="$5" allowFlip>
+    <Popover placement="bottom" size="$5" allowFlip open={open}>
       <Popover.Trigger>
-        <SearchInput value={value} onChangeText={setValue} />
+        <SearchInput
+          value={value}
+          onChangeText={setValue}
+          onFocus={handleFocus}
+          onBlur={handleBlur}
+        />
       </Popover.Trigger>
       <Popover.Content
         borderWidth={1}

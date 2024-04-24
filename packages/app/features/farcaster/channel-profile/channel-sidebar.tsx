@@ -49,7 +49,7 @@ const ChannelHosts = ({ channel }: { channel: Channel }) => {
       {lead && (
         <XStack alignItems="center" justifyContent="space-between" gap="$4">
           <FarcasterUserDisplay user={lead} asLink />
-          <FarcasterUserFollowButton user={lead} />
+          <FarcasterUserFollowButton username={lead.username || lead.fid} />
         </XStack>
       )}
       {others?.map((user) => (
@@ -60,7 +60,7 @@ const ChannelHosts = ({ channel }: { channel: Channel }) => {
           key={user.fid}
         >
           <FarcasterUserDisplay user={user} asLink />
-          <FarcasterUserFollowButton user={user} />
+          <FarcasterUserFollowButton username={user.username || user.fid} />
         </XStack>
       ))}
     </YStack>

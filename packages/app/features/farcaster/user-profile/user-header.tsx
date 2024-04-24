@@ -42,7 +42,7 @@ export const UserHeader = ({ username }: { username: string }) => {
           </YStack>
         </YStack>
         <View>
-          <FarcasterUserFollowButton user={user} />
+          <FarcasterUserFollowButton username={username} />
         </View>
       </View>
       {bio && <FarcasterBioText text={bio} selectable />}

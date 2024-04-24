@@ -53,9 +53,9 @@ const FarcasterUserItem = memo(({ user }: { user: FarcasterUser }) => {
           backgroundColor: "$color2",
         }}
       >
-        <XStack justifyContent="space-between" alignItems="center">
+        <XStack justifyContent="space-between">
           <FarcasterUserDisplay user={user} withBio />
-          <FarcasterUserFollowButton username={user.username} />
+          <FarcasterUserFollowButton username={user.username || user.fid} />
         </XStack>
       </YStack>
     </Link>

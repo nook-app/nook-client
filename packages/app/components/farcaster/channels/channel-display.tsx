@@ -7,10 +7,12 @@ export const FarcasterChannelTextDisplay = ({
   channel,
   orientation = "horizontal",
   asLink,
+  asLabel,
 }: {
   channel: Channel;
   orientation?: "horizontal" | "vertical";
   asLink?: boolean;
+  asLabel?: boolean;
 }) => {
   const Stack = orientation === "horizontal" ? XStack : YStack;
   const Component = (
@@ -20,7 +22,8 @@ export const FarcasterChannelTextDisplay = ({
           flexShrink={1}
           numberOfLines={1}
           ellipsizeMode="tail"
-          variant="label"
+          variant={asLabel ? "label" : undefined}
+          fontWeight={asLabel ? undefined : "600"}
         >
           {`${channel.name} `}
         </NookText>
@@ -50,13 +53,15 @@ export const FarcasterChannelTextDisplay = ({
 export const FarcasterChannelDisplay = ({
   channel,
   asLink,
-}: { channel: Channel; asLink?: boolean }) => (
+  asLabel,
+}: { channel: Channel; asLink?: boolean; asLabel?: boolean }) => (
   <XStack gap="$2.5" alignItems="center" flex={1}>
     <FarcasterChannelAvatar channel={channel} size="$4" asLink={asLink} />
     <FarcasterChannelTextDisplay
       channel={channel}
       orientation="vertical"
       asLink={asLink}
+      asLabel={asLabel}
     />
   </XStack>
 );

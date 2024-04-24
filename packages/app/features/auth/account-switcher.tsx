@@ -5,6 +5,7 @@ import { Session } from "../../types";
 import { useUsers } from "../../api/farcaster";
 import { FarcasterUserDisplay } from "../../components/farcaster/users/user-display";
 import { Check } from "@tamagui/lucide-icons";
+import { useRouter } from "next/navigation";
 
 export const AccountSwitcher = ({ children }: { children: ReactNode }) => {
   return (
@@ -63,6 +64,7 @@ const AccountSwitcherContent = () => {
 const AccountSwitcherSessions = ({ sessions }: { sessions: Session[] }) => {
   const { session, setSession } = useAuth();
   const { data } = useUsers(sessions.map((session) => session.fid));
+  const router = useRouter();
 
   if (!data) return null;
 
@@ -75,7 +77,10 @@ const AccountSwitcherSessions = ({ sessions }: { sessions: Session[] }) => {
           <NookButton
             variant="ghost"
             height="$6"
-            onPress={() => setSession(userSession)}
+            onPress={async () => {
+              await setSession(userSession);
+              window.location.reload();
+            }}
             disabled={session?.fid === user.fid}
           >
             <XStack justifyContent="space-between" alignItems="center" flex={1}>

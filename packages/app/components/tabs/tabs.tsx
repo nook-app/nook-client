@@ -3,14 +3,15 @@ import { ReactNode } from "react";
 import { Link } from "solito/link";
 
 type TabItem = {
+  id: string;
   label: string;
   href: string;
 };
 
 export const Tabs = ({
   tabs,
-  activeIndex,
-}: { tabs: TabItem[]; activeIndex: number }) => {
+  activeTab,
+}: { tabs: TabItem[]; activeTab: string }) => {
   return (
     <XStack
       flexGrow={1}
@@ -20,7 +21,7 @@ export const Tabs = ({
       borderBottomColor="rgba(256, 256, 256, 0.1)"
     >
       {tabs.map((tab, index) => (
-        <Tab key={tab.label} href={tab.href} isActive={activeIndex === index}>
+        <Tab key={tab.label} href={tab.href} isActive={activeTab === tab.id}>
           {tab.label}
         </Tab>
       ))}

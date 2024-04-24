@@ -12,7 +12,7 @@ export default async function User({
     return (
       <UserEngagementAuthenticatedTabs
         username={params.username}
-        activeTab="followers"
+        activeTab="mutuals"
       />
     );
   }
@@ -20,7 +20,7 @@ export default async function User({
   return (
     <UserEngagementUnauthenticatedTabs
       username={params.username}
-      activeTab="followers"
+      activeTab="mutuals"
     />
   );
 }

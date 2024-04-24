@@ -72,6 +72,25 @@ export class FarcasterAPIClient extends BaseAPIClient {
     return response.json();
   }
 
+  async getUserMutuals(
+    viewerFid: string,
+    fid: string,
+    cursor?: string,
+  ): Promise<GetFarcasterUsersResponse> {
+    const response = await this.makeRequest(
+      `/users/${fid}/mutuals${cursor ? `?cursor=${cursor}` : ""}`,
+      {
+        viewerFid,
+      },
+    );
+
+    if (!response.ok) {
+      throw new Error(response.statusText);
+    }
+
+    return response.json();
+  }
+
   async getUserFollowers(
     fid: string,
     cursor?: string,

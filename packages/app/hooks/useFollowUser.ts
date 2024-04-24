@@ -8,11 +8,11 @@ import { submitLinkAdd, submitLinkRemove } from "../api/farcaster/actions";
 export const useFollowUser = (username: string) => {
   const queryClient = useQueryClient();
   const { data } = useUser(username);
-  const { user } = useAuth();
+  const { session } = useAuth();
 
   const incrementFollow = useCallback(
     (user: FarcasterUser, increment: number) => {
-      queryClient.setQueryData(["user", user.fid], {
+      queryClient.setQueryData(["user", user.username], {
         ...user,
         engagement: {
           ...user.engagement,
@@ -32,7 +32,7 @@ export const useFollowUser = (username: string) => {
       onSucess,
       onError,
     }: { onSucess?: () => void; onError?: (error: string) => void }) => {
-      if (!user || !data) return;
+      if (!data) return;
 
       incrementFollow(data, 1);
 
@@ -53,7 +53,7 @@ export const useFollowUser = (username: string) => {
 
       incrementFollow(data, -1);
     },
-    [incrementFollow, user, data],
+    [incrementFollow, data],
   );
 
   const unfollowUser = useCallback(
@@ -61,7 +61,7 @@ export const useFollowUser = (username: string) => {
       onSucess,
       onError,
     }: { onSucess?: () => void; onError?: (error: string) => void }) => {
-      if (!user || !data) return;
+      if (!data) return;
 
       incrementFollow(data, -1);
 
@@ -82,7 +82,7 @@ export const useFollowUser = (username: string) => {
 
       incrementFollow(data, 1);
     },
-    [incrementFollow, user, data],
+    [incrementFollow, data],
   );
 
   return {
@@ -92,6 +92,6 @@ export const useFollowUser = (username: string) => {
     isFollowing: data?.context?.following,
     isFollower: data?.context?.followers,
     isMutual: data?.context?.following && data?.context?.followers,
-    isViewer: !user || data?.fid === user?.fid,
+    isViewer: !session || data?.fid === session?.fid,
   };
 };

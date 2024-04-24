@@ -7,6 +7,8 @@ export const FarcasterUserFollowButton = ({
   const { user, isFollowing, followUser, unfollowUser, isViewer } =
     useFollowUser(username);
 
+  console.log(user, isViewer);
+
   if (!user || isViewer) {
     return null;
   }

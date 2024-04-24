@@ -3,5 +3,5 @@ import { CastEngagementTabs } from "@nook/app/features/farcaster/cast-screen/cas
 export default async function CastQuotes({
   params,
 }: { params: { hash: string } }) {
-  return <CastEngagementTabs hash={params.hash} activeIndex={0} />;
+  return <CastEngagementTabs hash={params.hash} activeTab="quotes" />;
 }

@@ -3,5 +3,5 @@ import { ChannelTabs } from "@nook/app/features/farcaster/channel-profile/channe
 export default async function Channel({
   params,
 }: { params: { channelId: string } }) {
-  return <ChannelTabs channelId={params.channelId} activeIndex={3} />;
+  return <ChannelTabs channelId={params.channelId} activeTab="media" />;
 }

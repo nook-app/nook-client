@@ -1,6 +1,7 @@
 import { Metadata } from "next";
 import { RootNavigation } from "../components/RootNavigation";
 import { Providers } from "./providers";
+import { getActiveUser, getServerSession } from "@nook/app/server/actions";
 
 export const metadata: Metadata = {
   title: "nook",
@@ -21,9 +22,13 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: { children: React.ReactNode }) {
+  const [session, user] = await Promise.all([
+    getServerSession(),
+    getActiveUser(),
+  ]);
   return (
     <html lang="en">
       <body
@@ -32,8 +37,8 @@ export default function RootLayout({
           overscrollBehaviorX: "none",
         }}
       >
-        <Providers>
-          <RootNavigation>{children}</RootNavigation>
+        <Providers session={session} user={user}>
+          <RootNavigation user={user}>{children}</RootNavigation>
         </Providers>
       </body>
     </html>

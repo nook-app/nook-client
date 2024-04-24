@@ -8,8 +8,8 @@ import { useUser } from "../../../api/farcaster";
 
 export const UserTabs = ({
   username,
-  activeIndex,
-}: { username: string; activeIndex: number }) => {
+  activeTab,
+}: { username: string; activeTab: string }) => {
   const { data: user } = useUser(username);
   if (!user) return null;
 
@@ -18,35 +18,39 @@ export const UserTabs = ({
       <Tabs
         tabs={[
           {
+            id: "casts",
             label: "Casts",
             href: `/users/${user.username}`,
           },
           {
+            id: "replies",
             label: "Replies",
             href: `/users/${user.username}/replies`,
           },
           {
+            id: "media",
             label: "Media",
             href: `/users/${user.username}/media`,
           },
           {
+            id: "frames",
             label: "Frames",
             href: `/users/${user.username}/frames`,
           },
         ]}
-        activeIndex={activeIndex}
+        activeTab={activeTab}
       />
-      <UserFeed user={user} activeIndex={activeIndex} />
+      <UserFeed user={user} activeTab={activeTab} />
     </View>
   );
 };
 
 export const UserFeed = ({
   user,
-  activeIndex,
-}: { user: FarcasterUser; activeIndex: number }) => {
-  switch (activeIndex) {
-    case 0:
+  activeTab,
+}: { user: FarcasterUser; activeTab: string }) => {
+  switch (activeTab) {
+    case "casts":
       return (
         <FarcasterFilteredFeed
           filter={{
@@ -54,7 +58,7 @@ export const UserFeed = ({
           }}
         />
       );
-    case 1:
+    case "replies":
       return (
         <FarcasterFilteredFeed
           filter={{
@@ -63,7 +67,7 @@ export const UserFeed = ({
           }}
         />
       );
-    case 2:
+    case "media":
       return (
         <FarcasterFilteredFeed
           filter={{
@@ -73,7 +77,7 @@ export const UserFeed = ({
           displayMode={Display.GRID}
         />
       );
-    case 3:
+    case "frames":
       return (
         <FarcasterFilteredFeed
           filter={{

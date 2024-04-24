@@ -38,6 +38,20 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@amplitude/analytics-browser@npm:^2.6.2":
+  version: 2.6.2
+  resolution: "@amplitude/analytics-browser@npm:2.6.2"
+  dependencies:
+    "@amplitude/analytics-client-common": "npm:^2.1.3"
+    "@amplitude/analytics-core": "npm:^2.2.4"
+    "@amplitude/analytics-types": "npm:^2.5.0"
+    "@amplitude/plugin-page-view-tracking-browser": "npm:^2.2.6"
+    "@amplitude/plugin-web-attribution-browser": "npm:^2.1.7"
+    tslib: "npm:^2.4.1"
+  checksum: 10c0/5bf17a428f33dda7395709a6a487748ec3352b05518e1fecf2bd857767a79bff50e97d5bf47b6ea39d6853578b57eadf0c75c1a666145f508aca191085bc2686
+  languageName: node
+  linkType: hard
+
 "@amplitude/analytics-client-common@npm:^1.2.2":
   version: 1.2.2
   resolution: "@amplitude/analytics-client-common@npm:1.2.2"
@@ -50,7 +64,19 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@amplitude/analytics-connector@npm:^1.5.0":
+"@amplitude/analytics-client-common@npm:^2.1.3":
+  version: 2.1.3
+  resolution: "@amplitude/analytics-client-common@npm:2.1.3"
+  dependencies:
+    "@amplitude/analytics-connector": "npm:^1.4.8"
+    "@amplitude/analytics-core": "npm:^2.2.4"
+    "@amplitude/analytics-types": "npm:^2.5.0"
+    tslib: "npm:^2.4.1"
+  checksum: 10c0/0b1fa1e7cf8b5164ce3d2a23e13d189b8dac7e1f4f9803e582387c2330e896fdf40562e5205d42ce279833f39b8c06b5dd788d7f38ddb5fd1cd9342eeecf6eb0
+  languageName: node
+  linkType: hard
+
+"@amplitude/analytics-connector@npm:^1.4.8, @amplitude/analytics-connector@npm:^1.5.0":
   version: 1.5.0
   resolution: "@amplitude/analytics-connector@npm:1.5.0"
   checksum: 10c0/3514ed3c21f502d94bb059e062bb9d5fcb464eef669e04ae730ffcc0f3cd50e34b617686842cbbb5e010b76c1f07df30cfdb6da3d9e6c5507bcadc1318446273
@@ -64,6 +90,16 @@ __metadata:
     "@amplitude/analytics-types": "npm:^1.3.4"
     tslib: "npm:^2.4.1"
   checksum: 10c0/f796d2ba6ec8b2e81fc6bef711bc8058c9392d862954eb037395a5d18d0645663e07e27afd75db5b3908ff1b34a016a508cc1c8c0604691c812271da055d8767
+  languageName: node
+  linkType: hard
+
+"@amplitude/analytics-core@npm:^2.2.4":
+  version: 2.2.4
+  resolution: "@amplitude/analytics-core@npm:2.2.4"
+  dependencies:
+    "@amplitude/analytics-types": "npm:^2.5.0"
+    tslib: "npm:^2.4.1"
+  checksum: 10c0/3070cbb18f7c6c59c9d9f3c94ee6e3d4d747c50be7a605eac861d4c15bd42cbccc534bcf7b8f5a6cb9a67e5eb349af9fba287ddd0b8cb1ef77a426c8922e93b0
   languageName: node
   linkType: hard
 
@@ -88,6 +124,36 @@ __metadata:
   version: 1.3.4
   resolution: "@amplitude/analytics-types@npm:1.3.4"
   checksum: 10c0/c5ee3fcf1ce6966bbecb5b1bc33b80a3b721b5d8d95b587cd0ccff4ad8225f06a25c5df244a37569d061cbc8ffec3dfe527eda426270bc8066041ee89f3e3a12
+  languageName: node
+  linkType: hard
+
+"@amplitude/analytics-types@npm:^2.5.0":
+  version: 2.5.0
+  resolution: "@amplitude/analytics-types@npm:2.5.0"
+  checksum: 10c0/e162dd6a261f68b8f3d371ecb58ce5051f77ab1c2edc3d74c847e025339680c67b6195e2b53d65d55ab4ce737764f2ab281d944d32385b922f664646169192ff
+  languageName: node
+  linkType: hard
+
+"@amplitude/plugin-page-view-tracking-browser@npm:^2.2.6":
+  version: 2.2.6
+  resolution: "@amplitude/plugin-page-view-tracking-browser@npm:2.2.6"
+  dependencies:
+    "@amplitude/analytics-client-common": "npm:^2.1.3"
+    "@amplitude/analytics-types": "npm:^2.5.0"
+    tslib: "npm:^2.4.1"
+  checksum: 10c0/d4bf0aadc234243436f1c33bde2110dc3d8cf0a77cd201255c3fde30d8d50222256b57c8ab461dc0f1ab72a952493c231eb71db8eb216bf6217c623c4561cd5e
+  languageName: node
+  linkType: hard
+
+"@amplitude/plugin-web-attribution-browser@npm:^2.1.7":
+  version: 2.1.7
+  resolution: "@amplitude/plugin-web-attribution-browser@npm:2.1.7"
+  dependencies:
+    "@amplitude/analytics-client-common": "npm:^2.1.3"
+    "@amplitude/analytics-core": "npm:^2.2.4"
+    "@amplitude/analytics-types": "npm:^2.5.0"
+    tslib: "npm:^2.4.1"
+  checksum: 10c0/7a877e3d4e1d6431c8c05527aa612caff25c7bc6585b142361b48616772a701c8c56d2976af7c7a30cc61bee523388ac751b407223a17ed2c7dc90ff63cbf7c8
   languageName: node
   linkType: hard
 
@@ -4521,6 +4587,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@next/env@npm:14.2.3":
+  version: 14.2.3
+  resolution: "@next/env@npm:14.2.3"
+  checksum: 10c0/25ab3ac2739c8e5ce35e1f50373238c5c428ab6b01d448ba78a6068dcdef88978b64f9a92790c324b2926ccc41390a67107154a0b0fee32fe980a485f4ef20d8
+  languageName: node
+  linkType: hard
+
 "@next/eslint-plugin-next@npm:13.5.6":
   version: 13.5.6
   resolution: "@next/eslint-plugin-next@npm:13.5.6"
@@ -4537,9 +4610,23 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@next/swc-darwin-arm64@npm:14.2.3":
+  version: 14.2.3
+  resolution: "@next/swc-darwin-arm64@npm:14.2.3"
+  conditions: os=darwin & cpu=arm64
+  languageName: node
+  linkType: hard
+
 "@next/swc-darwin-x64@npm:14.2.2":
   version: 14.2.2
   resolution: "@next/swc-darwin-x64@npm:14.2.2"
+  conditions: os=darwin & cpu=x64
+  languageName: node
+  linkType: hard
+
+"@next/swc-darwin-x64@npm:14.2.3":
+  version: 14.2.3
+  resolution: "@next/swc-darwin-x64@npm:14.2.3"
   conditions: os=darwin & cpu=x64
   languageName: node
   linkType: hard
@@ -4551,9 +4638,23 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@next/swc-linux-arm64-gnu@npm:14.2.3":
+  version: 14.2.3
+  resolution: "@next/swc-linux-arm64-gnu@npm:14.2.3"
+  conditions: os=linux & cpu=arm64 & libc=glibc
+  languageName: node
+  linkType: hard
+
 "@next/swc-linux-arm64-musl@npm:14.2.2":
   version: 14.2.2
   resolution: "@next/swc-linux-arm64-musl@npm:14.2.2"
+  conditions: os=linux & cpu=arm64 & libc=musl
+  languageName: node
+  linkType: hard
+
+"@next/swc-linux-arm64-musl@npm:14.2.3":
+  version: 14.2.3
+  resolution: "@next/swc-linux-arm64-musl@npm:14.2.3"
   conditions: os=linux & cpu=arm64 & libc=musl
   languageName: node
   linkType: hard
@@ -4565,9 +4666,23 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@next/swc-linux-x64-gnu@npm:14.2.3":
+  version: 14.2.3
+  resolution: "@next/swc-linux-x64-gnu@npm:14.2.3"
+  conditions: os=linux & cpu=x64 & libc=glibc
+  languageName: node
+  linkType: hard
+
 "@next/swc-linux-x64-musl@npm:14.2.2":
   version: 14.2.2
   resolution: "@next/swc-linux-x64-musl@npm:14.2.2"
+  conditions: os=linux & cpu=x64 & libc=musl
+  languageName: node
+  linkType: hard
+
+"@next/swc-linux-x64-musl@npm:14.2.3":
+  version: 14.2.3
+  resolution: "@next/swc-linux-x64-musl@npm:14.2.3"
   conditions: os=linux & cpu=x64 & libc=musl
   languageName: node
   linkType: hard
@@ -4579,6 +4694,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@next/swc-win32-arm64-msvc@npm:14.2.3":
+  version: 14.2.3
+  resolution: "@next/swc-win32-arm64-msvc@npm:14.2.3"
+  conditions: os=win32 & cpu=arm64
+  languageName: node
+  linkType: hard
+
 "@next/swc-win32-ia32-msvc@npm:14.2.2":
   version: 14.2.2
   resolution: "@next/swc-win32-ia32-msvc@npm:14.2.2"
@@ -4586,9 +4708,23 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@next/swc-win32-ia32-msvc@npm:14.2.3":
+  version: 14.2.3
+  resolution: "@next/swc-win32-ia32-msvc@npm:14.2.3"
+  conditions: os=win32 & cpu=ia32
+  languageName: node
+  linkType: hard
+
 "@next/swc-win32-x64-msvc@npm:14.2.2":
   version: 14.2.2
   resolution: "@next/swc-win32-x64-msvc@npm:14.2.2"
+  conditions: os=win32 & cpu=x64
+  languageName: node
+  linkType: hard
+
+"@next/swc-win32-x64-msvc@npm:14.2.3":
+  version: 14.2.3
+  resolution: "@next/swc-win32-x64-msvc@npm:14.2.3"
   conditions: os=win32 & cpu=x64
   languageName: node
   linkType: hard
@@ -4699,6 +4835,7 @@ __metadata:
     "@tamagui/shorthands": "npm:^1.94.5"
     "@tamagui/themes": "npm:^1.94.5"
     "@tanstack/react-virtual": "npm:^3.4.0"
+    "@types/js-cookie": "npm:^3"
     "@types/react": "npm:^18.2.14"
     "@types/react-native": "npm:^0.71.3"
     "@types/react-virtualized": "npm:^9"
@@ -4707,6 +4844,8 @@ __metadata:
     burnt: "npm:^0.12.2"
     expo-constants: "npm:~15.4.6"
     expo-linking: "npm:~6.2.2"
+    js-cookie: "npm:^3.0.5"
+    next: "npm:^14.2.3"
     react-native-safe-area-context: "npm:4.8.2"
     react-player: "npm:^2.16.0"
     solito: "npm:^4.2.2"
@@ -4943,6 +5082,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@nook/next@workspace:packages/next"
   dependencies:
+    "@amplitude/analytics-browser": "npm:^2.6.2"
     "@nook/app": "npm:0.0.0"
     "@privy-io/react-auth": "npm:^1.60.6"
     "@tamagui/config": "npm:^1.94.5"
@@ -8527,6 +8667,13 @@ __metadata:
   version: 2.2.7
   resolution: "@types/js-cookie@npm:2.2.7"
   checksum: 10c0/29196c6829982b5efa79117122a7d62cf4bc2f6397ce8eac1539319ff5dce3b44b2d86f2ac064f2ed3488fb24439358f24af6914fde5c5c4bab9a85728a13a6f
+  languageName: node
+  linkType: hard
+
+"@types/js-cookie@npm:^3":
+  version: 3.0.6
+  resolution: "@types/js-cookie@npm:3.0.6"
+  checksum: 10c0/173afaf5ea9d86c22395b9d2a00b6adb0006dcfef165d6dcb0395cdc32f5a5dcf9c3c60f97194119963a15849b8f85121e1ae730b03e40bc0c29b84396ba22f9
   languageName: node
   linkType: hard
 
@@ -20084,6 +20231,64 @@ __metadata:
   bin:
     next: dist/bin/next
   checksum: 10c0/775fe33021051def673946dbd2dea0b3f66c3f550ffc0544e55a6e0411b400b64229fe375730f009588cf7263d69b2b828ca7bb984fd3e3883cdddeaba82c31d
+  languageName: node
+  linkType: hard
+
+"next@npm:^14.2.3":
+  version: 14.2.3
+  resolution: "next@npm:14.2.3"
+  dependencies:
+    "@next/env": "npm:14.2.3"
+    "@next/swc-darwin-arm64": "npm:14.2.3"
+    "@next/swc-darwin-x64": "npm:14.2.3"
+    "@next/swc-linux-arm64-gnu": "npm:14.2.3"
+    "@next/swc-linux-arm64-musl": "npm:14.2.3"
+    "@next/swc-linux-x64-gnu": "npm:14.2.3"
+    "@next/swc-linux-x64-musl": "npm:14.2.3"
+    "@next/swc-win32-arm64-msvc": "npm:14.2.3"
+    "@next/swc-win32-ia32-msvc": "npm:14.2.3"
+    "@next/swc-win32-x64-msvc": "npm:14.2.3"
+    "@swc/helpers": "npm:0.5.5"
+    busboy: "npm:1.6.0"
+    caniuse-lite: "npm:^1.0.30001579"
+    graceful-fs: "npm:^4.2.11"
+    postcss: "npm:8.4.31"
+    styled-jsx: "npm:5.1.1"
+  peerDependencies:
+    "@opentelemetry/api": ^1.1.0
+    "@playwright/test": ^1.41.2
+    react: ^18.2.0
+    react-dom: ^18.2.0
+    sass: ^1.3.0
+  dependenciesMeta:
+    "@next/swc-darwin-arm64":
+      optional: true
+    "@next/swc-darwin-x64":
+      optional: true
+    "@next/swc-linux-arm64-gnu":
+      optional: true
+    "@next/swc-linux-arm64-musl":
+      optional: true
+    "@next/swc-linux-x64-gnu":
+      optional: true
+    "@next/swc-linux-x64-musl":
+      optional: true
+    "@next/swc-win32-arm64-msvc":
+      optional: true
+    "@next/swc-win32-ia32-msvc":
+      optional: true
+    "@next/swc-win32-x64-msvc":
+      optional: true
+  peerDependenciesMeta:
+    "@opentelemetry/api":
+      optional: true
+    "@playwright/test":
+      optional: true
+    sass:
+      optional: true
+  bin:
+    next: dist/bin/next
+  checksum: 10c0/2c409154720846d07a7a995cc3bfba24b9ee73c87360ce3266528c8a217f5f1ab6f916cffbe1be83509b4e8d7b1d713921bb5c69338b4ecaa57df3212f79a8c5
   languageName: node
   linkType: hard
 

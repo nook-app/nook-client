@@ -6,6 +6,7 @@ import {
   CastEngagementType,
   Channel,
   FarcasterTrendingCashtag,
+  FarcasterUserMutualsPreview,
   UserContextType,
   UserEngagementType,
 } from "../../types";
@@ -245,6 +246,41 @@ export class FarcasterCacheClient {
 
   async removeAppFidBySigner(pubkey: string) {
     await this.redis.del(`${this.CLIENT_CACHE_PREFIX}:${pubkey}`);
+  }
+
+  async getMutualPreview(
+    fid: string,
+    targetFid: string,
+  ): Promise<FarcasterUserMutualsPreview> {
+    return await this.redis.getJson(
+      `${this.USER_CACHE_PREFIX}:mutuals-preview:${fid}:${targetFid}`,
+    );
+  }
+
+  async setMutualPreview(
+    fid: string,
+    targetFid: string,
+    preview: FarcasterUserMutualsPreview,
+  ) {
+    await this.redis.setJson(
+      `${this.USER_CACHE_PREFIX}:mutuals-preview:${fid}:${targetFid}`,
+      preview,
+      86400,
+    );
+  }
+
+  async getMutualFids(fid: string, targetFid: string): Promise<string[]> {
+    return await this.redis.getMembers(
+      `${this.USER_CACHE_PREFIX}:mutuals:${fid}:${targetFid}`,
+    );
+  }
+
+  async setMutualFids(fid: string, targetFid: string, mutuals: string[]) {
+    await this.redis.addMembers(
+      `${this.USER_CACHE_PREFIX}:mutuals:${fid}:${targetFid}`,
+      mutuals,
+      86400,
+    );
   }
 
   async getUserFollowingFids(fid: string): Promise<string[]> {

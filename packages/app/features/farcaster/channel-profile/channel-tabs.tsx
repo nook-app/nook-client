@@ -8,8 +8,8 @@ import { useChannel } from "../../../api/farcaster";
 
 export const ChannelTabs = ({
   channelId,
-  activeIndex,
-}: { channelId: string; activeIndex: number }) => {
+  activeTab,
+}: { channelId: string; activeTab: string }) => {
   const { data: channel } = useChannel(channelId);
   if (!channel) return null;
 
@@ -18,35 +18,39 @@ export const ChannelTabs = ({
       <Tabs
         tabs={[
           {
+            id: "relevant",
             label: "Relevant",
             href: `/channels/${channel.channelId}`,
           },
           {
+            id: "all",
             label: "All",
             href: `/channels/${channel.channelId}/all`,
           },
           {
+            id: "from-hosts",
             label: "From Hosts",
             href: `/channels/${channel.channelId}/from-hosts`,
           },
           {
+            id: "media",
             label: "Media",
             href: `/channels/${channel.channelId}/media`,
           },
         ]}
-        activeIndex={activeIndex}
+        activeTab={activeTab}
       />
-      <ChannelFeed channel={channel} activeIndex={activeIndex} />
+      <ChannelFeed channel={channel} activeTab={activeTab} />
     </View>
   );
 };
 
 export const ChannelFeed = ({
   channel,
-  activeIndex,
-}: { channel: Channel; activeIndex: number }) => {
-  switch (activeIndex) {
-    case 0:
+  activeTab,
+}: { channel: Channel; activeTab: string }) => {
+  switch (activeTab) {
+    case "relevant":
       return (
         <FarcasterFilteredFeed
           filter={{
@@ -65,7 +69,7 @@ export const ChannelFeed = ({
           }}
         />
       );
-    case 1:
+    case "all":
       return (
         <FarcasterFilteredFeed
           filter={{
@@ -78,7 +82,7 @@ export const ChannelFeed = ({
           }}
         />
       );
-    case 2:
+    case "from-hosts":
       return (
         <FarcasterFilteredFeed
           filter={{
@@ -97,7 +101,7 @@ export const ChannelFeed = ({
           }}
         />
       );
-    case 3:
+    case "media":
       return (
         <FarcasterFilteredFeed
           filter={{

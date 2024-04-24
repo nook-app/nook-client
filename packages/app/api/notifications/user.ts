@@ -12,6 +12,8 @@ export const useNotificationsCount = () => {
     queryKey: ["notifications-count", session?.fid],
     queryFn: fetchNotificationsCount,
     enabled: !!session?.fid,
+    refetchInterval: 30 * 1000,
+    refetchOnWindowFocus: false,
   });
 };
 

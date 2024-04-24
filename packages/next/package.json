@@ -10,6 +10,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@amplitude/analytics-browser": "^2.6.2",
     "@nook/app": "0.0.0",
     "@privy-io/react-auth": "^1.60.6",
     "@tamagui/config": "^1.94.5",

@@ -57,6 +57,7 @@ export const useCastFeed = (filter: FarcasterFeedFilter) => {
     },
     getNextPageParam: (lastPage) => lastPage.nextCursor,
     initialPageParam: undefined,
+    refetchOnWindowFocus: false,
   });
 };
 

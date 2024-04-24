@@ -1544,6 +1544,70 @@ export class FarcasterService {
     };
   }
 
+  async getUserMutuals(
+    fid: string,
+    targetFid: string,
+    cursor?: string,
+  ): Promise<GetFarcasterUsersResponse> {
+    const mutuals = await this.getAllUserMutuals(fid, targetFid);
+
+    const cursorFid = decodeCursor(cursor)?.fid;
+
+    const filteredMutals = cursorFid
+      ? mutuals.filter((user) => Number(user) > Number(cursorFid))
+      : mutuals;
+
+    const users = await this.getUsers(
+      filteredMutals
+        .sort((a, b) => Number(a) - Number(b))
+        .slice(0, MAX_PAGE_SIZE),
+      fid,
+    );
+
+    return {
+      data: users,
+      nextCursor:
+        users.length === MAX_PAGE_SIZE
+          ? encodeCursor({
+              fid: Number(users[users.length - 1]?.fid),
+            })
+          : undefined,
+    };
+  }
+
+  async getUserMutualsPreview(fid: string, targetFid: string) {
+    const cached = await this.cache.getMutualPreview(fid, targetFid);
+    if (cached) return cached;
+
+    const mutuals = await this.getAllUserMutuals(fid, targetFid);
+    const users = await this.getUsers(mutuals.slice(0, 3));
+
+    const data = {
+      preview: users,
+      total: mutuals.length,
+    };
+
+    await this.cache.setMutualPreview(fid, targetFid, data);
+
+    return data;
+  }
+
+  async getAllUserMutuals(fid: string, targetFid: string) {
+    const cached = await this.cache.getMutualFids(fid, targetFid);
+    if (cached && cached.length > 0) return cached;
+
+    const [following, targetFollowing] = await Promise.all([
+      this.getUserFollowingFids(fid),
+      this.getUserFollowingFids(targetFid),
+    ]);
+
+    const mutuals = following.filter((user) => targetFollowing.includes(user));
+
+    await this.cache.setMutualFids(fid, targetFid, mutuals);
+
+    return mutuals;
+  }
+
   async getUserVerifiedAddresses(fid: string) {
     const addresses = await this.client.farcasterVerification.findMany({
       where: { fid: BigInt(fid), deletedAt: null },

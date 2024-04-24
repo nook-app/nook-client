@@ -301,6 +301,27 @@ export const farcasterRoutes = async (fastify: FastifyInstance) => {
     );
 
     fastify.get<{ Params: { fid: string }; Querystring: { cursor?: string } }>(
+      "/farcaster/users/:fid/mutuals",
+      async (request, reply) => {
+        let viewerFid: string | undefined;
+        try {
+          const { fid } = (await request.jwtDecode()) as { fid: string };
+          viewerFid = fid;
+        } catch (e) {}
+        if (!viewerFid) {
+          reply.status(401);
+          return;
+        }
+        const response = await client.getUserMutuals(
+          viewerFid,
+          request.params.fid,
+          request.query.cursor,
+        );
+        reply.send(response);
+      },
+    );
+
+    fastify.get<{ Params: { fid: string }; Querystring: { cursor?: string } }>(
       "/farcaster/users/:fid/followers",
       async (request, reply) => {
         let viewerFid: string | undefined;
