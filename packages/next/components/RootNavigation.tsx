@@ -1,6 +1,6 @@
 "use client";
 
-import { NookButton, NookText, View, XStack, YStack } from "@nook/ui";
+import { NookButton, NookText, View, XStack, YStack, useTheme } from "@nook/ui";
 import {
   Bell,
   Home,
@@ -16,6 +16,8 @@ import { FarcasterUserDisplay } from "@nook/app/components/farcaster/users/user-
 import { CreateCastDialog } from "@nook/app/features/farcaster/create-cast/disalog";
 import { AccountSwitcher } from "@nook/app/features/auth/account-switcher";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { NotificationsCount } from "@nook/app/features/notifications/notifications-count";
 
 export const RootNavigation = ({ children }: { children: React.ReactNode }) => {
   const { user } = useAuth();
@@ -46,6 +48,7 @@ export const RootNavigation = ({ children }: { children: React.ReactNode }) => {
                   label="Notifications"
                   Icon={Bell}
                   href="/notifications"
+                  right={<NotificationsCount />}
                 />
                 <RootNavigationItem
                   label="Profile"
@@ -77,18 +80,47 @@ const RootNavigationItem = ({
   label,
   Icon,
   href,
-}: { label: string; Icon: typeof Home; href: string }) => {
+  right,
+}: {
+  label: string;
+  Icon: typeof Home;
+  href: string;
+  right?: React.ReactNode;
+}) => {
+  const pathname = usePathname();
   return (
-    <Link href={href} style={{ textDecoration: "none" }}>
-      <NookButton variant="ghost" borderRadius="$10">
-        <XStack gap="$3" alignItems="center" paddingRight="$2">
-          <Icon color="$mauve12" size={24} />
-          <NookText fontWeight="500" fontSize="$7">
-            {label}
-          </NookText>
+    <View group>
+      <Link href={href} style={{ textDecoration: "none" }}>
+        {/* @ts-ignore */}
+        <XStack
+          justifyContent="space-between"
+          alignItems="center"
+          paddingRight="$2"
+          borderRadius="$10"
+          backgroundColor="transparent"
+          padding="$3"
+          $group-hover={{
+            backgroundColor: "$color3",
+            transition: "all 0.2s ease-in-out",
+          }}
+        >
+          <XStack gap="$3" alignContent="center">
+            <Icon
+              color="$mauve12"
+              size={24}
+              strokeWidth={pathname === href ? 2.5 : 2}
+            />
+            <NookText
+              fontWeight={pathname === href ? "700" : "400"}
+              fontSize="$7"
+            >
+              {label}
+            </NookText>
+          </XStack>
+          {right}
         </XStack>
-      </NookButton>
-    </Link>
+      </Link>
+    </View>
   );
 };
 

@@ -1,4 +1,4 @@
-import { Session } from "../types";
+import { Channel, FarcasterCast, FarcasterUser, Session } from "../types";
 
 export const makeRequest = async (path: string, requestInit?: RequestInit) => {
   const url = path.startsWith("http")
@@ -25,4 +25,24 @@ export const makeRequest = async (path: string, requestInit?: RequestInit) => {
   }
 
   return await response.json();
+};
+
+export const hasUserDiff = (user1: FarcasterUser, user2: FarcasterUser) => {
+  return (
+    user1.engagement.followers !== user2.engagement.followers ||
+    user1.engagement.following !== user2.engagement.following
+  );
+};
+
+export const hasChannelDiff = (channel1: Channel, channel2: Channel) => {
+  return false;
+};
+
+export const hasCastDiff = (cast1: FarcasterCast, cast2: FarcasterCast) => {
+  return (
+    cast1.engagement.likes !== cast2.engagement.likes ||
+    cast1.engagement.recasts !== cast2.engagement.recasts ||
+    cast1.engagement.replies !== cast2.engagement.replies ||
+    cast1.engagement.quotes !== cast2.engagement.quotes
+  );
 };

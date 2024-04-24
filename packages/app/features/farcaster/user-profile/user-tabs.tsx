@@ -1,11 +1,7 @@
 "use client";
 
 import { View } from "@nook/ui";
-import {
-  FarcasterFeedFilter,
-  FarcasterUser,
-  UserFilterType,
-} from "../../../types";
+import { Display, FarcasterUser, UserFilterType } from "../../../types";
 import { FarcasterFilteredFeed } from "../cast-feed/filtered-feed";
 import { Tabs } from "../../../components/tabs/tabs";
 import { useUser } from "../../../api/farcaster";
@@ -49,51 +45,42 @@ export const UserFeed = ({
   user,
   activeIndex,
 }: { user: FarcasterUser; activeIndex: number }) => {
-  let filter: FarcasterFeedFilter = {};
   switch (activeIndex) {
     case 0:
-      filter = {
-        users: {
-          type: UserFilterType.FIDS,
-          data: {
-            fids: [user.fid],
-          },
-        },
-      };
-      break;
+      return (
+        <FarcasterFilteredFeed
+          filter={{
+            users: { type: UserFilterType.FIDS, data: { fids: [user.fid] } },
+          }}
+        />
+      );
     case 1:
-      filter = {
-        users: {
-          type: UserFilterType.FIDS,
-          data: {
-            fids: [user.fid],
-          },
-        },
-        onlyReplies: true,
-      };
-      break;
+      return (
+        <FarcasterFilteredFeed
+          filter={{
+            users: { type: UserFilterType.FIDS, data: { fids: [user.fid] } },
+            onlyReplies: true,
+          }}
+        />
+      );
     case 2:
-      filter = {
-        users: {
-          type: UserFilterType.FIDS,
-          data: {
-            fids: [user.fid],
-          },
-        },
-        contentTypes: ["image", "video"],
-      };
-      break;
+      return (
+        <FarcasterFilteredFeed
+          filter={{
+            users: { type: UserFilterType.FIDS, data: { fids: [user.fid] } },
+            contentTypes: ["image"],
+          }}
+          displayMode={Display.GRID}
+        />
+      );
     case 3:
-      filter = {
-        users: {
-          type: UserFilterType.FIDS,
-          data: {
-            fids: [user.fid],
-          },
-        },
-        onlyFrames: true,
-      };
-      break;
+      return (
+        <FarcasterFilteredFeed
+          filter={{
+            users: { type: UserFilterType.FIDS, data: { fids: [user.fid] } },
+            onlyFrames: true,
+          }}
+        />
+      );
   }
-  return <FarcasterFilteredFeed filter={filter} />;
 };

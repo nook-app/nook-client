@@ -1,10 +1,12 @@
-import { useCastReplies } from "../../../api/farcaster";
-import { Loading } from "../../../components/loading";
-import { FarcasterInfiniteFeed } from "./infinite-feed";
+"use client";
 
-export const FarcasterReplyFeed = ({ hash }: { hash: string }) => {
+import { useCastQuotes } from "../../../api/farcaster/casts";
+import { Loading } from "../../../components/loading";
+import { FarcasterInfiniteFeed } from "../cast-feed/infinite-feed";
+
+export const FarcasterCastQuotes = ({ hash }: { hash: string }) => {
   const { data, isLoading, hasNextPage, fetchNextPage, isFetchingNextPage } =
-    useCastReplies(hash, "best");
+    useCastQuotes(hash);
 
   if (isLoading) {
     return <Loading />;

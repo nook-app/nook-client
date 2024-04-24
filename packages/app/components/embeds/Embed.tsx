@@ -34,7 +34,9 @@ export const Embed = ({
   }
   if (
     content.type?.startsWith("video/") ||
-    content.type?.startsWith("application/x-mpegURL")
+    content.type?.startsWith("application/x-mpegURL") ||
+    content.uri.includes("youtube.com") ||
+    content.uri.includes("youtu.be")
   ) {
     return <EmbedVideo content={content} />;
   }

@@ -10,8 +10,8 @@ export const EmbedTwitter = ({
   if (!content.metadata) return null;
   return (
     <YStack
-      borderWidth="$0.25"
-      borderColor="$borderColor"
+      borderWidth="$0.5"
+      borderColor="rgba(256, 256, 256, 0.1)"
       borderRadius="$4"
       padding="$2.5"
       gap="$2"

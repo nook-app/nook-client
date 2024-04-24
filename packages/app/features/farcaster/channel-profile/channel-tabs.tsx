@@ -1,12 +1,7 @@
 "use client";
 
 import { View } from "@nook/ui";
-import {
-  Channel,
-  ChannelFilterType,
-  FarcasterFeedFilter,
-  UserFilterType,
-} from "../../../types";
+import { Channel, ChannelFilterType, UserFilterType } from "../../../types";
 import { FarcasterFilteredFeed } from "../cast-feed/filtered-feed";
 import { Tabs } from "../../../components/tabs/tabs";
 import { useChannel } from "../../../api/farcaster";
@@ -27,12 +22,16 @@ export const ChannelTabs = ({
             href: `/channels/${channel.channelId}`,
           },
           {
-            label: "Media",
-            href: `/channels/${channel.channelId}/media`,
+            label: "All",
+            href: `/channels/${channel.channelId}/all`,
           },
           {
-            label: "Recent",
-            href: `/channels/${channel.channelId}/all`,
+            label: "From Hosts",
+            href: `/channels/${channel.channelId}/from-hosts`,
+          },
+          {
+            label: "Media",
+            href: `/channels/${channel.channelId}/media`,
           },
         ]}
         activeIndex={activeIndex}
@@ -46,51 +45,77 @@ export const ChannelFeed = ({
   channel,
   activeIndex,
 }: { channel: Channel; activeIndex: number }) => {
-  let filter: FarcasterFeedFilter = {};
   switch (activeIndex) {
     case 0:
-      filter = {
-        users: {
-          type: UserFilterType.POWER_BADGE,
-          data: {
-            badge: true,
-          },
-        },
-        channels: {
-          type: ChannelFilterType.CHANNEL_URLS,
-          data: {
-            urls: [channel.url],
-          },
-        },
-      };
-      break;
+      return (
+        <FarcasterFilteredFeed
+          filter={{
+            users: {
+              type: UserFilterType.POWER_BADGE,
+              data: {
+                badge: true,
+              },
+            },
+            channels: {
+              type: ChannelFilterType.CHANNEL_URLS,
+              data: {
+                urls: [channel.url],
+              },
+            },
+          }}
+        />
+      );
     case 1:
-      filter = {
-        users: {
-          type: UserFilterType.POWER_BADGE,
-          data: {
-            badge: true,
-          },
-        },
-        channels: {
-          type: ChannelFilterType.CHANNEL_URLS,
-          data: {
-            urls: [channel.url],
-          },
-        },
-        contentTypes: ["image", "video"],
-      };
-      break;
+      return (
+        <FarcasterFilteredFeed
+          filter={{
+            channels: {
+              type: ChannelFilterType.CHANNEL_URLS,
+              data: {
+                urls: [channel.url],
+              },
+            },
+          }}
+        />
+      );
     case 2:
-      filter = {
-        channels: {
-          type: ChannelFilterType.CHANNEL_URLS,
-          data: {
-            urls: [channel.url],
-          },
-        },
-      };
-      break;
+      return (
+        <FarcasterFilteredFeed
+          filter={{
+            users: {
+              type: UserFilterType.FIDS,
+              data: {
+                fids: channel.hostFids || [],
+              },
+            },
+            channels: {
+              type: ChannelFilterType.CHANNEL_URLS,
+              data: {
+                urls: [channel.url],
+              },
+            },
+          }}
+        />
+      );
+    case 3:
+      return (
+        <FarcasterFilteredFeed
+          filter={{
+            users: {
+              type: UserFilterType.POWER_BADGE,
+              data: {
+                badge: true,
+              },
+            },
+            channels: {
+              type: ChannelFilterType.CHANNEL_URLS,
+              data: {
+                urls: [channel.url],
+              },
+            },
+            contentTypes: ["image"],
+          }}
+        />
+      );
   }
-  return <FarcasterFilteredFeed filter={filter} />;
 };

@@ -68,8 +68,13 @@ export const userRoutes = async (fastify: FastifyInstance) => {
       Params: GetFarcasterUserRequest;
       Querystring: { cursor?: string };
     }>("/users/:fid/followers", async (request, reply) => {
+      let fid = request.params.fid;
+      if (Number.isNaN(Number(fid))) {
+        fid = (await service.getFidsForUsernames([fid]))[0];
+      }
+
       const response = await service.getUserFollowers(
-        request.params.fid,
+        fid,
         request.query.cursor,
         request.headers["x-viewer-fid"] as string,
       );
@@ -81,8 +86,13 @@ export const userRoutes = async (fastify: FastifyInstance) => {
       Params: GetFarcasterUserRequest;
       Querystring: { cursor?: string };
     }>("/users/:fid/following", async (request, reply) => {
+      let fid = request.params.fid;
+      if (Number.isNaN(Number(fid))) {
+        fid = (await service.getFidsForUsernames([fid]))[0];
+      }
+
       const response = await service.getUserFollowing(
-        request.params.fid,
+        fid,
         request.query.cursor,
         request.headers["x-viewer-fid"] as string,
       );

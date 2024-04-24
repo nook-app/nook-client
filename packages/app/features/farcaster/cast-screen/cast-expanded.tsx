@@ -1,12 +1,12 @@
 "use client";
 
-import { NookText, View, XStack, YStack } from "@nook/ui";
+import { NookText, Select, View, XStack, YStack } from "@nook/ui";
 import { FarcasterUserDisplay } from "../../../components/farcaster/users/user-display";
 import { FarcasterCastText } from "../../../components/farcaster/casts/cast-text";
 import { Embeds } from "../../../components/embeds/Embed";
 import { FarcasterCastEngagement } from "../../../components/farcaster/casts/cast-engagement";
 import { FarcasterChannelBadge } from "../../../components/farcaster/channels/channel-display";
-import { useCast } from "../../../api/farcaster";
+import { useCast, useCastReplies } from "../../../api/farcaster";
 import {
   FarcasterCustomActionButton,
   FarcasterLikeActionButton,
@@ -14,7 +14,17 @@ import {
   FarcasterReplyActionButton,
   FarcasterShareButton,
 } from "../../../components/farcaster/casts/cast-actions";
-import { FarcasterReplyFeed } from "../cast-feed/reply-feed";
+import { FarcasterCastDefaultDisplay } from "../../../components/farcaster/casts/cast-display";
+import { Display } from "../../../types";
+import { FarcasterInfiniteFeed } from "../cast-feed/infinite-feed";
+import {
+  BarChartBig,
+  Check,
+  ChevronDown,
+  Clock,
+  Rocket,
+} from "@tamagui/lucide-icons";
+import { useState } from "react";
 
 function formatTimestamp(timestamp: number) {
   const date = new Date(timestamp);
@@ -34,6 +44,39 @@ function formatTimestamp(timestamp: number) {
 }
 
 export const FarcasterExpandedCast = ({ hash }: { hash: string }) => {
+  const [replySort, setReplySort] = useState<"best" | "top" | "new">("best");
+  const { data, isLoading, hasNextPage, fetchNextPage, isFetchingNextPage } =
+    useCastReplies(hash, replySort);
+
+  const casts = data?.pages.flatMap((page) => page.data) ?? [];
+
+  return (
+    <View>
+      <FarcasterInfiniteFeed
+        casts={casts}
+        fetchNextPage={fetchNextPage}
+        isFetchingNextPage={isFetchingNextPage}
+        hasNextPage={hasNextPage}
+        displayMode={Display.REPLIES}
+        ListHeaderComponent={
+          <FarcasterExpandedCastHeader
+            hash={hash}
+            onReplySortChange={setReplySort}
+          />
+        }
+        isLoading={isLoading}
+      />
+    </View>
+  );
+};
+
+const FarcasterExpandedCastHeader = ({
+  hash,
+  onReplySortChange,
+}: {
+  hash: string;
+  onReplySortChange: (sort: "best" | "top" | "new") => void;
+}) => {
   const { data: cast } = useCast(hash);
   if (!cast) return null;
 
@@ -42,6 +85,9 @@ export const FarcasterExpandedCast = ({ hash }: { hash: string }) => {
 
   return (
     <View>
+      {cast.ancestors?.toReversed().map((ancestor) => (
+        <FarcasterCastDefaultDisplay cast={ancestor} isConnected />
+      ))}
       <YStack gap="$3" padding="$3">
         <FarcasterUserDisplay user={cast.user} asLink />
         {renderText && <FarcasterCastText cast={cast} fontSize="$6" />}
@@ -57,7 +103,61 @@ export const FarcasterExpandedCast = ({ hash }: { hash: string }) => {
         </XStack>
       </YStack>
       <FarcasterCastActions hash={cast.hash} />
-      <FarcasterReplyFeed hash={cast.hash} />
+      <Select defaultValue="best" onValueChange={onReplySortChange}>
+        <Select.Trigger
+          borderWidth="$0"
+          width="auto"
+          alignSelf="flex-end"
+          justifyContent="center"
+          paddingHorizontal="$3"
+          paddingVertical="$1"
+          margin="$2"
+          size="$2"
+        >
+          <XStack gap="$1.5" alignItems="center">
+            <NookText muted fontSize="$4">
+              Sorted by
+            </NookText>
+            <Select.Value color="$mauve12" />
+            <ChevronDown size={16} />
+          </XStack>
+        </Select.Trigger>
+        <Select.Content>
+          <Select.ScrollUpButton />
+          <Select.Viewport>
+            <Select.Group>
+              <Select.Item index={0} value="best">
+                <XStack gap="$2" alignItems="center">
+                  <Rocket size={16} />
+                  <Select.ItemText>Best</Select.ItemText>
+                </XStack>
+                <Select.ItemIndicator marginLeft="auto">
+                  <Check size={16} />
+                </Select.ItemIndicator>
+              </Select.Item>
+              <Select.Item index={1} value="top">
+                <XStack gap="$2" alignItems="center">
+                  <BarChartBig size={16} />
+                  <Select.ItemText>Top</Select.ItemText>
+                </XStack>
+                <Select.ItemIndicator marginLeft="auto">
+                  <Check size={16} />
+                </Select.ItemIndicator>
+              </Select.Item>
+              <Select.Item index={2} value="new">
+                <XStack gap="$2" alignItems="center">
+                  <Clock size={16} />
+                  <Select.ItemText>New</Select.ItemText>
+                </XStack>
+                <Select.ItemIndicator marginLeft="auto">
+                  <Check size={16} />
+                </Select.ItemIndicator>
+              </Select.Item>
+            </Select.Group>
+          </Select.Viewport>
+          <Select.ScrollDownButton />
+        </Select.Content>
+      </Select>
     </View>
   );
 };

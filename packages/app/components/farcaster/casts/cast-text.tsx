@@ -68,7 +68,7 @@ export const FarcasterCastText = ({
               >
                 {part}
               </Text>
-            </TextLink>{" "}
+            </TextLink>
           </Text>,
         );
       } else {
@@ -167,7 +167,6 @@ export const FarcasterCastText = ({
               {label}
             </Text>
           </TextLink>
-          ,
         </Text>,
       );
     }

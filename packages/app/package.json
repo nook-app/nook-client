@@ -21,6 +21,7 @@
     "expo-constants": "~15.4.6",
     "expo-linking": "~6.2.2",
     "react-native-safe-area-context": "4.8.2",
+    "react-player": "^2.16.0",
     "solito": "^4.2.2"
   },
   "devDependencies": {

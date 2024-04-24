@@ -1,9 +1,11 @@
 import { NookButton } from "@nook/ui";
 import { useFollowUser } from "../../../hooks/useFollowUser";
 
-export const FarcasterUserFollowButton = ({ fid }: { fid: string }) => {
+export const FarcasterUserFollowButton = ({
+  username,
+}: { username: string }) => {
   const { user, isFollowing, followUser, unfollowUser, isViewer } =
-    useFollowUser(fid);
+    useFollowUser(username);
 
   if (!user || isViewer) {
     return null;
@@ -11,7 +13,15 @@ export const FarcasterUserFollowButton = ({ fid }: { fid: string }) => {
 
   return (
     <NookButton
-      onPress={() => (isFollowing ? unfollowUser({}) : followUser({}))}
+      onPress={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (isFollowing) {
+          unfollowUser({});
+        } else {
+          followUser({});
+        }
+      }}
       variant={isFollowing ? "active-action" : "action"}
     >
       {isFollowing ? "Unfollow" : "Follow"}

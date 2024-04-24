@@ -20,7 +20,7 @@ export const UserHeader = ({ username }: { username: string }) => {
     <YStack gap="$3" padding="$4">
       <View flexDirection="row" justifyContent="space-between">
         <YStack gap="$2">
-          <ZoomableImage aspectRatio={1} uri={user.pfp}>
+          <ZoomableImage uri={user.pfp}>
             <View cursor="pointer">
               <CdnAvatar src={user.pfp} size="$10" />
             </View>
@@ -42,12 +42,12 @@ export const UserHeader = ({ username }: { username: string }) => {
           </YStack>
         </YStack>
         <View>
-          <FarcasterUserFollowButton fid={user.fid} />
+          <FarcasterUserFollowButton user={user} />
         </View>
       </View>
       {bio && <FarcasterBioText text={bio} selectable />}
       <XStack gap="$2">
-        <Link href={`/users/${user.fid}/following`}>
+        <Link href={`/users/${user.username}/following`}>
           <View flexDirection="row" alignItems="center" gap="$1">
             <NookText fontWeight="600">
               {formatNumber(user.engagement?.following || 0)}
@@ -55,7 +55,7 @@ export const UserHeader = ({ username }: { username: string }) => {
             <NookText muted>following</NookText>
           </View>
         </Link>
-        <Link href={`/users/${user.fid}/followers`}>
+        <Link href={`/users/${user.username}/followers`}>
           <View flexDirection="row" alignItems="center" gap="$1">
             <NookText fontWeight="600">
               {formatNumber(user.engagement?.followers || 0)}

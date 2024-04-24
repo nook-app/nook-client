@@ -57,9 +57,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       await logoutPrivy();
       await handleSessionChange(session);
     },
-    onError: (error) => {
-      console.error("error", error);
-    },
+    onError: (error) => {},
   });
 
   const handleSessionChange = useCallback(async (session: Session) => {

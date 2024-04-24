@@ -8,7 +8,7 @@ export const CreateCastDialog = () => {
     <CreateCastProvider initialCast={{ text: "" }}>
       <Dialog modal>
         <Dialog.Trigger asChild>
-          <NookButton variant="primary">Post</NookButton>
+          <NookButton variant="primary">Cast</NookButton>
         </Dialog.Trigger>
         <Dialog.Portal justifyContent="flex-start" paddingTop="$10">
           <Dialog.Overlay

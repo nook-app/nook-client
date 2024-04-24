@@ -1,12 +1,12 @@
 import { fetchUser } from "@nook/app/api/farcaster";
-import { PageNavigation } from "../../../components/PageNavigation";
-import { UserHeader } from "@nook/app/features/farcaster/user-profile/user-header";
 import { UserSidebar } from "@nook/app/features/farcaster/user-profile/user-sidebar";
 import {
   dehydrate,
   HydrationBoundary,
   QueryClient,
 } from "@tanstack/react-query";
+import { PageNavigation } from "../../../components/PageNavigation";
+import { NavigationHeader } from "../../../components/NavigationHeader";
 
 export default async function User({
   children,
@@ -21,11 +21,8 @@ export default async function User({
 
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
-      <PageNavigation
-        sidebar={<UserSidebar username={params.username} />}
-        headerTitle={user.displayName || `@${user.username}`}
-      >
-        <UserHeader username={params.username} />
+      <PageNavigation sidebar={<UserSidebar username={params.username} />}>
+        <NavigationHeader title={user.displayName || `@${user.username}`} />
         {children}
       </PageNavigation>
     </HydrationBoundary>

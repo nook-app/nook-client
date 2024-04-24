@@ -305,11 +305,11 @@ function InfiniteScrollListImpl<Item>(
                     data-index={index}
                     ref={rowVirtualizer.measureElement}
                     style={{
-                      width: "100%",
+                      width: numColumns ? `${100 / numColumns}%` : "100%",
                       ...transformStyle,
                       // @ts-ignore
-                      "scroll-snap-align": pagingEnabled ? "start" : undefined,
-                      "scroll-snap-stop": pagingEnabled ? "always" : undefined,
+                      scrollSnapAlign: pagingEnabled ? "start" : undefined,
+                      scrollSnapStop: pagingEnabled ? "always" : undefined,
                     }}
                   >
                     {typeof data?.[index] !== "undefined" ? (

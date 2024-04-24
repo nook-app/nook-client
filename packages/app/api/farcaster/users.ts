@@ -1,23 +1,36 @@
 import { FarcasterUser } from "../../types";
 import { makeRequest } from "../utils";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  useQuery,
+  InfiniteData,
+  useInfiniteQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 
 type FarcasterUsersResponse = {
   data: FarcasterUser[];
   nextCursor?: string;
 };
 
-export const fetchUser = async (fid: string): Promise<FarcasterUser> => {
-  return await makeRequest(`/farcaster/users/${fid}`);
+export const fetchUser = async (username: string): Promise<FarcasterUser> => {
+  return await makeRequest(`/farcaster/users/${username}`);
 };
 
-export const useUser = (fid: string) => {
+export const useUser = (username: string) => {
+  const queryClient = useQueryClient();
+  const initialData = queryClient.getQueryData<FarcasterUser>([
+    "user",
+    username,
+  ]);
   return useQuery<FarcasterUser>({
-    queryKey: ["user", fid],
+    queryKey: ["user", username],
     queryFn: async () => {
-      const user = await fetchUser(fid);
+      const user = await fetchUser(username);
+      queryClient.setQueryData(["user", username], user);
       return user;
     },
+    initialData,
+    enabled: !initialData && !!username,
   });
 };
 
@@ -40,10 +53,70 @@ export const useUsers = (fids: string[]) => {
     queryFn: async () => {
       const users = await fetchUsers(fids);
       for (const user of users.data) {
-        queryClient.setQueryData(["user", user.fid], user);
+        queryClient.setQueryData(["user", user.username], user);
       }
       return users;
     },
     enabled: fids.length > 0,
+  });
+};
+
+export const fetchUserFollowers = async (username: string, cursor?: string) => {
+  return await makeRequest(
+    `/farcaster/users/${username}/followers${
+      cursor ? `?cursor=${cursor}` : ""
+    }`,
+  );
+};
+
+export const useUserFollowers = (username: string) => {
+  const queryClient = useQueryClient();
+  return useInfiniteQuery<
+    FarcasterUsersResponse,
+    unknown,
+    InfiniteData<FarcasterUsersResponse>,
+    string[],
+    string | undefined
+  >({
+    queryKey: ["user-followers", username],
+    queryFn: async ({ pageParam }) => {
+      const data = await fetchUserFollowers(username, pageParam);
+      for (const user of data.data) {
+        queryClient.setQueryData(["user", user.username], user);
+      }
+      return data;
+    },
+    getNextPageParam: (lastPage) => lastPage.nextCursor,
+    initialPageParam: undefined,
+  });
+};
+
+export const fetchUserFollowing = async (username: string, cursor?: string) => {
+  return await makeRequest(
+    `/farcaster/users/${username}/following${
+      cursor ? `?cursor=${cursor}` : ""
+    }`,
+  );
+};
+
+export const useUserFollowing = (username: string) => {
+  const queryClient = useQueryClient();
+  return useInfiniteQuery<
+    FarcasterUsersResponse,
+    unknown,
+    InfiniteData<FarcasterUsersResponse>,
+    string[],
+    string | undefined
+  >({
+    queryKey: ["user-following", username],
+    queryFn: async ({ pageParam }) => {
+      const data = await fetchUserFollowing(username, pageParam);
+      for (const user of data.data) {
+        queryClient.setQueryData(["user", user.username], user);
+      }
+      return data;
+    },
+    getNextPageParam: (lastPage) => lastPage.nextCursor,
+    initialPageParam: undefined,
   });
 };

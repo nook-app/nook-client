@@ -1,48 +1,57 @@
-import { FarcasterCast, FarcasterFeedResponse } from "../../types";
+import {
+  FarcasterCast,
+  FarcasterCastsResponse,
+  FarcasterUsersResponse,
+} from "../../types";
 import { makeRequest } from "../utils";
 import {
+  useQueryClient,
   useQuery,
   InfiniteData,
   useInfiniteQuery,
 } from "@tanstack/react-query";
+import { cacheRelatedData } from "./feed";
 
 export const fetchCast = async (hash: string) => {
   return await makeRequest(`/farcaster/casts/${hash}`);
 };
 
 export const useCast = (hash: string) => {
+  const queryClient = useQueryClient();
+  const initialData = queryClient.getQueryData<FarcasterCast>(["cast", hash]);
   return useQuery<FarcasterCast>({
     queryKey: ["cast", hash],
     queryFn: async () => {
       const cast = await fetchCast(hash);
+      cacheRelatedData(queryClient, [cast]);
       return cast;
     },
+    initialData,
+    enabled: !initialData && !!hash,
   });
 };
 
-export const fetchCastReplies = async (
-  hash: string,
-  mode: "best" | "new" | "top",
-  cursor?: string,
-) => {
+export const fetchCastLikes = async (hash: string, cursor?: string) => {
   return await makeRequest(
-    `/farcaster/casts/${hash}/replies${mode !== "best" ? `/${mode}` : ""}${
-      cursor ? `?cursor=${cursor}` : ""
-    }`,
+    `/farcaster/casts/${hash}/likes${cursor ? `?cursor=${cursor}` : ""}`,
   );
 };
 
-export const useCastReplies = (hash: string, mode: "best" | "new" | "top") => {
+export const useCastLikes = (hash: string) => {
+  const queryClient = useQueryClient();
   return useInfiniteQuery<
-    FarcasterFeedResponse,
+    FarcasterUsersResponse,
     unknown,
-    InfiniteData<FarcasterFeedResponse>,
+    InfiniteData<FarcasterUsersResponse>,
     string[],
     string | undefined
   >({
-    queryKey: ["cast-replies", hash, mode],
+    queryKey: ["cast-likes", hash],
     queryFn: async ({ pageParam }) => {
-      const data = await fetchCastReplies(hash, mode, pageParam);
+      const data = await fetchCastLikes(hash, pageParam);
+      for (const user of data.data) {
+        queryClient.setQueryData(["user", user.username], user);
+      }
       return data;
     },
     getNextPageParam: (lastPage) => lastPage.nextCursor,
@@ -50,37 +59,53 @@ export const useCastReplies = (hash: string, mode: "best" | "new" | "top") => {
   });
 };
 
-export const fetchTrendingCasts = async (
-  viewerFid?: string,
-  cursor?: string,
-) => {
-  return await makeRequest("/panels", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      type: "default",
-      key: "trending",
-      context: {
-        viewerFid,
-      },
-      cursor,
-    }),
-  });
+export const fetchCastRecasts = async (hash: string, cursor?: string) => {
+  return await makeRequest(
+    `/farcaster/casts/${hash}/recasts${cursor ? `?cursor=${cursor}` : ""}`,
+  );
 };
 
-export const useTrendingCasts = (viewerFid?: string) => {
+export const useCastRecasts = (hash: string) => {
+  const queryClient = useQueryClient();
   return useInfiniteQuery<
-    FarcasterFeedResponse,
+    FarcasterUsersResponse,
     unknown,
-    InfiniteData<FarcasterFeedResponse>,
+    InfiniteData<FarcasterUsersResponse>,
     string[],
     string | undefined
   >({
-    queryKey: ["trending"],
+    queryKey: ["cast-recasts", hash],
     queryFn: async ({ pageParam }) => {
-      const data = await fetchTrendingCasts(viewerFid, pageParam);
+      const data = await fetchCastRecasts(hash, pageParam);
+      for (const user of data.data) {
+        queryClient.setQueryData(["user", user.username], user);
+      }
+      return data;
+    },
+    getNextPageParam: (lastPage) => lastPage.nextCursor,
+    initialPageParam: undefined,
+  });
+};
+
+export const fetchCastQuotes = async (hash: string, cursor?: string) => {
+  return await makeRequest(
+    `/farcaster/casts/${hash}/quotes${cursor ? `?cursor=${cursor}` : ""}`,
+  );
+};
+
+export const useCastQuotes = (hash: string) => {
+  const queryClient = useQueryClient();
+  return useInfiniteQuery<
+    FarcasterCastsResponse,
+    unknown,
+    InfiniteData<FarcasterCastsResponse>,
+    string[],
+    string | undefined
+  >({
+    queryKey: ["cast-quotes", hash],
+    queryFn: async ({ pageParam }) => {
+      const data = await fetchCastQuotes(hash, pageParam);
+      cacheRelatedData(queryClient, data.data);
       return data;
     },
     getNextPageParam: (lastPage) => lastPage.nextCursor,

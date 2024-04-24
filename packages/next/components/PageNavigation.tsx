@@ -8,11 +8,9 @@ import { ReactNode } from "react";
 export const PageNavigation = ({
   children,
   sidebar,
-  headerTitle,
 }: {
   children: ReactNode;
   sidebar?: ReactNode;
-  headerTitle?: ReactNode;
 }) => {
   const router = useRouter();
   return (
@@ -25,30 +23,6 @@ export const PageNavigation = ({
         borderRightColor="rgba(256, 256, 256, 0.1)"
         borderRightWidth="$0.5"
       >
-        {headerTitle && (
-          <XStack
-            gap="$5"
-            height="$5"
-            alignItems="center"
-            paddingHorizontal="$3"
-          >
-            <NookButton
-              icon={<ArrowLeft />}
-              circular
-              size="$3"
-              scaleIcon={1.5}
-              backgroundColor="transparent"
-              borderWidth="$0"
-              hoverStyle={{
-                // @ts-ignore
-                transition: "all 0.2s ease-in-out",
-                backgroundColor: "$color3",
-              }}
-              onPress={router.back}
-            />
-            <NookText variant="label">{headerTitle}</NookText>
-          </XStack>
-        )}
         {children}
       </View>
       <View width={400}>{sidebar}</View>

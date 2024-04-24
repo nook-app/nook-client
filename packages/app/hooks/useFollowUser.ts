@@ -5,9 +5,9 @@ import { useAuth } from "../context/auth";
 import { FarcasterUser } from "../types";
 import { submitLinkAdd, submitLinkRemove } from "../api/farcaster/actions";
 
-export const useFollowUser = (fid: string) => {
+export const useFollowUser = (username: string) => {
   const queryClient = useQueryClient();
-  const { data } = useUser(fid);
+  const { data } = useUser(username);
   const { user } = useAuth();
 
   const incrementFollow = useCallback(

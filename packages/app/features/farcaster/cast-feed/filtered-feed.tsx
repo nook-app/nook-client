@@ -1,11 +1,12 @@
-import { FarcasterFeedFilter } from "../../../types";
+import { Display, FarcasterFeedFilter } from "../../../types";
 import { useCastFeed } from "../../../api/farcaster";
 import { FarcasterInfiniteFeed } from "./infinite-feed";
 import { Loading } from "../../../components/loading";
 
 export const FarcasterFilteredFeed = ({
   filter,
-}: { filter: FarcasterFeedFilter }) => {
+  displayMode,
+}: { filter: FarcasterFeedFilter; displayMode?: Display }) => {
   const { data, isLoading, hasNextPage, fetchNextPage, isFetchingNextPage } =
     useCastFeed(filter);
 
@@ -21,6 +22,7 @@ export const FarcasterFilteredFeed = ({
       fetchNextPage={fetchNextPage}
       isFetchingNextPage={isFetchingNextPage}
       hasNextPage={hasNextPage}
+      displayMode={displayMode}
     />
   );
 };

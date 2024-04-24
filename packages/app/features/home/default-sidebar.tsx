@@ -3,7 +3,7 @@
 import { YStack } from "@nook/ui";
 import { SearchBar } from "../search/search-bar";
 
-export const HomeSidebar = () => {
+export const DefaultSidebar = () => {
   return (
     <YStack
       padding="$3"

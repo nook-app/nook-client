@@ -7,6 +7,7 @@ import {
   HydrationBoundary,
   QueryClient,
 } from "@tanstack/react-query";
+import { NavigationHeader } from "../../../components/NavigationHeader";
 
 export default async function Channel({
   children,
@@ -21,10 +22,8 @@ export default async function Channel({
 
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
-      <PageNavigation
-        sidebar={<ChannelSidebar channelId={params.channelId} />}
-        headerTitle={channel.name}
-      >
+      <PageNavigation sidebar={<ChannelSidebar channelId={params.channelId} />}>
+        <NavigationHeader title={channel.name} />
         <ChannelHeader channelId={params.channelId} />
         {children}
       </PageNavigation>

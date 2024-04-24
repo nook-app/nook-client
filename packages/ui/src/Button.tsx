@@ -9,10 +9,9 @@ export const NookButton = styled(Button, {
         fontSize: "$5",
         borderRadius: "$10",
         height: "$5",
-        transition: "all 0.2s ease-in",
         hoverStyle: {
           backgroundColor: "$color10",
-          transition: "all 0.2s ease-in",
+          transition: "all 0.2s ease-in-out",
         },
       },
       ghost: {
@@ -23,10 +22,9 @@ export const NookButton = styled(Button, {
         borderRadius: "$0",
         height: "$5",
         borderWidth: "$0",
-        transition: "all 0.2s ease-in",
         hoverStyle: {
           backgroundColor: "$color4",
-          transition: "all 0.2s ease-in",
+          transition: "all 0.2s ease-in-out",
         },
       },
       action: {
@@ -38,7 +36,7 @@ export const NookButton = styled(Button, {
         height: "$3",
         hoverStyle: {
           backgroundColor: "$mauve11",
-          transition: "all 0.2s ease-in",
+          transition: "all 0.2s ease-in-out",
         },
         fontWeight: "600",
       },
@@ -52,7 +50,7 @@ export const NookButton = styled(Button, {
         fontWeight: "500",
         hoverStyle: {
           backgroundColor: "$color4",
-          transition: "all 0.2s ease-in",
+          transition: "all 0.2s ease-in-out",
         },
       },
     },

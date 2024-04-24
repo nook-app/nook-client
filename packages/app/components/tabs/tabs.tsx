@@ -17,7 +17,7 @@ export const Tabs = ({
       justifyContent="space-around"
       alignItems="center"
       borderBottomWidth="$0.5"
-      borderBottomColor="$color5"
+      borderBottomColor="rgba(256, 256, 256, 0.1)"
     >
       {tabs.map((tab, index) => (
         <Tab key={tab.label} href={tab.href} isActive={activeIndex === index}>
