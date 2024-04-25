@@ -2,20 +2,8 @@
 
 import "@tamagui/core/reset.css";
 
-import {
-  ColorScheme,
-  NextThemeProvider,
-  useRootTheme,
-} from "@tamagui/next-theme";
-import { useServerInsertedHTML } from "next/navigation";
-import React, { useEffect, useMemo } from "react";
-import {
-  config,
-  TamaguiProvider as TamaguiProviderOG,
-  Theme,
-  ThemeName,
-  ToastProvider,
-} from "@nook/ui";
+import React, { useEffect } from "react";
+import { ToastProvider } from "@nook/ui";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { PrivyProvider } from "@privy-io/react-auth";
 import { AuthProvider, useAuth } from "@nook/app/context/auth";
@@ -45,53 +33,14 @@ export const Providers = ({
       >
         <AuthProvider defaultSession={session} defaultUser={user}>
           <AnalyticsProvider>
-            <TamaguiProvider
-              defaultTheme={session?.theme as ThemeName | undefined}
-            >
-              <ToastProvider>
-                <Toasts />
-                {children}
-              </ToastProvider>
-            </TamaguiProvider>
+            <ToastProvider>
+              <Toasts />
+              {children}
+            </ToastProvider>
           </AnalyticsProvider>
         </AuthProvider>
       </PrivyProvider>
     </QueryClientProvider>
-  );
-};
-
-const TamaguiProvider = ({
-  children,
-  defaultTheme,
-}: { children: React.ReactNode; defaultTheme?: ThemeName }) => {
-  const [colorScheme, setColorScheme] = useRootTheme();
-
-  useServerInsertedHTML(() => {
-    return (
-      <style
-        // biome-ignore lint/security/noDangerouslySetInnerHtml: <explanation>
-        dangerouslySetInnerHTML={{
-          __html: config.getCSS(),
-        }}
-      />
-    );
-  });
-
-  const contents = useMemo(() => {
-    return <>{children}</>;
-  }, [children]);
-
-  return (
-    <NextThemeProvider onChangeTheme={(t) => setColorScheme(t as ColorScheme)}>
-      <TamaguiProviderOG
-        config={config}
-        disableInjectCSS
-        themeClassNameOnRoot
-        defaultTheme={colorScheme}
-      >
-        <Theme name={defaultTheme || "pink"}>{contents}</Theme>
-      </TamaguiProviderOG>
-    </NextThemeProvider>
   );
 };
 

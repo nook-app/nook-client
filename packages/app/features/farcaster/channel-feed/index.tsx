@@ -10,22 +10,19 @@ export const FarcasterChannelInfiniteFeed = ({
   fetchNextPage,
   isFetchingNextPage,
   hasNextPage,
-  displayMode = Display.CASTS,
 }: {
   channels: Channel[];
   fetchNextPage: () => void;
   isFetchingNextPage: boolean;
   hasNextPage: boolean;
-  displayMode?: Display;
 }) => {
   return (
     <InfiniteScrollList
       data={channels}
       renderItem={({ item }) => (
-        <FarcasterChannelFeedItem channel={item as Channel} />
+        <FarcasterChannelFeedItem channel={item as Channel} withBio />
       )}
       onEndReached={fetchNextPage}
-      numColumns={displayMode === Display.GRID ? 3 : 1}
       ListFooterComponent={
         isFetchingNextPage ? (
           <View marginVertical="$3">

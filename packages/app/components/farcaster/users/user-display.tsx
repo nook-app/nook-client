@@ -4,17 +4,20 @@ import { FarcasterPowerBadge } from "./power-badge";
 import { CdnAvatar } from "../../cdn-avatar";
 import { Link } from "solito/link";
 import { FarcasterBioText } from "../bio-text";
+import { ReactNode } from "react";
 
 export const FarcasterUserTextDisplay = ({
   user,
   orientation = "horizontal",
   asLink,
   withBio,
+  suffix,
 }: {
   user: FarcasterUser;
   orientation?: "horizontal" | "vertical";
   asLink?: boolean;
   withBio?: boolean;
+  suffix?: ReactNode;
 }) => {
   const Stack = orientation === "horizontal" ? XStack : YStack;
   const bio = user?.bio?.trim().replace(/\n\s*\n/g, "\n");
@@ -24,6 +27,7 @@ export const FarcasterUserTextDisplay = ({
         gap={orientation === "horizontal" ? "$1.5" : "$1"}
         flexShrink={1}
         alignItems={orientation === "horizontal" ? "center" : "flex-start"}
+        $xs={{ flexDirection: "column", alignItems: "flex-start", gap: "$1" }}
       >
         <XStack gap="$1.5" alignItems="center" flexShrink={1}>
           <NookText
@@ -38,6 +42,7 @@ export const FarcasterUserTextDisplay = ({
         </XStack>
         <NookText muted flexShrink={1} numberOfLines={1}>
           {user.username ? ` @${user.username}` : ` !${user.fid}`}
+          {suffix ? ` ${suffix}` : ""}
         </NookText>
       </Stack>
       {withBio && bio && <FarcasterBioText text={bio} />}

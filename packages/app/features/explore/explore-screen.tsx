@@ -36,7 +36,11 @@ export const ExploreScreen = ({ channels }: { channels: Channel[] }) => {
         <NookText variant="label">Trending Channels</NookText>
       </View>
       {channels.map((channel: Channel) => (
-        <FarcasterChannelFeedItem key={channel.channelId} channel={channel} />
+        <FarcasterChannelFeedItem
+          key={channel.channelId}
+          channel={channel}
+          withBio
+        />
       ))}
     </View>
   );

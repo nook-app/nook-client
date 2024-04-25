@@ -4,27 +4,43 @@ import { NookButton, NookText, View, XStack, YStack, useTheme } from "@nook/ui";
 import {
   Bell,
   Home,
+  LogIn,
   MoreHorizontal,
   Search,
   Settings,
   User,
 } from "@tamagui/lucide-icons";
 import { useAuth } from "@nook/app/context/auth";
-import { FarcasterUserDisplay } from "@nook/app/components/farcaster/users/user-display";
+import {
+  FarcasterUserAvatar,
+  FarcasterUserDisplay,
+} from "@nook/app/components/farcaster/users/user-display";
 import { CreateCastButton } from "@nook/app/features/farcaster/create-cast/disalog";
 import { AccountSwitcher } from "@nook/app/features/auth/account-switcher";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { NotificationsCount } from "@nook/app/features/notifications/notifications-count";
 import { FarcasterUser } from "@nook/app/types";
+import { MobileNavigation } from "./MobileNavigation";
 
 export const RootNavigation = ({
   children,
   user,
 }: { children: React.ReactNode; user?: FarcasterUser }) => {
   return (
-    <XStack justifyContent="center" flex={1} backgroundColor="$color1">
-      <View width={280} maxWidth={280} alignItems="flex-end">
+    <XStack
+      justifyContent="center"
+      flex={1}
+      backgroundColor="$color1"
+      $lg={{ justifyContent: "flex-start" }}
+    >
+      <View
+        width={280}
+        maxWidth={280}
+        alignItems="flex-end"
+        $lg={{ width: "auto" }}
+        $xxs={{ display: "none" }}
+      >
         <View
           top={0}
           $platform-web={{
@@ -34,10 +50,15 @@ export const RootNavigation = ({
           width="100%"
           minHeight="100vh"
           padding="$3"
+          $lg={{ alignItems: "center" }}
         >
-          <YStack>
-            <View paddingHorizontal="$3" marginBottom="$4">
-              <NookText fontSize="$9" fontWeight="700">
+          <YStack $lg={{ alignItems: "center" }}>
+            <View
+              paddingHorizontal="$3"
+              height="$4.5"
+              $lg={{ justifyContent: "center" }}
+            >
+              <NookText fontSize="$9" fontWeight="700" $lg={{ fontSize: "$5" }}>
                 nook
               </NookText>
             </View>
@@ -70,9 +91,12 @@ export const RootNavigation = ({
           <SessionItem user={user} />
         </View>
       </View>
-      <View width={1000} maxWidth={1000}>
-        {children}
-      </View>
+
+      <MobileNavigation user={user}>
+        <View width={1000} maxWidth={1000} $lg={{ width: "auto", flexGrow: 1 }}>
+          {children}
+        </View>
+      </MobileNavigation>
     </XStack>
   );
 };
@@ -90,7 +114,7 @@ const RootNavigationItem = ({
 }) => {
   const pathname = usePathname();
   return (
-    <View group>
+    <View group $lg={{ width: "100%", alignItems: "center" }}>
       <Link href={href} style={{ textDecoration: "none" }}>
         {/* @ts-ignore */}
         <XStack
@@ -99,7 +123,7 @@ const RootNavigationItem = ({
           paddingRight="$2"
           borderRadius="$10"
           backgroundColor="transparent"
-          padding="$3"
+          padding="$3.5"
           $group-hover={{
             backgroundColor: "$color3",
             transition: "all 0.2s ease-in-out",
@@ -114,6 +138,7 @@ const RootNavigationItem = ({
             <NookText
               fontWeight={pathname === href ? "700" : "400"}
               fontSize="$7"
+              $lg={{ display: "none" }}
             >
               {label}
             </NookText>
@@ -130,20 +155,57 @@ const SessionItem = ({ user }: { user?: FarcasterUser }) => {
 
   if (!user?.fid) {
     return (
-      <NookButton variant="primary" onPress={login}>
-        Sign in
-      </NookButton>
+      <>
+        <View display="flex" $lg={{ display: "none" }}>
+          <NookButton variant="primary" onPress={login}>
+            <NookText fontWeight="700" fontSize="$5">
+              Sign In
+            </NookText>
+          </NookButton>
+        </View>
+        <View display="none" $lg={{ display: "flex" }}>
+          <NookButton variant="primary" width="$5" padding="$0" onPress={login}>
+            <NookText>
+              <LogIn size={24} />
+            </NookText>
+          </NookButton>
+        </View>
+      </>
     );
   }
 
   return (
-    <AccountSwitcher>
-      <NookButton variant="ghost" height="$6" borderRadius="$10">
-        <XStack justifyContent="space-between" alignItems="center" flexGrow={1}>
-          <FarcasterUserDisplay user={user} />
-          <MoreHorizontal color="$mauve12" size={16} />
-        </XStack>
-      </NookButton>
-    </AccountSwitcher>
+    <>
+      <View display="flex" $lg={{ display: "none" }}>
+        <AccountSwitcher>
+          <NookButton variant="ghost" height="$6" borderRadius="$10">
+            <XStack
+              justifyContent="space-between"
+              alignItems="center"
+              flexGrow={1}
+              $lg={{ display: "none" }}
+            >
+              <FarcasterUserDisplay user={user} />
+              <MoreHorizontal color="$mauve12" size={16} />
+            </XStack>
+          </NookButton>
+        </AccountSwitcher>
+      </View>
+      <View display="none" $lg={{ display: "flex" }}>
+        <AccountSwitcher>
+          <NookButton
+            variant="ghost"
+            height="$6"
+            borderRadius="$10"
+            width="$6"
+            padding="$0"
+            justifyContent="center"
+            alignItems="center"
+          >
+            <FarcasterUserAvatar user={user} size="$4" />
+          </NookButton>
+        </AccountSwitcher>
+      </View>
+    </>
   );
 };

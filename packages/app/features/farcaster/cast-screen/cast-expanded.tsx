@@ -21,21 +21,25 @@ import { BarChartBig, Clock, Rocket } from "@tamagui/lucide-icons";
 import { useState } from "react";
 import { FarcasterCastKebabMenu } from "../../../components/farcaster/casts/cast-kebab-menu";
 
-function formatTimestamp(timestamp: number) {
-  const date = new Date(timestamp);
-  // Format for time part
+function formatTimestampTime(timestamp: number) {
   const timeFormatter = new Intl.DateTimeFormat("en-US", {
     hour: "numeric",
     minute: "numeric",
     hour12: true,
   });
-  // Format for date part
+
+  const date = new Date(timestamp);
+  return timeFormatter.format(date);
+}
+
+function formatTimestampDate(timestamp: number) {
+  const date = new Date(timestamp);
   const dateFormatter = new Intl.DateTimeFormat("en-US", {
     month: "short",
     day: "numeric",
     year: "numeric",
   });
-  return `${timeFormatter.format(date)} · ${dateFormatter.format(date)}`;
+  return dateFormatter.format(date);
 }
 
 export const FarcasterExpandedCast = ({ cast }: { cast: FarcasterCast }) => {
@@ -103,7 +107,13 @@ const FarcasterExpandedCastHeader = ({
             types={["likes", "replies", "quotes", "recasts"]}
           />
           <XStack alignItems="center" gap="$2">
-            <NookText muted>{formatTimestamp(cast.timestamp)}</NookText>
+            <NookText muted $xs={{ display: "none" }}>
+              {formatTimestampTime(cast.timestamp)}
+            </NookText>
+            <NookText muted $xs={{ display: "none" }}>
+              {" · "}
+            </NookText>
+            <NookText muted>{formatTimestampDate(cast.timestamp)}</NookText>
             {cast.channel && (
               <FarcasterChannelBadge channel={cast.channel} asLink />
             )}

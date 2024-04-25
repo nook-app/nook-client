@@ -1,5 +1,12 @@
-import { X } from "@tamagui/lucide-icons";
-import { NookButton, Dialog, XStack, ScrollView } from "@nook/ui";
+import { Pencil, X } from "@tamagui/lucide-icons";
+import {
+  NookButton,
+  Dialog,
+  XStack,
+  ScrollView,
+  NookText,
+  View,
+} from "@nook/ui";
 import { CreateCastEditor } from "./form";
 import { CreateCastProvider } from "./context";
 import { useCallback, useState } from "react";
@@ -24,7 +31,11 @@ export const CreateCastDialog = ({
     <CreateCastProvider initialCast={initialState}>
       <Dialog modal disableRemoveScroll open={open} onOpenChange={setOpen}>
         <Dialog.Trigger asChild>{children}</Dialog.Trigger>
-        <Dialog.Portal justifyContent="flex-start" paddingTop="$10">
+        <Dialog.Portal
+          justifyContent="flex-start"
+          paddingTop="$10"
+          $xs={{ paddingTop: "$0" }}
+        >
           <Dialog.Overlay
             key="overlay"
             animation="slow"
@@ -49,6 +60,7 @@ export const CreateCastDialog = ({
             width={600}
             backgroundColor="$color2"
             padding="$2"
+            $xs={{ width: "100%", height: "100%" }}
           >
             <ScrollView maxHeight="75vh">
               <XStack alignItems="center" justifyContent="space-between">
@@ -82,9 +94,26 @@ export const CreateCastDialog = ({
 
 export const CreateCastButton = () => {
   return (
-    <CreateCastDialog initialState={{ text: "" }}>
-      <NookButton variant="primary">Cast</NookButton>
-    </CreateCastDialog>
+    <>
+      <View display="flex" $lg={{ display: "none" }}>
+        <CreateCastDialog initialState={{ text: "" }}>
+          <NookButton variant="primary">
+            <NookText fontWeight="700" fontSize="$5">
+              Cast
+            </NookText>
+          </NookButton>
+        </CreateCastDialog>
+      </View>
+      <View display="none" $lg={{ display: "flex" }}>
+        <CreateCastDialog initialState={{ text: "" }}>
+          <NookButton variant="primary" width="$5" padding="$0">
+            <NookText>
+              <Pencil size={24} />
+            </NookText>
+          </NookButton>
+        </CreateCastDialog>
+      </View>
+    </>
   );
 };
 

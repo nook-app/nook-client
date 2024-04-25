@@ -45,6 +45,7 @@ export const AccountSwitcher = ({ children }: { children: ReactNode }) => {
 
 const AccountSwitcherContent = () => {
   const { login, logout, user } = useAuth();
+  const router = useRouter();
 
   const rawSessions = localStorage.getItem("sessions");
   const sessions: Session[] = rawSessions ? JSON.parse(rawSessions) : [];
@@ -61,9 +62,18 @@ const AccountSwitcherContent = () => {
         Add an existing account
       </NookButton>
       {user && (
-        <NookButton variant="ghost" height="$4" onPress={logout}>{`Log out ${
-          user.username ? `@${user.username}` : `!${user.fid}`
-        }`}</NookButton>
+        <>
+          <NookButton
+            variant="ghost"
+            height="$4"
+            onPress={() => router.push(`/users/${user.username || user.fid}`)}
+          >{`View ${
+            user.username ? `@${user.username}` : `!${user.fid}`
+          }`}</NookButton>
+          <NookButton variant="ghost" height="$4" onPress={logout}>{`Log out ${
+            user.username ? `@${user.username}` : `!${user.fid}`
+          }`}</NookButton>
+        </>
       )}
     </YStack>
   );

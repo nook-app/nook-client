@@ -5,7 +5,7 @@ import { Link } from "solito/link";
 import { FarcasterChannelDisplay } from "../../../components/farcaster/channels/channel-display";
 
 export const FarcasterChannelFeedItem = memo(
-  ({ channel }: { channel: Channel }) => {
+  ({ channel, withBio }: { channel: Channel; withBio?: boolean }) => {
     return (
       <Link href={`/channels/${channel.channelId}`}>
         <YStack
@@ -18,7 +18,7 @@ export const FarcasterChannelFeedItem = memo(
           }}
         >
           <XStack justifyContent="space-between">
-            <FarcasterChannelDisplay channel={channel} withBio />
+            <FarcasterChannelDisplay channel={channel} withBio={withBio} />
           </XStack>
         </YStack>
       </Link>

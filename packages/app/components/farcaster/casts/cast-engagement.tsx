@@ -24,7 +24,7 @@ export const FarcasterCastEngagement = ({
   types: CastEngagementTypes[];
 }) => {
   return (
-    <XStack gap="$2" alignItems="center">
+    <XStack gap="$2" alignItems="center" flexWrap="wrap">
       {types.map((type) => {
         return (
           <FarcasterCastEngagementItem

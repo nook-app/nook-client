@@ -63,6 +63,7 @@ const Tab = ({
             $group-hover={{
               color: "$mauve12",
             }}
+            whiteSpace="nowrap"
           >
             {children}
           </NookText>

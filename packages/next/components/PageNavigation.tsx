@@ -1,8 +1,6 @@
 "use client";
 
-import { NookButton, NookText, View, XStack } from "@nook/ui";
-import { ArrowLeft } from "@tamagui/lucide-icons";
-import { useRouter } from "next/navigation";
+import { View, XStack } from "@nook/ui";
 import { ReactNode } from "react";
 
 export const PageNavigation = ({
@@ -12,7 +10,6 @@ export const PageNavigation = ({
   children: ReactNode;
   sidebar?: ReactNode;
 }) => {
-  const router = useRouter();
   return (
     <XStack>
       <View
@@ -22,10 +19,15 @@ export const PageNavigation = ({
         borderLeftWidth="$0.5"
         borderRightColor="rgba(256, 256, 256, 0.1)"
         borderRightWidth="$0.5"
+        $lg={{
+          width: 300,
+        }}
       >
         {children}
       </View>
-      <View width={400}>{sidebar}</View>
+      <View width={400} $md={{ display: "none" }}>
+        {sidebar}
+      </View>
     </XStack>
   );
 };

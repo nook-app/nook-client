@@ -15,6 +15,8 @@ import {
   setActiveUser,
   loginUser,
 } from "../server/auth";
+import { ThemeProvider } from "./theme";
+import { ThemeName } from "@nook/ui";
 
 type AuthContextType = {
   session?: Session;
@@ -135,7 +137,9 @@ export const AuthProvider = ({
         setSession: handleSessionChange,
       }}
     >
-      {children}
+      <ThemeProvider defaultTheme={session?.theme as ThemeName | undefined}>
+        {children}
+      </ThemeProvider>
     </AuthContext.Provider>
   );
 };

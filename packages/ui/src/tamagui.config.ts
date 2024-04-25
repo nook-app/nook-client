@@ -4,6 +4,20 @@ import { themes } from "./themes";
 
 export const config = createTamagui({
   ...configBase,
+  media: {
+    ...configBase.media,
+    xl: { maxWidth: 1650 - 15 },
+    lg: { maxWidth: 1280 - 15 },
+    md: { maxWidth: 1020 - 15 },
+    sm: { maxWidth: 800 - 15 },
+    xs: { maxWidth: 660 - 15 },
+    xxs: { maxWidth: 390 - 15 },
+    gtXs: { minWidth: 660 - 14 },
+    gtSm: { minWidth: 800 - 14 },
+    gtMd: { minWidth: 1020 - 14 },
+    gtLg: { minWidth: 1280 - 14 },
+    gtXl: { minWidth: 1650 - 14 },
+  },
   tokens: {
     ...configBase.tokens,
     size: {

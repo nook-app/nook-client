@@ -1,3 +1,5 @@
+"use client";
+
 import { Display, FarcasterCast } from "../../../types";
 import { NookText, Separator, View, XStack, YStack } from "@nook/ui";
 import { useCast } from "../../../api/farcaster";
@@ -160,11 +162,9 @@ export const FarcasterCastDefaultDisplay = ({
       }}
       onPress={handlePress}
       cursor="pointer"
-      paddingHorizontal="$3"
-      paddingTop="$2"
-      paddingBottom="$3"
+      padding="$3"
     >
-      <YStack alignItems="center" width="$4" marginTop="$2">
+      <YStack alignItems="center" width="$4">
         <FarcasterUserAvatar user={cast.user} size="$4" asLink />
         {isConnected && (
           <Separator
@@ -177,13 +177,16 @@ export const FarcasterCastDefaultDisplay = ({
         )}
       </YStack>
       <YStack flex={1} gap="$2">
-        <YStack gap="$1">
+        <YStack gap="$1.5">
           <XStack justifyContent="space-between">
-            <XStack alignItems="center">
-              <FarcasterUserTextDisplay user={cast.user} asLink />
-              <NookText muted>{` · ${formatTimeAgo(cast.timestamp)}`}</NookText>
-            </XStack>
-            <FarcasterCastKebabMenu cast={cast} />
+            <FarcasterUserTextDisplay
+              user={cast.user}
+              asLink
+              suffix={` · ${formatTimeAgo(cast.timestamp)}`}
+            />
+            <View position="absolute" right={0} top={0} marginTop="$-2">
+              <FarcasterCastKebabMenu cast={cast} />
+            </View>
           </XStack>
           {renderText && <FarcasterCastText cast={cast} />}
         </YStack>
