@@ -319,9 +319,11 @@ export class SignerService {
     return await Promise.all(
       casts.map(async (cast) => {
         const fid = cast.fid;
+        console.log("getting signer");
         const signer = await this.getActiveSigner(fid);
         if (!signer) return [cast.id, null];
 
+        console.log("formatting cast add");
         const castAddMessage = await this.formatCastAdd(fid, signer, {
           text: cast.text,
           parentUrl: cast.parentUrl || undefined,
@@ -336,6 +338,7 @@ export class SignerService {
           return [cast.id, null];
         }
 
+        console.log("submitting message");
         const response = await this.submitMessage(castAddMessage.value);
         return [cast.id, bufferToHex(response.hash)];
       }),

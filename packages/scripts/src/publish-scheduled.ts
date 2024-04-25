@@ -25,21 +25,29 @@ const publishScheduledCasts = async () => {
     if (scheduledCasts.length === 0) {
       break;
     }
-    const responses = await signerService.submitScheduledCasts(scheduledCasts);
-    // update with published
-    const successes = responses.filter((x) => x[1] !== null);
-    const errors = responses.filter((x) => x[1] === null);
+    try {
+      const responses =
+        await signerService.submitScheduledCasts(scheduledCasts);
 
-    await prismaClient.pendingCast.updateMany({
-      where: { id: { in: successes.map((x) => x[0]) } },
-      data: { publishedAt: time },
-    });
-    await prismaClient.pendingCast.updateMany({
-      where: { id: { in: errors.map((x) => x[0]) } },
-      data: { attemptedAt: time },
-    });
-    numProcessed += successes.length;
-    numErrors += errors.length;
+      // update with published
+      const successes = responses.filter((x) => x[1] !== null);
+      const errors = responses.filter((x) => x[1] === null);
+      console.log("updating pending casts table");
+
+      await prismaClient.pendingCast.updateMany({
+        where: { id: { in: successes.map((x) => x[0]) } },
+        data: { publishedAt: time },
+      });
+      await prismaClient.pendingCast.updateMany({
+        where: { id: { in: errors.map((x) => x[0]) } },
+        data: { attemptedAt: time },
+      });
+      numProcessed += successes.length;
+      numErrors += errors.length;
+    } catch (err) {
+      console.error(err);
+      process.exit(1);
+    }
   }
   console.log(
     `Published ${numProcessed} scheduled casts in ${batchNum} batches, and skipped ${numErrors}`,

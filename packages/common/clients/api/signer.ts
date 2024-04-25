@@ -90,12 +90,14 @@ export class SignerAPIClient extends BaseAPIClient {
   }
 
   async submitScheduledCasts(data: PendingCast[]) {
+    console.log(`making request to signer service at ${this.API_ENDPOINT}`);
     const response = await this.makeRequest("/signer/cast-add/scheduled", {
       method: "POST",
       body: JSON.stringify(data),
     });
 
     if (!response.ok) {
+      console.log("response not ok");
       throw new Error(response.statusText);
     }
 
