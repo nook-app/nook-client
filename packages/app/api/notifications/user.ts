@@ -16,9 +16,3 @@ export const useNotificationsCount = () => {
     refetchOnWindowFocus: false,
   });
 };
-
-export const markNotificationsRead = async () => {
-  return await makeRequest("/notifications/mark-read", {
-    method: "POST",
-  });
-};

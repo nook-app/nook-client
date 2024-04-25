@@ -32,18 +32,25 @@ export const FarcasterBioText = ({
       }
 
       result.push(
-        <TextLink key={`${index}-${i}-${url}`} href={url}>
-          <NookText
-            color="$color11"
-            fontWeight="500"
-            hoverStyle={{
-              // @ts-ignore
-              textDecoration: "underline",
-            }}
-          >
-            {url}
-          </NookText>
-        </TextLink>,
+        <NookText
+          key={`${index}-${i}-${url}`}
+          onPress={(e) => {
+            e.stopPropagation();
+          }}
+        >
+          <TextLink href={url} target="_blank">
+            <NookText
+              color="$color11"
+              fontWeight="500"
+              hoverStyle={{
+                // @ts-ignore
+                textDecoration: "underline",
+              }}
+            >
+              {url}
+            </NookText>
+          </TextLink>
+        </NookText>,
       );
 
       endIndex = index - url.length;
@@ -124,21 +131,25 @@ export const FarcasterBioText = ({
         ),
       );
       textParts.push(
-        <TextLink
+        <NookText
           key={`${mention.position}-${mention.word}`}
-          href={`/channels/${mention.word.slice(1)}`}
+          onPress={(e) => {
+            e.stopPropagation();
+          }}
         >
-          <NookText
-            color="$color11"
-            fontWeight="500"
-            hoverStyle={{
-              // @ts-ignore
-              textDecoration: "underline",
-            }}
-          >
-            {mention.word}
-          </NookText>
-        </TextLink>,
+          <TextLink href={`/channels/${mention.word.slice(1)}`}>
+            <NookText
+              color="$color11"
+              fontWeight="500"
+              hoverStyle={{
+                // @ts-ignore
+                textDecoration: "underline",
+              }}
+            >
+              {mention.word}
+            </NookText>
+          </TextLink>
+        </NookText>,
       );
     } else {
       textParts.push(
@@ -151,21 +162,25 @@ export const FarcasterBioText = ({
       );
 
       textParts.push(
-        <TextLink
+        <NookText
           key={`${mention.position}-${mention.word}`}
-          href={`/users/${mention.word.slice(1)}`}
+          onPress={(e) => {
+            e.stopPropagation();
+          }}
         >
-          <NookText
-            color="$color11"
-            fontWeight="500"
-            hoverStyle={{
-              // @ts-ignore
-              textDecoration: "underline",
-            }}
-          >
-            {mention.word}
-          </NookText>
-        </TextLink>,
+          <TextLink href={`/users/${mention.word.slice(1)}`}>
+            <NookText
+              color="$color11"
+              fontWeight="500"
+              hoverStyle={{
+                // @ts-ignore
+                textDecoration: "underline",
+              }}
+            >
+              {mention.word}
+            </NookText>
+          </TextLink>
+        </NookText>,
       );
     }
     index = Number(mention.position);

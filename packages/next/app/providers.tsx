@@ -1,5 +1,7 @@
 "use client";
 
+import "@tamagui/core/reset.css";
+
 import {
   ColorScheme,
   NextThemeProvider,
@@ -12,12 +14,14 @@ import {
   TamaguiProvider as TamaguiProviderOG,
   Theme,
   ThemeName,
+  ToastProvider,
 } from "@nook/ui";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { PrivyProvider } from "@privy-io/react-auth";
 import { AuthProvider, useAuth } from "@nook/app/context/auth";
 import * as amplitude from "@amplitude/analytics-browser";
 import { FarcasterUser, Session } from "@nook/app/types";
+import { Toasts } from "@nook/app/components/toasts";
 
 const queryClient = new QueryClient();
 
@@ -44,7 +48,10 @@ export const Providers = ({
             <TamaguiProvider
               defaultTheme={session?.theme as ThemeName | undefined}
             >
-              {children}
+              <ToastProvider>
+                <Toasts />
+                {children}
+              </ToastProvider>
             </TamaguiProvider>
           </AnalyticsProvider>
         </AuthProvider>
@@ -82,7 +89,7 @@ const TamaguiProvider = ({
         themeClassNameOnRoot
         defaultTheme={colorScheme}
       >
-        <Theme name={defaultTheme}>{contents}</Theme>
+        <Theme name={defaultTheme || "pink"}>{contents}</Theme>
       </TamaguiProviderOG>
     </NextThemeProvider>
   );

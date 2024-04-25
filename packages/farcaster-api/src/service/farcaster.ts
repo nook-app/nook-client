@@ -1096,12 +1096,12 @@ export class FarcasterService {
     const conditions: string[] = [];
     if (query) {
       conditions.push(
-        `((to_tsvector('english', "value") @@ to_tsquery('english', '${sanitizeInput(
+        `(((to_tsvector('english', "value") @@ to_tsquery('english', '${sanitizeInput(
           query,
         ).replaceAll(
           " ",
           "<->",
-        )}')) OR (type = 6 AND value LIKE '${sanitizeInput(
+        )}')) AND type IN (2, 6)) OR (type = 6 AND value LIKE '${sanitizeInput(
           query,
         ).toLowerCase()}%'))`,
       );

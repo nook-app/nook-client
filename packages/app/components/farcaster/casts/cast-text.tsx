@@ -1,8 +1,8 @@
-import { Text } from "tamagui";
 import { GetThemeValueForKey } from "@tamagui/core";
 import { Buffer } from "buffer";
 import { FarcasterCast } from "../../../types";
-import { Link, TextLink } from "solito/link";
+import { TextLink } from "solito/link";
+import { NookText } from "@nook/ui";
 
 export const FarcasterCastText = ({
   cast,
@@ -34,8 +34,10 @@ export const FarcasterCastText = ({
       if (!part) continue;
 
       if (cast.embeds.some((embed) => embed.uri === part)) {
-        skippedEmbed = true;
-        continue;
+        if (splitParts.length === 0) {
+          skippedEmbed = true;
+          continue;
+        }
       }
 
       if (skippedEmbed) {
@@ -45,15 +47,14 @@ export const FarcasterCastText = ({
 
       if (/https?:\/\/[^\s]+/.test(part) && !disableLinks) {
         splitParts.push(
-          <Text
+          <NookText
             key={`${cast.hash}-${index}-${i}-${part}`}
             onPress={(e) => {
-              e.preventDefault();
               e.stopPropagation();
             }}
           >
-            <TextLink href={part}>
-              <Text
+            <TextLink href={part} target="_blank">
+              <NookText
                 color="$color11"
                 fontSize={
                   fontSize as
@@ -67,13 +68,13 @@ export const FarcasterCastText = ({
                 }}
               >
                 {part}
-              </Text>
+              </NookText>
             </TextLink>
-          </Text>,
+          </NookText>,
         );
       } else {
         splitParts.push(
-          <Text
+          <NookText
             key={`${cast.hash}-${index}-${i}-${part}`}
             color={color}
             fontSize={
@@ -81,7 +82,7 @@ export const FarcasterCastText = ({
             }
           >
             {part}
-          </Text>,
+          </NookText>,
         );
       }
     }
@@ -108,15 +109,14 @@ export const FarcasterCastText = ({
         ),
       );
       textParts.push(
-        <Text
+        <NookText
           key={`${cast.hash}-${mention.position}-${label}`}
           onPress={(e) => {
-            e.preventDefault();
             e.stopPropagation();
           }}
         >
           <TextLink href={`/channels/${mention.channel.channelId}`}>
-            <Text
+            <NookText
               color="$color11"
               fontSize={
                 fontSize as
@@ -130,9 +130,9 @@ export const FarcasterCastText = ({
               }}
             >
               {label}
-            </Text>
+            </NookText>
           </TextLink>
-        </Text>,
+        </NookText>,
       );
     } else {
       const label = `@${mention.user.username || "unknown"}`;
@@ -143,15 +143,14 @@ export const FarcasterCastText = ({
         ),
       );
       textParts.push(
-        <Text
+        <NookText
           key={`${cast.hash}-${mention.position}-${label}`}
           onPress={(e) => {
-            e.preventDefault();
             e.stopPropagation();
           }}
         >
           <TextLink href={`/users/${mention.user.username}`}>
-            <Text
+            <NookText
               color="$color11"
               fontSize={
                 fontSize as
@@ -165,9 +164,9 @@ export const FarcasterCastText = ({
               }}
             >
               {label}
-            </Text>
+            </NookText>
           </TextLink>
-        </Text>,
+        </NookText>,
       );
     }
     index = Number(mention.position);
@@ -185,5 +184,5 @@ export const FarcasterCastText = ({
 
   textParts.reverse();
 
-  return <Text selectable={selectable}>{textParts}</Text>;
+  return <NookText selectable={selectable}>{textParts}</NookText>;
 };

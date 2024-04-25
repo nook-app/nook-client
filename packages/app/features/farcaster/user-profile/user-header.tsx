@@ -9,12 +9,10 @@ import { formatNumber } from "../../../utils";
 import { FarcasterPowerBadge } from "../../../components/farcaster/users/power-badge";
 import { FarcasterUserFollowButton } from "../../../components/farcaster/users/user-follow-button";
 import { UserFollowBadge } from "../../../components/farcaster/users/user-follow-badge";
-import { useUser } from "../../../api/farcaster";
+import { FarcasterUser, FarcasterUserMutualsPreview } from "../../../types";
+import { useAuth } from "../../../context/auth";
 
-export const UserHeader = ({ username }: { username: string }) => {
-  const { data: user } = useUser(username);
-  if (!user) return null;
-
+export const UserHeader = ({ user }: { user: FarcasterUser }) => {
   const bio = user?.bio?.trim().replace(/\n\s*\n/g, "\n");
   return (
     <YStack gap="$3" padding="$4">
@@ -42,7 +40,7 @@ export const UserHeader = ({ username }: { username: string }) => {
           </YStack>
         </YStack>
         <View>
-          <FarcasterUserFollowButton username={username} />
+          <FarcasterUserFollowButton user={user} />
         </View>
       </View>
       {bio && <FarcasterBioText text={bio} selectable />}
@@ -64,6 +62,70 @@ export const UserHeader = ({ username }: { username: string }) => {
           </View>
         </Link>
       </XStack>
+      <Link href={`/users/${user.username}/mutuals`}>
+        <MutualsPreview mutuals={user.context?.mutuals} />
+      </Link>
     </YStack>
+  );
+};
+
+const MutualsPreview = ({
+  mutuals,
+}: { mutuals?: FarcasterUserMutualsPreview }) => {
+  const { session } = useAuth();
+
+  if (!session) return null;
+
+  const total = mutuals?.total || 0;
+  const previews = mutuals?.preview || [];
+  const other = total - previews.length;
+
+  let label = "Not followed by anyone you’re following";
+
+  switch (previews.length) {
+    case 3:
+      if (other > 0) {
+        label = `Followed by ${
+          previews[0].displayName || previews[0].username
+        }, ${
+          previews[1].displayName || previews[1].username
+        }, and ${other} other${other > 1 ? "s" : ""} you follow`;
+      } else {
+        label = `Followed by ${
+          previews[0].displayName || previews[0].username
+        }, ${previews[1].displayName || previews[1].username}, and ${
+          previews[2].displayName || previews[2].username
+        }`;
+      }
+      break;
+    case 2:
+      label = `Followed by ${
+        previews[0].displayName || previews[0].username
+      } and ${previews[1].displayName || previews[1].username}`;
+      break;
+    case 1:
+      label = `Followed by ${previews[0].displayName || previews[0].username}`;
+  }
+
+  return (
+    <XStack gap="$3" alignItems="center" cursor="pointer" group>
+      <XStack>
+        {previews.map((user) => (
+          <View key={user.fid} marginRight="$-2">
+            <CdnAvatar src={user.pfp} size="$1" />
+          </View>
+        ))}
+      </XStack>
+      {/* @ts-ignore */}
+      <NookText
+        muted
+        fontSize="$3"
+        $group-hover={{
+          textDecoration: "underline",
+        }}
+      >
+        {label}
+      </NookText>
+    </XStack>
   );
 };

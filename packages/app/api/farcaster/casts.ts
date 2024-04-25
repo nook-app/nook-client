@@ -1,7 +1,7 @@
 import {
   FarcasterCast,
-  FarcasterCastsResponse,
-  FarcasterUsersResponse,
+  FetchCastsResponse,
+  FetchUsersResponse,
 } from "../../types";
 import { makeRequest } from "../utils";
 import {
@@ -12,7 +12,7 @@ import {
 } from "@tanstack/react-query";
 import { cacheRelatedData } from "./feed";
 
-export const fetchCast = async (hash: string) => {
+export const fetchCast = async (hash: string): Promise<FarcasterCast> => {
   return await makeRequest(`/farcaster/casts/${hash}`);
 };
 
@@ -40,9 +40,9 @@ export const fetchCastLikes = async (hash: string, cursor?: string) => {
 export const useCastLikes = (hash: string) => {
   const queryClient = useQueryClient();
   return useInfiniteQuery<
-    FarcasterUsersResponse,
+    FetchUsersResponse,
     unknown,
-    InfiniteData<FarcasterUsersResponse>,
+    InfiniteData<FetchUsersResponse>,
     string[],
     string | undefined
   >({
@@ -68,9 +68,9 @@ export const fetchCastRecasts = async (hash: string, cursor?: string) => {
 export const useCastRecasts = (hash: string) => {
   const queryClient = useQueryClient();
   return useInfiniteQuery<
-    FarcasterUsersResponse,
+    FetchUsersResponse,
     unknown,
-    InfiniteData<FarcasterUsersResponse>,
+    InfiniteData<FetchUsersResponse>,
     string[],
     string | undefined
   >({
@@ -96,9 +96,9 @@ export const fetchCastQuotes = async (hash: string, cursor?: string) => {
 export const useCastQuotes = (hash: string) => {
   const queryClient = useQueryClient();
   return useInfiniteQuery<
-    FarcasterCastsResponse,
+    FetchCastsResponse,
     unknown,
-    InfiniteData<FarcasterCastsResponse>,
+    InfiniteData<FetchCastsResponse>,
     string[],
     string | undefined
   >({

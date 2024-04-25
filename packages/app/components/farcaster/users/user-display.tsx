@@ -90,6 +90,7 @@ export const FarcasterUserAvatar = ({
           e.preventDefault();
           e.stopPropagation();
         }}
+        zIndex={2}
       >
         <Link href={`/users/${user.username}`}>{Component}</Link>
       </View>

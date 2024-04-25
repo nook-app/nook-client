@@ -7,10 +7,14 @@ import {
   useCallback,
   useEffect,
 } from "react";
-import { loginUser } from "@nook/app/api/auth";
 import { FarcasterUser, Session } from "@nook/app/types";
-import { fetchUser, useUser } from "@nook/app/api/farcaster";
-import { loginServer, logoutServer, setActiveUser } from "../server/actions";
+import { fetchUser } from "@nook/app/api/farcaster";
+import {
+  loginServer,
+  logoutServer,
+  setActiveUser,
+  loginUser,
+} from "../server/auth";
 
 type AuthContextType = {
   session?: Session;
@@ -45,12 +49,14 @@ export const AuthProvider = ({
 
   useEffect(() => {
     if (session?.fid) {
-      updateUser(session.fid);
+      if (user?.fid !== session.fid) {
+        updateUser(session.fid);
+      }
     } else {
       setUser(undefined);
       setActiveUser(undefined);
     }
-  }, [session, updateUser]);
+  }, [session, user, updateUser]);
 
   useEffect(() => {
     const init = async () => {

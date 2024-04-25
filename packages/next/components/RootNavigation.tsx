@@ -11,7 +11,7 @@ import {
 } from "@tamagui/lucide-icons";
 import { useAuth } from "@nook/app/context/auth";
 import { FarcasterUserDisplay } from "@nook/app/components/farcaster/users/user-display";
-import { CreateCastDialog } from "@nook/app/features/farcaster/create-cast/disalog";
+import { CreateCastButton } from "@nook/app/features/farcaster/create-cast/disalog";
 import { AccountSwitcher } from "@nook/app/features/auth/account-switcher";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -62,7 +62,7 @@ export const RootNavigation = ({
                   href="/settings"
                 />
                 <View marginTop="$4">
-                  <CreateCastDialog />
+                  <CreateCastButton />
                 </View>
               </>
             )}

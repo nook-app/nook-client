@@ -260,7 +260,7 @@ function InfiniteScrollListImpl<Item>(
             style={{
               height:
                 rowVirtualizer.getTotalSize() === 0
-                  ? "100%"
+                  ? "0%"
                   : rowVirtualizer.getTotalSize() -
                     (useWindowScroll ? 0 : parentOffsetRef.current),
               width: "100%",

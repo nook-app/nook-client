@@ -2,9 +2,10 @@ import {
   FarcasterCast,
   FarcasterFeedFilter,
   FarcasterFeedRequest,
-  FarcasterCastsResponse,
+  FetchCastsResponse,
   FarcasterUser,
   Channel,
+  FeedContext,
 } from "../../types";
 import {
   hasCastDiff,
@@ -22,7 +23,7 @@ import {
 export const fetchCastFeed = async (
   req: FarcasterFeedRequest,
   requestInit?: RequestInit,
-): Promise<FarcasterCastsResponse> => {
+): Promise<FetchCastsResponse> => {
   return await makeRequest("/farcaster/casts/feed", {
     ...requestInit,
     method: "POST",
@@ -34,12 +35,15 @@ export const fetchCastFeed = async (
   });
 };
 
-export const useCastFeed = (filter: FarcasterFeedFilter) => {
+export const useCastFeed = (
+  filter: FarcasterFeedFilter,
+  context: FeedContext,
+) => {
   const queryClient = useQueryClient();
   return useInfiniteQuery<
-    FarcasterCastsResponse,
+    FetchCastsResponse,
     unknown,
-    InfiniteData<FarcasterCastsResponse>,
+    InfiniteData<FetchCastsResponse>,
     string[],
     string | undefined
   >({
@@ -47,9 +51,7 @@ export const useCastFeed = (filter: FarcasterFeedFilter) => {
     queryFn: async ({ pageParam }) => {
       const data = await fetchCastFeed({
         filter,
-        context: {
-          viewerFid: "3887",
-        },
+        context,
         cursor: pageParam,
       });
       cacheRelatedData(queryClient, data.data);
@@ -76,9 +78,9 @@ export const fetchCastReplies = async (
 export const useCastReplies = (hash: string, mode: "best" | "new" | "top") => {
   const queryClient = useQueryClient();
   return useInfiniteQuery<
-    FarcasterCastsResponse,
+    FetchCastsResponse,
     unknown,
-    InfiniteData<FarcasterCastsResponse>,
+    InfiniteData<FetchCastsResponse>,
     string[],
     string | undefined
   >({
@@ -116,9 +118,9 @@ export const fetchTrendingCasts = async (
 export const useTrendingCasts = (viewerFid?: string) => {
   const queryClient = useQueryClient();
   return useInfiniteQuery<
-    FarcasterCastsResponse,
+    FetchCastsResponse,
     unknown,
-    InfiniteData<FarcasterCastsResponse>,
+    InfiniteData<FetchCastsResponse>,
     string[],
     string | undefined
   >({

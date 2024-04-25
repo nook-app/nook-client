@@ -2,16 +2,13 @@
 
 import { NookText, XStack, YStack } from "@nook/ui";
 import { Channel } from "../../../types";
-import { useChannel, useUsers } from "../../../api/farcaster";
+import { useUsers } from "../../../api/farcaster";
 import { FarcasterUserDisplay } from "../../../components/farcaster/users/user-display";
 import { FarcasterUserFollowButton } from "../../../components/farcaster/users/user-follow-button";
 import { SearchBar } from "../../search/search-bar";
 import { ChannelOverview } from "../../../components/farcaster/channels/channel-overview";
 
-export const ChannelSidebar = ({ channelId }: { channelId: string }) => {
-  const { data: channel } = useChannel(channelId);
-  if (!channel) return null;
-
+export const ChannelSidebar = ({ channel }: { channel: Channel }) => {
   return (
     <YStack
       padding="$3"
@@ -49,7 +46,7 @@ const ChannelHosts = ({ channel }: { channel: Channel }) => {
       {lead && (
         <XStack alignItems="center" justifyContent="space-between" gap="$4">
           <FarcasterUserDisplay user={lead} asLink />
-          <FarcasterUserFollowButton username={lead.username || lead.fid} />
+          <FarcasterUserFollowButton user={lead} />
         </XStack>
       )}
       {others?.map((user) => (
@@ -60,7 +57,7 @@ const ChannelHosts = ({ channel }: { channel: Channel }) => {
           key={user.fid}
         >
           <FarcasterUserDisplay user={user} asLink />
-          <FarcasterUserFollowButton username={user.username || user.fid} />
+          <FarcasterUserFollowButton user={user} />
         </XStack>
       ))}
     </YStack>

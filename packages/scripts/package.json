@@ -16,7 +16,8 @@
     "fix-power-badge-notifications": "ts-node src/fix-power-badge-notifications.ts",
     "migrate-shelves-to-feeds": "ts-node src/migrate-shelves-to-feeds.ts",
     "generate-token": "ts-node src/generate-token.ts",
-    "publish-scheduled": "ts-node src/publish-scheduled.ts"
+    "publish-scheduled": "ts-node src/publish-scheduled.ts",
+    "denormalize-content": "ts-node src/denormalize-content.ts"
   },
   "dependencies": {
     "@farcaster/auth-client": "^0.1.0",

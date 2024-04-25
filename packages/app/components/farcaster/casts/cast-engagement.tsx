@@ -1,5 +1,8 @@
 import { NookText, XStack } from "@nook/ui";
-import { FarcasterCast } from "../../../types";
+import {
+  FarcasterCast,
+  FarcasterCastEngagement as FarcasterCastEngagementType,
+} from "../../../types";
 import { Link } from "solito/link";
 
 export type CastEngagementTypes = "replies" | "likes" | "quotes" | "recasts";
@@ -12,14 +15,24 @@ const singular = {
 };
 
 export const FarcasterCastEngagement = ({
-  cast,
+  hash,
+  engagement,
   types,
-}: { cast: FarcasterCast; types: CastEngagementTypes[] }) => {
+}: {
+  hash: string;
+  engagement: FarcasterCastEngagementType;
+  types: CastEngagementTypes[];
+}) => {
   return (
     <XStack gap="$2" alignItems="center">
       {types.map((type) => {
         return (
-          <FarcasterCastEngagementItem key={type} cast={cast} type={type} />
+          <FarcasterCastEngagementItem
+            key={type}
+            hash={hash}
+            amount={engagement[type]}
+            type={type}
+          />
         );
       })}
     </XStack>
@@ -27,27 +40,46 @@ export const FarcasterCastEngagement = ({
 };
 
 const FarcasterCastEngagementItem = ({
-  cast,
+  hash,
+  amount,
   type,
-}: { cast: FarcasterCast; type: CastEngagementTypes }) => {
-  const amount = cast.engagement[type] || 0;
+}: { hash: string; amount: number; type: CastEngagementTypes }) => {
   if (amount === 0) return null;
-
-  const Component = (
-    <XStack gap="$1.5" alignItems="center">
-      <NookText fontWeight="500">{amount}</NookText>
-      <NookText muted>{amount === 1 ? singular[type] : type}</NookText>
-    </XStack>
-  );
 
   switch (type) {
     case "likes":
-      return <Link href={`/casts/${cast.hash}/likes`}>{Component}</Link>;
+      return (
+        <Link href={`/casts/${hash}/likes`}>
+          <XStack gap="$1.5" alignItems="center">
+            <NookText fontWeight="500">{amount}</NookText>
+            <NookText muted>{amount === 1 ? singular[type] : type}</NookText>
+          </XStack>
+        </Link>
+      );
     case "quotes":
-      return <Link href={`/casts/${cast.hash}/quotes`}>{Component}</Link>;
+      return (
+        <Link href={`/casts/${hash}/quotes`}>
+          <XStack gap="$1.5" alignItems="center">
+            <NookText fontWeight="500">{amount}</NookText>
+            <NookText muted>{amount === 1 ? singular[type] : type}</NookText>
+          </XStack>
+        </Link>
+      );
     case "recasts":
-      return <Link href={`/casts/${cast.hash}/recasts`}>{Component}</Link>;
+      return (
+        <Link href={`/casts/${hash}/recasts`}>
+          <XStack gap="$1.5" alignItems="center">
+            <NookText fontWeight="500">{amount}</NookText>
+            <NookText muted>{amount === 1 ? singular[type] : type}</NookText>
+          </XStack>
+        </Link>
+      );
     default:
-      return Component;
+      return (
+        <XStack gap="$1.5" alignItems="center">
+          <NookText fontWeight="500">{amount}</NookText>
+          <NookText muted>{amount === 1 ? singular[type] : type}</NookText>
+        </XStack>
+      );
   }
 };

@@ -1,4 +1,4 @@
-import { FarcasterCast } from "./cast";
+import { Channel, FarcasterCast } from "./cast";
 import { NotificationResponse } from "./notifications";
 import { FarcasterUser } from "./user";
 
@@ -11,17 +11,22 @@ export * from "./cast";
 export * from "./feed";
 export * from "./session";
 
-export type FarcasterCastsResponse = {
+export type FetchCastsResponse = {
   data: FarcasterCast[];
   nextCursor?: string;
 };
 
-export type FarcasterUsersResponse = {
+export type FetchUsersResponse = {
   data: FarcasterUser[];
   nextCursor?: string;
 };
 
 export type FetchNotificationsResponse = {
   data: NotificationResponse[];
+  nextCursor?: string;
+};
+
+export type FetchChannelsResponse = {
+  data: Channel[];
   nextCursor?: string;
 };

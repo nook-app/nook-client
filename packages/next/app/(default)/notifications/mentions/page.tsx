@@ -1,5 +1,9 @@
 import { NotificationsTabs } from "@nook/app/features/notifications/notifications-tabs";
+import { getServerSession } from "@nook/app/server/auth";
 
 export default async function Home() {
-  return <NotificationsTabs activeIndex={1} />;
+  const session = await getServerSession();
+  if (!session) return null;
+
+  return <NotificationsTabs session={session} activeTab="mentions" />;
 }

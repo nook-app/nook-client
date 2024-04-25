@@ -2,29 +2,22 @@
 
 import { FarcasterUser, Session } from "@nook/app/types";
 import { cookies } from "next/headers";
+import { makeRequest } from "../api/utils";
 
 export async function loginServer(session: Session) {
-  "use server";
-
   cookies().set("session", JSON.stringify(session), { secure: true });
 }
 
 export async function logoutServer() {
-  "use server";
-
   cookies().delete("session");
 }
 
 export async function getServerSession(): Promise<Session | undefined> {
-  "use server";
-
   const session = cookies().get("session");
   return session ? JSON.parse(session.value) : undefined;
 }
 
 export async function setActiveUser(user: FarcasterUser | undefined) {
-  "use server";
-
   if (!user) {
     cookies().delete("user");
     return;
@@ -34,8 +27,14 @@ export async function setActiveUser(user: FarcasterUser | undefined) {
 }
 
 export async function getActiveUser(): Promise<FarcasterUser | undefined> {
-  "use server";
-
-  const user = cookies().get("user");
-  return user ? JSON.parse(user.value) : undefined;
+  const user = cookies().get("user")?.value;
+  return user ? JSON.parse(user) : undefined;
 }
+
+export const loginUser = async (token: string): Promise<Session> => {
+  return await makeRequest("/user/login/privy", {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+};

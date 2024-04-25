@@ -51,6 +51,11 @@ export const userRoutes = async (fastify: FastifyInstance) => {
         fid = (await service.getFidsForUsernames([fid]))[0];
       }
 
+      if (!fid) {
+        reply.status(404).send({ message: "User not found" });
+        return;
+      }
+
       const [users, mutuals] = await Promise.all([
         service.getUsers([fid], request.headers["x-viewer-fid"] as string),
         request.headers["x-viewer-fid"]
@@ -78,6 +83,11 @@ export const userRoutes = async (fastify: FastifyInstance) => {
         fid = (await service.getFidsForUsernames([fid]))[0];
       }
 
+      if (!fid) {
+        reply.status(404).send({ message: "User not found" });
+        return;
+      }
+
       const response = await service.getUserFollowers(
         fid,
         request.query.cursor,
@@ -96,6 +106,11 @@ export const userRoutes = async (fastify: FastifyInstance) => {
         fid = (await service.getFidsForUsernames([fid]))[0];
       }
 
+      if (!fid) {
+        reply.status(404).send({ message: "User not found" });
+        return;
+      }
+
       const response = await service.getUserFollowing(
         fid,
         request.query.cursor,
@@ -112,6 +127,11 @@ export const userRoutes = async (fastify: FastifyInstance) => {
       let fid = request.params.fid;
       if (Number.isNaN(Number(fid))) {
         fid = (await service.getFidsForUsernames([fid]))[0];
+      }
+
+      if (!fid) {
+        reply.status(404).send({ message: "User not found" });
+        return;
       }
 
       const response = await service.getUserMutuals(

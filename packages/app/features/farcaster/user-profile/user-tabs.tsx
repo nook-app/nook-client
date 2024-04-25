@@ -7,12 +7,9 @@ import { Tabs } from "../../../components/tabs/tabs";
 import { useUser } from "../../../api/farcaster";
 
 export const UserTabs = ({
-  username,
+  user,
   activeTab,
-}: { username: string; activeTab: string }) => {
-  const { data: user } = useUser(username);
-  if (!user) return null;
-
+}: { user: FarcasterUser; activeTab: string }) => {
   return (
     <View>
       <Tabs

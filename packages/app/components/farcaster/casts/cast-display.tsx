@@ -20,6 +20,8 @@ import {
   FarcasterShareButton,
 } from "../../../components/farcaster/casts/cast-actions";
 import { Link } from "solito/link";
+import { FarcasterCastKebabMenu } from "./cast-kebab-menu";
+import { useState } from "react";
 
 export const FarcasterCastDisplay = ({
   cast,
@@ -106,7 +108,21 @@ const FarcasterCastMediaDisplay = ({ cast }: { cast: FarcasterCast }) => {
             <FarcasterCastText cast={cast} />
           )}
         </NookText>
-        <FarcasterCastActions hash={cast.hash} />
+        <XStack
+          alignItems="center"
+          justifyContent="space-between"
+          marginHorizontal="$-2"
+        >
+          <XStack gap="$2" alignItems="center">
+            <FarcasterReplyActionButton cast={cast} />
+            <FarcasterRecastActionButton cast={cast} />
+            <FarcasterLikeActionButton cast={cast} />
+          </XStack>
+          <XStack gap="$2" alignItems="center">
+            <FarcasterCustomActionButton cast={cast} />
+            <FarcasterShareButton cast={cast} />
+          </XStack>
+        </XStack>
       </YStack>
     </YStack>
   );
@@ -116,6 +132,8 @@ export const FarcasterCastDefaultDisplay = ({
   cast,
   isConnected,
 }: { cast: FarcasterCast; isConnected?: boolean }) => {
+  const [likes, setLikes] = useState(cast.engagement.likes || 0);
+  const [recasts, setRecasts] = useState(cast.engagement.recasts || 0);
   const { push } = useRouter();
 
   const handlePress = () => {
@@ -143,14 +161,15 @@ export const FarcasterCastDefaultDisplay = ({
       onPress={handlePress}
       cursor="pointer"
       paddingHorizontal="$3"
-      paddingVertical="$3"
+      paddingTop="$2"
+      paddingBottom="$3"
     >
-      <YStack alignItems="center" width="$4" marginTop="$1">
+      <YStack alignItems="center" width="$4" marginTop="$2">
         <FarcasterUserAvatar user={cast.user} size="$4" asLink />
         {isConnected && (
           <Separator
             vertical
-            marginBottom="$-4"
+            marginBottom="$-8"
             borderWidth="$0.5"
             borderColor="rgba(256, 256, 256, 0.1)"
             zIndex={1}
@@ -159,17 +178,38 @@ export const FarcasterCastDefaultDisplay = ({
       </YStack>
       <YStack flex={1} gap="$2">
         <YStack gap="$1">
-          <XStack alignItems="center">
-            <FarcasterUserTextDisplay user={cast.user} asLink />
-            <NookText muted>{` · ${formatTimeAgo(cast.timestamp)}`}</NookText>
+          <XStack justifyContent="space-between">
+            <XStack alignItems="center">
+              <FarcasterUserTextDisplay user={cast.user} asLink />
+              <NookText muted>{` · ${formatTimeAgo(cast.timestamp)}`}</NookText>
+            </XStack>
+            <FarcasterCastKebabMenu cast={cast} />
           </XStack>
           {renderText && <FarcasterCastText cast={cast} />}
         </YStack>
         {renderEmbeds && <Embeds cast={cast} />}
-        <FarcasterCastActions hash={cast.hash} />
+        <XStack
+          alignItems="center"
+          justifyContent="space-between"
+          marginHorizontal="$-2"
+        >
+          <XStack gap="$2" alignItems="center">
+            <FarcasterReplyActionButton cast={cast} />
+            <FarcasterRecastActionButton cast={cast} setRecasts={setRecasts} />
+            <FarcasterLikeActionButton cast={cast} setLikes={setLikes} />
+          </XStack>
+          <XStack gap="$2" alignItems="center">
+            <FarcasterCustomActionButton cast={cast} />
+            <FarcasterShareButton cast={cast} />
+          </XStack>
+        </XStack>
         {renderEngagementBar && (
           <XStack justifyContent="space-between" alignItems="center">
-            <FarcasterCastEngagement cast={cast} types={["likes", "replies"]} />
+            <FarcasterCastEngagement
+              hash={cast.hash}
+              engagement={{ ...cast.engagement, likes, recasts }}
+              types={["likes", "replies"]}
+            />
             <View>
               {cast.channel && (
                 <FarcasterChannelBadge channel={cast.channel} asLink />
@@ -178,24 +218,6 @@ export const FarcasterCastDefaultDisplay = ({
           </XStack>
         )}
       </YStack>
-    </XStack>
-  );
-};
-
-export const FarcasterCastActions = ({ hash }: { hash: string }) => {
-  const { data: cast } = useCast(hash);
-
-  return (
-    <XStack alignItems="center" justifyContent="space-between" marginLeft="$-2">
-      <XStack gap="$2" alignItems="center">
-        <FarcasterReplyActionButton />
-        <FarcasterRecastActionButton />
-        <FarcasterLikeActionButton />
-      </XStack>
-      <XStack gap="$2" alignItems="center">
-        <FarcasterCustomActionButton />
-        <FarcasterShareButton />
-      </XStack>
     </XStack>
   );
 };

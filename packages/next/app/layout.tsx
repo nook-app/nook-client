@@ -1,7 +1,7 @@
 import { Metadata } from "next";
 import { RootNavigation } from "../components/RootNavigation";
 import { Providers } from "./providers";
-import { getActiveUser, getServerSession } from "@nook/app/server/actions";
+import { getActiveUser, getServerSession } from "@nook/app/server/auth";
 
 export const metadata: Metadata = {
   title: "nook",

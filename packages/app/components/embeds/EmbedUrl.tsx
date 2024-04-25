@@ -1,4 +1,3 @@
-import { Linking } from "react-native";
 import { UrlContentResponse } from "../../types";
 import { Image, NookText, Text, View, XStack, YStack } from "@nook/ui";
 import { Link as LinkIcon } from "@tamagui/lucide-icons";
@@ -12,7 +11,7 @@ export const EmbedUrl = ({ content }: { content: UrlContentResponse }) => {
   }
 
   return (
-    <Link href={content.uri}>
+    <Link href={content.uri} target="_blank">
       <YStack borderRadius="$4" overflow="hidden">
         {content.metadata.image && (
           <View flex={1}>
@@ -58,14 +57,13 @@ const EmbedUrlSmall = ({ content }: { content: UrlContentResponse }) => {
   if (!content.metadata) return null;
 
   return (
-    <Link href={content.uri}>
+    <Link href={content.uri} target="_blank">
       <XStack
         alignItems="center"
         borderColor="$borderColor"
         borderWidth="$0.25"
         borderRadius="$4"
         overflow="hidden"
-        onPress={() => Linking.openURL(content.uri)}
       >
         <View padding="$4" backgroundColor="$color3">
           <LinkIcon size={24} color="$mauve12" />

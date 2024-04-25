@@ -20,6 +20,13 @@ export const EmbedCast = ({
         e.stopPropagation();
         push(`/casts/${cast.hash}`);
       }}
+      cursor="pointer"
+      transition="all 0.2s ease-in-out"
+      hoverStyle={{
+        // @ts-ignore
+        transition: "all 0.2s ease-in-out",
+        backgroundColor: "$color2",
+      }}
     >
       <YStack
         borderWidth="$0.5"

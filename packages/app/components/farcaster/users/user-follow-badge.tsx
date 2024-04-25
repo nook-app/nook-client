@@ -5,8 +5,6 @@ export const UserFollowBadge = ({ user }: { user: FarcasterUser }) => {
   let badge: string | undefined;
   if (user.context?.following && user.context?.followers) {
     badge = "Mutuals";
-  } else if (user.context?.following) {
-    badge = "Following";
   } else if (user.context?.followers) {
     badge = "Follows you";
   }

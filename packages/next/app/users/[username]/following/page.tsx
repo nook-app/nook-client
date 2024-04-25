@@ -2,7 +2,7 @@ import {
   UserEngagementAuthenticatedTabs,
   UserEngagementUnauthenticatedTabs,
 } from "@nook/app/features/farcaster/user-profile/user-engagement-tabs";
-import { getServerSession } from "@nook/app/server/actions";
+import { getServerSession } from "@nook/app/server/auth";
 
 export default async function User({
   params,

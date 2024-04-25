@@ -1,4 +1,4 @@
-import { getServerSession } from "../server/actions";
+import { getServerSession } from "../server/auth";
 import { Channel, FarcasterCast, FarcasterUser, Session } from "../types";
 
 export const makeRequest = async (path: string, requestInit?: RequestInit) => {
@@ -27,6 +27,10 @@ export const makeRequest = async (path: string, requestInit?: RequestInit) => {
     ...requestInit,
     headers,
   });
+
+  if (response.status === 404) {
+    return;
+  }
 
   if (!response.ok) {
     throw new Error(await response.text());

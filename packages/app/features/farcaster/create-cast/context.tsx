@@ -1,9 +1,9 @@
 import { createContext, useContext, ReactNode, useState } from "react";
 import { useToastController } from "@tamagui/toast";
 import { Channel, SubmitCastAddRequest, FarcasterCast } from "../../../types";
-import { uploadImage } from "../../../api/image";
 import { fetchCast } from "../../../api/farcaster";
-import { submitCastAdds } from "../../../api/farcaster/actions";
+import { submitCastAdds } from "../../../server/farcaster";
+import { uploadImage } from "../../../server/media";
 
 const TEXT_LENGTH_LIMIT = 320;
 const EMBED_LIMIT = 2;
@@ -13,7 +13,7 @@ type CreateCastContextType = {
   thread: SubmitCastAddRequest;
   allCastsValid: boolean;
   isCasting: boolean;
-  cast: () => void;
+  cast: () => Promise<FarcasterCast | undefined>;
   updateCast: (index: number, cast: SubmitCastAddRequest) => void;
   channel?: Channel;
   updateChannel: (channel?: Channel) => void;
@@ -29,6 +29,7 @@ type CreateCastContextType = {
   addCast: (index: number) => void;
   removeCast: (index: number) => void;
   count: number;
+  reset: () => void;
 };
 
 const CreateCastContext = createContext<CreateCastContextType | undefined>(
@@ -202,6 +203,11 @@ export const CreateCastProvider = ({
     setCasts((prev) => prev.filter((_, i) => i !== index));
   };
 
+  const reset = () => {
+    setCasts([{ text: "" }]);
+    setActiveIndex(0);
+  };
+
   return (
     <CreateCastContext.Provider
       value={{
@@ -225,6 +231,7 @@ export const CreateCastProvider = ({
         addCast: handleAddCast,
         removeCast: handleRemoveCast,
         count: casts.length,
+        reset,
       }}
     >
       {children}

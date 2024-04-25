@@ -8,12 +8,12 @@ export const FarcasterPowerBadge = ({ badge }: { badge: boolean }) => {
     <View
       backgroundColor="$color9"
       borderRadius="$12"
-      width={14}
-      height={14}
+      width={12}
+      height={12}
       alignItems="center"
       justifyContent="center"
     >
-      <Zap size={10} color="white" fill="white" />
+      <Zap size={8} color="white" fill="white" />
     </View>
   );
 };

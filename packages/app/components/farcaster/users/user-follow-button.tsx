@@ -1,15 +1,16 @@
 import { NookButton } from "@nook/ui";
 import { useFollowUser } from "../../../hooks/useFollowUser";
+import { FarcasterUser } from "../../../types";
 
 export const FarcasterUserFollowButton = ({
-  username,
-}: { username: string }) => {
-  const { user, isFollowing, followUser, unfollowUser, isViewer } =
-    useFollowUser(username);
+  user,
+}: {
+  user: FarcasterUser;
+}) => {
+  const { followUser, unfollowUser, isFollowing, isViewer } =
+    useFollowUser(user);
 
-  console.log(user, isViewer);
-
-  if (!user || isViewer) {
+  if (isViewer) {
     return null;
   }
 

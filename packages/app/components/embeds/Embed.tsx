@@ -2,13 +2,12 @@ import { EmbedImage, EmbedImages } from "./EmbedImage";
 import { EmbedVideo } from "./EmbedVideo";
 import { EmbedUrl } from "./EmbedUrl";
 import { EmbedTwitter } from "./EmbedTwitter";
-import { Linking } from "react-native";
 import { Text, View, XStack, YStack } from "tamagui";
 import { EmbedNook } from "./EmbedNook";
 import { FarcasterCast, UrlContentResponse } from "../../types";
-import { formatToCDN } from "../../utils";
 import { EmbedCast } from "./EmbedCast";
-import { Link } from "@tamagui/lucide-icons";
+import { Link as LinkIcon } from "@tamagui/lucide-icons";
+import { Link } from "solito/link";
 
 export const Embed = ({
   content,
@@ -28,10 +27,9 @@ export const Embed = ({
     content.type?.startsWith("image/") ||
     (!content.type && content.uri.includes("imgur.com"))
   ) {
-    return (
-      <EmbedImage uri={formatToCDN(content.uri, { type: content.type })} />
-    );
+    return <EmbedImage uri={content.uri} />;
   }
+
   if (
     content.type?.startsWith("video/") ||
     content.type?.startsWith("application/x-mpegURL") ||
@@ -65,9 +63,7 @@ export const Embeds = ({
   if (isAllImages) {
     return (
       <>
-        <EmbedImages
-          uris={cast.embeds.map(({ uri, type }) => formatToCDN(uri, { type }))}
-        />
+        <EmbedImages uris={cast.embeds.map(({ uri }) => uri)} />
         {cast.embedCasts.map((embedCast) => (
           <EmbedCast key={embedCast.hash} cast={embedCast} />
         ))}
@@ -89,22 +85,23 @@ export const Embeds = ({
 
 const EmbedUrlNoContent = ({ uri }: { uri: string }) => {
   return (
-    <XStack
-      alignItems="center"
-      borderColor="$borderColor"
-      borderWidth="$0.25"
-      borderRadius="$4"
-      overflow="hidden"
-      onPress={() => Linking.openURL(uri)}
-    >
-      <View padding="$4" backgroundColor="$color3">
-        <Link size={24} color="$color11" />
-      </View>
-      <YStack gap="$1" paddingHorizontal="$3" flexShrink={1}>
-        <Text fontSize="$3" numberOfLines={1}>
-          {uri}
-        </Text>
-      </YStack>
-    </XStack>
+    <Link href={uri} target="_blank">
+      <XStack
+        alignItems="center"
+        borderColor="$borderColor"
+        borderWidth="$0.25"
+        borderRadius="$4"
+        overflow="hidden"
+      >
+        <View padding="$4" backgroundColor="$color3">
+          <LinkIcon size={24} color="$color11" />
+        </View>
+        <YStack gap="$1" paddingHorizontal="$3" flexShrink={1}>
+          <Text fontSize="$3" numberOfLines={1}>
+            {uri}
+          </Text>
+        </YStack>
+      </XStack>
+    </Link>
   );
 };

@@ -42,7 +42,7 @@ export const FarcasterInfiniteFeed = ({
         ) : null
       }
       ListHeaderComponent={ListHeaderComponent}
-      ListEmptyComponent={isLoading ? <Loading /> : null}
+      ListEmptyComponent={isLoading ? <Loading /> : <View />}
     />
   );
 };

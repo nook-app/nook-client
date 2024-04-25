@@ -1,5 +1,7 @@
+"use server";
+
+import { makeRequest } from "../api/utils";
 import { ImgurUploadResponse } from "../types";
-import { makeRequest } from "./utils";
 
 export const uploadImage = async (
   image: string,
@@ -11,6 +13,6 @@ export const uploadImage = async (
       Authorization: "Client-ID c2593243d3ea679",
       "X-RapidApi-Key": "H6XlGK0RRnmshCkkElumAWvWjiBLp1ItTOBjsncst1BaYKMS8H",
     },
-    body: JSON.stringify({ image }),
+    body: JSON.stringify({ image: image.split(",")[1] }),
   });
 };

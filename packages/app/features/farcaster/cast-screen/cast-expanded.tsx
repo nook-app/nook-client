@@ -1,12 +1,12 @@
 "use client";
 
-import { NookText, Select, View, XStack, YStack } from "@nook/ui";
+import { NookText, View, XStack, YStack, ToggleGroup, Tooltip } from "@nook/ui";
 import { FarcasterUserDisplay } from "../../../components/farcaster/users/user-display";
 import { FarcasterCastText } from "../../../components/farcaster/casts/cast-text";
 import { Embeds } from "../../../components/embeds/Embed";
 import { FarcasterCastEngagement } from "../../../components/farcaster/casts/cast-engagement";
 import { FarcasterChannelBadge } from "../../../components/farcaster/channels/channel-display";
-import { useCast, useCastReplies } from "../../../api/farcaster";
+import { useCastReplies } from "../../../api/farcaster";
 import {
   FarcasterCustomActionButton,
   FarcasterLikeActionButton,
@@ -15,16 +15,11 @@ import {
   FarcasterShareButton,
 } from "../../../components/farcaster/casts/cast-actions";
 import { FarcasterCastDefaultDisplay } from "../../../components/farcaster/casts/cast-display";
-import { Display } from "../../../types";
+import { Display, FarcasterCast } from "../../../types";
 import { FarcasterInfiniteFeed } from "../cast-feed/infinite-feed";
-import {
-  BarChartBig,
-  Check,
-  ChevronDown,
-  Clock,
-  Rocket,
-} from "@tamagui/lucide-icons";
+import { BarChartBig, Clock, Rocket } from "@tamagui/lucide-icons";
 import { useState } from "react";
+import { FarcasterCastKebabMenu } from "../../../components/farcaster/casts/cast-kebab-menu";
 
 function formatTimestamp(timestamp: number) {
   const date = new Date(timestamp);
@@ -43,10 +38,10 @@ function formatTimestamp(timestamp: number) {
   return `${timeFormatter.format(date)} · ${dateFormatter.format(date)}`;
 }
 
-export const FarcasterExpandedCast = ({ hash }: { hash: string }) => {
+export const FarcasterExpandedCast = ({ cast }: { cast: FarcasterCast }) => {
   const [replySort, setReplySort] = useState<"best" | "top" | "new">("best");
   const { data, isLoading, hasNextPage, fetchNextPage, isFetchingNextPage } =
-    useCastReplies(hash, replySort);
+    useCastReplies(cast.hash, replySort);
 
   const casts = data?.pages.flatMap((page) => page.data) ?? [];
 
@@ -60,7 +55,8 @@ export const FarcasterExpandedCast = ({ hash }: { hash: string }) => {
         displayMode={Display.REPLIES}
         ListHeaderComponent={
           <FarcasterExpandedCastHeader
-            hash={hash}
+            cast={cast}
+            replySort={replySort}
             onReplySortChange={setReplySort}
           />
         }
@@ -71,30 +67,39 @@ export const FarcasterExpandedCast = ({ hash }: { hash: string }) => {
 };
 
 const FarcasterExpandedCastHeader = ({
-  hash,
+  cast,
+  replySort,
   onReplySortChange,
 }: {
-  hash: string;
+  cast: FarcasterCast;
+  replySort: "best" | "top" | "new";
   onReplySortChange: (sort: "best" | "top" | "new") => void;
 }) => {
-  const { data: cast } = useCast(hash);
-  if (!cast) return null;
-
+  const [likes, setLikes] = useState(cast.engagement.likes);
+  const [recasts, setRecasts] = useState(cast.engagement.recasts);
   const renderText = cast.text || cast.mentions.length > 0;
   const renderEmbeds = cast.embeds.length > 0 || cast.embedCasts.length > 0;
 
   return (
     <View>
       {cast.ancestors?.toReversed().map((ancestor) => (
-        <FarcasterCastDefaultDisplay cast={ancestor} isConnected />
+        <FarcasterCastDefaultDisplay
+          key={ancestor.hash}
+          cast={ancestor}
+          isConnected
+        />
       ))}
       <YStack gap="$3" padding="$3">
-        <FarcasterUserDisplay user={cast.user} asLink />
+        <XStack justifyContent="space-between">
+          <FarcasterUserDisplay user={cast.user} asLink />
+          <FarcasterCastKebabMenu cast={cast} />
+        </XStack>
         {renderText && <FarcasterCastText cast={cast} fontSize="$6" />}
         {renderEmbeds && <Embeds cast={cast} />}
         <XStack justifyContent="space-between" alignItems="center">
           <FarcasterCastEngagement
-            cast={cast}
+            hash={cast.hash}
+            engagement={{ ...cast.engagement, likes, recasts }}
             types={["likes", "replies", "quotes", "recasts"]}
           />
           <XStack alignItems="center" gap="$2">
@@ -105,84 +110,72 @@ const FarcasterExpandedCastHeader = ({
           </XStack>
         </XStack>
       </YStack>
-      <FarcasterCastActions hash={cast.hash} />
-      <Select defaultValue="best" onValueChange={onReplySortChange}>
-        <Select.Trigger
+      <XStack
+        alignItems="center"
+        justifyContent="space-around"
+        borderTopWidth="$0.5"
+        borderTopColor="rgba(256, 256, 256, 0.1)"
+        borderBottomWidth="$0.5"
+        borderBottomColor="rgba(256, 256, 256, 0.1)"
+        paddingVertical="$2"
+      >
+        <FarcasterReplyActionButton cast={cast} />
+        <FarcasterRecastActionButton cast={cast} setRecasts={setRecasts} />
+        <FarcasterLikeActionButton cast={cast} setLikes={setLikes} />
+        <FarcasterCustomActionButton cast={cast} />
+        <FarcasterShareButton cast={cast} />
+      </XStack>
+      <View
+        borderBottomWidth="$0.5"
+        borderBottomColor="rgba(256, 256, 256, 0.1)"
+      >
+        <ToggleGroup
+          type="single"
           borderWidth="$0"
           width="auto"
           alignSelf="flex-end"
           justifyContent="center"
-          paddingHorizontal="$3"
-          paddingVertical="$1"
           margin="$2"
-          size="$2"
+          size="$3"
+          value={replySort}
+          onValueChange={onReplySortChange}
         >
-          <XStack gap="$1.5" alignItems="center">
-            <NookText muted fontSize="$4">
-              Sorted by
-            </NookText>
-            <Select.Value color="$mauve12" />
-            <ChevronDown size={16} />
-          </XStack>
-        </Select.Trigger>
-        <Select.Content>
-          <Select.ScrollUpButton />
-          <Select.Viewport>
-            <Select.Group>
-              <Select.Item index={0} value="best">
-                <XStack gap="$2" alignItems="center">
-                  <Rocket size={16} />
-                  <Select.ItemText>Best</Select.ItemText>
-                </XStack>
-                <Select.ItemIndicator marginLeft="auto">
-                  <Check size={16} />
-                </Select.ItemIndicator>
-              </Select.Item>
-              <Select.Item index={1} value="top">
-                <XStack gap="$2" alignItems="center">
-                  <BarChartBig size={16} />
-                  <Select.ItemText>Top</Select.ItemText>
-                </XStack>
-                <Select.ItemIndicator marginLeft="auto">
-                  <Check size={16} />
-                </Select.ItemIndicator>
-              </Select.Item>
-              <Select.Item index={2} value="new">
-                <XStack gap="$2" alignItems="center">
-                  <Clock size={16} />
-                  <Select.ItemText>New</Select.ItemText>
-                </XStack>
-                <Select.ItemIndicator marginLeft="auto">
-                  <Check size={16} />
-                </Select.ItemIndicator>
-              </Select.Item>
-            </Select.Group>
-          </Select.Viewport>
-          <Select.ScrollDownButton />
-        </Select.Content>
-      </Select>
+          {[
+            { value: "best", label: "Best", Icon: Rocket },
+            { value: "top", label: "Top", Icon: BarChartBig },
+            { value: "new", label: "New", Icon: Clock },
+          ].map(({ value, label, Icon }) => (
+            <Tooltip delay={100} placement="top" key={value}>
+              <Tooltip.Trigger>
+                <ToggleGroup.Item value={value}>
+                  <Icon size={16} />
+                </ToggleGroup.Item>
+              </Tooltip.Trigger>
+              <Tooltip.Content
+                enterStyle={{ x: 0, y: -5, opacity: 0, scale: 0.9 }}
+                exitStyle={{ x: 0, y: -5, opacity: 0, scale: 0.9 }}
+                scale={1}
+                x={0}
+                y={0}
+                opacity={1}
+                animation={[
+                  "100ms",
+                  {
+                    opacity: {
+                      overshootClamping: true,
+                    },
+                  },
+                ]}
+              >
+                <Tooltip.Arrow />
+                <NookText color="$color1" fontWeight="500" fontSize="$4">
+                  {label}
+                </NookText>
+              </Tooltip.Content>
+            </Tooltip>
+          ))}
+        </ToggleGroup>
+      </View>
     </View>
-  );
-};
-
-export const FarcasterCastActions = ({ hash }: { hash: string }) => {
-  const { data: cast } = useCast(hash);
-
-  return (
-    <XStack
-      alignItems="center"
-      justifyContent="space-around"
-      borderTopWidth="$0.5"
-      borderTopColor="rgba(256, 256, 256, 0.1)"
-      borderBottomWidth="$0.5"
-      borderBottomColor="rgba(256, 256, 256, 0.1)"
-      paddingVertical="$2"
-    >
-      <FarcasterReplyActionButton />
-      <FarcasterRecastActionButton />
-      <FarcasterLikeActionButton />
-      <FarcasterCustomActionButton />
-      <FarcasterShareButton />
-    </XStack>
   );
 };

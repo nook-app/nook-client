@@ -3,12 +3,9 @@
 import { YStack } from "@nook/ui";
 import { SearchBar } from "../../search/search-bar";
 import { ChannelOverview } from "../../../components/farcaster/channels/channel-overview";
-import { useCast } from "../../../api/farcaster";
+import { FarcasterCast } from "../../../types";
 
-export const CastSidebar = ({ hash }: { hash: string }) => {
-  const { data: cast } = useCast(hash);
-  if (!cast) return null;
-
+export const CastSidebar = ({ cast }: { cast: FarcasterCast }) => {
   return (
     <YStack
       padding="$3"
@@ -19,7 +16,7 @@ export const CastSidebar = ({ hash }: { hash: string }) => {
       }}
     >
       <SearchBar />
-      {cast.channel && <ChannelOverview channel={cast.channel} asLink />}
+      {cast?.channel && <ChannelOverview channel={cast.channel} asLink />}
     </YStack>
   );
 };

@@ -19,11 +19,20 @@ export const run = async () => {
     throw new Error("No fids found");
   }
 
-  await client.setPowerBadgeUsers(fids.map((fid: number) => fid.toString()));
+  const oldPowerBadgeUsers = await client.getPowerBadgeUsers();
+  const newPowerBadgeUsers = fids.map((fid: number) => fid.toString());
 
-  console.log(await client.getPowerBadgeUsers());
+  const delta = newPowerBadgeUsers.filter(
+    (fid) => !oldPowerBadgeUsers.includes(fid),
+  );
 
-  for (const fid of fids) {
+  await client.setPowerBadgeUsers(newPowerBadgeUsers);
+
+  console.log(delta);
+
+  console.log(`Added ${delta.length} new power badge users`);
+
+  for (const fid of delta) {
     await notifications.notification.updateMany({
       where: {
         sourceFid: fid.toString(),

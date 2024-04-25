@@ -4,15 +4,11 @@ import { View } from "@nook/ui";
 import { Channel, ChannelFilterType, UserFilterType } from "../../../types";
 import { FarcasterFilteredFeed } from "../cast-feed/filtered-feed";
 import { Tabs } from "../../../components/tabs/tabs";
-import { useChannel } from "../../../api/farcaster";
 
 export const ChannelTabs = ({
-  channelId,
+  channel,
   activeTab,
-}: { channelId: string; activeTab: string }) => {
-  const { data: channel } = useChannel(channelId);
-  if (!channel) return null;
-
+}: { channel: Channel; activeTab: string }) => {
   return (
     <View>
       <Tabs

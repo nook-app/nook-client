@@ -1,59 +1,37 @@
-import { useCallback } from "react";
-import { useUser } from "../api/farcaster";
-import { useQueryClient } from "@tanstack/react-query";
+import { useCallback, useState } from "react";
 import { useAuth } from "../context/auth";
 import { FarcasterUser } from "../types";
-import { submitLinkAdd, submitLinkRemove } from "../api/farcaster/actions";
+import { submitLinkAdd, submitLinkRemove } from "../server/farcaster";
 
-export const useFollowUser = (username: string) => {
-  const queryClient = useQueryClient();
-  const { data } = useUser(username);
-  const { session } = useAuth();
-
-  const incrementFollow = useCallback(
-    (user: FarcasterUser, increment: number) => {
-      queryClient.setQueryData(["user", user.username], {
-        ...user,
-        engagement: {
-          ...user.engagement,
-          followers: user.engagement.followers + increment,
-        },
-        context: {
-          ...user.context,
-          following: increment > 0,
-        },
-      });
-    },
-    [queryClient],
+export const useFollowUser = (user: FarcasterUser) => {
+  const [isFollowing, setIsFollowing] = useState<boolean>(
+    user.context?.following ?? false,
   );
+  const { session } = useAuth();
 
   const followUser = useCallback(
     async ({
       onSucess,
       onError,
     }: { onSucess?: () => void; onError?: (error: string) => void }) => {
-      if (!data) return;
-
-      incrementFollow(data, 1);
-
+      setIsFollowing(true);
       try {
         const response = await submitLinkAdd({
           linkType: "follow",
-          targetFid: data.fid,
+          targetFid: user.fid,
+          username: user.username,
         });
-        if ("message" in response) {
-          onError?.(response.message);
-        } else {
+        if (!("message" in response)) {
           onSucess?.();
           return;
         }
+        onError?.(response.message);
       } catch (e) {
         onError?.("An error occurred. Try again later.");
       }
-
-      incrementFollow(data, -1);
+      setIsFollowing(false);
     },
-    [incrementFollow, data],
+    [user],
   );
 
   const unfollowUser = useCallback(
@@ -61,37 +39,30 @@ export const useFollowUser = (username: string) => {
       onSucess,
       onError,
     }: { onSucess?: () => void; onError?: (error: string) => void }) => {
-      if (!data) return;
-
-      incrementFollow(data, -1);
-
+      setIsFollowing(false);
       try {
         const response = await submitLinkRemove({
           linkType: "follow",
-          targetFid: data.fid,
+          targetFid: user.fid,
+          username: user.username,
         });
-        if ("message" in response) {
-          onError?.(response.message);
-        } else {
+        if (!("message" in response)) {
           onSucess?.();
           return;
         }
+        onError?.(response.message);
       } catch (e) {
         onError?.("An error occurred. Try again later.");
       }
-
-      incrementFollow(data, 1);
+      setIsFollowing(true);
     },
-    [incrementFollow, data],
+    [user],
   );
 
   return {
-    user: data,
     followUser,
     unfollowUser,
-    isFollowing: data?.context?.following,
-    isFollower: data?.context?.followers,
-    isMutual: data?.context?.following && data?.context?.followers,
-    isViewer: !session || data?.fid === session?.fid,
+    isFollowing,
+    isViewer: !session || user.fid === session?.fid,
   };
 };

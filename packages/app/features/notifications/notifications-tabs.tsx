@@ -4,7 +4,6 @@ import { View } from "@nook/ui";
 import { Tabs } from "../../components/tabs/tabs";
 import { useAuth } from "../../context/auth";
 import {
-  markNotificationsRead,
   useAllNotifications,
   useMentionsNotifications,
   usePriorityNotifications,
@@ -12,20 +11,27 @@ import {
 import { NotificationsInfiniteFeed } from "./notifications-feed";
 import { useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
+import { Session } from "../../types";
+import { markNotificationsRead } from "../../server/notifications";
 
-export const NotificationsTabs = ({ activeIndex }: { activeIndex: number }) => {
-  const { session } = useAuth();
+export const NotificationsTabs = ({
+  session,
+  activeTab,
+}: { session: Session; activeTab: string }) => {
   const queryClient = useQueryClient();
   const tabs = [
     {
+      id: "priority",
       label: "Priority",
       href: "/notifications",
     },
     {
+      id: "mentions",
       label: "Mentions",
       href: "/notifications/mentions",
     },
     {
+      id: "all",
       label: "All",
       href: "/notifications/all",
     },
@@ -42,23 +48,23 @@ export const NotificationsTabs = ({ activeIndex }: { activeIndex: number }) => {
 
   return (
     <View>
-      <Tabs tabs={tabs} activeIndex={activeIndex} />
-      <NotificationsFeed activeIndex={activeIndex} />
+      <Tabs tabs={tabs} activeTab={activeTab} />
+      <NotificationsFeed activeTab={activeTab} />
     </View>
   );
 };
 
-const NotificationsFeed = ({ activeIndex }: { activeIndex: number }) => {
+const NotificationsFeed = ({ activeTab }: { activeTab: string }) => {
   const { session } = useAuth();
 
   if (!session?.fid) return null;
 
-  switch (activeIndex) {
-    case 0:
+  switch (activeTab) {
+    case "priority":
       return <NotificationsPriorityFeed fid={session.fid} />;
-    case 1:
+    case "mentions":
       return <NotificationsMentionsFeed fid={session.fid} />;
-    case 2:
+    case "all":
       return <NotificationsAllFeed fid={session.fid} />;
   }
 };

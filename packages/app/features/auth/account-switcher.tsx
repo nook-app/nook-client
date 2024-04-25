@@ -1,4 +1,12 @@
-import { NookButton, Popover, Separator, View, XStack, YStack } from "@nook/ui";
+import {
+  NookButton,
+  Popover,
+  Separator,
+  Spinner,
+  View,
+  XStack,
+  YStack,
+} from "@nook/ui";
 import { ReactNode } from "react";
 import { useAuth } from "../../context/auth";
 import { Session } from "../../types";
@@ -63,14 +71,13 @@ const AccountSwitcherContent = () => {
 
 const AccountSwitcherSessions = ({ sessions }: { sessions: Session[] }) => {
   const { session, setSession } = useAuth();
-  const { data } = useUsers(sessions.map((session) => session.fid));
-  const router = useRouter();
+  const { data, isLoading } = useUsers(sessions.map((session) => session.fid));
 
-  if (!data) return null;
+  if (isLoading) return <Spinner color="$color11" />;
 
   return (
     <YStack>
-      {data.data.map((user) => {
+      {data?.data.map((user) => {
         const userSession = sessions.find((s) => s.fid === user.fid);
         if (!userSession) return null;
         return (

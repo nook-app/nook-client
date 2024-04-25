@@ -511,6 +511,27 @@ export const farcasterRoutes = async (fastify: FastifyInstance) => {
       },
     );
 
+    fastify.get("/farcaster/channels/recommended", async (request, reply) => {
+      const { fid } = (await request.jwtDecode()) as { fid: string };
+      const response = await fetch(
+        `https://api.neynar.com/v2/farcaster/channel/user?fid=${fid}`,
+        {
+          headers: {
+            accept: "application/json",
+            api_key: process.env.NEYNAR_API_KEY as string,
+          },
+        },
+      );
+      if (!response.ok) {
+        reply.status(500);
+        return;
+      }
+      const { channels } = await response.json();
+      const urls = channels.map((channel: { url: string }) => channel.url);
+      const data = await client.getChannels({ parentUrls: urls });
+      reply.send(data);
+    });
+
     fastify.post<{ Body: ShelfDataRequest<FarcasterPostArgs> }>(
       "/farcaster/casts/new",
       async (request, reply) => {

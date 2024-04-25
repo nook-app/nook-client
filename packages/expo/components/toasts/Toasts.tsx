@@ -1,13 +1,11 @@
-import { Toast, ToastViewport, useToastState } from '@tamagui/toast'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { Toast, ToastViewport, useToastState } from "@tamagui/toast";
 
 export const Toasts = () => {
-  const insets = useSafeAreaInsets()
-  const toast = useToastState()
+  const toast = useToastState();
 
   // don't show any toast if no toast is present or it's handled natively
   if (!toast || toast.isHandledNatively) {
-    return null
+    return null;
   }
 
   return (
@@ -15,13 +13,13 @@ export const Toasts = () => {
       <ToastViewport
         flexDirection="column"
         style={{
-          top: insets.top,
+          top: 0,
           left: 0,
           right: 0,
         }}
       />
       <Toast
-        animation={'quick'}
+        animation={"quick"}
         enterStyle={{ opacity: 0 }}
         exitStyle={{ opacity: 0 }}
         key={toast.id}
@@ -29,9 +27,11 @@ export const Toasts = () => {
       >
         <Toast.Title color="$mauve12">{toast.title}</Toast.Title>
         {toast.message && (
-          <Toast.Description color="$mauve12">{toast.message}</Toast.Description>
+          <Toast.Description color="$mauve12">
+            {toast.message}
+          </Toast.Description>
         )}
       </Toast>
     </>
-  )
-}
+  );
+};

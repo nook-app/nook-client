@@ -56,6 +56,9 @@ module.exports = () => {
     ],
     experimental: {
       scrollRestoration: true,
+      serverActions: {
+        bodySizeLimit: "10mb",
+      },
     },
   };
 
