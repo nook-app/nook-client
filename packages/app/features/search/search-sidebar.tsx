@@ -1,11 +1,11 @@
 "use client";
 
 import { YStack } from "@nook/ui";
-import { SearchBar } from "../search/search-bar";
+import { SearchBar } from "./search-bar";
 import { Channel } from "../../types";
-import { RecommendedChannels } from "./recommended-channels";
+import { RecommendedChannels } from "../home/recommended-channels";
 
-export const DefaultSidebar = ({ channels }: { channels: Channel[] }) => {
+export const SearchSidebar = ({ channels }: { channels: Channel[] }) => {
   return (
     <YStack
       padding="$3"

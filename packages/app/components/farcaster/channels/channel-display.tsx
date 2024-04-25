@@ -1,37 +1,48 @@
-import { NookText, View, XStack, YStack } from "@nook/ui";
+import { NookText, Text, View, XStack, YStack } from "@nook/ui";
 import { Channel } from "../../../types";
 import { Link } from "solito/link";
 import { CdnAvatar } from "../../cdn-avatar";
+import { FarcasterBioText } from "../bio-text";
 
 export const FarcasterChannelTextDisplay = ({
   channel,
   orientation = "horizontal",
   asLink,
   asLabel,
+  withBio,
 }: {
   channel: Channel;
   orientation?: "horizontal" | "vertical";
   asLink?: boolean;
   asLabel?: boolean;
+  withBio?: boolean;
 }) => {
   const Stack = orientation === "horizontal" ? XStack : YStack;
+  const bio = channel.description?.trim().replace(/\n\s*\n/g, "\n");
   const Component = (
-    <Stack gap={orientation === "horizontal" ? "$1.5" : "$1"} flexShrink={1}>
-      <XStack gap="$1.5" alignItems="center" flexShrink={1}>
-        <NookText
-          flexShrink={1}
-          numberOfLines={1}
-          ellipsizeMode="tail"
-          variant={asLabel ? "label" : undefined}
-          fontWeight={asLabel ? undefined : "600"}
-        >
-          {`${channel.name} `}
+    <YStack flexShrink={1} gap="$1">
+      <Stack gap={orientation === "horizontal" ? "$1.5" : "$1"} flexShrink={1}>
+        <XStack gap="$1.5" alignItems="center" flexShrink={1}>
+          <NookText
+            flexShrink={1}
+            numberOfLines={1}
+            ellipsizeMode="tail"
+            variant={asLabel ? "label" : undefined}
+            fontWeight={asLabel ? undefined : "600"}
+          >
+            {`${channel.name} `}
+          </NookText>
+        </XStack>
+        <NookText muted flexShrink={1} numberOfLines={1}>
+          {`/${channel.channelId}`}
         </NookText>
-      </XStack>
-      <NookText muted flexShrink={1} numberOfLines={1}>
-        {`/${channel.channelId}`}
-      </NookText>
-    </Stack>
+      </Stack>
+      {withBio && bio && (
+        <Text numberOfLines={2}>
+          <FarcasterBioText text={bio} />
+        </Text>
+      )}
+    </YStack>
   );
 
   if (asLink) {
@@ -54,14 +65,21 @@ export const FarcasterChannelDisplay = ({
   channel,
   asLink,
   asLabel,
-}: { channel: Channel; asLink?: boolean; asLabel?: boolean }) => (
-  <XStack gap="$2.5" alignItems="center" flex={1}>
+  withBio,
+}: {
+  channel: Channel;
+  asLink?: boolean;
+  asLabel?: boolean;
+  withBio?: boolean;
+}) => (
+  <XStack gap="$2.5" alignItems={withBio ? "flex-start" : "center"} flex={1}>
     <FarcasterChannelAvatar channel={channel} size="$4" asLink={asLink} />
     <FarcasterChannelTextDisplay
       channel={channel}
       orientation="vertical"
       asLink={asLink}
       asLabel={asLabel}
+      withBio={withBio}
     />
   </XStack>
 );

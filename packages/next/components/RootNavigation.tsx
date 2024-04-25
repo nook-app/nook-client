@@ -42,7 +42,7 @@ export const RootNavigation = ({
               </NookText>
             </View>
             <RootNavigationItem label="Home" Icon={Home} href="/" />
-            <RootNavigationItem label="Explore" Icon={Search} href="/search" />
+            <RootNavigationItem label="Explore" Icon={Search} href="/explore" />
             {user && (
               <>
                 <RootNavigationItem

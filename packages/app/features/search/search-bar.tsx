@@ -1,5 +1,4 @@
 import {
-  Input,
   NookText,
   Popover,
   Separator,
@@ -22,13 +21,15 @@ import {
   FarcasterChannelBadge,
   FarcasterChannelDisplay,
 } from "../../components/farcaster/channels/channel-display";
-import { useParams } from "solito/navigation";
+import { useParams, useRouter } from "solito/navigation";
 import { useChannel, useUser } from "../../api/farcaster";
+import { NativeSyntheticEvent, TextInputKeyPressEventData } from "react-native";
 
-export const SearchBar = () => {
-  const [value, setValue] = useState<string>("");
+export const SearchBar = ({ defaultValue }: { defaultValue?: string }) => {
+  const [value, setValue] = useState<string>(defaultValue || "");
   const [open, setOpen] = useState<boolean>(false);
   const closeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const router = useRouter();
 
   const debouncedValue = useDebounceValue(value, 300);
 
@@ -41,13 +42,19 @@ export const SearchBar = () => {
   };
 
   const handleBlur = () => {
-    // Delay closing the popover to allow click events to be processed
     closeTimeoutRef.current = setTimeout(() => {
       setOpen(false);
-    }, 200); // 200ms delay
+    }, 200);
   };
 
-  // Cleanup timeout on component unmount
+  const handleKeyPress = (
+    event: NativeSyntheticEvent<TextInputKeyPressEventData>,
+  ) => {
+    if (event.nativeEvent.key === "Enter") {
+      router.push(`/search?q=${encodeURIComponent(value)}`);
+    }
+  };
+
   useEffect(() => {
     return () => {
       if (closeTimeoutRef.current) {
@@ -57,13 +64,22 @@ export const SearchBar = () => {
   }, []);
 
   return (
-    <Popover placement="bottom" size="$5" allowFlip open={open}>
+    <Popover
+      placement="bottom"
+      size="$5"
+      allowFlip
+      open={open}
+      offset={{
+        mainAxis: 0,
+      }}
+    >
       <Popover.Trigger>
         <SearchInput
           value={value}
           onChangeText={setValue}
           onFocus={handleFocus}
           onBlur={handleBlur}
+          onKeyPress={handleKeyPress}
         />
       </Popover.Trigger>
       <Popover.Content
@@ -82,7 +98,11 @@ export const SearchBar = () => {
         ]}
         padding="$0"
       >
-        <Popover.Arrow borderWidth={1} borderColor="$borderColor" />
+        <Popover.Arrow
+          borderWidth={1}
+          borderColor="$borderColor"
+          display="none"
+        />
         <SearchResults value={debouncedValue} />
       </Popover.Content>
     </Popover>

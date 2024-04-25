@@ -30,24 +30,24 @@ export const NookButton = styled(Button, {
       action: {
         backgroundColor: "$mauve12",
         borderRadius: "$10",
-        paddingHorizontal: "$3",
+        paddingHorizontal: "$4",
         color: "$color1",
         borderWidth: "$0",
         height: "$3",
+        fontWeight: "600",
         hoverStyle: {
           backgroundColor: "$mauve11",
           transition: "all 0.2s ease-in-out",
         },
-        fontWeight: "600",
       },
       "active-action": {
         backgroundColor: "transparent",
         borderColor: "$color6",
         borderRadius: "$10",
         height: "$3",
-        paddingHorizontal: "$3",
+        paddingHorizontal: "$4",
         color: "$color12",
-        fontWeight: "500",
+        fontWeight: "600",
         hoverStyle: {
           backgroundColor: "$color4",
           transition: "all 0.2s ease-in-out",

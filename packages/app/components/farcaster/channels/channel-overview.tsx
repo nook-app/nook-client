@@ -15,7 +15,7 @@ export const ChannelOverview = ({
       padding="$3"
       gap="$3"
       borderRadius="$4"
-      backgroundColor="$color2"
+      backgroundColor="$color1"
       borderColor="$color4"
       borderWidth="$0.5"
     >

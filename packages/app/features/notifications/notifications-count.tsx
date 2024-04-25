@@ -14,11 +14,11 @@ export const NotificationsCount = () => {
       backgroundColor="$red9"
       alignItems="center"
       justifyContent="center"
-      minHeight="$1"
-      minWidth="$1"
+      minHeight="$0.9"
+      minWidth="$0.9"
       paddingHorizontal="$1.5"
     >
-      <NookText fontWeight="600" fontSize="$4">
+      <NookText fontWeight="600" fontSize="$1">
         {count > 99 ? "" : count}
       </NookText>
     </View>

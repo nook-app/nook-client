@@ -6,7 +6,6 @@ import { FarcasterUserDisplay } from "../../../components/farcaster/users/user-d
 import { InfiniteScrollList } from "../../../components/infinite-scroll-list";
 import { FarcasterUserFollowButton } from "../../../components/farcaster/users/user-follow-button";
 import { memo } from "react";
-import { FarcasterBioText } from "../../../components/farcaster/bio-text";
 import { Link } from "solito/link";
 
 export const FarcasterUserInfiniteFeed = ({
