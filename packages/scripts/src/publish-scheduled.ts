@@ -26,8 +26,9 @@ const publishScheduledCasts = async () => {
       break;
     }
     try {
-      const responses =
-        await signerService.submitScheduledCasts(scheduledCasts);
+      const responses = await signerService.submitScheduledCasts({
+        data: scheduledCasts,
+      });
 
       // update with published
       const successes = responses.filter((x) => x[1] !== null);
