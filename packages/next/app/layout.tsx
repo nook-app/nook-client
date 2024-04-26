@@ -11,16 +11,23 @@ import { fetchUser } from "@nook/app/api/farcaster";
 import { FarcasterUser, GetSignerResponse } from "@nook/app/types";
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://nook.social"),
   title: "nook",
   description:
     "nook is reimagining the way we navigate and experience crypto, onchain and offchain.",
+  icons: {
+    icon: "/favicon.ico",
+  },
   openGraph: {
     title: "nook",
     description:
       "nook is reimagining the way we navigate and experience crypto, onchain and offchain.",
+    type: "website",
+    locale: "en_US",
+    url: "https://nook.social",
     images: [
       {
-        url: "banner.png",
+        url: "/banner.png",
         width: 1200,
         height: 630,
         alt: "nook",

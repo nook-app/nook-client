@@ -12,7 +12,7 @@ import { FarcasterCast, FetchCastsResponse } from "../../../types";
 import { KebabMenu, KebabMenuItem } from "../../kebab-menu";
 import { useParams, useRouter } from "solito/navigation";
 import { useCallback, useState } from "react";
-import { fetchCast } from "../../../api/farcaster";
+import { fetchCast, useUser } from "../../../api/farcaster";
 import { Spinner, useToastController } from "@nook/ui";
 import { useFollowUser } from "../../../hooks/useFollowUser";
 import {
@@ -22,6 +22,7 @@ import {
   unmuteUser,
 } from "../../../server/settings";
 import { useQueryClient, InfiniteData } from "@tanstack/react-query";
+import { CdnAvatar } from "../../cdn-avatar";
 
 export const FarcasterCastKebabMenu = ({
   cast,
@@ -34,6 +35,7 @@ export const FarcasterCastKebabMenu = ({
       <MuteUser cast={cast} queryKey={queryKey} />
       <MuteChannel cast={cast} queryKey={queryKey} />
       <ViewCastEngagements cast={cast} />
+      {cast.appFid && <CastSource cast={cast} />}
     </KebabMenu>
   );
 };
@@ -402,6 +404,22 @@ const ViewCastEngagements = ({
       title="View cast engagements"
       onPress={() => router.push(`/casts/${cast.hash}/likes`)}
       closeMenu={closeMenu}
+    />
+  );
+};
+
+const CastSource = ({
+  cast,
+  closeMenu,
+}: { cast: FarcasterCast; closeMenu?: () => void }) => {
+  const { data } = useUser(cast.appFid || "");
+
+  if (!data) return null;
+
+  return (
+    <KebabMenuItem
+      Icon={<CdnAvatar size="$1" src={data.pfp} />}
+      title={`Casted via ${data.displayName}`}
     />
   );
 };
