@@ -46,7 +46,7 @@ export const KebabMenu = ({
           padding="$0"
           cursor="pointer"
         >
-          <Popover.Arrow borderWidth={1} borderColor="$borderColor" />
+          <Popover.Arrow borderWidth={1} borderColor="$borderColorBg" />
           <YGroup alignSelf="center" bordered size="$4" overflow="hidden">
             {childrenWithProps}
           </YGroup>

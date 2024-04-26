@@ -118,7 +118,7 @@ export const FarcasterUserBadge = ({
       borderRadius="$6"
       paddingHorizontal="$2"
       paddingVertical="$1.5"
-      borderColor="$borderColor"
+      borderColor="$borderColorBg"
       borderWidth="$0.5"
       hoverStyle={{
         // @ts-ignore

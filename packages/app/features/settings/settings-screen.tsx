@@ -9,7 +9,7 @@ export const SettingsScreen = ({ settings }: { settings: User }) => {
   return (
     <YStack>
       <ThemeSettings />
-      <Separator borderColor="$borderColor" />
+      <Separator borderColor="$borderColorBg" />
       <MutedSettings settings={settings} />
     </YStack>
   );

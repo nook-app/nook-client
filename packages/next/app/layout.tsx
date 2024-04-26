@@ -3,6 +3,7 @@ import { RootNavigation } from "../components/RootNavigation";
 import { Providers } from "./providers";
 import { getActiveUser, getServerSession } from "@nook/app/server/auth";
 import { fetchSettings } from "@nook/app/api/settings";
+import { ReactNode } from "react";
 
 export const metadata: Metadata = {
   title: "nook",
@@ -61,10 +62,6 @@ export async function generateViewport() {
 export default async function RootLayout({
   children,
 }: { children: React.ReactNode }) {
-  const [session, user] = await Promise.all([
-    getServerSession(),
-    getActiveUser(),
-  ]);
   return (
     <html lang="en">
       <body
@@ -73,10 +70,21 @@ export default async function RootLayout({
           overscrollBehaviorX: "none",
         }}
       >
-        <Providers session={session} user={user}>
-          <RootNavigation user={user}>{children}</RootNavigation>
-        </Providers>
+        <Component>{children}</Component>
       </body>
     </html>
+  );
+}
+
+async function Component({ children }: { children: ReactNode }) {
+  const [session, user] = await Promise.all([
+    getServerSession(),
+    getActiveUser(),
+  ]);
+
+  return (
+    <Providers session={session} user={user}>
+      <RootNavigation user={user}>{children}</RootNavigation>
+    </Providers>
   );
 }

@@ -125,9 +125,9 @@ const FarcasterExpandedCastHeader = ({
         alignItems="center"
         justifyContent="space-around"
         borderTopWidth="$0.5"
-        borderTopColor="$borderColor"
+        borderTopColor="$borderColorBg"
         borderBottomWidth="$0.5"
-        borderBottomColor="$borderColor"
+        borderBottomColor="$borderColorBg"
         paddingVertical="$2"
       >
         <FarcasterReplyActionButton cast={cast} />
@@ -136,7 +136,7 @@ const FarcasterExpandedCastHeader = ({
         <FarcasterCustomActionButton cast={cast} />
         <FarcasterShareButton cast={cast} />
       </XStack>
-      <View borderBottomWidth="$0.5" borderBottomColor="$borderColor">
+      <View borderBottomWidth="$0.5" borderBottomColor="$borderColorBg">
         <ToggleGroup
           type="single"
           borderWidth="$0"

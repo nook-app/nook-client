@@ -22,7 +22,7 @@ export const AccountSwitcher = ({ children }: { children: ReactNode }) => {
       <Popover.Trigger asChild>{children}</Popover.Trigger>
       <Popover.Content
         borderWidth={1}
-        borderColor="$borderColor"
+        borderColor="$borderColorBg"
         enterStyle={{ y: -10, opacity: 0 }}
         exitStyle={{ y: -10, opacity: 0 }}
         elevate
@@ -37,7 +37,7 @@ export const AccountSwitcher = ({ children }: { children: ReactNode }) => {
         paddingHorizontal="$0"
         paddingVertical="$2"
       >
-        <Popover.Arrow borderWidth={1} borderColor="$borderColor" />
+        <Popover.Arrow borderWidth={1} borderColor="$borderColorBg" />
         <AccountSwitcherContent />
       </Popover.Content>
     </Popover>
@@ -92,6 +92,7 @@ const AccountSwitcherSessions = ({ sessions }: { sessions: Session[] }) => {
         if (!userSession) return null;
         return (
           <NookButton
+            key={user.fid}
             variant="ghost"
             height="$6"
             onPress={async () => {

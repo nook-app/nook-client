@@ -88,7 +88,7 @@ const EmbedUrlNoContent = ({ uri }: { uri: string }) => {
     <Link href={uri} target="_blank">
       <XStack
         alignItems="center"
-        borderColor="$borderColor"
+        borderColor="$borderColorBg"
         borderWidth="$0.25"
         borderRadius="$4"
         overflow="hidden"

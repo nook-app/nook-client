@@ -41,7 +41,7 @@ export const CreateCastMentions = ({ children }: { children: ReactNode }) => {
       <Popover.Trigger>{children}</Popover.Trigger>
       <Popover.Content
         borderWidth={1}
-        borderColor="$borderColor"
+        borderColor="$borderColorBg"
         enterStyle={{ y: -10, opacity: 0 }}
         exitStyle={{ y: -10, opacity: 0 }}
         elevate

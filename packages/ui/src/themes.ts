@@ -245,7 +245,9 @@ export const getTemplates = (scheme: "dark" | "light") => {
   const bgIndex = 5;
   const lighten = isLight ? -1 : 1;
   const darken = -lighten;
-  const borderColor = isLight
+  const borderColor = bgIndex + 4;
+
+  const borderColorBg = isLight
     ? "rgb(239, 243, 244)"
     : "rgba(256, 256, 256, 0.1)";
 
@@ -287,6 +289,7 @@ export const getTemplates = (scheme: "dark" | "light") => {
     borderColorHover: borderColor + lighten,
     borderColorPress: borderColor + darken,
     borderColorFocus: borderColor,
+    borderColorBg,
     color: -bgIndex,
     colorHover: -bgIndex - 1,
     colorPress: -bgIndex,

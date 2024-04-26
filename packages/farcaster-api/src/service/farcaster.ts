@@ -1613,16 +1613,22 @@ export class FarcasterService {
     const cached = await this.cache.getMutualFids(fid, targetFid);
     if (cached && cached.length > 0) return cached;
 
-    const [following, targetFollowers] = await Promise.all([
-      this.getUserFollowingFids(fid),
-      this.getUserFollowerFids(targetFid),
-    ]);
+    const following = await this.getUserFollowingFids(fid);
+    const mutuals = await this.client.farcasterLink.findMany({
+      where: {
+        fid: {
+          in: following.map((user) => BigInt(user)),
+        },
+        targetFid: BigInt(targetFid),
+        deletedAt: null,
+      },
+    });
 
-    const mutuals = following.filter((user) => targetFollowers.includes(user));
+    const mutualFids = mutuals.map((mutual) => mutual.fid.toString());
 
-    await this.cache.setMutualFids(fid, targetFid, mutuals);
+    await this.cache.setMutualFids(fid, targetFid, mutualFids);
 
-    return mutuals;
+    return mutualFids;
   }
 
   async getUserVerifiedAddresses(fid: string) {

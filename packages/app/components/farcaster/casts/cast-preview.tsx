@@ -35,7 +35,7 @@ export const FarcasterCastPreview = ({
             vertical
             marginBottom="$-8"
             borderWidth="$0.5"
-            borderColor="$borderColor"
+            borderColor="$borderColorBg"
             zIndex={1}
           />
         )}

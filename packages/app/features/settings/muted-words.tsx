@@ -39,7 +39,7 @@ export const MutedWords = ({ settings }: { settings: User }) => {
         </NookText>
         <AddMutedWord onSubmit={handleMuteWord} />
       </XStack>
-      <Separator borderColor="$borderColor" />
+      <Separator borderColor="$borderColorBg" />
       {words.map((word) => (
         <MutedWord key={word} word={word} onPress={handleUnmuteWord} />
       ))}
@@ -104,7 +104,7 @@ const AddMutedWord = ({ onSubmit }: { onSubmit: (word: string) => void }) => {
 
       <Popover.Content
         borderWidth={1}
-        borderColor="$borderColor"
+        borderColor="$borderColorBg"
         enterStyle={{ y: -10, opacity: 0 }}
         exitStyle={{ y: -10, opacity: 0 }}
         elevate
@@ -118,14 +118,14 @@ const AddMutedWord = ({ onSubmit }: { onSubmit: (word: string) => void }) => {
         ]}
         padding="$3"
       >
-        <Popover.Arrow borderWidth={1} borderColor="$borderColor" />
+        <Popover.Arrow borderWidth={1} borderColor="$borderColorBg" />
 
         <YStack space="$3">
           <XStack space="$3">
             <Input
               size="$3"
               placeholder="Enter word or phrase..."
-              borderWidth="$0"
+              borderColor="$color5"
               focusVisibleStyle={{ outlineWidth: 0 }}
               value={word}
               onChangeText={setWord}

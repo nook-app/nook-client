@@ -350,7 +350,7 @@ const Notification = ({
   return (
     <XStack
       borderBottomWidth="$0.5"
-      borderColor="$borderColor"
+      borderColor="$borderColorBg"
       hoverStyle={{
         // @ts-ignore
         transition: "all 0.2s ease-in-out",

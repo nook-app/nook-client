@@ -39,7 +39,7 @@ const ChannelHosts = ({ channel }: { channel: Channel }) => {
       padding="$3"
       borderRadius="$4"
       backgroundColor="$color1"
-      borderColor="$borderColor"
+      borderColor="$borderColorBg"
       borderWidth="$0.5"
     >
       <NookText variant="label">Hosts</NookText>

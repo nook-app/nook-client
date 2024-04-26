@@ -84,7 +84,7 @@ export const SearchBar = ({ defaultValue }: { defaultValue?: string }) => {
       </Popover.Trigger>
       <Popover.Content
         borderWidth={1}
-        borderColor="$borderColor"
+        borderColor="$borderColorBg"
         enterStyle={{ y: -10, opacity: 0 }}
         exitStyle={{ y: -10, opacity: 0 }}
         elevate
@@ -100,7 +100,7 @@ export const SearchBar = ({ defaultValue }: { defaultValue?: string }) => {
       >
         <Popover.Arrow
           borderWidth={1}
-          borderColor="$borderColor"
+          borderColor="$borderColorBg"
           display="none"
         />
         <SearchResults value={debouncedValue} />

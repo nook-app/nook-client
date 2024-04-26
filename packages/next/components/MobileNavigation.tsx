@@ -37,7 +37,7 @@ const MobileTabMenu = ({ user }: { user?: FarcasterUser }) => {
     <YStack
       backgroundColor="$color2"
       borderTopWidth="$0.5"
-      borderTopColor="$borderColor"
+      borderTopColor="$borderColorBg"
       justifyContent="space-around"
       alignItems="center"
       flexDirection="row"

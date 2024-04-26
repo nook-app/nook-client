@@ -16,9 +16,9 @@ export const PageNavigation = ({
       <View
         minHeight="100vh"
         flex={1}
-        borderLeftColor="$borderColor"
+        borderLeftColor="$borderColorBg"
         borderLeftWidth="$0.5"
-        borderRightColor="$borderColor"
+        borderRightColor="$borderColorBg"
         borderRightWidth="$0.5"
         $lg={{
           width: 300,

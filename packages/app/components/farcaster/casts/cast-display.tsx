@@ -38,7 +38,7 @@ export const FarcasterCastDisplay = ({
     default:
       if (cast.parent && displayMode !== Display.REPLIES) {
         return (
-          <View borderBottomWidth="$0.5" borderBottomColor="$borderColor">
+          <View borderBottomWidth="$0.5" borderBottomColor="$borderColorBg">
             <FarcasterCastDefaultDisplay
               cast={cast.parent}
               isConnected
@@ -49,7 +49,7 @@ export const FarcasterCastDisplay = ({
         );
       }
       return (
-        <View borderBottomWidth="$0.5" borderBottomColor="$borderColor">
+        <View borderBottomWidth="$0.5" borderBottomColor="$borderColorBg">
           <FarcasterCastDefaultDisplay cast={cast} queryKey={queryKey} />
         </View>
       );
@@ -70,7 +70,7 @@ const FarcasterCastGridDisplay = ({ cast }: { cast: FarcasterCast }) => {
       <View
         borderRightWidth="$0.5"
         borderBottomWidth="$0.5"
-        borderColor="$borderColor"
+        borderColor="$borderColorBg"
       >
         <img
           src={imageEmbed.uri}
@@ -171,7 +171,7 @@ export const FarcasterCastDefaultDisplay = ({
             vertical
             marginBottom="$-8"
             borderWidth="$0.5"
-            borderColor="$borderColor"
+            borderColor="$borderColorBg"
             zIndex={1}
           />
         )}

@@ -33,7 +33,7 @@ export const MutedChannels = ({ settings }: { settings: User }) => {
           posts.
         </NookText>
       </View>
-      <Separator borderColor="$borderColor" />
+      <Separator borderColor="$borderColorBg" />
       {isLoading && (
         <View padding="$4" gap="$4">
           <Spinner color="$color11" />

@@ -50,7 +50,7 @@ export const ChannelSelect = ({
 
       <Popover.Content
         borderWidth={1}
-        borderColor="$borderColor"
+        borderColor="$borderColorBg"
         enterStyle={{ y: -10, opacity: 0 }}
         exitStyle={{ y: -10, opacity: 0 }}
         elevate
@@ -64,13 +64,12 @@ export const ChannelSelect = ({
         ]}
         padding="$0"
       >
-        <Popover.Arrow borderWidth={1} borderColor="$borderColor" />
+        <Popover.Arrow borderWidth={1} borderColor="$borderColorBg" />
 
         <ScrollView maxHeight="50vh">
           <YStack>
             <XStack gap="$3" alignItems="center" padding="$3">
               <Input
-                focusVisibleStyle={{ outlineWidth: 0 }}
                 value={value}
                 onChangeText={setValue}
                 placeholder="Search..."
