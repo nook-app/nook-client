@@ -163,7 +163,10 @@ const SearchResults = ({
         </View>
       </Link>
       <Separator />
-      {data.users.map((user) => (
+      <NookText fontWeight="600" padding="$2" fontSize="$4">
+        Users
+      </NookText>
+      {data.users.slice(0, 5).map((user) => (
         <Link key={user.fid} href={`/users/${user.username}`}>
           <View
             padding="$3"
@@ -178,7 +181,10 @@ const SearchResults = ({
         </Link>
       ))}
       <Separator />
-      {data.channels.map((channel) => (
+      <NookText fontWeight="600" padding="$2" fontSize="$4">
+        Channels
+      </NookText>
+      {data.channels.slice(0, 5).map((channel) => (
         <Link key={channel.channelId} href={`/channels/${channel.channelId}`}>
           <View
             padding="$3"

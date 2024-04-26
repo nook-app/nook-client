@@ -103,7 +103,7 @@ export const CreateCastButton = () => {
           <NookButton
             variant="primary"
             backgroundColor={
-              ["light", "dark"].includes(theme) ? "$color12" : "$color11"
+              ["light", "dark"].includes(theme) ? "$color12" : "$color9"
             }
           >
             <NookText
@@ -123,7 +123,7 @@ export const CreateCastButton = () => {
             width="$5"
             padding="$0"
             backgroundColor={
-              ["light", "dark"].includes(theme) ? "$color12" : "$color11"
+              ["light", "dark"].includes(theme) ? "$color12" : "$color9"
             }
           >
             <NookText>

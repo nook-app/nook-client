@@ -8,6 +8,7 @@ import { FarcasterCast, UrlContentResponse } from "../../types";
 import { EmbedCast } from "./EmbedCast";
 import { Link as LinkIcon } from "@tamagui/lucide-icons";
 import { Link } from "solito/link";
+import { EmbedFrame } from "./EmbedFrame";
 
 export const Embed = ({
   content,
@@ -36,7 +37,7 @@ export const Embed = ({
     content.uri.includes("youtube.com") ||
     content.uri.includes("youtu.be")
   ) {
-    return <EmbedVideo content={content} />;
+    return <EmbedVideo uri={content.uri} />;
   }
 
   if (content.uri.includes("twitter.com") || content.uri.includes("x.com")) {
@@ -44,6 +45,9 @@ export const Embed = ({
   }
 
   if (content.metadata) {
+    if (content.frame?.buttons && content.frame?.buttons.length > 0) {
+      return <EmbedFrame cast={cast} content={content} />;
+    }
     return <EmbedUrl content={content} />;
   }
 

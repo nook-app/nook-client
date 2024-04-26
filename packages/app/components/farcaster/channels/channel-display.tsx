@@ -1,8 +1,11 @@
-import { NookText, Text, View, XStack, YStack } from "@nook/ui";
+import { NookText, Text, Tooltip, View, XStack, YStack } from "@nook/ui";
 import { Channel } from "../../../types";
 import { Link } from "solito/link";
 import { CdnAvatar } from "../../cdn-avatar";
 import { FarcasterBioText } from "../bio-text";
+import { ReactNode } from "react";
+import { ChannelHeader } from "../../../features/farcaster/channel-profile/channel-header";
+import { ChannelOverview } from "./channel-overview";
 
 export const FarcasterChannelTextDisplay = ({
   channel,
@@ -47,14 +50,16 @@ export const FarcasterChannelTextDisplay = ({
 
   if (asLink) {
     return (
-      <View
-        onPress={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-        }}
-      >
-        <Link href={`/channels/${channel.channelId}`}>{Component}</Link>
-      </View>
+      <FarcasterChannelTooltip channel={channel}>
+        <View
+          onPress={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+          }}
+        >
+          <Link href={`/channels/${channel.channelId}`}>{Component}</Link>
+        </View>
+      </FarcasterChannelTooltip>
     );
   }
 
@@ -93,18 +98,57 @@ export const FarcasterChannelAvatar = ({
 
   if (asLink) {
     return (
-      <View
-        onPress={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-        }}
-      >
-        <Link href={`/channels/${channel.channelId}`}>{Component}</Link>
-      </View>
+      <FarcasterChannelTooltip channel={channel}>
+        <View
+          onPress={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+          }}
+        >
+          <Link href={`/channels/${channel.channelId}`}>{Component}</Link>
+        </View>
+      </FarcasterChannelTooltip>
     );
   }
 
   return Component;
+};
+
+export const FarcasterChannelTooltip = ({
+  channel,
+  children,
+}: {
+  channel: Channel;
+  children: ReactNode;
+}) => {
+  return (
+    <Tooltip delay={100}>
+      <Tooltip.Trigger>{children}</Tooltip.Trigger>
+      <Tooltip.Content
+        enterStyle={{ x: 0, y: -5, opacity: 0, scale: 0.9 }}
+        exitStyle={{ x: 0, y: -5, opacity: 0, scale: 0.9 }}
+        scale={1}
+        x={0}
+        y={0}
+        opacity={1}
+        animation={[
+          "100ms",
+          {
+            opacity: {
+              overshootClamping: true,
+            },
+          },
+        ]}
+        backgroundColor="$color1"
+        borderColor="$borderColorBg"
+        borderWidth="$0.25"
+        padding="$2"
+        width={400}
+      >
+        <ChannelOverview channel={channel} />
+      </Tooltip.Content>
+    </Tooltip>
+  );
 };
 
 export const FarcasterChannelBadge = ({
@@ -120,7 +164,7 @@ export const FarcasterChannelBadge = ({
       borderRadius="$6"
       paddingHorizontal="$2"
       paddingVertical="$1.5"
-      borderColor="$borderColorBg"
+      borderColor="$color7"
       borderWidth="$0.5"
       hoverStyle={{
         // @ts-ignore
@@ -144,14 +188,16 @@ export const FarcasterChannelBadge = ({
 
   if (asLink) {
     return (
-      <View
-        onPress={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-        }}
-      >
-        <Link href={`/channels/${channel.channelId}`}>{Component}</Link>
-      </View>
+      <FarcasterChannelTooltip channel={channel}>
+        <View
+          onPress={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+          }}
+        >
+          <Link href={`/channels/${channel.channelId}`}>{Component}</Link>
+        </View>
+      </FarcasterChannelTooltip>
     );
   }
 

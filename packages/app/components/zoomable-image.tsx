@@ -1,4 +1,5 @@
 import { Dialog, Image, View } from "@nook/ui";
+import { X } from "@tamagui/lucide-icons";
 import { ReactNode } from "react";
 
 export const ZoomableImage = ({
@@ -16,11 +17,20 @@ export const ZoomableImage = ({
       <Dialog.Portal>
         <Dialog.Overlay
           key="overlay"
-          animation="slow"
+          animation="100ms"
           opacity={0.75}
           enterStyle={{ opacity: 0 }}
           exitStyle={{ opacity: 0 }}
         />
+        <Dialog.Close
+          position="absolute"
+          top="$2"
+          left="$2"
+          zIndex={10000000000000}
+          cursor="pointer"
+        >
+          <X size={24} />
+        </Dialog.Close>
         <Dialog.Content
           elevate
           key="content"
@@ -35,7 +45,6 @@ export const ZoomableImage = ({
           ]}
           enterStyle={{ x: 0, y: -20, opacity: 0, scale: 0.9 }}
           exitStyle={{ x: 0, y: 10, opacity: 0, scale: 0.95 }}
-          backgroundColor="transparent"
           padding="$0"
           $platform-web={{
             boxShadow: "none",

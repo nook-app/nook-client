@@ -1,16 +1,15 @@
-import { Text, View } from "tamagui";
-import { UrlContentResponse } from "../../types";
+import { View } from "tamagui";
 import ReactPlayer from "react-player/lazy";
 
 export const EmbedVideo = ({
-  content: { uri },
-}: {
-  content: UrlContentResponse;
-}) => {
+  uri,
+  noBorderRadius,
+}: { uri: string; noBorderRadius?: boolean }) => {
+  if (!uri) return null;
   return (
     <View
       overflow="hidden"
-      borderRadius="$4"
+      borderRadius={noBorderRadius ? "$0" : "$4"}
       onPress={(e) => {
         e.stopPropagation();
       }}

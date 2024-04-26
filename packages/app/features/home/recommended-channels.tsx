@@ -3,6 +3,8 @@ import { FarcasterChannelFeedItem } from "../farcaster/channel-feed/channel-feed
 import { Channel } from "../../types";
 
 export const RecommendedChannels = ({ channels }: { channels: Channel[] }) => {
+  if (channels.length === 0) return null;
+
   return (
     <YStack
       borderRadius="$4"

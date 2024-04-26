@@ -81,6 +81,7 @@ export const UserFeed = ({
             users: { type: UserFilterType.FIDS, data: { fids: [user.fid] } },
             onlyFrames: true,
           }}
+          displayMode={Display.FRAMES}
         />
       );
   }

@@ -3,7 +3,7 @@ import { Prisma, PrismaClient, UrlContent } from "@nook/common/prisma/content";
 const run = async () => {
   const client = new PrismaClient();
 
-  for (let i = 404_000; i < 500_000; i++) {
+  for (let i = 406_450; i < 500_000; i++) {
     const references = await client.farcasterContentReference.findMany({
       where: {
         fid: i,

@@ -84,7 +84,7 @@ export class FeedService {
     const conditions: string[] = [`"reference"."type" = 'EMBED'`];
 
     if (onlyFrames) {
-      conditions.push(`"content"."hasFrame"`);
+      conditions.push(`"reference"."hasFrame"`);
     }
 
     if (contentTypes && contentTypes.length > 0) {
@@ -99,12 +99,14 @@ export class FeedService {
         formattedTypes.push("'image/webp'");
       }
 
-      conditions.push(`("content"."type" IN (${formattedTypes.join(",")}))`);
+      conditions.push(
+        `("reference"."contentType" IN (${formattedTypes.join(",")}))`,
+      );
     }
 
     if (embeds) {
       const embedConditions = embeds.map(
-        (embed) => `"content"."uri" ILIKE '%${sanitizeInput(embed)}%'`,
+        (embed) => `"reference"."uri" ILIKE '%${sanitizeInput(embed)}%'`,
       );
       conditions.push(`(${embedConditions.join(" OR ")})`);
     }
@@ -153,7 +155,6 @@ export class FeedService {
         `
             SELECT DISTINCT "reference".hash, "reference".timestamp
             FROM "FarcasterContentReference" AS "reference"
-            JOIN "UrlContent" AS "content" ON "reference"."uri" = "content"."uri"
             WHERE ${conditions.join(" AND ")}
             ORDER BY "reference"."timestamp" DESC
             LIMIT ${MAX_PAGE_SIZE}

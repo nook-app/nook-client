@@ -1,7 +1,12 @@
 "use client";
 
 import { View } from "@nook/ui";
-import { Channel, ChannelFilterType, UserFilterType } from "../../../types";
+import {
+  Channel,
+  ChannelFilterType,
+  Display,
+  UserFilterType,
+} from "../../../types";
 import { FarcasterFilteredFeed } from "../cast-feed/filtered-feed";
 import { Tabs } from "../../../components/tabs/tabs";
 
@@ -113,8 +118,9 @@ export const ChannelFeed = ({
                 urls: [channel.url],
               },
             },
-            contentTypes: ["image"],
+            contentTypes: ["image", "application/x-mpegURL"],
           }}
+          displayMode={Display.GRID}
         />
       );
   }

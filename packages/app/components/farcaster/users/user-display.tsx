@@ -1,10 +1,12 @@
 import { FarcasterUser } from "../../../types";
-import { NookText, View, XStack, YStack } from "@nook/ui";
+import { NookText, Tooltip, View, XStack, YStack } from "@nook/ui";
 import { FarcasterPowerBadge } from "./power-badge";
 import { CdnAvatar } from "../../cdn-avatar";
 import { Link } from "solito/link";
 import { FarcasterBioText } from "../bio-text";
 import { ReactNode } from "react";
+import { UserHeader } from "../../../features/farcaster/user-profile/user-header";
+import { useUser } from "../../../api/farcaster";
 
 export const FarcasterUserTextDisplay = ({
   user,
@@ -51,14 +53,16 @@ export const FarcasterUserTextDisplay = ({
 
   if (asLink) {
     return (
-      <View
-        onPress={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-        }}
-      >
-        <Link href={`/users/${user.username}`}>{Component}</Link>
-      </View>
+      <FarcasterUserTooltip user={user}>
+        <View
+          onPress={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+          }}
+        >
+          <Link href={`/users/${user.username}`}>{Component}</Link>
+        </View>
+      </FarcasterUserTooltip>
     );
   }
 
@@ -69,14 +73,23 @@ export const FarcasterUserDisplay = ({
   user,
   asLink,
   withBio,
-}: { user: FarcasterUser; asLink?: boolean; withBio?: boolean }) => (
+  size,
+  suffix,
+}: {
+  user: FarcasterUser;
+  asLink?: boolean;
+  withBio?: boolean;
+  size?: string;
+  suffix?: ReactNode;
+}) => (
   <XStack gap="$2.5" alignItems={withBio ? "flex-start" : "center"} flex={1}>
-    <FarcasterUserAvatar user={user} size="$4" asLink={asLink} />
+    <FarcasterUserAvatar user={user} size={size ?? "$4"} asLink={asLink} />
     <FarcasterUserTextDisplay
       user={user}
       orientation="vertical"
       asLink={asLink}
       withBio={withBio}
+      suffix={suffix}
     />
   </XStack>
 );
@@ -90,19 +103,58 @@ export const FarcasterUserAvatar = ({
 
   if (asLink) {
     return (
-      <View
-        onPress={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-        }}
-        zIndex={2}
-      >
-        <Link href={`/users/${user.username}`}>{Component}</Link>
-      </View>
+      <FarcasterUserTooltip user={user}>
+        <View
+          onPress={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+          }}
+          zIndex={2}
+        >
+          <Link href={`/users/${user.username}`}>{Component}</Link>
+        </View>
+      </FarcasterUserTooltip>
     );
   }
 
   return Component;
+};
+
+const FarcasterUserTooltip = ({
+  user,
+  children,
+}: {
+  user: FarcasterUser;
+  children: ReactNode;
+}) => {
+  return (
+    <Tooltip delay={100}>
+      <Tooltip.Trigger>{children}</Tooltip.Trigger>
+      <Tooltip.Content
+        enterStyle={{ x: 0, y: -5, opacity: 0, scale: 0.9 }}
+        exitStyle={{ x: 0, y: -5, opacity: 0, scale: 0.9 }}
+        scale={1}
+        x={0}
+        y={0}
+        opacity={1}
+        animation={[
+          "100ms",
+          {
+            opacity: {
+              overshootClamping: true,
+            },
+          },
+        ]}
+        backgroundColor="$color1"
+        borderColor="$borderColorBg"
+        borderWidth="$0.25"
+        padding="$2"
+        width={400}
+      >
+        <UserHeader user={user} size="$6" />
+      </Tooltip.Content>
+    </Tooltip>
+  );
 };
 
 export const FarcasterUserBadge = ({
@@ -118,7 +170,7 @@ export const FarcasterUserBadge = ({
       borderRadius="$6"
       paddingHorizontal="$2"
       paddingVertical="$1.5"
-      borderColor="$borderColorBg"
+      borderColor="$color7"
       borderWidth="$0.5"
       hoverStyle={{
         // @ts-ignore

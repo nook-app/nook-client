@@ -18,6 +18,7 @@ export const ChannelOverview = ({
       backgroundColor="$color1"
       borderColor="$borderColorBg"
       borderWidth="$0.5"
+      width="100%"
     >
       <FarcasterChannelDisplay channel={channel} asLink={asLink} asLabel />
       {bio && <FarcasterBioText text={bio} />}

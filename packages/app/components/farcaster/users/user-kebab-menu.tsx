@@ -13,7 +13,7 @@ export const FarcasterUserKebabMenu = ({ user }: { user: FarcasterUser }) => {
     <KebabMenu
       trigger={
         <NookButton variant="active-action" width="$3" height="$3" padding="$0">
-          <MoreHorizontal size={20} />
+          <MoreHorizontal size={20} color="$mauve12" />
         </NookButton>
       }
     >

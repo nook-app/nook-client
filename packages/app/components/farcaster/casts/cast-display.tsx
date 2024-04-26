@@ -24,6 +24,9 @@ import {
 import { Link } from "solito/link";
 import { FarcasterCastKebabMenu } from "./cast-kebab-menu";
 import { useState } from "react";
+import { EmbedImage } from "../../embeds/EmbedImage";
+import { EmbedVideo } from "../../embeds/EmbedVideo";
+import { EmbedFrame } from "../../embeds/EmbedFrame";
 
 export const FarcasterCastDisplay = ({
   cast,
@@ -31,6 +34,8 @@ export const FarcasterCastDisplay = ({
   queryKey,
 }: { cast: FarcasterCast; displayMode: Display; queryKey?: string[] }) => {
   switch (displayMode) {
+    case Display.FRAMES:
+      return <FarcasterCastFrameDisplay cast={cast} />;
     case Display.MEDIA:
       return <FarcasterCastMediaDisplay cast={cast} />;
     case Display.GRID:
@@ -56,6 +61,66 @@ export const FarcasterCastDisplay = ({
   }
 };
 
+const FarcasterCastFrameDisplay = ({ cast }: { cast: FarcasterCast }) => {
+  const router = useRouter();
+
+  const frameEmbed = cast.embeds.find((embed) => embed.frame);
+
+  const handlePress = () => {
+    const selection = window?.getSelection()?.toString();
+    if (!selection || selection.length === 0) {
+      router.push(`/casts/${cast.hash}`);
+    }
+  };
+
+  if (!frameEmbed) {
+    return null;
+  }
+
+  return (
+    <YStack
+      borderBottomWidth="$0.25"
+      borderBottomColor="$color4"
+      hoverStyle={{
+        // @ts-ignore
+        transition: "all 0.2s ease-in-out",
+        backgroundColor: "$color2",
+      }}
+      onPress={handlePress}
+      cursor="pointer"
+      padding="$3"
+      gap="$3"
+    >
+      <XStack justifyContent="space-between">
+        <FarcasterUserDisplay
+          user={cast.user}
+          size="$3"
+          suffix={` · ${formatTimeAgo(cast.timestamp)}`}
+        />
+        <FarcasterCastKebabMenu cast={cast} />
+      </XStack>
+      <EmbedFrame cast={cast} content={frameEmbed} />
+      <YStack padding="$2" gap="$2">
+        <XStack
+          alignItems="center"
+          justifyContent="space-between"
+          marginHorizontal="$-2"
+        >
+          <XStack gap="$2" alignItems="center">
+            <FarcasterReplyActionButton cast={cast} />
+            <FarcasterRecastActionButton cast={cast} />
+            <FarcasterLikeActionButton cast={cast} />
+          </XStack>
+          <XStack gap="$2" alignItems="center">
+            <FarcasterCustomActionButton cast={cast} />
+            <FarcasterShareButton cast={cast} />
+          </XStack>
+        </XStack>
+      </YStack>
+    </YStack>
+  );
+};
+
 const FarcasterCastGridDisplay = ({ cast }: { cast: FarcasterCast }) => {
   const imageEmbed = cast.embeds.find((embed) =>
     embed.type?.startsWith("image"),
@@ -70,7 +135,12 @@ const FarcasterCastGridDisplay = ({ cast }: { cast: FarcasterCast }) => {
       <View
         borderRightWidth="$0.5"
         borderBottomWidth="$0.5"
-        borderColor="$borderColorBg"
+        borderColor="$borderColor"
+        hoverStyle={{
+          // @ts-ignore
+          transition: "all 0.2s ease-in-out",
+          opacity: 0.75,
+        }}
       >
         <img
           src={imageEmbed.uri}
@@ -83,32 +153,58 @@ const FarcasterCastGridDisplay = ({ cast }: { cast: FarcasterCast }) => {
 };
 
 const FarcasterCastMediaDisplay = ({ cast }: { cast: FarcasterCast }) => {
+  const router = useRouter();
+
   const imageEmbed = cast.embeds.find((embed) =>
     embed.type?.startsWith("image"),
   );
+  const videoEmbed = cast.embeds.find(
+    (embed) => embed.type === "application/x-mpegURL",
+  );
 
-  if (!imageEmbed) {
+  const handlePress = () => {
+    const selection = window?.getSelection()?.toString();
+    if (!selection || selection.length === 0) {
+      router.push(`/casts/${cast.hash}`);
+    }
+  };
+
+  if (!imageEmbed && !videoEmbed) {
     return null;
   }
 
   return (
     <YStack
-      gap="$2.5"
       borderBottomWidth="$0.25"
       borderBottomColor="$color4"
-      paddingVertical="$2"
+      paddingVertical="$1"
+      hoverStyle={{
+        // @ts-ignore
+        transition: "all 0.2s ease-in-out",
+        backgroundColor: "$color2",
+      }}
+      onPress={handlePress}
+      cursor="pointer"
     >
-      <FarcasterUserDisplay user={cast.user} />
-      <img src={imageEmbed.uri} alt="" />
-      <YStack paddingHorizontal="$2.5" gap="$2">
-        <NookText numberOfLines={4}>
-          <NookText fontWeight="600" color="$mauve12">
-            {cast.user.username || `!${cast.user.fid}`}{" "}
-          </NookText>
-          {(cast.text || cast.mentions.length > 0) && (
+      <XStack justifyContent="space-between" padding="$3">
+        <FarcasterUserDisplay
+          user={cast.user}
+          size="$3"
+          suffix={` · ${formatTimeAgo(cast.timestamp)}`}
+        />
+        <FarcasterCastKebabMenu cast={cast} />
+      </XStack>
+      {imageEmbed && <EmbedImage uri={imageEmbed.uri} noBorderRadius />}
+      {videoEmbed && <EmbedVideo uri={videoEmbed.uri} noBorderRadius />}
+      <YStack padding="$3" gap="$2">
+        {(cast.text || cast.mentions.length > 0) && (
+          <NookText>
+            <NookText fontWeight="600" color="$mauve12">
+              {cast.user.username || `!${cast.user.fid}`}{" "}
+            </NookText>
             <FarcasterCastText cast={cast} />
-          )}
-        </NookText>
+          </NookText>
+        )}
         <XStack
           alignItems="center"
           justifyContent="space-between"
@@ -136,12 +232,12 @@ export const FarcasterCastDefaultDisplay = ({
 }: { cast: FarcasterCast; isConnected?: boolean; queryKey?: string[] }) => {
   const [likes, setLikes] = useState(cast.engagement.likes || 0);
   const [recasts, setRecasts] = useState(cast.engagement.recasts || 0);
-  const { push } = useRouter();
+  const router = useRouter();
 
   const handlePress = () => {
     const selection = window?.getSelection()?.toString();
     if (!selection || selection.length === 0) {
-      push(`/casts/${cast.hash}`);
+      router.push(`/casts/${cast.hash}`);
     }
   };
 

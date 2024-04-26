@@ -106,7 +106,7 @@ export const EnableSignerDialog = ({
               />
             </AlertDialog.Cancel>
           </XStack>
-          <YStack paddingHorizontal="$3" alignItems="center" gap="$3">
+          <YStack padding="$3" alignItems="center" gap="$3">
             <YStack alignItems="center">
               <AlertDialog.Title>Enable Nook</AlertDialog.Title>
               <AlertDialog.Description textAlign="center">

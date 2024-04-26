@@ -17,10 +17,13 @@ export const EmbedImages = ({ uris }: { uris: string[] }) => {
   );
 };
 
-export const EmbedImage = ({ uri }: { uri: string }) => {
+export const EmbedImage = ({
+  uri,
+  noBorderRadius,
+}: { uri: string; noBorderRadius?: boolean }) => {
   return (
     <View
-      borderRadius="$4"
+      borderRadius={noBorderRadius ? "$0" : "$4"}
       overflow="hidden"
       onPress={(e) => {
         e.preventDefault();

@@ -265,7 +265,7 @@ export class FarcasterCacheClient {
     await this.redis.setJson(
       `${this.USER_CACHE_PREFIX}:mutuals-preview:${fid}:${targetFid}`,
       preview,
-      86400,
+      60 * 60 * 3,
     );
   }
 

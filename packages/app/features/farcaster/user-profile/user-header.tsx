@@ -13,16 +13,19 @@ import { FarcasterUser, FarcasterUserMutualsPreview } from "../../../types";
 import { useAuth } from "../../../context/auth";
 import { FarcasterUserKebabMenu } from "../../../components/farcaster/users/user-kebab-menu";
 
-export const UserHeader = ({ user }: { user: FarcasterUser }) => {
+export const UserHeader = ({
+  user,
+  size,
+}: { user: FarcasterUser; size?: string }) => {
   const { session } = useAuth();
   const bio = user?.bio?.trim().replace(/\n\s*\n/g, "\n");
   return (
-    <YStack gap="$3" padding="$4">
+    <YStack gap="$3" padding="$4" width="100%">
       <View flexDirection="row" justifyContent="space-between">
         <YStack gap="$2">
           <ZoomableImage uri={user.pfp}>
             <View cursor="pointer">
-              <CdnAvatar src={user.pfp} size="$10" />
+              <CdnAvatar src={user.pfp} size={size || "$10"} />
             </View>
           </ZoomableImage>
           <YStack gap="$1">
@@ -79,7 +82,7 @@ const MutualsPreview = ({
 }: { mutuals?: FarcasterUserMutualsPreview }) => {
   const { session } = useAuth();
 
-  if (!session) return null;
+  if (!session || !mutuals) return null;
 
   const total = mutuals?.total || 0;
   const previews = mutuals?.preview || [];
@@ -114,13 +117,15 @@ const MutualsPreview = ({
 
   return (
     <XStack gap="$3" alignItems="center" cursor="pointer" group>
-      <XStack>
-        {previews.map((user) => (
-          <View key={user.fid} marginRight="$-2">
-            <CdnAvatar src={user.pfp} size="$1" />
-          </View>
-        ))}
-      </XStack>
+      {previews.length > 0 && (
+        <XStack>
+          {previews.map((user) => (
+            <View key={user.fid} marginRight="$-2">
+              <CdnAvatar src={user.pfp} size="$1" />
+            </View>
+          ))}
+        </XStack>
+      )}
       {/* @ts-ignore */}
       <NookText
         muted

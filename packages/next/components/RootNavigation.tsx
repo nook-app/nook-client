@@ -4,8 +4,10 @@ import { NookButton, NookText, View, XStack, YStack } from "@nook/ui";
 import {
   Bell,
   Home,
+  Image,
   LogIn,
   MoreHorizontal,
+  MousePointerSquare,
   Pencil,
   Search,
   Settings,
@@ -66,6 +68,12 @@ export const RootNavigation = ({
               </NookText>
             </View>
             <RootNavigationItem label="Home" Icon={Home} href="/" />
+            <RootNavigationItem label="Media" Icon={Image} href="/media" />
+            <RootNavigationItem
+              label="Frames"
+              Icon={MousePointerSquare}
+              href="/frames"
+            />
             <RootNavigationItem label="Explore" Icon={Search} href="/explore" />
             {session?.user && (
               <>

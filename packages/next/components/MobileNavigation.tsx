@@ -166,7 +166,7 @@ const MobileCreateButton = ({ session }: { session?: Session }) => {
             }}
             borderWidth="$0"
             backgroundColor={
-              ["light", "dark"].includes(theme) ? "$color12" : "$color11"
+              ["light", "dark"].includes(theme) ? "$color12" : "$color9"
             }
             pressStyle={{
               backgroundColor: ["light", "dark"].includes(theme)
@@ -199,7 +199,7 @@ const MobileCreateButton = ({ session }: { session?: Session }) => {
           }}
           borderWidth="$0"
           backgroundColor={
-            ["light", "dark"].includes(theme) ? "$color12" : "$color11"
+            ["light", "dark"].includes(theme) ? "$color12" : "$color9"
           }
           pressStyle={{
             backgroundColor: ["light", "dark"].includes(theme)
