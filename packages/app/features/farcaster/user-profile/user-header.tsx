@@ -11,8 +11,10 @@ import { FarcasterUserFollowButton } from "../../../components/farcaster/users/u
 import { UserFollowBadge } from "../../../components/farcaster/users/user-follow-badge";
 import { FarcasterUser, FarcasterUserMutualsPreview } from "../../../types";
 import { useAuth } from "../../../context/auth";
+import { FarcasterUserKebabMenu } from "../../../components/farcaster/users/user-kebab-menu";
 
 export const UserHeader = ({ user }: { user: FarcasterUser }) => {
+  const { session } = useAuth();
   const bio = user?.bio?.trim().replace(/\n\s*\n/g, "\n");
   return (
     <YStack gap="$3" padding="$4">
@@ -39,9 +41,10 @@ export const UserHeader = ({ user }: { user: FarcasterUser }) => {
             </XStack>
           </YStack>
         </YStack>
-        <View>
+        <XStack gap="$2">
+          <FarcasterUserKebabMenu user={user} />
           <FarcasterUserFollowButton user={user} />
-        </View>
+        </XStack>
       </View>
       {bio && <FarcasterBioText text={bio} selectable />}
       <XStack gap="$2">
@@ -62,9 +65,11 @@ export const UserHeader = ({ user }: { user: FarcasterUser }) => {
           </View>
         </Link>
       </XStack>
-      <Link href={`/users/${user.username}/mutuals`}>
-        <MutualsPreview mutuals={user.context?.mutuals} />
-      </Link>
+      {session?.fid !== user.fid && (
+        <Link href={`/users/${user.username}/mutuals`}>
+          <MutualsPreview mutuals={user.context?.mutuals} />
+        </Link>
+      )}
     </YStack>
   );
 };

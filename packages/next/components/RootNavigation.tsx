@@ -1,6 +1,6 @@
 "use client";
 
-import { NookButton, NookText, View, XStack, YStack, useTheme } from "@nook/ui";
+import { NookButton, NookText, View, XStack, YStack } from "@nook/ui";
 import {
   Bell,
   Home,
@@ -22,6 +22,7 @@ import { usePathname } from "next/navigation";
 import { NotificationsCount } from "@nook/app/features/notifications/notifications-count";
 import { FarcasterUser } from "@nook/app/types";
 import { MobileNavigation } from "./MobileNavigation";
+import { useTheme } from "@nook/app/context/theme";
 
 export const RootNavigation = ({
   children,
@@ -152,22 +153,42 @@ const RootNavigationItem = ({
 
 const SessionItem = ({ user }: { user?: FarcasterUser }) => {
   const { login } = useAuth();
+  const { theme } = useTheme();
 
   if (!user?.fid) {
     return (
       <>
         <View display="flex" $lg={{ display: "none" }}>
-          <NookButton variant="primary" onPress={login}>
-            <NookText fontWeight="700" fontSize="$5">
+          <NookButton
+            variant="primary"
+            onPress={login}
+            backgroundColor={
+              ["light", "dark"].includes(theme) ? "$color12" : undefined
+            }
+          >
+            <NookText
+              fontWeight="700"
+              fontSize="$5"
+              color={["light", "dark"].includes(theme) ? "$color1" : "$color12"}
+            >
               Sign In
             </NookText>
           </NookButton>
         </View>
         <View display="none" $lg={{ display: "flex" }}>
-          <NookButton variant="primary" width="$5" padding="$0" onPress={login}>
-            <NookText>
-              <LogIn size={24} />
-            </NookText>
+          <NookButton
+            variant="primary"
+            width="$5"
+            padding="$0"
+            onPress={login}
+            backgroundColor={
+              ["light", "dark"].includes(theme) ? "$color12" : undefined
+            }
+          >
+            <LogIn
+              size={24}
+              color={["light", "dark"].includes(theme) ? "$color1" : "$color12"}
+            />
           </NookButton>
         </View>
       </>

@@ -6,6 +6,7 @@ import { ZoomableImage } from "../../../components/zoomable-image";
 import { CdnAvatar } from "../../../components/cdn-avatar";
 import { FarcasterBioText } from "../../../components/farcaster/bio-text";
 import { formatNumber } from "../../../utils";
+import { FarcasterChannelKebabMenu } from "../../../components/farcaster/channels/channel-kebab-menu";
 
 export const ChannelHeader = ({ channel }: { channel: Channel }) => {
   const bio = channel?.description?.trim().replace(/\n\s*\n/g, "\n");
@@ -25,6 +26,7 @@ export const ChannelHeader = ({ channel }: { channel: Channel }) => {
             <NookText muted>{`/${channel.channelId}`}</NookText>
           </YStack>
         </XStack>
+        <FarcasterChannelKebabMenu channel={channel} />
       </View>
       <YStack gap="$3" $gtMd={{ display: "none" }}>
         {bio && <FarcasterBioText text={bio} />}

@@ -2,7 +2,7 @@ import { NookText, ThemeName, View, XStack, YStack } from "@nook/ui";
 import { useTheme } from "../../context/theme";
 
 export const ThemeSettings = () => {
-  const { theme: myTheme, setTheme, colorSchemeOverride } = useTheme();
+  const { theme: myTheme, setTheme } = useTheme();
 
   const themes: ThemeName[] = [
     "mauve",
@@ -15,52 +15,74 @@ export const ThemeSettings = () => {
     "yellow",
   ];
 
-  const defaultTheme =
-    colorSchemeOverride === "light" ? "light" : ("dark" as ThemeName);
-
   return (
-    <YStack>
-      <NookText variant="label">Select Theme</NookText>
+    <YStack gap="$4" padding="$4">
+      <YStack gap="$2">
+        <NookText variant="label">Theme</NookText>
+        <NookText muted>
+          Change the theme for your account. You can select a different theme
+          for each of your accounts.
+        </NookText>
+      </YStack>
       <XStack justifyContent="space-around">
         <View
-          theme={defaultTheme}
-          backgroundColor="$color1"
-          width="$2.5"
-          height="$2.5"
+          backgroundColor="black"
+          width="$4"
+          height="$4"
           borderRadius="$10"
           borderWidth="$1"
-          borderColor={myTheme === defaultTheme ? "$color11" : "$color7"}
-          onPress={() => setTheme(defaultTheme)}
+          borderColor={myTheme === "dark" ? "$mauve12" : "$mauve7"}
+          onPress={() => setTheme("dark")}
         />
         {themes.slice(0, 4).map((t, i) => (
-          <View
+          <ThemeItem
             key={t}
             theme={t}
-            backgroundColor={"$color5"}
-            width="$2.5"
-            height="$2.5"
-            borderRadius="$10"
-            borderWidth="$1"
-            borderColor={myTheme === t ? "$color11" : "$color7"}
-            onPress={() => setTheme(t)}
+            isActive={myTheme === t}
+            onPress={setTheme}
           />
         ))}
       </XStack>
       <XStack justifyContent="space-around">
+        <View
+          backgroundColor="white"
+          width="$4"
+          height="$4"
+          borderRadius="$10"
+          borderWidth="$1"
+          borderColor={myTheme === "light" ? "$mauve12" : "$mauve7"}
+          onPress={() => setTheme("light")}
+        />
         {themes.slice(4).map((t, i) => (
-          <View
+          <ThemeItem
             key={t}
             theme={t}
-            backgroundColor={"$color5"}
-            width="$2.5"
-            height="$2.5"
-            borderRadius="$10"
-            borderWidth="$1"
-            borderColor={myTheme === t ? "$color11" : "$color7"}
-            onPress={() => setTheme(t)}
+            isActive={myTheme === t}
+            onPress={setTheme}
           />
         ))}
       </XStack>
     </YStack>
   );
 };
+
+const ThemeItem = ({
+  theme,
+  isActive,
+  onPress,
+}: {
+  theme: ThemeName;
+  isActive: boolean;
+  onPress: (theme: ThemeName) => void;
+}) => (
+  <View
+    theme={theme}
+    backgroundColor={isActive ? "$color9" : "$color5"}
+    width="$4"
+    height="4"
+    borderRadius="$10"
+    borderWidth="$1"
+    borderColor={isActive ? "$color12" : "$color7"}
+    onPress={() => onPress(theme)}
+  />
+);

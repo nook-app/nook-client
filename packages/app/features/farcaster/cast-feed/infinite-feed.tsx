@@ -7,6 +7,7 @@ import { FarcasterCastDisplay } from "../../../components/farcaster/casts/cast-d
 import { Loading } from "../../../components/loading";
 
 export const FarcasterInfiniteFeed = ({
+  queryKey,
   casts,
   fetchNextPage,
   isFetchingNextPage,
@@ -15,6 +16,7 @@ export const FarcasterInfiniteFeed = ({
   ListHeaderComponent,
   isLoading,
 }: {
+  queryKey: string[];
   casts: FarcasterCast[];
   fetchNextPage: () => void;
   isFetchingNextPage: boolean;
@@ -30,6 +32,7 @@ export const FarcasterInfiniteFeed = ({
         <FarcasterCastDisplay
           cast={item as FarcasterCast}
           displayMode={displayMode}
+          queryKey={queryKey}
         />
       )}
       onEndReached={fetchNextPage}

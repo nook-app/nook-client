@@ -52,6 +52,7 @@ export const FarcasterExpandedCast = ({ cast }: { cast: FarcasterCast }) => {
   return (
     <View>
       <FarcasterInfiniteFeed
+        queryKey={["castReplies", cast.hash, replySort]}
         casts={casts}
         fetchNextPage={fetchNextPage}
         isFetchingNextPage={isFetchingNextPage}
@@ -124,9 +125,9 @@ const FarcasterExpandedCastHeader = ({
         alignItems="center"
         justifyContent="space-around"
         borderTopWidth="$0.5"
-        borderTopColor="rgba(256, 256, 256, 0.1)"
+        borderTopColor="$borderColor"
         borderBottomWidth="$0.5"
-        borderBottomColor="rgba(256, 256, 256, 0.1)"
+        borderBottomColor="$borderColor"
         paddingVertical="$2"
       >
         <FarcasterReplyActionButton cast={cast} />
@@ -135,10 +136,7 @@ const FarcasterExpandedCastHeader = ({
         <FarcasterCustomActionButton cast={cast} />
         <FarcasterShareButton cast={cast} />
       </XStack>
-      <View
-        borderBottomWidth="$0.5"
-        borderBottomColor="rgba(256, 256, 256, 0.1)"
-      >
+      <View borderBottomWidth="$0.5" borderBottomColor="$borderColor">
         <ToggleGroup
           type="single"
           borderWidth="$0"
@@ -148,7 +146,9 @@ const FarcasterExpandedCastHeader = ({
           margin="$2"
           size="$3"
           value={replySort}
-          onValueChange={onReplySortChange}
+          onValueChange={(value) =>
+            onReplySortChange((value as "best" | "top" | "new") || replySort)
+          }
         >
           {[
             { value: "best", label: "Best", Icon: Rocket },

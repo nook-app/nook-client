@@ -245,7 +245,9 @@ export const getTemplates = (scheme: "dark" | "light") => {
   const bgIndex = 5;
   const lighten = isLight ? -1 : 1;
   const darken = -lighten;
-  const borderColor = bgIndex + 4;
+  const borderColor = isLight
+    ? "rgb(239, 243, 244)"
+    : "rgba(256, 256, 256, 0.1)";
 
   // templates use the palette and specify index
   // negative goes backwards from end so -1 is the last item

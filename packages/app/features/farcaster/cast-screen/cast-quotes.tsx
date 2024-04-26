@@ -16,6 +16,7 @@ export const FarcasterCastQuotes = ({ hash }: { hash: string }) => {
 
   return (
     <FarcasterInfiniteFeed
+      queryKey={["cast-quotes", hash]}
       casts={casts}
       fetchNextPage={fetchNextPage}
       isFetchingNextPage={isFetchingNextPage}

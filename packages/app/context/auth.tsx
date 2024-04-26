@@ -7,7 +7,7 @@ import {
   useCallback,
   useEffect,
 } from "react";
-import { FarcasterUser, Session } from "@nook/app/types";
+import { FarcasterUser, Session, User } from "@nook/app/types";
 import { fetchUser } from "@nook/app/api/farcaster";
 import {
   loginServer,
@@ -17,6 +17,12 @@ import {
 } from "../server/auth";
 import { ThemeProvider } from "./theme";
 import { ThemeName } from "@nook/ui";
+import {
+  getSession,
+  removeSession,
+  updateSession,
+} from "../utils/local-storage";
+import { useSettings } from "../api/settings";
 
 type AuthContextType = {
   session?: Session;
@@ -25,6 +31,7 @@ type AuthContextType = {
   logout: () => void;
   setSession: (session: Session) => Promise<void>;
   user?: FarcasterUser;
+  settings?: User;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -42,6 +49,8 @@ export const AuthProvider = ({
   const [isLoading, setIsLoading] = useState(true);
   const { getAccessToken, logout: logoutPrivy } = usePrivy();
   const [user, setUser] = useState<FarcasterUser | undefined>(defaultUser);
+
+  const { data } = useSettings();
 
   const updateUser = useCallback(async (fid: string) => {
     const user = await fetchUser(fid);
@@ -62,12 +71,11 @@ export const AuthProvider = ({
 
   useEffect(() => {
     const init = async () => {
-      const rawSession = localStorage.getItem("session");
-      if (!rawSession) {
+      const session = getSession();
+      if (!session) {
         setIsLoading(false);
         return;
       }
-      const session = JSON.parse(rawSession);
       await handleSessionChange(session);
       setIsLoading(false);
     };
@@ -95,28 +103,12 @@ export const AuthProvider = ({
   const handleSessionChange = useCallback(async (session: Session) => {
     await loginServer(session);
     setSession(session);
-    localStorage.setItem("session", JSON.stringify(session));
-    const sessions = JSON.parse(localStorage.getItem("sessions") || "[]");
-    if (!sessions.some((s: Session) => s.fid === session.fid)) {
-      localStorage.setItem("sessions", JSON.stringify([...sessions, session]));
-    } else {
-      localStorage.setItem(
-        "sessions",
-        JSON.stringify(
-          sessions.map((s: Session) => (s.fid === session.fid ? session : s)),
-        ),
-      );
-    }
+    updateSession(session);
   }, []);
 
   const logout = useCallback(async () => {
     if (!session) return;
-    localStorage.removeItem("session");
-    const sessions = JSON.parse(localStorage.getItem("sessions") || "[]");
-    const remainingSessions = sessions.filter(
-      (s: Session) => s.fid !== session.fid,
-    );
-    localStorage.setItem("sessions", JSON.stringify(remainingSessions));
+    const remainingSessions = removeSession(session);
     if (remainingSessions.length > 0) {
       await loginServer(remainingSessions[0]);
       await handleSessionChange(remainingSessions[0]);
@@ -135,6 +127,7 @@ export const AuthProvider = ({
         logout,
         user,
         setSession: handleSessionChange,
+        settings: data,
       }}
     >
       <ThemeProvider defaultTheme={session?.theme as ThemeName | undefined}>

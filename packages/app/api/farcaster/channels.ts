@@ -1,4 +1,8 @@
-import { Channel, FetchChannelsResponse } from "../../types";
+import {
+  Channel,
+  FetchChannelsResponse,
+  FetchUsersResponse,
+} from "../../types";
 import { makeRequest } from "../utils";
 import {
   useQuery,
@@ -66,5 +70,32 @@ export const useSearchChannels = (query: string, limit?: number) => {
     getNextPageParam: (lastPage) => lastPage.nextCursor,
     initialPageParam: undefined,
     enabled: !!query,
+  });
+};
+
+export const fetchChannels = async (
+  channelIds: string[],
+): Promise<FetchChannelsResponse> => {
+  return await makeRequest("/farcaster/channels", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ channelIds }),
+  });
+};
+
+export const useChannels = (channelIds: string[]) => {
+  const queryClient = useQueryClient();
+  return useQuery<FetchChannelsResponse>({
+    queryKey: ["channels", channelIds.join(",")],
+    queryFn: async () => {
+      const channels = await fetchChannels(channelIds);
+      for (const channel of channels.data) {
+        queryClient.setQueryData(["channel", channel.channelId], channel);
+      }
+      return channels;
+    },
+    enabled: channelIds.length > 0,
   });
 };

@@ -1,6 +1,6 @@
 "use client";
 
-import { NookText, XStack, YStack } from "@nook/ui";
+import { NookText, View, XStack, YStack } from "@nook/ui";
 import { Channel } from "../../../types";
 import { useUsers } from "../../../api/farcaster";
 import { FarcasterUserDisplay } from "../../../components/farcaster/users/user-display";
@@ -39,7 +39,7 @@ const ChannelHosts = ({ channel }: { channel: Channel }) => {
       padding="$3"
       borderRadius="$4"
       backgroundColor="$color1"
-      borderColor="$color4"
+      borderColor="$borderColor"
       borderWidth="$0.5"
     >
       <NookText variant="label">Hosts</NookText>

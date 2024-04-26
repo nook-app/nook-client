@@ -1,11 +1,27 @@
-import { ListItem, NookText, Popover, View, YGroup } from "@nook/ui";
+import { ListItem, NookText, Popover, Separator, View, YGroup } from "@nook/ui";
 import { MoreHorizontal } from "@tamagui/lucide-icons";
-import { NamedExoticComponent } from "react";
+import {
+  Children,
+  NamedExoticComponent,
+  ReactNode,
+  cloneElement,
+  isValidElement,
+  useState,
+} from "react";
 
 export const KebabMenu = ({
   trigger,
   children,
 }: { trigger?: React.ReactNode; children: React.ReactNode }) => {
+  const [open, setOpen] = useState(false);
+
+  const childrenWithProps = Children.map(children, (child) => {
+    if (isValidElement<{ closeMenu: () => void }>(child)) {
+      return cloneElement(child, { closeMenu: () => setOpen(false) });
+    }
+    return child;
+  });
+
   return (
     <View
       onPress={(e) => {
@@ -13,7 +29,7 @@ export const KebabMenu = ({
         e.stopPropagation();
       }}
     >
-      <Popover placement="bottom">
+      <Popover placement="bottom" open={open} onOpenChange={setOpen}>
         <Popover.Trigger>{trigger ? trigger : <KebabButton />}</Popover.Trigger>
         <Popover.Content
           enterStyle={{ y: -10, opacity: 0 }}
@@ -32,7 +48,7 @@ export const KebabMenu = ({
         >
           <Popover.Arrow borderWidth={1} borderColor="$borderColor" />
           <YGroup alignSelf="center" bordered size="$4" overflow="hidden">
-            {children}
+            {childrenWithProps}
           </YGroup>
         </Popover.Content>
       </Popover>
@@ -45,22 +61,29 @@ export const KebabMenuItem = ({
   title,
   color,
   onPress,
+  closeMenu,
 }: {
   Icon: NamedExoticComponent | JSX.Element;
   title: string;
   color?: string;
   onPress?: () => void;
+  closeMenu?: () => void;
 }) => (
   <YGroup.Item key={title}>
     <ListItem
       hoverTheme
       icon={Icon}
       color={color}
-      onPress={onPress}
+      onPress={() => {
+        console.log(closeMenu);
+        onPress?.();
+        closeMenu?.();
+      }}
       style={{ cursor: "pointer" }}
       justifyContent="flex-start"
+      scaleIcon={1.2}
     >
-      <NookText cursor="pointer" color={color}>
+      <NookText cursor="pointer" color={color} fontWeight="500">
         {title}
       </NookText>
     </ListItem>

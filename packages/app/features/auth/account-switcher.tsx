@@ -14,6 +14,7 @@ import { useUsers } from "../../api/farcaster";
 import { FarcasterUserDisplay } from "../../components/farcaster/users/user-display";
 import { Check } from "@tamagui/lucide-icons";
 import { useRouter } from "next/navigation";
+import { getSessions } from "../../utils/local-storage";
 
 export const AccountSwitcher = ({ children }: { children: ReactNode }) => {
   return (
@@ -47,8 +48,7 @@ const AccountSwitcherContent = () => {
   const { login, logout, user } = useAuth();
   const router = useRouter();
 
-  const rawSessions = localStorage.getItem("sessions");
-  const sessions: Session[] = rawSessions ? JSON.parse(rawSessions) : [];
+  const sessions = getSessions();
 
   return (
     <YStack width="$19">

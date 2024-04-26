@@ -75,6 +75,23 @@ export class FarcasterService {
     return fids;
   }
 
+  async getUserFollowerFids(fid: string) {
+    const cachedFollowing = await this.cache.getUserFollowersFids(fid);
+    if (cachedFollowing.length > 0) return cachedFollowing;
+
+    const followers = await this.client.farcasterLink.findMany({
+      where: {
+        linkType: "follow",
+        targetFid: BigInt(fid),
+        deletedAt: null,
+      },
+    });
+
+    const fids = followers.map((link) => link.fid.toString());
+    await this.cache.setUserFollowersFids(fid, fids);
+    return fids;
+  }
+
   async getNewCastReplies(
     hash: string,
     cursor?: string,
@@ -1596,12 +1613,12 @@ export class FarcasterService {
     const cached = await this.cache.getMutualFids(fid, targetFid);
     if (cached && cached.length > 0) return cached;
 
-    const [following, targetFollowing] = await Promise.all([
+    const [following, targetFollowers] = await Promise.all([
       this.getUserFollowingFids(fid),
-      this.getUserFollowingFids(targetFid),
+      this.getUserFollowerFids(targetFid),
     ]);
 
-    const mutuals = following.filter((user) => targetFollowing.includes(user));
+    const mutuals = following.filter((user) => targetFollowers.includes(user));
 
     await this.cache.setMutualFids(fid, targetFid, mutuals);
 

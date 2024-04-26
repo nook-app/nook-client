@@ -297,6 +297,20 @@ export class FarcasterCacheClient {
     );
   }
 
+  async getUserFollowersFids(fid: string): Promise<string[]> {
+    return await this.redis.getMembers(
+      `${this.USER_FOLLOWERS_FIDS_CACHE_PREFIX}:${fid}`,
+    );
+  }
+
+  async setUserFollowersFids(fid: string, fids: string[]) {
+    await this.redis.addMembers(
+      `${this.USER_FOLLOWERS_FIDS_CACHE_PREFIX}:${fid}`,
+      fids,
+      60 * 60,
+    );
+  }
+
   async addUserFollowingFid(fid: string, targetFid: string) {
     await this.redis.addMember(
       `${this.USER_FOLLOWING_FIDS_CACHE_PREFIX}:${fid}`,

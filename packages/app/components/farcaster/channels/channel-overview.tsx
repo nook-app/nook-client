@@ -16,7 +16,7 @@ export const ChannelOverview = ({
       gap="$3"
       borderRadius="$4"
       backgroundColor="$color1"
-      borderColor="$color4"
+      borderColor="$borderColor"
       borderWidth="$0.5"
     >
       <FarcasterChannelDisplay channel={channel} asLink={asLink} asLabel />

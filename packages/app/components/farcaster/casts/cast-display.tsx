@@ -28,7 +28,8 @@ import { useState } from "react";
 export const FarcasterCastDisplay = ({
   cast,
   displayMode,
-}: { cast: FarcasterCast; displayMode: Display }) => {
+  queryKey,
+}: { cast: FarcasterCast; displayMode: Display; queryKey?: string[] }) => {
   switch (displayMode) {
     case Display.MEDIA:
       return <FarcasterCastMediaDisplay cast={cast} />;
@@ -37,21 +38,19 @@ export const FarcasterCastDisplay = ({
     default:
       if (cast.parent && displayMode !== Display.REPLIES) {
         return (
-          <View
-            borderBottomWidth="$0.5"
-            borderBottomColor="rgba(256, 256, 256, 0.1)"
-          >
-            <FarcasterCastDefaultDisplay cast={cast.parent} isConnected />
-            <FarcasterCastDefaultDisplay cast={cast} />
+          <View borderBottomWidth="$0.5" borderBottomColor="$borderColor">
+            <FarcasterCastDefaultDisplay
+              cast={cast.parent}
+              isConnected
+              queryKey={queryKey}
+            />
+            <FarcasterCastDefaultDisplay cast={cast} queryKey={queryKey} />
           </View>
         );
       }
       return (
-        <View
-          borderBottomWidth="$0.5"
-          borderBottomColor="rgba(256, 256, 256, 0.1)"
-        >
-          <FarcasterCastDefaultDisplay cast={cast} />
+        <View borderBottomWidth="$0.5" borderBottomColor="$borderColor">
+          <FarcasterCastDefaultDisplay cast={cast} queryKey={queryKey} />
         </View>
       );
   }
@@ -71,7 +70,7 @@ const FarcasterCastGridDisplay = ({ cast }: { cast: FarcasterCast }) => {
       <View
         borderRightWidth="$0.5"
         borderBottomWidth="$0.5"
-        borderColor="rgba(256, 256, 256, 0.1)"
+        borderColor="$borderColor"
       >
         <img
           src={imageEmbed.uri}
@@ -133,7 +132,8 @@ const FarcasterCastMediaDisplay = ({ cast }: { cast: FarcasterCast }) => {
 export const FarcasterCastDefaultDisplay = ({
   cast,
   isConnected,
-}: { cast: FarcasterCast; isConnected?: boolean }) => {
+  queryKey,
+}: { cast: FarcasterCast; isConnected?: boolean; queryKey?: string[] }) => {
   const [likes, setLikes] = useState(cast.engagement.likes || 0);
   const [recasts, setRecasts] = useState(cast.engagement.recasts || 0);
   const { push } = useRouter();
@@ -171,7 +171,7 @@ export const FarcasterCastDefaultDisplay = ({
             vertical
             marginBottom="$-8"
             borderWidth="$0.5"
-            borderColor="rgba(256, 256, 256, 0.1)"
+            borderColor="$borderColor"
             zIndex={1}
           />
         )}
@@ -185,7 +185,7 @@ export const FarcasterCastDefaultDisplay = ({
               suffix={` · ${formatTimeAgo(cast.timestamp)}`}
             />
             <View position="absolute" right={0} top={0} marginTop="$-2">
-              <FarcasterCastKebabMenu cast={cast} />
+              <FarcasterCastKebabMenu cast={cast} queryKey={queryKey} />
             </View>
           </XStack>
           {renderText && <FarcasterCastText cast={cast} />}

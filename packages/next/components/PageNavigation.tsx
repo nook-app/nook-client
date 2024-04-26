@@ -1,5 +1,6 @@
 "use client";
 
+import { useTheme } from "@nook/app/context/theme";
 import { View, XStack } from "@nook/ui";
 import { ReactNode } from "react";
 
@@ -15,9 +16,9 @@ export const PageNavigation = ({
       <View
         minHeight="100vh"
         flex={1}
-        borderLeftColor="rgba(256, 256, 256, 0.1)"
+        borderLeftColor="$borderColor"
         borderLeftWidth="$0.5"
-        borderRightColor="rgba(256, 256, 256, 0.1)"
+        borderRightColor="$borderColor"
         borderRightWidth="$0.5"
         $lg={{
           width: 300,

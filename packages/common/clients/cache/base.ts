@@ -208,9 +208,11 @@ export class RedisClient {
     await this.redis.sadd(key, members);
   }
 
-  async addMember(key: string, member: string) {
-    const exists = await this.exists(key);
-    if (!exists) return;
+  async addMember(key: string, member: string, force?: boolean) {
+    if (!force) {
+      const exists = await this.exists(key);
+      if (!exists) return;
+    }
     await this.redis.sadd(key, member);
   }
 

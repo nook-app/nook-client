@@ -1,5 +1,6 @@
 import { getServerSession } from "../server/auth";
 import { Channel, FarcasterCast, FarcasterUser, Session } from "../types";
+import { getSession } from "../utils/local-storage";
 
 export const makeRequest = async (path: string, requestInit?: RequestInit) => {
   const url = path.startsWith("http")
@@ -10,9 +11,8 @@ export const makeRequest = async (path: string, requestInit?: RequestInit) => {
 
   if (!headers.has("Authorization")) {
     if (typeof window !== "undefined") {
-      const rawSession = localStorage.getItem("session");
-      if (rawSession) {
-        const session: Session = JSON.parse(rawSession);
+      const session = getSession();
+      if (session) {
         headers.set("Authorization", `Bearer ${session.token}`);
       }
     } else {

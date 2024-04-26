@@ -17,6 +17,7 @@ import { muteRoutes } from "./routes/user/mute";
 import { panelRoutes } from "./routes/panel";
 import { feedRoutes } from "./routes/feed";
 import { pendingCastRoutes } from "./routes/pending";
+import { farcasterFeedRoutes } from "./routes/farcaster/feed";
 
 const buildApp = () => {
   const app = fastify({
@@ -60,6 +61,7 @@ const buildApp = () => {
   app.register(nookRoutes, { prefix: "/v0" });
   app.register(userRoutes, { prefix: "/v0" });
   app.register(farcasterRoutes, { prefix: "/v0" });
+  app.register(farcasterFeedRoutes, { prefix: "/v0" });
   app.register(farcasterSignerRoutes, { prefix: "/v0" });
   app.register(frameRoutes, { prefix: "/v0" });
   app.register(transactionRoutes, { prefix: "/v0" });

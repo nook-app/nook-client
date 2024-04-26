@@ -396,6 +396,12 @@ export class FarcasterProcessor {
           data.targetFid.toString(),
         ),
       );
+      promises.push(
+        this.cacheClient.addUserFollowerFid(
+          data.targetFid.toString(),
+          data.fid.toString(),
+        ),
+      );
     }
 
     const notifications = parseNotificationsFromLink(data);
@@ -431,6 +437,12 @@ export class FarcasterProcessor {
         this.cacheClient.removeUserFollowingFid(
           data.fid.toString(),
           data.targetFid.toString(),
+        ),
+      );
+      promises.push(
+        this.cacheClient.removeUserFollowerFid(
+          data.targetFid.toString(),
+          data.fid.toString(),
         ),
       );
     }

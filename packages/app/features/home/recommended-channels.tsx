@@ -7,7 +7,7 @@ export const RecommendedChannels = ({ channels }: { channels: Channel[] }) => {
     <YStack
       borderRadius="$4"
       backgroundColor="$color1"
-      borderColor="$color4"
+      borderColor="$borderColor"
       borderWidth="$0.5"
     >
       <View padding="$3">

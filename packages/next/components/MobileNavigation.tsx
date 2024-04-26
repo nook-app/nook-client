@@ -2,6 +2,7 @@
 
 import { FarcasterUserAvatar } from "@nook/app/components/farcaster/users/user-display";
 import { useAuth } from "@nook/app/context/auth";
+import { useTheme } from "@nook/app/context/theme";
 import { AccountSwitcher } from "@nook/app/features/auth/account-switcher";
 import { CreateCastDialog } from "@nook/app/features/farcaster/create-cast/disalog";
 import { FarcasterUser } from "@nook/app/types";
@@ -36,7 +37,7 @@ const MobileTabMenu = ({ user }: { user?: FarcasterUser }) => {
     <YStack
       backgroundColor="$color2"
       borderTopWidth="$0.5"
-      borderTopColor="rgba(256, 256, 256, 0.1)"
+      borderTopColor="$borderColor"
       justifyContent="space-around"
       alignItems="center"
       flexDirection="row"
@@ -96,29 +97,32 @@ const MobileTabMenu = ({ user }: { user?: FarcasterUser }) => {
             onPress={() => router.push("/settings")}
             icon={<Settings />}
           />
-
-          <MobileNavigationAuth user={user} />
         </>
       )}
+      <MobileNavigationAuth user={user} />
     </YStack>
   );
 };
 
 const MobileNavigationAuth = ({ user }: { user?: FarcasterUser }) => {
   const { login } = useAuth();
+  const { theme } = useTheme();
 
   if (!user?.fid) {
     return (
       <NookButton
-        variant="primary"
+        variant="ghost"
         flexGrow={1}
-        padding="$0"
         height="$5"
+        padding="$0"
         justifyContent="center"
         alignItems="center"
         onPress={login}
       >
-        <LogIn size={16} />
+        <LogIn
+          size={20}
+          color={["light", "dark"].includes(theme) ? "$color1" : "$color12"}
+        />
       </NookButton>
     );
   }
@@ -140,22 +144,30 @@ const MobileNavigationAuth = ({ user }: { user?: FarcasterUser }) => {
 };
 
 const MobileCreateButton = () => {
+  const { theme } = useTheme();
   return (
-    <CreateCastDialog initialState={{ text: "" }}>
-      <NookButton
-        variant="primary"
-        zIndex={1000}
-        width="$5"
-        height="$5"
-        padding="$1"
-        right={20}
-        bottom={80}
-        $platform-web={{
-          position: "fixed",
-        }}
-      >
-        <Pencil />
-      </NookButton>
-    </CreateCastDialog>
+    <View display="none" $xxs={{ display: "flex" }}>
+      <CreateCastDialog initialState={{ text: "" }}>
+        <NookButton
+          variant="primary"
+          zIndex={1000}
+          width="$5"
+          height="$5"
+          padding="$1"
+          right={20}
+          bottom={80}
+          $platform-web={{
+            position: "fixed",
+          }}
+          backgroundColor={
+            ["light", "dark"].includes(theme) ? "$color12" : undefined
+          }
+        >
+          <Pencil
+            color={["light", "dark"].includes(theme) ? "$color1" : "$color12"}
+          />
+        </NookButton>
+      </CreateCastDialog>
+    </View>
   );
 };

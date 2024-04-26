@@ -1,8 +1,10 @@
+import { NookCacheClient } from "@nook/common/clients";
 import { FastifyInstance } from "fastify";
 
 export const muteRoutes = async (fastify: FastifyInstance) => {
   fastify.register(async (fastify: FastifyInstance) => {
     const client = fastify.nook.client;
+    const cache = new NookCacheClient(fastify.redis.client);
 
     fastify.post<{
       Body: {
@@ -26,6 +28,8 @@ export const muteRoutes = async (fastify: FastifyInstance) => {
         update: {},
       });
 
+      await cache.addUserMute(fid, `user:${mutedFid}`);
+
       return reply.send({});
     });
 
@@ -45,6 +49,7 @@ export const muteRoutes = async (fastify: FastifyInstance) => {
           },
         },
       });
+      await cache.removeUserMute(fid, `user:${mutedFid}`);
       return reply.send({});
     });
 
@@ -69,6 +74,7 @@ export const muteRoutes = async (fastify: FastifyInstance) => {
         },
         update: {},
       });
+      await cache.addUserMute(fid, `channel:${mutedParentUrl}`);
       return reply.send({});
     });
 
@@ -88,6 +94,7 @@ export const muteRoutes = async (fastify: FastifyInstance) => {
           },
         },
       });
+      await cache.removeUserMute(fid, `channel:${mutedParentUrl}`);
       return reply.send({});
     });
 
@@ -110,6 +117,7 @@ export const muteRoutes = async (fastify: FastifyInstance) => {
           },
           update: {},
         });
+        await cache.addUserMute(fid, `word:${mutedWord}`);
         return reply.send({});
       },
     );
@@ -128,6 +136,7 @@ export const muteRoutes = async (fastify: FastifyInstance) => {
             },
           },
         });
+        await cache.removeUserMute(fid, `word:${mutedWord}`);
         return reply.send({});
       },
     );

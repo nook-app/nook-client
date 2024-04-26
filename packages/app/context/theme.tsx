@@ -11,10 +11,13 @@ import {
   useRootTheme,
 } from "@tamagui/next-theme";
 import { useServerInsertedHTML } from "next/navigation";
+import { updateTheme } from "../server/user";
+import { useAuth } from "./auth";
+import { updateSession } from "../utils/local-storage";
 
 type ThemeContextType = {
   theme: ThemeName;
-  setTheme: (theme: string) => void;
+  setTheme: (theme: ThemeName) => void;
   colorScheme: "light" | "dark";
   colorSchemeOverride: string | null;
 };
@@ -35,6 +38,7 @@ export const ThemeProvider = ({
   const [colorSchemeOverride, setColorSchemeOverride] = useState<string | null>(
     null,
   );
+  const { session } = useAuth();
 
   useServerInsertedHTML(() => {
     return (
@@ -51,6 +55,14 @@ export const ThemeProvider = ({
     return <>{children}</>;
   }, [children]);
 
+  const handleSetTheme = async (t: ThemeName) => {
+    setTheme(t);
+    await updateTheme(t);
+    if (session) {
+      updateSession({ ...session, theme: t });
+    }
+  };
+
   return (
     <NextThemeProvider onChangeTheme={(t) => setColorScheme(t as ColorScheme)}>
       <TamaguiProviderOG
@@ -62,7 +74,7 @@ export const ThemeProvider = ({
         <ThemeContext.Provider
           value={{
             theme,
-            setTheme: (t) => setTheme(t as ThemeName),
+            setTheme: handleSetTheme,
             colorScheme,
             colorSchemeOverride,
           }}

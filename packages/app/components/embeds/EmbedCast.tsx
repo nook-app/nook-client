@@ -30,7 +30,7 @@ export const EmbedCast = ({
     >
       <YStack
         borderWidth="$0.5"
-        borderColor="rgba(256, 256, 256, 0.1)"
+        borderColor="$borderColor"
         borderRadius="$4"
         padding="$2.5"
         gap="$1"

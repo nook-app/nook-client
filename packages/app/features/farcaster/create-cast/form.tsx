@@ -4,7 +4,6 @@ import {
   View,
   XStack,
   YStack,
-  useTheme,
   TextArea,
   Input,
   Spinner,
@@ -26,6 +25,7 @@ import { Embed } from "../../../components/embeds/Embed";
 import { NativeSyntheticEvent, TextInputChangeEventData } from "react-native";
 import { ChannelSelect } from "../../../components/farcaster/channels/channel-select";
 import { CreateCastMentions } from "./mentions";
+import { useTheme } from "../../../context/theme";
 
 export const CreateCastEditor = ({ onSubmit }: { onSubmit: () => void }) => {
   const { activeCastLength } = useCreateCast();
@@ -118,6 +118,7 @@ const CreateCastButton = ({ onSubmit }: { onSubmit: () => void }) => {
   const { allCastsValid, isCasting, cast, reset, thread } = useCreateCast();
   const toast = useToastController();
   const router = useRouter();
+  const { theme } = useTheme();
 
   const handleCast = useCallback(async () => {
     const response = await cast();
@@ -140,6 +141,9 @@ const CreateCastButton = ({ onSubmit }: { onSubmit: () => void }) => {
       disabledStyle={{
         opacity: 0.5,
       }}
+      backgroundColor={
+        ["light", "dark"].includes(theme) ? "$color12" : undefined
+      }
     >
       {isCasting ? (
         <Spinner color="$color11" />
@@ -209,7 +213,7 @@ const CreateCastItem = ({ index }: { index: number }) => {
               onChangeText={(text) => updateText(index, text)}
               onChange={handleInput}
               placeholder={index > 0 ? "Add another post" : "What's happening?"}
-              placeholderTextColor={theme.mauve11.val}
+              placeholderTextColor="$mauve11"
               fontSize="$7"
               padding="$0"
               borderWidth="$0"

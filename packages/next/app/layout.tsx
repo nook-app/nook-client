@@ -2,6 +2,7 @@ import { Metadata } from "next";
 import { RootNavigation } from "../components/RootNavigation";
 import { Providers } from "./providers";
 import { getActiveUser, getServerSession } from "@nook/app/server/auth";
+import { fetchSettings } from "@nook/app/api/settings";
 
 export const metadata: Metadata = {
   title: "nook",
@@ -20,7 +21,42 @@ export const metadata: Metadata = {
       },
     ],
   },
+  manifest: "/manifest.json",
 };
+
+export async function generateViewport() {
+  const session = await getServerSession();
+  let themeColor;
+  switch (session?.theme) {
+    case "dark":
+      themeColor = "#000000";
+      break;
+    case "mauve":
+      themeColor = "#161618";
+      break;
+    case "red":
+      themeColor = "#1f1315";
+      break;
+    case "orange":
+      themeColor = "#1f1206";
+      break;
+    case "yellow":
+      themeColor = "#1c1500";
+      break;
+    case "green":
+      themeColor = "#0d1912";
+      break;
+    case "blue":
+      themeColor = "#0f1720";
+      break;
+    case "purple":
+      themeColor = "#1b141d";
+      break;
+    default:
+      themeColor = "#1f121b";
+  }
+  return { themeColor };
+}
 
 export default async function RootLayout({
   children,

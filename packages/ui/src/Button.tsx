@@ -4,7 +4,7 @@ export const NookButton = styled(Button, {
   variants: {
     variant: {
       primary: {
-        backgroundColor: "$color9",
+        backgroundColor: "$color11",
         fontWeight: "700",
         fontSize: "$5",
         borderRadius: "$10",

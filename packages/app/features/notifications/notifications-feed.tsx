@@ -152,8 +152,11 @@ const LikeNotification = ({
       theme="red"
     >
       <YStack gap="$2" flexShrink={1} paddingVertical="$3">
-        <XStack gap="$2">
-          {notification.users.slice(0, 7).map((user, i) => (
+        <XStack
+          gap="$2"
+          $platform-web={{ overflowX: "scroll", scrollbarWidth: "none" }}
+        >
+          {notification.users.slice(0, 10).map((user, i) => (
             <Link key={user.fid} href={`/users/${user.username}`}>
               <CdnAvatar src={user.pfp} size="$2.5">
                 <View
@@ -221,8 +224,11 @@ const RecastNotification = ({
       theme="green"
     >
       <YStack gap="$2" flexShrink={1} paddingVertical="$3">
-        <XStack gap="$2">
-          {notification.users.slice(0, 7).map((user, i) => (
+        <XStack
+          gap="$2"
+          $platform-web={{ overflowX: "scroll", scrollbarWidth: "none" }}
+        >
+          {notification.users.slice(0, 10).map((user, i) => (
             <Link key={user.fid} href={`/users/${user.username}`}>
               <CdnAvatar src={user.pfp} size="$2.5">
                 <View
@@ -285,8 +291,11 @@ const FollowNotification = ({
       theme="blue"
     >
       <YStack gap="$2" flexShrink={1} paddingVertical="$3">
-        <XStack gap="$2">
-          {notification.users.slice(0, 7).map((user, i) => (
+        <XStack
+          gap="$2"
+          $platform-web={{ overflowX: "scroll", scrollbarWidth: "none" }}
+        >
+          {notification.users.slice(0, 10).map((user, i) => (
             <Link key={user.fid} href={`/users/${user.username}`}>
               <CdnAvatar src={user.pfp} size="$2.5">
                 <View
@@ -341,7 +350,7 @@ const Notification = ({
   return (
     <XStack
       borderBottomWidth="$0.5"
-      borderColor="rgba(256, 256, 256, 0.1)"
+      borderColor="$borderColor"
       hoverStyle={{
         // @ts-ignore
         transition: "all 0.2s ease-in-out",

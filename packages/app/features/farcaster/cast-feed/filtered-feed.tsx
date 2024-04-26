@@ -22,6 +22,7 @@ export const FarcasterFilteredFeed = ({
 
   return (
     <FarcasterInfiniteFeed
+      queryKey={["castFeed", JSON.stringify(filter)]}
       casts={casts}
       fetchNextPage={fetchNextPage}
       isFetchingNextPage={isFetchingNextPage}

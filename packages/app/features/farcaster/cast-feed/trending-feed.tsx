@@ -16,6 +16,7 @@ export const FarcasterTrendingFeed = ({
 
   return (
     <FarcasterInfiniteFeed
+      queryKey={["trending"]}
       casts={casts}
       fetchNextPage={fetchNextPage}
       isFetchingNextPage={isFetchingNextPage}

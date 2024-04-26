@@ -2,7 +2,35 @@ import { CastSidebar } from "@nook/app/features/farcaster/cast-screen/cast-sideb
 import { PageNavigation } from "../../../../components/PageNavigation";
 import { NavigationHeader } from "../../../../components/NavigationHeader";
 import { fetchCast } from "@nook/app/api/farcaster";
-import { notFound } from "next/navigation";
+import { Metadata, ResolvingMetadata } from "next";
+
+export async function generateMetadata(
+  { params }: { params: { hash: string } },
+  parent: ResolvingMetadata,
+): Promise<Metadata | ResolvingMetadata> {
+  const cast = await fetchCast(params.hash);
+  if (!cast) return parent;
+
+  return {
+    title: cast.user.displayName
+      ? `${cast.user.displayName} (@${cast.user.username})`
+      : `@${cast.user.username}`,
+    description: cast.text,
+    openGraph: {
+      title: cast.user.displayName
+        ? `${cast.user.displayName} (@${cast.user.username})`
+        : `@${cast.user.username}`,
+      description: cast.text,
+      images: [
+        {
+          url: `https://client.warpcast.com/v2/og-image?castHash=${params.hash}`,
+          alt: cast.user.displayName || `@${cast.user.username}`,
+        },
+      ],
+    },
+    manifest: "/manifest.json",
+  };
+}
 
 export default async function Cast({
   children,
