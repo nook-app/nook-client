@@ -6,6 +6,7 @@ import {
   Home,
   LogIn,
   MoreHorizontal,
+  Pencil,
   Search,
   Settings,
   User,
@@ -20,14 +21,15 @@ import { AccountSwitcher } from "@nook/app/features/auth/account-switcher";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { NotificationsCount } from "@nook/app/features/notifications/notifications-count";
-import { FarcasterUser } from "@nook/app/types";
+import { FarcasterUser, Session } from "@nook/app/types";
 import { MobileNavigation } from "./MobileNavigation";
 import { useTheme } from "@nook/app/context/theme";
+import { EnableSignerDialog } from "@nook/app/features/farcaster/enable-signer/dialog";
 
 export const RootNavigation = ({
   children,
-  user,
-}: { children: React.ReactNode; user?: FarcasterUser }) => {
+  session,
+}: { children: React.ReactNode; session?: Session }) => {
   return (
     <XStack
       justifyContent="center"
@@ -65,7 +67,7 @@ export const RootNavigation = ({
             </View>
             <RootNavigationItem label="Home" Icon={Home} href="/" />
             <RootNavigationItem label="Explore" Icon={Search} href="/explore" />
-            {user && (
+            {session?.user && (
               <>
                 <RootNavigationItem
                   label="Notifications"
@@ -76,24 +78,22 @@ export const RootNavigation = ({
                 <RootNavigationItem
                   label="Profile"
                   Icon={User}
-                  href={`/users/${user?.username}`}
+                  href={`/users/${session.user?.username}`}
                 />
                 <RootNavigationItem
                   label="Settings"
                   Icon={Settings}
                   href="/settings"
                 />
-                <View marginTop="$4">
-                  <CreateCastButton />
-                </View>
+                <CreateCastItem session={session} />
               </>
             )}
           </YStack>
-          <SessionItem user={user} />
+          <SessionItem user={session?.user} />
         </View>
       </View>
 
-      <MobileNavigation user={user}>
+      <MobileNavigation session={session}>
         <View width={1000} maxWidth={1000} $lg={{ width: "auto", flexGrow: 1 }}>
           {children}
         </View>
@@ -228,5 +228,69 @@ const SessionItem = ({ user }: { user?: FarcasterUser }) => {
         </AccountSwitcher>
       </View>
     </>
+  );
+};
+
+const CreateCastItem = ({ session }: { session: Session }) => {
+  if (session.signer?.state !== "completed") {
+    return (
+      <View marginTop="$4">
+        <View display="flex" $lg={{ display: "none" }}>
+          <EnableSignerDialog>
+            <NookButton
+              variant="primary"
+              backgroundColor={
+                session.theme && ["light", "dark"].includes(session.theme)
+                  ? "$color12"
+                  : "$color11"
+              }
+            >
+              <NookText
+                fontWeight="700"
+                fontSize="$5"
+                color={
+                  session.theme && ["light", "dark"].includes(session.theme)
+                    ? "$color1"
+                    : "$color12"
+                }
+              >
+                Enable Nook
+              </NookText>
+            </NookButton>
+          </EnableSignerDialog>
+        </View>
+        <View display="none" $lg={{ display: "flex" }}>
+          <EnableSignerDialog>
+            <NookButton
+              variant="primary"
+              width="$5"
+              padding="$0"
+              backgroundColor={
+                session.theme && ["light", "dark"].includes(session.theme)
+                  ? "$color12"
+                  : "$color11"
+              }
+            >
+              <NookText>
+                <Pencil
+                  size={24}
+                  color={
+                    session.theme && ["light", "dark"].includes(session.theme)
+                      ? "$color1"
+                      : "$color12"
+                  }
+                />
+              </NookText>
+            </NookButton>
+          </EnableSignerDialog>
+        </View>
+      </View>
+    );
+  }
+
+  return (
+    <View marginTop="$4">
+      <CreateCastButton />
+    </View>
   );
 };

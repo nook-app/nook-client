@@ -1,41 +1,35 @@
-import {
-  Dialog,
-  Image,
-  ListItem,
-  NookText,
-  View,
-  YGroup,
-  useTheme,
-  useToastController,
-} from "@nook/ui";
+import { Dialog, Image, View, useTheme, useToastController } from "@nook/ui";
 import {
   Heart,
   Image as ImageIcon,
-  LayoutGrid,
   Link,
   MessageSquare,
   MessageSquareQuote,
   Repeat2,
   Share,
 } from "@tamagui/lucide-icons";
-import {
-  CreateCastDialog,
-  CreateCastDialogTest,
-} from "../../../features/farcaster/create-cast/disalog";
+import { CreateCastDialog } from "../../../features/farcaster/create-cast/disalog";
 import { FarcasterCast } from "../../../types";
 import { useLikeCast } from "../../../hooks/useLikeCast";
 import { useRecastCast } from "../../../hooks/useRecastCast";
 import { Dispatch, SetStateAction, useState } from "react";
 import { KebabMenu, KebabMenuItem } from "../../kebab-menu";
+import { EnableSignerDialog } from "../../../features/farcaster/enable-signer/dialog";
+import { useAuth } from "../../../context/auth";
 
 export const FarcasterReplyActionButton = ({
   cast,
 }: { cast: FarcasterCast }) => {
+  const { session, login } = useAuth();
   return (
     <View
       onPress={(e) => {
         e.preventDefault();
         e.stopPropagation();
+        if (!session) {
+          login();
+          return;
+        }
       }}
     >
       <CreateCastDialog
@@ -79,8 +73,9 @@ export const FarcasterRecastActionButton = ({
 }: { cast: FarcasterCast; setRecasts?: Dispatch<SetStateAction<number>> }) => {
   const theme = useTheme();
   const { recastCast, unrecastCast, isRecasted } = useRecastCast(cast);
+  const { session, login } = useAuth();
 
-  if (isRecasted) {
+  if (isRecasted || !session) {
     return (
       <View
         cursor="pointer"
@@ -98,6 +93,10 @@ export const FarcasterRecastActionButton = ({
         onPress={(e) => {
           e.preventDefault();
           e.stopPropagation();
+          if (!session) {
+            login();
+            return;
+          }
           unrecastCast({});
           setRecasts?.((prev) => prev - 1);
         }}
@@ -117,7 +116,7 @@ export const FarcasterRecastActionButton = ({
   }
 
   return (
-    <CreateCastDialogTest
+    <CreateCastDialog
       initialState={{
         text: "",
         castEmbedHash: cast.hash,
@@ -161,16 +160,13 @@ export const FarcasterRecastActionButton = ({
             setRecasts?.((prev) => prev + 1);
           }}
         />
-        <FarcasterQuoteMenuItem cast={cast} />
+        <FarcasterQuoteMenuItem />
       </KebabMenu>
-    </CreateCastDialogTest>
+    </CreateCastDialog>
   );
 };
 
-const FarcasterQuoteMenuItem = ({
-  cast,
-  closeMenu,
-}: { cast: FarcasterCast; closeMenu?: () => void }) => {
+const FarcasterQuoteMenuItem = ({ closeMenu }: { closeMenu?: () => void }) => {
   return (
     <Dialog.Trigger>
       <KebabMenuItem
@@ -188,43 +184,50 @@ export const FarcasterLikeActionButton = ({
 }: { cast: FarcasterCast; setLikes?: Dispatch<SetStateAction<number>> }) => {
   const theme = useTheme();
   const { likeCast, unlikeCast, isLiked } = useLikeCast(cast);
+  const { session, login, signer } = useAuth();
   return (
-    <View
-      cursor="pointer"
-      width="$2.5"
-      height="$2.5"
-      justifyContent="center"
-      alignItems="center"
-      borderRadius="$10"
-      group
-      hoverStyle={{
-        // @ts-ignore
-        transition: "all 0.2s ease-in-out",
-        backgroundColor: "$color3",
-      }}
-      onPress={(e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        if (isLiked) {
-          unlikeCast({});
-          setLikes?.((prev) => prev - 1);
-        } else {
-          likeCast({});
-          setLikes?.((prev) => prev + 1);
-        }
-      }}
-    >
-      <Heart
-        size={20}
-        opacity={isLiked ? 1 : 0.4}
-        $group-hover={{
-          color: "$red9",
-          opacity: 1,
+    <EnableSignerDialog>
+      <View
+        cursor="pointer"
+        width="$2.5"
+        height="$2.5"
+        justifyContent="center"
+        alignItems="center"
+        borderRadius="$10"
+        group
+        hoverStyle={{
+          // @ts-ignore
+          transition: "all 0.2s ease-in-out",
+          backgroundColor: "$color3",
         }}
-        color={isLiked ? theme.red9.val : undefined}
-        fill={isLiked ? theme.red9.val : "transparent"}
-      />
-    </View>
+        onPress={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          if (!session) {
+            login();
+            return;
+          }
+          if (isLiked) {
+            unlikeCast({});
+            setLikes?.((prev) => prev - 1);
+          } else {
+            likeCast({});
+            setLikes?.((prev) => prev + 1);
+          }
+        }}
+      >
+        <Heart
+          size={20}
+          opacity={isLiked ? 1 : 0.4}
+          $group-hover={{
+            color: "$red9",
+            opacity: 1,
+          }}
+          color={isLiked ? theme.red9.val : undefined}
+          fill={isLiked ? theme.red9.val : "transparent"}
+        />
+      </View>
+    </EnableSignerDialog>
   );
 };
 

@@ -1,4 +1,4 @@
-import { Toast, ToastViewport, useToastState } from "@nook/ui";
+import { NookButton, Toast, ToastViewport, useToastState } from "@nook/ui";
 
 export const Toasts = () => {
   const toast = useToastState();
@@ -7,6 +7,8 @@ export const Toasts = () => {
   if (!toast || toast.isHandledNatively) {
     return null;
   }
+
+  const type = toast.customData?.type;
 
   return (
     <>
@@ -18,23 +20,39 @@ export const Toasts = () => {
           right: 10,
         }}
       />
-      <Toast
-        animation={"quick"}
-        enterStyle={{ opacity: 0 }}
-        exitStyle={{ opacity: 0 }}
-        key={toast.id}
-        duration={5000}
-        backgroundColor="$color9"
-      >
-        <Toast.Title color="$mauve12" fontWeight="500">
-          {toast.title}
-        </Toast.Title>
-        {toast.message && (
-          <Toast.Description color="$mauve12">
-            {toast.message}
-          </Toast.Description>
-        )}
-      </Toast>
+      {type === "enable_signer" && (
+        <Toast
+          animation={"quick"}
+          enterStyle={{ opacity: 0 }}
+          exitStyle={{ opacity: 0 }}
+          key={toast.id}
+          duration={5000}
+          backgroundColor="$color9"
+        >
+          <NookButton variant="primary" onPress={() => console.log("whipeee")}>
+            Enable Signer
+          </NookButton>
+        </Toast>
+      )}
+      {!type && (
+        <Toast
+          animation={"quick"}
+          enterStyle={{ opacity: 0 }}
+          exitStyle={{ opacity: 0 }}
+          key={toast.id}
+          duration={5000}
+          backgroundColor="$color9"
+        >
+          <Toast.Title color="$mauve12" fontWeight="500">
+            {toast.title}
+          </Toast.Title>
+          {toast.message && (
+            <Toast.Description color="$mauve12">
+              {toast.message}
+            </Toast.Description>
+          )}
+        </Toast>
+      )}
     </>
   );
 };

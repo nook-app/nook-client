@@ -21,11 +21,15 @@ import {
   FarcasterChannelBadge,
   FarcasterChannelDisplay,
 } from "../../components/farcaster/channels/channel-display";
-import { useParams, useRouter } from "solito/navigation";
-import { useChannel, useUser } from "../../api/farcaster";
+import { useRouter } from "solito/navigation";
 import { NativeSyntheticEvent, TextInputKeyPressEventData } from "react-native";
+import { Channel, FarcasterUser } from "../../types";
 
-export const SearchBar = ({ defaultValue }: { defaultValue?: string }) => {
+export const SearchBar = ({
+  user,
+  channel,
+  defaultValue,
+}: { user?: FarcasterUser; channel?: Channel; defaultValue?: string }) => {
   const [value, setValue] = useState<string>(defaultValue || "");
   const [open, setOpen] = useState<boolean>(false);
   const closeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -103,15 +107,18 @@ export const SearchBar = ({ defaultValue }: { defaultValue?: string }) => {
           borderColor="$borderColorBg"
           display="none"
         />
-        <SearchResults value={debouncedValue} />
+        <SearchResults value={debouncedValue} user={user} channel={channel} />
       </Popover.Content>
     </Popover>
   );
 };
 
-const SearchResults = ({ value }: { value: string }) => {
+const SearchResults = ({
+  value,
+  user,
+  channel,
+}: { value: string; user?: FarcasterUser; channel?: Channel }) => {
   const { data, isLoading } = useSearchPreview(value);
-  const { channelId, username } = useParams();
 
   if (!value || !data) {
     return (
@@ -134,15 +141,10 @@ const SearchResults = ({ value }: { value: string }) => {
 
   return (
     <YStack width={350}>
-      {channelId && (
-        <ChannelContextSearchResult
-          channelId={channelId as string}
-          value={value}
-        />
+      {channel && (
+        <ChannelContextSearchResult channel={channel} value={value} />
       )}
-      {username && (
-        <UserContextSearchResult username={username as string} value={value} />
-      )}
+      {user && <UserContextSearchResult value={value} user={user} />}
       <Link href={`/search?q=${encodeURIComponent(value)}`}>
         <View
           padding="$3"
@@ -195,13 +197,9 @@ const SearchResults = ({ value }: { value: string }) => {
 };
 
 const ChannelContextSearchResult = ({
-  channelId,
+  channel,
   value,
-}: { channelId: string; value: string }) => {
-  const { data } = useChannel(channelId);
-
-  if (!data) return null;
-
+}: { channel: Channel; value: string }) => {
   return (
     <Link href={`/search?q=${encodeURIComponent(value)}`}>
       <View
@@ -216,7 +214,7 @@ const ChannelContextSearchResult = ({
           <View width="$4" alignItems="center" justifyContent="center">
             <Search size={24} strokeWidth={3} />
           </View>
-          <FarcasterChannelBadge channel={data} />
+          <FarcasterChannelBadge channel={channel} />
           <NookText fontWeight="600" marginTop="$-1">
             {value}
           </NookText>
@@ -227,13 +225,9 @@ const ChannelContextSearchResult = ({
 };
 
 const UserContextSearchResult = ({
-  username,
+  user,
   value,
-}: { username: string; value: string }) => {
-  const { data } = useUser(username);
-
-  if (!data) return null;
-
+}: { user: FarcasterUser; value: string }) => {
   return (
     <Link href={`/search?q=${encodeURIComponent(value)}`}>
       <View
@@ -248,7 +242,7 @@ const UserContextSearchResult = ({
           <View width="$4" alignItems="center" justifyContent="center">
             <Search size={24} strokeWidth={3} />
           </View>
-          <FarcasterUserBadge user={data} />
+          <FarcasterUserBadge user={user} />
           <NookText fontWeight="600" marginTop="$-1">
             {value}
           </NookText>

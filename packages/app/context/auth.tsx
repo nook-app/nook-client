@@ -7,30 +7,33 @@ import {
   useCallback,
   useEffect,
 } from "react";
-import { FarcasterUser, Session, User } from "@nook/app/types";
-import { fetchUser } from "@nook/app/api/farcaster";
+import {
+  FarcasterUser,
+  GetSignerResponse,
+  Session,
+  User,
+} from "@nook/app/types";
 import {
   loginServer,
   logoutServer,
-  setActiveUser,
   loginUser,
+  getSigner,
+  validateSigner,
 } from "../server/auth";
 import { ThemeProvider } from "./theme";
 import { ThemeName } from "@nook/ui";
-import {
-  getSession,
-  removeSession,
-  updateSession,
-} from "../utils/local-storage";
+import { removeSession, updateSession } from "../utils/local-storage";
 import { useSettings } from "../api/settings";
+import { fetchUser } from "../api/farcaster";
 
 type AuthContextType = {
   session?: Session;
-  isLoading: boolean;
   login: () => void;
   logout: () => void;
   setSession: (session: Session) => Promise<void>;
+  refreshSigner: () => Promise<string | undefined>;
   user?: FarcasterUser;
+  signer?: GetSignerResponse;
   settings?: User;
 };
 
@@ -39,48 +42,46 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider = ({
   children,
   defaultSession,
-  defaultUser,
 }: {
   children: ReactNode;
   defaultSession?: Session;
-  defaultUser?: FarcasterUser;
 }) => {
   const [session, setSession] = useState<Session | undefined>(defaultSession);
-  const [isLoading, setIsLoading] = useState(true);
   const { getAccessToken, logout: logoutPrivy } = usePrivy();
-  const [user, setUser] = useState<FarcasterUser | undefined>(defaultUser);
-
   const { data } = useSettings();
 
-  const updateUser = useCallback(async (fid: string) => {
-    const user = await fetchUser(fid);
-    setUser(user);
-    setActiveUser(user);
-  }, []);
-
   useEffect(() => {
-    if (session?.fid) {
-      if (user?.fid !== session.fid) {
-        updateUser(session.fid);
-      }
-    } else {
-      setUser(undefined);
-      setActiveUser(undefined);
+    if (
+      session?.fid &&
+      (!session.signer || session.signer?.state !== "completed")
+    ) {
+      handleRefreshSigner();
     }
-  }, [session, user, updateUser]);
+  }, [session?.fid, session?.signer]);
 
-  useEffect(() => {
-    const init = async () => {
-      const session = getSession();
-      if (!session) {
-        setIsLoading(false);
-        return;
-      }
-      await handleSessionChange(session);
-      setIsLoading(false);
+  const handleRefreshSigner = useCallback(async () => {
+    if (!session) return;
+
+    let signer = session.signer;
+    const prevState = signer?.state;
+
+    if (!signer) {
+      signer = await getSigner();
+    } else {
+      const validation = await validateSigner(signer.token);
+      signer.state = validation.state;
+    }
+
+    if (signer.state === prevState) return signer.state;
+
+    const updatedSession = {
+      ...session,
+      signer,
     };
-    init();
-  }, []);
+
+    handleSessionChange(updatedSession);
+    return signer.state;
+  }, [session]);
 
   const { login } = useLogin({
     onComplete: async (user, isNewUser, wasAlreadyAuthenticated) => {
@@ -102,8 +103,44 @@ export const AuthProvider = ({
 
   const handleSessionChange = useCallback(async (session: Session) => {
     await loginServer(session);
-    setSession(session);
-    updateSession(session);
+
+    let newSession = session;
+
+    const promises = [];
+    if (newSession && !newSession.user) {
+      promises.push(fetchUser(newSession.fid));
+    } else {
+      promises.push(null);
+    }
+
+    if (newSession && !newSession.signer) {
+      promises.push(getSigner());
+    } else {
+      promises.push(null);
+    }
+
+    const [user, signer] = (await Promise.all(promises)) as [
+      FarcasterUser | null,
+      GetSignerResponse | null,
+    ];
+
+    if (newSession && !newSession.user && user) {
+      newSession = {
+        ...newSession,
+        user,
+      };
+    }
+
+    if (newSession && !newSession.signer && signer) {
+      newSession = {
+        ...newSession,
+        signer,
+      };
+    }
+
+    await loginServer(newSession);
+    setSession(newSession);
+    updateSession(newSession);
   }, []);
 
   const logout = useCallback(async () => {
@@ -122,11 +159,12 @@ export const AuthProvider = ({
     <AuthContext.Provider
       value={{
         session,
-        isLoading,
         login,
         logout,
-        user,
+        user: session?.user,
+        signer: session?.signer,
         setSession: handleSessionChange,
+        refreshSigner: handleRefreshSigner,
         settings: data,
       }}
     >

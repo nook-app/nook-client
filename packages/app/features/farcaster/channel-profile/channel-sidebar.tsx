@@ -18,7 +18,7 @@ export const ChannelSidebar = ({ channel }: { channel: Channel }) => {
         position: "sticky",
       }}
     >
-      <SearchBar />
+      <SearchBar channel={channel} />
       <ChannelOverview channel={channel} />
       <ChannelHosts channel={channel} />
     </YStack>

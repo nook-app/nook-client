@@ -6,9 +6,13 @@ import {
 import { UserService } from "../../services/user";
 import { UserMetadata } from "@nook/common/types";
 import { PrivyClient } from "@privy-io/server-auth";
+import { FarcasterAPIClient, SignerAPIClient } from "@nook/common/clients";
 
 export const userRoutes = async (fastify: FastifyInstance) => {
   fastify.register(async (fastify: FastifyInstance) => {
+    const client = new SignerAPIClient();
+    const farcaster = new FarcasterAPIClient();
+
     const userService = new UserService(fastify);
     const privy = new PrivyClient(
       process.env.PRIVY_APP_ID as string,
@@ -97,15 +101,20 @@ export const userRoutes = async (fastify: FastifyInstance) => {
           return reply.code(401).send({ message: "Unauthorized" });
         }
 
-        const user = await privy.getUser(did);
-        if (!user?.farcaster) {
+        const privyUser = await privy.getUser(did);
+        if (!privyUser?.farcaster) {
           return reply.code(401).send({ message: "Unauthorized" });
         }
 
         const data = await userService.signInWithPrivy(
-          user.farcaster.fid.toString(),
+          privyUser.farcaster.fid.toString(),
         );
-        return reply.send(data);
+
+        const [signer, user] = await Promise.all([
+          client.getSigner(data.token),
+          farcaster.getUser(privyUser.farcaster.fid.toString()),
+        ]);
+        return reply.send({ ...data, signer, user });
       } catch (e) {
         console.error(e);
         return reply.code(500).send({ message: (e as Error).message });

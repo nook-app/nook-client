@@ -1,6 +1,10 @@
 "use server";
 
-import { FarcasterUser, Session } from "@nook/app/types";
+import {
+  GetSignerResponse,
+  Session,
+  ValidateSignerResponse,
+} from "@nook/app/types";
 import { cookies } from "next/headers";
 import { makeRequest } from "../api/utils";
 
@@ -17,24 +21,22 @@ export async function getServerSession(): Promise<Session | undefined> {
   return session ? JSON.parse(session.value) : undefined;
 }
 
-export async function setActiveUser(user: FarcasterUser | undefined) {
-  if (!user) {
-    cookies().delete("user");
-    return;
-  }
-
-  cookies().set("user", JSON.stringify(user), { secure: true });
-}
-
-export async function getActiveUser(): Promise<FarcasterUser | undefined> {
-  const user = cookies().get("user")?.value;
-  return user ? JSON.parse(user) : undefined;
-}
-
-export const loginUser = async (token: string): Promise<Session> => {
+export const loginUser = async (
+  token: string,
+): Promise<Session & { signer: GetSignerResponse }> => {
   return await makeRequest("/user/login/privy", {
     headers: {
       Authorization: `Bearer ${token}`,
     },
   });
+};
+
+export const getSigner = async (): Promise<GetSignerResponse> => {
+  return await makeRequest("/signer");
+};
+
+export const validateSigner = async (
+  token: string,
+): Promise<ValidateSignerResponse> => {
+  return await makeRequest(`/signer/validate?token=${token}`);
 };

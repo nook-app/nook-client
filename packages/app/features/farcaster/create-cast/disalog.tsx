@@ -45,6 +45,7 @@ export const CreateCastDialog = ({
             exitStyle={{ opacity: 0 }}
           />
           <Dialog.Content
+            bordered
             elevate
             key="content"
             animateOnly={["transform", "opacity"]}
@@ -59,86 +60,6 @@ export const CreateCastDialog = ({
             enterStyle={{ x: 0, y: -20, opacity: 0, scale: 0.9 }}
             exitStyle={{ x: 0, y: 10, opacity: 0, scale: 0.95 }}
             width={600}
-            backgroundColor="$color2"
-            padding="$2"
-            $xs={{ width: "100%", height: "100%" }}
-          >
-            <ScrollView maxHeight="75vh">
-              <XStack alignItems="center" justifyContent="space-between">
-                <Dialog.Close asChild>
-                  <NookButton
-                    size="$3"
-                    scaleIcon={1.5}
-                    circular
-                    icon={X}
-                    backgroundColor="transparent"
-                    borderWidth="$0"
-                    hoverStyle={{
-                      backgroundColor: "$color4",
-                      // @ts-ignore
-                      transition: "all 0.2s ease-in-out",
-                    }}
-                  />
-                </Dialog.Close>
-              </XStack>
-              {initialState.parentHash && (
-                <CreateCastParent parentHash={initialState.parentHash} />
-              )}
-              <CreateCastEditor onSubmit={handleSubmit} />
-            </ScrollView>
-          </Dialog.Content>
-        </Dialog.Portal>
-      </Dialog>
-    </CreateCastProvider>
-  );
-};
-
-export const CreateCastDialogTest = ({
-  children,
-  initialState,
-}: {
-  children?: React.ReactNode;
-  initialState: SubmitCastAddRequest;
-}) => {
-  const [isOpen, setIsOpen] = useState(false);
-
-  const handleSubmit = useCallback(() => {
-    setIsOpen(false);
-  }, []);
-
-  return (
-    <CreateCastProvider initialCast={initialState}>
-      <Dialog modal disableRemoveScroll open={isOpen} onOpenChange={setIsOpen}>
-        {children}
-
-        <Dialog.Portal
-          justifyContent="flex-start"
-          paddingTop="$10"
-          $xs={{ paddingTop: "$0" }}
-        >
-          <Dialog.Overlay
-            key="overlay"
-            animation="slow"
-            opacity={0.75}
-            enterStyle={{ opacity: 0 }}
-            exitStyle={{ opacity: 0 }}
-          />
-          <Dialog.Content
-            elevate
-            key="content"
-            animateOnly={["transform", "opacity"]}
-            animation={[
-              "100ms",
-              {
-                opacity: {
-                  overshootClamping: true,
-                },
-              },
-            ]}
-            enterStyle={{ x: 0, y: -20, opacity: 0, scale: 0.9 }}
-            exitStyle={{ x: 0, y: 10, opacity: 0, scale: 0.95 }}
-            width={600}
-            backgroundColor="$color2"
             padding="$2"
             $xs={{ width: "100%", height: "100%" }}
           >
@@ -174,6 +95,7 @@ export const CreateCastDialogTest = ({
 
 export const CreateCastButton = () => {
   const { theme } = useTheme();
+
   return (
     <>
       <View display="flex" $lg={{ display: "none" }}>

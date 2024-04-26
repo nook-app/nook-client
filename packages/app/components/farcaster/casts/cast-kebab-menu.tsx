@@ -45,7 +45,7 @@ const DeleteCast = ({
 }: { cast: FarcasterCast; closeMenu?: () => void; queryKey?: string[] }) => {
   const [isDeleting, setIsDeleting] = useState(false);
   const toast = useToastController();
-  const { session } = useAuth();
+  const { session, login } = useAuth();
   const params = useParams();
   const router = useRouter();
   const queryClient = useQueryClient();
@@ -55,6 +55,10 @@ const DeleteCast = ({
   }
 
   const handleDelete = useCallback(async () => {
+    if (!session) {
+      login();
+      return;
+    }
     setIsDeleting(true);
     await submitCastRemove({ hash: cast.hash });
 
@@ -98,7 +102,7 @@ const DeleteCast = ({
     if (params.hash === cast.hash) {
       router.push("/");
     }
-  }, [cast, toast, router, params.hash, queryKey, queryClient]);
+  }, [cast, toast, router, params.hash, queryKey, queryClient, session, login]);
 
   return (
     <KebabMenuItem
@@ -116,7 +120,7 @@ const FollowUser = ({
   closeMenu,
   queryKey,
 }: { cast: FarcasterCast; closeMenu?: () => void; queryKey?: string[] }) => {
-  const { session } = useAuth();
+  const { session, login } = useAuth();
   const queryClient = useQueryClient();
   const { isFollowing, followUser, unfollowUser } = useFollowUser(cast.user);
   if (cast.user.fid === session?.fid) {
@@ -124,6 +128,11 @@ const FollowUser = ({
   }
 
   const handleUnfollowUser = useCallback(async () => {
+    if (!session) {
+      login();
+      return;
+    }
+
     await unfollowUser({});
     if (queryKey) {
       queryClient.setQueryData<InfiniteData<FetchCastsResponse>>(
@@ -160,9 +169,14 @@ const FollowUser = ({
         },
       );
     }
-  }, [unfollowUser, queryClient, queryKey, cast]);
+  }, [unfollowUser, queryClient, queryKey, cast, session, login]);
 
   const handleFollowUser = useCallback(async () => {
+    if (!session) {
+      login();
+      return;
+    }
+
     await followUser({});
     if (queryKey) {
       queryClient.setQueryData<InfiniteData<FetchCastsResponse>>(
@@ -199,7 +213,7 @@ const FollowUser = ({
         },
       );
     }
-  }, [followUser, queryClient, queryKey, cast]);
+  }, [followUser, queryClient, queryKey, cast, session, login]);
 
   if (isFollowing) {
     return (
@@ -232,7 +246,7 @@ const MuteUser = ({
   closeMenu,
   queryKey,
 }: { cast: FarcasterCast; closeMenu?: () => void; queryKey?: string[] }) => {
-  const { session, settings } = useAuth();
+  const { session, settings, login } = useAuth();
   const queryClient = useQueryClient();
 
   if (cast.user.fid === session?.fid) {
@@ -242,6 +256,11 @@ const MuteUser = ({
   const isMuted = settings?.mutedUsers.includes(cast.user.fid);
 
   const handleMute = useCallback(async () => {
+    if (!session) {
+      login();
+      return;
+    }
+
     await muteUser(cast.user.fid);
     if (queryKey) {
       queryClient.setQueryData<InfiniteData<FetchCastsResponse>>(
@@ -260,11 +279,16 @@ const MuteUser = ({
         },
       );
     }
-  }, [cast.user.fid, queryClient, queryKey]);
+  }, [cast.user.fid, queryClient, queryKey, session, login]);
 
   const handleUnmute = useCallback(async () => {
+    if (!session) {
+      login();
+      return;
+    }
+
     await unmuteUser(cast.user.fid);
-  }, [cast.user.fid]);
+  }, [cast.user.fid, login, session]);
 
   if (isMuted) {
     return (
@@ -297,7 +321,7 @@ const MuteChannel = ({
   closeMenu,
   queryKey,
 }: { cast: FarcasterCast; closeMenu?: () => void; queryKey?: string[] }) => {
-  const { session, settings } = useAuth();
+  const { session, settings, login } = useAuth();
   const queryClient = useQueryClient();
 
   if (!cast.channel) {
@@ -307,6 +331,11 @@ const MuteChannel = ({
   const isMuted = settings?.mutedChannels.includes(cast.channel.url);
 
   const handleMute = useCallback(async () => {
+    if (!session) {
+      login();
+      return;
+    }
+
     if (!cast.channel) return;
     await muteChannel(cast.channel.url);
     if (queryKey) {
@@ -328,12 +357,17 @@ const MuteChannel = ({
         },
       );
     }
-  }, [cast.channel, queryClient, queryKey]);
+  }, [session, login, cast.channel, queryKey, queryClient]);
 
   const handleUnmute = useCallback(async () => {
+    if (!session) {
+      login();
+      return;
+    }
+
     if (!cast.channel) return;
     await unmuteChannel(cast.channel.url);
-  }, [cast.channel]);
+  }, [cast.channel, session, login]);
 
   if (isMuted) {
     return (

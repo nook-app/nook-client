@@ -4846,6 +4846,7 @@ __metadata:
     expo-linking: "npm:~6.2.2"
     js-cookie: "npm:^3.0.5"
     next: "npm:^14.2.3"
+    qrcode.react: "npm:^3.1.0"
     react-native-safe-area-context: "npm:4.8.2"
     react-player: "npm:^2.16.0"
     solito: "npm:^4.2.2"
@@ -22074,6 +22075,15 @@ __metadata:
   bin:
     qrcode-terminal: ./bin/qrcode-terminal.js
   checksum: 10c0/7561a649d21d7672d451ada5f2a2b393f586627cea75670c97141dc2b4b4145db547e1fddf512a3552e7fb54de530d513a736cd604c840adb908ed03c32312ad
+  languageName: node
+  linkType: hard
+
+"qrcode.react@npm:^3.1.0":
+  version: 3.1.0
+  resolution: "qrcode.react@npm:3.1.0"
+  peerDependencies:
+    react: ^16.8.0 || ^17.0.0 || ^18.0.0
+  checksum: 10c0/af183e99ecaad90f7ef14bd027510ae7866935693c53ccf81b172438abbbf7f29c283c5dc7c2141b420d2413960b8f8dca8d9949646475afe669ed638e8fb722
   languageName: node
   linkType: hard
 

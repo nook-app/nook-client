@@ -38,7 +38,7 @@ const MuteChannel = ({
   channel,
   closeMenu,
 }: { channel: Channel; closeMenu?: () => void }) => {
-  const { session, settings } = useAuth();
+  const { session, settings, login } = useAuth();
   const queryClient = useQueryClient();
 
   if (!channel) {
@@ -48,16 +48,24 @@ const MuteChannel = ({
   const isMuted = settings?.mutedChannels.includes(channel.url);
 
   const handleMute = useCallback(async () => {
+    if (!session) {
+      login();
+      return;
+    }
     if (!channel) return;
     await muteChannel(channel.url);
     queryClient.invalidateQueries({ queryKey: ["settings"] });
-  }, [channel, queryClient]);
+  }, [channel, queryClient, session, login]);
 
   const handleUnmute = useCallback(async () => {
+    if (!session) {
+      login();
+      return;
+    }
     if (!channel) return;
     await unmuteChannel(channel.url);
     queryClient.invalidateQueries({ queryKey: ["settings"] });
-  }, [channel, queryClient]);
+  }, [channel, queryClient, session, login]);
 
   if (isMuted) {
     return (

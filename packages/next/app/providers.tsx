@@ -16,11 +16,9 @@ const queryClient = new QueryClient();
 export const Providers = ({
   children,
   session,
-  user,
 }: {
   children: React.ReactNode;
   session: Session | undefined;
-  user: FarcasterUser | undefined;
 }) => {
   return (
     <QueryClientProvider client={queryClient}>
@@ -31,7 +29,7 @@ export const Providers = ({
           loginMethods: ["farcaster"],
         }}
       >
-        <AuthProvider defaultSession={session} defaultUser={user}>
+        <AuthProvider defaultSession={session}>
           <AnalyticsProvider>
             <ToastProvider>
               <Toasts />

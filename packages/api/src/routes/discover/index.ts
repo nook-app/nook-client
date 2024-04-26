@@ -12,8 +12,8 @@ export const discoverRoutes = async (fastify: FastifyInstance) => {
       "/search/preview",
       async (request, reply) => {
         const [users, channels] = await Promise.all([
-          farcaster.searchUsers(request.query.query, 5),
-          farcaster.searchChannels(request.query.query, 5),
+          farcaster.searchUsers(request.query.query),
+          farcaster.searchChannels(request.query.query),
         ]);
 
         return reply.send({ users: users.data, channels: channels.data });

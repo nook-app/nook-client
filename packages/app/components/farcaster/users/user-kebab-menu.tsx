@@ -36,7 +36,7 @@ const MuteUser = ({
   user,
   closeMenu,
 }: { user: FarcasterUser; closeMenu?: () => void }) => {
-  const { session, settings } = useAuth();
+  const { session, settings, login } = useAuth();
   const queryClient = useQueryClient();
 
   if (user.fid === session?.fid) {
@@ -46,14 +46,22 @@ const MuteUser = ({
   const isMuted = settings?.mutedUsers.includes(user.fid);
 
   const handleMute = useCallback(async () => {
+    if (!session) {
+      login();
+      return;
+    }
     await muteUser(user.fid);
     queryClient.invalidateQueries({ queryKey: ["settings"] });
-  }, [user.fid, queryClient]);
+  }, [user.fid, queryClient, session, login]);
 
   const handleUnmute = useCallback(async () => {
+    if (!session) {
+      login();
+      return;
+    }
     await unmuteUser(user.fid);
     queryClient.invalidateQueries({ queryKey: ["settings"] });
-  }, [user.fid, queryClient]);
+  }, [user.fid, queryClient, session, login]);
 
   if (isMuted) {
     return (

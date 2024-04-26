@@ -5,7 +5,8 @@ import { useAuth } from "@nook/app/context/auth";
 import { useTheme } from "@nook/app/context/theme";
 import { AccountSwitcher } from "@nook/app/features/auth/account-switcher";
 import { CreateCastDialog } from "@nook/app/features/farcaster/create-cast/disalog";
-import { FarcasterUser } from "@nook/app/types";
+import { EnableSignerDialog } from "@nook/app/features/farcaster/enable-signer/dialog";
+import { FarcasterUser, Session } from "@nook/app/types";
 import { NookButton, View, YStack } from "@nook/ui";
 import {
   Bell,
@@ -19,14 +20,14 @@ import { ReactNode } from "react";
 import { useRouter } from "solito/navigation";
 
 export const MobileNavigation = ({
-  user,
+  session,
   children,
-}: { user?: FarcasterUser; children: ReactNode }) => {
+}: { session?: Session; children: ReactNode }) => {
   return (
     <View flex={1}>
       <View flex={1}>{children}</View>
-      <MobileTabMenu user={user} />
-      <MobileCreateButton />
+      <MobileTabMenu user={session?.user} />
+      <MobileCreateButton session={session} />
     </View>
   );
 };
@@ -143,8 +144,45 @@ const MobileNavigationAuth = ({ user }: { user?: FarcasterUser }) => {
   );
 };
 
-const MobileCreateButton = () => {
+const MobileCreateButton = ({ session }: { session?: Session }) => {
   const { theme } = useTheme();
+
+  if (!session) return null;
+
+  if (session.signer?.state !== "completed") {
+    return (
+      <View display="none" $xxs={{ display: "flex" }}>
+        <EnableSignerDialog>
+          <NookButton
+            variant="primary"
+            zIndex={1000}
+            width="$5"
+            height="$5"
+            padding="$1"
+            right={15}
+            bottom={65}
+            $platform-web={{
+              position: "fixed",
+            }}
+            borderWidth="$0"
+            backgroundColor={
+              ["light", "dark"].includes(theme) ? "$color12" : "$color11"
+            }
+            pressStyle={{
+              backgroundColor: ["light", "dark"].includes(theme)
+                ? "$color11"
+                : "$color10",
+            }}
+          >
+            <Pencil
+              color={["light", "dark"].includes(theme) ? "$color1" : "$color12"}
+            />
+          </NookButton>
+        </EnableSignerDialog>
+      </View>
+    );
+  }
+
   return (
     <View display="none" $xxs={{ display: "flex" }}>
       <CreateCastDialog initialState={{ text: "" }}>
@@ -154,14 +192,20 @@ const MobileCreateButton = () => {
           width="$5"
           height="$5"
           padding="$1"
-          right={20}
-          bottom={80}
+          right={15}
+          bottom={65}
           $platform-web={{
             position: "fixed",
           }}
+          borderWidth="$0"
           backgroundColor={
-            ["light", "dark"].includes(theme) ? "$color12" : undefined
+            ["light", "dark"].includes(theme) ? "$color12" : "$color11"
           }
+          pressStyle={{
+            backgroundColor: ["light", "dark"].includes(theme)
+              ? "$color11"
+              : "$color10",
+          }}
         >
           <Pencil
             color={["light", "dark"].includes(theme) ? "$color1" : "$color12"}

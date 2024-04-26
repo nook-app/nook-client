@@ -109,7 +109,7 @@ const UploadImageButton = () => {
         style={{ display: "none" }}
         onChange={handleImageSelect}
       />
-      <Image size={20} color="$color11" />
+      <Image size={24} color="$color12" />
     </View>
   );
 };

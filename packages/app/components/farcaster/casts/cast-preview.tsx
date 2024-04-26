@@ -16,18 +16,7 @@ export const FarcasterCastPreview = ({
   const renderEmbeds = cast.embeds.length > 0 || cast.embedCasts.length > 0;
 
   return (
-    <XStack
-      gap="$2"
-      transition="all 0.2s ease-in-out"
-      hoverStyle={{
-        // @ts-ignore
-        transition: "all 0.2s ease-in-out",
-        backgroundColor: "$color2",
-      }}
-      paddingHorizontal="$3"
-      paddingVertical="$3"
-      minHeight="$8"
-    >
+    <XStack gap="$2" paddingHorizontal="$3" paddingVertical="$3" minHeight="$8">
       <YStack alignItems="center" width="$4" marginTop="$1">
         <FarcasterUserAvatar user={cast.user} size="$4" />
         {isConnected && (

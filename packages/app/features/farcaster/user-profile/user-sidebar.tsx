@@ -14,7 +14,7 @@ export const UserSidebar = ({ user }: { user: FarcasterUser }) => {
         position: "sticky",
       }}
     >
-      <SearchBar />
+      <SearchBar user={user} />
     </YStack>
   );
 };
