@@ -24,8 +24,8 @@ export const MobileNavigation = ({
   children,
 }: { session?: Session; children: ReactNode }) => {
   return (
-    <View flex={1}>
-      <View flex={1}>{children}</View>
+    <View $md={{ flex: 1 }}>
+      <View $md={{ flex: 1 }}>{children}</View>
       <MobileTabMenu user={session?.user} />
       <MobileCreateButton session={session} />
     </View>

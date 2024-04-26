@@ -102,7 +102,7 @@ export const RootNavigation = ({
       </View>
 
       <MobileNavigation session={session}>
-        <View width={1000} maxWidth={1000} $lg={{ width: "auto", flexGrow: 1 }}>
+        <View width={1000} maxWidth={1000} $md={{ width: "auto", flexGrow: 1 }}>
           {children}
         </View>
       </MobileNavigation>
