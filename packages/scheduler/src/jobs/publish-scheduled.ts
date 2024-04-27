@@ -18,25 +18,24 @@ export const queueScheduledCasts = async () => {
       attemptedAt: null,
     },
   });
-  if (scheduledCasts.length === 0) {
-    return;
-  }
   let numProcessed = 0;
-  try {
-    queue.addBulk(
-      scheduledCasts.map((x) => ({
-        name: QueueName.ScheduledCast,
-        data: x,
-        options: {
-          jobId: toJobId(x.id),
-        },
-      })),
-    );
+  if (scheduledCasts.length > 0) {
+    try {
+      queue.addBulk(
+        scheduledCasts.map((x) => ({
+          name: QueueName.ScheduledCast,
+          data: x,
+          options: {
+            jobId: toJobId(x.id),
+          },
+        })),
+      );
 
-    numProcessed += scheduledCasts.length;
-  } catch (err) {
-    console.error(err);
-    process.exit(1);
+      numProcessed += scheduledCasts.length;
+    } catch (err) {
+      console.error(err);
+      process.exit(1);
+    }
   }
   console.log(`Queued ${numProcessed} scheduled casts `);
 };
