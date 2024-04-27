@@ -109,7 +109,7 @@ export const CreateCastButton = () => {
             <NookText
               fontWeight="700"
               fontSize="$5"
-              color={["light", "dark"].includes(theme) ? "$color1" : "$color12"}
+              color={["light", "dark"].includes(theme) ? "$color1" : "white"}
             >
               Cast
             </NookText>

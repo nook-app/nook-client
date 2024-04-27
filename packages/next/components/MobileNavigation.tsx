@@ -125,7 +125,7 @@ const MobileNavigationAuth = ({ user }: { user?: FarcasterUser }) => {
       >
         <LogIn
           size={20}
-          color={["light", "dark"].includes(theme) ? "$color1" : "$color12"}
+          color={["light", "dark"].includes(theme) ? "$color1" : "white"}
         />
       </NookButton>
     );
@@ -178,7 +178,7 @@ const MobileCreateButton = ({ session }: { session?: Session }) => {
             }}
           >
             <Pencil
-              color={["light", "dark"].includes(theme) ? "$color1" : "$color12"}
+              color={["light", "dark"].includes(theme) ? "$color1" : "white"}
             />
           </NookButton>
         </EnableSignerDialog>
@@ -211,7 +211,7 @@ const MobileCreateButton = ({ session }: { session?: Session }) => {
           }}
         >
           <Pencil
-            color={["light", "dark"].includes(theme) ? "$color1" : "$color12"}
+            color={["light", "dark"].includes(theme) ? "$color1" : "white"}
           />
         </NookButton>
       </CreateCastDialog>
