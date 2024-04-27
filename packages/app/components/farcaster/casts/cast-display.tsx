@@ -2,7 +2,6 @@
 
 import { Display, FarcasterCast } from "../../../types";
 import { NookText, Separator, View, XStack, YStack } from "@nook/ui";
-import { useCast } from "../../../api/farcaster";
 import { FarcasterCastText } from "../../../components/farcaster/casts/cast-text";
 import {
   FarcasterUserAvatar,
@@ -23,16 +22,28 @@ import {
 } from "../../../components/farcaster/casts/cast-actions";
 import { Link } from "solito/link";
 import { FarcasterCastKebabMenu } from "./cast-kebab-menu";
-import { useState } from "react";
 import { EmbedImage } from "../../embeds/EmbedImage";
 import { EmbedVideo } from "../../embeds/EmbedVideo";
 import { EmbedFrame } from "../../embeds/EmbedFrame";
+import { useMuteStore } from "../../../store/useMuteStore";
 
 export const FarcasterCastDisplay = ({
   cast,
   displayMode,
   queryKey,
 }: { cast: FarcasterCast; displayMode: Display; queryKey?: string[] }) => {
+  const mutedUsers = useMuteStore((state) => state.users);
+  const mutedChannels = useMuteStore((state) => state.channels);
+  const deletedCasts = useMuteStore((state) => state.casts);
+
+  if (
+    mutedUsers[cast.user.username || cast.user.fid] ||
+    (cast.channel && mutedChannels[cast.channel.url]) ||
+    deletedCasts[cast.hash]
+  ) {
+    return null;
+  }
+
   switch (displayMode) {
     case Display.FRAMES:
       return <FarcasterCastFrameDisplay cast={cast} />;
@@ -44,18 +55,14 @@ export const FarcasterCastDisplay = ({
       if (cast.parent && displayMode !== Display.REPLIES) {
         return (
           <View borderBottomWidth="$0.5" borderBottomColor="$borderColorBg">
-            <FarcasterCastDefaultDisplay
-              cast={cast.parent}
-              isConnected
-              queryKey={queryKey}
-            />
-            <FarcasterCastDefaultDisplay cast={cast} queryKey={queryKey} />
+            <FarcasterCastDefaultDisplay cast={cast.parent} isConnected />
+            <FarcasterCastDefaultDisplay cast={cast} />
           </View>
         );
       }
       return (
         <View borderBottomWidth="$0.5" borderBottomColor="$borderColorBg">
-          <FarcasterCastDefaultDisplay cast={cast} queryKey={queryKey} />
+          <FarcasterCastDefaultDisplay cast={cast} />
         </View>
       );
   }
@@ -228,10 +235,7 @@ const FarcasterCastMediaDisplay = ({ cast }: { cast: FarcasterCast }) => {
 export const FarcasterCastDefaultDisplay = ({
   cast,
   isConnected,
-  queryKey,
-}: { cast: FarcasterCast; isConnected?: boolean; queryKey?: string[] }) => {
-  const [likes, setLikes] = useState(cast.engagement.likes || 0);
-  const [recasts, setRecasts] = useState(cast.engagement.recasts || 0);
+}: { cast: FarcasterCast; isConnected?: boolean }) => {
   const router = useRouter();
 
   const handlePress = () => {
@@ -281,7 +285,7 @@ export const FarcasterCastDefaultDisplay = ({
               suffix={` · ${formatTimeAgo(cast.timestamp)}`}
             />
             <View position="absolute" right={0} top={0} marginTop="$-2">
-              <FarcasterCastKebabMenu cast={cast} queryKey={queryKey} />
+              <FarcasterCastKebabMenu cast={cast} />
             </View>
           </XStack>
           {renderText && <FarcasterCastText cast={cast} />}
@@ -294,8 +298,8 @@ export const FarcasterCastDefaultDisplay = ({
         >
           <XStack gap="$2" alignItems="center">
             <FarcasterReplyActionButton cast={cast} />
-            <FarcasterRecastActionButton cast={cast} setRecasts={setRecasts} />
-            <FarcasterLikeActionButton cast={cast} setLikes={setLikes} />
+            <FarcasterRecastActionButton cast={cast} />
+            <FarcasterLikeActionButton cast={cast} />
           </XStack>
           <XStack gap="$2" alignItems="center">
             <FarcasterCustomActionButton cast={cast} />
@@ -304,11 +308,7 @@ export const FarcasterCastDefaultDisplay = ({
         </XStack>
         {renderEngagementBar && (
           <XStack justifyContent="space-between" alignItems="center">
-            <FarcasterCastEngagement
-              hash={cast.hash}
-              engagement={{ ...cast.engagement, likes, recasts }}
-              types={["likes", "replies"]}
-            />
+            <FarcasterCastEngagement cast={cast} types={["likes", "replies"]} />
             <View>
               {cast.channel && (
                 <FarcasterChannelBadge channel={cast.channel} asLink />

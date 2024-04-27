@@ -18,7 +18,7 @@ import { useAuth } from "../../context/auth";
 import { Link, TextLink } from "solito/link";
 import { CdnAvatar } from "../../components/cdn-avatar";
 import { User, Repeat2, Heart } from "@tamagui/lucide-icons";
-import { useRouter } from "solito/navigation";
+import { useRouter } from "next/navigation";
 import { FarcasterCastText } from "../../components/farcaster/casts/cast-text";
 
 export const NotificationsInfiniteFeed = ({
@@ -36,6 +36,10 @@ export const NotificationsInfiniteFeed = ({
   ListHeaderComponent?: JSX.Element;
   isLoading?: boolean;
 }) => {
+  if (isLoading) {
+    return <Loading />;
+  }
+
   return (
     <InfiniteScrollList
       data={notifications}
@@ -51,7 +55,6 @@ export const NotificationsInfiniteFeed = ({
         ) : null
       }
       ListHeaderComponent={ListHeaderComponent}
-      ListEmptyComponent={isLoading ? <Loading /> : null}
     />
   );
 };
@@ -347,6 +350,7 @@ const Notification = ({
   theme?: string;
 }) => {
   const router = useRouter();
+  router.prefetch(href);
   return (
     <XStack
       borderBottomWidth="$0.5"
@@ -360,6 +364,7 @@ const Notification = ({
         router.push(href);
       }}
       paddingHorizontal="$2"
+      cursor="pointer"
     >
       {Icon && (
         <Theme name={theme as ThemeName | undefined}>

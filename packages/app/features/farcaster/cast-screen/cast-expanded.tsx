@@ -80,8 +80,6 @@ const FarcasterExpandedCastHeader = ({
   replySort: "best" | "top" | "new";
   onReplySortChange: (sort: "best" | "top" | "new") => void;
 }) => {
-  const [likes, setLikes] = useState(cast.engagement.likes);
-  const [recasts, setRecasts] = useState(cast.engagement.recasts);
   const renderText = cast.text || cast.mentions.length > 0;
   const renderEmbeds = cast.embeds.length > 0 || cast.embedCasts.length > 0;
 
@@ -103,8 +101,7 @@ const FarcasterExpandedCastHeader = ({
         {renderEmbeds && <Embeds cast={cast} />}
         <XStack justifyContent="space-between" alignItems="center">
           <FarcasterCastEngagement
-            hash={cast.hash}
-            engagement={{ ...cast.engagement, likes, recasts }}
+            cast={cast}
             types={["likes", "replies", "quotes", "recasts"]}
           />
           <XStack alignItems="center" gap="$2">
@@ -131,8 +128,8 @@ const FarcasterExpandedCastHeader = ({
         paddingVertical="$2"
       >
         <FarcasterReplyActionButton cast={cast} />
-        <FarcasterRecastActionButton cast={cast} setRecasts={setRecasts} />
-        <FarcasterLikeActionButton cast={cast} setLikes={setLikes} />
+        <FarcasterRecastActionButton cast={cast} />
+        <FarcasterLikeActionButton cast={cast} />
         <FarcasterCustomActionButton cast={cast} />
         <FarcasterShareButton cast={cast} />
       </XStack>

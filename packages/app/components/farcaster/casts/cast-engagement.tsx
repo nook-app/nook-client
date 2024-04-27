@@ -4,6 +4,7 @@ import {
   FarcasterCastEngagement as FarcasterCastEngagementType,
 } from "../../../types";
 import { Link } from "solito/link";
+import { useCastStore } from "../../../store/useCastStore";
 
 export type CastEngagementTypes = "replies" | "likes" | "quotes" | "recasts";
 
@@ -15,24 +16,14 @@ const singular = {
 };
 
 export const FarcasterCastEngagement = ({
-  hash,
-  engagement,
+  cast,
   types,
-}: {
-  hash: string;
-  engagement: FarcasterCastEngagementType;
-  types: CastEngagementTypes[];
-}) => {
+}: { cast: FarcasterCast; types: CastEngagementTypes[] }) => {
   return (
     <XStack gap="$2" alignItems="center" flexWrap="wrap">
       {types.map((type) => {
         return (
-          <FarcasterCastEngagementItem
-            key={type}
-            hash={hash}
-            amount={engagement[type]}
-            type={type}
-          />
+          <FarcasterCastEngagementItem key={type} cast={cast} type={type} />
         );
       })}
     </XStack>
@@ -40,16 +31,18 @@ export const FarcasterCastEngagement = ({
 };
 
 const FarcasterCastEngagementItem = ({
-  hash,
-  amount,
+  cast,
   type,
-}: { hash: string; amount: number; type: CastEngagementTypes }) => {
+}: { cast: FarcasterCast; type: CastEngagementTypes }) => {
+  const storeCast = useCastStore((state) => state.casts[cast.hash]);
+
+  const amount = storeCast?.engagement[type] ?? cast.engagement[type];
   if (amount === 0) return null;
 
   switch (type) {
     case "likes":
       return (
-        <Link href={`/casts/${hash}/likes`}>
+        <Link href={`/casts/${cast.hash}/likes`}>
           <XStack gap="$1.5" alignItems="center">
             <NookText fontWeight="500">{amount}</NookText>
             <NookText muted>{amount === 1 ? singular[type] : type}</NookText>
@@ -58,7 +51,7 @@ const FarcasterCastEngagementItem = ({
       );
     case "quotes":
       return (
-        <Link href={`/casts/${hash}/quotes`}>
+        <Link href={`/casts/${cast.hash}/quotes`}>
           <XStack gap="$1.5" alignItems="center">
             <NookText fontWeight="500">{amount}</NookText>
             <NookText muted>{amount === 1 ? singular[type] : type}</NookText>
@@ -67,7 +60,7 @@ const FarcasterCastEngagementItem = ({
       );
     case "recasts":
       return (
-        <Link href={`/casts/${hash}/recasts`}>
+        <Link href={`/casts/${cast.hash}/recasts`}>
           <XStack gap="$1.5" alignItems="center">
             <NookText fontWeight="500">{amount}</NookText>
             <NookText muted>{amount === 1 ? singular[type] : type}</NookText>

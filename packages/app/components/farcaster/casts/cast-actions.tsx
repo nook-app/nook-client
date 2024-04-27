@@ -69,8 +69,7 @@ export const FarcasterReplyActionButton = ({
 
 export const FarcasterRecastActionButton = ({
   cast,
-  setRecasts,
-}: { cast: FarcasterCast; setRecasts?: Dispatch<SetStateAction<number>> }) => {
+}: { cast: FarcasterCast }) => {
   const theme = useTheme();
   const { recastCast, unrecastCast, isRecasted } = useRecastCast(cast);
   const { session, login } = useAuth();
@@ -97,8 +96,7 @@ export const FarcasterRecastActionButton = ({
             login();
             return;
           }
-          unrecastCast({});
-          setRecasts?.((prev) => prev - 1);
+          unrecastCast();
         }}
       >
         <Repeat2
@@ -156,8 +154,7 @@ export const FarcasterRecastActionButton = ({
           Icon={Repeat2}
           title="Recast"
           onPress={() => {
-            recastCast({});
-            setRecasts?.((prev) => prev + 1);
+            recastCast();
           }}
         />
         <FarcasterQuoteMenuItem />
@@ -180,11 +177,10 @@ const FarcasterQuoteMenuItem = ({ closeMenu }: { closeMenu?: () => void }) => {
 
 export const FarcasterLikeActionButton = ({
   cast,
-  setLikes,
-}: { cast: FarcasterCast; setLikes?: Dispatch<SetStateAction<number>> }) => {
+}: { cast: FarcasterCast }) => {
   const theme = useTheme();
   const { likeCast, unlikeCast, isLiked } = useLikeCast(cast);
-  const { session, login, signer } = useAuth();
+  const { session, login } = useAuth();
   return (
     <EnableSignerDialog>
       <View
@@ -208,11 +204,9 @@ export const FarcasterLikeActionButton = ({
             return;
           }
           if (isLiked) {
-            unlikeCast({});
-            setLikes?.((prev) => prev - 1);
+            unlikeCast();
           } else {
-            likeCast({});
-            setLikes?.((prev) => prev + 1);
+            likeCast();
           }
         }}
       >

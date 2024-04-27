@@ -1,14 +1,17 @@
-import {
-  HomeAuthenticatedTabs,
-  HomeUnauthenticatedTabs,
-} from "@nook/app/features/home/home-tabs";
-import { getServerSession } from "@nook/app/server/auth";
+import { FarcasterFilteredFeed } from "@nook/app/features/farcaster/cast-feed/filtered-feed";
+import { UserFilterType } from "@nook/app/types";
 
 export default async function Home() {
-  const session = await getServerSession();
-  if (session) {
-    return <HomeAuthenticatedTabs session={session} activeTab="latest" />;
-  }
-
-  return <HomeUnauthenticatedTabs activeTab="latest" />;
+  return (
+    <FarcasterFilteredFeed
+      filter={{
+        users: {
+          type: UserFilterType.POWER_BADGE,
+          data: {
+            badge: true,
+          },
+        },
+      }}
+    />
+  );
 }

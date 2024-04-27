@@ -5,9 +5,9 @@ import { Channel, User } from "../../types";
 import { useChannels } from "../../api/farcaster";
 import { Link } from "solito/link";
 import { VolumeX } from "@tamagui/lucide-icons";
-import { unmuteChannel } from "../../server/settings";
 import { useEffect, useState } from "react";
 import { FarcasterChannelDisplay } from "../../components/farcaster/channels/channel-display";
+import { useMuteChannel } from "../../hooks/useMuteChannel";
 
 export const MutedChannels = ({ settings }: { settings: User }) => {
   const { data, isLoading } = useChannels(settings.mutedChannels);
@@ -18,11 +18,6 @@ export const MutedChannels = ({ settings }: { settings: User }) => {
       setChannels(data.data);
     }
   }, [data]);
-
-  const handleUnmuteChannel = async (url: string) => {
-    await unmuteChannel(url);
-    setChannels((prev) => prev.filter((channel) => channel.url !== url));
-  };
 
   return (
     <YStack>
@@ -40,20 +35,14 @@ export const MutedChannels = ({ settings }: { settings: User }) => {
         </View>
       )}
       {channels.map((channel) => (
-        <MutedChannel
-          key={channel.channelId}
-          channel={channel}
-          onPress={handleUnmuteChannel}
-        />
+        <MutedChannel key={channel.channelId} channel={channel} />
       ))}
     </YStack>
   );
 };
 
-const MutedChannel = ({
-  channel,
-  onPress,
-}: { channel: Channel; onPress: (url: string) => void }) => {
+const MutedChannel = ({ channel }: { channel: Channel }) => {
+  const { unmuteChannel } = useMuteChannel(channel);
   return (
     <Link href={`/channels/${channel.channelId}`}>
       <XStack
@@ -81,7 +70,7 @@ const MutedChannel = ({
           onPress={(e) => {
             e.preventDefault();
             e.stopPropagation();
-            onPress(channel.url);
+            unmuteChannel();
           }}
         >
           <VolumeX

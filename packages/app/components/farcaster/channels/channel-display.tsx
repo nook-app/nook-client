@@ -123,7 +123,7 @@ export const FarcasterChannelTooltip = ({
 }) => {
   return (
     <Tooltip delay={100}>
-      <Tooltip.Trigger>{children}</Tooltip.Trigger>
+      <Tooltip.Trigger asChild>{children}</Tooltip.Trigger>
       <Tooltip.Content
         enterStyle={{ x: 0, y: -5, opacity: 0, scale: 0.9 }}
         exitStyle={{ x: 0, y: -5, opacity: 0, scale: 0.9 }}
@@ -142,7 +142,7 @@ export const FarcasterChannelTooltip = ({
         backgroundColor="$color1"
         borderColor="$borderColorBg"
         borderWidth="$0.25"
-        padding="$2"
+        padding="$0"
         width={400}
       >
         <ChannelOverview channel={channel} />

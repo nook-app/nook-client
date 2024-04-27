@@ -16,8 +16,8 @@ import {
   Search,
   Settings,
 } from "@tamagui/lucide-icons";
+import Link from "next/link";
 import { ReactNode } from "react";
-import { useRouter } from "solito/navigation";
 
 export const MobileNavigation = ({
   session,
@@ -33,7 +33,6 @@ export const MobileNavigation = ({
 };
 
 const MobileTabMenu = ({ user }: { user?: FarcasterUser }) => {
-  const router = useRouter();
   return (
     <YStack
       backgroundColor="$color2"
@@ -47,57 +46,61 @@ const MobileTabMenu = ({ user }: { user?: FarcasterUser }) => {
       bottom={0}
       zIndex={1000}
       display="none"
-      $xxs={{ display: "flex" }}
+      $xs={{ display: "flex" }}
       $platform-web={{
         position: "fixed",
       }}
     >
-      <NookButton
-        padding="$0"
-        borderRadius="$0"
-        height="$5"
-        flexGrow={1}
-        backgroundColor="transparent"
-        borderWidth="$0"
-        scaleIcon={1.5}
-        onPress={() => router.push("/")}
-        icon={<Home />}
-      />
-      <NookButton
-        padding="$0"
-        borderRadius="$0"
-        height="$5"
-        flexGrow={1}
-        backgroundColor="transparent"
-        borderWidth="$0"
-        scaleIcon={1.5}
-        onPress={() => router.push("/explore")}
-        icon={<Search />}
-      />
+      <Link href="/" style={{ flexGrow: 1 }}>
+        <NookButton
+          padding="$0"
+          borderRadius="$0"
+          height="$5"
+          width="100%"
+          backgroundColor="transparent"
+          borderWidth="$0"
+          scaleIcon={1.6}
+          icon={<Home />}
+        />
+      </Link>
+      <Link href="/explore" style={{ flexGrow: 1 }}>
+        <NookButton
+          padding="$0"
+          borderRadius="$0"
+          height="$5"
+          width="100%"
+          backgroundColor="transparent"
+          borderWidth="$0"
+          scaleIcon={1.6}
+          icon={<Search />}
+        />
+      </Link>
       {user && (
         <>
-          <NookButton
-            padding="$0"
-            flexGrow={1}
-            borderRadius="$0"
-            height="$5"
-            backgroundColor="transparent"
-            borderWidth="$0"
-            scaleIcon={1.5}
-            onPress={() => router.push("/notifications")}
-            icon={<Bell />}
-          />
-          <NookButton
-            padding="$0"
-            flexGrow={1}
-            borderRadius="$0"
-            height="$5"
-            backgroundColor="transparent"
-            borderWidth="$0"
-            scaleIcon={1.5}
-            onPress={() => router.push("/settings")}
-            icon={<Settings />}
-          />
+          <Link href="/notifications" style={{ flexGrow: 1 }}>
+            <NookButton
+              padding="$0"
+              width="100%"
+              borderRadius="$0"
+              height="$5"
+              backgroundColor="transparent"
+              borderWidth="$0"
+              scaleIcon={1.6}
+              icon={<Bell />}
+            />
+          </Link>
+          <Link href="/settings" style={{ flexGrow: 1 }}>
+            <NookButton
+              padding="$0"
+              width="100%"
+              borderRadius="$0"
+              height="$5"
+              backgroundColor="transparent"
+              borderWidth="$0"
+              scaleIcon={1.6}
+              icon={<Settings />}
+            />
+          </Link>
         </>
       )}
       <MobileNavigationAuth user={user} />
@@ -151,7 +154,7 @@ const MobileCreateButton = ({ session }: { session?: Session }) => {
 
   if (session.signer?.state !== "completed") {
     return (
-      <View display="none" $xxs={{ display: "flex" }}>
+      <View display="none" $xs={{ display: "flex" }}>
         <EnableSignerDialog>
           <NookButton
             variant="primary"
@@ -184,7 +187,7 @@ const MobileCreateButton = ({ session }: { session?: Session }) => {
   }
 
   return (
-    <View display="none" $xxs={{ display: "flex" }}>
+    <View display="none" $xs={{ display: "flex" }}>
       <CreateCastDialog initialState={{ text: "" }}>
         <NookButton
           variant="primary"

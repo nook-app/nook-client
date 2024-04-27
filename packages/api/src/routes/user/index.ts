@@ -111,7 +111,7 @@ export const userRoutes = async (fastify: FastifyInstance) => {
         );
 
         const [signer, user] = await Promise.all([
-          client.getSigner(data.token),
+          client.getSigner(`Bearer ${data.token}`),
           farcaster.getUser(privyUser.farcaster.fid.toString()),
         ]);
         return reply.send({ ...data, signer, user });

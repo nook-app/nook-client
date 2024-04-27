@@ -7,33 +7,25 @@ import {
   Volume,
   VolumeX,
 } from "@tamagui/lucide-icons";
-import { submitCastRemove } from "../../../server/farcaster";
-import { FarcasterCast, FetchCastsResponse } from "../../../types";
+import { Channel, FarcasterCast } from "../../../types";
 import { KebabMenu, KebabMenuItem } from "../../kebab-menu";
-import { useParams, useRouter } from "solito/navigation";
-import { useCallback, useState } from "react";
-import { fetchCast, useUser } from "../../../api/farcaster";
-import { Spinner, useToastController } from "@nook/ui";
+import { useRouter } from "solito/navigation";
+import { useCallback } from "react";
+import { useUser } from "../../../api/farcaster";
+import { Spinner } from "@nook/ui";
 import { useFollowUser } from "../../../hooks/useFollowUser";
-import {
-  muteChannel,
-  muteUser,
-  unmuteChannel,
-  unmuteUser,
-} from "../../../server/settings";
-import { useQueryClient, InfiniteData } from "@tanstack/react-query";
 import { CdnAvatar } from "../../cdn-avatar";
+import { useMuteUser } from "../../../hooks/useMuteUser";
+import { useMuteChannel } from "../../../hooks/useMuteChannel";
+import { useDeleteCast } from "../../../hooks/useDeleteCast";
 
-export const FarcasterCastKebabMenu = ({
-  cast,
-  queryKey,
-}: { cast: FarcasterCast; queryKey?: string[] }) => {
+export const FarcasterCastKebabMenu = ({ cast }: { cast: FarcasterCast }) => {
   return (
     <KebabMenu>
-      <DeleteCast cast={cast} queryKey={queryKey} />
-      <FollowUser cast={cast} queryKey={queryKey} />
-      <MuteUser cast={cast} queryKey={queryKey} />
-      <MuteChannel cast={cast} queryKey={queryKey} />
+      <DeleteCast cast={cast} />
+      <FollowUser cast={cast} />
+      <MuteUser cast={cast} />
+      {cast.channel && <MuteChannel channel={cast.channel} />}
       <ViewCastEngagements cast={cast} />
       {cast.appFid && <CastSource cast={cast} />}
     </KebabMenu>
@@ -43,75 +35,20 @@ export const FarcasterCastKebabMenu = ({
 const DeleteCast = ({
   cast,
   closeMenu,
-  queryKey,
-}: { cast: FarcasterCast; closeMenu?: () => void; queryKey?: string[] }) => {
-  const [isDeleting, setIsDeleting] = useState(false);
-  const toast = useToastController();
-  const { session, login } = useAuth();
-  const params = useParams();
-  const router = useRouter();
-  const queryClient = useQueryClient();
+}: { cast: FarcasterCast; closeMenu?: () => void }) => {
+  const { session } = useAuth();
+  const { isDeleting, deleteCast } = useDeleteCast(cast);
 
   if (cast.user.fid !== session?.fid) {
     return null;
   }
-
-  const handleDelete = useCallback(async () => {
-    if (!session) {
-      login();
-      return;
-    }
-    setIsDeleting(true);
-    await submitCastRemove({ hash: cast.hash });
-
-    const maxAttempts = 60;
-
-    let response;
-    let currentAttempts = 0;
-    while (currentAttempts < maxAttempts && response) {
-      currentAttempts++;
-      response = await fetchCast(cast.hash);
-      if (!response) break;
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-    }
-
-    if (response) {
-      setIsDeleting(false);
-      toast.show("Failed to refresh");
-      return;
-    }
-
-    if (queryKey) {
-      queryClient.setQueryData<InfiniteData<FetchCastsResponse>>(
-        queryKey,
-        (data) => {
-          if (!data) return;
-          return {
-            ...data,
-            pages: data.pages.map((page) => {
-              return {
-                ...page,
-                data: page.data.filter((c) => c.hash !== cast.hash),
-              };
-            }),
-          };
-        },
-      );
-    }
-
-    setIsDeleting(false);
-    toast.show("Cast deleted");
-    if (params.hash === cast.hash) {
-      router.push("/");
-    }
-  }, [cast, toast, router, params.hash, queryKey, queryClient, session, login]);
 
   return (
     <KebabMenuItem
       Icon={isDeleting ? <Spinner color="$color11" /> : Trash}
       title="Delete cast"
       color="$red9"
-      onPress={handleDelete}
+      onPress={deleteCast}
       closeMenu={closeMenu}
     />
   );
@@ -120,10 +57,8 @@ const DeleteCast = ({
 const FollowUser = ({
   cast,
   closeMenu,
-  queryKey,
-}: { cast: FarcasterCast; closeMenu?: () => void; queryKey?: string[] }) => {
+}: { cast: FarcasterCast; closeMenu?: () => void }) => {
   const { session, login } = useAuth();
-  const queryClient = useQueryClient();
   const { isFollowing, followUser, unfollowUser } = useFollowUser(cast.user);
   if (cast.user.fid === session?.fid) {
     return null;
@@ -135,43 +70,8 @@ const FollowUser = ({
       return;
     }
 
-    await unfollowUser({});
-    if (queryKey) {
-      queryClient.setQueryData<InfiniteData<FetchCastsResponse>>(
-        queryKey,
-        (data) => {
-          if (!data) return;
-          return {
-            ...data,
-            pages: data.pages.map((page) => {
-              return {
-                ...page,
-                data: page.data.map((c) => {
-                  if (c.user.fid === cast.user.fid) {
-                    return {
-                      ...c,
-                      user: {
-                        ...c.user,
-                        context: {
-                          followers: c.user.context?.followers || false,
-                          following: false,
-                        },
-                        engagement: {
-                          ...c.user.engagement,
-                          followers: c.user.engagement.followers - 1,
-                        },
-                      },
-                    };
-                  }
-                  return c;
-                }),
-              };
-            }),
-          };
-        },
-      );
-    }
-  }, [unfollowUser, queryClient, queryKey, cast, session, login]);
+    await unfollowUser();
+  }, [unfollowUser, session, login]);
 
   const handleFollowUser = useCallback(async () => {
     if (!session) {
@@ -179,43 +79,8 @@ const FollowUser = ({
       return;
     }
 
-    await followUser({});
-    if (queryKey) {
-      queryClient.setQueryData<InfiniteData<FetchCastsResponse>>(
-        queryKey,
-        (data) => {
-          if (!data) return;
-          return {
-            ...data,
-            pages: data.pages.map((page) => {
-              return {
-                ...page,
-                data: page.data.map((c) => {
-                  if (c.user.fid === cast.user.fid) {
-                    return {
-                      ...c,
-                      user: {
-                        ...c.user,
-                        context: {
-                          followers: c.user.context?.followers || false,
-                          following: true,
-                        },
-                        engagement: {
-                          ...c.user.engagement,
-                          followers: c.user.engagement.followers + 1,
-                        },
-                      },
-                    };
-                  }
-                  return c;
-                }),
-              };
-            }),
-          };
-        },
-      );
-    }
-  }, [followUser, queryClient, queryKey, cast, session, login]);
+    await followUser();
+  }, [followUser, session, login]);
 
   if (isFollowing) {
     return (
@@ -246,51 +111,13 @@ const FollowUser = ({
 const MuteUser = ({
   cast,
   closeMenu,
-  queryKey,
-}: { cast: FarcasterCast; closeMenu?: () => void; queryKey?: string[] }) => {
-  const { session, settings, login } = useAuth();
-  const queryClient = useQueryClient();
+}: { cast: FarcasterCast; closeMenu?: () => void }) => {
+  const { session } = useAuth();
+  const { isMuted, muteUser, unmuteUser } = useMuteUser(cast.user);
 
   if (cast.user.fid === session?.fid) {
     return null;
   }
-
-  const isMuted = settings?.mutedUsers.includes(cast.user.fid);
-
-  const handleMute = useCallback(async () => {
-    if (!session) {
-      login();
-      return;
-    }
-
-    await muteUser(cast.user.fid);
-    if (queryKey) {
-      queryClient.setQueryData<InfiniteData<FetchCastsResponse>>(
-        queryKey,
-        (data) => {
-          if (!data) return;
-          return {
-            ...data,
-            pages: data.pages.map((page) => {
-              return {
-                ...page,
-                data: page.data.filter((c) => c.user.fid !== cast.user.fid),
-              };
-            }),
-          };
-        },
-      );
-    }
-  }, [cast.user.fid, queryClient, queryKey, session, login]);
-
-  const handleUnmute = useCallback(async () => {
-    if (!session) {
-      login();
-      return;
-    }
-
-    await unmuteUser(cast.user.fid);
-  }, [cast.user.fid, login, session]);
 
   if (isMuted) {
     return (
@@ -300,7 +127,7 @@ const MuteUser = ({
           cast.user.username ? `@${cast.user.username}` : `!${cast.user.fid}`
         }`}
         color="$mauve12"
-        onPress={handleUnmute}
+        onPress={unmuteUser}
         closeMenu={closeMenu}
       />
     );
@@ -312,72 +139,25 @@ const MuteUser = ({
       title={`Mute ${
         cast.user.username ? `@${cast.user.username}` : `!${cast.user.fid}`
       }`}
-      onPress={handleMute}
+      onPress={muteUser}
       closeMenu={closeMenu}
     />
   );
 };
 
 const MuteChannel = ({
-  cast,
+  channel,
   closeMenu,
-  queryKey,
-}: { cast: FarcasterCast; closeMenu?: () => void; queryKey?: string[] }) => {
-  const { session, settings, login } = useAuth();
-  const queryClient = useQueryClient();
-
-  if (!cast.channel) {
-    return null;
-  }
-
-  const isMuted = settings?.mutedChannels.includes(cast.channel.url);
-
-  const handleMute = useCallback(async () => {
-    if (!session) {
-      login();
-      return;
-    }
-
-    if (!cast.channel) return;
-    await muteChannel(cast.channel.url);
-    if (queryKey) {
-      queryClient.setQueryData<InfiniteData<FetchCastsResponse>>(
-        queryKey,
-        (data) => {
-          if (!data) return;
-          return {
-            ...data,
-            pages: data.pages.map((page) => {
-              return {
-                ...page,
-                data: page.data.filter(
-                  (c) => c.channel?.url !== cast.channel?.url,
-                ),
-              };
-            }),
-          };
-        },
-      );
-    }
-  }, [session, login, cast.channel, queryKey, queryClient]);
-
-  const handleUnmute = useCallback(async () => {
-    if (!session) {
-      login();
-      return;
-    }
-
-    if (!cast.channel) return;
-    await unmuteChannel(cast.channel.url);
-  }, [cast.channel, session, login]);
+}: { channel: Channel; closeMenu?: () => void }) => {
+  const { isMuted, muteChannel, unmuteChannel } = useMuteChannel(channel);
 
   if (isMuted) {
     return (
       <KebabMenuItem
         Icon={Volume}
-        title={`Unmute /${cast.channel?.channelId}`}
+        title={`Unmute /${channel.channelId}`}
         color="$mauve12"
-        onPress={handleUnmute}
+        onPress={unmuteChannel}
         closeMenu={closeMenu}
       />
     );
@@ -386,8 +166,8 @@ const MuteChannel = ({
   return (
     <KebabMenuItem
       Icon={VolumeX}
-      title={`Mute /${cast.channel?.channelId}`}
-      onPress={handleMute}
+      title={`Mute /${channel.channelId}`}
+      onPress={muteChannel}
       closeMenu={closeMenu}
     />
   );

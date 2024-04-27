@@ -1,63 +1,55 @@
 import { useCallback, useState } from "react";
 import { FarcasterCast } from "../types";
 import { submitReactionAdd, submitReactionRemove } from "../server/farcaster";
+import { useToastController } from "@nook/ui";
+import { useCastStore } from "../store/useCastStore";
 
 export const useLikeCast = (cast: FarcasterCast) => {
-  const [isLiked, setIsLiked] = useState(cast.context?.liked ?? false);
+  const toast = useToastController();
 
-  const likeCast = useCallback(
-    async ({
-      onSucess,
-      onError,
-    }: { onSucess?: () => void; onError?: (error: string) => void }) => {
-      setIsLiked(true);
-      try {
-        const response = await submitReactionAdd({
-          reactionType: 1,
-          targetFid: cast.user.fid,
-          targetHash: cast.hash,
-        });
-        if (!("message" in response)) {
-          onSucess?.();
-          return;
-        }
-        onError?.(response.message);
-      } catch (e) {
-        onError?.("An error occurred. Try again later.");
-      }
-      setIsLiked(false);
-    },
-    [cast],
-  );
+  const storeCast = useCastStore((state) => state.casts[cast.hash]);
+  const updateLike = useCastStore((state) => state.likeCast);
+  const updateUnlike = useCastStore((state) => state.unlikeCast);
 
-  const unlikeCast = useCallback(
-    async ({
-      onSucess,
-      onError,
-    }: { onSucess?: () => void; onError?: (error: string) => void }) => {
-      setIsLiked(false);
-      try {
-        const response = await submitReactionRemove({
-          reactionType: 1,
-          targetFid: cast.user.fid,
-          targetHash: cast.hash,
-        });
-        if (!("message" in response)) {
-          onSucess?.();
-          return;
-        }
-        onError?.(response.message);
-      } catch (e) {
-        onError?.("An error occurred. Try again later.");
+  const likeCast = useCallback(async () => {
+    updateLike(cast);
+    try {
+      const response = await submitReactionAdd({
+        reactionType: 1,
+        targetFid: cast.user.fid,
+        targetHash: cast.hash,
+      });
+      if (!("message" in response)) {
+        return;
       }
-      setIsLiked(true);
-    },
-    [cast],
-  );
+      toast.show(response.message);
+    } catch (e) {
+      toast.show("An error occurred. Try again later.");
+    }
+    updateUnlike(cast);
+  }, [cast, updateLike, updateUnlike, toast]);
+
+  const unlikeCast = useCallback(async () => {
+    updateUnlike(cast);
+    try {
+      const response = await submitReactionRemove({
+        reactionType: 1,
+        targetFid: cast.user.fid,
+        targetHash: cast.hash,
+      });
+      if (!("message" in response)) {
+        return;
+      }
+      toast.show(response.message);
+    } catch (e) {
+      toast.show("An error occurred. Try again later.");
+    }
+    updateLike(cast);
+  }, [cast, updateLike, updateUnlike, toast]);
 
   return {
     likeCast,
     unlikeCast,
-    isLiked,
+    isLiked: storeCast?.context?.liked ?? cast.context?.liked ?? false,
   };
 };

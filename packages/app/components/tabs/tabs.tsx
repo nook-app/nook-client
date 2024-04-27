@@ -14,7 +14,6 @@ export const Tabs = ({
 }: { tabs: TabItem[]; activeTab: string }) => {
   return (
     <XStack
-      flexGrow={1}
       justifyContent="space-around"
       alignItems="center"
       borderBottomWidth="$0.5"

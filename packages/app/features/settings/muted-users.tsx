@@ -6,8 +6,8 @@ import { useUsers } from "../../api/farcaster";
 import { FarcasterUserDisplay } from "../../components/farcaster/users/user-display";
 import { Link } from "solito/link";
 import { VolumeX } from "@tamagui/lucide-icons";
-import { unmuteUser } from "../../server/settings";
 import { useEffect, useState } from "react";
+import { useMuteUser } from "../../hooks/useMuteUser";
 
 export const MutedUsers = ({ settings }: { settings: User }) => {
   const { data, isLoading } = useUsers(settings.mutedUsers);
@@ -18,11 +18,6 @@ export const MutedUsers = ({ settings }: { settings: User }) => {
       setUsers(data.data);
     }
   }, [data]);
-
-  const handleUnmuteUser = async (fid: string) => {
-    await unmuteUser(fid);
-    setUsers((prev) => prev.filter((user) => user.fid !== fid));
-  };
 
   return (
     <YStack>
@@ -40,16 +35,14 @@ export const MutedUsers = ({ settings }: { settings: User }) => {
         </View>
       )}
       {users.map((user) => (
-        <MutedUser key={user.fid} user={user} onPress={handleUnmuteUser} />
+        <MutedUser key={user.fid} user={user} />
       ))}
     </YStack>
   );
 };
 
-const MutedUser = ({
-  user,
-  onPress,
-}: { user: FarcasterUser; onPress: (fid: string) => void }) => {
+const MutedUser = ({ user }: { user: FarcasterUser }) => {
+  const { unmuteUser } = useMuteUser(user);
   return (
     <Link href={`/users/${user.username}`}>
       <XStack
@@ -77,7 +70,7 @@ const MutedUser = ({
           onPress={(e) => {
             e.preventDefault();
             e.stopPropagation();
-            onPress(user.fid);
+            unmuteUser();
           }}
         >
           <VolumeX

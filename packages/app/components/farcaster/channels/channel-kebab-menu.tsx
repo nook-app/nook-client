@@ -1,11 +1,8 @@
-import { useAuth } from "../../../context/auth";
 import { Link, MoreHorizontal, Volume, VolumeX } from "@tamagui/lucide-icons";
 import { Channel } from "../../../types";
 import { KebabMenu, KebabMenuItem } from "../../kebab-menu";
-import { useCallback } from "react";
 import { NookButton, useToastController } from "@nook/ui";
-import { muteChannel, unmuteChannel } from "../../../server/settings";
-import { useQueryClient } from "@tanstack/react-query";
+import { useMuteChannel } from "../../../hooks/useMuteChannel";
 
 export const FarcasterChannelKebabMenu = ({
   channel,
@@ -38,34 +35,7 @@ const MuteChannel = ({
   channel,
   closeMenu,
 }: { channel: Channel; closeMenu?: () => void }) => {
-  const { session, settings, login } = useAuth();
-  const queryClient = useQueryClient();
-
-  if (!channel) {
-    return null;
-  }
-
-  const isMuted = settings?.mutedChannels.includes(channel.url);
-
-  const handleMute = useCallback(async () => {
-    if (!session) {
-      login();
-      return;
-    }
-    if (!channel) return;
-    await muteChannel(channel.url);
-    queryClient.invalidateQueries({ queryKey: ["settings"] });
-  }, [channel, queryClient, session, login]);
-
-  const handleUnmute = useCallback(async () => {
-    if (!session) {
-      login();
-      return;
-    }
-    if (!channel) return;
-    await unmuteChannel(channel.url);
-    queryClient.invalidateQueries({ queryKey: ["settings"] });
-  }, [channel, queryClient, session, login]);
+  const { isMuted, muteChannel, unmuteChannel } = useMuteChannel(channel);
 
   if (isMuted) {
     return (
@@ -73,7 +43,7 @@ const MuteChannel = ({
         Icon={Volume}
         title={`Unmute /${channel?.channelId}`}
         color="$mauve12"
-        onPress={handleUnmute}
+        onPress={unmuteChannel}
         closeMenu={closeMenu}
       />
     );
@@ -83,7 +53,7 @@ const MuteChannel = ({
     <KebabMenuItem
       Icon={VolumeX}
       title={`Mute /${channel?.channelId}`}
-      onPress={handleMute}
+      onPress={muteChannel}
       closeMenu={closeMenu}
     />
   );

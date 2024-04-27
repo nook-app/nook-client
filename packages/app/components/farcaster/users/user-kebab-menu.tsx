@@ -2,10 +2,8 @@ import { useAuth } from "../../../context/auth";
 import { Link, MoreHorizontal, Volume, VolumeX } from "@tamagui/lucide-icons";
 import { FarcasterUser } from "../../../types";
 import { KebabMenu, KebabMenuItem } from "../../kebab-menu";
-import { useCallback } from "react";
 import { NookButton, useToastController } from "@nook/ui";
-import { muteUser, unmuteUser } from "../../../server/settings";
-import { useQueryClient } from "@tanstack/react-query";
+import { useMuteUser } from "../../../hooks/useMuteUser";
 
 export const FarcasterUserKebabMenu = ({ user }: { user: FarcasterUser }) => {
   const toast = useToastController();
@@ -36,32 +34,12 @@ const MuteUser = ({
   user,
   closeMenu,
 }: { user: FarcasterUser; closeMenu?: () => void }) => {
-  const { session, settings, login } = useAuth();
-  const queryClient = useQueryClient();
+  const { session } = useAuth();
+  const { isMuted, muteUser, unmuteUser } = useMuteUser(user);
 
   if (user.fid === session?.fid) {
     return null;
   }
-
-  const isMuted = settings?.mutedUsers.includes(user.fid);
-
-  const handleMute = useCallback(async () => {
-    if (!session) {
-      login();
-      return;
-    }
-    await muteUser(user.fid);
-    queryClient.invalidateQueries({ queryKey: ["settings"] });
-  }, [user.fid, queryClient, session, login]);
-
-  const handleUnmute = useCallback(async () => {
-    if (!session) {
-      login();
-      return;
-    }
-    await unmuteUser(user.fid);
-    queryClient.invalidateQueries({ queryKey: ["settings"] });
-  }, [user.fid, queryClient, session, login]);
 
   if (isMuted) {
     return (
@@ -69,7 +47,7 @@ const MuteUser = ({
         Icon={Volume}
         title={`Unmute ${user.username ? `@${user.username}` : `!${user.fid}`}`}
         color="$mauve12"
-        onPress={handleUnmute}
+        onPress={unmuteUser}
         closeMenu={closeMenu}
       />
     );
@@ -79,7 +57,7 @@ const MuteUser = ({
     <KebabMenuItem
       Icon={VolumeX}
       title={`Mute ${user.username ? `@${user.username}` : `!${user.fid}`}`}
-      onPress={handleMute}
+      onPress={muteUser}
       closeMenu={closeMenu}
     />
   );

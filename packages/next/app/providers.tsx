@@ -1,15 +1,14 @@
 "use client";
 
-import "@tamagui/core/reset.css";
-
 import React, { useEffect } from "react";
-import { ToastProvider } from "@nook/ui";
+import { ThemeName, ToastProvider } from "@nook/ui";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { PrivyProvider } from "@privy-io/react-auth";
 import { AuthProvider, useAuth } from "@nook/app/context/auth";
 import * as amplitude from "@amplitude/analytics-browser";
-import { FarcasterUser, Session } from "@nook/app/types";
 import { Toasts } from "@nook/app/components/toasts";
+import { Session } from "@nook/app/types";
+import { ThemeProvider } from "@nook/app/context/theme";
 
 const queryClient = new QueryClient();
 
@@ -18,7 +17,7 @@ export const Providers = ({
   session,
 }: {
   children: React.ReactNode;
-  session: Session | undefined;
+  session?: Session;
 }) => {
   return (
     <QueryClientProvider client={queryClient}>
@@ -29,13 +28,15 @@ export const Providers = ({
           loginMethods: ["farcaster"],
         }}
       >
-        <AuthProvider defaultSession={session}>
-          <AnalyticsProvider>
-            <ToastProvider>
-              <Toasts />
-              {children}
-            </ToastProvider>
-          </AnalyticsProvider>
+        <AuthProvider>
+          <ThemeProvider defaultTheme={session?.theme as ThemeName | undefined}>
+            <AnalyticsProvider>
+              <ToastProvider>
+                <Toasts />
+                {children}
+              </ToastProvider>
+            </AnalyticsProvider>
+          </ThemeProvider>
         </AuthProvider>
       </PrivyProvider>
     </QueryClientProvider>
@@ -48,7 +49,6 @@ const AnalyticsProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     if (session?.fid) {
       amplitude.init("7819c3ae9a7a78fc6835dcc60cdeb018", `fid:${session.fid}`);
-      amplitude.track("login", { userId: `fid:${session.fid}` });
     }
   }, [session?.fid]);
 

@@ -1,68 +1,58 @@
 import { useCallback, useState } from "react";
-import { useAuth } from "../context/auth";
 import { FarcasterUser } from "../types";
 import { submitLinkAdd, submitLinkRemove } from "../server/farcaster";
+import { useUserStore } from "../store/useUserStore";
+import { useToastController } from "@nook/ui";
 
 export const useFollowUser = (user: FarcasterUser) => {
-  const [isFollowing, setIsFollowing] = useState<boolean>(
-    user.context?.following ?? false,
-  );
-  const { session } = useAuth();
+  const toast = useToastController();
 
-  const followUser = useCallback(
-    async ({
-      onSucess,
-      onError,
-    }: { onSucess?: () => void; onError?: (error: string) => void }) => {
-      setIsFollowing(true);
-      try {
-        const response = await submitLinkAdd({
-          linkType: "follow",
-          targetFid: user.fid,
-          username: user.username,
-        });
-        if (!("message" in response)) {
-          onSucess?.();
-          return;
-        }
-        onError?.(response.message);
-      } catch (e) {
-        onError?.("An error occurred. Try again later.");
-      }
-      setIsFollowing(false);
-    },
-    [user],
+  const storeUser = useUserStore(
+    (state) => state.users[user.username || user.fid],
   );
+  const updateFollow = useUserStore((state) => state.followUser);
+  const updateUnfollow = useUserStore((state) => state.unfollowUser);
 
-  const unfollowUser = useCallback(
-    async ({
-      onSucess,
-      onError,
-    }: { onSucess?: () => void; onError?: (error: string) => void }) => {
-      setIsFollowing(false);
-      try {
-        const response = await submitLinkRemove({
-          linkType: "follow",
-          targetFid: user.fid,
-          username: user.username,
-        });
-        if (!("message" in response)) {
-          onSucess?.();
-          return;
-        }
-        onError?.(response.message);
-      } catch (e) {
-        onError?.("An error occurred. Try again later.");
+  const followUser = useCallback(async () => {
+    updateFollow(user);
+    try {
+      const response = await submitLinkAdd({
+        linkType: "follow",
+        targetFid: user.fid,
+        username: user.username,
+      });
+      if (!("message" in response)) {
+        return;
       }
-      setIsFollowing(true);
-    },
-    [user],
-  );
+      toast.show(response.message);
+    } catch (e) {
+      toast.show("An error occurred. Try again later.");
+    }
+    updateUnfollow(user);
+  }, [user, updateFollow, updateUnfollow, toast]);
+
+  const unfollowUser = useCallback(async () => {
+    updateUnfollow(user);
+    try {
+      const response = await submitLinkRemove({
+        linkType: "follow",
+        targetFid: user.fid,
+        username: user.username,
+      });
+      if (!("message" in response)) {
+        return;
+      }
+      toast.show(response.message);
+    } catch (e) {
+      toast.show("An error occurred. Try again later.");
+    }
+    updateFollow(user);
+  }, [user, updateFollow, updateUnfollow, toast]);
 
   return {
     followUser,
     unfollowUser,
-    isFollowing,
-    isViewer: !session || user.fid === session?.fid,
+    isFollowing:
+      storeUser?.context?.following ?? user.context?.following ?? false,
   };
 };

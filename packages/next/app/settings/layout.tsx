@@ -1,4 +1,5 @@
 import { getServerSession } from "@nook/app/server/auth";
+import { PageNavigation } from "../../components/PageNavigation";
 import { notFound } from "next/navigation";
 
 export default async function Home({
@@ -6,5 +7,5 @@ export default async function Home({
 }: { children: React.ReactNode }) {
   const session = await getServerSession();
   if (!session) return notFound();
-  return <>{children}</>;
+  return <PageNavigation>{children}</PageNavigation>;
 }

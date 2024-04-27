@@ -10,10 +10,9 @@ export const FarcasterUserFollowButton = ({
   user: FarcasterUser;
 }) => {
   const { session, login, signer } = useAuth();
-  const { followUser, unfollowUser, isFollowing, isViewer } =
-    useFollowUser(user);
+  const { followUser, unfollowUser, isFollowing } = useFollowUser(user);
 
-  if (isViewer) {
+  if (!session || user.fid === session.fid) {
     return null;
   }
 
@@ -29,9 +28,9 @@ export const FarcasterUserFollowButton = ({
             return;
           }
           if (isFollowing) {
-            unfollowUser({});
+            unfollowUser();
           } else {
-            followUser({});
+            followUser();
           }
         }}
         variant={isFollowing ? "active-action" : "action"}

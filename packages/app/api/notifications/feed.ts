@@ -4,6 +4,7 @@ import {
   FetchNotificationsResponse,
   GetNotificationsRequest,
   NotificationResponse,
+  NotificationType,
 } from "../../types";
 import { hasCastDiff, hasUserDiff, makeRequest } from "../utils";
 import {
@@ -69,7 +70,10 @@ export const useMentionsNotifications = (fid: string) => {
   });
 };
 
-export const useAllNotifications = (fid: string) => {
+export const useAllNotifications = (
+  fid: string,
+  types?: NotificationType[],
+) => {
   const queryClient = useQueryClient();
   return useInfiniteQuery<
     FetchNotificationsResponse,
@@ -78,9 +82,12 @@ export const useAllNotifications = (fid: string) => {
     string[],
     string | undefined
   >({
-    queryKey: ["notifications-all", fid],
+    queryKey: ["notifications-all", fid, JSON.stringify(types)],
     queryFn: async ({ pageParam }) => {
-      const data = await fetchNotifications({ fid }, pageParam);
+      const data = await fetchNotifications(
+        { fid, types: types && types.length > 0 ? types : undefined },
+        pageParam,
+      );
       cacheRelatedData(queryClient, data.data);
       return data;
     },

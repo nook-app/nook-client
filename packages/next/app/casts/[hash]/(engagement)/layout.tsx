@@ -1,49 +1,34 @@
-import { CastSidebar } from "@nook/app/features/farcaster/cast-screen/cast-sidebar";
-import { PageNavigation } from "../../../../components/PageNavigation";
-import { NavigationHeader } from "../../../../components/NavigationHeader";
-import { fetchCast } from "@nook/app/api/farcaster";
-import { Metadata, ResolvingMetadata } from "next";
-
-export async function generateMetadata(
-  { params }: { params: { hash: string } },
-  parent: ResolvingMetadata,
-): Promise<Metadata | ResolvingMetadata> {
-  const cast = await fetchCast(params.hash);
-  if (!cast) return parent;
-
-  return {
-    title: cast.user.displayName
-      ? `${cast.user.displayName} (@${cast.user.username})`
-      : `@${cast.user.username}`,
-    description: cast.text,
-    openGraph: {
-      title: cast.user.displayName
-        ? `${cast.user.displayName} (@${cast.user.username})`
-        : `@${cast.user.username}`,
-      description: cast.text,
-      images: [
-        {
-          url: `https://client.warpcast.com/v2/og-image?castHash=${params.hash}`,
-          alt: cast.user.displayName || `@${cast.user.username}`,
-        },
-      ],
-    },
-    manifest: "/manifest.json",
-  };
-}
+import { ReactNode } from "react";
+import { getServerSession } from "@nook/app/server/auth";
+import { TabNavigation } from "@nook/app/features/tabs";
 
 export default async function Cast({
   children,
   params,
-}: { children: React.ReactNode; params: { hash: string } }) {
-  const cast = await fetchCast(params.hash);
+}: { children: ReactNode; params: { hash: string } }) {
+  const session = await getServerSession();
   return (
-    <PageNavigation sidebar={<CastSidebar cast={cast} />}>
-      <NavigationHeader
-        title="Cast Engagements"
-        backHref={`/casts/${params.hash}`}
-      />
+    <TabNavigation
+      tabs={[
+        {
+          id: "quotes",
+          label: "Quotes",
+          href: `/casts/${params.hash}/quotes`,
+        },
+        {
+          id: "recasts",
+          label: "Recasts",
+          href: `/casts/${params.hash}/recasts`,
+        },
+        {
+          id: "likes",
+          label: "Likes",
+          href: `/casts/${params.hash}/likes`,
+        },
+      ]}
+      session={session}
+    >
       {children}
-    </PageNavigation>
+    </TabNavigation>
   );
 }

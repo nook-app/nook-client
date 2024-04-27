@@ -5,6 +5,7 @@ import { Spinner, View } from "@nook/ui";
 import { InfiniteScrollList } from "../../../components/infinite-scroll-list";
 import { FarcasterCastDisplay } from "../../../components/farcaster/casts/cast-display";
 import { Loading } from "../../../components/loading";
+import { useRouter } from "next/navigation";
 
 export const FarcasterInfiniteFeed = ({
   queryKey,
@@ -25,6 +26,11 @@ export const FarcasterInfiniteFeed = ({
   ListHeaderComponent?: JSX.Element;
   isLoading?: boolean;
 }) => {
+  const router = useRouter();
+  if (isLoading) {
+    return <Loading />;
+  }
+
   return (
     <InfiniteScrollList
       data={casts}
@@ -45,7 +51,12 @@ export const FarcasterInfiniteFeed = ({
         ) : null
       }
       ListHeaderComponent={ListHeaderComponent}
-      ListEmptyComponent={isLoading ? <Loading /> : <View />}
+      onViewableItemsChanged={({ viewableItems }) => {
+        const casts = viewableItems.map((item) => item.item as FarcasterCast);
+        for (const cast of casts) {
+          router.prefetch(`/casts/${cast.hash}`);
+        }
+      }}
     />
   );
 };

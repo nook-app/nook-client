@@ -1,14 +1,19 @@
-import {
-  MediaAuthenticatedTabs,
-  MediaUnauthenticatedTabs,
-} from "@nook/app/features/home/media-tabs";
-import { getServerSession } from "@nook/app/server/auth";
+import { FarcasterFilteredFeed } from "@nook/app/features/farcaster/cast-feed/filtered-feed";
+import { Display, UserFilterType } from "@nook/app/types";
 
 export default async function Home() {
-  const session = await getServerSession();
-  if (session) {
-    return <MediaAuthenticatedTabs session={session} activeTab="latest" />;
-  }
-
-  return <MediaUnauthenticatedTabs activeTab="latest" />;
+  return (
+    <FarcasterFilteredFeed
+      filter={{
+        users: {
+          type: UserFilterType.POWER_BADGE,
+          data: {
+            badge: true,
+          },
+        },
+        contentTypes: ["image", "application/x-mpegURL"],
+      }}
+      displayMode={Display.MEDIA}
+    />
+  );
 }

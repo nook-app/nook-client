@@ -56,7 +56,6 @@ function InfiniteScrollListImpl<Item>(
     ListFooterComponent,
     ListEmptyComponent,
     onEndReached,
-    onEndReachedThreshold,
     initialScrollIndex,
     numColumns = 1,
     overscan,
@@ -147,22 +146,17 @@ function InfiniteScrollListImpl<Item>(
 
   const renderedItems = rowVirtualizer.getVirtualItems();
 
-  const [lastIndex, setLastIndex] = useState(0);
-
   useEffect(() => {
     const lastItem = renderedItems[renderedItems.length - 1];
-    if (lastItem) {
-      setLastIndex(lastItem.index);
+
+    if (!lastItem) {
+      return;
     }
-  }, [renderedItems]);
 
-  useEffect(() => {
-    const threshold = onEndReachedThreshold ?? 1;
-
-    if (count > 0 && lastIndex >= count - threshold) {
+    if (count > 0 && lastItem.index >= count - 1) {
       onEndReached?.();
     }
-  }, [count, onEndReached, lastIndex]);
+  }, [count, onEndReached, renderedItems]);
 
   const saveScrollPosition = useStableCallback(() => {
     sessionStorage.setItem(key, rowVirtualizer.scrollOffset.toString());

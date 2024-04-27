@@ -1,6 +1,5 @@
 "use client";
 
-import { useTheme } from "@nook/app/context/theme";
 import { View, XStack } from "@nook/ui";
 import { ReactNode } from "react";
 

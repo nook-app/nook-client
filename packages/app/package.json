@@ -25,7 +25,8 @@
     "qrcode.react": "^3.1.0",
     "react-native-safe-area-context": "4.8.2",
     "react-player": "^2.16.0",
-    "solito": "^4.2.2"
+    "solito": "^4.2.2",
+    "zustand": "^4.5.2"
   },
   "devDependencies": {
     "@types/js-cookie": "^3",

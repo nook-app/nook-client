@@ -120,7 +120,7 @@ export const FarcasterUserAvatar = ({
   return Component;
 };
 
-const FarcasterUserTooltip = ({
+export const FarcasterUserTooltip = ({
   user,
   children,
 }: {
@@ -129,7 +129,7 @@ const FarcasterUserTooltip = ({
 }) => {
   return (
     <Tooltip delay={100}>
-      <Tooltip.Trigger>{children}</Tooltip.Trigger>
+      <Tooltip.Trigger asChild>{children}</Tooltip.Trigger>
       <Tooltip.Content
         enterStyle={{ x: 0, y: -5, opacity: 0, scale: 0.9 }}
         exitStyle={{ x: 0, y: -5, opacity: 0, scale: 0.9 }}
@@ -148,7 +148,7 @@ const FarcasterUserTooltip = ({
         backgroundColor="$color1"
         borderColor="$borderColorBg"
         borderWidth="$0.25"
-        padding="$2"
+        padding="$0"
         width={400}
       >
         <UserHeader user={user} size="$6" />

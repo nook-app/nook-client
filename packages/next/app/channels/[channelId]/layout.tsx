@@ -4,6 +4,7 @@ import { ChannelSidebar } from "@nook/app/features/farcaster/channel-profile/cha
 import { PageNavigation } from "../../../components/PageNavigation";
 import { NavigationHeader } from "../../../components/NavigationHeader";
 import { Metadata, ResolvingMetadata } from "next";
+import { TabNavigation } from "@nook/app/features/tabs";
 
 export async function generateMetadata(
   { params }: { params: { channelId: string } },
@@ -38,7 +39,32 @@ export default async function Channel({
     <PageNavigation sidebar={<ChannelSidebar channel={channel} />}>
       <NavigationHeader title={channel.name} />
       <ChannelHeader channel={channel} />
-      {children}
+      <TabNavigation
+        tabs={[
+          {
+            id: "relevant",
+            label: "Relevant",
+            href: `/channels/${channel.channelId}`,
+          },
+          {
+            id: "all",
+            label: "All",
+            href: `/channels/${channel.channelId}/all`,
+          },
+          {
+            id: "from-hosts",
+            label: "From Hosts",
+            href: `/channels/${channel.channelId}/from-hosts`,
+          },
+          {
+            id: "media",
+            label: "Media",
+            href: `/channels/${channel.channelId}/media`,
+          },
+        ]}
+      >
+        {children}
+      </TabNavigation>
     </PageNavigation>
   );
 }

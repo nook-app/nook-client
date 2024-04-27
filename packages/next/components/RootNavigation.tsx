@@ -44,7 +44,7 @@ export const RootNavigation = ({
         maxWidth={280}
         alignItems="flex-end"
         $lg={{ width: "auto" }}
-        $xxs={{ display: "none" }}
+        $xs={{ display: "none" }}
       >
         <View
           top={0}
@@ -171,7 +171,7 @@ const SessionItem = ({ user }: { user?: FarcasterUser }) => {
             variant="primary"
             onPress={login}
             backgroundColor={
-              ["light", "dark"].includes(theme) ? "$color12" : undefined
+              ["light", "dark"].includes(theme) ? "$color12" : "$color9"
             }
           >
             <NookText
@@ -190,7 +190,7 @@ const SessionItem = ({ user }: { user?: FarcasterUser }) => {
             padding="$0"
             onPress={login}
             backgroundColor={
-              ["light", "dark"].includes(theme) ? "$color12" : undefined
+              ["light", "dark"].includes(theme) ? "$color12" : "$color9"
             }
           >
             <LogIn

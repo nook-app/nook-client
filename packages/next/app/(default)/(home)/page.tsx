@@ -1,14 +1,24 @@
-import {
-  HomeAuthenticatedTabs,
-  HomeUnauthenticatedTabs,
-} from "@nook/app/features/home/home-tabs";
+import { FarcasterFilteredFeed } from "@nook/app/features/farcaster/cast-feed/filtered-feed";
+import { FarcasterTrendingFeed } from "@nook/app/features/farcaster/cast-feed/trending-feed";
 import { getServerSession } from "@nook/app/server/auth";
+import { UserFilterType } from "@nook/app/types";
 
 export default async function Home() {
   const session = await getServerSession();
   if (session) {
-    return <HomeAuthenticatedTabs session={session} activeTab="following" />;
+    return (
+      <FarcasterFilteredFeed
+        filter={{
+          users: {
+            type: UserFilterType.FOLLOWING,
+            data: {
+              fid: session?.fid,
+            },
+          },
+        }}
+      />
+    );
   }
 
-  return <HomeUnauthenticatedTabs activeTab="trending" />;
+  return <FarcasterTrendingFeed />;
 }

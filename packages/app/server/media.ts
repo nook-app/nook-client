@@ -1,12 +1,12 @@
 "use server";
 
-import { makeRequest } from "../api/utils";
+import { makeRequest, makeUrlRequest } from "../api/utils";
 import { ImgurUploadResponse } from "../types";
 
 export const uploadImage = async (
   image: string,
 ): Promise<ImgurUploadResponse> => {
-  return await makeRequest("https://imgur-apiv3.p.rapidapi.com/3/image", {
+  return await makeUrlRequest("https://imgur-apiv3.p.rapidapi.com/3/image", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

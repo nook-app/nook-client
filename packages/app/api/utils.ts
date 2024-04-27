@@ -3,10 +3,16 @@ import { Channel, FarcasterCast, FarcasterUser, Session } from "../types";
 import { getSession } from "../utils/local-storage";
 
 export const makeRequest = async (path: string, requestInit?: RequestInit) => {
-  const url = path.startsWith("http")
-    ? path
-    : `${process.env.NEXT_PUBLIC_API_BASE_URL}${path}`;
+  return await makeUrlRequest(
+    `${process.env.NEXT_PUBLIC_API_BASE_URL}${path}`,
+    requestInit,
+  );
+};
 
+export const makeUrlRequest = async (
+  url: string,
+  requestInit?: RequestInit,
+) => {
   const headers = new Headers(requestInit?.headers);
 
   if (!headers.has("Authorization")) {

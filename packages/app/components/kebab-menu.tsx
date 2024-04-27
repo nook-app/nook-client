@@ -75,7 +75,6 @@ export const KebabMenuItem = ({
       icon={Icon}
       color={color}
       onPress={() => {
-        console.log(closeMenu);
         onPress?.();
         closeMenu?.();
       }}

@@ -1,3 +1,4 @@
+"use client";
 import { Spinner, View } from "@nook/ui";
 
 export const Loading = () => (

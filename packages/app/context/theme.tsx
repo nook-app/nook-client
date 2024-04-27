@@ -1,15 +1,18 @@
-import { createContext, useContext, ReactNode, useState, useMemo } from "react";
+import {
+  createContext,
+  useContext,
+  ReactNode,
+  useState,
+  useMemo,
+  useEffect,
+} from "react";
 import {
   config,
   TamaguiProvider as TamaguiProviderOG,
   Theme,
   ThemeName,
 } from "@nook/ui";
-import {
-  ColorScheme,
-  NextThemeProvider,
-  useRootTheme,
-} from "@tamagui/next-theme";
+import { NextThemeProvider } from "@tamagui/next-theme";
 import { useServerInsertedHTML } from "next/navigation";
 import { updateTheme } from "../server/user";
 import { useAuth } from "./auth";
@@ -18,8 +21,6 @@ import { updateSession } from "../utils/local-storage";
 type ThemeContextType = {
   theme: ThemeName;
   setTheme: (theme: ThemeName) => void;
-  colorScheme: "light" | "dark";
-  colorSchemeOverride: string | null;
 };
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
@@ -30,15 +31,17 @@ type SheetProviderProps = {
 };
 
 export const ThemeProvider = ({
-  defaultTheme,
   children,
+  defaultTheme,
 }: SheetProviderProps) => {
   const [theme, setTheme] = useState<ThemeName>(defaultTheme || "pink");
-  const [colorScheme, setColorScheme] = useRootTheme();
-  const [colorSchemeOverride, setColorSchemeOverride] = useState<string | null>(
-    null,
-  );
   const { session } = useAuth();
+
+  useEffect(() => {
+    if (session?.theme) {
+      setTheme(session.theme as ThemeName);
+    }
+  }, [session]);
 
   useServerInsertedHTML(() => {
     return (
@@ -64,19 +67,17 @@ export const ThemeProvider = ({
   };
 
   return (
-    <NextThemeProvider onChangeTheme={(t) => setColorScheme(t as ColorScheme)}>
+    <NextThemeProvider>
       <TamaguiProviderOG
         config={config}
         disableInjectCSS
         themeClassNameOnRoot
-        defaultTheme={colorScheme}
+        defaultTheme={"dark"}
       >
         <ThemeContext.Provider
           value={{
             theme,
             setTheme: handleSetTheme,
-            colorScheme,
-            colorSchemeOverride,
           }}
         >
           <Theme name={theme}>{contents}</Theme>

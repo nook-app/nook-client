@@ -1,11 +1,9 @@
+import "@tamagui/core/reset.css";
+
 import { Metadata } from "next";
 import { RootNavigation } from "../components/RootNavigation";
 import { Providers } from "./providers";
-import {
-  getServerSession,
-  getSigner,
-  loginServer,
-} from "@nook/app/server/auth";
+import { getServerSession, getSigner } from "@nook/app/server/auth";
 import { ReactNode } from "react";
 import { fetchUser } from "@nook/app/api/farcaster";
 import { FarcasterUser, GetSignerResponse } from "@nook/app/types";

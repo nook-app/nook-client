@@ -3,6 +3,8 @@ import { Buffer } from "buffer";
 import { FarcasterCast } from "../../../types";
 import { TextLink } from "solito/link";
 import { NookText } from "@nook/ui";
+import { FarcasterChannelTooltip } from "../channels/channel-display";
+import { FarcasterUserTooltip } from "../users/user-display";
 
 export const FarcasterCastText = ({
   cast,
@@ -109,30 +111,34 @@ export const FarcasterCastText = ({
         ),
       );
       textParts.push(
-        <NookText
+        <FarcasterChannelTooltip
           key={`${cast.hash}-${mention.position}-${label}`}
-          onPress={(e) => {
-            e.stopPropagation();
-          }}
+          channel={mention.channel}
         >
-          <TextLink href={`/channels/${mention.channel.channelId}`}>
-            <NookText
-              color="$color11"
-              fontSize={
-                fontSize as
-                  | "unset"
-                  | GetThemeValueForKey<"fontSize">
-                  | undefined
-              }
-              hoverStyle={{
-                // @ts-ignore
-                textDecoration: "underline",
-              }}
-            >
-              {label}
-            </NookText>
-          </TextLink>
-        </NookText>,
+          <NookText
+            onPress={(e) => {
+              e.stopPropagation();
+            }}
+          >
+            <TextLink href={`/channels/${mention.channel.channelId}`}>
+              <NookText
+                color="$color11"
+                fontSize={
+                  fontSize as
+                    | "unset"
+                    | GetThemeValueForKey<"fontSize">
+                    | undefined
+                }
+                hoverStyle={{
+                  // @ts-ignore
+                  textDecoration: "underline",
+                }}
+              >
+                {label}
+              </NookText>
+            </TextLink>
+          </NookText>
+        </FarcasterChannelTooltip>,
       );
     } else {
       const label = `@${mention.user.username || "unknown"}`;
@@ -143,30 +149,34 @@ export const FarcasterCastText = ({
         ),
       );
       textParts.push(
-        <NookText
+        <FarcasterUserTooltip
+          user={mention.user}
           key={`${cast.hash}-${mention.position}-${label}`}
-          onPress={(e) => {
-            e.stopPropagation();
-          }}
         >
-          <TextLink href={`/users/${mention.user.username}`}>
-            <NookText
-              color="$color11"
-              fontSize={
-                fontSize as
-                  | "unset"
-                  | GetThemeValueForKey<"fontSize">
-                  | undefined
-              }
-              hoverStyle={{
-                // @ts-ignore
-                textDecoration: "underline",
-              }}
-            >
-              {label}
-            </NookText>
-          </TextLink>
-        </NookText>,
+          <NookText
+            onPress={(e) => {
+              e.stopPropagation();
+            }}
+          >
+            <TextLink href={`/users/${mention.user.username}`}>
+              <NookText
+                color="$color11"
+                fontSize={
+                  fontSize as
+                    | "unset"
+                    | GetThemeValueForKey<"fontSize">
+                    | undefined
+                }
+                hoverStyle={{
+                  // @ts-ignore
+                  textDecoration: "underline",
+                }}
+              >
+                {label}
+              </NookText>
+            </TextLink>
+          </NookText>
+        </FarcasterUserTooltip>,
       );
     }
     index = Number(mention.position);

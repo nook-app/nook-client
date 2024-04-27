@@ -17,6 +17,7 @@ import { submitFrameAction } from "../../server/farcaster";
 import { useRouter } from "solito/navigation";
 import { EnableSignerDialog } from "../../features/farcaster/enable-signer/dialog";
 import { useTheme } from "../../context/theme";
+import { Link } from "solito/link";
 
 export const EmbedFrame = ({
   cast,
@@ -117,15 +118,22 @@ export const EmbedFrame = ({
         >
           {frame.image && (
             <View
-              style={{ position: "relative" }}
-              onPress={() => router.push(content.uri)}
+              onPress={(e) => {
+                e.stopPropagation();
+              }}
             >
-              <Image
-                source={{ uri: frame.image }}
-                style={{
-                  aspectRatio: frame.imageAspectRatio === "1:1" ? 1 : 1.91,
-                }}
-              />
+              <Link
+                style={{ position: "relative" }}
+                href={content.uri}
+                target="_blank"
+              >
+                <Image
+                  source={{ uri: frame.image }}
+                  style={{
+                    aspectRatio: frame.imageAspectRatio === "1:1" ? 1 : 1.91,
+                  }}
+                />
+              </Link>
             </View>
           )}
           <YStack
