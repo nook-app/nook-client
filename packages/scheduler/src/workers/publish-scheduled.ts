@@ -1,8 +1,8 @@
 import { QueueName, getWorker } from "@nook/common/queues";
 import { ScheduledCastEventProcessor } from "../processors/ScheduledCastProcessor";
+const processor = new ScheduledCastEventProcessor();
 
 const run = async () => {
-  const processor = new ScheduledCastEventProcessor();
   const worker = getWorker(QueueName.ScheduledCast, async (job) => {
     await processor.process(job.data);
   });
