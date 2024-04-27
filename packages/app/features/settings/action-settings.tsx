@@ -29,12 +29,12 @@ export const ActionSettings = () => {
         </NookText>
       </YStack>
       <XStack gap="$5" justifyContent="space-around">
-        {topBar.map((a, i) => (
+        {topBar?.map((a, i) => (
           <ActionItem key={`top-${i}`} action={a} index={i} />
         ))}
       </XStack>
       <XStack gap="$5" justifyContent="space-around">
-        {bottomBar.map((a, i) => (
+        {bottomBar?.map((a, i) => (
           <ActionItem key={`bottom-${i}`} action={a} index={i + 4} />
         ))}
       </XStack>

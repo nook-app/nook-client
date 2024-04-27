@@ -39,8 +39,10 @@ export async function getTrendingChannels() {
     };
   } = await res.json();
 
-  return neynarChannels.channels.map((channel) =>
-    mapToNookChannel(channel.channel),
+  return (
+    neynarChannels?.channels?.map((channel) =>
+      mapToNookChannel(channel.channel),
+    ) || []
   );
 }
 
@@ -67,7 +69,7 @@ export async function getRecommendedChannels() {
     };
   } = await res.json();
 
-  return neynarChannels.channels.map(mapToNookChannel);
+  return neynarChannels?.channels?.map(mapToNookChannel) || [];
 }
 
 const mapToNookChannel = (channel: NeynarChannel): Channel => ({
@@ -78,7 +80,7 @@ const mapToNookChannel = (channel: NeynarChannel): Channel => ({
   imageUrl: channel.image_url,
   followerCount: channel.follower_count,
   leadFid: channel.lead?.fid.toString(),
-  hostFids: channel.hosts.map((host) => host.fid.toString()),
+  hostFids: channel.hosts?.map((host) => host.fid.toString()) || [],
   createdAt: channel.created_at
     ? new Date(channel.created_at * 1000)
     : new Date(),
