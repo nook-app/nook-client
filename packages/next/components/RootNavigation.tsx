@@ -175,7 +175,7 @@ const SessionItem = ({ session }: { session: Session | undefined }) => {
             <NookText
               fontWeight="700"
               fontSize="$5"
-              color={["light", "dark"].includes(theme) ? "$color1" : "$color12"}
+              color={["light", "dark"].includes(theme) ? "$color1" : "white"}
             >
               Sign In
             </NookText>
@@ -193,7 +193,7 @@ const SessionItem = ({ session }: { session: Session | undefined }) => {
           >
             <LogIn
               size={24}
-              color={["light", "dark"].includes(theme) ? "$color1" : "$color12"}
+              color={["light", "dark"].includes(theme) ? "$color1" : "white"}
             />
           </NookButton>
         </View>

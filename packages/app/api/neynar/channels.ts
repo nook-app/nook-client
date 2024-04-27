@@ -20,5 +20,10 @@ export const getUserHighlights = async (
     }[];
   } = await res.json();
 
-  return await fetchCasts(neynarCasts.casts.map((cast) => cast.hash));
+  const hashes = neynarCasts?.casts?.map((cast) => cast.hash);
+  if (!hashes) {
+    return { data: [] };
+  }
+
+  return await fetchCasts(hashes);
 };

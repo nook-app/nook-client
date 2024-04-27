@@ -30,7 +30,7 @@ export const getFarcasterActions = async (
   } = await response.json();
 
   return {
-    data: data.result.actions.map((action) => ({
+    data: data.result.actions?.map((action) => ({
       name: action.name,
       icon: action.icon,
       description: action.description,

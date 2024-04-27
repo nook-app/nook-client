@@ -12,7 +12,7 @@ import {
   Theme,
   ThemeName,
 } from "@nook/ui";
-import { NextThemeProvider } from "@tamagui/next-theme";
+import { NextThemeProvider, useRootTheme } from "@tamagui/next-theme";
 import { useServerInsertedHTML } from "next/navigation";
 import { updateTheme } from "../server/user";
 import { useAuth } from "./auth";
@@ -34,6 +34,8 @@ export const ThemeProvider = ({
   children,
   defaultTheme,
 }: SheetProviderProps) => {
+  const [rootTheme, setRootTheme] = useRootTheme();
+
   const [theme, setTheme] = useState<ThemeName>(defaultTheme || "pink");
   const { session } = useAuth();
 
@@ -67,12 +69,12 @@ export const ThemeProvider = ({
   };
 
   return (
-    <NextThemeProvider>
+    <NextThemeProvider onChangeTheme={setRootTheme as (name: string) => void}>
       <TamaguiProviderOG
         config={config}
         disableInjectCSS
         themeClassNameOnRoot
-        defaultTheme={"dark"}
+        defaultTheme={rootTheme}
       >
         <ThemeContext.Provider
           value={{

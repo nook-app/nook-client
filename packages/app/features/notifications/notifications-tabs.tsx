@@ -8,7 +8,7 @@ import {
 } from "../../api/notifications";
 import { NotificationsInfiniteFeed } from "./notifications-feed";
 import { NotificationType } from "../../types";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   AtSign,
   Heart,
@@ -17,12 +17,20 @@ import {
   Repeat2,
   User,
 } from "@tamagui/lucide-icons";
+import { markNotificationsRead } from "../../server/notifications";
+import { useQueryClient } from "@tanstack/react-query";
 
 export const NotificationsPriorityFeed = ({ fid }: { fid: string }) => {
+  const queryClient = useQueryClient();
   const { data, isLoading, hasNextPage, fetchNextPage, isFetchingNextPage } =
     usePriorityNotifications(fid);
 
   const notifications = data?.pages.flatMap((page) => page.data) ?? [];
+
+  useEffect(() => {
+    queryClient.invalidateQueries({ queryKey: ["notifications-count"] });
+    markNotificationsRead();
+  }, [queryClient]);
 
   return (
     <NotificationsInfiniteFeed

@@ -31,7 +31,7 @@ export const Toasts = () => {
         }
       >
         <Toast.Title
-          color={["light", "dark"].includes(theme) ? "$color1" : "$color12"}
+          color={["light", "dark"].includes(theme) ? "$color1" : "white"}
           fontWeight="500"
         >
           {toast.title}

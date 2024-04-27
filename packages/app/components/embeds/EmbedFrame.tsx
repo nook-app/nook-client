@@ -267,13 +267,13 @@ const FrameButtonAction = ({
           transition: "all 0.2s ease-in-out",
         }}
         fontWeight="500"
-        color={["light", "dark"].includes(theme) ? "$color1" : "$color12"}
+        color={["light", "dark"].includes(theme) ? "$color1" : "white"}
       >
         {button.action === "tx" && (
           <>
             <Zap
               size={12}
-              color={["light", "dark"].includes(theme) ? "$color1" : "$color12"}
+              color={["light", "dark"].includes(theme) ? "$color1" : "white"}
               fill={
                 ["light", "dark"].includes(theme)
                   ? tamaguiTheme.color1.val
@@ -290,7 +290,7 @@ const FrameButtonAction = ({
             {" "}
             <ExternalLink
               size={12}
-              color={["light", "dark"].includes(theme) ? "$color1" : "$color12"}
+              color={["light", "dark"].includes(theme) ? "$color1" : "white"}
             />
           </>
         ) : null}
