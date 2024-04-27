@@ -134,9 +134,6 @@ dist
 
 .DS_Store
 
-
-
-
 # keep types in repo to track them
 # **/types/**/*.d.ts
 # but map can be ignored and just published on npm
@@ -191,6 +188,8 @@ apps/studio/types/**
 
 .expo
 
-ios 
+ios
 
 android
+
+.turbo
