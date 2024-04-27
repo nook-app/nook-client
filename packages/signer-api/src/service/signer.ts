@@ -15,6 +15,7 @@ import {
   FrameActionBody,
   Embed,
   CastAddMessage,
+  toFarcasterTime,
 } from "@farcaster/hub-nodejs";
 import { bufferToHex, hexToBuffer } from "@nook/common/farcaster";
 import { PrismaClient, Signer } from "@nook/common/prisma/signer";
@@ -210,7 +211,12 @@ export class SignerService {
     };
   }
 
-  async formatCastAdd(fid: string, signer: Signer, req: SubmitCastAddRequest) {
+  async formatCastAdd(
+    fid: string,
+    signer: Signer,
+    req: SubmitCastAddRequest,
+    timestamp?: number,
+  ) {
     const mentionRegex = /(^|\s|\.)(@[a-z0-9][a-z0-9-]{0,15}(?:\.eth)?)/gi;
     const rawMentions = [...req.text.matchAll(mentionRegex)].map((match) => ({
       name: match[2],
@@ -282,6 +288,9 @@ export class SignerService {
       {
         fid: parseInt(fid, 10),
         network: FarcasterNetwork.MAINNET,
+        timestamp: timestamp
+          ? toFarcasterTime(timestamp).unwrapOr(undefined)
+          : undefined,
       },
       new NobleEd25519Signer(
         Buffer.from(signer.privateKey.substring(2), "hex"),
@@ -322,15 +331,20 @@ export class SignerService {
     if (!signer) return { id: cast.id, hash: null };
 
     console.log("formatting cast add");
-    const castAddMessage = await this.formatCastAdd(fid, signer, {
-      text: cast.text,
-      parentUrl: cast.parentUrl || undefined,
-      parentFid: cast.parentFid || undefined,
-      parentHash: cast.parentHash || undefined,
-      castEmbedFid: cast.castEmbedFid || undefined,
-      castEmbedHash: cast.castEmbedHash || undefined,
-      embeds: cast.embeds || undefined,
-    });
+    const castAddMessage = await this.formatCastAdd(
+      fid,
+      signer,
+      {
+        text: cast.text,
+        parentUrl: cast.parentUrl || undefined,
+        parentFid: cast.parentFid || undefined,
+        parentHash: cast.parentHash || undefined,
+        castEmbedFid: cast.castEmbedFid || undefined,
+        castEmbedHash: cast.castEmbedHash || undefined,
+        embeds: cast.embeds || undefined,
+      },
+      cast.scheduledFor?.getTime(),
+    );
 
     if (castAddMessage.isErr()) {
       return { id: cast.id, hash: null };
