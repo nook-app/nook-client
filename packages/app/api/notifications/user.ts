@@ -9,7 +9,7 @@ export const fetchNotificationsCount = async () => {
 export const useNotificationsCount = () => {
   const { session } = useAuth();
   return useQuery({
-    queryKey: ["notifications-count", session?.fid],
+    queryKey: ["notifications-count"],
     queryFn: fetchNotificationsCount,
     enabled: !!session?.fid,
     refetchInterval: 30 * 1000,
