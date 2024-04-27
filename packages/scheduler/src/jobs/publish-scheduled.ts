@@ -25,7 +25,7 @@ export const queueScheduledCasts = async () => {
         scheduledCasts.map((x) => ({
           name: QueueName.ScheduledCast,
           data: x,
-          options: {
+          opts: {
             jobId: toJobId(x.id),
           },
         })),
