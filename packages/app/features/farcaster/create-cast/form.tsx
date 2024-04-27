@@ -141,9 +141,7 @@ const CreateCastButton = ({ onSubmit }: { onSubmit: () => void }) => {
       disabledStyle={{
         opacity: 0.5,
       }}
-      backgroundColor={
-        ["light", "dark"].includes(theme) ? "$color12" : undefined
-      }
+      color={["light", "dark"].includes(theme) ? "$color1" : "$color12"}
     >
       {isCasting ? (
         <Spinner color="$color11" />
