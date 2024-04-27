@@ -313,36 +313,32 @@ export class SignerService {
     };
   }
 
-  async submitPendingCasts(
-    casts: PendingCast[],
-  ): Promise<[string, string | null][]> {
-    return await Promise.all(
-      casts.map(async (cast) => {
-        const fid = cast.fid;
-        console.log("getting signer");
-        const signer = await this.getActiveSigner(fid);
-        if (!signer) return [cast.id, null];
+  async submitPendingCast(
+    cast: PendingCast,
+  ): Promise<{ id: string; hash: string | null }> {
+    const fid = cast.fid;
+    console.log("getting signer");
+    const signer = await this.getActiveSigner(fid);
+    if (!signer) return { id: cast.id, hash: null };
 
-        console.log("formatting cast add");
-        const castAddMessage = await this.formatCastAdd(fid, signer, {
-          text: cast.text,
-          parentUrl: cast.parentUrl || undefined,
-          parentFid: cast.parentFid || undefined,
-          parentHash: cast.parentHash || undefined,
-          castEmbedFid: cast.castEmbedFid || undefined,
-          castEmbedHash: cast.castEmbedHash || undefined,
-          embeds: cast.embeds || undefined,
-        });
+    console.log("formatting cast add");
+    const castAddMessage = await this.formatCastAdd(fid, signer, {
+      text: cast.text,
+      parentUrl: cast.parentUrl || undefined,
+      parentFid: cast.parentFid || undefined,
+      parentHash: cast.parentHash || undefined,
+      castEmbedFid: cast.castEmbedFid || undefined,
+      castEmbedHash: cast.castEmbedHash || undefined,
+      embeds: cast.embeds || undefined,
+    });
 
-        if (castAddMessage.isErr()) {
-          return [cast.id, null];
-        }
+    if (castAddMessage.isErr()) {
+      return { id: cast.id, hash: null };
+    }
 
-        console.log("submitting message");
-        const response = await this.submitMessage(castAddMessage.value);
-        return [cast.id, bufferToHex(response.hash)];
-      }),
-    );
+    console.log("submitting message");
+    const response = await this.submitMessage(castAddMessage.value);
+    return { id: cast.id, hash: bufferToHex(response.hash) };
   }
 
   async submitCastRemove(

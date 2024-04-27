@@ -3,6 +3,7 @@ import Redis from "ioredis";
 import { Job, Queue, QueueOptions, Worker } from "bullmq";
 import { EntityEventData, EntityEvent, Notification } from "../types";
 import { Message } from "@farcaster/hub-nodejs";
+import { PendingCast } from "../prisma/nook";
 
 export enum QueueName {
   Farcaster = "farcaster",
@@ -10,6 +11,7 @@ export enum QueueName {
   Events = "events",
   EventsPriority = "events-priority",
   Notifications = "notifications",
+  ScheduledCast = "scheduled-cast",
 }
 
 type QueueType = {
@@ -18,6 +20,7 @@ type QueueType = {
   [QueueName.Events]: EntityEvent<EntityEventData>;
   [QueueName.EventsPriority]: EntityEvent<EntityEventData>;
   [QueueName.Notifications]: Notification;
+  [QueueName.ScheduledCast]: PendingCast;
 };
 
 const connection = new Redis({
