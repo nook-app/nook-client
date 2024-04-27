@@ -280,7 +280,6 @@ export class RedisClient {
   }
 
   async getSet(key: string, cursor?: number) {
-    console.log(key, cursor);
     return await this.redis.zrevrangebyscore(
       key,
       cursor ? cursor - 1 : "+inf",

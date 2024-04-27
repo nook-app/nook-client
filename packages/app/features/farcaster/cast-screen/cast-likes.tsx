@@ -2,11 +2,15 @@
 
 import { useCastLikes } from "../../../api/farcaster/casts";
 import { Loading } from "../../../components/loading";
-import { FarcasterUserInfiniteFeed } from "../user-feed";
+import { FetchUsersResponse } from "../../../types";
+import { FarcasterUserInfiniteFeed } from "../user-feed/user-feed";
 
-export const FarcasterCastLikes = ({ hash }: { hash: string }) => {
+export const FarcasterCastLikes = ({
+  hash,
+  initialData,
+}: { hash: string; initialData?: FetchUsersResponse }) => {
   const { data, isLoading, hasNextPage, fetchNextPage, isFetchingNextPage } =
-    useCastLikes(hash);
+    useCastLikes(hash, initialData);
 
   if (isLoading) {
     return <Loading />;

@@ -1,16 +1,16 @@
 "use client";
 
-import { useUserFollowing } from "../../../api/farcaster";
+import { useSearchUsers } from "../../../api/farcaster";
 import { Loading } from "../../../components/loading";
 import { FetchUsersResponse } from "../../../types";
-import { FarcasterUserInfiniteFeed } from "../user-feed/user-feed";
+import { FarcasterUserInfiniteFeed } from "./user-feed";
 
-export const FarcasterUserFollowing = ({
-  username,
+export const UserSearchFeed = ({
+  q,
   initialData,
-}: { username: string; initialData?: FetchUsersResponse }) => {
+}: { q: string; initialData?: FetchUsersResponse }) => {
   const { data, isLoading, hasNextPage, fetchNextPage, isFetchingNextPage } =
-    useUserFollowing(username, initialData);
+    useSearchUsers(q, undefined, initialData);
 
   if (isLoading) {
     return <Loading />;

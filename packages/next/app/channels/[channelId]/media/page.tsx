@@ -1,5 +1,5 @@
 import { fetchChannel } from "@nook/app/api/farcaster";
-import { FarcasterFilteredFeed } from "@nook/app/features/farcaster/cast-feed/filtered-feed";
+import { FarcasterFilteredFeedServer } from "@nook/app/features/farcaster/cast-feed/filtered-feed-server";
 import { ChannelFilterType, Display, UserFilterType } from "@nook/app/types";
 
 export default async function Channel({
@@ -7,7 +7,7 @@ export default async function Channel({
 }: { params: { channelId: string } }) {
   const channel = await fetchChannel(params.channelId);
   return (
-    <FarcasterFilteredFeed
+    <FarcasterFilteredFeedServer
       filter={{
         users: {
           type: UserFilterType.POWER_BADGE,

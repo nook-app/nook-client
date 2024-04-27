@@ -21,8 +21,6 @@ import {
   validateSigner,
   getServerSession,
 } from "../server/auth";
-import { ThemeProvider } from "./theme";
-import { ThemeName } from "@nook/ui";
 import { removeSession, updateSession } from "../utils/local-storage";
 import { useSettings } from "../api/settings";
 import { fetchUser } from "../api/farcaster";
@@ -42,10 +40,12 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({
   children,
+  defaultSession,
 }: {
   children: ReactNode;
+  defaultSession?: Session;
 }) => {
-  const [session, setSession] = useState<Session | undefined>();
+  const [session, setSession] = useState<Session | undefined>(defaultSession);
   const { getAccessToken, logout: logoutPrivy } = usePrivy();
   const { data } = useSettings(session);
 

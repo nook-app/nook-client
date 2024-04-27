@@ -1,10 +1,9 @@
 "use client";
 
 import { Display, FarcasterCast } from "../../../types";
-import { Spinner, View } from "@nook/ui";
+import { AnimatePresence, Spinner, View } from "@nook/ui";
 import { InfiniteScrollList } from "../../../components/infinite-scroll-list";
 import { FarcasterCastDisplay } from "../../../components/farcaster/casts/cast-display";
-import { Loading } from "../../../components/loading";
 import { useRouter } from "next/navigation";
 
 export const FarcasterInfiniteFeed = ({
@@ -27,19 +26,31 @@ export const FarcasterInfiniteFeed = ({
   isLoading?: boolean;
 }) => {
   const router = useRouter();
-  if (isLoading) {
-    return <Loading />;
-  }
 
   return (
     <InfiniteScrollList
       data={casts}
       renderItem={({ item }) => (
-        <FarcasterCastDisplay
-          cast={item as FarcasterCast}
-          displayMode={displayMode}
-          queryKey={queryKey}
-        />
+        <AnimatePresence>
+          <View
+            enterStyle={{
+              opacity: 0,
+            }}
+            exitStyle={{
+              opacity: 0,
+            }}
+            animation="quick"
+            opacity={1}
+            scale={1}
+            y={0}
+          >
+            <FarcasterCastDisplay
+              cast={item as FarcasterCast}
+              displayMode={displayMode}
+              queryKey={queryKey}
+            />
+          </View>
+        </AnimatePresence>
       )}
       onEndReached={fetchNextPage}
       numColumns={displayMode === Display.GRID ? 3 : 1}

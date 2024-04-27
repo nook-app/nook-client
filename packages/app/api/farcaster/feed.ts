@@ -37,7 +37,7 @@ export const fetchCastFeed = async (
 
 export const useCastFeed = (
   filter: FarcasterFeedFilter,
-  context: FeedContext,
+  initialData?: FetchCastsResponse,
 ) => {
   const queryClient = useQueryClient();
   return useInfiniteQuery<
@@ -51,14 +51,19 @@ export const useCastFeed = (
     queryFn: async ({ pageParam }) => {
       const data = await fetchCastFeed({
         filter,
-        context,
         cursor: pageParam,
       });
       cacheRelatedData(queryClient, data.data);
       return data;
     },
     getNextPageParam: (lastPage) => lastPage.nextCursor,
-    initialPageParam: undefined,
+    initialData: initialData
+      ? {
+          pages: [initialData],
+          pageParams: [undefined],
+        }
+      : undefined,
+    initialPageParam: initialData?.nextCursor,
     refetchOnWindowFocus: false,
   });
 };
@@ -75,7 +80,11 @@ export const fetchCastReplies = async (
   );
 };
 
-export const useCastReplies = (hash: string, mode: "best" | "new" | "top") => {
+export const useCastReplies = (
+  hash: string,
+  mode: "best" | "new" | "top",
+  initialData?: FetchCastsResponse,
+) => {
   const queryClient = useQueryClient();
   return useInfiniteQuery<
     FetchCastsResponse,
@@ -91,7 +100,13 @@ export const useCastReplies = (hash: string, mode: "best" | "new" | "top") => {
       return data;
     },
     getNextPageParam: (lastPage) => lastPage.nextCursor,
-    initialPageParam: undefined,
+    initialData: initialData
+      ? {
+          pages: [initialData],
+          pageParams: [undefined],
+        }
+      : undefined,
+    initialPageParam: initialData?.nextCursor,
   });
 };
 
@@ -115,7 +130,10 @@ export const fetchTrendingCasts = async (
   });
 };
 
-export const useTrendingCasts = (viewerFid?: string) => {
+export const useTrendingCasts = (
+  viewerFid?: string,
+  initialData?: FetchCastsResponse,
+) => {
   const queryClient = useQueryClient();
   return useInfiniteQuery<
     FetchCastsResponse,
@@ -131,7 +149,13 @@ export const useTrendingCasts = (viewerFid?: string) => {
       return data;
     },
     getNextPageParam: (lastPage) => lastPage.nextCursor,
-    initialPageParam: undefined,
+    initialData: initialData
+      ? {
+          pages: [initialData],
+          pageParams: [undefined],
+        }
+      : undefined,
+    initialPageParam: initialData?.nextCursor,
   });
 };
 

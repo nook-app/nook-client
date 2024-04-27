@@ -4,16 +4,17 @@ import { useEffect, useState } from "react";
 import { useTrendingCasts } from "../../../api/farcaster";
 import { Loading } from "../../../components/loading";
 import { FarcasterInfiniteFeed } from "./infinite-feed";
-import { FarcasterCast } from "../../../types";
+import { FarcasterCast, FetchCastsResponse } from "../../../types";
 import { useUserStore } from "../../../store/useUserStore";
 import { useCastStore } from "../../../store/useCastStore";
 
 export const FarcasterTrendingFeed = ({
   viewerFid,
-}: { viewerFid?: string }) => {
+  initialData,
+}: { viewerFid?: string; initialData?: FetchCastsResponse }) => {
   const [casts, setCasts] = useState<FarcasterCast[]>([]);
   const { data, isLoading, hasNextPage, fetchNextPage, isFetchingNextPage } =
-    useTrendingCasts(viewerFid);
+    useTrendingCasts(viewerFid, initialData);
 
   const addUsers = useUserStore((state) => state.addUsers);
   const addCasts = useCastStore((state) => state.addCasts);

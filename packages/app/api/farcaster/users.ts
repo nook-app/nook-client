@@ -60,7 +60,10 @@ export const fetchUserFollowers = async (username: string, cursor?: string) => {
   );
 };
 
-export const useUserFollowers = (username: string) => {
+export const useUserFollowers = (
+  username: string,
+  initialData?: FetchUsersResponse,
+) => {
   const queryClient = useQueryClient();
   return useInfiniteQuery<
     FetchUsersResponse,
@@ -78,7 +81,13 @@ export const useUserFollowers = (username: string) => {
       return data;
     },
     getNextPageParam: (lastPage) => lastPage.nextCursor,
-    initialPageParam: undefined,
+    initialData: initialData
+      ? {
+          pages: [initialData],
+          pageParams: [undefined],
+        }
+      : undefined,
+    initialPageParam: initialData?.nextCursor,
   });
 };
 
@@ -90,7 +99,10 @@ export const fetchUserFollowing = async (username: string, cursor?: string) => {
   );
 };
 
-export const useUserFollowing = (username: string) => {
+export const useUserFollowing = (
+  username: string,
+  initialData?: FetchUsersResponse,
+) => {
   const queryClient = useQueryClient();
   return useInfiniteQuery<
     FetchUsersResponse,
@@ -108,7 +120,13 @@ export const useUserFollowing = (username: string) => {
       return data;
     },
     getNextPageParam: (lastPage) => lastPage.nextCursor,
-    initialPageParam: undefined,
+    initialData: initialData
+      ? {
+          pages: [initialData],
+          pageParams: [undefined],
+        }
+      : undefined,
+    initialPageParam: initialData?.nextCursor,
   });
 };
 
@@ -118,7 +136,10 @@ export const fetchUserMutuals = async (username: string, cursor?: string) => {
   );
 };
 
-export const useUserMutuals = (username: string) => {
+export const useUserMutuals = (
+  username: string,
+  initialData?: FetchUsersResponse,
+) => {
   const queryClient = useQueryClient();
   return useInfiniteQuery<
     FetchUsersResponse,
@@ -136,7 +157,13 @@ export const useUserMutuals = (username: string) => {
       return data;
     },
     getNextPageParam: (lastPage) => lastPage.nextCursor,
-    initialPageParam: undefined,
+    initialData: initialData
+      ? {
+          pages: [initialData],
+          pageParams: [undefined],
+        }
+      : undefined,
+    initialPageParam: initialData?.nextCursor,
   });
 };
 
@@ -152,7 +179,11 @@ export const searchUsers = async (
   );
 };
 
-export const useSearchUsers = (query: string, limit?: number) => {
+export const useSearchUsers = (
+  query: string,
+  limit?: number,
+  initialData?: FetchUsersResponse,
+) => {
   return useInfiniteQuery<
     FetchUsersResponse,
     unknown,
@@ -166,7 +197,13 @@ export const useSearchUsers = (query: string, limit?: number) => {
       return data;
     },
     getNextPageParam: (lastPage) => lastPage.nextCursor,
-    initialPageParam: undefined,
+    initialData: initialData
+      ? {
+          pages: [initialData],
+          pageParams: [undefined],
+        }
+      : undefined,
+    initialPageParam: initialData?.nextCursor,
     enabled: !!query,
   });
 };

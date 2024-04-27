@@ -1,9 +1,9 @@
-import { FarcasterFilteredFeed } from "@nook/app/features/farcaster/cast-feed/filtered-feed";
+import { FarcasterFilteredFeedServer } from "@nook/app/features/farcaster/cast-feed/filtered-feed-server";
 import { Display, UserFilterType } from "@nook/app/types";
 
 export default async function Home() {
   return (
-    <FarcasterFilteredFeed
+    <FarcasterFilteredFeedServer
       filter={{
         users: {
           type: UserFilterType.POWER_BADGE,

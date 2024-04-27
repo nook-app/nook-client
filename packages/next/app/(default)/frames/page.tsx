@@ -1,4 +1,4 @@
-import { FarcasterFilteredFeed } from "@nook/app/features/farcaster/cast-feed/filtered-feed";
+import { FarcasterFilteredFeedServer } from "@nook/app/features/farcaster/cast-feed/filtered-feed-server";
 import { getServerSession } from "@nook/app/server/auth";
 import { Display, UserFilterType } from "@nook/app/types";
 
@@ -6,7 +6,7 @@ export default async function Home() {
   const session = await getServerSession();
   if (session) {
     return (
-      <FarcasterFilteredFeed
+      <FarcasterFilteredFeedServer
         filter={{
           users: {
             type: UserFilterType.FOLLOWING,
@@ -22,7 +22,7 @@ export default async function Home() {
   }
 
   return (
-    <FarcasterFilteredFeed
+    <FarcasterFilteredFeedServer
       filter={{
         users: {
           type: UserFilterType.POWER_BADGE,

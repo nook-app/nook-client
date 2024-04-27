@@ -28,7 +28,7 @@ export const Providers = ({
           loginMethods: ["farcaster"],
         }}
       >
-        <AuthProvider>
+        <AuthProvider defaultSession={session}>
           <ThemeProvider defaultTheme={session?.theme as ThemeName | undefined}>
             <AnalyticsProvider>
               <ToastProvider>

@@ -127,7 +127,7 @@ async function Component({ children }: { children: ReactNode }) {
 
   return (
     <Providers session={session}>
-      <RootNavigation session={session}>{children}</RootNavigation>
+      <RootNavigation>{children}</RootNavigation>
     </Providers>
   );
 }

@@ -1,7 +1,7 @@
 "use client";
 
-import { Channel, Display } from "../../../types";
-import { Spinner, View } from "@nook/ui";
+import { Channel } from "../../../types";
+import { AnimatePresence, Spinner, View } from "@nook/ui";
 import { InfiniteScrollList } from "../../../components/infinite-scroll-list";
 import { FarcasterChannelFeedItem } from "./channel-feed-item";
 
@@ -20,7 +20,22 @@ export const FarcasterChannelInfiniteFeed = ({
     <InfiniteScrollList
       data={channels}
       renderItem={({ item }) => (
-        <FarcasterChannelFeedItem channel={item as Channel} withBio />
+        <AnimatePresence>
+          <View
+            enterStyle={{
+              opacity: 0,
+            }}
+            exitStyle={{
+              opacity: 0,
+            }}
+            animation="quick"
+            opacity={1}
+            scale={1}
+            y={0}
+          >
+            <FarcasterChannelFeedItem channel={item as Channel} withBio />
+          </View>
+        </AnimatePresence>
       )}
       onEndReached={fetchNextPage}
       ListFooterComponent={

@@ -23,15 +23,13 @@ import { AccountSwitcher } from "@nook/app/features/auth/account-switcher";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { NotificationsCount } from "@nook/app/features/notifications/notifications-count";
-import { FarcasterUser, Session } from "@nook/app/types";
+import { Session } from "@nook/app/types";
 import { MobileNavigation } from "./MobileNavigation";
 import { useTheme } from "@nook/app/context/theme";
 import { EnableSignerDialog } from "@nook/app/features/farcaster/enable-signer/dialog";
 
-export const RootNavigation = ({
-  children,
-  session,
-}: { children: React.ReactNode; session?: Session }) => {
+export const RootNavigation = ({ children }: { children: React.ReactNode }) => {
+  const { session } = useAuth();
   return (
     <XStack
       justifyContent="center"
@@ -97,7 +95,7 @@ export const RootNavigation = ({
               </>
             )}
           </YStack>
-          <SessionItem user={session?.user} />
+          <SessionItem session={session} />
         </View>
       </View>
 
@@ -159,11 +157,11 @@ const RootNavigationItem = ({
   );
 };
 
-const SessionItem = ({ user }: { user?: FarcasterUser }) => {
+const SessionItem = ({ session }: { session: Session | undefined }) => {
   const { login } = useAuth();
   const { theme } = useTheme();
 
-  if (!user?.fid) {
+  if (!session?.user) {
     return (
       <>
         <View display="flex" $lg={{ display: "none" }}>
@@ -214,7 +212,7 @@ const SessionItem = ({ user }: { user?: FarcasterUser }) => {
               flexGrow={1}
               $lg={{ display: "none" }}
             >
-              <FarcasterUserDisplay user={user} />
+              <FarcasterUserDisplay user={session.user} />
               <MoreHorizontal color="$mauve12" size={16} />
             </XStack>
           </NookButton>
@@ -231,7 +229,7 @@ const SessionItem = ({ user }: { user?: FarcasterUser }) => {
             justifyContent="center"
             alignItems="center"
           >
-            <FarcasterUserAvatar user={user} size="$4" />
+            <FarcasterUserAvatar user={session.user} size="$4" />
           </NookButton>
         </AccountSwitcher>
       </View>

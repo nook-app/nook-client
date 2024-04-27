@@ -37,7 +37,10 @@ export const fetchCastLikes = async (hash: string, cursor?: string) => {
   );
 };
 
-export const useCastLikes = (hash: string) => {
+export const useCastLikes = (
+  hash: string,
+  initialData?: FetchUsersResponse,
+) => {
   const queryClient = useQueryClient();
   return useInfiniteQuery<
     FetchUsersResponse,
@@ -55,7 +58,13 @@ export const useCastLikes = (hash: string) => {
       return data;
     },
     getNextPageParam: (lastPage) => lastPage.nextCursor,
-    initialPageParam: undefined,
+    initialData: initialData
+      ? {
+          pages: [initialData],
+          pageParams: [undefined],
+        }
+      : undefined,
+    initialPageParam: initialData?.nextCursor,
   });
 };
 
@@ -65,7 +74,10 @@ export const fetchCastRecasts = async (hash: string, cursor?: string) => {
   );
 };
 
-export const useCastRecasts = (hash: string) => {
+export const useCastRecasts = (
+  hash: string,
+  initialData?: FetchUsersResponse,
+) => {
   const queryClient = useQueryClient();
   return useInfiniteQuery<
     FetchUsersResponse,
@@ -83,7 +95,13 @@ export const useCastRecasts = (hash: string) => {
       return data;
     },
     getNextPageParam: (lastPage) => lastPage.nextCursor,
-    initialPageParam: undefined,
+    initialData: initialData
+      ? {
+          pages: [initialData],
+          pageParams: [undefined],
+        }
+      : undefined,
+    initialPageParam: initialData?.nextCursor,
   });
 };
 
@@ -93,7 +111,10 @@ export const fetchCastQuotes = async (hash: string, cursor?: string) => {
   );
 };
 
-export const useCastQuotes = (hash: string) => {
+export const useCastQuotes = (
+  hash: string,
+  initialData?: FetchCastsResponse,
+) => {
   const queryClient = useQueryClient();
   return useInfiniteQuery<
     FetchCastsResponse,
@@ -109,6 +130,12 @@ export const useCastQuotes = (hash: string) => {
       return data;
     },
     getNextPageParam: (lastPage) => lastPage.nextCursor,
-    initialPageParam: undefined,
+    initialData: initialData
+      ? {
+          pages: [initialData],
+          pageParams: [undefined],
+        }
+      : undefined,
+    initialPageParam: initialData?.nextCursor,
   });
 };

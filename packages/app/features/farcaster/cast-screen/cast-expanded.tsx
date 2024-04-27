@@ -15,7 +15,7 @@ import {
   FarcasterShareButton,
 } from "../../../components/farcaster/casts/cast-actions";
 import { FarcasterCastDefaultDisplay } from "../../../components/farcaster/casts/cast-display";
-import { Display, FarcasterCast } from "../../../types";
+import { Display, FarcasterCast, FetchCastsResponse } from "../../../types";
 import { FarcasterInfiniteFeed } from "../cast-feed/infinite-feed";
 import { BarChartBig, Clock, Rocket } from "@tamagui/lucide-icons";
 import { useState } from "react";
@@ -42,10 +42,13 @@ function formatTimestampDate(timestamp: number) {
   return dateFormatter.format(date);
 }
 
-export const FarcasterExpandedCast = ({ cast }: { cast: FarcasterCast }) => {
+export const FarcasterExpandedCast = ({
+  cast,
+  initialData,
+}: { cast: FarcasterCast; initialData?: FetchCastsResponse }) => {
   const [replySort, setReplySort] = useState<"best" | "top" | "new">("best");
   const { data, isLoading, hasNextPage, fetchNextPage, isFetchingNextPage } =
-    useCastReplies(cast.hash, replySort);
+    useCastReplies(cast.hash, replySort, initialData);
 
   const casts = data?.pages.flatMap((page) => page.data) ?? [];
 

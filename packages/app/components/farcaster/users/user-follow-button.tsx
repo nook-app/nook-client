@@ -1,4 +1,4 @@
-import { NookButton } from "@nook/ui";
+import { NookButton, View } from "@nook/ui";
 import { useFollowUser } from "../../../hooks/useFollowUser";
 import { FarcasterUser } from "../../../types";
 import { useAuth } from "../../../context/auth";
@@ -17,26 +17,32 @@ export const FarcasterUserFollowButton = ({
   }
 
   return (
-    <EnableSignerDialog>
-      <NookButton
-        onPress={(e) => {
-          if (!session) {
-            login();
-            return;
-          }
-          if (!signer || signer?.state !== "completed") {
-            return;
-          }
-          if (isFollowing) {
-            unfollowUser();
-          } else {
-            followUser();
-          }
-        }}
-        variant={isFollowing ? "active-action" : "action"}
-      >
-        {isFollowing ? "Unfollow" : "Follow"}
-      </NookButton>
-    </EnableSignerDialog>
+    <View
+      onPress={(e) => {
+        e.preventDefault();
+      }}
+    >
+      <EnableSignerDialog>
+        <NookButton
+          onPress={(e) => {
+            if (!session) {
+              login();
+              return;
+            }
+            if (!signer || signer?.state !== "completed") {
+              return;
+            }
+            if (isFollowing) {
+              unfollowUser();
+            } else {
+              followUser();
+            }
+          }}
+          variant={isFollowing ? "active-action" : "action"}
+        >
+          {isFollowing ? "Unfollow" : "Follow"}
+        </NookButton>
+      </EnableSignerDialog>
+    </View>
   );
 };

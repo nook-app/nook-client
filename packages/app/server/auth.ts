@@ -18,7 +18,7 @@ export async function logoutServer() {
 
 export async function getServerSession(): Promise<Session | undefined> {
   const session = cookies().get("session");
-  return session ? JSON.parse(session.value) : undefined;
+  return session?.value ? JSON.parse(session.value) : undefined;
 }
 
 export const loginUser = async (

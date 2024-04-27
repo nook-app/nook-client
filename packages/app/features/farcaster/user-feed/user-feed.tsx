@@ -1,7 +1,7 @@
 "use client";
 
 import { Display, FarcasterUser } from "../../../types";
-import { Spinner, View, XStack, YStack } from "@nook/ui";
+import { AnimatePresence, Spinner, View, XStack, YStack } from "@nook/ui";
 import { FarcasterUserDisplay } from "../../../components/farcaster/users/user-display";
 import { InfiniteScrollList } from "../../../components/infinite-scroll-list";
 import { FarcasterUserFollowButton } from "../../../components/farcaster/users/user-follow-button";
@@ -25,7 +25,22 @@ export const FarcasterUserInfiniteFeed = ({
     <InfiniteScrollList
       data={users}
       renderItem={({ item }) => (
-        <FarcasterUserItem user={item as FarcasterUser} />
+        <AnimatePresence>
+          <View
+            enterStyle={{
+              opacity: 0,
+            }}
+            exitStyle={{
+              opacity: 0,
+            }}
+            animation="quick"
+            opacity={1}
+            scale={1}
+            y={0}
+          >
+            <FarcasterUserItem user={item as FarcasterUser} />
+          </View>
+        </AnimatePresence>
       )}
       onEndReached={fetchNextPage}
       numColumns={displayMode === Display.GRID ? 3 : 1}

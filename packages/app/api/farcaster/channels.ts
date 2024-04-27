@@ -1,8 +1,4 @@
-import {
-  Channel,
-  FetchChannelsResponse,
-  FetchUsersResponse,
-} from "../../types";
+import { Channel, FetchChannelsResponse } from "../../types";
 import { makeRequest } from "../utils";
 import {
   useQuery,
@@ -54,7 +50,11 @@ export const searchChannels = async (
   );
 };
 
-export const useSearchChannels = (query: string, limit?: number) => {
+export const useSearchChannels = (
+  query: string,
+  limit?: number,
+  initialData?: FetchChannelsResponse,
+) => {
   return useInfiniteQuery<
     FetchChannelsResponse,
     unknown,
@@ -68,7 +68,13 @@ export const useSearchChannels = (query: string, limit?: number) => {
       return data;
     },
     getNextPageParam: (lastPage) => lastPage.nextCursor,
-    initialPageParam: undefined,
+    initialData: initialData
+      ? {
+          pages: [initialData],
+          pageParams: [undefined],
+        }
+      : undefined,
+    initialPageParam: initialData?.nextCursor,
     enabled: !!query,
   });
 };

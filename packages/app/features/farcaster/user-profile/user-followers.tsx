@@ -2,11 +2,15 @@
 
 import { useUserFollowers } from "../../../api/farcaster";
 import { Loading } from "../../../components/loading";
-import { FarcasterUserInfiniteFeed } from "../user-feed";
+import { FetchUsersResponse } from "../../../types";
+import { FarcasterUserInfiniteFeed } from "../user-feed/user-feed";
 
-export const FarcasterUserFollowers = ({ username }: { username: string }) => {
+export const FarcasterUserFollowers = ({
+  username,
+  initialData,
+}: { username: string; initialData?: FetchUsersResponse }) => {
   const { data, isLoading, hasNextPage, fetchNextPage, isFetchingNextPage } =
-    useUserFollowers(username);
+    useUserFollowers(username, initialData);
 
   if (isLoading) {
     return <Loading />;

@@ -35,7 +35,7 @@ export type FeedContext = {
 export type FarcasterFeedRequest = {
   api?: string;
   filter: FarcasterFeedFilter;
-  context: FeedContext;
+  context?: FeedContext;
   cursor?: string;
 };
 

@@ -1,24 +1,30 @@
 "use client";
 
-import { Display, FarcasterCast, FarcasterFeedFilter } from "../../../types";
+import {
+  Display,
+  FarcasterCast,
+  FarcasterFeedFilter,
+  FetchCastsResponse,
+} from "../../../types";
 import { useCastFeed } from "../../../api/farcaster";
 import { FarcasterInfiniteFeed } from "./infinite-feed";
 import { Loading } from "../../../components/loading";
-import { useAuth } from "../../../context/auth";
 import { useEffect, useState } from "react";
 import { useUserStore } from "../../../store/useUserStore";
 import { useCastStore } from "../../../store/useCastStore";
 
 export const FarcasterFilteredFeed = ({
   filter,
+  initialData,
   displayMode,
-}: { filter: FarcasterFeedFilter; displayMode?: Display }) => {
-  const { session } = useAuth();
+}: {
+  filter: FarcasterFeedFilter;
+  initialData?: FetchCastsResponse;
+  displayMode?: Display;
+}) => {
   const [casts, setCasts] = useState<FarcasterCast[]>([]);
   const { data, isLoading, hasNextPage, fetchNextPage, isFetchingNextPage } =
-    useCastFeed(filter, {
-      viewerFid: session?.fid,
-    });
+    useCastFeed(filter, initialData);
 
   const addUsers = useUserStore((state) => state.addUsers);
   const addCasts = useCastStore((state) => state.addCasts);

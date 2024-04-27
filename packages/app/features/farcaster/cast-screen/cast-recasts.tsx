@@ -2,11 +2,15 @@
 
 import { useCastRecasts } from "../../../api/farcaster/casts";
 import { Loading } from "../../../components/loading";
-import { FarcasterUserInfiniteFeed } from "../user-feed";
+import { FetchUsersResponse } from "../../../types";
+import { FarcasterUserInfiniteFeed } from "../user-feed/user-feed";
 
-export const FarcasterCastRecasts = ({ hash }: { hash: string }) => {
+export const FarcasterCastRecasts = ({
+  hash,
+  initialData,
+}: { hash: string; initialData?: FetchUsersResponse }) => {
   const { data, isLoading, hasNextPage, fetchNextPage, isFetchingNextPage } =
-    useCastRecasts(hash);
+    useCastRecasts(hash, initialData);
 
   if (isLoading) {
     return <Loading />;
