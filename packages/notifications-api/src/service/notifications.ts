@@ -1,4 +1,4 @@
-import { PrismaClient } from "@nook/common/prisma/notifications";
+import { Notification, PrismaClient } from "@nook/common/prisma/notifications";
 import {
   FarcasterFollowNotification,
   FarcasterLikeNotification,
@@ -91,6 +91,44 @@ export class NotificationsService {
     });
   }
 
+  async getSourceNotifications(req: GetNotificationsRequest, cursor?: string) {
+    const baseFilter = {
+      sourceFid: req.fid,
+      type: req.types
+        ? {
+            in: req.types,
+          }
+        : undefined,
+      timestamp: decodeCursorTimestamp(cursor),
+      deletedAt: null,
+      fid: {
+        not: req.fid,
+      },
+    };
+
+    const data = await this.client.notification.findMany({
+      where: req.priority
+        ? {
+            OR: [
+              { ...baseFilter, powerBadge: true },
+              {
+                ...baseFilter,
+                sourceFid: {
+                  in: (await this.farcaster.getUserFollowingFids(req.fid)).data,
+                },
+              },
+            ],
+          }
+        : baseFilter,
+      orderBy: {
+        timestamp: "desc",
+      },
+      take: DB_MAX_PAGE_SIZE,
+    });
+
+    return this.formatNotifications(data);
+  }
+
   async getNotifications(req: GetNotificationsRequest, cursor?: string) {
     const baseFilter = {
       fid: req.fid,
@@ -126,6 +164,10 @@ export class NotificationsService {
       take: DB_MAX_PAGE_SIZE,
     });
 
+    return this.formatNotifications(data);
+  }
+
+  formatNotifications(data: Notification[]) {
     const mentions = data.filter(
       (notification) => notification.type === NotificationType.MENTION,
     ) as unknown as FarcasterMentionNotification[];

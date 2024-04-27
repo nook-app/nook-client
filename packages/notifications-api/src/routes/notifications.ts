@@ -81,6 +81,22 @@ export const notificationsRoutes = async (fastify: FastifyInstance) => {
       }
     });
 
+    fastify.post<{
+      Body: GetNotificationsRequest;
+      Querystring: { cursor?: string };
+    }>("/notifications/source", async (request, reply) => {
+      try {
+        const data = await service.getSourceNotifications(
+          request.body,
+          request.query.cursor,
+        );
+        return reply.send(data);
+      } catch (e) {
+        console.error(e);
+        reply.code(500).send({ message: (e as Error).message });
+      }
+    });
+
     fastify.get("/notifications/count", async (request, reply) => {
       const { fid } = (await request.jwtDecode()) as { fid: string };
       try {

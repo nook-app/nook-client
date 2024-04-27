@@ -12,7 +12,6 @@ import { CreateCastDialog } from "../../../features/farcaster/create-cast/disalo
 import { FarcasterCast } from "../../../types";
 import { useLikeCast } from "../../../hooks/useLikeCast";
 import { useRecastCast } from "../../../hooks/useRecastCast";
-import { Dispatch, SetStateAction, useState } from "react";
 import { KebabMenu, KebabMenuItem } from "../../kebab-menu";
 import { EnableSignerDialog } from "../../../features/farcaster/enable-signer/dialog";
 import { useAuth } from "../../../context/auth";
@@ -285,39 +284,4 @@ export const FarcasterShareButton = ({ cast }: { cast: FarcasterCast }) => {
       />
     </KebabMenu>
   );
-};
-
-export const FarcasterCustomActionButton = ({
-  cast,
-}: { cast: FarcasterCast }) => {
-  return null;
-  // return (
-  //   <View
-  //     cursor="pointer"
-  //     width="$2.5"
-  //     height="$2.5"
-  //     justifyContent="center"
-  //     alignItems="center"
-  //     borderRadius="$10"
-  //     group
-  //     hoverStyle={{
-  //       // @ts-ignore
-  //       transition: "all 0.2s ease-in-out",
-  //       backgroundColor: "$color3",
-  //     }}
-  //     onPress={(e) => {
-  //       e.preventDefault();
-  //       e.stopPropagation();
-  //     }}
-  //   >
-  //     <LayoutGrid
-  //       size={20}
-  //       opacity={0.4}
-  //       $group-hover={{
-  //         color: "$color9",
-  //         opacity: 1,
-  //       }}
-  //     />
-  //   </View>
-  // );
 };

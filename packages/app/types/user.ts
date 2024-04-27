@@ -54,6 +54,21 @@ export type User = {
   metadata?: UserMetadata;
   nooks: Nook[];
   feeds: Feed[];
+  actions: CastActionInstall[];
+};
+
+export type CastActionInstall = {
+  index: number;
+  action: CastAction;
+};
+
+export type CastAction = {
+  actionType: string;
+  postUrl: string;
+  name: string;
+  icon: string;
+  description?: string;
+  aboutUrl?: string;
 };
 
 export type UserMetadata = {

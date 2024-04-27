@@ -276,6 +276,11 @@ export class UserService {
         mutedUsers: true,
         mutedParentUrls: true,
         mutedWords: true,
+        actions: {
+          include: {
+            action: true,
+          },
+        },
         feeds: {
           where: {
             deletedAt: null,

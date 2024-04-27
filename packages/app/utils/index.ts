@@ -56,3 +56,51 @@ export function formatNumber(num: number): string {
   }
   return num.toString();
 }
+
+export function stringToColor(str: string): string {
+  const backgroundColors = [
+    "#87CEEB", // Sky Blue
+    "#FF7F50", // Coral
+    "#40E0D0", // Turquoise
+    "#50C878", // Emerald Green
+    "#9966CC", // Amethyst
+    "#FD5E53", // Sunset Orange
+    "#008080", // Teal
+    "#D87093", // Pale Violet Red,
+    "#32CD32", // Lime Green
+    "#6A5ACD", // Slate Blue,
+    "#FFDB58", // Mustard Yellow
+    "#708090", // Slate Grey
+    "#2E8B57", // Sea Green,
+    "#6495ED", // Cornflower Blue,
+    "#FFA07A", // Light Salmon,
+    "#191970", // Midnight Blue
+    "#98FF98", // Mint Green
+    "#800000", // Maroon
+    "#007BA7", // Cerulean
+    "#E97451", // Burnt Sienna
+  ];
+
+  // Hash function to convert the string to a hash number.
+  const hash = str.split("").reduce((acc, char) => {
+    return char.charCodeAt(0) + ((acc << 5) - acc);
+  }, 0);
+
+  // Use the hash number to select a color from the list.
+  const index = Math.abs(hash) % backgroundColors.length;
+  return backgroundColors[index];
+}
+
+export const darkenColor = (color: string): string => {
+  let r = parseInt(color.slice(1, 3), 16);
+  let g = parseInt(color.slice(3, 5), 16);
+  let b = parseInt(color.slice(5, 7), 16);
+
+  r = Math.floor(r * 0.5);
+  g = Math.floor(g * 0.5);
+  b = Math.floor(b * 0.5);
+
+  return `#${r.toString(16).padStart(2, "0")}${g
+    .toString(16)
+    .padStart(2, "0")}${b.toString(16).padStart(2, "0")}`;
+};

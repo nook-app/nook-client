@@ -19,7 +19,6 @@ import {
   loginUser,
   getSigner,
   validateSigner,
-  getServerSession,
 } from "../server/auth";
 import { removeSession, updateSession } from "../utils/local-storage";
 import { useSettings } from "../api/settings";
@@ -48,14 +47,6 @@ export const AuthProvider = ({
   const [session, setSession] = useState<Session | undefined>(defaultSession);
   const { getAccessToken, logout: logoutPrivy } = usePrivy();
   const { data } = useSettings(session);
-
-  useEffect(() => {
-    getServerSession().then((session) => {
-      if (session) {
-        handleSessionChange(session);
-      }
-    });
-  }, []);
 
   useEffect(() => {
     if (

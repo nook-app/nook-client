@@ -150,6 +150,7 @@ export const FarcasterUserTooltip = ({
         borderWidth="$0.25"
         padding="$0"
         width={400}
+        $sm={{ width: "auto" }}
       >
         <UserHeader user={user} size="$6" />
       </Tooltip.Content>

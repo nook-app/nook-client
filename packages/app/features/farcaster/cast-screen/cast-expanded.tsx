@@ -8,12 +8,12 @@ import { FarcasterCastEngagement } from "../../../components/farcaster/casts/cas
 import { FarcasterChannelBadge } from "../../../components/farcaster/channels/channel-display";
 import { useCastReplies } from "../../../api/farcaster";
 import {
-  FarcasterCustomActionButton,
   FarcasterLikeActionButton,
   FarcasterRecastActionButton,
   FarcasterReplyActionButton,
   FarcasterShareButton,
 } from "../../../components/farcaster/casts/cast-actions";
+import { FarcasterCustomActionButton } from "../../../components/farcaster/casts/cast-custom-action";
 import { FarcasterCastDefaultDisplay } from "../../../components/farcaster/casts/cast-display";
 import { Display, FarcasterCast, FetchCastsResponse } from "../../../types";
 import { FarcasterInfiniteFeed } from "../cast-feed/infinite-feed";
@@ -55,7 +55,6 @@ export const FarcasterExpandedCast = ({
   return (
     <View>
       <FarcasterInfiniteFeed
-        queryKey={["castReplies", cast.hash, replySort]}
         casts={casts}
         fetchNextPage={fetchNextPage}
         isFetchingNextPage={isFetchingNextPage}

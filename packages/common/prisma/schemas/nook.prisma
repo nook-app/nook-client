@@ -225,13 +225,13 @@ model CastAction {
     actionType String
     postUrl    String
 
-    name       String
-    icon       String
-    creatorFid String?
-    hidden     Boolean @default(false)
-
+    name        String
+    icon        String
     description String?
     aboutUrl    String?
+
+    creatorFid String?
+    hidden     Boolean @default(false)
 
     createdAt DateTime @default(now())
     updatedAt DateTime @default(now()) @updatedAt
@@ -278,21 +278,21 @@ model UserMutedParentUrl {
 }
 
 model PendingCast {
-    id String @id @default(uuid())
-    fid String
-    text String
-    parentUrl String?
-    parentFid String?
-    parentHash String?
-    castEmbedFid String?
+    id            String    @id @default(uuid())
+    fid           String
+    text          String
+    parentUrl     String?
+    parentFid     String?
+    parentHash    String?
+    castEmbedFid  String?
     castEmbedHash String?
-    embeds String[]
-    scheduledFor DateTime?
-    publishedAt DateTime?
-    attemptedAt DateTime?
+    embeds        String[]
+    scheduledFor  DateTime?
+    publishedAt   DateTime?
+    attemptedAt   DateTime?
 
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
+    createdAt DateTime  @default(now())
+    updatedAt DateTime  @updatedAt
     deletedAt DateTime?
 
     @@index([scheduledFor])

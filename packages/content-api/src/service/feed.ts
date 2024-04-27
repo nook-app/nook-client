@@ -148,6 +148,14 @@ export class FeedService {
       );
     }
 
+    console.log(`
+    SELECT DISTINCT "reference".hash, "reference".timestamp
+    FROM "FarcasterContentReference" AS "reference"
+    WHERE ${conditions.join(" AND ")}
+    ORDER BY "reference"."timestamp" DESC
+    LIMIT ${MAX_PAGE_SIZE}
+  `);
+
     const casts = await this.client.$queryRaw<
       { hash: string; timestamp: Date }[]
     >(

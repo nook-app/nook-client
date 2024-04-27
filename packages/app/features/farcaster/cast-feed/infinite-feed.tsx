@@ -7,7 +7,6 @@ import { FarcasterCastDisplay } from "../../../components/farcaster/casts/cast-d
 import { useRouter } from "next/navigation";
 
 export const FarcasterInfiniteFeed = ({
-  queryKey,
   casts,
   fetchNextPage,
   isFetchingNextPage,
@@ -16,11 +15,10 @@ export const FarcasterInfiniteFeed = ({
   ListHeaderComponent,
   isLoading,
 }: {
-  queryKey: string[];
   casts: FarcasterCast[];
-  fetchNextPage: () => void;
-  isFetchingNextPage: boolean;
-  hasNextPage: boolean;
+  fetchNextPage?: () => void;
+  isFetchingNextPage?: boolean;
+  hasNextPage?: boolean;
   displayMode?: Display;
   ListHeaderComponent?: JSX.Element;
   isLoading?: boolean;
@@ -47,7 +45,6 @@ export const FarcasterInfiniteFeed = ({
             <FarcasterCastDisplay
               cast={item as FarcasterCast}
               displayMode={displayMode}
-              queryKey={queryKey}
             />
           </View>
         </AnimatePresence>

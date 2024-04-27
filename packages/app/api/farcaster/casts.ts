@@ -16,6 +16,16 @@ export const fetchCast = async (hash: string): Promise<FarcasterCast> => {
   return await makeRequest(`/farcaster/casts/${hash}`);
 };
 
+export const fetchCasts = async (hashes: string[]) => {
+  return await makeRequest("/farcaster/casts", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ hashes }),
+  });
+};
+
 export const useCast = (hash: string) => {
   const queryClient = useQueryClient();
   const initialData = queryClient.getQueryData<FarcasterCast>(["cast", hash]);

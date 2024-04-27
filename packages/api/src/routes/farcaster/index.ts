@@ -13,6 +13,23 @@ export const farcasterRoutes = async (fastify: FastifyInstance) => {
     const client = new FarcasterAPIClient();
     const content = new ContentAPIClient();
 
+    fastify.post<{ Body: { hashes: string[] } }>(
+      "/farcaster/casts",
+      async (request, reply) => {
+        let viewerFid: string | undefined;
+        try {
+          const { fid } = (await request.jwtDecode()) as { fid: string };
+          viewerFid = fid;
+        } catch (e) {}
+        const response = await client.getCasts(request.body.hashes, viewerFid);
+        if (!response) {
+          reply.status(404);
+          return;
+        }
+        reply.send(response);
+      },
+    );
+
     fastify.get<{ Params: { hash: string } }>(
       "/farcaster/casts/:hash",
       async (request, reply) => {

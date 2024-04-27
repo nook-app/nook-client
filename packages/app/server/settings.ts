@@ -1,6 +1,7 @@
 "use server";
 
 import { makeRequest } from "../api/utils";
+import { CastAction } from "../types";
 
 export const muteUser = async (mutedFid: string) => {
   return await makeRequest("/mute/users", {
@@ -59,5 +60,18 @@ export const unmuteWord = async (mutedWord: string) => {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({ mutedWord }),
+  });
+};
+
+export const installAction = async (
+  index: number,
+  action: CastAction | null,
+) => {
+  await makeRequest("/user/actions", {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ index, action }),
   });
 };

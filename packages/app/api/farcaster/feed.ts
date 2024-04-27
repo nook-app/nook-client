@@ -5,7 +5,6 @@ import {
   FetchCastsResponse,
   FarcasterUser,
   Channel,
-  FeedContext,
 } from "../../types";
 import {
   hasCastDiff,

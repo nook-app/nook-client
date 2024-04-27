@@ -2,7 +2,7 @@ import { useAuth } from "../../../context/auth";
 import { Link, MoreHorizontal, Volume, VolumeX } from "@tamagui/lucide-icons";
 import { FarcasterUser } from "../../../types";
 import { KebabMenu, KebabMenuItem } from "../../kebab-menu";
-import { NookButton, useToastController } from "@nook/ui";
+import { Image, NookButton, useToastController } from "@nook/ui";
 import { useMuteUser } from "../../../hooks/useMuteUser";
 
 export const FarcasterUserKebabMenu = ({ user }: { user: FarcasterUser }) => {
@@ -25,6 +25,13 @@ export const FarcasterUserKebabMenu = ({ user }: { user: FarcasterUser }) => {
           );
           toast.show("Link copied to clipboard");
         }}
+      />
+      <KebabMenuItem
+        Icon={
+          <Image source={{ uri: "/warpcast.svg" }} width={14} height={14} />
+        }
+        title="View on Warpcast"
+        onPress={() => window.open(`https://warpcast.com/${user.username}`)}
       />
     </KebabMenu>
   );

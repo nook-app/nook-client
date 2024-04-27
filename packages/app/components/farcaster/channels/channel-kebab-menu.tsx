@@ -1,7 +1,7 @@
 import { Link, MoreHorizontal, Volume, VolumeX } from "@tamagui/lucide-icons";
 import { Channel } from "../../../types";
 import { KebabMenu, KebabMenuItem } from "../../kebab-menu";
-import { NookButton, useToastController } from "@nook/ui";
+import { Image, NookButton, useToastController } from "@nook/ui";
 import { useMuteChannel } from "../../../hooks/useMuteChannel";
 
 export const FarcasterChannelKebabMenu = ({
@@ -26,6 +26,15 @@ export const FarcasterChannelKebabMenu = ({
           );
           toast.show("Link copied to clipboard");
         }}
+      />
+      <KebabMenuItem
+        Icon={
+          <Image source={{ uri: "/warpcast.svg" }} width={14} height={14} />
+        }
+        title="View on Warpcast"
+        onPress={() =>
+          window.open(`https://warpcast.com/~/channel/${channel.channelId}`)
+        }
       />
     </KebabMenu>
   );

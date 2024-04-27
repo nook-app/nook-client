@@ -23,6 +23,11 @@ export default async function User({
             href: `/users/${user.username}/replies`,
           },
           {
+            id: "highlights",
+            label: "Highlights",
+            href: `/users/${user.username}/highlights`,
+          },
+          {
             id: "media",
             label: "Media",
             href: `/users/${user.username}/media`,

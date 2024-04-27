@@ -144,6 +144,7 @@ export const FarcasterChannelTooltip = ({
         borderWidth="$0.25"
         padding="$0"
         width={400}
+        $sm={{ width: "auto" }}
       >
         <ChannelOverview channel={channel} />
       </Tooltip.Content>

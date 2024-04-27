@@ -1,6 +1,6 @@
 import { Channel, FarcasterCast } from "./cast";
 import { NotificationResponse } from "./notifications";
-import { FarcasterUser } from "./user";
+import { CastAction, FarcasterUser } from "./user";
 
 export * from "./user";
 export * from "./content";
@@ -28,5 +28,10 @@ export type FetchNotificationsResponse = {
 
 export type FetchChannelsResponse = {
   data: Channel[];
+  nextCursor?: string;
+};
+
+export type FetchCatActionsResponse = {
+  data: CastAction[];
   nextCursor?: string;
 };

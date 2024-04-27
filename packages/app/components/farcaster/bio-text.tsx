@@ -74,17 +74,13 @@ export const FarcasterBioText = ({
 
   const channelMentions = words.reduce(
     (acc, word) => {
-      const matchWord = word.match(/^\//)?.[0];
       const cleanWord = word.match(/^\/([\w-]+)/)?.[0];
-      if (matchWord && cleanWord) {
-        const regex = new RegExp(`(?:^|\\s)${cleanWord}`);
-        const match = text.slice(acc.lastIndex).match(regex);
-        if (match?.index) {
-          const position =
-            acc.lastIndex + Buffer.from(text.slice(0, match.index + 1)).length;
-          acc.mentions.push({ word: cleanWord, position });
-          acc.lastIndex = position + matchWord.length;
-        }
+      if (cleanWord) {
+        const position = Buffer.from(
+          textBuffer.slice(0, textBuffer.indexOf(cleanWord, acc.lastIndex)),
+        ).length;
+        acc.mentions.push({ word: cleanWord, position });
+        acc.lastIndex = position + cleanWord.length;
       }
       return acc;
     },
@@ -99,7 +95,7 @@ export const FarcasterBioText = ({
       const cleanWord = word.match(/^@(\w+(?:\.eth)?)\b/)?.[0];
       if (cleanWord) {
         const position = Buffer.from(
-          text.slice(0, text.indexOf(cleanWord, acc.lastIndex)),
+          textBuffer.slice(0, textBuffer.indexOf(cleanWord, acc.lastIndex)),
         ).length;
         acc.mentions.push({ word: cleanWord, position, isUser: true });
         acc.lastIndex = position + cleanWord.length;

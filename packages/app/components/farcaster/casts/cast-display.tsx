@@ -14,12 +14,12 @@ import { Embeds } from "../../../components/embeds/Embed";
 import { useRouter } from "solito/navigation";
 import { FarcasterCastEngagement } from "../../../components/farcaster/casts/cast-engagement";
 import {
-  FarcasterCustomActionButton,
   FarcasterLikeActionButton,
   FarcasterRecastActionButton,
   FarcasterReplyActionButton,
   FarcasterShareButton,
 } from "../../../components/farcaster/casts/cast-actions";
+import { FarcasterCustomActionButton } from "../../../components/farcaster/casts/cast-custom-action";
 import { Link } from "solito/link";
 import { FarcasterCastKebabMenu } from "./cast-kebab-menu";
 import { EmbedImage } from "../../embeds/EmbedImage";
@@ -30,8 +30,7 @@ import { useMuteStore } from "../../../store/useMuteStore";
 export const FarcasterCastDisplay = ({
   cast,
   displayMode,
-  queryKey,
-}: { cast: FarcasterCast; displayMode: Display; queryKey?: string[] }) => {
+}: { cast: FarcasterCast; displayMode: Display }) => {
   const mutedUsers = useMuteStore((state) => state.users);
   const mutedChannels = useMuteStore((state) => state.channels);
   const deletedCasts = useMuteStore((state) => state.casts);

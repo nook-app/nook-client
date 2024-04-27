@@ -10,6 +10,11 @@ export const FarcasterFilteredFeedServer = async ({
   displayMode?: Display;
 }) => {
   const initialData = await fetchCastFeed(filter);
+
+  if (!initialData) {
+    return <></>;
+  }
+
   return (
     <FarcasterFilteredFeed
       filter={filter}
