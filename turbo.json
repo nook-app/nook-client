@@ -7,7 +7,8 @@
         "./dist/**",
         "./prisma/generated/**",
         ".next/**",
-        "!.next/cache/**"
+        "!.next/cache/**",
+        "./.tamagui/**"
       ]
     },
     "lint": {},
