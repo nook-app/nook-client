@@ -206,6 +206,7 @@ export const CreateCastProvider = ({
   const reset = () => {
     setCasts([{ text: "" }]);
     setActiveIndex(0);
+    setIsCasting(false);
   };
 
   return (

@@ -142,9 +142,14 @@ const CreateCastButton = ({ onSubmit }: { onSubmit?: () => void }) => {
         opacity: 0.5,
       }}
       color={["light", "dark"].includes(theme) ? "$color1" : "white"}
+      backgroundColor={
+        ["light", "dark"].includes(theme) ? "$color12" : "$color9"
+      }
     >
       {isCasting ? (
-        <Spinner color="$color11" />
+        <Spinner
+          color={["light", "dark"].includes(theme) ? "$color1" : "white"}
+        />
       ) : thread.parentHash ? (
         "Reply"
       ) : (
@@ -309,7 +314,7 @@ const CreateCastEmbeds = memo(({ index }: { index: number }) => {
   const [embeds, setEmbeds] = useState<UrlContentResponse[]>([]);
   const [isFetchingEmbeds, setIsFetchingEmbeds] = useState(false);
 
-  const { data: embed } = useCast(activeCast.embeds?.[index] || "");
+  const { data: embed } = useCast(activeCast.castEmbedHash || "");
 
   const fetchEmbeds = useDebounce(async () => {
     const allEmbeds: string[] = [];
@@ -326,6 +331,7 @@ const CreateCastEmbeds = memo(({ index }: { index: number }) => {
 
     if (allEmbeds.length === 0) {
       setEmbeds([]);
+      setIsFetchingEmbeds(false);
       return;
     }
 
@@ -340,6 +346,7 @@ const CreateCastEmbeds = memo(({ index }: { index: number }) => {
       setEmbeds((prev) =>
         prev.filter((e) => !extraEmbeds.some((extra) => extra.uri === e.uri)),
       );
+      setIsFetchingEmbeds(false);
       return;
     }
 
@@ -361,13 +368,7 @@ const CreateCastEmbeds = memo(({ index }: { index: number }) => {
   // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
   useEffect(() => {
     fetchEmbeds();
-  }, []);
-
-  useEffect(() => {
-    if (isUploadingImages) {
-      setIsFetchingEmbeds(true);
-    }
-  }, [isUploadingImages]);
+  }, [activeCast.embeds]);
 
   return (
     <YStack gap="$2">

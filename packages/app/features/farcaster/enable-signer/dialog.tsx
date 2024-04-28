@@ -57,11 +57,7 @@ export const EnableSignerDialog = ({
       onOpenChange={setIsOpen}
     >
       <AlertDialog.Trigger asChild>{children}</AlertDialog.Trigger>
-      <AlertDialog.Portal
-        justifyContent="flex-start"
-        paddingTop="$10"
-        $xs={{ paddingTop: "$0" }}
-      >
+      <AlertDialog.Portal>
         <AlertDialog.Overlay
           key="overlay"
           animation="slow"
