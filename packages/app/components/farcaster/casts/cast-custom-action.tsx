@@ -22,7 +22,7 @@ export const FarcasterCustomActionButton = ({
   cast,
 }: { cast: FarcasterCast }) => {
   const [open, setOpen] = useState(false);
-  const { settings } = useAuth();
+  const { settings, session } = useAuth();
   const router = useRouter();
 
   const actions: (CastAction | null)[] = [];
@@ -38,6 +38,8 @@ export const FarcasterCustomActionButton = ({
   const showBottomBar = bottomBar && bottomBar.length > 0;
 
   const close = useCallback(() => setOpen(false), []);
+
+  if (!session) return null;
 
   return (
     <View

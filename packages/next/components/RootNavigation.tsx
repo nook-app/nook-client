@@ -29,7 +29,6 @@ import { useTheme } from "@nook/app/context/theme";
 import { EnableSignerDialog } from "@nook/app/features/farcaster/enable-signer/dialog";
 
 export const RootNavigation = ({ children }: { children: React.ReactNode }) => {
-  const { session } = useAuth();
   return (
     <XStack
       justifyContent="center"
@@ -73,33 +72,13 @@ export const RootNavigation = ({ children }: { children: React.ReactNode }) => {
               href="/frames"
             />
             <RootNavigationItem label="Explore" Icon={Search} href="/explore" />
-            {session?.user && (
-              <>
-                <RootNavigationItem
-                  label="Notifications"
-                  Icon={Bell}
-                  href="/notifications"
-                  right={<NotificationsCount />}
-                />
-                <RootNavigationItem
-                  label="Profile"
-                  Icon={User}
-                  href={`/users/${session.user?.username}`}
-                />
-                <RootNavigationItem
-                  label="Settings"
-                  Icon={Settings}
-                  href="/settings"
-                />
-                <CreateCastItem session={session} />
-              </>
-            )}
+            <AuthenticatedNavigation />
           </YStack>
-          <SessionItem session={session} />
+          <SessionItem />
         </View>
       </View>
 
-      <MobileNavigation session={session}>
+      <MobileNavigation>
         <View width={1000} maxWidth={1000} $md={{ width: "auto", flexGrow: 1 }}>
           {children}
         </View>
@@ -157,8 +136,34 @@ const RootNavigationItem = ({
   );
 };
 
-const SessionItem = ({ session }: { session: Session | undefined }) => {
-  const { login } = useAuth();
+const AuthenticatedNavigation = () => {
+  const { session } = useAuth();
+
+  if (!session?.user) {
+    return null;
+  }
+
+  return (
+    <>
+      <RootNavigationItem
+        label="Notifications"
+        Icon={Bell}
+        href="/notifications"
+        right={<NotificationsCount />}
+      />
+      <RootNavigationItem
+        label="Profile"
+        Icon={User}
+        href={`/users/${session.user?.username}`}
+      />
+      <RootNavigationItem label="Settings" Icon={Settings} href="/settings" />
+      <CreateCastItem />
+    </>
+  );
+};
+
+const SessionItem = () => {
+  const { login, session } = useAuth();
   const { theme } = useTheme();
 
   if (!session?.user) {
@@ -237,8 +242,10 @@ const SessionItem = ({ session }: { session: Session | undefined }) => {
   );
 };
 
-const CreateCastItem = ({ session }: { session: Session }) => {
-  if (session.signer?.state !== "completed") {
+const CreateCastItem = () => {
+  const { session } = useAuth();
+
+  if (session?.signer?.state !== "completed") {
     return (
       <View marginTop="$4">
         <View display="flex" $lg={{ display: "none" }}>
@@ -246,7 +253,7 @@ const CreateCastItem = ({ session }: { session: Session }) => {
             <NookButton
               variant="primary"
               backgroundColor={
-                session.theme && ["light", "dark"].includes(session.theme)
+                session?.theme && ["light", "dark"].includes(session.theme)
                   ? "$color12"
                   : "$color11"
               }
@@ -255,7 +262,7 @@ const CreateCastItem = ({ session }: { session: Session }) => {
                 fontWeight="700"
                 fontSize="$5"
                 color={
-                  session.theme && ["light", "dark"].includes(session.theme)
+                  session?.theme && ["light", "dark"].includes(session.theme)
                     ? "$color1"
                     : "$color12"
                 }
@@ -272,7 +279,7 @@ const CreateCastItem = ({ session }: { session: Session }) => {
               width="$5"
               padding="$0"
               backgroundColor={
-                session.theme && ["light", "dark"].includes(session.theme)
+                session?.theme && ["light", "dark"].includes(session.theme)
                   ? "$color12"
                   : "$color11"
               }
@@ -281,7 +288,7 @@ const CreateCastItem = ({ session }: { session: Session }) => {
                 <Pencil
                   size={24}
                   color={
-                    session.theme && ["light", "dark"].includes(session.theme)
+                    session?.theme && ["light", "dark"].includes(session.theme)
                       ? "$color1"
                       : "$color12"
                   }

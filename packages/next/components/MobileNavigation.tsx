@@ -19,20 +19,17 @@ import {
 import Link from "next/link";
 import { ReactNode } from "react";
 
-export const MobileNavigation = ({
-  session,
-  children,
-}: { session?: Session; children: ReactNode }) => {
+export const MobileNavigation = ({ children }: { children: ReactNode }) => {
   return (
     <View $md={{ flex: 1 }}>
       <View $md={{ flex: 1 }}>{children}</View>
-      <MobileTabMenu user={session?.user} />
-      <MobileCreateButton session={session} />
+      <MobileTabMenu />
+      <MobileCreateButton />
     </View>
   );
 };
 
-const MobileTabMenu = ({ user }: { user?: FarcasterUser }) => {
+const MobileTabMenu = () => {
   return (
     <YStack
       backgroundColor="$color2"
@@ -55,11 +52,11 @@ const MobileTabMenu = ({ user }: { user?: FarcasterUser }) => {
         <NookButton
           padding="$0"
           borderRadius="$0"
-          height="$5"
+          height="$6"
           width="100%"
           backgroundColor="transparent"
           borderWidth="$0"
-          scaleIcon={1.6}
+          scaleIcon={1.9}
           icon={<Home />}
         />
       </Link>
@@ -67,83 +64,80 @@ const MobileTabMenu = ({ user }: { user?: FarcasterUser }) => {
         <NookButton
           padding="$0"
           borderRadius="$0"
-          height="$5"
+          height="6"
           width="100%"
           backgroundColor="transparent"
           borderWidth="$0"
-          scaleIcon={1.6}
+          scaleIcon={1.9}
           icon={<Search />}
         />
       </Link>
-      {user && (
-        <>
-          <Link href="/notifications" style={{ flexGrow: 1 }}>
-            <NookButton
-              padding="$0"
-              width="100%"
-              borderRadius="$0"
-              height="$5"
-              backgroundColor="transparent"
-              borderWidth="$0"
-              scaleIcon={1.6}
-              icon={<Bell />}
-            />
-          </Link>
-          <Link href="/settings" style={{ flexGrow: 1 }}>
-            <NookButton
-              padding="$0"
-              width="100%"
-              borderRadius="$0"
-              height="$5"
-              backgroundColor="transparent"
-              borderWidth="$0"
-              scaleIcon={1.6}
-              icon={<Settings />}
-            />
-          </Link>
-        </>
-      )}
-      <MobileNavigationAuth user={user} />
+      <MobileNavigationAuth />
     </YStack>
   );
 };
 
-const MobileNavigationAuth = ({ user }: { user?: FarcasterUser }) => {
-  const { login } = useAuth();
+const MobileNavigationAuth = () => {
+  const { user, login } = useAuth();
   const { theme } = useTheme();
 
-  if (!user?.fid) {
+  if (!user)
     return (
       <NookButton
         variant="ghost"
         flexGrow={1}
-        height="$5"
+        height="$6"
         padding="$0"
         justifyContent="center"
         alignItems="center"
         onPress={login}
       >
         <LogIn
-          size={20}
+          size={26.5}
           color={["light", "dark"].includes(theme) ? "$color1" : "white"}
         />
       </NookButton>
     );
-  }
 
   return (
-    <AccountSwitcher>
-      <NookButton
-        variant="ghost"
-        flexGrow={1}
-        height="$5"
-        padding="$0"
-        justifyContent="center"
-        alignItems="center"
-      >
-        <FarcasterUserAvatar user={user} size="$2" />
-      </NookButton>
-    </AccountSwitcher>
+    <>
+      <Link href="/notifications" style={{ flexGrow: 1 }}>
+        <NookButton
+          padding="$0"
+          width="100%"
+          borderRadius="$0"
+          height="$6"
+          backgroundColor="transparent"
+          borderWidth="$0"
+          scaleIcon={1.9}
+          icon={<Bell />}
+        />
+      </Link>
+      <Link href="/settings" style={{ flexGrow: 1 }}>
+        <NookButton
+          padding="$0"
+          width="100%"
+          borderRadius="$0"
+          height="$6"
+          backgroundColor="transparent"
+          borderWidth="$0"
+          scaleIcon={1.9}
+          icon={<Settings />}
+        />
+      </Link>
+      <AccountSwitcher>
+        <NookButton
+          variant="ghost"
+          flexGrow={1}
+          height="$6"
+          padding="$0"
+          justifyContent="center"
+          alignItems="center"
+        >
+          <FarcasterUserAvatar user={user} size="$3" />
+        </NookButton>
+      </AccountSwitcher>
+    </>
   );
 };
 

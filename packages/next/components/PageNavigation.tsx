@@ -25,7 +25,7 @@ export const PageNavigation = ({
       >
         {children}
       </View>
-      <View width={400} $md={{ display: "none" }}>
+      <View width={380} $md={{ display: "none" }}>
         {sidebar}
       </View>
     </XStack>

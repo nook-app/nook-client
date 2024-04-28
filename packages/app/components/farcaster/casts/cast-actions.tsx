@@ -273,15 +273,6 @@ export const FarcasterShareButton = ({ cast }: { cast: FarcasterCast }) => {
           )
         }
       />
-      <KebabMenuItem
-        Icon={
-          <Image source={{ uri: "/warpcast.svg" }} width={14} height={14} />
-        }
-        title="View on Warpcast"
-        onPress={() =>
-          window.open(`https://warpcast.com/~/conversations/${cast.hash}`)
-        }
-      />
     </KebabMenu>
   );
 };

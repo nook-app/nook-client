@@ -194,5 +194,9 @@ export const FarcasterCastText = ({
 
   textParts.reverse();
 
-  return <NookText selectable={selectable}>{textParts}</NookText>;
+  return (
+    <NookText selectable={selectable} lineHeight={20}>
+      {textParts}
+    </NookText>
+  );
 };

@@ -39,7 +39,7 @@ const DeleteCast = ({
   const { session } = useAuth();
   const { isDeleting, deleteCast } = useDeleteCast(cast);
 
-  if (cast.user.fid !== session?.fid) {
+  if (!session || cast.user.fid !== session?.fid) {
     return null;
   }
 
@@ -60,7 +60,8 @@ const FollowUser = ({
 }: { cast: FarcasterCast; closeMenu?: () => void }) => {
   const { session, login } = useAuth();
   const { isFollowing, followUser, unfollowUser } = useFollowUser(cast.user);
-  if (cast.user.fid === session?.fid) {
+
+  if (!session || cast.user.fid === session?.fid) {
     return null;
   }
 
@@ -115,7 +116,7 @@ const MuteUser = ({
   const { session } = useAuth();
   const { isMuted, muteUser, unmuteUser } = useMuteUser(cast.user);
 
-  if (cast.user.fid === session?.fid) {
+  if (!session || cast.user.fid === session?.fid) {
     return null;
   }
 
@@ -150,6 +151,11 @@ const MuteChannel = ({
   closeMenu,
 }: { channel: Channel; closeMenu?: () => void }) => {
   const { isMuted, muteChannel, unmuteChannel } = useMuteChannel(channel);
+  const { session, login } = useAuth();
+
+  if (!session || !channel.channelId) {
+    return null;
+  }
 
   if (isMuted) {
     return (
@@ -200,6 +206,9 @@ const CastSource = ({
     <KebabMenuItem
       Icon={<CdnAvatar size="$1" src={data.pfp} />}
       title={`Casted via ${data.displayName}`}
+      onPress={() =>
+        window.open(`https://warpcast.com/~/conversations/${cast.hash}`)
+      }
     />
   );
 };

@@ -4,6 +4,7 @@ import { InstallAction } from "@nook/app/features/actions/install-action";
 import { notFound } from "next/navigation";
 import { PageNavigation } from "../../../components/PageNavigation";
 import { DefaultSidebar } from "@nook/app/features/home/default-sidebar";
+import { getServerSession } from "@nook/app/server/auth";
 
 const getActionMetadata = async (url: string) => {
   const res = await fetch(url);
@@ -17,8 +18,15 @@ export default async function Install({
   searchParams: { url: string };
 }) {
   if (!searchParams.url) return notFound();
-  const action = await getActionMetadata(searchParams.url);
-  if (!action) return notFound();
+
+  const [session, action] = await Promise.all([
+    getServerSession(),
+    getActionMetadata(searchParams.url),
+  ]);
+
+  if (!session || !action) {
+    return notFound();
+  }
 
   return (
     <PageNavigation sidebar={<DefaultSidebar />}>
