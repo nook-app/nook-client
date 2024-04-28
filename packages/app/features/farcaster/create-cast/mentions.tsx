@@ -13,7 +13,7 @@ import { ReactNode } from "react";
 import { FarcasterUserDisplay } from "../../../components/farcaster/users/user-display";
 
 export const CreateCastMentions = ({ children }: { children: ReactNode }) => {
-  const { activeCast } = useCreateCast();
+  const { activeCast, updateText, activeIndex } = useCreateCast();
   const lastWord = activeCast.text.split(/\s+/).pop();
   const isChannelMention = lastWord?.startsWith("/");
   const isUserMention = lastWord?.startsWith("@");
@@ -75,6 +75,17 @@ export const CreateCastMentions = ({ children }: { children: ReactNode }) => {
                       transition: "all 0.2s ease-in",
                     }}
                     cursor="pointer"
+                    onPress={() => {
+                      if (lastWord) {
+                        updateText(
+                          activeIndex,
+                          `${activeCast.text.substring(
+                            0,
+                            activeCast.text.length - lastWord.length,
+                          )}/${channel.channelId} `,
+                        );
+                      }
+                    }}
                   >
                     <FarcasterChannelDisplay channel={channel} />
                   </View>
@@ -93,6 +104,17 @@ export const CreateCastMentions = ({ children }: { children: ReactNode }) => {
                       transition: "all 0.2s ease-in",
                     }}
                     cursor="pointer"
+                    onPress={() => {
+                      if (lastWord) {
+                        updateText(
+                          activeIndex,
+                          `${activeCast.text.substring(
+                            0,
+                            activeCast.text.length - lastWord.length,
+                          )}@${user.username} `,
+                        );
+                      }
+                    }}
                   >
                     <FarcasterUserDisplay user={user} />
                   </View>

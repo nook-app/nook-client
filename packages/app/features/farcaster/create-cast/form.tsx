@@ -27,7 +27,7 @@ import { ChannelSelect } from "../../../components/farcaster/channels/channel-se
 import { CreateCastMentions } from "./mentions";
 import { useTheme } from "../../../context/theme";
 
-export const CreateCastEditor = ({ onSubmit }: { onSubmit: () => void }) => {
+export const CreateCastEditor = ({ onSubmit }: { onSubmit?: () => void }) => {
   const { activeCastLength } = useCreateCast();
   return (
     <View>
@@ -114,7 +114,7 @@ const UploadImageButton = () => {
   );
 };
 
-const CreateCastButton = ({ onSubmit }: { onSubmit: () => void }) => {
+const CreateCastButton = ({ onSubmit }: { onSubmit?: () => void }) => {
   const { allCastsValid, isCasting, cast, reset, thread } = useCreateCast();
   const toast = useToastController();
   const router = useRouter();
@@ -126,7 +126,7 @@ const CreateCastButton = ({ onSubmit }: { onSubmit: () => void }) => {
       toast.show("Successfully casted!");
       router.push(`/casts/${response.hash}`);
     }
-    onSubmit();
+    onSubmit?.();
     reset();
   }, [cast, toast, router, onSubmit, reset]);
 
@@ -241,7 +241,7 @@ const CreateCastItem = ({ index }: { index: number }) => {
               </CreateCastMentions>
             </View>
           </View>
-          <CreateCastEmbeds post={post} index={index} />
+          <CreateCastEmbeds index={index} />
         </YStack>
         <YStack width="$3">
           {activeIndex === index && index > 0 && (
@@ -304,95 +304,94 @@ const CreateCastChannelSelector = () => {
   );
 };
 
-const CreateCastEmbeds = memo(
-  ({ post, index }: { post: SubmitCastAddRequest; index: number }) => {
-    const { removeEmbed, isUploadingImages } = useCreateCast();
-    const [embeds, setEmbeds] = useState<UrlContentResponse[]>([]);
-    const [isFetchingEmbeds, setIsFetchingEmbeds] = useState(false);
+const CreateCastEmbeds = memo(({ index }: { index: number }) => {
+  const { removeEmbed, isUploadingImages, activeCast } = useCreateCast();
+  const [embeds, setEmbeds] = useState<UrlContentResponse[]>([]);
+  const [isFetchingEmbeds, setIsFetchingEmbeds] = useState(false);
 
-    const { data: embed } = useCast(post.castEmbedHash || "");
+  const { data: embed } = useCast(activeCast.embeds?.[index] || "");
 
-    const fetchEmbeds = useDebounce(async () => {
-      const allEmbeds: string[] = [];
-      if (post.embeds && post.embeds.length > 0) {
-        for (const activeEmbed of post.embeds) {
-          allEmbeds.push(activeEmbed);
-        }
+  const fetchEmbeds = useDebounce(async () => {
+    const allEmbeds: string[] = [];
+    if (activeCast.embeds && activeCast.embeds.length > 0) {
+      for (const activeEmbed of activeCast.embeds) {
+        allEmbeds.push(activeEmbed);
       }
-      if (post.parsedEmbeds && post.parsedEmbeds.length > 0) {
-        for (const activeEmbed of post.parsedEmbeds) {
-          allEmbeds.push(activeEmbed);
-        }
+    }
+    if (activeCast.parsedEmbeds && activeCast.parsedEmbeds.length > 0) {
+      for (const activeEmbed of activeCast.parsedEmbeds) {
+        allEmbeds.push(activeEmbed);
       }
+    }
 
-      if (allEmbeds.length === 0) {
-        setEmbeds([]);
-        return;
-      }
+    if (allEmbeds.length === 0) {
+      setEmbeds([]);
+      return;
+    }
 
-      const extraEmbeds = embeds.filter(
-        (embed) => !allEmbeds.some((e) => e === embed.uri),
-      );
-      const embedsToFetch = allEmbeds.filter(
-        (embed) => !embeds.some((e) => e.uri === embed),
-      );
-
-      if (embedsToFetch.length === 0) {
-        setEmbeds((prev) =>
-          prev.filter((e) => !extraEmbeds.some((extra) => extra.uri === e.uri)),
-        );
-        return;
-      }
-
-      setIsFetchingEmbeds(true);
-      const fetchedEmbeds = await Promise.all(embedsToFetch.map(fetchContent));
-      setEmbeds(
-        (prev) =>
-          allEmbeds
-            .map(
-              (embed) =>
-                prev.find((e) => e.uri === embed) ||
-                fetchedEmbeds.find((e) => e?.uri === embed),
-            )
-            .filter(Boolean) as UrlContentResponse[],
-      );
-      setIsFetchingEmbeds(false);
-    }, 1000);
-
-    useEffect(() => {
-      fetchEmbeds();
-    }, [fetchEmbeds]);
-
-    useEffect(() => {
-      if (isUploadingImages) {
-        setIsFetchingEmbeds(true);
-      }
-    }, [isUploadingImages]);
-
-    return (
-      <YStack gap="$2">
-        {((embeds.length === 0 && isFetchingEmbeds) || isUploadingImages) && (
-          <View padding="$2">
-            <Spinner color="$color11" />
-          </View>
-        )}
-        {embeds.length > 0 && (
-          <YStack padding="$2" marginTop="$4" gap="$2">
-            <PostEmbedsDisplay
-              embeds={embeds}
-              onRemove={(url) => removeEmbed(index, url)}
-            />
-          </YStack>
-        )}
-        {embed && (
-          <View padding="$2.5">
-            <EmbedCast cast={embed} />
-          </View>
-        )}
-      </YStack>
+    const extraEmbeds = embeds.filter(
+      (embed) => !allEmbeds.some((e) => e === embed.uri),
     );
-  },
-);
+    const embedsToFetch = allEmbeds.filter(
+      (embed) => !embeds.some((e) => e.uri === embed),
+    );
+
+    if (embedsToFetch.length === 0) {
+      setEmbeds((prev) =>
+        prev.filter((e) => !extraEmbeds.some((extra) => extra.uri === e.uri)),
+      );
+      return;
+    }
+
+    setIsFetchingEmbeds(true);
+    const fetchedEmbeds = await Promise.all(embedsToFetch.map(fetchContent));
+    setEmbeds(
+      (prev) =>
+        allEmbeds
+          .map(
+            (embed) =>
+              prev.find((e) => e.uri === embed) ||
+              fetchedEmbeds.find((e) => e?.uri === embed),
+          )
+          .filter(Boolean) as UrlContentResponse[],
+    );
+    setIsFetchingEmbeds(false);
+  }, 1000);
+
+  // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
+  useEffect(() => {
+    fetchEmbeds();
+  }, []);
+
+  useEffect(() => {
+    if (isUploadingImages) {
+      setIsFetchingEmbeds(true);
+    }
+  }, [isUploadingImages]);
+
+  return (
+    <YStack gap="$2">
+      {((embeds.length === 0 && isFetchingEmbeds) || isUploadingImages) && (
+        <View padding="$2">
+          <Spinner color="$color11" />
+        </View>
+      )}
+      {embeds.length > 0 && (
+        <YStack padding="$2" marginTop="$4" gap="$2">
+          <PostEmbedsDisplay
+            embeds={embeds}
+            onRemove={(url) => removeEmbed(index, url)}
+          />
+        </YStack>
+      )}
+      {embed && (
+        <View padding="$2.5">
+          <EmbedCast cast={embed} />
+        </View>
+      )}
+    </YStack>
+  );
+});
 
 const PostEmbedsDisplay = ({
   embeds,

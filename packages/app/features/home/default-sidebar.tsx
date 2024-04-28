@@ -5,7 +5,7 @@ import { SearchBar } from "../search/search-bar";
 import { Channel } from "../../types";
 import { RecommendedChannels } from "./recommended-channels";
 
-export const DefaultSidebar = ({ channels }: { channels: Channel[] }) => {
+export const DefaultSidebar = ({ channels }: { channels?: Channel[] }) => {
   return (
     <YStack
       padding="$3"
@@ -16,7 +16,7 @@ export const DefaultSidebar = ({ channels }: { channels: Channel[] }) => {
       }}
     >
       <SearchBar />
-      <RecommendedChannels channels={channels} />
+      {channels && <RecommendedChannels channels={channels} />}
     </YStack>
   );
 };

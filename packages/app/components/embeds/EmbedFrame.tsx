@@ -41,7 +41,14 @@ export const EmbedFrame = ({
   const bottomButtons = frame.buttons?.slice(2, 4) || [];
 
   const handleLink = (url: string) => {
-    router.push(url);
+    if (url.includes("warpcast.com/~/add-cast-action")) {
+      const parsed = new URL(url);
+      const urlParams = new URLSearchParams(parsed.search);
+      console.log(urlParams.toString());
+      router.push(`/~/add-cast-action?${urlParams.toString()}`);
+    } else {
+      router.push(url);
+    }
   };
 
   const handlePress = async (frameButton: FrameButton, index: number) => {

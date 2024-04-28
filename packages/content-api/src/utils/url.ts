@@ -124,12 +124,13 @@ const fetchUrlMetadata = async (url: string) => {
       headers: {
         "user-agent":
           USER_AGENT_OVERRIDES[new URL(url).hostname] ||
-          "Mozilla/5.0 (compatible; TelegramBot/1.0; +https://core.telegram.org/bots/webhooks)",
+          "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
         "Sec-Fetch-Dest": "document",
         "Sec-Fetch-Mode": "navigate",
         "Sec-Fetch-Site": "same-origin",
         "Sec-Fetch-User": "?1",
       },
+      redirect: "manual",
     }) as Promise<Response>,
     new Promise((_, reject) =>
       setTimeout(() => reject(new Error("Timed out getting frame")), 20000),
@@ -140,9 +141,7 @@ const fetchUrlMetadata = async (url: string) => {
     throw res;
   }
 
-  const html = await res.text();
   const headers = res.headers;
-
   const contentType = headers.get("content-type");
   const contentLength = headers.get("content-length");
 
@@ -151,31 +150,56 @@ const fetchUrlMetadata = async (url: string) => {
     contentLength: contentLength ? Number(contentLength) : undefined,
   };
 
-  if (contentType?.startsWith("text/html")) {
-    const scrapedMetadata = await Promise.race([
-      scrapeMetadata({ html, url }),
+  if (contentType && !contentType.startsWith("text/html")) {
+    return urlMetadata;
+  }
+
+  let html = await res.text();
+
+  if (!html) {
+    const res2 = await Promise.race([
+      fetch(url, {
+        redirect: "manual",
+      }) as Promise<Response>,
       new Promise((_, reject) =>
         setTimeout(() => reject(new Error("Timed out getting frame")), 20000),
       ) as Promise<Error>,
     ]);
-    if (scrapedMetadata instanceof Error) {
-      throw scrapedMetadata;
-    }
-    urlMetadata.metadata = scrapedMetadata;
-    if (
-      urlMetadata.metadata?.image &&
-      new Blob([urlMetadata.metadata?.image]).size >= 256000
-    ) {
-      urlMetadata.metadata.image = undefined;
-    }
-    const { frame } = getFrame({
-      url,
-      htmlString: html,
-    });
 
-    if (frame?.image && new Blob([frame?.image]).size < 256000) {
-      urlMetadata.frame = frame;
+    if (res2 instanceof Error) {
+      throw res2;
     }
+
+    html = await res2.text();
+    if (!html) {
+      return urlMetadata;
+    }
+  }
+
+  const scrapedMetadata = await Promise.race([
+    scrapeMetadata({ html, url }),
+    new Promise((_, reject) =>
+      setTimeout(() => reject(new Error("Timed out getting frame")), 20000),
+    ) as Promise<Error>,
+  ]);
+  if (scrapedMetadata instanceof Error) {
+    throw scrapedMetadata;
+  }
+  urlMetadata.metadata = scrapedMetadata;
+  if (
+    urlMetadata.metadata?.image &&
+    new Blob([urlMetadata.metadata?.image]).size >= 256000
+  ) {
+    urlMetadata.metadata.image = undefined;
+  }
+
+  const { frame } = getFrame({
+    url,
+    htmlString: html,
+  });
+
+  if (frame?.image && new Blob([frame?.image]).size < 256000) {
+    urlMetadata.frame = frame;
   }
 
   return urlMetadata;
