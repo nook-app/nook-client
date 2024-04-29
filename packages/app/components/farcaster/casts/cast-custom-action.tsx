@@ -94,8 +94,9 @@ export const FarcasterCustomActionButton = ({
           <YGroup>
             {showTopBar && (
               <XGroup disablePassBorderRadius="bottom">
-                {topBar?.map((action) => (
+                {topBar?.map((action, i) => (
                   <CustomActionButton
+                    key={`${action?.name}-${i}`}
                     action={action}
                     cast={cast}
                     onPress={close}
@@ -105,8 +106,9 @@ export const FarcasterCustomActionButton = ({
             )}
             {showBottomBar && (
               <XGroup borderRadius="$0">
-                {bottomBar?.map((action) => (
+                {bottomBar?.map((action, i) => (
                   <CustomActionButton
+                    key={`${action?.name}-${i}`}
                     action={action}
                     cast={cast}
                     onPress={close}
