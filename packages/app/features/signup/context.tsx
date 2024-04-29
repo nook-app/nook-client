@@ -106,7 +106,7 @@ export const CreateAccountProvider = ({ children }: SheetProviderProps) => {
 
   const handleAddressChange = useCallback(
     async (address: `0x${string}`) => {
-      if (hash) return;
+      if (step === CreateAccountStep.Done) return;
 
       await reconnect(wagmiConfig);
       setRecoveryAddress(address);
@@ -129,7 +129,7 @@ export const CreateAccountProvider = ({ children }: SheetProviderProps) => {
         setStep(CreateAccountStep.RecoveryAddress);
       }
     },
-    [hash],
+    [step],
   );
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
