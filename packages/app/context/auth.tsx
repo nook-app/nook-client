@@ -118,7 +118,6 @@ export const AuthProvider = ({
   const loginViaPrivyToken = useCallback(
     async (onSuccess?: () => void) => {
       const token = await getAccessToken();
-      console.log("token", token);
       if (!token) {
         return;
       }

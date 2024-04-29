@@ -3,11 +3,10 @@
   "name": "@nook/app",
   "main": "index.ts",
   "private": true,
-  "sideEffects": [
-    "*.css"
-  ],
+  "sideEffects": ["*.css"],
   "dependencies": {
     "@nook/ui": "*",
+    "@nook/common": "*",
     "@privy-io/react-auth": "^1.60.6",
     "@privy-io/wagmi": "^0.2.2",
     "@shopify/flash-list": "^1.6.4",

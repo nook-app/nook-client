@@ -124,7 +124,6 @@ export const submitUserDataAdd = async (
     },
     body: JSON.stringify(req),
   });
-  console.log("response", response);
   return response;
 };
 
