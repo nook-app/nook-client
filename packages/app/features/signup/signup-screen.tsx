@@ -22,6 +22,8 @@ import { isAddress } from "viem";
 import { WagmiProvider } from "wagmi";
 import { wagmiConfig } from "../../utils/wagmi";
 import { formatAddress } from "../../utils";
+import { useAuth } from "../../context/auth";
+import { useEffect } from "react";
 
 export const SignupScreen = () => {
   return (
@@ -101,7 +103,7 @@ const SignupStep = () => {
 };
 
 const ConnectWalletStep = () => {
-  const { connectWallet } = usePrivy();
+  const { login } = usePrivy();
   const { custodyFid, wallet } = useCreateAccount();
   const { data } = useUser(custodyFid?.toString() || "");
 
@@ -115,26 +117,33 @@ const ConnectWalletStep = () => {
         </NookText>
       </YStack>
       <YStack gap="$2" alignItems="center">
-        <NookButton variant="action" onPress={connectWallet} width="100%">
+        <NookButton variant="action" onPress={login} width="100%">
           {custodyFid ? "Switch" : "Connect"}
         </NookButton>
         {custodyFid && data && (
-          <XStack gap="$2" alignItems="center" borderRadius="$10">
-            <View
-              width="$0.75"
-              height="$0.75"
-              borderRadius="$10"
-              backgroundColor="$red10"
-            />
-            <NookText>
-              <NookText>This wallet already custodies </NookText>
-              <TextLink href={`/users/${data?.username || data.fid}`}>
-                <NookText fontWeight="700">
-                  {data?.username ? `@${data.username}` : `!${data.fid}`}
-                </NookText>
-              </TextLink>
-            </NookText>
-          </XStack>
+          <YStack gap="$2" alignItems="center">
+            <XStack gap="$2" alignItems="center" borderRadius="$10">
+              <View
+                width="$0.75"
+                height="$0.75"
+                borderRadius="$10"
+                backgroundColor="$red10"
+              />
+              <NookText>
+                <NookText>This wallet already custodies </NookText>
+                <TextLink href={`/users/${data?.username || data.fid}`}>
+                  <NookText fontWeight="700">
+                    {data?.username ? `@${data.username}` : `!${data.fid}`}
+                  </NookText>
+                </TextLink>
+              </NookText>
+            </XStack>
+            <Link href="/settings">
+              <NookButton variant="action" width="100%">
+                Go to settings
+              </NookButton>
+            </Link>
+          </YStack>
         )}
         {(!custodyFid || !data) && wallet && (
           <XStack gap="$2" alignItems="center" borderRadius="$10">
@@ -248,6 +257,24 @@ const SubmitTransactionStep = () => {
 };
 
 const DoneStep = () => {
+  const { user, loginViaPrivyToken, privyUser } = useAuth();
+  const { custodyFid, wallet } = useCreateAccount();
+
+  const handleReauth = async () => {
+    await wallet?.loginOrLink();
+  };
+
+  useEffect(() => {
+    const handleAuth = async () => {
+      if (!privyUser) {
+        return;
+      }
+
+      await loginViaPrivyToken();
+    };
+    handleAuth();
+  }, [privyUser, loginViaPrivyToken]);
+
   return (
     <YStack gap="$4" padding="$4">
       <YStack gap="$2">
@@ -257,11 +284,18 @@ const DoneStep = () => {
           profile from your settings.
         </NookText>
       </YStack>
-      <Link href="/settings">
-        <NookButton variant="action" width="100%">
-          Go to settings
+      {user?.fid !== custodyFid?.toString() && (
+        <NookButton variant="action" width="100%" onPress={handleReauth}>
+          Re-authenticate
         </NookButton>
-      </Link>
+      )}
+      {user?.fid === custodyFid?.toString() && (
+        <Link href="/settings">
+          <NookButton variant="action" width="100%">
+            Go to settings
+          </NookButton>
+        </Link>
+      )}
     </YStack>
   );
 };

@@ -29,7 +29,7 @@ import { fetchUser } from "../api/farcaster";
 type AuthContextType = {
   session?: Session;
   login: () => void;
-  loginViaPrivyToken: (onSuccess?: () => void) => Promise<void>;
+  loginViaPrivyToken: () => Promise<void>;
   logout: () => void;
   setSession: (session: Session) => Promise<void>;
   refreshSigner: () => Promise<string | undefined>;
@@ -115,19 +115,15 @@ export const AuthProvider = ({
     }
   }, [session?.fid]);
 
-  const loginViaPrivyToken = useCallback(
-    async (onSuccess?: () => void) => {
-      const token = await getAccessToken();
-      if (!token) {
-        return;
-      }
-      const session = await loginUser(token);
-      await logoutPrivy();
-      await handleSessionChange(session);
-      onSuccess?.();
-    },
-    [getAccessToken, logoutPrivy, handleSessionChange],
-  );
+  const loginViaPrivyToken = useCallback(async () => {
+    const token = await getAccessToken();
+    if (!token) {
+      return;
+    }
+    const session = await loginUser(token);
+    await logoutPrivy();
+    await handleSessionChange(session);
+  }, [getAccessToken, logoutPrivy, handleSessionChange]);
 
   const logout = useCallback(async () => {
     if (!session) return;

@@ -1,4 +1,4 @@
-import { usePrivy, useWallets } from "@privy-io/react-auth";
+import { useWallets } from "@privy-io/react-auth";
 import {
   createContext,
   useContext,
@@ -21,8 +21,6 @@ import {
 import { encodeAbiParameters, hexToBigInt, parseAbiItem } from "viem";
 import { getPendingSigner } from "../../server/auth";
 import { PendingSignerResponse } from "../../types";
-import { useAuth } from "../../context/auth";
-import { useRouter } from "solito/navigation";
 
 export enum CreateAccountStep {
   ConnectWallet = 0,
@@ -85,10 +83,8 @@ export const CreateAccountProvider = ({ children }: SheetProviderProps) => {
   });
   const chainId = useChainId();
   const { wallets } = useWallets();
-  const { loginViaPrivyToken } = useAuth();
   const [wallet, setWallet] =
     useState<ReturnType<typeof useWallets>["wallets"][number]>();
-  const router = useRouter();
 
   useEffect(() => {
     let addy: `0x${string}` | undefined = address;
@@ -147,20 +143,11 @@ export const CreateAccountProvider = ({ children }: SheetProviderProps) => {
     setActiveStep(step);
   }, [step]);
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
   useEffect(() => {
     if (hash && custodyFid && custodyFid > 0) {
-      wallet?.loginOrLink();
       setStep(CreateAccountStep.Done);
     }
   }, [custodyFid, hash]);
-
-  useEffect(() => {
-    const handle = async () => {
-      await loginViaPrivyToken();
-    };
-    handle();
-  }, [loginViaPrivyToken]);
 
   useEffect(() => {
     if (isConfirmed && data) {
