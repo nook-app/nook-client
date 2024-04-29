@@ -4,14 +4,14 @@
   "private": true,
   "scripts": {
     "dev": "next dev --port 3100",
-    "build": "cd ../.. && yarn build && cd packages/next && next build",
+    "build": "next build",
     "start": "next start",
     "serve": "NODE_ENV=production next start --port 8151",
     "lint": "next lint"
   },
   "dependencies": {
     "@amplitude/analytics-browser": "^2.6.2",
-    "@nook/app": "0.0.0",
+    "@nook/app": "*",
     "@privy-io/react-auth": "^1.60.6",
     "@tamagui/config": "^1.94.5",
     "@tamagui/lucide-icons": "^1.94.5",

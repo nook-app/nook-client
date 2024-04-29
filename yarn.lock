@@ -4821,7 +4821,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@nook/app@npm:0.0.0, @nook/app@workspace:packages/app":
+"@nook/app@npm:*, @nook/app@workspace:packages/app":
   version: 0.0.0-use.local
   resolution: "@nook/app@workspace:packages/app"
   dependencies:
@@ -5085,7 +5085,7 @@ __metadata:
   resolution: "@nook/next@workspace:packages/next"
   dependencies:
     "@amplitude/analytics-browser": "npm:^2.6.2"
-    "@nook/app": "npm:0.0.0"
+    "@nook/app": "npm:*"
     "@privy-io/react-auth": "npm:^1.60.6"
     "@tamagui/config": "npm:^1.94.5"
     "@tamagui/lucide-icons": "npm:^1.94.5"
