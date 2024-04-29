@@ -19,6 +19,7 @@ import {
 } from "@tamagui/lucide-icons";
 import { markNotificationsRead } from "../../server/notifications";
 import { useQueryClient } from "@tanstack/react-query";
+import { Loading } from "../../components/loading";
 
 export const NotificationsPriorityFeed = ({
   fid,
@@ -26,14 +27,19 @@ export const NotificationsPriorityFeed = ({
 }: { fid: string; initialData?: FetchNotificationsResponse }) => {
   const queryClient = useQueryClient();
   const { data, isLoading, hasNextPage, fetchNextPage, isFetchingNextPage } =
-    usePriorityNotifications(fid);
+    usePriorityNotifications(fid, initialData);
 
   const notifications = data?.pages.flatMap((page) => page.data) ?? [];
 
   useEffect(() => {
-    queryClient.invalidateQueries({ queryKey: ["notifications-count"] });
-    markNotificationsRead();
+    markNotificationsRead().then(() =>
+      queryClient.invalidateQueries({ queryKey: ["notifications-count"] }),
+    );
   }, [queryClient]);
+
+  if (isLoading) {
+    return <Loading />;
+  }
 
   return (
     <NotificationsInfiniteFeed
@@ -41,7 +47,6 @@ export const NotificationsPriorityFeed = ({
       fetchNextPage={fetchNextPage}
       isFetchingNextPage={isFetchingNextPage}
       hasNextPage={hasNextPage}
-      isLoading={isLoading}
     />
   );
 };
@@ -55,13 +60,16 @@ export const NotificationsMentionsFeed = ({
 
   const notifications = data?.pages.flatMap((page) => page.data) ?? [];
 
+  if (isLoading) {
+    return <Loading />;
+  }
+
   return (
     <NotificationsInfiniteFeed
       notifications={notifications}
       fetchNextPage={fetchNextPage}
       isFetchingNextPage={isFetchingNextPage}
       hasNextPage={hasNextPage}
-      isLoading={isLoading}
     />
   );
 };
@@ -119,6 +127,10 @@ export const NotificationsAllFeed = ({
     },
   ];
 
+  if (isLoading) {
+    return <Loading />;
+  }
+
   return (
     <View>
       <XStack
@@ -161,7 +173,6 @@ export const NotificationsAllFeed = ({
         fetchNextPage={fetchNextPage}
         isFetchingNextPage={isFetchingNextPage}
         hasNextPage={hasNextPage}
-        isLoading={isLoading}
       />
     </View>
   );

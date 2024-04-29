@@ -186,7 +186,9 @@ const SessionItem = () => {
               <NookText
                 fontWeight="700"
                 fontSize="$5"
-                color={["light", "dark"].includes(theme) ? "$color1" : "white"}
+                color={
+                  ["light", "dark"].includes(theme) ? "$color12" : "$color9"
+                }
               >
                 Create Account
               </NookText>

@@ -387,7 +387,7 @@ const CreateCastEmbeds = memo(({ index }: { index: number }) => {
       )}
       {embed && (
         <View padding="$2.5">
-          <EmbedCast cast={embed} />
+          <EmbedCast cast={embed} disableLink />
         </View>
       )}
     </YStack>

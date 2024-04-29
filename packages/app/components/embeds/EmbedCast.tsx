@@ -9,16 +9,33 @@ import { useRouter } from "solito/navigation";
 
 export const EmbedCast = ({
   cast,
+  disableLink,
 }: {
   cast: FarcasterCast;
+  disableLink?: boolean;
 }) => {
-  const { push } = useRouter();
+  const router = useRouter();
+
+  // @ts-ignore
+  const handlePress = (event) => {
+    if (disableLink) return;
+    const selection = window?.getSelection()?.toString();
+    if (!selection || selection.length === 0) {
+      if (event.ctrlKey || event.metaKey) {
+        // metaKey is for macOS
+        window.open(`/casts/${cast.hash}`, "_blank");
+      } else {
+        router.push(`/casts/${cast.hash}`);
+      }
+    }
+  };
+
   return (
     <View
       onPress={(e) => {
         e.preventDefault();
         e.stopPropagation();
-        push(`/casts/${cast.hash}`);
+        handlePress(e);
       }}
       cursor="pointer"
       transition="all 0.2s ease-in-out"

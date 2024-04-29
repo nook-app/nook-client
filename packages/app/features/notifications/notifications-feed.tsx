@@ -11,7 +11,6 @@ import {
 } from "@nook/ui";
 import { NotificationResponse } from "../../types";
 import { InfiniteScrollList } from "../../components/infinite-scroll-list";
-import { Loading } from "../../components/loading";
 import { NamedExoticComponent, memo } from "react";
 import { FarcasterCastDefaultDisplay } from "../../components/farcaster/casts/cast-display";
 import { useAuth } from "../../context/auth";
@@ -27,19 +26,13 @@ export const NotificationsInfiniteFeed = ({
   isFetchingNextPage,
   hasNextPage,
   ListHeaderComponent,
-  isLoading,
 }: {
   notifications: NotificationResponse[];
   fetchNextPage: () => void;
   isFetchingNextPage: boolean;
   hasNextPage: boolean;
   ListHeaderComponent?: JSX.Element;
-  isLoading?: boolean;
 }) => {
-  if (isLoading) {
-    return <Loading />;
-  }
-
   return (
     <InfiniteScrollList
       data={notifications}
@@ -350,7 +343,20 @@ const Notification = ({
   theme?: string;
 }) => {
   const router = useRouter();
-  router.prefetch(href);
+
+  // @ts-ignore
+  const handlePress = (event) => {
+    const selection = window?.getSelection()?.toString();
+    if (!selection || selection.length === 0) {
+      if (event.ctrlKey || event.metaKey) {
+        // metaKey is for macOS
+        window.open(href, "_blank");
+      } else {
+        router.push(href);
+      }
+    }
+  };
+
   return (
     <XStack
       borderBottomWidth="$0.5"
@@ -360,8 +366,9 @@ const Notification = ({
         transition: "all 0.2s ease-in-out",
         backgroundColor: "$color2",
       }}
-      onPress={() => {
-        router.push(href);
+      onPress={(e) => {
+        e.stopPropagation();
+        handlePress(e);
       }}
       paddingHorizontal="$2"
       cursor="pointer"
