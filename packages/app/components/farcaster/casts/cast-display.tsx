@@ -237,10 +237,16 @@ export const FarcasterCastDefaultDisplay = ({
 }: { cast: FarcasterCast; isConnected?: boolean }) => {
   const router = useRouter();
 
-  const handlePress = () => {
+  // @ts-ignore
+  const handlePress = (event) => {
     const selection = window?.getSelection()?.toString();
     if (!selection || selection.length === 0) {
-      router.push(`/casts/${cast.hash}`);
+      if (event.ctrlKey || event.metaKey) {
+        // metaKey is for macOS
+        window.open(`/casts/${cast.hash}`, "_blank");
+      } else {
+        router.push(`/casts/${cast.hash}`);
+      }
     }
   };
 

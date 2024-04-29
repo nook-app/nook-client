@@ -1,8 +1,5 @@
 import { NookText, XStack } from "@nook/ui";
-import {
-  FarcasterCast,
-  FarcasterCastEngagement as FarcasterCastEngagementType,
-} from "../../../types";
+import { FarcasterCast } from "../../../types";
 import { Link } from "solito/link";
 import { useCastStore } from "../../../store/useCastStore";
 

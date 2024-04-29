@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback } from "react";
 import { FarcasterCast } from "../types";
 import { submitReactionAdd, submitReactionRemove } from "../server/farcaster";
 import { useToastController } from "@nook/ui";
