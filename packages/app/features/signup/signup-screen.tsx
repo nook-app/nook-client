@@ -115,6 +115,10 @@ const ConnectWalletStep = () => {
           Nook currently only supports creating accounts with crypto.
           Wallet-less login will be coming in the near future.
         </NookText>
+        <NookText fontWeight="700">
+          We suggest creating a brand new hot wallet for your account. You will
+          not be able to use Warpcast if you use a hardware wallet.
+        </NookText>
       </YStack>
       <YStack gap="$2" alignItems="center">
         <NookButton variant="action" onPress={login} width="100%">
