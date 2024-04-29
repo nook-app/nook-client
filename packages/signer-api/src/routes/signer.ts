@@ -9,6 +9,7 @@ import {
   SubmitLinkRemoveRequest,
   SubmitReactionAddRequest,
   SubmitReactionRemoveRequest,
+  SubmitUserDataAddRequest,
 } from "@nook/common/types";
 import { PendingCast } from "@nook/common/prisma/nook";
 
@@ -16,16 +17,37 @@ export const signerRoutes = async (fastify: FastifyInstance) => {
   fastify.register(async (fastify: FastifyInstance) => {
     const signerService = new SignerService(fastify);
 
-    fastify.get("/signer", async (request, reply) => {
-      const { fid } = (await request.jwtDecode()) as { fid: string };
-      try {
-        const data = await signerService.getSigner(fid);
-        return reply.send(data);
-      } catch (e) {
-        console.error(e);
-        return reply.code(500).send({ message: (e as Error).message });
-      }
-    });
+    fastify.get<{ Querystring: { address?: string } }>(
+      "/signer",
+      async (request, reply) => {
+        const { fid } = (await request.jwtDecode()) as { fid: string };
+        try {
+          const data = await signerService.getSigner(
+            fid,
+            request.query.address,
+          );
+          return reply.send(data);
+        } catch (e) {
+          console.error(e);
+          return reply.code(500).send({ message: (e as Error).message });
+        }
+      },
+    );
+
+    fastify.get<{ Params: { address: string } }>(
+      "/signer/:address",
+      async (request, reply) => {
+        try {
+          const data = await signerService.getPendingSigner(
+            request.params.address,
+          );
+          return reply.send(data);
+        } catch (e) {
+          console.error(e);
+          return reply.code(500).send({ message: (e as Error).message });
+        }
+      },
+    );
 
     fastify.get<{ Querystring: { token: string } }>(
       "/signer/validate",
@@ -161,6 +183,23 @@ export const signerRoutes = async (fastify: FastifyInstance) => {
         const { fid } = (await request.jwtDecode()) as { fid: string };
         try {
           const response = await signerService.submitLinkRemove(
+            fid,
+            request.body,
+          );
+          return reply.send(response);
+        } catch (e) {
+          console.error(e);
+          return reply.code(500).send({ message: (e as Error).message });
+        }
+      },
+    );
+
+    fastify.post<{ Body: SubmitUserDataAddRequest }>(
+      "/signer/user-data-add",
+      async (request, reply) => {
+        const { fid } = (await request.jwtDecode()) as { fid: string };
+        try {
+          const response = await signerService.submitUserDataAdd(
             fid,
             request.body,
           );

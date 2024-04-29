@@ -7,6 +7,7 @@ import {
   SubmitLinkRemoveRequest,
   SubmitReactionAddRequest,
   SubmitReactionRemoveRequest,
+  SubmitUserDataAddRequest,
 } from "@nook/common/types";
 
 export const farcasterSignerRoutes = async (fastify: FastifyInstance) => {
@@ -26,6 +27,21 @@ export const farcasterSignerRoutes = async (fastify: FastifyInstance) => {
         return reply.code(500).send({ message: (e as Error).message });
       }
     });
+
+    fastify.get<{ Params: { address: string } }>(
+      "/signer/:address",
+      async (request, reply) => {
+        try {
+          const response = await client.getPendingSigner(
+            request.params.address,
+          );
+          return reply.send(response);
+        } catch (e) {
+          console.error(e);
+          return reply.code(500).send({ message: (e as Error).message });
+        }
+      },
+    );
 
     fastify.get<{ Querystring: { token: string } }>(
       "/signer/validate",
@@ -175,6 +191,24 @@ export const farcasterSignerRoutes = async (fastify: FastifyInstance) => {
         }
         try {
           const response = await client.submitLinkRemove(
+            request.headers.authorization,
+            request.body,
+          );
+          return reply.send(response);
+        } catch (e) {
+          return reply.code(500).send({ message: (e as Error).message });
+        }
+      },
+    );
+
+    fastify.post<{ Body: SubmitUserDataAddRequest }>(
+      "/signer/user-data-add",
+      async (request, reply) => {
+        if (!request.headers.authorization) {
+          return reply.code(401).send({ message: "Unauthorized" });
+        }
+        try {
+          const response = await client.submitUserDataAdd(
             request.headers.authorization,
             request.body,
           );

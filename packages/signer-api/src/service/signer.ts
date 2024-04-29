@@ -16,12 +16,14 @@ import {
   Embed,
   CastAddMessage,
   toFarcasterTime,
+  makeUserDataAdd,
 } from "@farcaster/hub-nodejs";
 import { bufferToHex, hexToBuffer } from "@nook/common/farcaster";
 import { PrismaClient, Signer } from "@nook/common/prisma/signer";
 import {
   generateKeyPair,
   getWarpcastDeeplink,
+  signMessage,
   validateSignerRegistration,
 } from "../utils";
 import {
@@ -35,6 +37,7 @@ import {
   SubmitMessageResponse,
   SubmitReactionAddRequest,
   SubmitReactionRemoveRequest,
+  SubmitUserDataAddRequest,
   ValidateSignerResponse,
 } from "@nook/common/types";
 import { hexToBytes } from "viem";
@@ -49,7 +52,81 @@ export class SignerService {
     this.hub = fastify.hub.client;
   }
 
-  async createSigner(fid: string) {
+  async getPendingSigner(address: string) {
+    const signer = await this.client.signerPending.findFirst({
+      where: {
+        address,
+      },
+    });
+    if (signer) {
+      return {
+        address,
+        publicKey: signer.publicKey,
+        signature: signer.signature,
+        deadline: signer.deadline,
+        requestFid: signer.requestFid,
+        requestAddress: signer.requestAddress,
+      };
+    }
+
+    const { publicKey, privateKey } = await generateKeyPair();
+    const { signature, deadline, requestFid, requestAddress } =
+      await signMessage(publicKey);
+
+    await this.client.signerPending.create({
+      data: {
+        address,
+        publicKey,
+        privateKey,
+        signature,
+        deadline,
+        requestFid,
+        requestAddress,
+      },
+    });
+
+    return {
+      address,
+      publicKey,
+      signature,
+      deadline,
+      requestFid,
+      requestAddress,
+    };
+  }
+
+  async upgradePendingSigner(fid: string, address: string) {
+    const pendingSigner = await this.client.signerPending.findFirst({
+      where: {
+        address,
+      },
+    });
+    if (pendingSigner) {
+      await this.client.signer.deleteMany({
+        where: {
+          fid,
+          state: "pending",
+        },
+      });
+
+      return await this.client.signer.create({
+        data: {
+          fid,
+          publicKey: pendingSigner.publicKey,
+          privateKey: pendingSigner.privateKey,
+          state: "completed",
+        },
+      });
+    }
+    return null;
+  }
+
+  async createSigner(fid: string, address?: string) {
+    if (address) {
+      const pendingSigner = await this.upgradePendingSigner(fid, address);
+      if (pendingSigner) return pendingSigner;
+    }
+
     const { publicKey, privateKey } = await generateKeyPair();
     const { token, deeplinkUrl, state } = await getWarpcastDeeplink(publicKey);
 
@@ -81,7 +158,7 @@ export class SignerService {
     });
   }
 
-  async getSigner(fid: string): Promise<GetSignerResponse> {
+  async getSigner(fid: string, address?: string): Promise<GetSignerResponse> {
     let signer = await this.client.signer.findFirst({
       where: {
         fid,
@@ -94,22 +171,28 @@ export class SignerService {
       },
     });
     if (!signer) {
-      signer = await this.createSigner(fid);
-    } else if (
-      signer.state === "pending" &&
-      signer.updatedAt.getTime() < Date.now() - 86400 * 1000
-    ) {
-      // tokens expire after 1 day; update if expired
-      signer = await this.updateSignerToken(
-        signer as { fid: string; publicKey: `0x${string}` },
-      );
+      signer = await this.createSigner(fid, address);
+    } else if (signer.state === "pending") {
+      if (address) {
+        const pendingSigner = await this.upgradePendingSigner(fid, address);
+        if (pendingSigner) signer = pendingSigner;
+      }
+      if (
+        signer.state === "pending" &&
+        signer.updatedAt.getTime() < Date.now() - 86400 * 1000
+      ) {
+        // tokens expire after 1 day; update if expired
+        signer = await this.updateSignerToken(
+          signer as { fid: string; publicKey: `0x${string}` },
+        );
+      }
     }
 
     return {
       publicKey: signer.publicKey,
-      token: signer.token,
-      deeplinkUrl: signer.deeplinkUrl,
-      state: signer.state,
+      token: signer.token || undefined,
+      deeplinkUrl: signer.deeplinkUrl || undefined,
+      state: signer.state || undefined,
     };
   }
 
@@ -126,7 +209,7 @@ export class SignerService {
     const { state, userFid } = await validateSignerRegistration(token);
     if (state !== "completed") return { state };
 
-    const signer = await this.client.signer.findUnique({
+    const signer = await this.client.signer.findFirst({
       where: {
         token,
       },
@@ -135,17 +218,14 @@ export class SignerService {
     if (!signer || !userFid) return { state: "pending" };
 
     if (signer.fid !== userFid.toString()) {
-      await this.client.signer.upsert({
+      await this.client.signer.updateMany({
         where: {
           token,
         },
-        create: {
-          ...signer,
-          state,
-          fid: userFid.toString(),
-        },
-        update: {
-          ...signer,
+        data: {
+          deeplinkUrl: signer.deeplinkUrl || null,
+          publicKey: signer.publicKey,
+          token,
           state,
           fid: userFid.toString(),
         },
@@ -154,7 +234,7 @@ export class SignerService {
       return { state: "pending" };
     }
 
-    await this.client.signer.update({
+    await this.client.signer.updateMany({
       where: {
         token,
       },
@@ -542,6 +622,44 @@ export class SignerService {
     }
 
     const result = await this.submitMessage(linkRemoveMessage.value);
+
+    return {
+      hash: bufferToHex(result.hash),
+    };
+  }
+
+  async submitUserDataAdd(
+    fid: string,
+    req: SubmitUserDataAddRequest,
+  ): Promise<SubmitMessageResponse | SubmitMessageError> {
+    const signer = await this.getActiveSigner(fid);
+    if (!signer) {
+      return {
+        message: "Signer not found",
+      };
+    }
+
+    const userDataAddMessage = await makeUserDataAdd(
+      {
+        type: req.type,
+        value: req.value,
+      },
+      {
+        fid: parseInt(fid, 10),
+        network: FarcasterNetwork.MAINNET,
+      },
+      new NobleEd25519Signer(
+        Buffer.from(signer.privateKey.substring(2), "hex"),
+      ),
+    );
+
+    if (userDataAddMessage.isErr()) {
+      return {
+        message: userDataAddMessage.error.message,
+      };
+    }
+
+    const result = await this.submitMessage(userDataAddMessage.value);
 
     return {
       hash: bufferToHex(result.hash),

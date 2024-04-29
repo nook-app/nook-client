@@ -10,6 +10,7 @@ import {
   SubmitMessageResponse,
   SubmitReactionAddRequest,
   SubmitReactionRemoveRequest,
+  SubmitUserDataAddRequest,
   ValidateSignerResponse,
 } from "../../types";
 import { BaseAPIClient } from "./base";
@@ -17,12 +18,25 @@ import { BaseAPIClient } from "./base";
 export class SignerAPIClient extends BaseAPIClient {
   API_ENDPOINT = process.env.SIGNER_API_ENDPOINT;
 
-  async getSigner(token: string): Promise<GetSignerResponse> {
-    const response = await this.makeRequest("/signer", {
-      headers: {
-        Authorization: token,
+  async getSigner(token: string, address?: string): Promise<GetSignerResponse> {
+    const response = await this.makeRequest(
+      `/signer${address ? `?address=${address}` : ""}`,
+      {
+        headers: {
+          Authorization: token,
+        },
       },
-    });
+    );
+
+    if (!response.ok) {
+      throw new Error(response.statusText);
+    }
+
+    return await response.json();
+  }
+
+  async getPendingSigner(address: string) {
+    const response = await this.makeRequest(`/signer/${address}`);
 
     if (!response.ok) {
       throw new Error(response.statusText);
@@ -185,6 +199,25 @@ export class SignerAPIClient extends BaseAPIClient {
     data: SubmitLinkRemoveRequest,
   ): Promise<SubmitMessageResponse | SubmitMessageError> {
     const response = await this.makeRequest("/signer/link-remove", {
+      method: "POST",
+      headers: {
+        Authorization: token,
+      },
+      body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+      throw new Error(response.statusText);
+    }
+
+    return await response.json();
+  }
+
+  async submitUserDataAdd(
+    token: string,
+    data: SubmitUserDataAddRequest,
+  ): Promise<SubmitMessageResponse | SubmitMessageError> {
+    const response = await this.makeRequest("/signer/user-data-add", {
       method: "POST",
       headers: {
         Authorization: token,

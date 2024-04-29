@@ -7,7 +7,7 @@ import {
   usePriorityNotifications,
 } from "../../api/notifications";
 import { NotificationsInfiniteFeed } from "./notifications-feed";
-import { NotificationType } from "../../types";
+import { FetchNotificationsResponse, NotificationType } from "../../types";
 import { useCallback, useEffect, useState } from "react";
 import {
   AtSign,
@@ -20,7 +20,10 @@ import {
 import { markNotificationsRead } from "../../server/notifications";
 import { useQueryClient } from "@tanstack/react-query";
 
-export const NotificationsPriorityFeed = ({ fid }: { fid: string }) => {
+export const NotificationsPriorityFeed = ({
+  fid,
+  initialData,
+}: { fid: string; initialData?: FetchNotificationsResponse }) => {
   const queryClient = useQueryClient();
   const { data, isLoading, hasNextPage, fetchNextPage, isFetchingNextPage } =
     usePriorityNotifications(fid);
@@ -43,9 +46,12 @@ export const NotificationsPriorityFeed = ({ fid }: { fid: string }) => {
   );
 };
 
-export const NotificationsMentionsFeed = ({ fid }: { fid: string }) => {
+export const NotificationsMentionsFeed = ({
+  fid,
+  initialData,
+}: { fid: string; initialData?: FetchNotificationsResponse }) => {
   const { data, isLoading, hasNextPage, fetchNextPage, isFetchingNextPage } =
-    useMentionsNotifications(fid);
+    useMentionsNotifications(fid, initialData);
 
   const notifications = data?.pages.flatMap((page) => page.data) ?? [];
 
@@ -60,10 +66,17 @@ export const NotificationsMentionsFeed = ({ fid }: { fid: string }) => {
   );
 };
 
-export const NotificationsAllFeed = ({ fid }: { fid: string }) => {
+export const NotificationsAllFeed = ({
+  fid,
+  initialData,
+}: { fid: string; initialData?: FetchNotificationsResponse }) => {
   const [types, setTypes] = useState<NotificationType[]>([]);
   const { data, isLoading, hasNextPage, fetchNextPage, isFetchingNextPage } =
-    useAllNotifications(fid, types);
+    useAllNotifications(
+      fid,
+      types,
+      types.length === 0 ? initialData : undefined,
+    );
 
   const notifications = data?.pages.flatMap((page) => page.data) ?? [];
 

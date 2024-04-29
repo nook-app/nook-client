@@ -109,9 +109,9 @@ export type GetFarcasterUserFollowersRequest = {
 
 export type GetSignerResponse = {
   publicKey: string;
-  token: string;
-  deeplinkUrl: string;
-  state: string;
+  token?: string;
+  deeplinkUrl?: string;
+  state?: string;
 };
 
 export type ValidateSignerResponse = {
@@ -162,6 +162,11 @@ export type SubmitLinkAddRequest = {
 export type SubmitLinkRemoveRequest = {
   linkType: string;
   targetFid: string;
+};
+
+export type SubmitUserDataAddRequest = {
+  type: number;
+  value: string;
 };
 
 export type SubmitMessageResponse = {

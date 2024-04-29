@@ -17,7 +17,7 @@ import {
 export const fetchNotifications = async (
   req: GetNotificationsRequest,
   cursor?: string,
-) => {
+): Promise<FetchNotificationsResponse> => {
   return makeRequest(`/notifications${cursor ? `?cursor=${cursor}` : ""}`, {
     method: "POST",
     headers: {
@@ -27,7 +27,10 @@ export const fetchNotifications = async (
   });
 };
 
-export const usePriorityNotifications = (fid: string) => {
+export const usePriorityNotifications = (
+  fid: string,
+  initialData?: FetchNotificationsResponse,
+) => {
   const queryClient = useQueryClient();
   return useInfiniteQuery<
     FetchNotificationsResponse,
@@ -43,11 +46,20 @@ export const usePriorityNotifications = (fid: string) => {
       return data;
     },
     getNextPageParam: (lastPage) => lastPage.nextCursor,
-    initialPageParam: undefined,
+    initialData: initialData
+      ? {
+          pages: [initialData],
+          pageParams: [undefined],
+        }
+      : undefined,
+    initialPageParam: initialData?.nextCursor,
   });
 };
 
-export const useMentionsNotifications = (fid: string) => {
+export const useMentionsNotifications = (
+  fid: string,
+  initialData?: FetchNotificationsResponse,
+) => {
   const queryClient = useQueryClient();
   return useInfiniteQuery<
     FetchNotificationsResponse,
@@ -66,13 +78,20 @@ export const useMentionsNotifications = (fid: string) => {
       return data;
     },
     getNextPageParam: (lastPage) => lastPage.nextCursor,
-    initialPageParam: undefined,
+    initialData: initialData
+      ? {
+          pages: [initialData],
+          pageParams: [undefined],
+        }
+      : undefined,
+    initialPageParam: initialData?.nextCursor,
   });
 };
 
 export const useAllNotifications = (
   fid: string,
   types?: NotificationType[],
+  initialData?: FetchNotificationsResponse,
 ) => {
   const queryClient = useQueryClient();
   return useInfiniteQuery<
@@ -92,7 +111,13 @@ export const useAllNotifications = (
       return data;
     },
     getNextPageParam: (lastPage) => lastPage.nextCursor,
-    initialPageParam: undefined,
+    initialData: initialData
+      ? {
+          pages: [initialData],
+          pageParams: [undefined],
+        }
+      : undefined,
+    initialPageParam: initialData?.nextCursor,
   });
 };
 

@@ -104,3 +104,7 @@ export const darkenColor = (color: string): string => {
     .toString(16)
     .padStart(2, "0")}${b.toString(16).padStart(2, "0")}`;
 };
+
+export const formatAddress = (address: string) => {
+  return `${address.slice(0, 6)}...${address.slice(-4)}`;
+};

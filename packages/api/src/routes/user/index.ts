@@ -7,6 +7,16 @@ import { UserService } from "../../services/user";
 import { UserMetadata } from "@nook/common/types";
 import { PrivyClient } from "@privy-io/server-auth";
 import { FarcasterAPIClient, SignerAPIClient } from "@nook/common/clients";
+import { createPublicClient, http, parseAbiItem } from "viem";
+import { optimism } from "viem/chains";
+import { CONTRACTS } from "@nook/common/utils";
+
+const viemClient = createPublicClient({
+  chain: optimism,
+  transport: http(
+    "https://opt-mainnet.g.alchemy.com/v2/jrjomnn0ub8MFFQOXz3X9s9oVk_Oj5Q2",
+  ),
+});
 
 export const userRoutes = async (fastify: FastifyInstance) => {
   fastify.register(async (fastify: FastifyInstance) => {
@@ -98,23 +108,39 @@ export const userRoutes = async (fastify: FastifyInstance) => {
           );
           did = verifiedClaims.userId;
         } catch (error) {
+          console.error(error);
           return reply.code(401).send({ message: "Unauthorized" });
         }
 
         const privyUser = await privy.getUser(did);
-        if (!privyUser?.farcaster) {
-          return reply.code(401).send({ message: "Unauthorized" });
+
+        let fid = privyUser?.farcaster?.fid.toString();
+        const address = privyUser?.wallet?.address;
+        if (!fid) {
+          // check custody address
+          if (address) {
+            const result = await viemClient.readContract({
+              address: CONTRACTS.ID_REGISTRY_ADDRESS,
+              abi: [
+                parseAbiItem(
+                  "function idOf(address) external view returns (uint256)",
+                ),
+              ],
+              functionName: "idOf",
+              args: [address as `0x${string}`],
+            });
+
+            if (result > 0) {
+              fid = result.toString();
+            }
+          }
+          if (!fid) {
+            return reply.code(401).send({ message: "Unauthorized" });
+          }
         }
 
-        const data = await userService.signInWithPrivy(
-          privyUser.farcaster.fid.toString(),
-        );
-
-        const [signer, user] = await Promise.all([
-          client.getSigner(`Bearer ${data.token}`),
-          farcaster.getUser(privyUser.farcaster.fid.toString()),
-        ]);
-        return reply.send({ ...data, signer, user });
+        const data = await userService.signInWithPrivy(fid);
+        return reply.send(data);
       } catch (e) {
         console.error(e);
         return reply.code(500).send({ message: (e as Error).message });

@@ -141,12 +141,13 @@ const MobileNavigationAuth = () => {
   );
 };
 
-const MobileCreateButton = ({ session }: { session?: Session }) => {
+const MobileCreateButton = () => {
+  const { signer } = useAuth();
   const { theme } = useTheme();
 
-  if (!session) return null;
+  if (!signer) return null;
 
-  if (session.signer?.state !== "completed") {
+  if (signer.state !== "completed") {
     return (
       <View display="none" $xs={{ display: "flex" }}>
         <EnableSignerDialog>

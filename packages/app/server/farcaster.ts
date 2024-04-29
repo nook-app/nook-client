@@ -13,6 +13,7 @@ import {
   SubmitMessageResponse,
   SubmitReactionAddRequest,
   SubmitReactionRemoveRequest,
+  SubmitUserDataAddRequest,
 } from "../types";
 
 export const submitCastAdds = async (
@@ -110,6 +111,20 @@ export const submitReactionRemove = async (
     body: JSON.stringify(req),
   });
   revalidatePath(`/casts/${req.targetHash}`);
+  return response;
+};
+
+export const submitUserDataAdd = async (
+  req: SubmitUserDataAddRequest,
+): Promise<SubmitMessageResponse | SubmitMessageError> => {
+  const response = await makeRequest("/signer/user-data-add", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(req),
+  });
+  console.log("response", response);
   return response;
 };
 

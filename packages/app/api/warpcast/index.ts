@@ -1,4 +1,8 @@
-import { FetchCatActionsResponse } from "../../types";
+import {
+  FetchCatActionsResponse,
+  FnameTransfer,
+  SubmitFnameTransfer,
+} from "../../types";
 import { InfiniteData, useInfiniteQuery } from "@tanstack/react-query";
 
 export const getFarcasterActions = async (
@@ -64,4 +68,50 @@ export const useFarcasterActions = (initialData?: FetchCatActionsResponse) => {
       : undefined,
     initialPageParam: initialData?.nextCursor,
   });
+};
+
+export const fetchCurrentFnameTransfer = async (fname: string) => {
+  const response = await fetch(
+    `https://fnames.farcaster.xyz/transfers/current?name=${fname}`,
+  );
+
+  if (!response.ok) {
+    return;
+  }
+
+  const data: {
+    transfer: FnameTransfer;
+  } = await response.json();
+
+  return data?.transfer;
+};
+
+export const fetchCurrentFnameTransferByFid = async (fid: string) => {
+  const response = await fetch(
+    `https://fnames.farcaster.xyz/transfers/current?fid=${fid}`,
+  );
+
+  if (!response.ok) {
+    return;
+  }
+
+  const data: {
+    transfer: FnameTransfer;
+  } = await response.json();
+
+  return data?.transfer;
+};
+
+export const submitFnameTransfer = async (transfer: SubmitFnameTransfer) => {
+  const response = await fetch("https://fnames.farcaster.xyz/transfers", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(transfer),
+  });
+
+  if (!response.ok) {
+    console.error(await response.text());
+  }
 };

@@ -17,6 +17,8 @@ export const run = async () => {
     },
   });
 
+  console.log(`Found ${urls.length} URLs`);
+
   for (const url of urls) {
     console.log(url.uri);
     const content = await getUrlContent(url.uri);

@@ -1,4 +1,4 @@
-import { useLogin, usePrivy } from "@privy-io/react-auth";
+import { useLogin, usePrivy, User as PrivyUser } from "@privy-io/react-auth";
 import {
   createContext,
   useContext,
@@ -19,6 +19,8 @@ import {
   loginUser,
   getSigner,
   validateSigner,
+  updateSigner,
+  updateUser,
 } from "../server/auth";
 import { removeSession, updateSession } from "../utils/local-storage";
 import { useSettings } from "../api/settings";
@@ -27,12 +29,16 @@ import { fetchUser } from "../api/farcaster";
 type AuthContextType = {
   session?: Session;
   login: () => void;
+  loginViaPrivyToken: (onSuccess?: () => void) => Promise<void>;
   logout: () => void;
   setSession: (session: Session) => Promise<void>;
   refreshSigner: () => Promise<string | undefined>;
   user?: FarcasterUser;
+  setUser: (user: FarcasterUser) => void;
   signer?: GetSignerResponse;
+  setSigner: (signer: GetSignerResponse) => void;
   settings?: User;
+  privyUser?: PrivyUser;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -40,46 +46,42 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider = ({
   children,
   defaultSession,
+  defaultUser,
+  defaultSigner,
 }: {
   children: ReactNode;
   defaultSession?: Session;
+  defaultUser?: FarcasterUser;
+  defaultSigner?: GetSignerResponse;
 }) => {
   const [session, setSession] = useState<Session | undefined>(defaultSession);
-  const { getAccessToken, logout: logoutPrivy } = usePrivy();
+  const [signer, setSigner] = useState<GetSignerResponse | undefined>(
+    defaultSigner,
+  );
+  const [user, setUser] = useState<FarcasterUser | undefined>(defaultUser);
+  const { getAccessToken, logout: logoutPrivy, user: privyUser } = usePrivy();
   const { data } = useSettings(session);
-
-  useEffect(() => {
-    if (
-      session?.fid &&
-      (!session.signer || session.signer?.state !== "completed")
-    ) {
-      handleRefreshSigner();
-    }
-  }, [session?.fid, session?.signer]);
 
   const handleRefreshSigner = useCallback(async () => {
     if (!session) return;
 
-    let signer = session.signer;
-    const prevState = signer?.state;
-
     if (!signer) {
-      signer = await getSigner();
-    } else {
-      const validation = await validateSigner(signer.token);
-      signer.state = validation.state;
+      const signer = await getSigner();
+      await updateSigner(signer);
+      setSigner(signer);
+      return signer.state;
     }
 
-    if (signer.state === prevState) return signer.state;
+    const validation = await validateSigner(signer.token);
+    if (validation.state === signer.state) {
+      return signer.state;
+    }
 
-    const updatedSession = {
-      ...session,
-      signer,
-    };
+    signer.state = validation.state;
+    await updateSigner(signer);
 
-    handleSessionChange(updatedSession);
     return signer.state;
-  }, [session]);
+  }, [session, signer]);
 
   const { login } = useLogin({
     onComplete: async (user, isNewUser, wasAlreadyAuthenticated) => {
@@ -87,59 +89,46 @@ export const AuthProvider = ({
         await logoutPrivy();
         return;
       }
+      await loginViaPrivyToken();
+    },
+    onError: (error) => {
+      console.error("Error logging in", error);
+    },
+  });
 
+  const handleSessionChange = useCallback(async (session: Session) => {
+    await loginServer(session);
+    setSession(session);
+    getSigner().then((signer) => {
+      setSigner(signer);
+      updateSigner(signer);
+    });
+    fetchUser(session.fid).then((user) => {
+      setUser(user);
+      updateUser(user);
+    });
+    updateSession(session);
+  }, []);
+
+  useEffect(() => {
+    if (session?.fid) {
+    }
+  }, [session?.fid]);
+
+  const loginViaPrivyToken = useCallback(
+    async (onSuccess?: () => void) => {
       const token = await getAccessToken();
+      console.log("token", token);
       if (!token) {
         return;
       }
       const session = await loginUser(token);
       await logoutPrivy();
       await handleSessionChange(session);
+      onSuccess?.();
     },
-    onError: (error) => {},
-  });
-
-  const handleSessionChange = useCallback(async (session: Session) => {
-    await loginServer(session);
-
-    let newSession = session;
-
-    const promises = [];
-    if (newSession && !newSession.user) {
-      promises.push(fetchUser(newSession.fid));
-    } else {
-      promises.push(null);
-    }
-
-    if (newSession && !newSession.signer) {
-      promises.push(getSigner());
-    } else {
-      promises.push(null);
-    }
-
-    const [user, signer] = (await Promise.all(promises)) as [
-      FarcasterUser | null,
-      GetSignerResponse | null,
-    ];
-
-    if (newSession && !newSession.user && user) {
-      newSession = {
-        ...newSession,
-        user,
-      };
-    }
-
-    if (newSession && !newSession.signer && signer) {
-      newSession = {
-        ...newSession,
-        signer,
-      };
-    }
-
-    await loginServer(newSession);
-    setSession(newSession);
-    updateSession(newSession);
-  }, []);
+    [getAccessToken, logoutPrivy, handleSessionChange],
+  );
 
   const logout = useCallback(async () => {
     if (!session) return;
@@ -156,11 +145,15 @@ export const AuthProvider = ({
   return (
     <AuthContext.Provider
       value={{
+        privyUser: privyUser || undefined,
         session,
         login,
+        loginViaPrivyToken,
         logout,
-        user: session?.user,
-        signer: session?.signer,
+        user,
+        setUser,
+        signer,
+        setSigner,
         setSession: handleSessionChange,
         refreshSigner: handleRefreshSigner,
         settings: data,

@@ -39,6 +39,11 @@ export type SubmitLinkRemoveRequest = {
   username?: string;
 };
 
+export type SubmitUserDataAddRequest = {
+  type: number;
+  value: string;
+};
+
 export type SubmitMessageResponse = {
   hash: string;
   trustedBytes?: string;

@@ -39,7 +39,7 @@ export const ActionSettings = () => {
         ))}
       </XStack>
       <Link href="/explore/actions">
-        <NookButton>Browse Actions</NookButton>
+        <NookButton variant="action">Browse Actions</NookButton>
       </Link>
     </YStack>
   );

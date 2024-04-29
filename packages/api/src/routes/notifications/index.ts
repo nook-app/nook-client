@@ -113,9 +113,12 @@ export const notificationsRoutes = async (fastify: FastifyInstance) => {
       Body: GetNotificationsRequest;
       Querystring: { cursor?: string };
     }>("/notifications", async (request, reply) => {
-      if (!request.headers.authorization) {
-        return reply.code(401).send({ message: "Unauthorized" });
-      }
+      let viewerFid: string | undefined;
+      try {
+        const { fid } = (await request.jwtDecode()) as { fid: string };
+        viewerFid = fid;
+      } catch (e) {}
+
       try {
         const data = await client.getNotifications(
           request.body,
@@ -128,8 +131,8 @@ export const notificationsRoutes = async (fastify: FastifyInstance) => {
         const hashes = data.data.map((n) => n.hash).filter(Boolean) as string[];
 
         const [users, casts] = await Promise.all([
-          farcaster.getUsers({ fids }),
-          farcaster.getCasts(hashes),
+          farcaster.getUsers({ fids }, viewerFid),
+          farcaster.getCasts(hashes, viewerFid),
         ]);
 
         const castMap = casts.data.reduce(

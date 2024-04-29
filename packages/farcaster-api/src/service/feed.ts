@@ -392,15 +392,19 @@ export class FeedService {
     switch (users.type) {
       case UserFilterType.FOLLOWING: {
         const fids = await this.getFollowingFids(users.data.fid);
-        conditions.push(`"FarcasterCast"."fid" IN (${fids.join(",")})`);
+        if (fids.length > 0) {
+          conditions.push(`"FarcasterCast"."fid" IN (${fids.join(",")})`);
+        }
         break;
       }
       case UserFilterType.FIDS:
-        conditions.push(
-          `"FarcasterCast"."fid" IN (${users.data.fids
-            .map((fid) => BigInt(fid))
-            .join(",")})`,
-        );
+        if (users.data.fids.length > 0) {
+          conditions.push(
+            `"FarcasterCast"."fid" IN (${users.data.fids
+              .map((fid) => BigInt(fid))
+              .join(",")})`,
+          );
+        }
         break;
       case UserFilterType.POWER_BADGE: {
         const [following, holders] = await Promise.all([

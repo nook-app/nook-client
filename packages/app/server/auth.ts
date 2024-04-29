@@ -1,7 +1,9 @@
 "use server";
 
 import {
+  FarcasterUser,
   GetSignerResponse,
+  PendingSignerResponse,
   Session,
   ValidateSignerResponse,
 } from "@nook/app/types";
@@ -39,4 +41,30 @@ export const validateSigner = async (
   token: string,
 ): Promise<ValidateSignerResponse> => {
   return await makeRequest(`/signer/validate?token=${token}`);
+};
+
+export const getPendingSigner = async (
+  address: string,
+): Promise<PendingSignerResponse> => {
+  return await makeRequest(`/signer/${address}`);
+};
+
+export const updateUser = async (user: FarcasterUser) => {
+  cookies().set("user", JSON.stringify(user), { secure: true });
+};
+
+export const getUser = async (): Promise<FarcasterUser | undefined> => {
+  const user = cookies().get("user");
+  return user?.value ? JSON.parse(user.value) : undefined;
+};
+
+export const updateSigner = async (signer: GetSignerResponse) => {
+  cookies().set("signer", JSON.stringify(signer), { secure: true });
+};
+
+export const getSignerFromStorage = async (): Promise<
+  GetSignerResponse | undefined
+> => {
+  const signer = cookies().get("signer");
+  return signer?.value ? JSON.parse(signer.value) : undefined;
 };

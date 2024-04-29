@@ -3,10 +3,14 @@ import "@tamagui/core/reset.css";
 import { Metadata } from "next";
 import { RootNavigation } from "../components/RootNavigation";
 import { Providers } from "./providers";
-import { getServerSession, getSigner } from "@nook/app/server/auth";
+import {
+  getServerSession,
+  getSigner,
+  getSignerFromStorage,
+  getUser,
+} from "@nook/app/server/auth";
 import { ReactNode } from "react";
 import { fetchUser } from "@nook/app/api/farcaster";
-import { FarcasterUser, GetSignerResponse } from "@nook/app/types";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://nook.social"),
@@ -87,46 +91,23 @@ export default async function RootLayout({
 }
 
 async function Component({ children }: { children: ReactNode }) {
-  let session = await getServerSession();
+  const [session] = await Promise.all([getServerSession()]);
 
-  const promises = [];
-  if (session && !session.user) {
-    promises.push(fetchUser(session.fid));
-  } else {
-    promises.push(null);
+  if (!session) {
+    return (
+      <Providers>
+        <RootNavigation>{children}</RootNavigation>
+      </Providers>
+    );
   }
 
-  if (session && (!session.signer || session.signer?.state !== "completed")) {
-    promises.push(getSigner());
-  } else {
-    promises.push(null);
-  }
-
-  const [user, signer] = (await Promise.all(promises)) as [
-    FarcasterUser | null,
-    GetSignerResponse | null,
-  ];
-
-  if (session && !session.user && user) {
-    session = {
-      ...session,
-      user,
-    };
-  }
-
-  if (
-    session &&
-    (!session.signer || session.signer?.state !== "completed") &&
-    signer
-  ) {
-    session = {
-      ...session,
-      signer,
-    };
-  }
+  const [user, signer] = await Promise.all([
+    fetchUser(session.fid),
+    getSigner(),
+  ]);
 
   return (
-    <Providers session={session}>
+    <Providers session={session} user={user} signer={signer}>
       <RootNavigation>{children}</RootNavigation>
     </Providers>
   );

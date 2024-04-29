@@ -21,7 +21,7 @@ export const TabNavigation = ({
   const pathname = usePathname();
   const tabsToRender = tabs.filter((tab) => {
     if (tab.auth) {
-      return session?.user;
+      return session;
     }
     return true;
   });

@@ -44,7 +44,6 @@ export const EmbedFrame = ({
     if (url.includes("warpcast.com/~/add-cast-action")) {
       const parsed = new URL(url);
       const urlParams = new URLSearchParams(parsed.search);
-      console.log(urlParams.toString());
       router.push(`/~/add-cast-action?${urlParams.toString()}`);
     } else {
       router.push(url);

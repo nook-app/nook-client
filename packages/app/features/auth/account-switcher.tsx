@@ -7,7 +7,7 @@ import {
   XStack,
   YStack,
 } from "@nook/ui";
-import { ReactNode } from "react";
+import { ReactNode, useCallback, useState } from "react";
 import { useAuth } from "../../context/auth";
 import { Session } from "../../types";
 import { useUsers } from "../../api/farcaster";
@@ -15,6 +15,7 @@ import { FarcasterUserDisplay } from "../../components/farcaster/users/user-disp
 import { Check } from "@tamagui/lucide-icons";
 import { useRouter } from "next/navigation";
 import { getSessions } from "../../utils/local-storage";
+import { Link } from "solito/link";
 
 export const AccountSwitcher = ({ children }: { children: ReactNode }) => {
   return (
@@ -61,6 +62,11 @@ const AccountSwitcherContent = () => {
       <NookButton variant="ghost" height="$4" onPress={login}>
         Add an existing account
       </NookButton>
+      <Link href="/signup">
+        <NookButton variant="ghost" height="$4">
+          Create a new account
+        </NookButton>
+      </Link>
       {user && (
         <>
           <NookButton

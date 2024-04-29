@@ -81,7 +81,7 @@ export const validateSignerRegistration = async (token: string) => {
   };
 };
 
-const signMessage = async (key: `0x${string}`) => {
+export const signMessage = async (key: `0x${string}`) => {
   const SIGNED_KEY_REQUEST_VALIDATOR_EIP_712_DOMAIN = {
     name: "Farcaster SignedKeyRequestValidator",
     version: "1",
@@ -119,5 +119,6 @@ const signMessage = async (key: `0x${string}`) => {
     signature,
     requestFid,
     deadline,
+    requestAddress: account.address,
   };
 };

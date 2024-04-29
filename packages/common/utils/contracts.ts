@@ -1,0 +1,20 @@
+export const CONTRACTS = {
+  FROM_BLOCK: BigInt(111846778),
+  KEY_REGISTRY_ADDRESS:
+    "0x00000000fc1237824fb747abde0ff18990e59b7e" as `0x${string}`,
+  KEY_GATEWAY_ADDRESS:
+    "0x00000000fc56947c7e7183f8ca4b62398caadf0b" as `0x${string}`,
+  ID_REGISTRY_ADDRESS:
+    "0x00000000fc6c5f01fc30151999387bb99a9f489b" as `0x${string}`,
+  ID_GATEWAY_ADDRESS:
+    "0x00000000fc25870c6ed6b6c7e41fb078b7656f69" as `0x${string}`,
+  STORAGE_REGISTRY_ADDRESS:
+    "0x00000000fcCe7f938e7aE6D3c335bD6a1a7c593D" as `0x${string}`,
+  BUNDLER_ADDRESS:
+    "0x00000000fc04c910a0b5fea33b03e0447ad0b0aa" as `0x${string}`,
+  VALIDATOR_ADDRESS:
+    "0x00000000fc700472606ed4fa22623acf62c60553" as `0x${string}`,
+  FNAME_REGISTRY_ADDRESS:
+    "0xe3be01d99baa8db9905b33a3ca391238234b79d1" as `0x${string}`,
+  NETWORK: 10,
+};

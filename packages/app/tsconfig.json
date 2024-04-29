@@ -2,7 +2,7 @@
   "extends": "../../tsconfig.json",
   "include": [
     "**/*.ts",
-    "**/*.tsx",
+    "**/*.tsx", "../common/utils/contracts.ts",
   ],
   "compilerOptions": {
     "composite": true,

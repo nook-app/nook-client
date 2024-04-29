@@ -12,12 +12,28 @@ model Signer {
     fid         String
     publicKey   String
     privateKey  String
-    token       String @unique
-    deeplinkUrl String
-    state       String
+    token       String?
+    deeplinkUrl String?
+    state       String?
 
     createdAt DateTime @default(now())
     updatedAt DateTime @default(now()) @updatedAt
 
     @@id([fid, publicKey])
+}
+
+model SignerPending {
+    address    String
+    publicKey  String
+    privateKey String
+
+    signature      String
+    deadline       Int
+    requestFid     String
+    requestAddress String
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @default(now()) @updatedAt
+
+    @@id([address, publicKey])
 }

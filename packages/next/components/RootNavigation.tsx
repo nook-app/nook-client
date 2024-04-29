@@ -12,6 +12,7 @@ import {
   Search,
   Settings,
   User,
+  UserRoundPlus,
 } from "@tamagui/lucide-icons";
 import { useAuth } from "@nook/app/context/auth";
 import {
@@ -23,7 +24,6 @@ import { AccountSwitcher } from "@nook/app/features/auth/account-switcher";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { NotificationsCount } from "@nook/app/features/notifications/notifications-count";
-import { Session } from "@nook/app/types";
 import { MobileNavigation } from "./MobileNavigation";
 import { useTheme } from "@nook/app/context/theme";
 import { EnableSignerDialog } from "@nook/app/features/farcaster/enable-signer/dialog";
@@ -137,9 +137,9 @@ const RootNavigationItem = ({
 };
 
 const AuthenticatedNavigation = () => {
-  const { session } = useAuth();
+  const { user } = useAuth();
 
-  if (!session?.user) {
+  if (!user) {
     return null;
   }
 
@@ -154,7 +154,7 @@ const AuthenticatedNavigation = () => {
       <RootNavigationItem
         label="Profile"
         Icon={User}
-        href={`/users/${session.user?.username}`}
+        href={`/users/${user.username}`}
       />
       <RootNavigationItem label="Settings" Icon={Settings} href="/settings" />
       <CreateCastItem />
@@ -163,12 +163,55 @@ const AuthenticatedNavigation = () => {
 };
 
 const SessionItem = () => {
-  const { login, session } = useAuth();
+  const { login, user } = useAuth();
   const { theme } = useTheme();
 
-  if (!session?.user) {
+  if (!user) {
     return (
-      <>
+      <YStack gap="$3">
+        <View display="flex" $lg={{ display: "none" }}>
+          <Link
+            href="/signup"
+            style={{ textDecoration: "none", width: "100%" }}
+          >
+            <NookButton
+              variant="primary"
+              backgroundColor="transparent"
+              borderColor={
+                ["light", "dark"].includes(theme) ? "$color12" : "$color9"
+              }
+              width="100%"
+              borderWidth="$1"
+            >
+              <NookText
+                fontWeight="700"
+                fontSize="$5"
+                color={["light", "dark"].includes(theme) ? "$color1" : "white"}
+              >
+                Create Account
+              </NookText>
+            </NookButton>
+          </Link>
+        </View>
+        <View display="none" $lg={{ display: "flex" }}>
+          <Link href="/signup">
+            <NookButton
+              variant="primary"
+              width="$5"
+              padding="$0"
+              backgroundColor="transparent"
+              borderColor={
+                ["light", "dark"].includes(theme) ? "$color12" : "$color9"
+              }
+              borderWidth="$1"
+            >
+              <UserRoundPlus
+                size={24}
+                color={["light", "dark"].includes(theme) ? "$color1" : "white"}
+              />
+            </NookButton>
+          </Link>
+        </View>
         <View display="flex" $lg={{ display: "none" }}>
           <NookButton
             variant="primary"
@@ -202,7 +245,7 @@ const SessionItem = () => {
             />
           </NookButton>
         </View>
-      </>
+      </YStack>
     );
   }
 
@@ -217,7 +260,7 @@ const SessionItem = () => {
               flexGrow={1}
               $lg={{ display: "none" }}
             >
-              <FarcasterUserDisplay user={session.user} />
+              <FarcasterUserDisplay user={user} />
               <MoreHorizontal color="$mauve12" size={16} />
             </XStack>
           </NookButton>
@@ -234,7 +277,7 @@ const SessionItem = () => {
             justifyContent="center"
             alignItems="center"
           >
-            <FarcasterUserAvatar user={session.user} size="$4" />
+            <FarcasterUserAvatar user={user} size="$4" />
           </NookButton>
         </AccountSwitcher>
       </View>
@@ -243,9 +286,10 @@ const SessionItem = () => {
 };
 
 const CreateCastItem = () => {
-  const { session } = useAuth();
+  const { signer } = useAuth();
+  const { theme } = useTheme();
 
-  if (session?.signer?.state !== "completed") {
+  if (signer?.state !== "completed") {
     return (
       <View marginTop="$4">
         <View display="flex" $lg={{ display: "none" }}>
@@ -253,7 +297,7 @@ const CreateCastItem = () => {
             <NookButton
               variant="primary"
               backgroundColor={
-                session?.theme && ["light", "dark"].includes(session.theme)
+                theme && ["light", "dark"].includes(theme)
                   ? "$color12"
                   : "$color11"
               }
@@ -262,7 +306,7 @@ const CreateCastItem = () => {
                 fontWeight="700"
                 fontSize="$5"
                 color={
-                  session?.theme && ["light", "dark"].includes(session.theme)
+                  theme && ["light", "dark"].includes(theme)
                     ? "$color1"
                     : "$color12"
                 }
@@ -279,7 +323,7 @@ const CreateCastItem = () => {
               width="$5"
               padding="$0"
               backgroundColor={
-                session?.theme && ["light", "dark"].includes(session.theme)
+                theme && ["light", "dark"].includes(theme)
                   ? "$color12"
                   : "$color11"
               }
@@ -288,7 +332,7 @@ const CreateCastItem = () => {
                 <Pencil
                   size={24}
                   color={
-                    session?.theme && ["light", "dark"].includes(session.theme)
+                    theme && ["light", "dark"].includes(theme)
                       ? "$color1"
                       : "$color12"
                   }

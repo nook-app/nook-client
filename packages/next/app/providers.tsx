@@ -7,7 +7,7 @@ import { PrivyProvider } from "@privy-io/react-auth";
 import { AuthProvider, useAuth } from "@nook/app/context/auth";
 import * as amplitude from "@amplitude/analytics-browser";
 import { Toasts } from "@nook/app/components/toasts";
-import { Session } from "@nook/app/types";
+import { FarcasterUser, GetSignerResponse, Session } from "@nook/app/types";
 import { ThemeProvider } from "@nook/app/context/theme";
 
 const queryClient = new QueryClient();
@@ -15,20 +15,28 @@ const queryClient = new QueryClient();
 export const Providers = ({
   children,
   session,
+  user,
+  signer,
 }: {
   children: React.ReactNode;
   session?: Session;
+  user?: FarcasterUser;
+  signer?: GetSignerResponse;
 }) => {
   return (
-    <QueryClientProvider client={queryClient}>
-      <PrivyProvider
-        appId="clsnxqma102qxbyt1ght4j14w"
-        config={{
-          appearance: { logo: "", theme: "dark" },
-          loginMethods: ["farcaster"],
-        }}
-      >
-        <AuthProvider defaultSession={session}>
+    <PrivyProvider
+      appId="clsnxqma102qxbyt1ght4j14w"
+      config={{
+        appearance: { logo: "", theme: "dark" },
+        loginMethods: ["farcaster", "wallet"],
+      }}
+    >
+      <QueryClientProvider client={queryClient}>
+        <AuthProvider
+          defaultSession={session}
+          defaultUser={user}
+          defaultSigner={signer}
+        >
           <ThemeProvider defaultTheme={session?.theme as ThemeName | undefined}>
             <AnalyticsProvider>
               <ToastProvider>
@@ -38,8 +46,8 @@ export const Providers = ({
             </AnalyticsProvider>
           </ThemeProvider>
         </AuthProvider>
-      </PrivyProvider>
-    </QueryClientProvider>
+      </QueryClientProvider>
+    </PrivyProvider>
   );
 };
 

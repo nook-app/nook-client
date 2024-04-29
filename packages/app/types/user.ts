@@ -47,6 +47,14 @@ export type ValidateSignerResponse = {
   state: string;
 };
 
+export type PendingSignerResponse = {
+  publicKey: `0x${string}`;
+  requestFid: string;
+  deadline: number;
+  signature: `0x${string}`;
+  requestAddress: `0x${string}`;
+};
+
 export type User = {
   mutedUsers: string[];
   mutedChannels: string[];
@@ -91,4 +99,25 @@ export type Panel = {
   key: string;
   name: string;
   display?: Display;
+};
+
+export type FnameTransfer = {
+  id: string;
+  timestamp: number;
+  username: string;
+  owner: string;
+  from: number;
+  to: number;
+  user_signature: string;
+  server_signature: string;
+};
+
+export type SubmitFnameTransfer = {
+  name: string;
+  from: number;
+  to: number;
+  fid: number;
+  owner: string;
+  timestamp: number;
+  signature: string;
 };
