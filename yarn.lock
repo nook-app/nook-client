@@ -4985,6 +4985,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@nook/app@workspace:packages/app"
   dependencies:
+    "@nook/common": "npm:*"
     "@nook/ui": "npm:*"
     "@privy-io/react-auth": "npm:^1.60.6"
     "@privy-io/wagmi": "npm:^0.2.2"
