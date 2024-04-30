@@ -45,7 +45,12 @@ const buildApp = () => {
         !origin ||
         origin.startsWith("http://localhost") ||
         origin.startsWith("https://localhost") ||
-        ["https://nook-next.vercel.app", "https://nook.social"].includes(origin)
+        origin.startsWith("https://farcon.localhost") ||
+        [
+          "https://nook-next.vercel.app",
+          "https://nook.social",
+          "https://farcon.nook.social",
+        ].includes(origin)
       ) {
         callback(null, true);
       } else {
