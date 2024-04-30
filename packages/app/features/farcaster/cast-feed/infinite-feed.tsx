@@ -13,7 +13,6 @@ export const FarcasterInfiniteFeed = ({
   hasNextPage,
   displayMode = Display.CASTS,
   ListHeaderComponent,
-  isLoading,
 }: {
   casts: FarcasterCast[];
   fetchNextPage?: () => void;
@@ -21,7 +20,6 @@ export const FarcasterInfiniteFeed = ({
   hasNextPage?: boolean;
   displayMode?: Display;
   ListHeaderComponent?: JSX.Element;
-  isLoading?: boolean;
 }) => {
   const router = useRouter();
 

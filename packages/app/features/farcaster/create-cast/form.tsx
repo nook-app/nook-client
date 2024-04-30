@@ -161,7 +161,7 @@ const CreateCastButton = ({ onSubmit }: { onSubmit?: () => void }) => {
 
 const CreateCastItem = ({ index }: { index: number }) => {
   const theme = useTheme();
-  const { updateText, activeIndex, removeCast, setActiveIndex, casts } =
+  const { updateText, activeIndex, removeCast, setActiveIndex, casts, cast } =
     useCreateCast();
   const { user } = useAuth();
 
@@ -185,6 +185,14 @@ const CreateCastItem = ({ index }: { index: number }) => {
     target.style.height = "inherit";
     // @ts-ignore
     target.style.height = `${target.scrollHeight}px`;
+  };
+
+  // @ts-ignore
+  const handleKeyDown = (event) => {
+    if (event.metaKey && event.key === "Enter") {
+      event.preventDefault();
+      cast();
+    }
   };
 
   return (
@@ -234,6 +242,7 @@ const CreateCastItem = ({ index }: { index: number }) => {
               $platform-web={{
                 resize: "none",
               }}
+              onKeyPress={handleKeyDown}
             />
             <View
               position="absolute"

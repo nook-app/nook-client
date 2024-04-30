@@ -20,6 +20,7 @@ import { FarcasterInfiniteFeed } from "../cast-feed/infinite-feed";
 import { BarChartBig, Clock, Rocket } from "@tamagui/lucide-icons";
 import { useState } from "react";
 import { FarcasterCastKebabMenu } from "../../../components/farcaster/casts/cast-kebab-menu";
+import { Loading } from "../../../components/loading";
 
 function formatTimestampTime(timestamp: number) {
   const timeFormatter = new Intl.DateTimeFormat("en-US", {
@@ -52,6 +53,10 @@ export const FarcasterExpandedCast = ({
 
   const casts = data?.pages.flatMap((page) => page.data) ?? [];
 
+  if (isLoading) {
+    return <Loading />;
+  }
+
   return (
     <View>
       <FarcasterInfiniteFeed
@@ -67,7 +72,6 @@ export const FarcasterExpandedCast = ({
             onReplySortChange={setReplySort}
           />
         }
-        isLoading={isLoading}
       />
     </View>
   );

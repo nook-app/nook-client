@@ -106,6 +106,7 @@ export const useCastReplies = (
         }
       : undefined,
     initialPageParam: initialData?.nextCursor,
+    enabled: !initialData || !!initialData?.nextCursor,
   });
 };
 

@@ -92,10 +92,7 @@ const MobileNavigationAuth = () => {
         alignItems="center"
         onPress={login}
       >
-        <LogIn
-          size={26.5}
-          color={["light", "dark"].includes(theme) ? "$color1" : "white"}
-        />
+        <LogIn size={26.5} />
       </NookButton>
     );
 
