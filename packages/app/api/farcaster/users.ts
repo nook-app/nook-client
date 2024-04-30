@@ -12,13 +12,10 @@ export const fetchUser = async (username: string): Promise<FarcasterUser> => {
 };
 
 export const useUser = (username: string) => {
-  const queryClient = useQueryClient();
   return useQuery<FarcasterUser>({
     queryKey: ["user", username],
     queryFn: async () => {
       const user = await fetchUser(username);
-      queryClient.setQueryData(["user", username], user);
-      queryClient.setQueryData(["users", user.fid], user);
       return user;
     },
     enabled: !!username,
@@ -38,14 +35,10 @@ export const fetchUsers = async (
 };
 
 export const useUsers = (fids: string[]) => {
-  const queryClient = useQueryClient();
   return useQuery<FetchUsersResponse>({
     queryKey: ["users", fids.join(",")],
     queryFn: async () => {
       const users = await fetchUsers(fids);
-      for (const user of users.data) {
-        queryClient.setQueryData(["user", user.username], user);
-      }
       return users;
     },
     enabled: fids.length > 0,
@@ -64,7 +57,6 @@ export const useUserFollowers = (
   username: string,
   initialData?: FetchUsersResponse,
 ) => {
-  const queryClient = useQueryClient();
   return useInfiniteQuery<
     FetchUsersResponse,
     unknown,
@@ -75,9 +67,6 @@ export const useUserFollowers = (
     queryKey: ["user-followers", username],
     queryFn: async ({ pageParam }) => {
       const data = await fetchUserFollowers(username, pageParam);
-      for (const user of data.data) {
-        queryClient.setQueryData(["user", user.username], user);
-      }
       return data;
     },
     getNextPageParam: (lastPage) => lastPage.nextCursor,
@@ -103,7 +92,6 @@ export const useUserFollowing = (
   username: string,
   initialData?: FetchUsersResponse,
 ) => {
-  const queryClient = useQueryClient();
   return useInfiniteQuery<
     FetchUsersResponse,
     unknown,
@@ -114,9 +102,6 @@ export const useUserFollowing = (
     queryKey: ["user-following", username],
     queryFn: async ({ pageParam }) => {
       const data = await fetchUserFollowing(username, pageParam);
-      for (const user of data.data) {
-        queryClient.setQueryData(["user", user.username], user);
-      }
       return data;
     },
     getNextPageParam: (lastPage) => lastPage.nextCursor,
@@ -140,7 +125,6 @@ export const useUserMutuals = (
   username: string,
   initialData?: FetchUsersResponse,
 ) => {
-  const queryClient = useQueryClient();
   return useInfiniteQuery<
     FetchUsersResponse,
     unknown,
@@ -151,9 +135,6 @@ export const useUserMutuals = (
     queryKey: ["user-mutuals", username],
     queryFn: async ({ pageParam }) => {
       const data = await fetchUserMutuals(username, pageParam);
-      for (const user of data.data) {
-        queryClient.setQueryData(["user", user.username], user);
-      }
       return data;
     },
     getNextPageParam: (lastPage) => lastPage.nextCursor,
