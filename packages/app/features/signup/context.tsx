@@ -21,6 +21,7 @@ import {
 import { encodeAbiParameters, hexToBigInt, parseAbiItem } from "viem";
 import { getPendingSigner } from "../../server/auth";
 import { PendingSignerResponse } from "../../types";
+import { useAuth } from "../../context/auth";
 
 export enum CreateAccountStep {
   ConnectWallet = 0,
@@ -85,6 +86,7 @@ export const CreateAccountProvider = ({ children }: SheetProviderProps) => {
   const { wallets } = useWallets();
   const [wallet, setWallet] =
     useState<ReturnType<typeof useWallets>["wallets"][number]>();
+  const { refreshSignerByPublicKey } = useAuth();
 
   useEffect(() => {
     let addy: `0x${string}` | undefined = address;
@@ -156,10 +158,11 @@ export const CreateAccountProvider = ({ children }: SheetProviderProps) => {
       );
       if (log?.topics[2]) {
         const fid = hexToBigInt(log.topics[2]);
+        refreshSignerByPublicKey();
         setCustodyFid(fid);
       }
     }
-  }, [data, isConfirmed]);
+  }, [data, isConfirmed, refreshSignerByPublicKey]);
 
   const saveRecoveryAddress = useCallback(async () => {
     if (!address || !recoveryAddress) return;

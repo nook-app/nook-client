@@ -9,10 +9,13 @@ export const run = async () => {
     process.exit(1);
   }
 
-  const urls = await client.urlContent.findMany({
+  const urls = await client.farcasterContentReference.findMany({
     where: {
       uri: {
         startsWith: process.argv[2],
+      },
+      timestamp: {
+        gte: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2),
       },
     },
   });
@@ -23,17 +26,14 @@ export const run = async () => {
     console.log(url.uri);
     const content = await getUrlContent(url.uri);
     if (!content) continue;
-    await client.urlContent.upsert({
+    await client.farcasterContentReference.updateMany({
       where: {
         uri: content.uri,
       },
-      create: {
+      data: {
         ...content,
-        metadata: (content.metadata || Prisma.DbNull) as Prisma.InputJsonValue,
-        frame: (content.frame || Prisma.DbNull) as Prisma.InputJsonValue,
-      },
-      update: {
-        ...content,
+        type: undefined,
+        contentType: content.type,
         metadata: (content.metadata || Prisma.DbNull) as Prisma.InputJsonValue,
         frame: (content.frame || Prisma.DbNull) as Prisma.InputJsonValue,
       },

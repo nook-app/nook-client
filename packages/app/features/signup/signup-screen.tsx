@@ -120,13 +120,18 @@ const ConnectWalletStep = () => {
           not be able to use Warpcast if you use a hardware wallet.
         </NookText>
       </YStack>
-      <YStack gap="$2" alignItems="center">
+      <YStack gap="$4" alignItems="center">
         <NookButton variant="action" onPress={login} width="100%">
           {custodyFid ? "Switch" : "Connect"}
         </NookButton>
         {custodyFid && data && (
-          <YStack gap="$2" alignItems="center">
-            <XStack gap="$2" alignItems="center" borderRadius="$10">
+          <YStack gap="$2" width="100%">
+            <XStack
+              gap="$2"
+              alignItems="center"
+              borderRadius="$10"
+              alignSelf="center"
+            >
               <View
                 width="$0.75"
                 height="$0.75"

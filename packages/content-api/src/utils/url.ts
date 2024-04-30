@@ -140,8 +140,9 @@ const fetchUrlMetadata = async (url: string) => {
     throw res;
   }
 
-  const contentType = res.headers.get("content-type");
-  const contentLength = res.headers.get("content-length");
+  const headers = res.headers;
+  const contentType = headers.get("content-type");
+  const contentLength = headers.get("content-length");
 
   const urlMetadata: UrlMetadata = {
     contentType: contentType || undefined,
