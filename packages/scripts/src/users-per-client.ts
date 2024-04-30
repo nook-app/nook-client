@@ -1,5 +1,4 @@
 import { PrismaClient } from "@nook/common/prisma/farcaster";
-import { PrismaClient as SignerClient } from "@nook/common/prisma/signer";
 const fs = require("fs");
 const path = require("path");
 
