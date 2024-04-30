@@ -53,6 +53,7 @@ export const usePriorityNotifications = (
         }
       : undefined,
     initialPageParam: initialData?.nextCursor,
+    refetchOnWindowFocus: false,
   });
 };
 
@@ -85,6 +86,7 @@ export const useMentionsNotifications = (
         }
       : undefined,
     initialPageParam: initialData?.nextCursor,
+    refetchOnWindowFocus: false,
   });
 };
 
@@ -118,6 +120,7 @@ export const useAllNotifications = (
         }
       : undefined,
     initialPageParam: initialData?.nextCursor,
+    refetchOnWindowFocus: false,
   });
 };
 

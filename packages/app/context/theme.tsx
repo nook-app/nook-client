@@ -19,6 +19,7 @@ import { useAuth } from "./auth";
 import { updateSession } from "../utils/local-storage";
 
 type ThemeContextType = {
+  rootTheme: "dark" | "light";
   theme: ThemeName;
   setTheme: (theme: ThemeName) => void;
 };
@@ -78,6 +79,7 @@ export const ThemeProvider = ({
       >
         <ThemeContext.Provider
           value={{
+            rootTheme,
             theme,
             setTheme: handleSetTheme,
           }}

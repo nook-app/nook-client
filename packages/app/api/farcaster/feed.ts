@@ -107,6 +107,7 @@ export const useCastReplies = (
       : undefined,
     initialPageParam: initialData?.nextCursor,
     enabled: !initialData || !!initialData?.nextCursor,
+    refetchOnWindowFocus: false,
   });
 };
 
@@ -156,6 +157,7 @@ export const useTrendingCasts = (
         }
       : undefined,
     initialPageParam: initialData?.nextCursor,
+    refetchOnWindowFocus: false,
   });
 };
 
