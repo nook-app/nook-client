@@ -130,7 +130,6 @@ const fetchUrlMetadata = async (url: string) => {
         "Sec-Fetch-Site": "same-origin",
         "Sec-Fetch-User": "?1",
       },
-      redirect: "manual",
     }) as Promise<Response>,
     new Promise((_, reject) =>
       setTimeout(() => reject(new Error("Timed out getting frame")), 20000),
@@ -141,33 +140,8 @@ const fetchUrlMetadata = async (url: string) => {
     throw res;
   }
 
-  let contentType = res.headers.get("content-type");
-  let contentLength = res.headers.get("content-length");
-
-  if (!contentType) {
-    const res2 = await Promise.race([
-      fetch(url, {
-        headers: {
-          "user-agent":
-            USER_AGENT_OVERRIDES[new URL(url).hostname] ||
-            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
-          "Sec-Fetch-Dest": "document",
-          "Sec-Fetch-Mode": "navigate",
-          "Sec-Fetch-Site": "same-origin",
-          "Sec-Fetch-User": "?1",
-        },
-      }) as Promise<Response>,
-      new Promise((_, reject) =>
-        setTimeout(() => reject(new Error("Timed out getting frame")), 20000),
-      ) as Promise<Error>,
-    ]);
-    if (res2 instanceof Error) {
-      throw res2;
-    }
-
-    contentType = res2.headers.get("content-type");
-    contentLength = res2.headers.get("content-length");
-  }
+  const contentType = res.headers.get("content-type");
+  const contentLength = res.headers.get("content-length");
 
   const urlMetadata: UrlMetadata = {
     contentType: contentType || undefined,
