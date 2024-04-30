@@ -128,10 +128,22 @@ export class SignerService {
     }
 
     const { publicKey, privateKey } = await generateKeyPair();
-    const { token, deeplinkUrl, state } = await getWarpcastDeeplink(publicKey);
+    const {
+      token,
+      deeplinkUrl,
+      state,
+      requestAddress,
+      requestFid,
+      signature,
+      deadline,
+    } = await getWarpcastDeeplink(publicKey);
 
     return await this.client.signer.create({
       data: {
+        requestAddress,
+        requestFid,
+        signature,
+        deadline,
         fid,
         publicKey,
         privateKey,
@@ -143,14 +155,24 @@ export class SignerService {
   }
 
   async updateSignerToken(signer: { fid: string; publicKey: `0x${string}` }) {
-    const { token, deeplinkUrl, state } = await getWarpcastDeeplink(
-      signer.publicKey,
-    );
+    const {
+      token,
+      deeplinkUrl,
+      state,
+      requestAddress,
+      requestFid,
+      signature,
+      deadline,
+    } = await getWarpcastDeeplink(signer.publicKey);
     return await this.client.signer.update({
       where: {
         fid_publicKey: { fid: signer.fid, publicKey: signer.publicKey },
       },
       data: {
+        requestAddress,
+        requestFid,
+        signature,
+        deadline,
         token,
         deeplinkUrl,
         state,
@@ -179,7 +201,8 @@ export class SignerService {
       }
       if (
         signer.state === "pending" &&
-        signer.updatedAt.getTime() < Date.now() - 86400 * 1000
+        (!signer.signature ||
+          signer.updatedAt.getTime() < Date.now() - 86400 * 1000)
       ) {
         // tokens expire after 1 day; update if expired
         signer = await this.updateSignerToken(
@@ -193,6 +216,10 @@ export class SignerService {
       token: signer.token || undefined,
       deeplinkUrl: signer.deeplinkUrl || undefined,
       state: signer.state || undefined,
+      requestAddress: signer.requestAddress || undefined,
+      requestFid: signer.requestFid || undefined,
+      signature: signer.signature || undefined,
+      deadline: signer.deadline || undefined,
     };
   }
 
@@ -203,6 +230,22 @@ export class SignerService {
         state: "completed",
       },
     });
+  }
+
+  async validateSignerByPublicKey(
+    publicKey: string,
+  ): Promise<ValidateSignerResponse> {
+    console.log({ publicKey });
+    await this.client.signer.updateMany({
+      where: {
+        publicKey,
+      },
+      data: {
+        state: "completed",
+      },
+    });
+
+    return { state: "completed" };
   }
 
   async validateSigner(token: string): Promise<ValidateSignerResponse> {

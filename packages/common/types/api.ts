@@ -112,6 +112,10 @@ export type GetSignerResponse = {
   token?: string;
   deeplinkUrl?: string;
   state?: string;
+  requestFid?: string;
+  requestAddress?: string;
+  signature?: string;
+  deadline?: number;
 };
 
 export type ValidateSignerResponse = {

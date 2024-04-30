@@ -27,6 +27,7 @@ import { NotificationsCount } from "@nook/app/features/notifications/notificatio
 import { MobileNavigation } from "./MobileNavigation";
 import { useTheme } from "@nook/app/context/theme";
 import { EnableSignerDialog } from "@nook/app/features/farcaster/enable-signer/dialog";
+import { WagmiProvider } from "wagmi";
 
 export const RootNavigation = ({ children }: { children: React.ReactNode }) => {
   return (

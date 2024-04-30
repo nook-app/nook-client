@@ -47,10 +47,13 @@ export class SignerAPIClient extends BaseAPIClient {
 
   async validateSigner(
     token: string,
-    signerToken: string,
+    signerToken?: string,
+    publicKey?: string,
   ): Promise<ValidateSignerResponse> {
     const response = await this.makeRequest(
-      `/signer/validate?token=${signerToken}`,
+      `/signer/validate${signerToken ? `?token=${signerToken}` : ""}${
+        publicKey ? `?publicKey=${publicKey}` : ""
+      }`,
       {
         headers: {
           Authorization: token,

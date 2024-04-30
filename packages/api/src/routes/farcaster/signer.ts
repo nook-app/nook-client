@@ -43,7 +43,7 @@ export const farcasterSignerRoutes = async (fastify: FastifyInstance) => {
       },
     );
 
-    fastify.get<{ Querystring: { token: string } }>(
+    fastify.get<{ Querystring: { token?: string; publicKey?: string } }>(
       "/signer/validate",
       async (request, reply) => {
         if (!request.headers.authorization) {
@@ -53,6 +53,7 @@ export const farcasterSignerRoutes = async (fastify: FastifyInstance) => {
           const response = await client.validateSigner(
             request.headers.authorization,
             request.query.token,
+            request.query.publicKey,
           );
           return reply.send(response);
         } catch (e) {

@@ -49,11 +49,20 @@ export const signerRoutes = async (fastify: FastifyInstance) => {
       },
     );
 
-    fastify.get<{ Querystring: { token: string } }>(
+    fastify.get<{ Querystring: { token?: string; publicKey?: string } }>(
       "/signer/validate",
       async (request, reply) => {
         await request.jwtVerify();
         try {
+          if (request.query.publicKey) {
+            const response = await signerService.validateSignerByPublicKey(
+              request.query.publicKey,
+            );
+            return reply.send(response);
+          }
+          if (!request.query.token) {
+            throw new Error("Missing token or public key");
+          }
           const response = await signerService.validateSigner(
             request.query.token,
           );

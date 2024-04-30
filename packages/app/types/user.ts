@@ -37,10 +37,14 @@ export type FarcasterUser = BaseFarcasterUser & {
 };
 
 export type GetSignerResponse = {
-  publicKey: string;
+  publicKey: `0x${string}`;
   token: string;
   deeplinkUrl: string;
   state: string;
+  requestFid?: string;
+  deadline?: number;
+  signature?: `0x${string}`;
+  requestAddress?: `0x${string}`;
 };
 
 export type ValidateSignerResponse = {

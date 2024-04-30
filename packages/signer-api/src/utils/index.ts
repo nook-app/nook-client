@@ -31,7 +31,8 @@ export const generateKeyPair = async () => {
 };
 
 export const getWarpcastDeeplink = async (key: `0x${string}`) => {
-  const { signature, deadline, requestFid } = await signMessage(key);
+  const { signature, deadline, requestFid, requestAddress } =
+    await signMessage(key);
   const response = await fetch(`${WARPCAST_API_URL}/signed-key-requests`, {
     method: "POST",
     headers: {
@@ -54,6 +55,10 @@ export const getWarpcastDeeplink = async (key: `0x${string}`) => {
   }: WarpcastSignerResponse = await response.json();
 
   return {
+    signature,
+    requestFid,
+    requestAddress,
+    deadline,
     token,
     deeplinkUrl,
     state,

@@ -21,6 +21,7 @@ import {
   validateSigner,
   updateSigner,
   updateUser,
+  validateSignerByPublicKey,
 } from "../server/auth";
 import { removeSession, updateSession } from "../utils/local-storage";
 import { useSettings } from "../api/settings";
@@ -33,6 +34,7 @@ type AuthContextType = {
   logout: () => void;
   setSession: (session: Session) => Promise<void>;
   refreshSigner: () => Promise<string | undefined>;
+  refreshSignerByPublicKey: () => Promise<string | undefined>;
   user?: FarcasterUser;
   setUser: (user: FarcasterUser) => void;
   signer?: GetSignerResponse;
@@ -73,6 +75,27 @@ export const AuthProvider = ({
     }
 
     const validation = await validateSigner(signer.token);
+    if (validation.state === signer.state) {
+      return signer.state;
+    }
+
+    signer.state = validation.state;
+    await updateSigner(signer);
+
+    return signer.state;
+  }, [session, signer]);
+
+  const handleRefreshSignerByPublicKey = useCallback(async () => {
+    if (!session) return;
+
+    if (!signer) {
+      const signer = await getSigner();
+      await updateSigner(signer);
+      setSigner(signer);
+      return signer.state;
+    }
+
+    const validation = await validateSignerByPublicKey(signer.publicKey);
     if (validation.state === signer.state) {
       return signer.state;
     }
@@ -134,6 +157,8 @@ export const AuthProvider = ({
     } else {
       await logoutServer();
       setSession(undefined);
+      setSigner(undefined);
+      setUser(undefined);
     }
   }, [session, handleSessionChange]);
 
@@ -151,6 +176,7 @@ export const AuthProvider = ({
         setSigner,
         setSession: handleSessionChange,
         refreshSigner: handleRefreshSigner,
+        refreshSignerByPublicKey: handleRefreshSignerByPublicKey,
         settings: data,
       }}
     >

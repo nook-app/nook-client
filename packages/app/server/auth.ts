@@ -43,6 +43,12 @@ export const validateSigner = async (
   return await makeRequest(`/signer/validate?token=${token}`);
 };
 
+export const validateSignerByPublicKey = async (
+  publicKey: string,
+): Promise<ValidateSignerResponse> => {
+  return await makeRequest(`/signer/validate?publicKey=${publicKey}`);
+};
+
 export const getPendingSigner = async (
   address: string,
 ): Promise<PendingSignerResponse> => {

@@ -16,6 +16,11 @@ model Signer {
     deeplinkUrl String?
     state       String?
 
+    signature      String?
+    deadline       Int?
+    requestFid     String?
+    requestAddress String?
+
     createdAt DateTime @default(now())
     updatedAt DateTime @default(now()) @updatedAt
 
