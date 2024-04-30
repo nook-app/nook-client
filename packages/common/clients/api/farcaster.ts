@@ -159,6 +159,24 @@ export class FarcasterAPIClient extends BaseAPIClient {
     return response.json();
   }
 
+  async getUserFids(
+    req: GetFarcasterUsersRequest,
+  ): Promise<{ data: string[] }> {
+    const response = await this.makeRequest("/users/fids", {
+      method: "POST",
+      body: JSON.stringify(req),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(response.statusText);
+    }
+
+    return response.json();
+  }
+
   async getCast(
     hash: string,
     viewerFid?: string,

@@ -20,56 +20,64 @@ interface NeynarChannel {
 }
 
 export async function getTrendingChannels() {
-  const res = await fetch(
-    "https://api.neynar.com/v2/farcaster/channel/trending?time_window=1d&limit=25",
-    {
-      headers: {
-        "Content-Type": "application/json",
-        api_key: process.env.NEYNAR_API_KEY as string,
+  try {
+    const res = await fetch(
+      "https://api.neynar.com/v2/farcaster/channel/trending?time_window=1d&limit=25",
+      {
+        headers: {
+          "Content-Type": "application/json",
+          api_key: process.env.NEYNAR_API_KEY as string,
+        },
       },
-    },
-  );
+    );
 
-  const neynarChannels: {
-    channels: {
-      channel: NeynarChannel;
-    }[];
-    next: {
-      cursor: string;
-    };
-  } = await res.json();
+    const neynarChannels: {
+      channels: {
+        channel: NeynarChannel;
+      }[];
+      next: {
+        cursor: string;
+      };
+    } = await res.json();
 
-  return (
-    neynarChannels?.channels?.map((channel) =>
-      mapToNookChannel(channel.channel),
-    ) || []
-  );
+    return (
+      neynarChannels?.channels?.map((channel) =>
+        mapToNookChannel(channel.channel),
+      ) || []
+    );
+  } catch (e) {
+    return [];
+  }
 }
 
 export async function getRecommendedChannels() {
-  const session = await getServerSession();
-  if (!session?.fid) {
-    return await getTrendingChannels();
-  }
+  try {
+    const session = await getServerSession();
+    if (!session?.fid) {
+      return await getTrendingChannels();
+    }
 
-  const res = await fetch(
-    `https://api.neynar.com/v2/farcaster/channel/user?fid=${session.fid}&limit=20`,
-    {
-      headers: {
-        "Content-Type": "application/json",
-        api_key: process.env.NEYNAR_API_KEY as string,
+    const res = await fetch(
+      `https://api.neynar.com/v2/farcaster/channel/user?fid=${session.fid}&limit=20`,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          api_key: process.env.NEYNAR_API_KEY as string,
+        },
       },
-    },
-  );
+    );
 
-  const neynarChannels: {
-    channels: NeynarChannel[];
-    next: {
-      cursor: string;
-    };
-  } = await res.json();
+    const neynarChannels: {
+      channels: NeynarChannel[];
+      next: {
+        cursor: string;
+      };
+    } = await res.json();
 
-  return neynarChannels?.channels?.map(mapToNookChannel) || [];
+    return neynarChannels?.channels?.map(mapToNookChannel) || [];
+  } catch (e) {
+    return [];
+  }
 }
 
 const mapToNookChannel = (channel: NeynarChannel): Channel => ({

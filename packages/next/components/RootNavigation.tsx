@@ -2,16 +2,12 @@
 
 import { NookButton, NookText, View, XStack, YStack } from "@nook/ui";
 import {
-  Bell,
+  ChevronDown,
+  ExternalLink,
   Home,
-  Image,
   LogIn,
   MoreHorizontal,
-  MousePointerSquare,
   Pencil,
-  Search,
-  Settings,
-  User,
   UserRoundPlus,
 } from "@tamagui/lucide-icons";
 import { useAuth } from "@nook/app/context/auth";
@@ -23,11 +19,11 @@ import { CreateCastButton } from "@nook/app/features/farcaster/create-cast/disal
 import { AccountSwitcher } from "@nook/app/features/auth/account-switcher";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { NotificationsCount } from "@nook/app/features/notifications/notifications-count";
 import { MobileNavigation } from "./MobileNavigation";
 import { useTheme } from "@nook/app/context/theme";
 import { EnableSignerDialog } from "@nook/app/features/farcaster/enable-signer/dialog";
-import { WagmiProvider } from "wagmi";
+import { NookNavigationItem, useNook } from "@nook/app/context/nook";
+import { NookSwitcher } from "@nook/app/features/nooks/nook-switcher";
 
 export const RootNavigation = ({ children }: { children: React.ReactNode }) => {
   return (
@@ -56,24 +52,8 @@ export const RootNavigation = ({ children }: { children: React.ReactNode }) => {
           $lg={{ alignItems: "center" }}
         >
           <YStack $lg={{ alignItems: "center" }}>
-            <View
-              paddingHorizontal="$3"
-              height="$4.5"
-              $lg={{ justifyContent: "center" }}
-            >
-              <NookText fontSize="$9" fontWeight="700" $lg={{ fontSize: "$5" }}>
-                nook
-              </NookText>
-            </View>
-            <RootNavigationItem label="Home" Icon={Home} href="/" />
-            <RootNavigationItem label="Media" Icon={Image} href="/media" />
-            <RootNavigationItem
-              label="Frames"
-              Icon={MousePointerSquare}
-              href="/frames"
-            />
-            <RootNavigationItem label="Explore" Icon={Search} href="/explore" />
-            <AuthenticatedNavigation />
+            <RootNavigationNook />
+            <RootNavigationItems />
           </YStack>
           <SessionItem />
         </View>
@@ -88,21 +68,89 @@ export const RootNavigation = ({ children }: { children: React.ReactNode }) => {
   );
 };
 
+const RootNavigationNook = () => {
+  return (
+    <NookSwitcher>
+      <NookButton variant="ghost" borderRadius="$10">
+        <XStack
+          justifyContent="space-between"
+          alignItems="center"
+          width="100%"
+          gap="$8"
+        >
+          <RootNavigationNookBanner />
+          <View
+            width="$2"
+            justifyContent="center"
+            alignItems="center"
+            $lg={{ display: "none" }}
+          >
+            <ChevronDown />
+          </View>
+        </XStack>
+      </NookButton>
+    </NookSwitcher>
+  );
+};
+
+const RootNavigationNookBanner = () => {
+  const { name, banner } = useNook();
+  if (!banner) {
+    return (
+      <NookText fontSize="$9" fontWeight="700" $lg={{ fontSize: "$6" }}>
+        {name}
+      </NookText>
+    );
+  }
+
+  return (
+    <View maxWidth="$12" $lg={{ maxWidth: "$6" }}>
+      <img src={banner} alt={name} style={{ objectFit: "contain" }} />
+    </View>
+  );
+};
+
+const RootNavigationItems = () => {
+  const { navigation, authNavigation } = useNook();
+  const { user } = useAuth();
+
+  return (
+    <>
+      {navigation.map((props) => (
+        <RootNavigationItem key={props.label} {...props} />
+      ))}
+      {user &&
+        authNavigation.map((props) => (
+          <RootNavigationItem key={props.label} {...props} />
+        ))}
+      {user && <CreateCastItem />}
+    </>
+  );
+};
+
 const RootNavigationItem = ({
   label,
   Icon,
   href,
   right,
-}: {
-  label: string;
-  Icon: typeof Home;
-  href: string;
-  right?: React.ReactNode;
-}) => {
+  isExternal,
+}: NookNavigationItem) => {
   const pathname = usePathname();
+  const { user } = useAuth();
+
   return (
     <View group $lg={{ width: "100%", alignItems: "center" }}>
-      <Link href={href} style={{ textDecoration: "none" }}>
+      <Link
+        href={
+          typeof href === "string"
+            ? href
+            : user
+              ? href(user.username || user.fid)
+              : "#"
+        }
+        style={{ textDecoration: "none" }}
+        target={isExternal ? "_blank" : undefined}
+      >
         {/* @ts-ignore */}
         <XStack
           justifyContent="space-between"
@@ -122,44 +170,21 @@ const RootNavigationItem = ({
               size={24}
               strokeWidth={pathname === href ? 2.5 : 2}
             />
-            <NookText
-              fontWeight={pathname === href ? "700" : "400"}
-              fontSize="$7"
-              $lg={{ display: "none" }}
-            >
-              {label}
+            <NookText>
+              <NookText
+                fontWeight={pathname === href ? "700" : "400"}
+                fontSize="$7"
+                $lg={{ display: "none" }}
+              >
+                {label}
+              </NookText>
+              {isExternal && <ExternalLink size={16} marginLeft="$2" />}
             </NookText>
           </XStack>
           {right}
         </XStack>
       </Link>
     </View>
-  );
-};
-
-const AuthenticatedNavigation = () => {
-  const { user } = useAuth();
-
-  if (!user) {
-    return null;
-  }
-
-  return (
-    <>
-      <RootNavigationItem
-        label="Notifications"
-        Icon={Bell}
-        href="/notifications"
-        right={<NotificationsCount />}
-      />
-      <RootNavigationItem
-        label="Profile"
-        Icon={User}
-        href={`/users/${user.username}`}
-      />
-      <RootNavigationItem label="Settings" Icon={Settings} href="/settings" />
-      <CreateCastItem />
-    </>
   );
 };
 

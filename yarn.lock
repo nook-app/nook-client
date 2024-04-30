@@ -5118,7 +5118,7 @@ __metadata:
     "@farcaster/auth-kit": "npm:^0.2.1"
     "@gorhom/bottom-sheet": "npm:^4.6.1"
     "@openspacelabs/react-native-zoomable-view": "npm:2.1.6"
-    "@privy-io/expo": "npm:^0.14.0"
+    "@privy-io/expo": "npm:^0.15.0"
     "@react-native-async-storage/async-storage": "npm:1.21.0"
     "@react-native-community/netinfo": "npm:11.1.0"
     "@react-navigation/drawer": "npm:^6.6.11"
@@ -5688,11 +5688,11 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@privy-io/expo@npm:^0.14.0":
-  version: 0.14.1
-  resolution: "@privy-io/expo@npm:0.14.1"
+"@privy-io/expo@npm:^0.15.0":
+  version: 0.15.0
+  resolution: "@privy-io/expo@npm:0.15.0"
   dependencies:
-    "@privy-io/js-sdk-core": "npm:0.18.1"
+    "@privy-io/js-sdk-core": "npm:0.19.0"
     react-fast-compare: "npm:^3.2.2"
   peerDependencies:
     expo-application: "*"
@@ -5705,39 +5705,39 @@ __metadata:
     react-native: "*"
     react-native-passkeys: ^0.2.1
     react-native-webview: "*"
-  checksum: 10c0/b4c6c9d57f39403a4016c0efbf3ae3371961a39f2af4fa5eea63bb649905b6193143abc6630cb353ee2c02566f172fc46e2b1f26e425de6a34b51c85fd4f4160
+  checksum: 10c0/6e6d9b11e4858787f8afa68947e7c904f14253200223f1450e3d2ae2ad183498a8b1f6d0e57cc3dbf6dac49ada8e09ca41910d3d53080270c5184501396231c8
   languageName: node
   linkType: hard
 
-"@privy-io/js-sdk-core@npm:0.18.1":
-  version: 0.18.1
-  resolution: "@privy-io/js-sdk-core@npm:0.18.1"
+"@privy-io/js-sdk-core@npm:0.19.0":
+  version: 0.19.0
+  resolution: "@privy-io/js-sdk-core@npm:0.19.0"
   dependencies:
     "@ethersproject/abstract-signer": "npm:^5.7.0"
     "@ethersproject/bignumber": "npm:^5.7.0"
     "@ethersproject/providers": "npm:^5.7.2"
     "@ethersproject/units": "npm:^5.7.0"
     "@privy-io/api-base": "npm:^1.0.0"
-    "@privy-io/public-api": "npm:2.0.0"
+    "@privy-io/public-api": "npm:2.1.0"
     eventemitter3: "npm:^5.0.1"
     fetch-retry: "npm:^5.0.6"
     jose: "npm:^4.15.5"
     js-cookie: "npm:^3.0.5"
     set-cookie-parser: "npm:^2.6.0"
     uuid: "npm:>=8 <10"
-  checksum: 10c0/2dd0e334169e98b89405daff4160a4e2289122202b0f9a8e53ac058b0d6e0e2ab4631936080848eb3d4e8b25ee077a41b4f37acc12017815b9781eae5fbb438e
+  checksum: 10c0/bf1759a00568c8a961be9e8c1135c83c5d864e377cb612539b0b6d00d6a021fc84340797e255e736fdbf1432888451251d797dfc38a6487010af3e8f54a2e1ea
   languageName: node
   linkType: hard
 
-"@privy-io/public-api@npm:2.0.0":
-  version: 2.0.0
-  resolution: "@privy-io/public-api@npm:2.0.0"
+"@privy-io/public-api@npm:2.1.0":
+  version: 2.1.0
+  resolution: "@privy-io/public-api@npm:2.1.0"
   dependencies:
     "@privy-io/api-base": "npm:1.0.0"
     ethers: "npm:^5.7.2"
     libphonenumber-js: "npm:^1.10.31"
     zod: "npm:^3.22.4"
-  checksum: 10c0/b1393ce384b48c9d4c4e2c7b1733ed0311905006f60894aecd38e613c9de42db8b2fa1fd7b5074c852b07f8673f515eeb2c7bfd16b879da7fc5450d5df273125
+  checksum: 10c0/8081a0f6990af47cefaee0d1bca6c6268dde1a6d748ecc865fd2259bde3377fc54a4761e4b700b1afd1d8e28cfa8c40348f0e3f6a93d17751a6ae5c65968a3da
   languageName: node
   linkType: hard
 

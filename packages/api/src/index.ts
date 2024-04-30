@@ -18,6 +18,7 @@ import { panelRoutes } from "./routes/panel";
 import { feedRoutes } from "./routes/feed";
 import { pendingCastRoutes } from "./routes/pending";
 import { farcasterFeedRoutes } from "./routes/farcaster/feed";
+import { farconRoutes } from "./routes/farcon/attendees";
 
 const buildApp = () => {
   const app = fastify({
@@ -78,6 +79,7 @@ const buildApp = () => {
   app.register(panelRoutes, { prefix: "/v0" });
   app.register(feedRoutes, { prefix: "/v0" });
   app.register(pendingCastRoutes, { prefix: "/v0" });
+  app.register(farconRoutes, { prefix: "/v0" });
 
   return app;
 };

@@ -1161,6 +1161,27 @@ export class FarcasterService {
     };
   }
 
+  async getFidsForAddresses(addresses: string[]) {
+    const fids = await this.client.farcasterVerification.findMany({
+      where: {
+        address: {
+          in: addresses,
+        },
+        protocol: 0,
+      },
+    });
+
+    const addressMap = fids.reduce(
+      (acc, cur) => {
+        acc[cur.address] = cur.fid.toString();
+        return acc;
+      },
+      {} as Record<string, string>,
+    );
+
+    return addresses.map((address) => addressMap[address]);
+  }
+
   async getUsersForAddresses(addresses: string[], viewerFid?: string) {
     const fids = await this.client.farcasterVerification.findMany({
       where: {

@@ -3,14 +3,11 @@ import "@tamagui/core/reset.css";
 import { Metadata } from "next";
 import { RootNavigation } from "../components/RootNavigation";
 import { Providers } from "./providers";
-import {
-  getServerSession,
-  getSigner,
-  getSignerFromStorage,
-  getUser,
-} from "@nook/app/server/auth";
+import { getServerSession, getSigner } from "@nook/app/server/auth";
 import { ReactNode } from "react";
 import { fetchUser } from "@nook/app/api/farcaster";
+import { headers } from "next/headers";
+import { NookProvider } from "@nook/app/context/nook";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://nook.social"),
@@ -93,9 +90,12 @@ export default async function RootLayout({
 async function Component({ children }: { children: ReactNode }) {
   const [session] = await Promise.all([getServerSession()]);
 
+  const host = headers().get("host");
+  const subdomain = host?.split(".")[0];
+
   if (!session) {
     return (
-      <Providers>
+      <Providers nook={subdomain}>
         <RootNavigation>{children}</RootNavigation>
       </Providers>
     );
@@ -107,7 +107,7 @@ async function Component({ children }: { children: ReactNode }) {
   ]);
 
   return (
-    <Providers session={session} user={user} signer={signer}>
+    <Providers session={session} user={user} signer={signer} nook={subdomain}>
       <RootNavigation>{children}</RootNavigation>
     </Providers>
   );

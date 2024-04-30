@@ -9,16 +9,19 @@ import * as amplitude from "@amplitude/analytics-browser";
 import { Toasts } from "@nook/app/components/toasts";
 import { FarcasterUser, GetSignerResponse, Session } from "@nook/app/types";
 import { ThemeProvider } from "@nook/app/context/theme";
+import { NookProvider } from "@nook/app/context/nook";
 
 const queryClient = new QueryClient();
 
 export const Providers = ({
   children,
+  nook,
   session,
   user,
   signer,
 }: {
   children: React.ReactNode;
+  nook?: string;
   session?: Session;
   user?: FarcasterUser;
   signer?: GetSignerResponse;
@@ -37,14 +40,18 @@ export const Providers = ({
           defaultUser={user}
           defaultSigner={signer}
         >
-          <ThemeProvider defaultTheme={session?.theme as ThemeName | undefined}>
-            <AnalyticsProvider>
-              <ToastProvider>
-                <Toasts />
-                {children}
-              </ToastProvider>
-            </AnalyticsProvider>
-          </ThemeProvider>
+          <NookProvider nook={nook}>
+            <ThemeProvider
+              defaultTheme={session?.theme as ThemeName | undefined}
+            >
+              <AnalyticsProvider>
+                <ToastProvider>
+                  <Toasts />
+                  {children}
+                </ToastProvider>
+              </AnalyticsProvider>
+            </ThemeProvider>
+          </NookProvider>
         </AuthProvider>
       </QueryClientProvider>
     </PrivyProvider>

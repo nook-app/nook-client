@@ -23,7 +23,7 @@
     "@farcaster/auth-kit": "^0.2.1",
     "@gorhom/bottom-sheet": "^4.6.1",
     "@openspacelabs/react-native-zoomable-view": "2.1.6",
-    "@privy-io/expo": "^0.14.0",
+    "@privy-io/expo": "^0.15.0",
     "@react-native-async-storage/async-storage": "1.21.0",
     "@react-native-community/netinfo": "11.1.0",
     "@react-navigation/drawer": "^6.6.11",

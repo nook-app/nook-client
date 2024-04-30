@@ -43,6 +43,20 @@ export const userRoutes = async (fastify: FastifyInstance) => {
       },
     );
 
+    fastify.post<{ Body: GetFarcasterUsersRequest }>(
+      "/users/fids",
+      async (request, reply) => {
+        if (request.body.addresses) {
+          const fids = await service.getFidsForAddresses(
+            request.body.addresses,
+          );
+          reply.send({ data: fids });
+        } else {
+          reply.status(400).send({ message: "Invalid request" });
+        }
+      },
+    );
+
     fastify.get<{
       Params: GetFarcasterUserRequest;
     }>("/users/:fid", async (request, reply) => {

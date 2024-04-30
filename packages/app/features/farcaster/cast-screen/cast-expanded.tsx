@@ -105,7 +105,11 @@ const FarcasterExpandedCastHeader = ({
         </XStack>
         {renderText && <FarcasterCastText cast={cast} fontSize="$6" />}
         {renderEmbeds && <Embeds cast={cast} />}
-        <XStack justifyContent="space-between" alignItems="center">
+        <XStack
+          justifyContent="space-between"
+          alignItems="center"
+          flexWrap="wrap"
+        >
           <FarcasterCastEngagement
             cast={cast}
             types={["likes", "replies", "quotes", "recasts"]}
