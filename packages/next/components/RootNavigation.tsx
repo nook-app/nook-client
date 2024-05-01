@@ -15,7 +15,7 @@ import {
   FarcasterUserAvatar,
   FarcasterUserDisplay,
 } from "@nook/app/components/farcaster/users/user-display";
-import { CreateCastButton } from "@nook/app/features/farcaster/create-cast/disalog";
+import { CreateCastButton } from "@nook/app/features/farcaster/create-cast/dialog";
 import { AccountSwitcher } from "@nook/app/features/auth/account-switcher";
 import Link from "next/link";
 import { usePathname } from "next/navigation";

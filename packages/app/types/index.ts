@@ -11,6 +11,8 @@ export * from "./cast";
 export * from "./feed";
 export * from "./session";
 
+import { PendingCastRequest } from "./actions";
+
 export type FetchCastsResponse = {
   data: FarcasterCast[];
   nextCursor?: string;
@@ -33,5 +35,10 @@ export type FetchChannelsResponse = {
 
 export type FetchCatActionsResponse = {
   data: CastAction[];
+  nextCursor?: string;
+};
+
+export type PendingCastResponse = {
+  data: PendingCastRequest[];
   nextCursor?: string;
 };

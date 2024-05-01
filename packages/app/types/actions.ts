@@ -11,6 +11,20 @@ export type SubmitCastAddRequest = {
   castEmbedHash?: string;
 };
 
+export type PendingCastRequest = SubmitCastAddRequest & {
+  scheduledFor?: string;
+};
+
+export type GetDraftsRequest = {
+  fid: string;
+  cursor?: string;
+};
+
+export type GetScheduledRequest = {
+  fid: string;
+  cursor?: string;
+};
+
 export type SubmitCastRemoveRequest = {
   hash: string;
 };

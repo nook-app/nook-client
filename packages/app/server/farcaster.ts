@@ -14,6 +14,8 @@ import {
   SubmitReactionAddRequest,
   SubmitReactionRemoveRequest,
   SubmitUserDataAddRequest,
+  PendingCastRequest,
+  PendingCastResponse,
 } from "../types";
 
 export const submitCastAdds = async (
@@ -42,6 +44,43 @@ export const submitCastAdd = async (
     },
     body: JSON.stringify(req),
   });
+};
+
+export const submitPendingCastAdd = async (req: PendingCastRequest) => {
+  return await makeRequest("/pending", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(req),
+  });
+};
+
+export const getDraftCasts = async (req: { fid: string; cursor?: string }) => {
+  const urlPath = `/drafts?fid=${req.fid}${
+    req.cursor ? `&cursor=${req.cursor}` : ""
+  }`;
+  return (await makeRequest(urlPath, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  })) as PendingCastResponse;
+};
+
+export const getScheduledCasts = async (req: {
+  fid: string;
+  cursor?: string;
+}) => {
+  const urlPath = `/scheduled?fid=${req.fid}${
+    req.cursor ? `&cursor=${req.cursor}` : ""
+  }`;
+  return (await makeRequest(urlPath, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  })) as PendingCastResponse;
 };
 
 export const submitLinkAdd = async (

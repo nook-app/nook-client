@@ -5,7 +5,7 @@ import { useAuth } from "@nook/app/context/auth";
 import { useNook } from "@nook/app/context/nook";
 import { useTheme } from "@nook/app/context/theme";
 import { AccountSwitcher } from "@nook/app/features/auth/account-switcher";
-import { CreateCastDialog } from "@nook/app/features/farcaster/create-cast/disalog";
+import { CreateCastDialog } from "@nook/app/features/farcaster/create-cast/dialog";
 import { EnableSignerDialog } from "@nook/app/features/farcaster/enable-signer/dialog";
 import { FarcasterUser, Session } from "@nook/app/types";
 import {

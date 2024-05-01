@@ -8,7 +8,7 @@ import {
   Repeat2,
   Share,
 } from "@tamagui/lucide-icons";
-import { CreateCastDialog } from "../../../features/farcaster/create-cast/disalog";
+import { CreateCastDialog } from "../../../features/farcaster/create-cast/dialog";
 import { FarcasterCast } from "../../../types";
 import { useLikeCast } from "../../../hooks/useLikeCast";
 import { useRecastCast } from "../../../hooks/useRecastCast";
