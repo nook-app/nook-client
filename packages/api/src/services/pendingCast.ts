@@ -96,7 +96,7 @@ export class PendingCastService {
 
   _validateScheduledFor(scheduledFor: string | null) {
     const date = scheduledFor ? new Date(scheduledFor) : null;
-    if (date === null || date.getTime() < Date.now()) {
+    if (date !== null && date.getTime() < Date.now()) {
       throw new Error("Scheduled for date is in the past");
     }
     return date;
