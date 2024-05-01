@@ -1,10 +1,6 @@
 import { FetchUsersResponse } from "../../types";
 import { makeRequest } from "../utils";
-import {
-  InfiniteData,
-  useInfiniteQuery,
-  useQueryClient,
-} from "@tanstack/react-query";
+import { InfiniteData, useInfiniteQuery } from "@tanstack/react-query";
 
 export const fetchFarconAttendees = async (
   following?: boolean,
@@ -26,7 +22,6 @@ export const useFarconAttendees = (
   following?: boolean,
   initialData?: FetchUsersResponse,
 ) => {
-  const queryClient = useQueryClient();
   return useInfiniteQuery<
     FetchUsersResponse,
     unknown,
@@ -37,9 +32,6 @@ export const useFarconAttendees = (
     queryKey: ["farcon-attendees", (following || false).toString()],
     queryFn: async ({ pageParam }) => {
       const data = await fetchFarconAttendees(following, pageParam);
-      for (const user of data.data) {
-        queryClient.setQueryData(["user", user.username], user);
-      }
       return data;
     },
     getNextPageParam: (lastPage) => lastPage.nextCursor,

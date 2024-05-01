@@ -5,12 +5,10 @@ import {
 } from "../../types";
 import { makeRequest } from "../utils";
 import {
-  useQueryClient,
   useQuery,
   InfiniteData,
   useInfiniteQuery,
 } from "@tanstack/react-query";
-import { cacheRelatedData } from "./feed";
 
 export const fetchCast = async (hash: string): Promise<FarcasterCast> => {
   return await makeRequest(`/farcaster/casts/${hash}`);
@@ -27,17 +25,12 @@ export const fetchCasts = async (hashes: string[]) => {
 };
 
 export const useCast = (hash: string) => {
-  const queryClient = useQueryClient();
-  const initialData = queryClient.getQueryData<FarcasterCast>(["cast", hash]);
   return useQuery<FarcasterCast>({
     queryKey: ["cast", hash],
     queryFn: async () => {
       const cast = await fetchCast(hash);
-      cacheRelatedData(queryClient, [cast]);
       return cast;
     },
-    initialData,
-    enabled: !initialData && !!hash,
   });
 };
 
@@ -51,7 +44,6 @@ export const useCastLikes = (
   hash: string,
   initialData?: FetchUsersResponse,
 ) => {
-  const queryClient = useQueryClient();
   return useInfiniteQuery<
     FetchUsersResponse,
     unknown,
@@ -62,9 +54,6 @@ export const useCastLikes = (
     queryKey: ["cast-likes", hash],
     queryFn: async ({ pageParam }) => {
       const data = await fetchCastLikes(hash, pageParam);
-      for (const user of data.data) {
-        queryClient.setQueryData(["user", user.username], user);
-      }
       return data;
     },
     getNextPageParam: (lastPage) => lastPage.nextCursor,
@@ -88,7 +77,6 @@ export const useCastRecasts = (
   hash: string,
   initialData?: FetchUsersResponse,
 ) => {
-  const queryClient = useQueryClient();
   return useInfiniteQuery<
     FetchUsersResponse,
     unknown,
@@ -99,9 +87,6 @@ export const useCastRecasts = (
     queryKey: ["cast-recasts", hash],
     queryFn: async ({ pageParam }) => {
       const data = await fetchCastRecasts(hash, pageParam);
-      for (const user of data.data) {
-        queryClient.setQueryData(["user", user.username], user);
-      }
       return data;
     },
     getNextPageParam: (lastPage) => lastPage.nextCursor,
@@ -125,7 +110,6 @@ export const useCastQuotes = (
   hash: string,
   initialData?: FetchCastsResponse,
 ) => {
-  const queryClient = useQueryClient();
   return useInfiniteQuery<
     FetchCastsResponse,
     unknown,
@@ -136,7 +120,6 @@ export const useCastQuotes = (
     queryKey: ["cast-quotes", hash],
     queryFn: async ({ pageParam }) => {
       const data = await fetchCastQuotes(hash, pageParam);
-      cacheRelatedData(queryClient, data.data);
       return data;
     },
     getNextPageParam: (lastPage) => lastPage.nextCursor,

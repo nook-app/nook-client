@@ -95,6 +95,7 @@ const RootNavigationNook = () => {
 
 const RootNavigationNookBanner = () => {
   const { name, banner } = useNook();
+  const { rootTheme, theme } = useTheme();
   if (!banner) {
     return (
       <NookText fontSize="$9" fontWeight="700" $lg={{ fontSize: "$6" }}>
@@ -105,7 +106,16 @@ const RootNavigationNookBanner = () => {
 
   return (
     <View maxWidth="$12" $lg={{ maxWidth: "$6" }}>
-      <img src={banner} alt={name} style={{ objectFit: "contain" }} />
+      <img
+        src={banner}
+        alt={name}
+        style={{
+          objectFit: "contain",
+          filter: `brightness(0) ${
+            rootTheme !== "light" && theme !== "light" ? "invert(1)" : ""
+          }`,
+        }}
+      />
     </View>
   );
 };
@@ -212,7 +222,9 @@ const SessionItem = () => {
               <NookText
                 fontWeight="700"
                 fontSize="$5"
-                color={["light", "dark"].includes(theme) ? "$color12" : "white"}
+                color={
+                  ["light", "dark"].includes(theme) ? "$color12" : "$color12"
+                }
               >
                 Create Account
               </NookText>
@@ -233,7 +245,9 @@ const SessionItem = () => {
             >
               <UserRoundPlus
                 size={24}
-                color={["light", "dark"].includes(theme) ? "$color1" : "white"}
+                color={
+                  ["light", "dark"].includes(theme) ? "$color1" : "$color12"
+                }
               />
             </NookButton>
           </Link>
@@ -249,7 +263,7 @@ const SessionItem = () => {
             <NookText
               fontWeight="700"
               fontSize="$5"
-              color={["light", "dark"].includes(theme) ? "$color1" : "white"}
+              color={["light", "dark"].includes(theme) ? "$color1" : "$color12"}
             >
               Sign In
             </NookText>
@@ -267,7 +281,7 @@ const SessionItem = () => {
           >
             <LogIn
               size={24}
-              color={["light", "dark"].includes(theme) ? "$color1" : "white"}
+              color={["light", "dark"].includes(theme) ? "$color1" : "$color12"}
             />
           </NookButton>
         </View>

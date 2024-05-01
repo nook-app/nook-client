@@ -1,5 +1,9 @@
 import { fetchNotifications } from "../../server/notifications";
-import { NotificationsPriorityFeed } from "./notifications-tabs";
+import {
+  NotificationsAllFeed,
+  NotificationsMentionsFeed,
+  NotificationsPriorityFeed,
+} from "./notifications-tabs";
 
 export const NotificationsPriorityFeedServer = async ({
   fid,
@@ -29,7 +33,7 @@ export const NotificationsMentionsFeedServer = async ({
     return <></>;
   }
 
-  return <NotificationsPriorityFeed fid={fid} initialData={initialData} />;
+  return <NotificationsMentionsFeed fid={fid} initialData={initialData} />;
 };
 
 export const NotificationsAllFeedServer = async ({
@@ -43,5 +47,5 @@ export const NotificationsAllFeedServer = async ({
     return <></>;
   }
 
-  return <NotificationsPriorityFeed fid={fid} initialData={initialData} />;
+  return <NotificationsAllFeed fid={fid} initialData={initialData} />;
 };

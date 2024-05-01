@@ -1,23 +1,10 @@
 import {
-  FarcasterCast,
   FarcasterFeedFilter,
   FarcasterFeedRequest,
   FetchCastsResponse,
-  FarcasterUser,
-  Channel,
 } from "../../types";
-import {
-  hasCastDiff,
-  hasChannelDiff,
-  hasUserDiff,
-  makeRequest,
-} from "../utils";
-import {
-  InfiniteData,
-  useInfiniteQuery,
-  QueryClient,
-  useQueryClient,
-} from "@tanstack/react-query";
+import { makeRequest } from "../utils";
+import { InfiniteData, useInfiniteQuery } from "@tanstack/react-query";
 
 export const fetchCastFeed = async (
   req: FarcasterFeedRequest,
@@ -38,7 +25,6 @@ export const useCastFeed = (
   filter: FarcasterFeedFilter,
   initialData?: FetchCastsResponse,
 ) => {
-  const queryClient = useQueryClient();
   return useInfiniteQuery<
     FetchCastsResponse,
     unknown,
@@ -52,7 +38,6 @@ export const useCastFeed = (
         filter,
         cursor: pageParam,
       });
-      cacheRelatedData(queryClient, data.data);
       return data;
     },
     getNextPageParam: (lastPage) => lastPage.nextCursor,
@@ -84,7 +69,6 @@ export const useCastReplies = (
   mode: "best" | "new" | "top",
   initialData?: FetchCastsResponse,
 ) => {
-  const queryClient = useQueryClient();
   return useInfiniteQuery<
     FetchCastsResponse,
     unknown,
@@ -95,7 +79,6 @@ export const useCastReplies = (
     queryKey: ["cast-replies", hash, mode],
     queryFn: async ({ pageParam }) => {
       const data = await fetchCastReplies(hash, mode, pageParam);
-      cacheRelatedData(queryClient, data.data);
       return data;
     },
     getNextPageParam: (lastPage) => lastPage.nextCursor,
@@ -107,6 +90,7 @@ export const useCastReplies = (
       : undefined,
     initialPageParam: initialData?.nextCursor,
     enabled: !initialData || !!initialData?.nextCursor,
+    refetchOnWindowFocus: false,
   });
 };
 
@@ -134,7 +118,6 @@ export const useTrendingCasts = (
   viewerFid?: string,
   initialData?: FetchCastsResponse,
 ) => {
-  const queryClient = useQueryClient();
   return useInfiniteQuery<
     FetchCastsResponse,
     unknown,
@@ -145,7 +128,6 @@ export const useTrendingCasts = (
     queryKey: ["trending"],
     queryFn: async ({ pageParam }) => {
       const data = await fetchTrendingCasts(viewerFid, pageParam);
-      cacheRelatedData(queryClient, data.data);
       return data;
     },
     getNextPageParam: (lastPage) => lastPage.nextCursor,
@@ -156,121 +138,6 @@ export const useTrendingCasts = (
         }
       : undefined,
     initialPageParam: initialData?.nextCursor,
+    refetchOnWindowFocus: false,
   });
-};
-
-export const cacheRelatedData = (
-  queryClient: QueryClient,
-  casts: FarcasterCast[],
-) => {
-  for (const cast of casts) {
-    const existingCast = queryClient.getQueryData<FarcasterCast>([
-      "cast",
-      cast.hash,
-    ]);
-    if (!existingCast || hasCastDiff(existingCast, cast)) {
-      queryClient.setQueryData(["cast", cast.hash], cast);
-    }
-
-    const existingUser = queryClient.getQueryData<FarcasterUser>([
-      "user",
-      cast.user.username,
-    ]);
-    if (!existingUser || hasUserDiff(existingUser, cast.user)) {
-      queryClient.setQueryData(["user", cast.user.username], cast.user);
-    }
-
-    for (const mention of cast.mentions) {
-      const existingUser = queryClient.getQueryData<FarcasterUser>([
-        "user",
-        mention.user.username,
-      ]);
-      if (!existingUser || hasUserDiff(existingUser, mention.user)) {
-        queryClient.setQueryData(["user", mention.user.username], mention.user);
-      }
-    }
-
-    if (cast.channel) {
-      const existingChannel = queryClient.getQueryData<Channel>([
-        "channel",
-        cast.channel.channelId,
-      ]);
-      if (!existingChannel || hasChannelDiff(existingChannel, cast.channel)) {
-        queryClient.setQueryData(
-          ["channel", cast.channel.channelId],
-          cast.channel,
-        );
-      }
-    }
-
-    for (const embed of cast.embedCasts) {
-      const existingCast = queryClient.getQueryData<FarcasterCast>([
-        "cast",
-        embed.hash,
-      ]);
-      if (!existingCast || hasCastDiff(existingCast, embed)) {
-        queryClient.setQueryData(["cast", embed.hash], embed);
-      }
-    }
-
-    if (cast.parent) {
-      const existingCast = queryClient.getQueryData<FarcasterCast>([
-        "cast",
-        cast.parent.hash,
-      ]);
-      if (!existingCast || hasCastDiff(existingCast, cast.parent)) {
-        queryClient.setQueryData(["cast", cast.parent.hash], cast.parent);
-      }
-
-      const existingUser = queryClient.getQueryData<FarcasterUser>([
-        "user",
-        cast.parent.user.username,
-      ]);
-      if (!existingUser || hasUserDiff(existingUser, cast.parent.user)) {
-        queryClient.setQueryData(
-          ["user", cast.parent.user.username],
-          cast.parent.user,
-        );
-      }
-
-      for (const mention of cast.parent.mentions) {
-        const existingUser = queryClient.getQueryData<FarcasterUser>([
-          "user",
-          mention.user.username,
-        ]);
-        if (!existingUser || hasUserDiff(existingUser, mention.user)) {
-          queryClient.setQueryData(
-            ["user", mention.user.username],
-            mention.user,
-          );
-        }
-      }
-
-      if (cast.parent.channel) {
-        const existingChannel = queryClient.getQueryData<Channel>([
-          "channel",
-          cast.parent.channel.channelId,
-        ]);
-        if (
-          !existingChannel ||
-          hasChannelDiff(existingChannel, cast.parent.channel)
-        ) {
-          queryClient.setQueryData(
-            ["channel", cast.parent.channel.channelId],
-            cast.parent.channel,
-          );
-        }
-      }
-
-      for (const embed of cast.parent.embedCasts) {
-        const existingCast = queryClient.getQueryData<FarcasterCast>([
-          "cast",
-          embed.hash,
-        ]);
-        if (!existingCast || hasCastDiff(existingCast, embed)) {
-          queryClient.setQueryData(["cast", embed.hash], embed);
-        }
-      }
-    }
-  }
 };

@@ -1,18 +1,10 @@
 import {
-  FarcasterCast,
-  FarcasterUser,
   FetchNotificationsResponse,
   GetNotificationsRequest,
-  NotificationResponse,
   NotificationType,
 } from "../../types";
-import { hasCastDiff, hasUserDiff, makeRequest } from "../utils";
-import {
-  InfiniteData,
-  useInfiniteQuery,
-  useQueryClient,
-  QueryClient,
-} from "@tanstack/react-query";
+import { makeRequest } from "../utils";
+import { InfiniteData, useInfiniteQuery } from "@tanstack/react-query";
 
 export const fetchNotifications = async (
   req: GetNotificationsRequest,
@@ -31,7 +23,6 @@ export const usePriorityNotifications = (
   fid: string,
   initialData?: FetchNotificationsResponse,
 ) => {
-  const queryClient = useQueryClient();
   return useInfiniteQuery<
     FetchNotificationsResponse,
     unknown,
@@ -42,7 +33,6 @@ export const usePriorityNotifications = (
     queryKey: ["notifications-priority", fid],
     queryFn: async ({ pageParam }) => {
       const data = await fetchNotifications({ fid, priority: true }, pageParam);
-      cacheRelatedData(queryClient, data.data);
       return data;
     },
     getNextPageParam: (lastPage) => lastPage.nextCursor,
@@ -53,6 +43,7 @@ export const usePriorityNotifications = (
         }
       : undefined,
     initialPageParam: initialData?.nextCursor,
+    refetchOnWindowFocus: false,
   });
 };
 
@@ -60,7 +51,6 @@ export const useMentionsNotifications = (
   fid: string,
   initialData?: FetchNotificationsResponse,
 ) => {
-  const queryClient = useQueryClient();
   return useInfiniteQuery<
     FetchNotificationsResponse,
     unknown,
@@ -74,7 +64,6 @@ export const useMentionsNotifications = (
         { fid, types: ["MENTION", "QUOTE", "REPLY"] },
         pageParam,
       );
-      cacheRelatedData(queryClient, data.data);
       return data;
     },
     getNextPageParam: (lastPage) => lastPage.nextCursor,
@@ -85,6 +74,7 @@ export const useMentionsNotifications = (
         }
       : undefined,
     initialPageParam: initialData?.nextCursor,
+    refetchOnWindowFocus: false,
   });
 };
 
@@ -93,7 +83,6 @@ export const useAllNotifications = (
   types?: NotificationType[],
   initialData?: FetchNotificationsResponse,
 ) => {
-  const queryClient = useQueryClient();
   return useInfiniteQuery<
     FetchNotificationsResponse,
     unknown,
@@ -107,7 +96,6 @@ export const useAllNotifications = (
         { fid, types: types && types.length > 0 ? types : undefined },
         pageParam,
       );
-      cacheRelatedData(queryClient, data.data);
       return data;
     },
     getNextPageParam: (lastPage) => lastPage.nextCursor,
@@ -118,34 +106,6 @@ export const useAllNotifications = (
         }
       : undefined,
     initialPageParam: initialData?.nextCursor,
+    refetchOnWindowFocus: false,
   });
-};
-
-const cacheRelatedData = (
-  queryClient: QueryClient,
-  notifications: NotificationResponse[],
-) => {
-  for (const notification of notifications) {
-    if (notification.cast) {
-      const existingCast = queryClient.getQueryData<FarcasterCast>([
-        "cast",
-        notification.cast.hash,
-      ]);
-      if (!existingCast || hasCastDiff(existingCast, notification.cast)) {
-        queryClient.setQueryData(
-          ["cast", notification.cast.hash],
-          notification.cast,
-        );
-      }
-      for (const user of notification.users || []) {
-        const existingUser = queryClient.getQueryData<FarcasterUser>([
-          "user",
-          user.fid,
-        ]);
-        if (!existingUser || hasUserDiff(existingUser, user)) {
-          queryClient.setQueryData(["user", user.fid], user);
-        }
-      }
-    }
-  }
 };

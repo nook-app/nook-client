@@ -2,7 +2,6 @@ import { Channel, FetchChannelsResponse } from "../../types";
 import { makeRequest } from "../utils";
 import {
   useQuery,
-  useQueryClient,
   InfiniteData,
   useInfiniteQuery,
 } from "@tanstack/react-query";
@@ -12,15 +11,12 @@ export const fetchChannel = async (channelId: string): Promise<Channel> => {
 };
 
 export const useChannel = (channelId: string) => {
-  const queryClient = useQueryClient();
-  const initialData = queryClient.getQueryData<Channel>(["channel", channelId]);
   return useQuery<Channel>({
     queryKey: ["channel", channelId],
     queryFn: async () => {
       const channel = await fetchChannel(channelId);
       return channel;
     },
-    initialData,
     enabled: !!channelId,
   });
 };
@@ -92,14 +88,10 @@ export const fetchChannels = async (
 };
 
 export const useChannels = (channelIds: string[]) => {
-  const queryClient = useQueryClient();
   return useQuery<FetchChannelsResponse>({
     queryKey: ["channels", channelIds.join(",")],
     queryFn: async () => {
       const channels = await fetchChannels(channelIds);
-      for (const channel of channels.data) {
-        queryClient.setQueryData(["channel", channel.channelId], channel);
-      }
       return channels;
     },
     enabled: channelIds.length > 0,
