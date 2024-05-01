@@ -6,6 +6,7 @@ import {
   Image,
   Info,
   MessageSquareQuote,
+  MessagesSquare,
   MousePointerSquare,
   Search,
   Settings,
@@ -93,7 +94,7 @@ const NOOK_CONFIG: { [key: string]: NookConfig } = {
       },
       {
         label: "Channel",
-        Icon: MessageSquareQuote,
+        Icon: MessagesSquare,
         href: "/channels/farcon",
       },
     ],

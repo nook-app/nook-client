@@ -45,6 +45,8 @@ while :; do
     
     # Prepare for the next iteration
     (( OFFSET += LIMIT ))
+
+    sleep 1
 done
 
 # Clean up
