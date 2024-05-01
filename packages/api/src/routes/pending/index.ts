@@ -1,6 +1,7 @@
 import { FastifyInstance } from "fastify";
 import { PendingCastService } from "../../services/pendingCast";
 import { PendingCastRequest, PendingCastResponse } from "@nook/common/types";
+import { PendingCast } from "@nook/common/prisma/nook";
 
 export const pendingCastRoutes = async (fastify: FastifyInstance) => {
   fastify.register(async (fastify: FastifyInstance) => {
@@ -35,25 +36,25 @@ export const pendingCastRoutes = async (fastify: FastifyInstance) => {
       return reply.send(response);
     });
 
-    fastify.post<{ Body: PendingCastRequest }>(
+    fastify.post<{ Body: PendingCastRequest; Reply: { id: string } }>(
       "/pending",
       async (request, reply) => {
         const { fid } = (await request.jwtDecode()) as { fid: string };
         const response = await service.addPendingCast(fid, request.body);
-        return reply.send(response.id);
+        return reply.send({ id: response.id });
       },
     );
 
-    fastify.delete<{ Body: { id: string } }>(
-      "/pending",
-      async (request, reply) => {
-        const { fid } = (await request.jwtDecode()) as { fid: string };
-        const response = await service.deletePendingCast(fid, request.body.id);
-        if (response === null) {
-          return reply.status(404).send({ error: "Pending cast not found" });
-        }
-        return reply.send(response);
-      },
-    );
+    fastify.delete<{
+      Body: { id: string };
+      Reply: PendingCast | { error: string };
+    }>("/pending", async (request, reply) => {
+      const { fid } = (await request.jwtDecode()) as { fid: string };
+      const response = await service.deletePendingCast(fid, request.body.id);
+      if (response === null) {
+        return reply.status(404).send({ error: "Pending cast not found" });
+      }
+      return reply.send(response);
+    });
   });
 };
