@@ -127,3 +127,13 @@ export type CreateFeedRequest = {
 export type Feed = CreateFeedRequest & {
   id: string;
 };
+
+export type TransactionFeedRequest = {
+  filter: TransactionFeedFilter;
+  cursor?: string;
+};
+
+export type TransactionFeedFilter = {
+  users?: UserFilter;
+  chains?: number[];
+};

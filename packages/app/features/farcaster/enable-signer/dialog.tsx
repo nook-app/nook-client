@@ -146,7 +146,6 @@ const EnableWithCustody = ({ address }: { address: `0x${string}` }) => {
   const chainId = useChainId();
   const { switchChainAsync } = useSwitchChain();
 
-  console.log(signer);
   const handleEnable = async () => {
     if (
       !signer?.requestFid ||

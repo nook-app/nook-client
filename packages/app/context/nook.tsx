@@ -5,13 +5,14 @@ import {
   Home,
   Image,
   Info,
-  MessageSquareQuote,
   MessagesSquare,
   MousePointerSquare,
   Search,
   Settings,
   User,
   Users,
+  Users2,
+  Wallet2,
 } from "@tamagui/lucide-icons";
 import { NotificationsCount } from "../features/notifications/notifications-count";
 
@@ -21,13 +22,13 @@ export type NookNavigationItem = {
   href: string | ((userId: string) => string);
   right?: ReactNode;
   isExternal?: boolean;
+  auth?: boolean;
 };
 
 type NookConfig = {
   name: string;
   banner?: string;
   navigation: NookNavigationItem[];
-  authNavigation: NookNavigationItem[];
 };
 
 type NookContextType = NookConfig & {
@@ -98,7 +99,6 @@ const NOOK_CONFIG: { [key: string]: NookConfig } = {
         href: "/channels/farcon",
       },
     ],
-    authNavigation: [],
   },
 };
 
@@ -109,6 +109,12 @@ const DEFAULT_CONFIG: NookConfig = {
       label: "Home",
       Icon: Home,
       href: "/",
+    },
+    {
+      label: "Transactions",
+      Icon: Users2,
+      href: "/transactions",
+      auth: true,
     },
     {
       label: "Media",
@@ -125,23 +131,24 @@ const DEFAULT_CONFIG: NookConfig = {
       Icon: Search,
       href: "/explore",
     },
-  ],
-  authNavigation: [
     {
       label: "Notifications",
       Icon: Bell,
       href: "/notifications",
       right: <NotificationsCount />,
+      auth: true,
     },
     {
       label: "Profile",
       Icon: User,
       href: (userId) => `/users/${userId}`,
+      auth: true,
     },
     {
       label: "Settings",
       Icon: Settings,
       href: "/settings",
+      auth: true,
     },
   ],
 };

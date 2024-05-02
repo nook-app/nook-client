@@ -14,7 +14,9 @@ export const CdnAvatar = ({
   children?: ReactNode;
 }) => {
   const formattedSrc =
-    src && !src?.endsWith(".svg") ? formatToCDN(src, { width: 168 }) : src;
+    src && !src?.endsWith(".svg") && !absolute
+      ? formatToCDN(src, { width: 168 })
+      : src;
 
   return (
     <Avatar circular size={size}>

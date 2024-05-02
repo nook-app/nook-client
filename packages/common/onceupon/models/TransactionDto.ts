@@ -237,6 +237,7 @@ export interface TransactionDto {
      */
     context: TransactionContextTypeDto;
     enrichedParties: Record<string,any>
+    assetsEnriched: Record<string,any>
 }
 
 /**
@@ -314,6 +315,7 @@ export function TransactionDtoFromJSONTyped(json: any, ignoreDiscriminator: bool
         'receipt': ReceiptDtoFromJSON(json['receipt']),
         'context': json['context'],
         'enrichedParties': json['enrichedParties'],
+        'assetsEnriched': json['assetsEnriched'],
     };
 }
 
@@ -354,6 +356,7 @@ export function TransactionDtoToJSON(value?: TransactionDto | null): any {
         'receipt': ReceiptDtoToJSON(value['receipt']),
         'context': TransactionContextTypeDtoToJSON(value['context']),
         'enrichedParties': value['enrichedParties'],
+        'assetsEnriched': value['assetsEnriched'],
     };
 }
 

@@ -121,7 +121,7 @@ const RootNavigationNookBanner = () => {
 };
 
 const RootNavigationItems = () => {
-  const { navigation, authNavigation } = useNook();
+  const { navigation } = useNook();
   const { user } = useAuth();
 
   return (
@@ -129,10 +129,6 @@ const RootNavigationItems = () => {
       {navigation.map((props) => (
         <RootNavigationItem key={props.label} {...props} />
       ))}
-      {user &&
-        authNavigation.map((props) => (
-          <RootNavigationItem key={props.label} {...props} />
-        ))}
       {user && <CreateCastItem />}
     </>
   );
@@ -144,9 +140,14 @@ const RootNavigationItem = ({
   href,
   right,
   isExternal,
+  auth,
 }: NookNavigationItem) => {
   const pathname = usePathname();
   const { user } = useAuth();
+
+  if (auth && !user) {
+    return null;
+  }
 
   return (
     <View group $lg={{ width: "100%", alignItems: "center" }}>

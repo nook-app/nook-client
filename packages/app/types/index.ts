@@ -35,3 +35,8 @@ export type FetchCatActionsResponse = {
   data: CastAction[];
   nextCursor?: string;
 };
+
+export type FetchTransactionsResponse = {
+  data: any[];
+  nextCursor?: string;
+};

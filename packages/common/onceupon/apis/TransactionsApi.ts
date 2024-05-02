@@ -343,7 +343,7 @@ export class TransactionsApi extends runtime.BaseAPI {
         headerParameters['Content-Type'] = 'application/json';
 
         const response = await this.request({
-            path: `/v1/transactions`,
+            path: `/v2/transactions`,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,

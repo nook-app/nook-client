@@ -99,7 +99,7 @@ export const FarcasterUserAvatar = ({
   size,
   asLink,
 }: { user: FarcasterUser; size: string; asLink?: boolean }) => {
-  const Component = <CdnAvatar src={user.pfp} size={size} />;
+  const Component = <CdnAvatar src={user?.pfp} size={size} />;
 
   if (asLink) {
     return (

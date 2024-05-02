@@ -1,6 +1,7 @@
 import {
   GetFarcasterUserRequest,
   GetFarcasterUsersRequest,
+  UserFilter,
 } from "@nook/common/types";
 import { FastifyInstance } from "fastify";
 import { FarcasterService } from "../service/farcaster";
@@ -40,6 +41,14 @@ export const userRoutes = async (fastify: FastifyInstance) => {
         } else {
           reply.status(400).send({ message: "Invalid request" });
         }
+      },
+    );
+
+    fastify.post<{ Body: UserFilter }>(
+      "/users/addresses",
+      async (request, reply) => {
+        const data = await service.getAddressesForUserFilter(request.body);
+        reply.send({ data });
       },
     );
 

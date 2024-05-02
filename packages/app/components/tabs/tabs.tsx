@@ -18,6 +18,10 @@ export const Tabs = ({
       alignItems="center"
       borderBottomWidth="$0.5"
       borderBottomColor="$borderColorBg"
+      $platform-web={{
+        overflowX: "scroll",
+        overflowY: "scroll",
+      }}
     >
       {tabs.map((tab, index) => (
         <Tab key={tab.label} href={tab.href} isActive={activeTab === tab.id}>
@@ -44,6 +48,7 @@ const Tab = ({
           width: "100%",
           justifyContent: "center",
           alignItems: "center",
+          minWidth: 120,
         },
       }}
     >

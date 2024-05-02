@@ -33,8 +33,6 @@ export const contentRoutes = async (fastify: FastifyInstance) => {
         await request.jwtVerify();
         const key = randomUUID();
 
-        console.log(request.body.type, key);
-
         const command = new PutObjectCommand({
           Bucket: "nook-social",
           Key: key,

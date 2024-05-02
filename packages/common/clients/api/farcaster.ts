@@ -10,6 +10,7 @@ import {
   ShelfDataRequest,
   FarcasterPostArgs,
   ShelfDataResponse,
+  UserFilter,
 } from "../../types";
 import { FarcasterFeedRequest } from "../../types/feed";
 import { BaseAPIClient } from "./base";
@@ -168,6 +169,19 @@ export class FarcasterAPIClient extends BaseAPIClient {
       headers: {
         "Content-Type": "application/json",
       },
+    });
+
+    if (!response.ok) {
+      throw new Error(response.statusText);
+    }
+
+    return response.json();
+  }
+
+  async getUserAddresses(req: UserFilter): Promise<{ data: string[] }> {
+    const response = await this.makeRequest("/users/addresses", {
+      method: "POST",
+      body: JSON.stringify(req),
     });
 
     if (!response.ok) {

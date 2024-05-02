@@ -1,3 +1,5 @@
+import { ThemeName } from "@nook/ui";
+
 const CDN_BASE_URL =
   "https://res.cloudinary.com/merkle-manufactory/image/fetch";
 
@@ -108,3 +110,25 @@ export const darkenColor = (color: string): string => {
 export const formatAddress = (address: string) => {
   return `${address.slice(0, 6)}...${address.slice(-4)}`;
 };
+
+export function stringToTheme(str: string): ThemeName {
+  const backgroundColors = [
+    "mauve",
+    "blue",
+    "green",
+    "orange",
+    "pink",
+    "purple",
+    "red",
+    "yellow",
+  ];
+
+  // Hash function to convert the string to a hash number.
+  const hash = str.split("").reduce((acc, char) => {
+    return char.charCodeAt(0) + ((acc << 5) - acc);
+  }, 0);
+
+  // Use the hash number to select a color from the list.
+  const index = Math.abs(hash) % backgroundColors.length;
+  return backgroundColors[index] as ThemeName;
+}

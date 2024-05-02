@@ -15,6 +15,8 @@ import {
   GetFarcasterUsersResponse,
   UrlContentResponse,
   FarcasterUserBadges,
+  UserFilter,
+  UserFilterType,
 } from "@nook/common/types";
 import {
   getCastEmbeds,
@@ -1159,6 +1161,50 @@ export class FarcasterService {
             })
           : undefined,
     };
+  }
+
+  async getAddressesForUserFilter(users: UserFilter) {
+    let fidRequests: bigint[] = [];
+    switch (users.type) {
+      case UserFilterType.FOLLOWING: {
+        const fids = await this.getUserFollowingFids(users.data.fid);
+        if (fids.length > 0) {
+          fidRequests = fids.map((fid) => BigInt(fid));
+        }
+        break;
+      }
+      case UserFilterType.FIDS:
+        if (users.data.fids.length > 0) {
+          fidRequests = users.data.fids.map((fid) => BigInt(fid));
+        }
+        break;
+      case UserFilterType.POWER_BADGE: {
+        const [following, holders] = await Promise.all([
+          users.data.fid ? this.getUserFollowingFids(users.data.fid) : [],
+          this.cache.getPowerBadgeUsers(),
+        ]);
+
+        const set = new Set(following);
+        for (const fid of holders) {
+          set.add(fid);
+        }
+
+        fidRequests = Array.from(set).map((fid) => BigInt(fid));
+        break;
+      }
+    }
+
+    const addresses = await this.client.farcasterVerification.findMany({
+      where: {
+        fid: {
+          in: fidRequests,
+        },
+        protocol: 0,
+        deletedAt: null,
+      },
+    });
+
+    return addresses.map((address) => address.address);
   }
 
   async getFidsForAddresses(addresses: string[]) {

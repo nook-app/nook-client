@@ -1,5 +1,9 @@
 import { FastifyInstance } from "fastify";
-import { TransactionResponse } from "@nook/common/types";
+import {
+  FarcasterUser,
+  TransactionFeedRequest,
+  TransactionResponse,
+} from "@nook/common/types";
 import {
   TransactionsApi,
   TransactionsControllerGetTransactionsRequest,
@@ -14,12 +18,22 @@ export const transactionRoutes = async (fastify: FastifyInstance) => {
     const client = new TransactionsApi();
 
     fastify.post<{
-      Body: { temp: 1 };
-      Querystring: { cursor?: string };
-    }>("/transactions", async (request, reply) => {
-      await request.jwtVerify();
+      Body: TransactionFeedRequest;
+    }>("/onceupon/transactions/feed", async (request, reply) => {
+      let viewerFid: string | undefined;
+      try {
+        const { fid } = (await request.jwtDecode()) as { fid: string };
+        viewerFid = fid;
+      } catch (e) {}
 
-      const response = { data: [] };
+      if (!request.body.filter.users) {
+        return reply.status(400).send({ message: "Invalid request" });
+      }
+
+      const response = await farcasterClient.getUserAddresses(
+        request.body.filter.users,
+      );
+
       if (!response?.data || response?.data.length === 0) {
         return reply.status(404).send({ message: "Addresses not found" });
       }
@@ -27,7 +41,7 @@ export const transactionRoutes = async (fastify: FastifyInstance) => {
       const contextAddresses: AddressTag[] = response?.data.map((address) => {
         return { address, toFromAll: "From" };
       });
-      const cursor = decodeCursor(request.query.cursor) ?? {
+      const cursor = decodeCursor(request.body.cursor) ?? {
         // use current timestamp for the lte dateRange and rely on skip to
         // paginate from beginning of that timestamp
         // subtract one just in case they're still indexing txs
@@ -45,35 +59,66 @@ export const transactionRoutes = async (fastify: FastifyInstance) => {
           functionSelectors: [],
           tokenTransfers: [],
           dateRange: { $lte: cursor.timestamp as number },
-          chainIds: [0],
+          chainIds: request.body.filter.chains ?? [0],
         },
       };
 
       // do we want to transform data..?
       const rawData = await client.transactionsControllerGetTransactions(req);
-      const data: TransactionResponse[] = rawData.map((tx) => ({
-        chainId: tx.chainId,
-        blockNumber: tx.blockNumber,
-        blockHash: tx.blockHash,
-        hash: tx.hash,
-        from: tx.from,
-        to: tx.to,
-        value: tx.value,
-        timestamp: tx.timestamp,
-        parties: tx.parties,
-        netAssetTransfers: tx.netAssetTransfers,
-        context: tx.context,
-        enrichedParties: tx.enrichedParties,
-      }));
+
+      if (!rawData) {
+        return reply.send({ nextCursor: null, data: [] });
+      }
+
+      const allEnrichedParties = rawData
+        .flatMap((tx) =>
+          tx?.enrichedParties ? Object.values(tx.enrichedParties) : [],
+        )
+        .flat();
+
+      const fids = allEnrichedParties
+        .map((party) => party?.farcaster?.fid?.toString())
+        .filter(Boolean) as string[];
+
+      const users = await farcasterClient.getUsers(
+        { fids: Array.from(new Set(fids)) },
+        viewerFid,
+      );
+
+      const userMap = users.data.reduce(
+        (acc, user) => {
+          acc[user.fid] = user;
+          return acc;
+        },
+        {} as Record<string, FarcasterUser>,
+      );
+
+      const enrichedData = rawData.map((tx) => {
+        const users: Record<string, FarcasterUser> = {};
+
+        if (!tx.enrichedParties) return { ...tx, users: {} };
+
+        for (const party of Object.entries(tx.enrichedParties)) {
+          const info = party[1][0];
+          if (info.farcaster?.fid) {
+            users[party[0]] = userMap[info.farcaster.fid];
+          }
+        }
+
+        return {
+          ...tx,
+          users,
+        };
+      });
 
       const nextCursor =
-        data.length === 25
+        rawData.length === 25
           ? encodeCursor({
               timestamp: cursor.timestamp,
               skip: (cursor.skip as number) + 25,
             })
           : null;
-      return reply.send({ nextCursor, data });
+      return reply.send({ nextCursor, data: enrichedData.toReversed() });
     });
   });
 };

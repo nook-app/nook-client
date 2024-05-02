@@ -2,7 +2,7 @@
 
 import { FarcasterUserAvatar } from "@nook/app/components/farcaster/users/user-display";
 import { useAuth } from "@nook/app/context/auth";
-import { useNook } from "@nook/app/context/nook";
+import { NookNavigationItem, useNook } from "@nook/app/context/nook";
 import { useTheme } from "@nook/app/context/theme";
 import { AccountSwitcher } from "@nook/app/features/auth/account-switcher";
 import { CreateCastDialog } from "@nook/app/features/farcaster/create-cast/disalog";
@@ -231,7 +231,7 @@ export const MobileNavigationHeader = () => {
 };
 
 const MobileNavigationMenu = () => {
-  const { navigation, authNavigation } = useNook();
+  const { navigation } = useNook();
   const { user } = useAuth();
 
   return (
@@ -276,37 +276,9 @@ const MobileNavigationMenu = () => {
           width="100%"
           marginVertical="$2"
         />
-        {navigation.map(({ label, Icon, href, right }) => (
-          <MobileNavigationMenuItem
-            key={label}
-            label={label}
-            Icon={Icon}
-            href={
-              typeof href === "string"
-                ? href
-                : user
-                  ? href(user.username || user.fid)
-                  : "#"
-            }
-            right={right}
-          />
+        {navigation.map((props) => (
+          <MobileNavigationMenuItem key={props.label} {...props} />
         ))}
-        {user &&
-          authNavigation.map(({ label, Icon, href, right }) => (
-            <MobileNavigationMenuItem
-              key={label}
-              label={label}
-              Icon={Icon}
-              href={
-                typeof href === "string"
-                  ? href
-                  : user
-                    ? href(user.username || user.fid)
-                    : "#"
-              }
-              right={right}
-            />
-          ))}
       </Popover.Content>
     </Popover>
   );
@@ -317,16 +289,29 @@ const MobileNavigationMenuItem = ({
   Icon,
   href,
   right,
-}: {
-  label: string;
-  Icon: typeof Home;
-  href: string;
-  right?: React.ReactNode;
-}) => {
+  auth,
+  isExternal,
+}: NookNavigationItem) => {
   const pathname = usePathname();
+  const { user } = useAuth();
+
+  if (auth && !user) {
+    return null;
+  }
+
   return (
     <View group width="100%">
-      <Link href={href} style={{ textDecoration: "none" }}>
+      <Link
+        href={
+          typeof href === "string"
+            ? href
+            : user
+              ? href(user.username || user.fid)
+              : "#"
+        }
+        style={{ textDecoration: "none" }}
+        target={isExternal ? "_blank" : undefined}
+      >
         {/* @ts-ignore */}
         <XStack
           justifyContent="space-between"

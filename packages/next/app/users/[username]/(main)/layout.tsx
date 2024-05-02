@@ -23,9 +23,9 @@ export default async function User({
             href: `/users/${user.username}/replies`,
           },
           {
-            id: "highlights",
-            label: "Highlights",
-            href: `/users/${user.username}/highlights`,
+            id: "transactions",
+            label: "Transactions",
+            href: `/users/${user.username}/transactions`,
           },
           {
             id: "media",
