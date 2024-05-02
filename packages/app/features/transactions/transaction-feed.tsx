@@ -12,11 +12,10 @@ import { useTransactionFeed } from "../../api/transactions";
 import { InfiniteScrollList } from "../../components/infinite-scroll-list";
 import { Loading } from "../../components/loading";
 import {
-  FarcasterUser,
   FetchTransactionsResponse,
+  Transaction,
   TransactionFeedFilter,
 } from "../../types";
-import { useRouter } from "solito/navigation";
 import {
   FarcasterUserAvatar,
   FarcasterUserTextDisplay,
@@ -34,48 +33,7 @@ import { KebabMenu, KebabMenuItem } from "../../components/kebab-menu";
 import { formatEther, formatUnits } from "viem";
 import { FarcasterPowerBadge } from "../../components/farcaster/users/power-badge";
 import { TextLink } from "solito/link";
-import { EmbedImage } from "../../components/embeds/EmbedImage";
 import { useCallback, useState } from "react";
-
-type Transaction = {
-  hash: string;
-  chainId: number;
-  timestamp: number;
-  from: string;
-  enrichedParties: Record<string, EnrichedParty[]>;
-  users: Record<string, FarcasterUser>;
-  context: TransactionContext;
-  assetsEnriched: Record<string, Asset>;
-};
-
-type TransactionContext = {
-  variables: Record<string, Record<string, string>>;
-  summaries: {
-    en: {
-      default: string;
-    };
-  };
-};
-
-type EnrichedParty = {
-  ensNew: {
-    handle: string;
-    avatar: string;
-  };
-  label: {
-    public: string;
-  };
-  decimals?: number;
-  symbol?: string;
-};
-
-type Asset = {
-  contract: string;
-  imageUrl: string;
-  tokenId: string;
-  type: string;
-  value: string;
-};
 
 export const TransactionFeed = ({
   filter,

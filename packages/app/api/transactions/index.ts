@@ -26,7 +26,7 @@ export const useTransactionFeed = (
     string[],
     string | undefined
   >({
-    queryKey: ["castFeed", JSON.stringify(filter)],
+    queryKey: ["txFeed", JSON.stringify(filter)],
     queryFn: async ({ pageParam }) => {
       const data = await fetchTransactionFeed(filter, pageParam);
       return data;

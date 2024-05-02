@@ -1,5 +1,6 @@
 import { Channel, FarcasterCast } from "./cast";
 import { NotificationResponse } from "./notifications";
+import { Transaction } from "./transactions";
 import { CastAction, FarcasterUser } from "./user";
 
 export * from "./user";
@@ -10,6 +11,7 @@ export * from "./notifications";
 export * from "./cast";
 export * from "./feed";
 export * from "./session";
+export * from "./transactions";
 
 export type FetchCastsResponse = {
   data: FarcasterCast[];
@@ -37,6 +39,6 @@ export type FetchCatActionsResponse = {
 };
 
 export type FetchTransactionsResponse = {
-  data: any[];
+  data: Transaction[];
   nextCursor?: string;
 };

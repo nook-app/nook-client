@@ -118,7 +118,7 @@ export const transactionRoutes = async (fastify: FastifyInstance) => {
               skip: (cursor.skip as number) + 25,
             })
           : null;
-      return reply.send({ nextCursor, data: enrichedData.toReversed() });
+      return reply.send({ nextCursor, data: enrichedData?.reverse() || [] });
     });
   });
 };
