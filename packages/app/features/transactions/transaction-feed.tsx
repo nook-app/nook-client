@@ -47,7 +47,7 @@ export const TransactionFeed = ({
   const { data, isLoading, fetchNextPage, isFetchingNextPage } =
     useTransactionFeed(
       { ...filter, chains: chains.length > 0 ? chains : undefined },
-      initialData,
+      chains.length > 0 ? undefined : initialData,
     );
 
   const casts = data?.pages.flatMap((page) => page.data) ?? [];

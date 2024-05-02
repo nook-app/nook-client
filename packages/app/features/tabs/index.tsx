@@ -32,7 +32,7 @@ export const TabNavigation = ({
     <View flex={1}>
       <Tabs
         tabs={tabsToRender}
-        activeTab={activeTab?.id || tabsToRender[0].id}
+        activeTab={activeTab?.id || tabsToRender[0]?.id}
       />
       {children}
     </View>
