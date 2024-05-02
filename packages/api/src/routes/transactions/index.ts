@@ -87,6 +87,9 @@ export const transactionRoutes = async (fastify: FastifyInstance) => {
 
       const userMap = users.data.reduce(
         (acc, user) => {
+          for (const address of user.verifiedAddresses ?? []) {
+            acc[address.address] = user;
+          }
           acc[user.fid] = user;
           return acc;
         },
@@ -98,10 +101,15 @@ export const transactionRoutes = async (fastify: FastifyInstance) => {
 
         if (!tx.enrichedParties) return { ...tx, users: {} };
 
+        if (userMap[tx.from]) {
+          users[tx.from] = userMap[tx.from];
+        }
+
         for (const party of Object.entries(tx.enrichedParties)) {
-          const info = party[1][0];
-          if (info.farcaster?.fid) {
-            users[party[0]] = userMap[info.farcaster.fid];
+          for (const info of party[1]) {
+            if (info.farcaster?.fid) {
+              users[party[0]] = userMap[info.farcaster.fid];
+            }
           }
         }
 
