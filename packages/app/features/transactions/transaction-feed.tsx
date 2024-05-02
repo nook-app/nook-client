@@ -34,6 +34,7 @@ import { formatEther, formatUnits } from "viem";
 import { FarcasterPowerBadge } from "../../components/farcaster/users/power-badge";
 import { TextLink } from "solito/link";
 import { useCallback, useState } from "react";
+import { EmbedImage } from "../../components/embeds/EmbedImage";
 
 export const TransactionFeed = ({
   filter,
@@ -213,6 +214,7 @@ const TransactionFeedItem = ({
             </View>
           </XStack>
           <TransactionText transaction={transaction} />
+          <TransactionEmbed transaction={transaction} />
         </YStack>
         <XStack justifyContent="space-between" alignItems="center">
           <View />
@@ -238,7 +240,7 @@ const TransactionText = ({ transaction }: { transaction: Transaction }) => {
     if (i % 2 === 0) {
       if (parts[i]) {
         textParts.push(
-          <NookText key={`text-${i}`} marginRight="$1.5">
+          <NookText key={`text-${i}`} marginRight="$1.5" color="$mauve12">
             {parts[i]}
           </NookText>,
         );
@@ -281,6 +283,7 @@ const TransactionText = ({ transaction }: { transaction: Transaction }) => {
             color="$mauve12"
             marginRight="$1.5"
             whiteSpace="nowrap"
+            fontWeight="600"
           >
             {`${(+formatEther(BigInt(variable.value))).toFixed(4)} ETH`}
           </NookText>,
@@ -295,6 +298,7 @@ const TransactionText = ({ transaction }: { transaction: Transaction }) => {
             color="$mauve12"
             marginRight="$1.5"
             whiteSpace="nowrap"
+            fontWeight="600"
           >
             {`${(+formatEther(BigInt(variable.value))).toFixed(4)} DEGEN`}
           </NookText>,
@@ -338,6 +342,7 @@ const TransactionText = ({ transaction }: { transaction: Transaction }) => {
               color="$mauve12"
               marginRight="$1.5"
               whiteSpace="nowrap"
+              fontWeight="600"
             >
               {enrichedParty.ensNew.handle}
             </NookText>,
@@ -352,6 +357,7 @@ const TransactionText = ({ transaction }: { transaction: Transaction }) => {
               color="$mauve12"
               marginRight="$1.5"
               whiteSpace="nowrap"
+              fontWeight="600"
             >
               {enrichedParty.label.public}
             </NookText>,
@@ -387,9 +393,11 @@ const TransactionText = ({ transaction }: { transaction: Transaction }) => {
             key={id}
             marginRight="$1.5"
           >
-            <NookText>{variable.value}</NookText>
+            <NookText fontWeight="600" color="$mauve12">
+              {variable.value}
+            </NookText>
             {asset && <CdnAvatar src={asset.imageUrl} size="$0.8" absolute />}
-            <NookText fontWeight="600">{`${
+            <NookText fontWeight="600" color="$mauve12">{`${
               party?.label?.public || formatAddress(variable.token)
             }`}</NookText>
           </XStack>,
@@ -414,7 +422,7 @@ const TransactionText = ({ transaction }: { transaction: Transaction }) => {
           >
             {asset && <CdnAvatar src={asset.imageUrl} size="$0.8" absolute />}
             {variable.tokenId && (
-              <NookText fontWeight="600">{`${
+              <NookText fontWeight="600" color="$mauve12">{`${
                 party?.label?.public
                   ? `${party.label.public} #${
                       variable.tokenId.length > 7
@@ -429,7 +437,7 @@ const TransactionText = ({ transaction }: { transaction: Transaction }) => {
               }`}</NookText>
             )}
             {!variable.tokenId && (
-              <NookText fontWeight="600">{`${
+              <NookText fontWeight="600" color="$mauve12">{`${
                 party?.label?.public
                   ? `${party.label.public}`
                   : `${formatAddress(variable.token)}`
@@ -454,12 +462,19 @@ const TransactionText = ({ transaction }: { transaction: Transaction }) => {
             key={id}
             marginRight="$1.5"
           >
-            <NookText>
+            <NookText fontWeight="600" color="$mauve12">
               {formatNumber(
-                +formatUnits(BigInt(variable.value), party?.decimals || 18),
+                +(+formatUnits(
+                  BigInt(variable.value),
+                  party?.decimals || 18,
+                )).toFixed(4),
               )}
             </NookText>
-            <NookText fontWeight="600">{`${
+            <NookText
+              fontWeight="600"
+              color="$mauve12"
+              textTransform="uppercase"
+            >{`${
               party?.label?.public || formatAddress(variable.token)
             }`}</NookText>
           </XStack>,
@@ -469,7 +484,12 @@ const TransactionText = ({ transaction }: { transaction: Transaction }) => {
 
       if (variable.type === "number") {
         textParts.push(
-          <NookText key={`var-${i}`} color="$mauve12" marginRight="$1.5">
+          <NookText
+            key={`var-${i}`}
+            color="$mauve12"
+            marginRight="$1.5"
+            fontWeight={variable.emphasis ? "600" : "400"}
+          >
             {`${formatNumber(+variable.value)} ${variable.unit}`}
           </NookText>,
         );
@@ -533,6 +553,7 @@ const TransactionText = ({ transaction }: { transaction: Transaction }) => {
               hoverStyle={{
                 textDecorationLine: "underline",
               }}
+              fontWeight={variable.emphasis ? "600" : "400"}
             >
               {variable.truncate
                 ? formatAddress(variable.value)
@@ -544,7 +565,12 @@ const TransactionText = ({ transaction }: { transaction: Transaction }) => {
       }
 
       textParts.push(
-        <NookText key={`var-${i}`} color="$mauve12" marginRight="$1.5">
+        <NookText
+          key={`var-${i}`}
+          color="$mauve12"
+          marginRight="$1.5"
+          fontWeight={variable.emphasis ? "600" : "400"}
+        >
           {variable.value}
         </NookText>,
       );
@@ -556,6 +582,13 @@ const TransactionText = ({ transaction }: { transaction: Transaction }) => {
       {textParts}
     </NookText>
   );
+};
+
+const TransactionEmbed = ({ transaction }: { transaction: Transaction }) => {
+  if (!transaction.assetsEnriched) return null;
+  const asset = Object.values(transaction.assetsEnriched)[0];
+  if (!asset?.imageUrl) return null;
+  return <EmbedImage uri={`${asset.imageUrl.split("?")[0]}?width=600`} />;
 };
 
 const TransactionChainBadge = ({ chainId }: { chainId: number }) => {
