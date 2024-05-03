@@ -1,5 +1,6 @@
 import { View, XStack } from "@nook/ui";
 import { ZoomableImage } from "../zoomable-image";
+import { formatToCDN } from "../../utils";
 
 export const EmbedImages = ({ uris }: { uris: string[] }) => {
   if (uris.length === 1) {
@@ -10,7 +11,7 @@ export const EmbedImages = ({ uris }: { uris: string[] }) => {
     <XStack borderRadius="$4" overflow="hidden" gap="$2">
       {uris.map((uri, index) => (
         <View width="50%" key={uri}>
-          <EmbedImage uri={uri} />
+          <EmbedImage uri={formatToCDN(uri)} />
         </View>
       ))}
     </XStack>
@@ -31,7 +32,7 @@ export const EmbedImage = ({
       }}
     >
       <ZoomableImage uri={uri}>
-        <img src={uri} alt="" />
+        <img src={formatToCDN(uri)} alt="" />
       </ZoomableImage>
     </View>
   );

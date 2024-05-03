@@ -2,22 +2,21 @@
 
 import { makeRequest } from "../api/utils";
 import {
-  FarcasterFeedFilter,
+  FarcasterFeedRequest,
   FetchCastsResponse,
   FetchChannelsResponse,
   FetchUsersResponse,
 } from "../types";
 
 export const fetchCastFeed = async (
-  filter: FarcasterFeedFilter,
-  cursor?: string,
+  req: FarcasterFeedRequest,
 ): Promise<FetchCastsResponse> => {
   return await makeRequest("/farcaster/casts/feed", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ filter, cursor }),
+    body: JSON.stringify(req),
   });
 };
 

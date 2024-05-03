@@ -10,16 +10,18 @@ import { FarcasterInfiniteFeed } from "./infinite-feed";
 import { Loading } from "../../../components/loading";
 
 export const FarcasterFilteredFeed = ({
+  api,
   filter,
   initialData,
   displayMode,
 }: {
+  api?: string;
   filter: FarcasterFeedFilter;
   initialData?: FetchCastsResponse;
   displayMode?: Display;
 }) => {
   const { data, isLoading, hasNextPage, fetchNextPage, isFetchingNextPage } =
-    useCastFeed(filter, initialData);
+    useCastFeed(filter, api, initialData);
 
   if (isLoading) {
     return <Loading />;

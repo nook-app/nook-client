@@ -23,6 +23,7 @@ export const fetchCastFeed = async (
 
 export const useCastFeed = (
   filter: FarcasterFeedFilter,
+  api?: string,
   initialData?: FetchCastsResponse,
 ) => {
   return useInfiniteQuery<
@@ -35,6 +36,7 @@ export const useCastFeed = (
     queryKey: ["castFeed", JSON.stringify(filter)],
     queryFn: async ({ pageParam }) => {
       const data = await fetchCastFeed({
+        api,
         filter,
         cursor: pageParam,
       });
