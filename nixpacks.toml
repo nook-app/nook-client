@@ -1,5 +1,17 @@
 providers = ["...", "python"]
 
 [phases.install]
-cmds = ["npm install -g corepack@0.24.1 && corepack enable", "yarn install --check-cache"] 
+cmds = [
+    "npm install -g corepack@0.24.1 && corepack enable",
+    "yarn install --check-cache",
+]
 dependsOn = ["setup"]
+
+[phases.build]
+cache_directories = [
+    '**/dist/**',
+    '**/prisma/generated/**',
+    '**/.next/**',
+    '!**./.next/cache/**',
+    '**/.tamagui/**',
+]
