@@ -280,6 +280,7 @@ model UserMutedParentUrl {
 model PendingCast {
     id            String    @id @default(uuid())
     fid           String
+    textHash      String
     text          String
     parentUrl     String?
     parentFid     String?
@@ -290,6 +291,8 @@ model PendingCast {
     scheduledFor  DateTime?
     publishedAt   DateTime?
     attemptedAt   DateTime?
+    threadParent String?
+    threadIndex  Int?
 
     createdAt DateTime  @default(now())
     updatedAt DateTime  @updatedAt
@@ -297,4 +300,6 @@ model PendingCast {
 
     @@index([scheduledFor])
     @@index([fid, scheduledFor])
+    @@unique([threadParent, threadIndex])
+    @@unique([fid, textHash, threadParent])
 }

@@ -10,6 +10,7 @@ import {
   useToastController,
   useDebounce,
   NookText,
+  Popover,
 } from "@nook/ui";
 import { useCreateCast } from "./context";
 import { memo, useCallback, useEffect, useRef, useState } from "react";
@@ -26,6 +27,9 @@ import { NativeSyntheticEvent, TextInputChangeEventData } from "react-native";
 import { ChannelSelect } from "../../../components/farcaster/channels/channel-select";
 import { CreateCastMentions } from "./mentions";
 import { useTheme } from "../../../context/theme";
+import { LmDatepicker } from "@tamagui-extras/date";
+import { DateTimePicker } from "./timepicker";
+import { LmTimePicker } from "./time";
 
 export const CreateCastEditor = ({ onSubmit }: { onSubmit?: () => void }) => {
   const { activeCastLength } = useCreateCast();
@@ -44,10 +48,29 @@ export const CreateCastEditor = ({ onSubmit }: { onSubmit?: () => void }) => {
             fontWeight="500"
             fontSize="$4"
           >{`${activeCastLength} / 320`}</NookText>
+          <ScheduleButton />
           <CreateCastButton onSubmit={onSubmit} />
         </XStack>
       </XStack>
     </View>
+  );
+};
+
+const ScheduleButton = () => {
+  const [isOpen, setIsOpen] = useState(false);
+
+  return (
+    <Popover placement="bottom" open={isOpen} onOpenChange={setIsOpen}>
+      <Popover.Trigger asChild>
+        <NookButton>Schedule</NookButton>
+      </Popover.Trigger>
+      <Popover.Content>
+        <NookText>Schedule</NookText>
+        <LmDatepicker />
+        <LmTimePicker time={new Date()} />
+        {/* <DateTimePicker type="time" /> */}
+      </Popover.Content>
+    </Popover>
   );
 };
 

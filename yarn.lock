@@ -2800,6 +2800,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@datepicker-react/hooks@npm:^2.8.4":
+  version: 2.8.4
+  resolution: "@datepicker-react/hooks@npm:2.8.4"
+  dependencies:
+    date-fns: "npm:^2.14.0"
+  peerDependencies:
+    react: ">= 16.8.5"
+  checksum: 10c0/aa2f339e17f75982f510179c4affe9cd8a87b2017ebb88867d0de898535bf9b62b146916f2e7718e77d962753ff194972695271bd4b02fd9191bc3e475216901
+  languageName: node
+  linkType: hard
+
 "@discoveryjs/json-ext@npm:^0.5.0":
   version: 0.5.7
   resolution: "@discoveryjs/json-ext@npm:0.5.7"
@@ -5757,6 +5768,8 @@ __metadata:
     "@privy-io/react-auth": "npm:^1.60.6"
     "@privy-io/wagmi": "npm:^0.2.2"
     "@shopify/flash-list": "npm:^1.6.4"
+    "@tamagui-extras/core": "npm:^1.12.2"
+    "@tamagui-extras/date": "npm:^1.13.2"
     "@tamagui/animations-react-native": "npm:^1.94.5"
     "@tamagui/colors": "npm:^1.94.5"
     "@tamagui/font-inter": "npm:^1.94.5"
@@ -6878,6 +6891,15 @@ __metadata:
   bin:
     react-native: build/bin.js
   checksum: 10c0/0117a4f212fd0eccf6e03d524c08734c1b9b1796ccabf6aacaa2d4c37313e1bd9c7c0a2d30a65eb361ed47dff52d3c728d5dedee97c36af55c3e36c14a3f6174
+  languageName: node
+  linkType: hard
+
+"@react-native-community/datetimepicker@npm:^7.2.0":
+  version: 7.7.0
+  resolution: "@react-native-community/datetimepicker@npm:7.7.0"
+  dependencies:
+    invariant: "npm:^2.2.4"
+  checksum: 10c0/c757d4a4d4d6af32a1ef96fb989235d2f3db8234a6ebc5278b50718d5b1ff9a3e72a7bf8c6dcfa1eb148b2bdc408f8db0ad03dae693dc7ad066cfa716bbb3346
   languageName: node
   linkType: hard
 
@@ -8427,6 +8449,50 @@ __metadata:
   dependencies:
     defer-to-connect: "npm:^2.0.0"
   checksum: 10c0/73946918c025339db68b09abd91fa3001e87fc749c619d2e9c2003a663039d4c3cb89836c98a96598b3d47dec2481284ba85355392644911f5ecd2336536697f
+  languageName: node
+  linkType: hard
+
+"@tamagui-extras/core@npm:1.12.2, @tamagui-extras/core@npm:^1.12.2":
+  version: 1.12.2
+  resolution: "@tamagui-extras/core@npm:1.12.2"
+  peerDependencies:
+    react: ^18.2.0
+    react-native: 0.72.6
+    react-native-svg: ^13.9.0
+    tamagui: 1.29.3
+  checksum: 10c0/cbda1fbead401aee1b3d377d65ad83c43f095c7533a71a5c0d2ddd3f886a127f856c56ecf4eb042b1a398eb341f62fd4ad8b100484856abacd43163751bca0ab
+  languageName: node
+  linkType: hard
+
+"@tamagui-extras/date@npm:^1.13.2":
+  version: 1.13.2
+  resolution: "@tamagui-extras/date@npm:1.13.2"
+  dependencies:
+    "@datepicker-react/hooks": "npm:^2.8.4"
+    "@react-native-community/datetimepicker": "npm:^7.2.0"
+    "@tamagui-extras/core": "npm:1.12.2"
+    "@tamagui-extras/form": "npm:1.17.2"
+    react-hook-form: "npm:^7.43.9"
+    react-native-modal-datetime-picker: "npm:^15.0.0"
+  peerDependencies:
+    react: ^18.2.0
+    react-native: 0.72.6
+    tamagui: 1.29.3
+  checksum: 10c0/c2cd55464faf0be3dd8c95a23b723db8e60b0c6d4b13d46b2548f1ca8193b6a0f55eac788e9255d6780f3346a9021545a6dfcc665ec88722495186e77981fc3d
+  languageName: node
+  linkType: hard
+
+"@tamagui-extras/form@npm:1.17.2":
+  version: 1.17.2
+  resolution: "@tamagui-extras/form@npm:1.17.2"
+  dependencies:
+    "@tamagui-extras/core": "npm:1.12.2"
+    react-hook-form: "npm:^7.43.9"
+  peerDependencies:
+    react: ^18.2.0
+    react-native: 0.72.6
+    tamagui: 1.29.3
+  checksum: 10c0/b6026a64901a1d2cd3b87abc34924a71227f75024273e70827a245523e6a5f870cd052ef735d860d6b1bbc02b2ce2151dd596a3a7801ceb76a42ec4df5ce5bc3
   languageName: node
   linkType: hard
 
@@ -14633,7 +14699,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"date-fns@npm:^2.29.3":
+"date-fns@npm:^2.14.0, date-fns@npm:^2.29.3":
   version: 2.30.0
   resolution: "date-fns@npm:2.30.0"
   dependencies:
@@ -24590,6 +24656,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"react-hook-form@npm:^7.43.9":
+  version: 7.51.3
+  resolution: "react-hook-form@npm:7.51.3"
+  peerDependencies:
+    react: ^16.8.0 || ^17 || ^18
+  checksum: 10c0/dd7dfc8514df19a13b7647b3faebdcb1329723afb52454626496eeaa657323d42bab12dc85e6b77d758a166c6427fa87f13c5bd9f5f78666c682e8263117e297
+  languageName: node
+  linkType: hard
+
 "react-intersection-observer@npm:^9.8.2":
   version: 9.8.2
   resolution: "react-intersection-observer@npm:9.8.2"
@@ -24768,6 +24843,18 @@ __metadata:
     react: "*"
     react-native: ">=0.71.0"
   checksum: 10c0/751b92d60b3526c9bbeac652b840c048b7f1cc4f48179f4e24a45cf14bdcdd08bfc7f3c65fb50c686cae41356ac0d15a21e6da034e2f0907459036dacb67fcbd
+  languageName: node
+  linkType: hard
+
+"react-native-modal-datetime-picker@npm:^15.0.0":
+  version: 15.0.1
+  resolution: "react-native-modal-datetime-picker@npm:15.0.1"
+  dependencies:
+    prop-types: "npm:^15.7.2"
+  peerDependencies:
+    "@react-native-community/datetimepicker": ">=6.7.0"
+    react-native: ">=0.65.0"
+  checksum: 10c0/7214cf8df910bb789df20128288b9e4f03e3084c961ea4e79cbda082c072a245c89808e32691d2dffae0da4a66d2a99349b6218ce985342ad3e5691240698332
   languageName: node
   linkType: hard
 

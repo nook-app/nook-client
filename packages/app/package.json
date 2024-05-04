@@ -12,6 +12,8 @@
     "@privy-io/react-auth": "^1.60.6",
     "@privy-io/wagmi": "^0.2.2",
     "@shopify/flash-list": "^1.6.4",
+    "@tamagui-extras/core": "^1.12.2",
+    "@tamagui-extras/date": "^1.13.2",
     "@tamagui/animations-react-native": "^1.94.5",
     "@tamagui/colors": "^1.94.5",
     "@tamagui/font-inter": "^1.94.5",

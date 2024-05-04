@@ -1,6 +1,7 @@
 import { PrismaClient } from "@nook/common/prisma/nook";
 import { PendingCastRequest, PendingCastResponse } from "@nook/common/types";
 import { decodeCursor, encodeCursor } from "@nook/common/utils";
+import { createHash } from "crypto";
 import { FastifyInstance } from "fastify";
 
 const MAX_PAGE_SIZE = 25;
@@ -67,6 +68,7 @@ export class PendingCastService {
         castEmbedHash: pendingCast.castEmbedHash,
         embeds: pendingCast.embeds,
         scheduledFor: scheduledFor,
+        textHash: createHash("md5").update(pendingCast.text).digest("hex"),
       },
     });
   }

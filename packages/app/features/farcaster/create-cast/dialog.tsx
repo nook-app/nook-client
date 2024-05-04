@@ -53,6 +53,14 @@ const DialogContent = ({
     }
   };
 
+  const handleDraftPromptIsOpenChange = (isOpen: boolean) => {
+    if (isOpen && context.activeCastLength > 0) {
+      setDraftPromptIsOpen(isOpen);
+    } else {
+      setIsOpen(false);
+    }
+  };
+
   const handleDraftPromptDiscard = () => {
     context.reset();
     setIsOpen(false);
@@ -109,9 +117,9 @@ const DialogContent = ({
             <XStack alignItems="center" justifyContent="space-between">
               <Dialog
                 open={draftPromptIsOpen}
-                onOpenChange={setDraftPromptIsOpen}
+                onOpenChange={handleDraftPromptIsOpenChange}
               >
-                <Dialog.Trigger>
+                <Dialog.Trigger asChild>
                   <NookButton
                     size="$3"
                     scaleIcon={1.5}
@@ -128,7 +136,7 @@ const DialogContent = ({
                 </Dialog.Trigger>
                 <Dialog.Portal>
                   <Dialog.Overlay />
-                  <Dialog.Content>
+                  <Dialog.Content key="draft">
                     <NookText>Save draft?</NookText>
                     <NookText>You can save a draft to cast later.</NookText>
                     <NookButton onPress={handleDraftPromptSave}>
