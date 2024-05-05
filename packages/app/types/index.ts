@@ -12,6 +12,7 @@ export * from "./cast";
 export * from "./feed";
 export * from "./session";
 export * from "./transactions";
+export * from "./simplehash";
 
 export type FetchCastsResponse = {
   data: FarcasterCast[];

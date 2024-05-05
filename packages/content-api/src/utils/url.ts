@@ -119,11 +119,12 @@ const scrapeMetadata = async (options: MetascraperOptions) => {
 };
 
 const fetchUrlMetadata = async (url: string) => {
-  const res = await Promise.race([
+  const hostname = new URL(url).hostname;
+  let res = await Promise.race([
     fetch(url, {
       headers: {
         "user-agent":
-          USER_AGENT_OVERRIDES[new URL(url).hostname] ||
+          USER_AGENT_OVERRIDES[hostname] ||
           "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
         "Sec-Fetch-Dest": "document",
         "Sec-Fetch-Mode": "navigate",
@@ -135,6 +136,21 @@ const fetchUrlMetadata = async (url: string) => {
       setTimeout(() => reject(new Error("Timed out getting frame")), 20000),
     ) as Promise<Error>,
   ]);
+
+  if (res instanceof Error) {
+    throw res;
+  }
+
+  if (res.redirected && !["x.com", "twitter.com"].includes(hostname)) {
+    res = await Promise.race([
+      fetch(url, {
+        redirect: "manual",
+      }) as Promise<Response>,
+      new Promise((_, reject) =>
+        setTimeout(() => reject(new Error("Timed out getting frame")), 20000),
+      ) as Promise<Error>,
+    ]);
+  }
 
   if (res instanceof Error) {
     throw res;
@@ -153,27 +169,7 @@ const fetchUrlMetadata = async (url: string) => {
     return urlMetadata;
   }
 
-  let html = await res.text();
-
-  if (!html) {
-    const res2 = await Promise.race([
-      fetch(url, {
-        redirect: "manual",
-      }) as Promise<Response>,
-      new Promise((_, reject) =>
-        setTimeout(() => reject(new Error("Timed out getting frame")), 20000),
-      ) as Promise<Error>,
-    ]);
-
-    if (res2 instanceof Error) {
-      throw res2;
-    }
-
-    html = await res2.text();
-    if (!html) {
-      return urlMetadata;
-    }
-  }
+  const html = await res.text();
 
   const scrapedMetadata = await Promise.race([
     scrapeMetadata({ html, url }),
@@ -192,10 +188,12 @@ const fetchUrlMetadata = async (url: string) => {
     urlMetadata.metadata.image = undefined;
   }
 
-  const { frame } = getFrame({
+  const { frame, reports } = getFrame({
     url,
     htmlString: html,
   });
+
+  console.log(`[metadata] [${url}] reports: ${JSON.stringify(reports)}`);
 
   if (frame?.image && new Blob([frame?.image]).size < 256000) {
     urlMetadata.frame = frame;

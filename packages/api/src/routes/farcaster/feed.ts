@@ -44,7 +44,11 @@ export const farcasterFeedRoutes = async (fastify: FastifyInstance) => {
           }
 
           if (request.body.api.includes("k3l.io")) {
-            const response = await fetch(request.body.api);
+            const response = await fetch(
+              `${request.body.api}${
+                request.body.cursor ? `?offset=${request.body.cursor}` : ""
+              }`,
+            );
             if (!response.ok) {
               console.error(await response.text());
               reply.status(500);
@@ -52,10 +56,8 @@ export const farcasterFeedRoutes = async (fastify: FastifyInstance) => {
             }
             const {
               result,
-              nextCursor,
             }: {
               result: { cast_hash: string }[];
-              nextCursor?: number | string;
             } = await response.json();
             const casts = await client.getCasts(
               result.map((r) => r.cast_hash),
@@ -63,7 +65,7 @@ export const farcasterFeedRoutes = async (fastify: FastifyInstance) => {
             );
             return reply.send({
               data: casts.data,
-              nextCursor,
+              nextCursor: (Number(request.body.cursor) || 0) + result.length,
             });
           }
 

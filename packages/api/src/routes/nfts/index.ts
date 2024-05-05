@@ -4,14 +4,13 @@ import {
   GetNftRequest,
   GetNftsRequest as GetFidNftsRequest,
   NftsByIdsOrRangeRequest,
-} from "@nook/common/types";
-
-import { FarcasterAPIClient } from "@nook/common/clients";
-import {
   SimpleHashChain,
   SimpleHashNFT,
   SimpleHashNFTsResponse,
-} from "./types";
+  NftFeedRequest,
+} from "@nook/common/types";
+
+import { FarcasterAPIClient } from "@nook/common/clients";
 
 const CHAINS = Object.values(SimpleHashChain).join(",");
 const SIMPLEHASH_API_KEY = process.env.SIMPLEHASH_API_KEY || "";
@@ -20,10 +19,10 @@ export const nftRoutes = async (fastify: FastifyInstance) => {
   fastify.register(async (fastify: FastifyInstance) => {
     const farcasterClient = new FarcasterAPIClient();
 
-    fastify.get<{
+    fastify.post<{
       Params: GetFidNftsRequest;
-      Querystring: { cursor?: string };
-    }>("/nft/:fid", async (request, reply) => {
+      Body: NftFeedRequest;
+    }>("/nfts/:fid", async (request, reply) => {
       await request.jwtVerify();
 
       const farResponse = await farcasterClient.getUser(request.params.fid);
@@ -34,15 +33,14 @@ export const nftRoutes = async (fastify: FastifyInstance) => {
           nfts: [],
         });
       }
-      addresses.push({
-        address: "0x333601a803CAc32B7D17A38d32c9728A93b422f4",
-        protocol: 1,
-      });
+
+      const chains = request.body?.filter?.chains || CHAINS;
+
       // todo: should we trust and fetch a "next" param here?
-      const url = `https://api.simplehash.com/api/v0/nfts/owners?chains=${CHAINS}&wallet_addresses=${addresses
+      const url = `https://api.simplehash.com/api/v0/nfts/owners?chains=${chains}&wallet_addresses=${addresses
         .map((x) => x.address)
         .join(",")}&queried_wallet_balances=1&limit=25${
-        request.query.cursor ? `&cursor=${request.query.cursor}` : ""
+        request.body?.cursor ? `&cursor=${request.body?.cursor}` : ""
       }`;
 
       const options = {
@@ -57,11 +55,32 @@ export const nftRoutes = async (fastify: FastifyInstance) => {
         await fetch(url, options)
       ).json()) as unknown as SimpleHashNFTsResponse;
 
-      return reply.send(results);
+      return reply.send({
+        data: results.nfts.map((nft) => ({
+          chain: nft.chain,
+          contractAddress: nft.contract_address,
+          tokenId: nft.token_id,
+          name: nft.name,
+          description: nft.description,
+          previews: nft.previews,
+          imageProperties: nft.image_properties,
+          videoUrl: nft.video_url,
+          videoProperties: nft.video_properties,
+          audioUrl: nft.audio_url,
+          audioProperties: nft.audio_properties,
+          modelUrl: nft.model_url,
+          modelProperties: nft.model_properties,
+          externalUrl: nft.external_url,
+          createdAt: nft.created_date,
+          tokenCount: nft.token_count,
+          ownerCount: nft.owner_count,
+        })),
+        nextCursor: results.next_cursor,
+      });
     });
 
     fastify.get<{ Params: GetNftRequest }>(
-      "/nft/:chain/:address/:identifier",
+      "/nfts/:chain/:address/:identifier",
       async (request, reply) => {
         await request.jwtVerify();
 
@@ -86,7 +105,7 @@ export const nftRoutes = async (fastify: FastifyInstance) => {
     fastify.get<{
       Params: GetNftCollectionRequest;
       Querystring: { cursor?: string };
-    }>("/nft/:chain/:address", async (request, reply) => {
+    }>("/nfts/:chain/:address", async (request, reply) => {
       await request.jwtVerify();
       const cursor = request.query.cursor;
 
@@ -112,7 +131,7 @@ export const nftRoutes = async (fastify: FastifyInstance) => {
     fastify.post<{
       Params: GetNftCollectionRequest;
       Body: NftsByIdsOrRangeRequest;
-    }>("/nft/:chain/:address", async (request, reply) => {
+    }>("/nfts/:chain/:address", async (request, reply) => {
       await request.jwtVerify();
       if (!request.body.ids && !request.body.range) {
         return reply.status(400).send({

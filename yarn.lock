@@ -5743,6 +5743,7 @@ __metadata:
     "@privy-io/server-auth": "npm:^1.7.3"
     "@types/node": "npm:^20.10.5"
     fastify: "npm:^4.25.2"
+    twitter-api-sdk: "npm:^1.2.1"
     typescript: "npm:^5.3.3"
     viem: "npm:2.x"
   languageName: unknown
@@ -6041,20 +6042,6 @@ __metadata:
     vercel: "npm:latest"
     viem: "npm:^2.7.9"
     wagmi: "npm:^2.5.18"
-  languageName: unknown
-  linkType: soft
-
-"@nook/nft-api@workspace:packages/nft-api":
-  version: 0.0.0-use.local
-  resolution: "@nook/nft-api@workspace:packages/nft-api"
-  dependencies:
-    "@fastify/jwt": "npm:^8.0.0"
-    "@nook/common": "npm:*"
-    "@types/jest": "npm:^29.5.12"
-    "@types/node": "npm:^20.11.30"
-    fastify: "npm:^4.26.2"
-    jest: "npm:^29.7.0"
-    typescript: "npm:^5.4.3"
   languageName: unknown
   linkType: soft
 
@@ -27999,6 +27986,16 @@ __metadata:
   version: 1.0.3
   resolution: "tweetnacl@npm:1.0.3"
   checksum: 10c0/069d9df51e8ad4a89fbe6f9806c68e06c65be3c7d42f0701cc43dba5f0d6064686b238bbff206c5addef8854e3ce00c643bff59432ea2f2c639feab0ee1a93f9
+  languageName: node
+  linkType: hard
+
+"twitter-api-sdk@npm:^1.2.1":
+  version: 1.2.1
+  resolution: "twitter-api-sdk@npm:1.2.1"
+  dependencies:
+    abort-controller: "npm:^3.0.0"
+    node-fetch: "npm:^2.6.1"
+  checksum: 10c0/8c9418f2314c01d05b7e9f89a3fd391ea1d294e0a03423c8cc958b02eab2382381c427691eac53d39398ef94f74dd6d83fc97d5c1b12dd0c175fd2915918345f
   languageName: node
   linkType: hard
 

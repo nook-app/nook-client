@@ -19,6 +19,7 @@ import { feedRoutes } from "./routes/feed";
 import { pendingCastRoutes } from "./routes/pending";
 import { farcasterFeedRoutes } from "./routes/farcaster/feed";
 import { farconRoutes } from "./routes/farcon/attendees";
+import { nftRoutes } from "./routes/nfts";
 
 const buildApp = () => {
   const app = fastify({
@@ -80,6 +81,7 @@ const buildApp = () => {
   app.register(feedRoutes, { prefix: "/v0" });
   app.register(pendingCastRoutes, { prefix: "/v0" });
   app.register(farconRoutes, { prefix: "/v0" });
+  app.register(nftRoutes, { prefix: "/v0" });
 
   return app;
 };

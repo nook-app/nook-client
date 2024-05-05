@@ -66,3 +66,12 @@ export type TransactionFeedFilter = {
   users?: UserFilter;
   chains?: number[];
 };
+
+export type NftFeedRequest = {
+  filter: NftFeedFilter;
+  cursor?: string;
+};
+
+export type NftFeedFilter = {
+  chains?: string[];
+};

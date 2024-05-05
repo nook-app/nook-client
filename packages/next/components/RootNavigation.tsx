@@ -175,7 +175,7 @@ const RootNavigationItem = ({
             transition: "all 0.2s ease-in-out",
           }}
         >
-          <XStack gap="$3" alignContent="center">
+          <XStack alignContent="center">
             <Icon
               color="$mauve12"
               size={24}
@@ -185,7 +185,8 @@ const RootNavigationItem = ({
               <NookText
                 fontWeight={pathname === href ? "700" : "400"}
                 fontSize="$7"
-                $lg={{ display: "none" }}
+                marginLeft="$3"
+                $lg={{ display: "none", marginLeft: "$0" }}
               >
                 {label}
               </NookText>

@@ -21,6 +21,7 @@
     "@nook/common": "*",
     "@privy-io/server-auth": "^1.7.3",
     "fastify": "^4.25.2",
+    "twitter-api-sdk": "^1.2.1",
     "viem": "2.x"
   },
   "devDependencies": {
