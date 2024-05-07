@@ -1,5 +1,5 @@
 import { FarcasterFilteredFeedServer } from "@nook/app/features/farcaster/cast-feed/filtered-feed-server";
-import { Display, UserFilterType } from "@nook/app/types";
+import { Display, UserFilterType } from "@nook/common/types";
 
 export default async function Home() {
   return (

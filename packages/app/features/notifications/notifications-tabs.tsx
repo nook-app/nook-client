@@ -7,7 +7,10 @@ import {
   usePriorityNotifications,
 } from "../../api/notifications";
 import { NotificationsInfiniteFeed } from "./notifications-feed";
-import { FetchNotificationsResponse, NotificationType } from "../../types";
+import {
+  FetchNotificationsResponse,
+  NotificationType,
+} from "@nook/common/types";
 import { useCallback, useEffect, useState } from "react";
 import {
   AtSign,

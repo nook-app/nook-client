@@ -1,4 +1,4 @@
-import { Channel, FetchChannelsResponse } from "../../types";
+import { Channel, FetchChannelsResponse } from "@nook/common/types";
 import { makeRequest } from "../utils";
 import {
   useQuery,

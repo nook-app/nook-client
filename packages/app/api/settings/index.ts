@@ -1,4 +1,4 @@
-import { Session, User } from "../../types";
+import { Session, User } from "@nook/common/types";
 import { makeRequest } from "../utils";
 import { useQuery } from "@tanstack/react-query";
 

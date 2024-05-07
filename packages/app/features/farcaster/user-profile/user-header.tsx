@@ -9,7 +9,7 @@ import { formatNumber } from "../../../utils";
 import { FarcasterPowerBadge } from "../../../components/farcaster/users/power-badge";
 import { FarcasterUserFollowButton } from "../../../components/farcaster/users/user-follow-button";
 import { UserFollowBadge } from "../../../components/farcaster/users/user-follow-badge";
-import { FarcasterUser, FarcasterUserMutualsPreview } from "../../../types";
+import { FarcasterUser, FarcasterUserMutualsPreview } from "@nook/common/types";
 import { useAuth } from "../../../context/auth";
 import { FarcasterUserKebabMenu } from "../../../components/farcaster/users/user-kebab-menu";
 

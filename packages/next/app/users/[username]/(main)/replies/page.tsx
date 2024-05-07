@@ -1,6 +1,6 @@
 import { fetchUser } from "@nook/app/api/farcaster";
 import { FarcasterFilteredFeedServer } from "@nook/app/features/farcaster/cast-feed/filtered-feed-server";
-import { UserFilterType } from "@nook/app/types";
+import { UserFilterType } from "@nook/common/types";
 import { notFound } from "next/navigation";
 
 export default async function User({

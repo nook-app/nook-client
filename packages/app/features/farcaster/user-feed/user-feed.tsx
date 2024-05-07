@@ -1,6 +1,6 @@
 "use client";
 
-import { Display, FarcasterUser } from "../../../types";
+import { Display, FarcasterUser } from "@nook/common/types";
 import { AnimatePresence, Spinner, View, XStack, YStack } from "@nook/ui";
 import { FarcasterUserDisplay } from "../../../components/farcaster/users/user-display";
 import { InfiniteScrollList } from "../../../components/infinite-scroll-list";

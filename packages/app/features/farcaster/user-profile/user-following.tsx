@@ -2,7 +2,7 @@
 
 import { useUserFollowing } from "../../../api/farcaster";
 import { Loading } from "../../../components/loading";
-import { FetchUsersResponse } from "../../../types";
+import { FetchUsersResponse } from "@nook/common/types";
 import { FarcasterUserInfiniteFeed } from "../user-feed/user-feed";
 
 export const FarcasterUserFollowing = ({

@@ -1,5 +1,5 @@
 import { NookText, Separator, XStack, YStack } from "@nook/ui";
-import { FarcasterCast } from "../../../types";
+import { FarcasterCast } from "@nook/common/types";
 import {
   FarcasterUserAvatar,
   FarcasterUserTextDisplay,

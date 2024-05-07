@@ -2,7 +2,7 @@
 
 import { useSearchChannels } from "../../../api/farcaster";
 import { Loading } from "../../../components/loading";
-import { FetchChannelsResponse } from "../../../types";
+import { FetchChannelsResponse } from "@nook/common/types";
 import { FarcasterChannelInfiniteFeed } from "./channel-feed";
 
 export const ChannelSearchFeed = ({

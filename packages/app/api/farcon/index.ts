@@ -1,4 +1,4 @@
-import { FetchUsersResponse } from "../../types";
+import { FetchUsersResponse } from "@nook/common/types";
 import { makeRequest } from "../utils";
 import { InfiniteData, useInfiniteQuery } from "@tanstack/react-query";
 

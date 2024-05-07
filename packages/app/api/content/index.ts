@@ -1,4 +1,4 @@
-import { UrlContentResponse } from "../../types";
+import { UrlContentResponse } from "@nook/common/types";
 import { makeRequest } from "../utils";
 
 export const fetchContent = async (

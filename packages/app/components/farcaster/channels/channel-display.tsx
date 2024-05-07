@@ -1,5 +1,5 @@
 import { NookText, Text, Tooltip, View, XStack, YStack } from "@nook/ui";
-import { Channel } from "../../../types";
+import { Channel } from "@nook/common/types";
 import { Link } from "solito/link";
 import { CdnAvatar } from "../../cdn-avatar";
 import { FarcasterBioText } from "../bio-text";

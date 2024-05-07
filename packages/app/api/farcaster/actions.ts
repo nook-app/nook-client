@@ -4,7 +4,7 @@ import {
   SubmitLinkRemoveRequest,
   SubmitMessageError,
   SubmitMessageResponse,
-} from "../../types";
+} from "@nook/common/types";
 import { makeRequest } from "../utils";
 
 export const submitCastAdds = async (

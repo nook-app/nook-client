@@ -3,7 +3,7 @@ import { CdnAvatar } from "../cdn-avatar";
 import { FarcasterUserTextDisplay } from "../farcaster/users/user-display";
 import { NookText, View, XStack, YStack } from "@nook/ui";
 import { FarcasterCastText } from "../farcaster/casts/cast-text";
-import { FarcasterCast } from "../../types";
+import { FarcasterCast } from "@nook/common/types";
 import { formatTimeAgo } from "../../utils";
 import { useRouter } from "solito/navigation";
 

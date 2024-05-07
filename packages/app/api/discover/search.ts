@@ -1,4 +1,4 @@
-import { Channel, FarcasterUser } from "../../types";
+import { Channel, FarcasterUser } from "@nook/common/types";
 import { makeRequest } from "../utils";
 import { useQuery } from "@tanstack/react-query";
 

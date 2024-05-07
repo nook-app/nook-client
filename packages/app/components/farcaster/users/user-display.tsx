@@ -1,4 +1,4 @@
-import { FarcasterUser } from "../../../types";
+import { FarcasterUser } from "@nook/common/types";
 import { NookText, Tooltip, View, XStack, YStack } from "@nook/ui";
 import { FarcasterPowerBadge } from "./power-badge";
 import { CdnAvatar } from "../../cdn-avatar";

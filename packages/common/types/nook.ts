@@ -1,6 +1,6 @@
 import { FarcasterCastResponse } from "./api";
 import { FarcasterUser } from "./farcaster";
-import { PanelDisplay } from "./feed";
+import { Display } from "./feed";
 
 export type Nook = {
   id: string;
@@ -389,5 +389,5 @@ export type Panel = {
   type: string;
   key: string;
   name: string;
-  display?: PanelDisplay;
+  display?: Display;
 };

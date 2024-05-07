@@ -1,6 +1,6 @@
 import { fetchChannel } from "@nook/app/api/farcaster";
 import { FarcasterFilteredFeedServer } from "@nook/app/features/farcaster/cast-feed/filtered-feed-server";
-import { ChannelFilterType } from "@nook/app/types";
+import { ChannelFilterType } from "@nook/common/types";
 
 export default async function Channel({
   params,

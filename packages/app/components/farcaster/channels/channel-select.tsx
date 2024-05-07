@@ -15,7 +15,7 @@ import {
 } from "@nook/ui";
 import { FarcasterChannelDisplay } from "./channel-display";
 import { X } from "@tamagui/lucide-icons";
-import { Channel } from "../../../types";
+import { Channel } from "@nook/common/types";
 
 export const ChannelSelect = ({
   channel,

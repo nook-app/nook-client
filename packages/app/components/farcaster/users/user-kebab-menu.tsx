@@ -1,6 +1,6 @@
 import { useAuth } from "../../../context/auth";
 import { Link, MoreHorizontal, Volume, VolumeX } from "@tamagui/lucide-icons";
-import { FarcasterUser } from "../../../types";
+import { FarcasterUser } from "@nook/common/types";
 import { KebabMenu, KebabMenuItem } from "../../kebab-menu";
 import { Image, NookButton, useToastController } from "@nook/ui";
 import { useMuteUser } from "../../../hooks/useMuteUser";

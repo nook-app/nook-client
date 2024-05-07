@@ -1,6 +1,6 @@
 import { NookText, View, XStack, YStack } from "@nook/ui";
 import { ChevronRight } from "@tamagui/lucide-icons";
-import { User } from "../../types";
+import { User } from "@nook/common/types";
 import { Link } from "solito/link";
 
 export const MutedSettings = ({ settings }: { settings: User }) => {

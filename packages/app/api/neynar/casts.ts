@@ -1,4 +1,4 @@
-import { Channel } from "@nook/app/types";
+import { Channel } from "@nook/common/types";
 import { getServerSession } from "../../server/auth";
 
 interface NeynarChannel {

@@ -2,7 +2,7 @@
 
 import { useCastQuotes } from "../../../api/farcaster/casts";
 import { Loading } from "../../../components/loading";
-import { FetchCastsResponse } from "../../../types";
+import { FetchCastsResponse } from "@nook/common/types";
 import { FarcasterInfiniteFeed } from "../cast-feed/infinite-feed";
 
 export const FarcasterCastQuotes = ({

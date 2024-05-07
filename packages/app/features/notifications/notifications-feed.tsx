@@ -9,7 +9,7 @@ import {
   XStack,
   YStack,
 } from "@nook/ui";
-import { NotificationResponse } from "../../types";
+import { NotificationResponse } from "@nook/common/types";
 import { InfiniteScrollList } from "../../components/infinite-scroll-list";
 import { NamedExoticComponent, memo } from "react";
 import { FarcasterCastDefaultDisplay } from "../../components/farcaster/casts/cast-display";

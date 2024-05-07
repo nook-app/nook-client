@@ -1,7 +1,10 @@
 "use server";
 
 import { makeRequest } from "../api/utils";
-import { FetchNotificationsResponse, GetNotificationsRequest } from "../types";
+import {
+  FetchNotificationsResponse,
+  GetNotificationsRequest,
+} from "@nook/common/types";
 
 export const markNotificationsRead = async () => {
   return await makeRequest("/notifications/mark-read", {

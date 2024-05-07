@@ -10,7 +10,7 @@ import {
 import { CreateCastEditor } from "./form";
 import { CreateCastProvider } from "./context";
 import { useCallback, useEffect, useState } from "react";
-import { SubmitCastAddRequest } from "../../../types";
+import { SubmitCastAddRequest } from "@nook/common/types";
 import { useCast } from "../../../api/farcaster";
 import { FarcasterCastPreview } from "../../../components/farcaster/casts/cast-preview";
 import { useTheme } from "../../../context/theme";

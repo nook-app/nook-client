@@ -4,7 +4,7 @@ import {
   Display,
   FarcasterFeedFilter,
   FetchCastsResponse,
-} from "../../../types";
+} from "@nook/common/types";
 import { useCastFeed } from "../../../api/farcaster";
 import { FarcasterInfiniteFeed } from "./infinite-feed";
 import { Loading } from "../../../components/loading";

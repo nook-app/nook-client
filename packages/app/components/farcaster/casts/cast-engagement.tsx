@@ -1,5 +1,5 @@
 import { NookText, XStack } from "@nook/ui";
-import { FarcasterCast } from "../../../types";
+import { FarcasterCast } from "@nook/common/types";
 import { Link } from "solito/link";
 import { useCastStore } from "../../../store/useCastStore";
 

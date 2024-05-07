@@ -3,7 +3,7 @@
 import { YStack } from "@nook/ui";
 import { SearchBar } from "../../search/search-bar";
 import { ChannelOverview } from "../../../components/farcaster/channels/channel-overview";
-import { FarcasterCast } from "../../../types";
+import { FarcasterCast } from "@nook/common/types";
 
 export const CastSidebar = ({ cast }: { cast: FarcasterCast }) => {
   return (

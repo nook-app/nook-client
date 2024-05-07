@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { FarcasterUser } from "../types";
+import { FarcasterUser } from "@nook/common/types";
 
 interface UserStore {
   users: Record<string, FarcasterUser>;

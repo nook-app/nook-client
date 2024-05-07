@@ -11,7 +11,7 @@ import {
   XStack,
   YStack,
 } from "@nook/ui";
-import { User } from "../../types";
+import { User } from "@nook/common/types";
 import { VolumeX } from "@tamagui/lucide-icons";
 import { muteWord, unmuteWord } from "../../server/settings";
 import { useState } from "react";

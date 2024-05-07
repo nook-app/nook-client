@@ -4532,6 +4532,7 @@ __metadata:
   dependencies:
     "@amplitude/analytics-browser": "npm:^2.6.2"
     "@nook/app": "npm:*"
+    "@nook/common": "npm:*"
     "@privy-io/react-auth": "npm:^1.60.6"
     "@privy-io/wagmi": "npm:^0.2.2"
     "@tamagui/config": "npm:^1.94.5"

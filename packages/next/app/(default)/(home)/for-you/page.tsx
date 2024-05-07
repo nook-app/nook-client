@@ -1,6 +1,6 @@
 import { FarcasterFilteredFeedServer } from "@nook/app/features/farcaster/cast-feed/filtered-feed-server";
 import { getServerSession } from "@nook/app/server/auth";
-import { UserFilterType } from "@nook/app/types";
+import { UserFilterType } from "@nook/common/types";
 
 export default async function Home() {
   const session = await getServerSession();

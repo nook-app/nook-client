@@ -1,6 +1,6 @@
 import { NookText, View, YStack } from "@nook/ui";
 import { FarcasterChannelFeedItem } from "../farcaster/channel-feed/channel-feed-item";
-import { Channel } from "../../types";
+import { Channel } from "@nook/common/types";
 
 export const RecommendedChannels = ({ channels }: { channels: Channel[] }) => {
   if (channels.length === 0) return null;

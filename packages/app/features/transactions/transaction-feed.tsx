@@ -15,7 +15,7 @@ import {
   FetchTransactionsResponse,
   Transaction,
   TransactionFeedFilter,
-} from "../../types";
+} from "@nook/common/types";
 import {
   FarcasterUserAvatar,
   FarcasterUserTextDisplay,

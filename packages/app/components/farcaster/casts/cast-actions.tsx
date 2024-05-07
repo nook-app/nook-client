@@ -9,7 +9,7 @@ import {
   Share,
 } from "@tamagui/lucide-icons";
 import { CreateCastDialog } from "../../../features/farcaster/create-cast/disalog";
-import { FarcasterCast } from "../../../types";
+import { FarcasterCast } from "@nook/common/types";
 import { useLikeCast } from "../../../hooks/useLikeCast";
 import { useRecastCast } from "../../../hooks/useRecastCast";
 import { KebabMenu, KebabMenuItem } from "../../kebab-menu";

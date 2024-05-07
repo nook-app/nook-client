@@ -1,5 +1,10 @@
 import { getServerSession } from "../server/auth";
-import { Channel, FarcasterCast, FarcasterUser, Session } from "../types";
+import {
+  Channel,
+  FarcasterCast,
+  FarcasterUser,
+  Session,
+} from "@nook/common/types";
 import { getSession } from "../utils/local-storage";
 
 export const makeRequest = async (path: string, requestInit?: RequestInit) => {

@@ -1,6 +1,6 @@
 import { GetThemeValueForKey } from "@tamagui/core";
 import { Buffer } from "buffer";
-import { FarcasterCast } from "../../../types";
+import { FarcasterCast } from "@nook/common/types";
 import { TextLink } from "solito/link";
 import { NookText } from "@nook/ui";
 import { FarcasterChannelTooltip } from "../channels/channel-display";

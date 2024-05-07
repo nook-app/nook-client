@@ -3,7 +3,7 @@
 import { Separator, YStack } from "@nook/ui";
 import { ThemeSettings } from "./theme-settings";
 import { MutedSettings } from "./muted-settings";
-import { User } from "../../types";
+import { User } from "@nook/common/types";
 import { ActionSettings } from "./action-settings";
 import { ProfileSettings } from "./profile-settings";
 import { UsernameSettings } from "./username-settings";

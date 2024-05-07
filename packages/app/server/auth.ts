@@ -6,7 +6,7 @@ import {
   PendingSignerResponse,
   Session,
   ValidateSignerResponse,
-} from "@nook/app/types";
+} from "@nook/common/types";
 import { cookies } from "next/headers";
 import { makeRequest } from "../api/utils";
 

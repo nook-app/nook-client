@@ -1,4 +1,4 @@
-import { FarcasterUser, FetchUsersResponse } from "../../types";
+import { FarcasterUser, FetchUsersResponse } from "@nook/common/types";
 import { makeRequest } from "../utils";
 import {
   useQuery,

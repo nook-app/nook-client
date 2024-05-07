@@ -1,7 +1,7 @@
 "use client";
 
 import { NookText, Separator, Spinner, View, XStack, YStack } from "@nook/ui";
-import { Channel, User } from "../../types";
+import { Channel, User } from "@nook/common/types";
 import { useChannels } from "../../api/farcaster";
 import { Link } from "solito/link";
 import { VolumeX } from "@tamagui/lucide-icons";

@@ -2,7 +2,7 @@ import {
   FarcasterCast,
   FetchCastsResponse,
   FetchUsersResponse,
-} from "../../types";
+} from "@nook/common/types";
 import { makeRequest } from "../utils";
 import {
   useQuery,

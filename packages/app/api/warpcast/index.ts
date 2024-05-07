@@ -2,7 +2,7 @@ import {
   FetchCatActionsResponse,
   FnameTransfer,
   SubmitFnameTransfer,
-} from "../../types";
+} from "@nook/common/types";
 import { InfiniteData, useInfiniteQuery } from "@tanstack/react-query";
 
 export const getFarcasterActions = async (

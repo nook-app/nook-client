@@ -9,8 +9,8 @@ import {
 } from "@nook/ui";
 import { useEffect, useState } from "react";
 import { useToastController } from "@tamagui/toast";
-import { FarcasterCast, UrlContentResponse } from "../../types";
-import { Frame, FrameButton } from "../../types/frames";
+import { FarcasterCast, UrlContentResponse } from "@nook/common/types";
+import { Frame, FrameButton } from "@nook/common/types/frames";
 import { useAuth } from "../../context/auth";
 import { NookButton, NookText, Input, Image } from "@nook/ui";
 import { submitFrameAction } from "../../server/farcaster";

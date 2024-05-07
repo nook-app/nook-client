@@ -15,7 +15,7 @@ import {
 } from "../../../components/farcaster/casts/cast-actions";
 import { FarcasterCustomActionButton } from "../../../components/farcaster/casts/cast-custom-action";
 import { FarcasterCastDefaultDisplay } from "../../../components/farcaster/casts/cast-display";
-import { Display, FarcasterCast, FetchCastsResponse } from "../../../types";
+import { Display, FarcasterCast, FetchCastsResponse } from "@nook/common/types";
 import { FarcasterInfiniteFeed } from "../cast-feed/infinite-feed";
 import { BarChartBig, Clock, Rocket } from "@tamagui/lucide-icons";
 import { useState } from "react";

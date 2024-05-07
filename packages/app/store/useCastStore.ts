@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { FarcasterCast } from "../types";
+import { FarcasterCast } from "@nook/common/types";
 
 interface CastStore {
   casts: Record<string, FarcasterCast>;

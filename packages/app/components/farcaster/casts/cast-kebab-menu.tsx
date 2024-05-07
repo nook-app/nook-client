@@ -7,7 +7,7 @@ import {
   Volume,
   VolumeX,
 } from "@tamagui/lucide-icons";
-import { Channel, FarcasterCast } from "../../../types";
+import { Channel, FarcasterCast } from "@nook/common/types";
 import { KebabMenu, KebabMenuItem } from "../../kebab-menu";
 import { useRouter } from "solito/navigation";
 import { useCallback } from "react";

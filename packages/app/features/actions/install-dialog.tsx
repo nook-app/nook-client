@@ -1,7 +1,7 @@
 import { X } from "@tamagui/lucide-icons";
 import { NookButton, Dialog, XStack } from "@nook/ui";
 import { useCallback, useState } from "react";
-import { CastAction } from "../../types";
+import { CastAction } from "@nook/common/types";
 import { useAuth } from "../../context/auth";
 import { installAction } from "../../server/settings";
 import { useQueryClient } from "@tanstack/react-query";

@@ -1,6 +1,6 @@
 import { Linking } from "react-native";
 import { Image, NookText, View, XStack, YStack } from "@nook/ui";
-import { UrlContentResponse } from "../../types";
+import { UrlContentResponse } from "@nook/common/types";
 
 export const EmbedTwitter = ({
   content,

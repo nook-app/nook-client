@@ -12,7 +12,7 @@ import {
   GetSignerResponse,
   Session,
   User,
-} from "@nook/app/types";
+} from "@nook/common/types";
 import {
   loginServer,
   logoutServer,

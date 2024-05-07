@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { Channel, FarcasterCast, FarcasterUser } from "../types";
+import { Channel, FarcasterCast, FarcasterUser } from "@nook/common/types";
 
 interface MuteStore {
   users: Record<string, boolean>;

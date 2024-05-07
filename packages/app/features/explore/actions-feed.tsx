@@ -10,7 +10,7 @@ import {
   YStack,
 } from "@nook/ui";
 import { memo } from "react";
-import { CastAction } from "../../types";
+import { CastAction } from "@nook/common/types";
 import { InfiniteScrollList } from "../../components/infinite-scroll-list";
 import { darkenColor, stringToColor } from "../../utils";
 import { GradientIcon } from "../../components/gradient-icon";

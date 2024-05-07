@@ -1,5 +1,5 @@
 import { useCast } from "../../api/farcaster";
-import { UrlContentResponse } from "../../types";
+import { UrlContentResponse } from "@nook/common/types";
 import { EmbedCast } from "./EmbedCast";
 
 export const EmbedNook = ({ content }: { content: UrlContentResponse }) => {

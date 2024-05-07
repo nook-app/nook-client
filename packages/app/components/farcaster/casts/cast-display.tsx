@@ -1,6 +1,6 @@
 "use client";
 
-import { Display, FarcasterCast } from "../../../types";
+import { Display, FarcasterCast } from "@nook/common/types";
 import { NookText, Separator, View, XStack, YStack } from "@nook/ui";
 import { FarcasterCastText } from "../../../components/farcaster/casts/cast-text";
 import {

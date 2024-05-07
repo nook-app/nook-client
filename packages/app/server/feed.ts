@@ -6,7 +6,7 @@ import {
   FetchCastsResponse,
   FetchChannelsResponse,
   FetchUsersResponse,
-} from "../types";
+} from "@nook/common/types";
 
 export const fetchCastFeed = async (
   req: FarcasterFeedRequest,

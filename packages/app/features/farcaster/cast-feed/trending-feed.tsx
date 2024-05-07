@@ -3,7 +3,7 @@
 import { useTrendingCasts } from "../../../api/farcaster";
 import { Loading } from "../../../components/loading";
 import { FarcasterInfiniteFeed } from "./infinite-feed";
-import { FetchCastsResponse } from "../../../types";
+import { FetchCastsResponse } from "@nook/common/types";
 
 export const FarcasterTrendingFeed = ({
   viewerFid,

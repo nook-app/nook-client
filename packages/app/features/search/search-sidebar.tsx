@@ -2,7 +2,7 @@
 
 import { YStack } from "@nook/ui";
 import { SearchBar } from "./search-bar";
-import { Channel } from "../../types";
+import { Channel } from "@nook/common/types";
 import { RecommendedChannels } from "../home/recommended-channels";
 
 export const SearchSidebar = ({ channels }: { channels: Channel[] }) => {

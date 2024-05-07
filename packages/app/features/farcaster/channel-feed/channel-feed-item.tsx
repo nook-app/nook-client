@@ -1,4 +1,4 @@
-import { Channel } from "../../../types";
+import { Channel } from "@nook/common/types";
 import { XStack, YStack } from "@nook/ui";
 import { memo } from "react";
 import { Link } from "solito/link";

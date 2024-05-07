@@ -1,6 +1,10 @@
 import { createContext, useContext, ReactNode, useState } from "react";
 import { useToastController } from "@tamagui/toast";
-import { Channel, SubmitCastAddRequest, FarcasterCast } from "../../../types";
+import {
+  Channel,
+  SubmitCastAddRequest,
+  FarcasterCast,
+} from "@nook/common/types";
 import { fetchCast } from "../../../api/farcaster";
 import { submitCastAdds } from "../../../server/farcaster";
 import { uploadImage } from "../../../server/media";

@@ -1,4 +1,4 @@
-import { Session } from "../types";
+import { Session } from "@nook/common/types";
 
 export const getSessions = (): Session[] => {
   return JSON.parse(localStorage.getItem("sessions") || "[]");

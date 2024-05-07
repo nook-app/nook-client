@@ -1,6 +1,6 @@
 "use client";
 
-import { FetchCatActionsResponse } from "../../types";
+import { FetchCatActionsResponse } from "@nook/common/types";
 import { useFarcasterActions } from "../../api/warpcast";
 import { FarcasterActionsFeed } from "./actions-feed";
 import { Loading } from "../../components/loading";

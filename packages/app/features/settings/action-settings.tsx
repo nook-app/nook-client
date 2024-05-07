@@ -1,6 +1,6 @@
 import { NookButton, NookText, Spinner, View, XStack, YStack } from "@nook/ui";
 import { useAuth } from "../../context/auth";
-import { CastAction } from "../../types";
+import { CastAction } from "@nook/common/types";
 import { GradientIcon } from "../../components/gradient-icon";
 import { Dot, Trash } from "@tamagui/lucide-icons";
 import { useCallback, useState } from "react";

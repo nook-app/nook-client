@@ -23,7 +23,7 @@ import {
 } from "../../components/farcaster/channels/channel-display";
 import { useRouter } from "solito/navigation";
 import { NativeSyntheticEvent, TextInputKeyPressEventData } from "react-native";
-import { Channel, FarcasterUser } from "../../types";
+import { Channel, FarcasterUser } from "@nook/common/types";
 
 export const SearchBar = ({
   user,

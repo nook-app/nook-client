@@ -1,5 +1,5 @@
 import { fetchCastFeed } from "../../../server/feed";
-import { Display, FarcasterFeedFilter } from "../../../types";
+import { Display, FarcasterFeedFilter } from "@nook/common/types";
 import { FarcasterFilteredFeed } from "./filtered-feed";
 
 export const FarcasterFilteredFeedServer = async ({

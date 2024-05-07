@@ -12,7 +12,7 @@ import {
 } from "@nook/ui";
 import { Dot, LayoutGrid, Search, Settings } from "@tamagui/lucide-icons";
 import { useCallback, useState } from "react";
-import { CastAction, FarcasterCast } from "../../../types";
+import { CastAction, FarcasterCast } from "@nook/common/types";
 import { useAuth } from "../../../context/auth";
 import { submitFrameAction } from "../../../server/farcaster";
 import { useRouter } from "solito/navigation";

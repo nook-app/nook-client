@@ -3,7 +3,7 @@
 import { ReactNode } from "react";
 import { Tabs } from "../../components/tabs/tabs";
 import { View } from "@nook/ui";
-import { Session } from "../../types";
+import { Session } from "@nook/common/types";
 import { usePathname } from "solito/navigation";
 
 type TabItem = {

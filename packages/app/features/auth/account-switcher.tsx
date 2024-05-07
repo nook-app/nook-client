@@ -9,7 +9,7 @@ import {
 } from "@nook/ui";
 import { ReactNode, useCallback, useState } from "react";
 import { useAuth } from "../../context/auth";
-import { Session } from "../../types";
+import { Session } from "@nook/common/types";
 import { useUsers } from "../../api/farcaster";
 import { FarcasterUserDisplay } from "../../components/farcaster/users/user-display";
 import { Check } from "@tamagui/lucide-icons";

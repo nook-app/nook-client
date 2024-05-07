@@ -6,7 +6,7 @@ import { GradientIcon } from "../../components/gradient-icon";
 import { useAuth } from "../../context/auth";
 import { installAction } from "../../server/settings";
 import { useQueryClient } from "@tanstack/react-query";
-import { CastAction } from "../../types";
+import { CastAction } from "@nook/common/types";
 import { useCallback } from "react";
 import { useRouter } from "solito/navigation";
 

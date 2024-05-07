@@ -22,7 +22,7 @@ import {
   useChainId,
   useReadContract,
 } from "wagmi";
-import { FnameTransfer } from "../../types";
+import { FnameTransfer } from "@nook/common/types";
 import { CONTRACTS } from "@nook/common/utils";
 import { submitUserDataAdd } from "../../server/farcaster";
 import { parseAbiItem } from "viem";

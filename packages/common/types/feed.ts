@@ -39,7 +39,7 @@ export type PanelRequest = {
   cursor?: string;
 };
 
-export enum PanelDisplay {
+export enum Display {
   CASTS = "CASTS",
   MEDIA = "MEDIA",
   GRID = "GRID",
@@ -54,7 +54,7 @@ export type CreateFeedRequest = {
   icon?: string;
   filter: FarcasterFeedFilter;
   type?: string;
-  display?: PanelDisplay;
+  display?: Display;
 };
 
 export type TransactionFeedRequest = {

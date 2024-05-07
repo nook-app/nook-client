@@ -6,7 +6,7 @@ import { NookButton, NookText, View, XStack } from "@nook/ui";
 import { ArrowLeft } from "@tamagui/lucide-icons";
 import { useRouter } from "solito/navigation";
 import { SearchBar } from "../search/search-bar";
-import { Channel } from "../../types";
+import { Channel } from "@nook/common/types";
 import { FarcasterChannelFeedItem } from "../farcaster/channel-feed/channel-feed-item";
 
 export const ExploreScreen = ({ channels }: { channels: Channel[] }) => {

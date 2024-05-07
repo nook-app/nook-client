@@ -3,7 +3,7 @@ import { EmbedVideo } from "./EmbedVideo";
 import { EmbedTwitter } from "./EmbedTwitter";
 import { NookText } from "@nook/ui";
 import { formatToCDN } from "../../utils";
-import { FarcasterCast, UrlContentResponse } from "../../types";
+import { FarcasterCast, UrlContentResponse } from "@nook/common/types";
 
 export const EmbedMedia = ({
   cast,

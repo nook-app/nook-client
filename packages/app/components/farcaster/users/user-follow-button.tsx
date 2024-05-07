@@ -1,6 +1,6 @@
 import { NookButton, View } from "@nook/ui";
 import { useFollowUser } from "../../../hooks/useFollowUser";
-import { FarcasterUser } from "../../../types";
+import { FarcasterUser } from "@nook/common/types";
 import { useAuth } from "../../../context/auth";
 import { EnableSignerDialog } from "../../../features/farcaster/enable-signer/dialog";
 

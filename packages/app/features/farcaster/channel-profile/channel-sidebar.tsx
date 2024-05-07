@@ -1,7 +1,7 @@
 "use client";
 
 import { NookText, View, XStack, YStack } from "@nook/ui";
-import { Channel } from "../../../types";
+import { Channel } from "@nook/common/types";
 import { useUsers } from "../../../api/farcaster";
 import { FarcasterUserDisplay } from "../../../components/farcaster/users/user-display";
 import { FarcasterUserFollowButton } from "../../../components/farcaster/users/user-follow-button";

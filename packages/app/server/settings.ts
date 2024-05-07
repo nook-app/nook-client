@@ -1,7 +1,7 @@
 "use server";
 
 import { makeRequest } from "../api/utils";
-import { CastAction } from "../types";
+import { CastAction } from "@nook/common/types";
 
 export const muteUser = async (mutedFid: string) => {
   return await makeRequest("/mute/users", {

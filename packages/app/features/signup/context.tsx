@@ -20,7 +20,7 @@ import {
 } from "wagmi";
 import { encodeAbiParameters, hexToBigInt, parseAbiItem } from "viem";
 import { getPendingSigner } from "../../server/auth";
-import { PendingSignerResponse } from "../../types";
+import { PendingSignerResponse } from "@nook/common/types";
 import { useAuth } from "../../context/auth";
 
 export enum CreateAccountStep {

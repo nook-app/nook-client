@@ -1,6 +1,6 @@
 import { TransactionFeedServer } from "@nook/app/features/transactions/transaction-feed-server";
 import { getServerSession } from "@nook/app/server/auth";
-import { UserFilterType } from "@nook/app/types";
+import { UserFilterType } from "@nook/common/types";
 import { View } from "tamagui";
 
 export default async function Home() {

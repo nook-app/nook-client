@@ -4,7 +4,7 @@ import { EmbedUrl } from "./EmbedUrl";
 import { EmbedTwitter } from "./EmbedTwitter";
 import { Text, View, XStack, YStack } from "tamagui";
 import { EmbedNook } from "./EmbedNook";
-import { FarcasterCast, UrlContentResponse } from "../../types";
+import { FarcasterCast, UrlContentResponse } from "@nook/common/types";
 import { EmbedCast } from "./EmbedCast";
 import { Link as LinkIcon } from "@tamagui/lucide-icons";
 import { Link } from "solito/link";

@@ -17,7 +17,7 @@ import { CdnAvatar } from "../../../components/cdn-avatar";
 import { useAuth } from "../../../context/auth";
 import { ChevronDown, Image, X } from "@tamagui/lucide-icons";
 import { useParams, useRouter } from "solito/navigation";
-import { SubmitCastAddRequest, UrlContentResponse } from "../../../types";
+import { SubmitCastAddRequest, UrlContentResponse } from "@nook/common/types";
 import { fetchChannel, useCast } from "../../../api/farcaster";
 import { fetchContent } from "../../../api/content";
 import { EmbedCast } from "../../../components/embeds/EmbedCast";

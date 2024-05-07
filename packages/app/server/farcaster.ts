@@ -14,7 +14,7 @@ import {
   SubmitReactionAddRequest,
   SubmitReactionRemoveRequest,
   SubmitUserDataAddRequest,
-} from "../types";
+} from "@nook/common/types";
 
 export const submitCastAdds = async (
   req: SubmitCastAddRequest[],

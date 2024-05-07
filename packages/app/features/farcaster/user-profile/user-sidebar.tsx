@@ -2,7 +2,7 @@
 
 import { YStack } from "@nook/ui";
 import { SearchBar } from "../../search/search-bar";
-import { FarcasterUser } from "../../../types";
+import { FarcasterUser } from "@nook/common/types";
 
 export const UserSidebar = ({ user }: { user: FarcasterUser }) => {
   return (

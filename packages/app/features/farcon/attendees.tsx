@@ -2,7 +2,7 @@
 
 import { useFarconAttendees } from "../../api/farcon";
 import { Loading } from "../../components/loading";
-import { FetchUsersResponse } from "../../types";
+import { FetchUsersResponse } from "@nook/common/types";
 import { FarcasterUserInfiniteFeed } from "../farcaster/user-feed/user-feed";
 
 export const FarconAttendees = ({

@@ -1,4 +1,4 @@
-import { FetchCastsResponse } from "../../types";
+import { FetchCastsResponse } from "@nook/common/types";
 import { fetchCasts } from "../farcaster";
 
 export const getUserHighlights = async (

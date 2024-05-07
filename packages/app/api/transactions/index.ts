@@ -1,4 +1,7 @@
-import { FetchTransactionsResponse, TransactionFeedFilter } from "../../types";
+import {
+  FetchTransactionsResponse,
+  TransactionFeedFilter,
+} from "@nook/common/types";
 import { makeRequest } from "../utils";
 import { InfiniteData, useInfiniteQuery } from "@tanstack/react-query";
 

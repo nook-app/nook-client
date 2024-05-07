@@ -1,5 +1,5 @@
 import { PrismaClient } from "@nook/common/prisma/nook";
-import { PanelDisplay } from "@nook/common/types";
+import { Display } from "@nook/common/types";
 
 const DEFAULT_PANELS = [
   {
@@ -21,37 +21,37 @@ const DEFAULT_PANELS = [
     type: "default",
     key: "frames-following",
     name: "Following",
-    display: PanelDisplay.FRAMES,
+    display: Display.FRAMES,
   },
   {
     type: "default",
     key: "frames-trending",
     name: "Trending",
-    display: PanelDisplay.FRAMES,
+    display: Display.FRAMES,
   },
   {
     type: "default",
     key: "frames-latest",
     name: "Latest",
-    display: PanelDisplay.FRAMES,
+    display: Display.FRAMES,
   },
   {
     type: "default",
     key: "media-following",
     name: "Following",
-    display: PanelDisplay.MEDIA,
+    display: Display.MEDIA,
   },
   {
     type: "default",
     key: "media-latest",
     name: "Latest",
-    display: PanelDisplay.MEDIA,
+    display: Display.MEDIA,
   },
   {
     type: "default",
     key: "videos-latest",
     name: "Videos",
-    display: PanelDisplay.MEDIA,
+    display: Display.MEDIA,
   },
 ];
 

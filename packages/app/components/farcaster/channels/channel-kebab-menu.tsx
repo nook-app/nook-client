@@ -1,5 +1,5 @@
 import { Link, MoreHorizontal, Volume, VolumeX } from "@tamagui/lucide-icons";
-import { Channel } from "../../../types";
+import { Channel } from "@nook/common/types";
 import { KebabMenu, KebabMenuItem } from "../../kebab-menu";
 import { Image, NookButton, useToastController } from "@nook/ui";
 import { useMuteChannel } from "../../../hooks/useMuteChannel";
