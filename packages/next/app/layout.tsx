@@ -7,7 +7,6 @@ import { getServerSession, getSigner } from "@nook/app/server/auth";
 import { ReactNode } from "react";
 import { fetchUser } from "@nook/app/api/farcaster";
 import { headers } from "next/headers";
-import { NookProvider } from "@nook/app/context/nook";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://nook.social"),

@@ -3,7 +3,6 @@ import {
   GetNotificationsResponse,
   Notification,
   NotificationPreferences,
-  ShelfNotification,
 } from "../../types";
 import { BaseAPIClient } from "./base";
 
@@ -141,74 +140,6 @@ export class NotificationsAPIClient extends BaseAPIClient {
       },
       body: JSON.stringify({}),
     });
-
-    if (!response.ok) {
-      throw new Error(response.statusText);
-    }
-  }
-
-  async updateNotificationShelf(
-    shelfId: string,
-    req: ShelfNotification,
-  ): Promise<void> {
-    const response = await this.makeRequest(
-      `/notifications/shelves/${shelfId}`,
-      {
-        method: "POST",
-        body: JSON.stringify(req),
-      },
-    );
-
-    if (!response.ok) {
-      throw new Error(response.statusText);
-    }
-  }
-
-  async deleteNotificationShelf(shelfId: string): Promise<void> {
-    const response = await this.makeRequest(
-      `/notifications/shelves/${shelfId}`,
-      {
-        method: "DELETE",
-      },
-    );
-
-    if (!response.ok) {
-      throw new Error(response.statusText);
-    }
-  }
-
-  async subscribeToShelfNotifications(
-    token: string,
-    shelfId: string,
-  ): Promise<void> {
-    const response = await this.makeRequest(
-      `/notifications/shelves/${shelfId}/subscription`,
-      {
-        method: "PUT",
-        headers: {
-          Authorization: token,
-        },
-      },
-    );
-
-    if (!response.ok) {
-      throw new Error(response.statusText);
-    }
-  }
-
-  async unsubscribeFromShelfNotifications(
-    token: string,
-    shelfId: string,
-  ): Promise<void> {
-    const response = await this.makeRequest(
-      `/notifications/shelves/${shelfId}/subscription`,
-      {
-        method: "DELETE",
-        headers: {
-          Authorization: token,
-        },
-      },
-    );
 
     if (!response.ok) {
       throw new Error(response.statusText);

@@ -114,7 +114,6 @@ export type NotificationPreferences = {
   disabled: boolean;
   receive: boolean;
   onlyPowerBadge: boolean;
-  subscriptions: string[];
 };
 
 export type ShelfNotification = {

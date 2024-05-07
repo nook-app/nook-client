@@ -2,13 +2,19 @@
 
 import { NookButton, NookText, View, XStack, YStack } from "@nook/ui";
 import {
-  ChevronDown,
   ExternalLink,
   Home,
   LogIn,
   MoreHorizontal,
   Pencil,
   UserRoundPlus,
+  Users2,
+  Image as ImageIcon,
+  MousePointerSquare,
+  Search,
+  Bell,
+  User,
+  Settings,
 } from "@tamagui/lucide-icons";
 import { useAuth } from "@nook/app/context/auth";
 import {
@@ -22,8 +28,65 @@ import { usePathname } from "next/navigation";
 import { MobileNavigation } from "./MobileNavigation";
 import { useTheme } from "@nook/app/context/theme";
 import { EnableSignerDialog } from "@nook/app/features/farcaster/enable-signer/dialog";
-import { NookNavigationItem, useNook } from "@nook/app/context/nook";
-import { NookSwitcher } from "@nook/app/features/nooks/nook-switcher";
+import { NotificationsCount } from "@nook/app/features/notifications/notifications-count";
+import { ReactNode } from "react";
+
+export type NookNavigationItem = {
+  label: string;
+  Icon: typeof Home;
+  href: string | ((userId: string) => string);
+  right?: ReactNode;
+  isExternal?: boolean;
+  auth?: boolean;
+};
+
+export const NAVIGATION: NookNavigationItem[] = [
+  {
+    label: "Home",
+    Icon: Home,
+    href: "/",
+  },
+  {
+    label: "Transactions",
+    Icon: Users2,
+    href: "/transactions",
+    auth: true,
+  },
+  {
+    label: "Media",
+    Icon: ImageIcon,
+    href: "/media",
+  },
+  {
+    label: "Frames",
+    Icon: MousePointerSquare,
+    href: "/frames",
+  },
+  {
+    label: "Explore",
+    Icon: Search,
+    href: "/explore",
+  },
+  {
+    label: "Notifications",
+    Icon: Bell,
+    href: "/notifications",
+    right: <NotificationsCount />,
+    auth: true,
+  },
+  {
+    label: "Profile",
+    Icon: User,
+    href: (userId) => `/users/${userId}`,
+    auth: true,
+  },
+  {
+    label: "Settings",
+    Icon: Settings,
+    href: "/settings",
+    auth: true,
+  },
+];
 
 export const RootNavigation = ({ children }: { children: React.ReactNode }) => {
   return (
@@ -46,13 +109,17 @@ export const RootNavigation = ({ children }: { children: React.ReactNode }) => {
             position: "sticky",
           }}
           justifyContent="space-between"
-          width="100%"
+          width="90%"
           minHeight="100vh"
           padding="$3"
           $lg={{ alignItems: "center" }}
         >
           <YStack $lg={{ alignItems: "center" }}>
-            <RootNavigationNook />
+            <View marginLeft="$3" marginBottom="$3" $lg={{ marginLeft: "$0" }}>
+              <NookText fontSize="$9" fontWeight="700" $lg={{ fontSize: "$6" }}>
+                nook
+              </NookText>
+            </View>
             <RootNavigationItems />
           </YStack>
           <SessionItem />
@@ -68,65 +135,12 @@ export const RootNavigation = ({ children }: { children: React.ReactNode }) => {
   );
 };
 
-const RootNavigationNook = () => {
-  return (
-    <NookSwitcher>
-      <NookButton variant="ghost" borderRadius="$10">
-        <XStack
-          justifyContent="space-between"
-          alignItems="center"
-          width="100%"
-          gap="$8"
-        >
-          <RootNavigationNookBanner />
-          <View
-            width="$2"
-            justifyContent="center"
-            alignItems="center"
-            $lg={{ display: "none" }}
-          >
-            <ChevronDown />
-          </View>
-        </XStack>
-      </NookButton>
-    </NookSwitcher>
-  );
-};
-
-const RootNavigationNookBanner = () => {
-  const { name, banner } = useNook();
-  const { rootTheme, theme } = useTheme();
-  if (!banner) {
-    return (
-      <NookText fontSize="$9" fontWeight="700" $lg={{ fontSize: "$6" }}>
-        {name}
-      </NookText>
-    );
-  }
-
-  return (
-    <View maxWidth="$12" $lg={{ maxWidth: "$6" }}>
-      <img
-        src={banner}
-        alt={name}
-        style={{
-          objectFit: "contain",
-          filter: `brightness(0) ${
-            rootTheme !== "light" && theme !== "light" ? "invert(1)" : ""
-          }`,
-        }}
-      />
-    </View>
-  );
-};
-
 const RootNavigationItems = () => {
-  const { navigation } = useNook();
   const { user } = useAuth();
 
   return (
     <>
-      {navigation.map((props) => (
+      {NAVIGATION.map((props) => (
         <RootNavigationItem key={props.label} {...props} />
       ))}
       {user && <CreateCastItem />}

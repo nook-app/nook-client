@@ -9,7 +9,6 @@ import * as amplitude from "@amplitude/analytics-browser";
 import { Toasts } from "@nook/app/components/toasts";
 import { FarcasterUser, GetSignerResponse, Session } from "@nook/app/types";
 import { ThemeProvider } from "@nook/app/context/theme";
-import { NookProvider } from "@nook/app/context/nook";
 import { usePathname } from "next/navigation";
 
 const queryClient = new QueryClient();
@@ -56,18 +55,14 @@ const OtherProviders = memo(
           defaultUser={user}
           defaultSigner={signer}
         >
-          <NookProvider nook={nook}>
-            <ThemeProvider
-              defaultTheme={session?.theme as ThemeName | undefined}
-            >
-              <AnalyticsProvider>
-                <ToastProvider>
-                  <Toasts />
-                  {children}
-                </ToastProvider>
-              </AnalyticsProvider>
-            </ThemeProvider>
-          </NookProvider>
+          <ThemeProvider defaultTheme={session?.theme as ThemeName | undefined}>
+            <AnalyticsProvider>
+              <ToastProvider>
+                <Toasts />
+                {children}
+              </ToastProvider>
+            </AnalyticsProvider>
+          </ThemeProvider>
         </AuthProvider>
       </QueryClientProvider>
     );

@@ -21,7 +21,6 @@ model User {
     createdAt DateTime @default(now())
     updatedAt DateTime @default(now()) @updatedAt
 
-    nooks   NookMembership[]
     actions UserCastAction[]
     groups  UserPanelGroup[]
     panels  UserPanel[]
@@ -94,115 +93,6 @@ model Feed {
     deletedAt DateTime?
 
     user User @relation(fields: [fid], references: [fid])
-}
-
-model NookMembership {
-    fid    String
-    nookId String
-
-    createdAt DateTime @default(now())
-    updatedAt DateTime @default(now()) @updatedAt
-
-    user User @relation(fields: [fid], references: [fid])
-    nook Nook @relation(fields: [nookId], references: [id], onDelete: Cascade)
-
-    @@id([fid, nookId])
-}
-
-model Nook {
-    id          String  @id @default(uuid())
-    creatorFid  String
-    name        String
-    description String?
-    imageUrl    String?
-    visibility  String
-    metadata    Json
-
-    createdAt DateTime  @default(now())
-    updatedAt DateTime  @default(now()) @updatedAt
-    deletedAt DateTime?
-
-    members NookMembership[]
-    shelves ShelfInstance[]
-}
-
-model Shelf {
-    id          String  @id @default(uuid())
-    creatorFid  String
-    name        String
-    description String?
-    imageUrl    String?
-
-    protocol  String
-    type      String
-    api       String
-    form      Json
-    renderers String
-    tags      String?
-
-    enabled Boolean @default(false)
-
-    createdAt DateTime  @default(now())
-    updatedAt DateTime  @default(now()) @updatedAt
-    deletedAt DateTime?
-
-    instances ShelfInstance[]
-
-    @@unique([creatorFid, name])
-}
-
-model ShelfInstance {
-    id          String  @id @default(uuid())
-    nookId      String
-    creatorFid  String
-    name        String
-    description String?
-    imageUrl    String?
-
-    shelfId  String
-    type     String
-    renderer String
-    data     Json
-
-    createdAt DateTime  @default(now())
-    updatedAt DateTime  @default(now()) @updatedAt
-    deletedAt DateTime?
-
-    nook  Nook  @relation(fields: [nookId], references: [id], onDelete: Cascade)
-    shelf Shelf @relation(fields: [shelfId], references: [id])
-}
-
-model NookTemplate {
-    id          String  @id @default(uuid())
-    creatorFid  String
-    name        String  @unique
-    description String?
-    imageUrl    String?
-
-    form Json
-
-    enabled Boolean @default(false)
-
-    createdAt DateTime  @default(now())
-    updatedAt DateTime  @default(now()) @updatedAt
-    deletedAt DateTime?
-}
-
-model Cashtag {
-    cashtag     String  @id
-    name        String?
-    description String?
-    imageUrl    String?
-    channelId   String?
-
-    chainId String?
-    address String?
-
-    coingeckoId String?
-    priceUsd    Float?
-
-    createdAt DateTime @default(now())
-    updatedAt DateTime @default(now()) @updatedAt
 }
 
 model UserCastAction {

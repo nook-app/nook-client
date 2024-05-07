@@ -2,34 +2,16 @@
 
 import { FarcasterUserAvatar } from "@nook/app/components/farcaster/users/user-display";
 import { useAuth } from "@nook/app/context/auth";
-import { NookNavigationItem, useNook } from "@nook/app/context/nook";
 import { useTheme } from "@nook/app/context/theme";
 import { AccountSwitcher } from "@nook/app/features/auth/account-switcher";
 import { CreateCastDialog } from "@nook/app/features/farcaster/create-cast/disalog";
 import { EnableSignerDialog } from "@nook/app/features/farcaster/enable-signer/dialog";
-import { FarcasterUser, Session } from "@nook/app/types";
-import {
-  NookButton,
-  NookText,
-  Popover,
-  Separator,
-  View,
-  XStack,
-  YStack,
-} from "@nook/ui";
-import {
-  Bell,
-  Check,
-  Home,
-  LogIn,
-  Menu,
-  Pencil,
-  Search,
-  Settings,
-} from "@tamagui/lucide-icons";
+import { NookButton, NookText, Popover, View, XStack, YStack } from "@nook/ui";
+import { Bell, Home, LogIn, Menu, Pencil, Search } from "@tamagui/lucide-icons";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ReactNode } from "react";
+import { NAVIGATION, NookNavigationItem } from "./RootNavigation";
 
 export const MobileNavigation = ({ children }: { children: ReactNode }) => {
   return (
@@ -212,7 +194,6 @@ const MobileCreateButton = () => {
 };
 
 export const MobileNavigationHeader = () => {
-  const { name } = useNook();
   return (
     <XStack
       height="$5"
@@ -224,16 +205,13 @@ export const MobileNavigationHeader = () => {
     >
       <XStack gap="$5" alignItems="center">
         <MobileNavigationMenu />
-        <NookText variant="label">{name}</NookText>
+        <NookText variant="label">nook</NookText>
       </XStack>
     </XStack>
   );
 };
 
 const MobileNavigationMenu = () => {
-  const { navigation } = useNook();
-  const { user } = useAuth();
-
   return (
     <Popover placement="bottom" size="$5" allowFlip>
       <Popover.Trigger asChild>
@@ -270,13 +248,7 @@ const MobileNavigationMenu = () => {
         width={300}
       >
         <Popover.Arrow borderWidth={1} borderColor="$borderColorBg" />
-        <MobileNavigationNookSwitcher />
-        <Separator
-          borderColor="$borderColorBg"
-          width="100%"
-          marginVertical="$2"
-        />
-        {navigation.map((props) => (
+        {NAVIGATION.map((props) => (
           <MobileNavigationMenuItem key={props.label} {...props} />
         ))}
       </Popover.Content>
@@ -340,73 +312,5 @@ const MobileNavigationMenuItem = ({
         </XStack>
       </Link>
     </View>
-  );
-};
-
-const MobileNavigationNookSwitcher = () => {
-  const isFarcon = window.location.href.includes("farcon.");
-  const baseNook = window.location.href.replace("farcon.", "");
-  const baseNookParts = baseNook.split("://");
-  const farconNookParts = [
-    baseNookParts[0],
-    "://",
-    "farcon.",
-    ...baseNookParts.slice(1),
-  ];
-  const farconNook = farconNookParts.join("");
-  return (
-    <YStack width="100%">
-      <View group>
-        <Link href={baseNook} style={{ textDecoration: "none" }}>
-          {/* @ts-ignore */}
-          <XStack
-            justifyContent="space-between"
-            alignItems="center"
-            backgroundColor="transparent"
-            padding="$2.5"
-            $group-hover={{
-              backgroundColor: "$color3",
-              transition: "all 0.2s ease-in-out",
-            }}
-          >
-            <View maxWidth="$6">
-              <NookText fontSize="$5" fontWeight="700">
-                nook
-              </NookText>
-            </View>
-            <View width="$8" alignItems="flex-end" justifyContent="center">
-              {!isFarcon && <Check />}
-            </View>
-          </XStack>
-        </Link>
-      </View>
-      <View group>
-        <Link href={farconNook} style={{ textDecoration: "none" }}>
-          {/* @ts-ignore */}
-          <XStack
-            justifyContent="space-between"
-            alignItems="center"
-            backgroundColor="transparent"
-            padding="$2.5"
-            paddingVertical="$3.5"
-            $group-hover={{
-              backgroundColor: "$color3",
-              transition: "all 0.2s ease-in-out",
-            }}
-          >
-            <View maxWidth="$6">
-              <img
-                src="https://i.imgur.com/yii9EpK.png"
-                alt="farcon"
-                style={{ objectFit: "contain" }}
-              />
-            </View>
-            <View width="$8" alignItems="flex-end" justifyContent="center">
-              {isFarcon && <Check />}
-            </View>
-          </XStack>
-        </Link>
-      </View>
-    </YStack>
   );
 };

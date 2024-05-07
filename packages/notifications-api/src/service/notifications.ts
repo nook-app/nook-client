@@ -8,7 +8,6 @@ import {
   FarcasterRecastNotification,
   FarcasterReplyNotification,
   GetNotificationsRequest,
-  GetNotificationsResponse,
   NotificationPreferences,
   NotificationType,
   RawNotificationResponse,
@@ -36,9 +35,6 @@ export class NotificationsService {
       where: {
         fid,
       },
-      include: {
-        subscriptions: true,
-      },
     });
 
     if (!data) return;
@@ -47,7 +43,6 @@ export class NotificationsService {
       disabled: data.disabled,
       receive: data.receive,
       onlyPowerBadge: data.onlyPowerBadge,
-      subscriptions: data.subscriptions.map((sub) => sub.shelfId),
     };
   }
 

@@ -39,27 +39,14 @@ model FarcasterContentReference {
     updatedAt DateTime @updatedAt
 
     @@id([uri, fid, hash, type])
-    @@index([timestamp, type])
-    @@index([fid, timestamp])
     @@index([fid, type, parentHash, timestamp(sort: Desc)])
     @@index([parentUrl, type, parentHash, timestamp(sort: Desc)])
     @@index([fid, parentUrl, type, parentHash, timestamp(sort: Desc)])
-    @@index([timestamp(sort: Desc), parentUrl, type, parentHash])
-    @@index([timestamp(sort: Desc), type, parentHash])
     @@index([contentType, fid, type, parentHash, timestamp(sort: Desc)])
     @@index([contentType, parentUrl, type, parentHash, timestamp(sort: Desc)])
-    @@index([timestamp(sort: Desc), contentType, fid, type, parentHash])
-    @@index([timestamp(sort: Desc), contentType, parentUrl, type, parentHash])
-    @@index([fid, contentType, type, parentHash, timestamp(sort: Desc)])
     @@index([parentUrl, contentType, type, parentHash, timestamp(sort: Desc)])
-    @@index([timestamp(sort: Desc), fid, contentType, type, parentHash])
-    @@index([timestamp(sort: Desc), parentUrl, contentType, type, parentHash])
     @@index([hasFrame, fid, type, parentHash, timestamp(sort: Desc)])
-    @@index([hasFrame, parentUrl, type, parentHash, timestamp(sort: Desc)])
-    @@index([timestamp(sort: Desc), hasFrame, fid, type, parentHash])
     @@index([timestamp(sort: Desc), hasFrame, parentUrl, type, parentHash])
-    @@index([parentUrl, contentType, fid, type, parentHash, timestamp(sort: Desc)])
-    @@index([timestamp(sort: Desc), parentUrl, contentType, fid, type, parentHash])
 }
 
 model UrlContent {
@@ -77,7 +64,4 @@ model UrlContent {
 
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
-
-    @@index([type])
-    @@index([hasFrame])
 }
