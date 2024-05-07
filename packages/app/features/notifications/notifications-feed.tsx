@@ -8,17 +8,17 @@ import {
   View,
   XStack,
   YStack,
-} from "@nook/ui";
+} from "@nook/app-ui";
 import { NotificationResponse } from "@nook/common/types";
 import { InfiniteScrollList } from "../../components/infinite-scroll-list";
 import { NamedExoticComponent, memo } from "react";
-import { FarcasterCastDefaultDisplay } from "../../components/farcaster/casts/cast-display";
+import { FarcasterCastResponseDefaultDisplay } from "../../components/farcaster/casts/cast-display";
 import { useAuth } from "../../context/auth";
 import { Link, TextLink } from "solito/link";
 import { CdnAvatar } from "../../components/cdn-avatar";
 import { User, Repeat2, Heart } from "@tamagui/lucide-icons";
 import { useRouter } from "next/navigation";
-import { FarcasterCastText } from "../../components/farcaster/casts/cast-text";
+import { FarcasterCastResponseText } from "../../components/farcaster/casts/cast-text";
 
 export const NotificationsInfiniteFeed = ({
   notifications,
@@ -82,7 +82,7 @@ const PostNotification = ({
   return (
     <Notification href={`/casts/${notification.cast?.hash}`}>
       <View flex={1}>
-        <FarcasterCastDefaultDisplay cast={notification.cast} />
+        <FarcasterCastResponseDefaultDisplay cast={notification.cast} />
       </View>
     </Notification>
   );
@@ -95,7 +95,7 @@ const MentionNotification = ({
   return (
     <Notification href={`/casts/${notification.cast?.hash}`}>
       <View flex={1}>
-        <FarcasterCastDefaultDisplay cast={notification.cast} />
+        <FarcasterCastResponseDefaultDisplay cast={notification.cast} />
       </View>
     </Notification>
   );
@@ -108,11 +108,11 @@ const ReplyNotification = ({
   return (
     <Notification href={`/casts/${notification.cast?.hash}`}>
       <View flex={1}>
-        <FarcasterCastDefaultDisplay
+        <FarcasterCastResponseDefaultDisplay
           cast={notification.cast.parent}
           isConnected
         />
-        <FarcasterCastDefaultDisplay cast={notification.cast} />
+        <FarcasterCastResponseDefaultDisplay cast={notification.cast} />
       </View>
     </Notification>
   );
@@ -125,7 +125,7 @@ const QuoteNotification = ({
   return (
     <Notification href={`/casts/${notification.cast?.hash}`}>
       <View flex={1}>
-        <FarcasterCastDefaultDisplay cast={notification.cast} />
+        <FarcasterCastResponseDefaultDisplay cast={notification.cast} />
       </View>
     </Notification>
   );
@@ -188,7 +188,10 @@ const LikeNotification = ({
           <NookText> liked</NookText>
         </NookText>
         <YStack gap="$2">
-          <FarcasterCastText cast={notification.cast} color="$mauve11" />
+          <FarcasterCastResponseText
+            cast={notification.cast}
+            color="$mauve11"
+          />
           {notification.cast.embeds.map((embed, i) => {
             return (
               <NookText key={embed.uri} color="$mauve11">
@@ -260,7 +263,10 @@ const RecastNotification = ({
           <NookText> recasted</NookText>
         </NookText>
         <YStack gap="$2">
-          <FarcasterCastText cast={notification.cast} color="$mauve11" />
+          <FarcasterCastResponseText
+            cast={notification.cast}
+            color="$mauve11"
+          />
           {notification.cast.embeds.map((embed, i) => {
             return (
               <NookText key={embed.uri} color="$mauve11">

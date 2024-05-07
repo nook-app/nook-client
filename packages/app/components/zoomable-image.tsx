@@ -1,4 +1,4 @@
-import { Dialog, Image, View } from "@nook/ui";
+import { Dialog, Image, View } from "@nook/app-ui";
 import { X } from "@tamagui/lucide-icons";
 import { ReactNode } from "react";
 

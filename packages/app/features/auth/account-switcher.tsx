@@ -6,7 +6,7 @@ import {
   View,
   XStack,
   YStack,
-} from "@nook/ui";
+} from "@nook/app-ui";
 import { ReactNode, useCallback, useState } from "react";
 import { useAuth } from "../../context/auth";
 import { Session } from "@nook/common/types";

@@ -1,4 +1,4 @@
-import { NookText, View, XStack } from "@nook/ui";
+import { NookText, View, XStack } from "@nook/app-ui";
 import { ReactNode } from "react";
 import { Link } from "solito/link";
 

@@ -1,5 +1,5 @@
 import {
-  FarcasterCast,
+  FarcasterCastResponse,
   FetchCastsResponse,
   FetchUsersResponse,
 } from "@nook/common/types";
@@ -10,7 +10,9 @@ import {
   useInfiniteQuery,
 } from "@tanstack/react-query";
 
-export const fetchCast = async (hash: string): Promise<FarcasterCast> => {
+export const fetchCast = async (
+  hash: string,
+): Promise<FarcasterCastResponse> => {
   return await makeRequest(`/farcaster/casts/${hash}`);
 };
 
@@ -25,7 +27,7 @@ export const fetchCasts = async (hashes: string[]) => {
 };
 
 export const useCast = (hash: string) => {
-  return useQuery<FarcasterCast>({
+  return useQuery<FarcasterCastResponse>({
     queryKey: ["cast", hash],
     queryFn: async () => {
       const cast = await fetchCast(hash);

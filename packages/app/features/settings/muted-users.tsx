@@ -1,6 +1,13 @@
 "use client";
 
-import { NookText, Separator, Spinner, View, XStack, YStack } from "@nook/ui";
+import {
+  NookText,
+  Separator,
+  Spinner,
+  View,
+  XStack,
+  YStack,
+} from "@nook/app-ui";
 import { FarcasterUser, User } from "@nook/common/types";
 import { useUsers } from "../../api/farcaster";
 import { FarcasterUserDisplay } from "../../components/farcaster/users/user-display";

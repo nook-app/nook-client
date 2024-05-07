@@ -1,4 +1,4 @@
-import { NookText, View } from "@nook/ui";
+import { NookText, View } from "@nook/app-ui";
 import { useNotificationsCount } from "../../api/notifications";
 
 export const NotificationsCount = () => {

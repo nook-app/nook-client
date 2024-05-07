@@ -1,5 +1,5 @@
 "use client";
-import { Spinner, View } from "@nook/ui";
+import { Spinner, View } from "@nook/app-ui";
 
 export const Loading = () => (
   <View flexGrow={1} justifyContent="center" alignItems="center" padding="$8">

@@ -6,7 +6,14 @@ import { useTheme } from "@nook/app/context/theme";
 import { AccountSwitcher } from "@nook/app/features/auth/account-switcher";
 import { CreateCastDialog } from "@nook/app/features/farcaster/create-cast/disalog";
 import { EnableSignerDialog } from "@nook/app/features/farcaster/enable-signer/dialog";
-import { NookButton, NookText, Popover, View, XStack, YStack } from "@nook/ui";
+import {
+  NookButton,
+  NookText,
+  Popover,
+  View,
+  XStack,
+  YStack,
+} from "@nook/app-ui";
 import { Bell, Home, LogIn, Menu, Pencil, Search } from "@tamagui/lucide-icons";
 import Link from "next/link";
 import { usePathname } from "next/navigation";

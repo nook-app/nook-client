@@ -1,8 +1,8 @@
 "use client";
 
-import { Display, FarcasterCast } from "@nook/common/types";
-import { NookText, Separator, View, XStack, YStack } from "@nook/ui";
-import { FarcasterCastText } from "../../../components/farcaster/casts/cast-text";
+import { Display, FarcasterCastResponse } from "@nook/common/types";
+import { NookText, Separator, View, XStack, YStack } from "@nook/app-ui";
+import { FarcasterCastResponseText } from "../../../components/farcaster/casts/cast-text";
 import {
   FarcasterUserAvatar,
   FarcasterUserDisplay,
@@ -12,7 +12,7 @@ import { formatTimeAgo } from "../../../utils";
 import { FarcasterChannelBadge } from "../../../components/farcaster/channels/channel-display";
 import { Embeds } from "../../../components/embeds/Embed";
 import { useRouter } from "solito/navigation";
-import { FarcasterCastEngagement } from "../../../components/farcaster/casts/cast-engagement";
+import { FarcasterCastResponseEngagement } from "../../../components/farcaster/casts/cast-engagement";
 import {
   FarcasterLikeActionButton,
   FarcasterRecastActionButton,
@@ -21,16 +21,16 @@ import {
 } from "../../../components/farcaster/casts/cast-actions";
 import { FarcasterCustomActionButton } from "../../../components/farcaster/casts/cast-custom-action";
 import { Link } from "solito/link";
-import { FarcasterCastKebabMenu } from "./cast-kebab-menu";
+import { FarcasterCastResponseKebabMenu } from "./cast-kebab-menu";
 import { EmbedImage } from "../../embeds/EmbedImage";
 import { EmbedVideo } from "../../embeds/EmbedVideo";
 import { EmbedFrame } from "../../embeds/EmbedFrame";
 import { useMuteStore } from "../../../store/useMuteStore";
 
-export const FarcasterCastDisplay = ({
+export const FarcasterCastResponseDisplay = ({
   cast,
   displayMode,
-}: { cast: FarcasterCast; displayMode: Display }) => {
+}: { cast: FarcasterCastResponse; displayMode: Display }) => {
   const mutedUsers = useMuteStore((state) => state.users);
   const mutedChannels = useMuteStore((state) => state.channels);
   const deletedCasts = useMuteStore((state) => state.casts);
@@ -45,29 +45,34 @@ export const FarcasterCastDisplay = ({
 
   switch (displayMode) {
     case Display.FRAMES:
-      return <FarcasterCastFrameDisplay cast={cast} />;
+      return <FarcasterCastResponseFrameDisplay cast={cast} />;
     case Display.MEDIA:
-      return <FarcasterCastMediaDisplay cast={cast} />;
+      return <FarcasterCastResponseMediaDisplay cast={cast} />;
     case Display.GRID:
-      return <FarcasterCastGridDisplay cast={cast} />;
+      return <FarcasterCastResponseGridDisplay cast={cast} />;
     default:
       if (cast.parent && displayMode !== Display.REPLIES) {
         return (
           <View borderBottomWidth="$0.5" borderBottomColor="$borderColorBg">
-            <FarcasterCastDefaultDisplay cast={cast.parent} isConnected />
-            <FarcasterCastDefaultDisplay cast={cast} />
+            <FarcasterCastResponseDefaultDisplay
+              cast={cast.parent}
+              isConnected
+            />
+            <FarcasterCastResponseDefaultDisplay cast={cast} />
           </View>
         );
       }
       return (
         <View borderBottomWidth="$0.5" borderBottomColor="$borderColorBg">
-          <FarcasterCastDefaultDisplay cast={cast} />
+          <FarcasterCastResponseDefaultDisplay cast={cast} />
         </View>
       );
   }
 };
 
-const FarcasterCastFrameDisplay = ({ cast }: { cast: FarcasterCast }) => {
+const FarcasterCastResponseFrameDisplay = ({
+  cast,
+}: { cast: FarcasterCastResponse }) => {
   const router = useRouter();
 
   const frameEmbed = cast.embeds.find((embed) => embed.frame);
@@ -103,7 +108,7 @@ const FarcasterCastFrameDisplay = ({ cast }: { cast: FarcasterCast }) => {
           size="$3"
           suffix={` · ${formatTimeAgo(cast.timestamp)}`}
         />
-        <FarcasterCastKebabMenu cast={cast} />
+        <FarcasterCastResponseKebabMenu cast={cast} />
       </XStack>
       <EmbedFrame cast={cast} content={frameEmbed} />
       <YStack padding="$2" gap="$2">
@@ -127,7 +132,9 @@ const FarcasterCastFrameDisplay = ({ cast }: { cast: FarcasterCast }) => {
   );
 };
 
-const FarcasterCastGridDisplay = ({ cast }: { cast: FarcasterCast }) => {
+const FarcasterCastResponseGridDisplay = ({
+  cast,
+}: { cast: FarcasterCastResponse }) => {
   const imageEmbed = cast.embeds.find((embed) =>
     embed.type?.startsWith("image"),
   );
@@ -158,7 +165,9 @@ const FarcasterCastGridDisplay = ({ cast }: { cast: FarcasterCast }) => {
   );
 };
 
-const FarcasterCastMediaDisplay = ({ cast }: { cast: FarcasterCast }) => {
+const FarcasterCastResponseMediaDisplay = ({
+  cast,
+}: { cast: FarcasterCastResponse }) => {
   const router = useRouter();
 
   const imageEmbed = cast.embeds.find((embed) =>
@@ -198,7 +207,7 @@ const FarcasterCastMediaDisplay = ({ cast }: { cast: FarcasterCast }) => {
           size="$3"
           suffix={` · ${formatTimeAgo(cast.timestamp)}`}
         />
-        <FarcasterCastKebabMenu cast={cast} />
+        <FarcasterCastResponseKebabMenu cast={cast} />
       </XStack>
       {imageEmbed && <EmbedImage uri={imageEmbed.uri} noBorderRadius />}
       {videoEmbed && <EmbedVideo uri={videoEmbed.uri} noBorderRadius />}
@@ -208,7 +217,7 @@ const FarcasterCastMediaDisplay = ({ cast }: { cast: FarcasterCast }) => {
             <NookText fontWeight="600" color="$mauve12">
               {cast.user.username || `!${cast.user.fid}`}{" "}
             </NookText>
-            <FarcasterCastText cast={cast} />
+            <FarcasterCastResponseText cast={cast} />
           </NookText>
         )}
         <XStack
@@ -231,10 +240,10 @@ const FarcasterCastMediaDisplay = ({ cast }: { cast: FarcasterCast }) => {
   );
 };
 
-export const FarcasterCastDefaultDisplay = ({
+export const FarcasterCastResponseDefaultDisplay = ({
   cast,
   isConnected,
-}: { cast: FarcasterCast; isConnected?: boolean }) => {
+}: { cast: FarcasterCastResponse; isConnected?: boolean }) => {
   const router = useRouter();
 
   // @ts-ignore
@@ -290,10 +299,10 @@ export const FarcasterCastDefaultDisplay = ({
               suffix={` · ${formatTimeAgo(cast.timestamp)}`}
             />
             <View position="absolute" right={0} top={0} marginTop="$-2">
-              <FarcasterCastKebabMenu cast={cast} />
+              <FarcasterCastResponseKebabMenu cast={cast} />
             </View>
           </XStack>
-          {renderText && <FarcasterCastText cast={cast} />}
+          {renderText && <FarcasterCastResponseText cast={cast} />}
         </YStack>
         {renderEmbeds && <Embeds cast={cast} />}
         <XStack
@@ -313,7 +322,10 @@ export const FarcasterCastDefaultDisplay = ({
         </XStack>
         {renderEngagementBar && (
           <XStack justifyContent="space-between" alignItems="center">
-            <FarcasterCastEngagement cast={cast} types={["likes", "replies"]} />
+            <FarcasterCastResponseEngagement
+              cast={cast}
+              types={["likes", "replies"]}
+            />
             <View>
               {cast.channel && (
                 <FarcasterChannelBadge channel={cast.channel} asLink />

@@ -10,7 +10,7 @@ import {
   View,
   XStack,
   YStack,
-} from "@nook/ui";
+} from "@nook/app-ui";
 import { User } from "@nook/common/types";
 import { VolumeX } from "@tamagui/lucide-icons";
 import { muteWord, unmuteWord } from "../../server/settings";

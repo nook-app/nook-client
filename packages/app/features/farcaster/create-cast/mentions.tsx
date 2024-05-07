@@ -6,7 +6,7 @@ import {
   View,
   YStack,
   useDebounceValue,
-} from "@nook/ui";
+} from "@nook/app-ui";
 import { useCreateCast } from "./context";
 import { FarcasterChannelDisplay } from "../../../components/farcaster/channels/channel-display";
 import { ReactNode } from "react";

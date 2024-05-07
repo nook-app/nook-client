@@ -1,6 +1,6 @@
 "use client";
 
-import { NookButton, View, XStack } from "@nook/ui";
+import { NookButton, View, XStack } from "@nook/app-ui";
 import { Tabs } from "../../components/tabs/tabs";
 import { SearchBar } from "./search-bar";
 import { ArrowLeft } from "@tamagui/lucide-icons";

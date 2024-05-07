@@ -1,7 +1,7 @@
 import { getServerSession } from "../server/auth";
 import {
   Channel,
-  FarcasterCast,
+  FarcasterCastResponse,
   FarcasterUser,
   Session,
 } from "@nook/common/types";
@@ -61,7 +61,10 @@ export const hasChannelDiff = (channel1: Channel, channel2: Channel) => {
   return false;
 };
 
-export const hasCastDiff = (cast1: FarcasterCast, cast2: FarcasterCast) => {
+export const hasCastDiff = (
+  cast1: FarcasterCastResponse,
+  cast2: FarcasterCastResponse,
+) => {
   return (
     cast1.engagement.likes !== cast2.engagement.likes ||
     cast1.engagement.recasts !== cast2.engagement.recasts ||

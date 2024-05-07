@@ -1,4 +1,4 @@
-import { NookText, ThemeName, View, XStack, YStack } from "@nook/ui";
+import { NookText, ThemeName, View, XStack, YStack } from "@nook/app-ui";
 import { useTheme } from "../../context/theme";
 
 export const ThemeSettings = () => {

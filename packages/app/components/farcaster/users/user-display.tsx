@@ -1,5 +1,5 @@
 import { FarcasterUser } from "@nook/common/types";
-import { NookText, Tooltip, View, XStack, YStack } from "@nook/ui";
+import { NookText, Tooltip, View, XStack, YStack } from "@nook/app-ui";
 import { FarcasterPowerBadge } from "./power-badge";
 import { CdnAvatar } from "../../cdn-avatar";
 import { Link } from "solito/link";

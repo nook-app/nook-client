@@ -2,7 +2,7 @@
 
 "use client";
 
-import { NookButton, NookText, View, XStack } from "@nook/ui";
+import { NookButton, NookText, View, XStack } from "@nook/app-ui";
 import { ArrowLeft } from "@tamagui/lucide-icons";
 import { useRouter } from "solito/navigation";
 import { SearchBar } from "../search/search-bar";

@@ -1,7 +1,14 @@
 "use client";
 
 import { Dot } from "@tamagui/lucide-icons";
-import { NookButton, Dialog, XStack, View, YStack, NookText } from "@nook/ui";
+import {
+  NookButton,
+  Dialog,
+  XStack,
+  View,
+  YStack,
+  NookText,
+} from "@nook/app-ui";
 import { GradientIcon } from "../../components/gradient-icon";
 import { useAuth } from "../../context/auth";
 import { installAction } from "../../server/settings";

@@ -1,13 +1,13 @@
 import { useCallback, useState } from "react";
-import { FarcasterCast } from "@nook/common/types";
-import { useToastController } from "@nook/ui";
+import { FarcasterCastResponse } from "@nook/common/types";
+import { useToastController } from "@nook/app-ui";
 import { useAuth } from "../context/auth";
 import { useMuteStore } from "../store/useMuteStore";
 import { submitCastRemove } from "../server/farcaster";
 import { fetchCast } from "../api/farcaster";
 import { useParams, useRouter } from "solito/navigation";
 
-export const useDeleteCast = (cast: FarcasterCast) => {
+export const useDeleteCast = (cast: FarcasterCastResponse) => {
   const { session, login } = useAuth();
   const toast = useToastController();
   const [isDeleting, setIsDeleting] = useState(false);

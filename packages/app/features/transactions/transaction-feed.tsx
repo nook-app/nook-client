@@ -7,7 +7,7 @@ import {
   View,
   XStack,
   YStack,
-} from "@nook/ui";
+} from "@nook/app-ui";
 import { useTransactionFeed } from "../../api/transactions";
 import { InfiniteScrollList } from "../../components/infinite-scroll-list";
 import { Loading } from "../../components/loading";

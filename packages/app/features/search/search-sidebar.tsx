@@ -1,6 +1,6 @@
 "use client";
 
-import { YStack } from "@nook/ui";
+import { YStack } from "@nook/app-ui";
 import { SearchBar } from "./search-bar";
 import { Channel } from "@nook/common/types";
 import { RecommendedChannels } from "../home/recommended-channels";

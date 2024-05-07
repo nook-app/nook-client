@@ -2,7 +2,7 @@ import { useAuth } from "../../../context/auth";
 import { Link, MoreHorizontal, Volume, VolumeX } from "@tamagui/lucide-icons";
 import { FarcasterUser } from "@nook/common/types";
 import { KebabMenu, KebabMenuItem } from "../../kebab-menu";
-import { Image, NookButton, useToastController } from "@nook/ui";
+import { Image, NookButton, useToastController } from "@nook/app-ui";
 import { useMuteUser } from "../../../hooks/useMuteUser";
 
 export const FarcasterUserKebabMenu = ({ user }: { user: FarcasterUser }) => {

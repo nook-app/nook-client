@@ -1,5 +1,3 @@
-import { FarcasterUser } from "./farcaster";
-
 export type TransactionResponse = {
   chainId: number;
   blockNumber: number;

@@ -1,6 +1,6 @@
 "use client";
 
-import { View, XStack } from "@nook/ui";
+import { View, XStack } from "@nook/app-ui";
 import {
   useAllNotifications,
   useMentionsNotifications,

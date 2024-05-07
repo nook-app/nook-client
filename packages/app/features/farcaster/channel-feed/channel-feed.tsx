@@ -1,7 +1,7 @@
 "use client";
 
 import { Channel } from "@nook/common/types";
-import { AnimatePresence, Spinner, View } from "@nook/ui";
+import { AnimatePresence, Spinner, View } from "@nook/app-ui";
 import { InfiniteScrollList } from "../../../components/infinite-scroll-list";
 import { FarcasterChannelFeedItem } from "./channel-feed-item";
 

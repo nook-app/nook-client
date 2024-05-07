@@ -1,0 +1,69 @@
+{
+  "expo": {
+    "name": "nook",
+    "slug": "nook",
+    "displayName": "nook",
+    "version": "0.3.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "scheme": "nook",
+    "userInterfaceStyle": "automatic",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#161719"
+    },
+    "assetBundlePatterns": ["**/*"],
+    "ios": {
+      "buildNumber": "29",
+      "supportsTablet": true,
+      "bundleIdentifier": "social.nook",
+      "associatedDomains": [
+        "applinks:nook.social",
+        "applinks:*.nook.social",
+        "applinks:nook.ngrok.dev"
+      ],
+      "infoPlist": {
+        "LSApplicationQueriesSchemes": [
+          "rainbow",
+          "coinbase",
+          "uniswap",
+          "metamask",
+          "trust",
+          "cbwallet"
+        ]
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#161719"
+      },
+      "package": "social.nook"
+    },
+    "web": {
+      "bundler": "metro",
+      "favicon": "./assets/icon.png"
+    },
+    "plugins": ["expo-secure-store", "expo-font", "expo-media-library"],
+    "runtimeVersion": "0.1.0",
+    "updates": {
+      "requestHeaders": {
+        "expo-channel-name": "main"
+      },
+      "url": "https://u.expo.dev/43df0ae9-e020-41cf-9b7b-6b5ca4fb5c35"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "43df0ae9-e020-41cf-9b7b-6b5ca4fb5c35"
+      }
+    },
+    "owner": "nook-social"
+  },
+  "runtimeVersion": {
+    "policy": "appVersion"
+  },
+  "updates": {
+    "url": "https://u.expo.dev/43df0ae9-e020-41cf-9b7b-6b5ca4fb5c35"
+  }
+}

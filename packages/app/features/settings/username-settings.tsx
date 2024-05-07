@@ -7,7 +7,7 @@ import {
   YStack,
   useDebounceValue,
   useToastController,
-} from "@nook/ui";
+} from "@nook/app-ui";
 import { useEffect, useState } from "react";
 import { useAuth } from "../../context/auth";
 import {

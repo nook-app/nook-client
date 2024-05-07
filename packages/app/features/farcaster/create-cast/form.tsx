@@ -10,7 +10,7 @@ import {
   useToastController,
   useDebounce,
   NookText,
-} from "@nook/ui";
+} from "@nook/app-ui";
 import { useCreateCast } from "./context";
 import { memo, useCallback, useEffect, useRef, useState } from "react";
 import { CdnAvatar } from "../../../components/cdn-avatar";

@@ -1,6 +1,6 @@
 "use client";
 
-import { Separator, YStack } from "@nook/ui";
+import { Separator, YStack } from "@nook/app-ui";
 import { ThemeSettings } from "./theme-settings";
 import { MutedSettings } from "./muted-settings";
 import { User } from "@nook/common/types";

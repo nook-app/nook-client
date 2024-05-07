@@ -1,6 +1,6 @@
 "use server";
 
-import { ThemeName } from "@nook/ui";
+import { ThemeName } from "@nook/app-ui";
 import { makeRequest } from "../api/utils";
 import { cookies } from "next/headers";
 

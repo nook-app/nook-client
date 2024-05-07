@@ -1,5 +1,5 @@
-import { NookText, XStack } from "@nook/ui";
-import { FarcasterCast } from "@nook/common/types";
+import { NookText, XStack } from "@nook/app-ui";
+import { FarcasterCastResponse } from "@nook/common/types";
 import { Link } from "solito/link";
 import { useCastStore } from "../../../store/useCastStore";
 
@@ -12,25 +12,29 @@ const singular = {
   recasts: "recast",
 };
 
-export const FarcasterCastEngagement = ({
+export const FarcasterCastResponseEngagement = ({
   cast,
   types,
-}: { cast: FarcasterCast; types: CastEngagementTypes[] }) => {
+}: { cast: FarcasterCastResponse; types: CastEngagementTypes[] }) => {
   return (
     <XStack gap="$2" alignItems="center" flexWrap="wrap">
       {types.map((type) => {
         return (
-          <FarcasterCastEngagementItem key={type} cast={cast} type={type} />
+          <FarcasterCastResponseEngagementItem
+            key={type}
+            cast={cast}
+            type={type}
+          />
         );
       })}
     </XStack>
   );
 };
 
-const FarcasterCastEngagementItem = ({
+const FarcasterCastResponseEngagementItem = ({
   cast,
   type,
-}: { cast: FarcasterCast; type: CastEngagementTypes }) => {
+}: { cast: FarcasterCastResponse; type: CastEngagementTypes }) => {
   const storeCast = useCastStore((state) => state.casts[cast.hash]);
 
   const amount = storeCast?.engagement[type] ?? cast.engagement[type];

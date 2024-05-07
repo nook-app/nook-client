@@ -1,4 +1,4 @@
-import { View, XStack } from "@nook/ui";
+import { View, XStack } from "@nook/app-ui";
 import { ZoomableImage } from "../zoomable-image";
 import { formatToCDN } from "../../utils";
 

@@ -6,13 +6,13 @@ import {
   ScrollView,
   NookText,
   View,
-} from "@nook/ui";
+} from "@nook/app-ui";
 import { CreateCastEditor } from "./form";
 import { CreateCastProvider } from "./context";
 import { useCallback, useEffect, useState } from "react";
 import { SubmitCastAddRequest } from "@nook/common/types";
 import { useCast } from "../../../api/farcaster";
-import { FarcasterCastPreview } from "../../../components/farcaster/casts/cast-preview";
+import { FarcasterCastResponsePreview } from "../../../components/farcaster/casts/cast-preview";
 import { useTheme } from "../../../context/theme";
 
 export const CreateCastDialog = ({
@@ -144,5 +144,5 @@ const CreateCastParent = ({ parentHash }: { parentHash: string }) => {
 
   if (!cast) return null;
 
-  return <FarcasterCastPreview cast={cast} isConnected />;
+  return <FarcasterCastResponsePreview cast={cast} isConnected />;
 };

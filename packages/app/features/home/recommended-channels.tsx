@@ -1,4 +1,4 @@
-import { NookText, View, YStack } from "@nook/ui";
+import { NookText, View, YStack } from "@nook/app-ui";
 import { FarcasterChannelFeedItem } from "../farcaster/channel-feed/channel-feed-item";
 import { Channel } from "@nook/common/types";
 

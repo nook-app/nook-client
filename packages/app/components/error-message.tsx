@@ -1,4 +1,4 @@
-import { Text, View } from "@nook/ui";
+import { Text, View } from "@nook/app-ui";
 import { ReactNode } from "react";
 
 export const ErrorMessage = ({ children }: { children: ReactNode }) => (

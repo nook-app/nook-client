@@ -1,4 +1,4 @@
-import { NookText, View, XStack, YStack } from "@nook/ui";
+import { NookText, View, XStack, YStack } from "@nook/app-ui";
 import { ChevronRight } from "@tamagui/lucide-icons";
 import { User } from "@nook/common/types";
 import { Link } from "solito/link";

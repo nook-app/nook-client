@@ -1,4 +1,4 @@
-import { NookText, View } from "@nook/ui";
+import { NookText, View } from "@nook/app-ui";
 import { FarcasterUser } from "@nook/common/types";
 
 export const UserFollowBadge = ({ user }: { user: FarcasterUser }) => {

@@ -8,7 +8,7 @@ import {
   View,
   XStack,
   YStack,
-} from "@nook/ui";
+} from "@nook/app-ui";
 import {
   CreateAccountProvider,
   CreateAccountStep,

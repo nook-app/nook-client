@@ -1,29 +1,29 @@
 import { create } from "zustand";
-import { FarcasterCast } from "@nook/common/types";
+import { FarcasterCastResponse } from "@nook/common/types";
 
 interface CastStore {
-  casts: Record<string, FarcasterCast>;
-  addCasts: (casts: FarcasterCast[]) => void;
-  likeCast: (cast: FarcasterCast) => void;
-  unlikeCast: (cast: FarcasterCast) => void;
-  recastCast: (cast: FarcasterCast) => void;
-  unrecastCast: (cast: FarcasterCast) => void;
+  casts: Record<string, FarcasterCastResponse>;
+  addCasts: (casts: FarcasterCastResponse[]) => void;
+  likeCast: (cast: FarcasterCastResponse) => void;
+  unlikeCast: (cast: FarcasterCastResponse) => void;
+  recastCast: (cast: FarcasterCastResponse) => void;
+  unrecastCast: (cast: FarcasterCastResponse) => void;
 }
 
 export const useCastStore = create<CastStore>((set, get) => ({
   casts: {},
-  addCasts: (casts: FarcasterCast[]) => {
+  addCasts: (casts: FarcasterCastResponse[]) => {
     const currentCasts = get().casts;
     const newCasts = casts.reduce(
       (acc, cast) => {
         acc[cast.hash] = cast;
         return acc;
       },
-      {} as Record<string, FarcasterCast>,
+      {} as Record<string, FarcasterCastResponse>,
     );
     set({ casts: { ...currentCasts, ...newCasts } });
   },
-  likeCast: (cast: FarcasterCast) => {
+  likeCast: (cast: FarcasterCastResponse) => {
     const storeCast = get().casts[cast.hash] ?? cast;
     const newCast = {
       ...storeCast,
@@ -44,7 +44,7 @@ export const useCastStore = create<CastStore>((set, get) => ({
       },
     }));
   },
-  unlikeCast: (cast: FarcasterCast) => {
+  unlikeCast: (cast: FarcasterCastResponse) => {
     const storeCast = get().casts[cast.hash] ?? cast;
     const newCast = {
       ...storeCast,
@@ -65,7 +65,7 @@ export const useCastStore = create<CastStore>((set, get) => ({
       },
     }));
   },
-  recastCast: (cast: FarcasterCast) => {
+  recastCast: (cast: FarcasterCastResponse) => {
     const storeCast = get().casts[cast.hash] ?? cast;
     const newCast = {
       ...storeCast,
@@ -86,7 +86,7 @@ export const useCastStore = create<CastStore>((set, get) => ({
       },
     }));
   },
-  unrecastCast: (cast: FarcasterCast) => {
+  unrecastCast: (cast: FarcasterCastResponse) => {
     const storeCast = get().casts[cast.hash] ?? cast;
     const newCast = {
       ...storeCast,

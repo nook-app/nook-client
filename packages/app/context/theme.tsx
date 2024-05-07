@@ -11,7 +11,7 @@ import {
   TamaguiProvider as TamaguiProviderOG,
   Theme,
   ThemeName,
-} from "@nook/ui";
+} from "@nook/app-ui";
 import { NextThemeProvider, useRootTheme } from "@tamagui/next-theme";
 import { useServerInsertedHTML } from "next/navigation";
 import { updateTheme } from "../server/user";

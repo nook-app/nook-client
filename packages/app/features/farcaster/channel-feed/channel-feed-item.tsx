@@ -1,5 +1,5 @@
 import { Channel } from "@nook/common/types";
-import { XStack, YStack } from "@nook/ui";
+import { XStack, YStack } from "@nook/app-ui";
 import { memo } from "react";
 import { Link } from "solito/link";
 import {

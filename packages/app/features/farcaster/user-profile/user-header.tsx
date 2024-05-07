@@ -1,6 +1,6 @@
 "use client";
 
-import { NookText, View, XStack, YStack } from "@nook/ui";
+import { NookText, View, XStack, YStack } from "@nook/app-ui";
 import { ZoomableImage } from "../../../components/zoomable-image";
 import { CdnAvatar } from "../../../components/cdn-avatar";
 import { FarcasterBioText } from "../../../components/farcaster/bio-text";

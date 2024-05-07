@@ -20,7 +20,7 @@ import {
 import { usePathname } from "next/navigation";
 
 import { useStableCallback } from "../hooks/useStableCallback";
-import { debounce } from "@nook/ui";
+import { debounce } from "@nook/app-ui";
 
 // biome-ignore lint/suspicious/noExplicitAny: todo type later
 const measurementsCache: any = {};

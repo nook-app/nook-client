@@ -1,6 +1,6 @@
 import { useCallback } from "react";
 import { Channel } from "@nook/common/types";
-import { useToastController } from "@nook/ui";
+import { useToastController } from "@nook/app-ui";
 import { useAuth } from "../context/auth";
 import { useMuteStore } from "../store/useMuteStore";
 import { muteChannel, unmuteChannel } from "../server/settings";

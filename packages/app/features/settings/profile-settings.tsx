@@ -1,4 +1,11 @@
-import { Input, NookButton, NookText, Spinner, View, YStack } from "@nook/ui";
+import {
+  Input,
+  NookButton,
+  NookText,
+  Spinner,
+  View,
+  YStack,
+} from "@nook/app-ui";
 import { CdnAvatar } from "../../components/cdn-avatar";
 import { useRef, useState } from "react";
 import { useAuth } from "../../context/auth";

@@ -1,9 +1,9 @@
 "use client";
 
-import { View } from "@nook/ui";
+import { View } from "@nook/app-ui";
 import { Tabs } from "../../../components/tabs/tabs";
-import { FarcasterCastQuotes } from "./cast-quotes";
-import { FarcasterCastRecasts } from "./cast-recasts";
+import { FarcasterCastLikes } from "./cast-quotes";
+import { FarcasterCastLikes } from "./cast-recasts";
 import { FarcasterCastLikes } from "./cast-likes";
 
 export const CastEngagementTabs = ({
@@ -43,9 +43,9 @@ export const CastEngagementTab = ({
 }: { hash: string; activeTab: string }) => {
   switch (activeTab) {
     case "quotes":
-      return <FarcasterCastQuotes hash={hash} />;
+      return <FarcasterCastLikes hash={hash} />;
     case "recasts":
-      return <FarcasterCastRecasts hash={hash} />;
+      return <FarcasterCastLikes hash={hash} />;
     case "likes":
       return <FarcasterCastLikes hash={hash} />;
   }

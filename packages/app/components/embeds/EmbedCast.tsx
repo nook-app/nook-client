@@ -1,9 +1,9 @@
 import { EmbedMedia } from "./EmbedMedia";
 import { CdnAvatar } from "../cdn-avatar";
 import { FarcasterUserTextDisplay } from "../farcaster/users/user-display";
-import { NookText, View, XStack, YStack } from "@nook/ui";
-import { FarcasterCastText } from "../farcaster/casts/cast-text";
-import { FarcasterCast } from "@nook/common/types";
+import { NookText, View, XStack, YStack } from "@nook/app-ui";
+import { FarcasterCastResponseText } from "../farcaster/casts/cast-text";
+import { FarcasterCastResponse } from "@nook/common/types";
 import { formatTimeAgo } from "../../utils";
 import { useRouter } from "solito/navigation";
 
@@ -11,7 +11,7 @@ export const EmbedCast = ({
   cast,
   disableLink,
 }: {
-  cast: FarcasterCast;
+  cast: FarcasterCastResponse;
   disableLink?: boolean;
 }) => {
   const router = useRouter();
@@ -60,7 +60,7 @@ export const EmbedCast = ({
           <NookText muted>{` · ${formatTimeAgo(cast.timestamp)}`}</NookText>
         </XStack>
         {(cast.text || cast.mentions.length > 0) && (
-          <FarcasterCastText cast={cast} disableLinks />
+          <FarcasterCastResponseText cast={cast} disableLinks />
         )}
         {cast.embeds.length > 0 && <EmbedMedia cast={cast} />}
       </YStack>

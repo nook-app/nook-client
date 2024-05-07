@@ -1,6 +1,6 @@
 "use client";
 
-import { YStack } from "@nook/ui";
+import { YStack } from "@nook/app-ui";
 import { SearchBar } from "../../search/search-bar";
 import { FarcasterUser } from "@nook/common/types";
 

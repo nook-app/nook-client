@@ -41,6 +41,7 @@ export type PanelRequest = {
 
 export enum Display {
   CASTS = "CASTS",
+  REPLIES = "REPLIES",
   MEDIA = "MEDIA",
   GRID = "GRID",
   MASONRY = "MASONRY",

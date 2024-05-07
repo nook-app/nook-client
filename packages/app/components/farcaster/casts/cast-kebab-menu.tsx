@@ -7,19 +7,21 @@ import {
   Volume,
   VolumeX,
 } from "@tamagui/lucide-icons";
-import { Channel, FarcasterCast } from "@nook/common/types";
+import { Channel, FarcasterCastResponse } from "@nook/common/types";
 import { KebabMenu, KebabMenuItem } from "../../kebab-menu";
 import { useRouter } from "solito/navigation";
 import { useCallback } from "react";
 import { useUser } from "../../../api/farcaster";
-import { Spinner } from "@nook/ui";
+import { Spinner } from "@nook/app-ui";
 import { useFollowUser } from "../../../hooks/useFollowUser";
 import { CdnAvatar } from "../../cdn-avatar";
 import { useMuteUser } from "../../../hooks/useMuteUser";
 import { useMuteChannel } from "../../../hooks/useMuteChannel";
 import { useDeleteCast } from "../../../hooks/useDeleteCast";
 
-export const FarcasterCastKebabMenu = ({ cast }: { cast: FarcasterCast }) => {
+export const FarcasterCastResponseKebabMenu = ({
+  cast,
+}: { cast: FarcasterCastResponse }) => {
   return (
     <KebabMenu>
       <DeleteCast cast={cast} />
@@ -35,7 +37,7 @@ export const FarcasterCastKebabMenu = ({ cast }: { cast: FarcasterCast }) => {
 const DeleteCast = ({
   cast,
   closeMenu,
-}: { cast: FarcasterCast; closeMenu?: () => void }) => {
+}: { cast: FarcasterCastResponse; closeMenu?: () => void }) => {
   const { session } = useAuth();
   const { isDeleting, deleteCast } = useDeleteCast(cast);
 
@@ -57,7 +59,7 @@ const DeleteCast = ({
 const FollowUser = ({
   cast,
   closeMenu,
-}: { cast: FarcasterCast; closeMenu?: () => void }) => {
+}: { cast: FarcasterCastResponse; closeMenu?: () => void }) => {
   const { session, login } = useAuth();
   const { isFollowing, followUser, unfollowUser } = useFollowUser(cast.user);
 
@@ -112,7 +114,7 @@ const FollowUser = ({
 const MuteUser = ({
   cast,
   closeMenu,
-}: { cast: FarcasterCast; closeMenu?: () => void }) => {
+}: { cast: FarcasterCastResponse; closeMenu?: () => void }) => {
   const { session } = useAuth();
   const { isMuted, muteUser, unmuteUser } = useMuteUser(cast.user);
 
@@ -182,7 +184,7 @@ const MuteChannel = ({
 const ViewCastEngagements = ({
   cast,
   closeMenu,
-}: { cast: FarcasterCast; closeMenu?: () => void }) => {
+}: { cast: FarcasterCastResponse; closeMenu?: () => void }) => {
   const router = useRouter();
   return (
     <KebabMenuItem
@@ -197,7 +199,7 @@ const ViewCastEngagements = ({
 const CastSource = ({
   cast,
   closeMenu,
-}: { cast: FarcasterCast; closeMenu?: () => void }) => {
+}: { cast: FarcasterCastResponse; closeMenu?: () => void }) => {
   const { data } = useUser(cast.appFid || "");
 
   if (!data) return null;

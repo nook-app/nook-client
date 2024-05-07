@@ -1,4 +1,11 @@
-import { ListItem, NookText, Popover, Separator, View, YGroup } from "@nook/ui";
+import {
+  ListItem,
+  NookText,
+  Popover,
+  Separator,
+  View,
+  YGroup,
+} from "@nook/app-ui";
 import { MoreHorizontal } from "@tamagui/lucide-icons";
 import {
   Children,

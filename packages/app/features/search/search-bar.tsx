@@ -7,7 +7,7 @@ import {
   XStack,
   YStack,
   useDebounceValue,
-} from "@nook/ui";
+} from "@nook/app-ui";
 import { Search } from "@tamagui/lucide-icons";
 import { SearchInput } from "./search-input";
 import { useEffect, useRef, useState } from "react";

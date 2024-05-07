@@ -1,4 +1,11 @@
-import { NookButton, NookText, Spinner, View, XStack, YStack } from "@nook/ui";
+import {
+  NookButton,
+  NookText,
+  Spinner,
+  View,
+  XStack,
+  YStack,
+} from "@nook/app-ui";
 import { useAuth } from "../../context/auth";
 import { CastAction } from "@nook/common/types";
 import { GradientIcon } from "../../components/gradient-icon";

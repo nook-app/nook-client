@@ -2,7 +2,7 @@
 
 import { ReactNode } from "react";
 import { Tabs } from "../../components/tabs/tabs";
-import { View } from "@nook/ui";
+import { View } from "@nook/app-ui";
 import { Session } from "@nook/common/types";
 import { usePathname } from "solito/navigation";
 

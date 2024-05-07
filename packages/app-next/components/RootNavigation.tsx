@@ -1,6 +1,6 @@
 "use client";
 
-import { NookButton, NookText, View, XStack, YStack } from "@nook/ui";
+import { NookButton, NookText, View, XStack, YStack } from "@nook/app-ui";
 import {
   ExternalLink,
   Home,

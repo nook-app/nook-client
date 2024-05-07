@@ -1,4 +1,4 @@
-import { Toast, ToastViewport, useToastState } from "@nook/ui";
+import { Toast, ToastViewport, useToastState } from "@nook/app-ui";
 import { useTheme } from "../context/theme";
 
 export const Toasts = () => {

@@ -9,10 +9,10 @@ import {
   YGroup,
   useTheme,
   useToastController,
-} from "@nook/ui";
+} from "@nook/app-ui";
 import { Dot, LayoutGrid, Search, Settings } from "@tamagui/lucide-icons";
 import { useCallback, useState } from "react";
-import { CastAction, FarcasterCast } from "@nook/common/types";
+import { CastAction, FarcasterCastResponse } from "@nook/common/types";
 import { useAuth } from "../../../context/auth";
 import { submitFrameAction } from "../../../server/farcaster";
 import { useRouter } from "solito/navigation";
@@ -20,7 +20,7 @@ import { GradientIcon } from "../../gradient-icon";
 
 export const FarcasterCustomActionButton = ({
   cast,
-}: { cast: FarcasterCast }) => {
+}: { cast: FarcasterCastResponse }) => {
   const [open, setOpen] = useState(false);
   const { settings, session } = useAuth();
   const router = useRouter();
@@ -151,7 +151,11 @@ const CustomActionButton = ({
   action,
   cast,
   onPress,
-}: { action: CastAction | null; cast: FarcasterCast; onPress: () => void }) => {
+}: {
+  action: CastAction | null;
+  cast: FarcasterCastResponse;
+  onPress: () => void;
+}) => {
   const toast = useToastController();
 
   const handlePress = useCallback(async () => {

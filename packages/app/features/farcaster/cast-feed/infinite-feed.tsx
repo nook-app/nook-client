@@ -1,9 +1,9 @@
 "use client";
 
-import { Display, FarcasterCast } from "@nook/common/types";
-import { AnimatePresence, Spinner, View } from "@nook/ui";
+import { Display, FarcasterCastResponse } from "@nook/common/types";
+import { AnimatePresence, Spinner, View } from "@nook/app-ui";
 import { InfiniteScrollList } from "../../../components/infinite-scroll-list";
-import { FarcasterCastDisplay } from "../../../components/farcaster/casts/cast-display";
+import { FarcasterCastResponseDisplay } from "../../../components/farcaster/casts/cast-display";
 import { useRouter } from "next/navigation";
 
 export const FarcasterInfiniteFeed = ({
@@ -14,7 +14,7 @@ export const FarcasterInfiniteFeed = ({
   displayMode = Display.CASTS,
   ListHeaderComponent,
 }: {
-  casts: FarcasterCast[];
+  casts: FarcasterCastResponse[];
   fetchNextPage?: () => void;
   isFetchingNextPage?: boolean;
   hasNextPage?: boolean;
@@ -40,8 +40,8 @@ export const FarcasterInfiniteFeed = ({
             scale={1}
             y={0}
           >
-            <FarcasterCastDisplay
-              cast={item as FarcasterCast}
+            <FarcasterCastResponseDisplay
+              cast={item as FarcasterCastResponse}
               displayMode={displayMode}
             />
           </View>
@@ -58,7 +58,9 @@ export const FarcasterInfiniteFeed = ({
       }
       ListHeaderComponent={ListHeaderComponent}
       onViewableItemsChanged={({ viewableItems }) => {
-        const casts = viewableItems.map((item) => item.item as FarcasterCast);
+        const casts = viewableItems.map(
+          (item) => item.item as FarcasterCastResponse,
+        );
         for (const cast of casts) {
           router.prefetch(`/casts/${cast.hash}`);
         }

@@ -1,4 +1,4 @@
-import { ThemeName } from "@nook/ui";
+import { ThemeName } from "@nook/app-ui";
 
 const CDN_BASE_URL =
   "https://res.cloudinary.com/merkle-manufactory/image/fetch";

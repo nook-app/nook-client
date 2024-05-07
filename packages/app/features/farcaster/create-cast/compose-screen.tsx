@@ -1,6 +1,6 @@
 "use client";
 
-import { View } from "@nook/ui";
+import { View } from "@nook/app-ui";
 import { CreateCastProvider } from "./context";
 import { CreateCastEditor } from "./form";
 

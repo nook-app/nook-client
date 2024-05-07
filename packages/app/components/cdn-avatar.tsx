@@ -1,4 +1,4 @@
-import { Avatar } from "@nook/ui";
+import { Avatar } from "@nook/app-ui";
 import { formatToCDN } from "../utils";
 import { ReactNode } from "react";
 

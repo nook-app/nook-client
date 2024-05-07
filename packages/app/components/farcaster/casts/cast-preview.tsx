@@ -1,17 +1,17 @@
-import { NookText, Separator, XStack, YStack } from "@nook/ui";
-import { FarcasterCast } from "@nook/common/types";
+import { NookText, Separator, XStack, YStack } from "@nook/app-ui";
+import { FarcasterCastResponse } from "@nook/common/types";
 import {
   FarcasterUserAvatar,
   FarcasterUserTextDisplay,
 } from "../users/user-display";
 import { formatTimeAgo } from "../../../utils";
 import { Embeds } from "../../embeds/Embed";
-import { FarcasterCastText } from "./cast-text";
+import { FarcasterCastResponseText } from "./cast-text";
 
-export const FarcasterCastPreview = ({
+export const FarcasterCastResponsePreview = ({
   cast,
   isConnected,
-}: { cast: FarcasterCast; isConnected?: boolean }) => {
+}: { cast: FarcasterCastResponse; isConnected?: boolean }) => {
   const renderText = cast.text || cast.mentions.length > 0;
   const renderEmbeds = cast.embeds.length > 0 || cast.embedCasts.length > 0;
 
@@ -35,7 +35,7 @@ export const FarcasterCastPreview = ({
             <FarcasterUserTextDisplay user={cast.user} />
             <NookText muted>{` · ${formatTimeAgo(cast.timestamp)}`}</NookText>
           </XStack>
-          {renderText && <FarcasterCastText cast={cast} />}
+          {renderText && <FarcasterCastResponseText cast={cast} />}
         </YStack>
         {renderEmbeds && <Embeds cast={cast} />}
       </YStack>

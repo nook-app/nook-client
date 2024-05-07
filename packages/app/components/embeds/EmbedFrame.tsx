@@ -6,13 +6,13 @@ import {
   XStack,
   YStack,
   useTheme as useTamaguiTheme,
-} from "@nook/ui";
+} from "@nook/app-ui";
 import { useEffect, useState } from "react";
 import { useToastController } from "@tamagui/toast";
-import { FarcasterCast, UrlContentResponse } from "@nook/common/types";
+import { FarcasterCastResponse, UrlContentResponse } from "@nook/common/types";
 import { Frame, FrameButton } from "@nook/common/types/frames";
 import { useAuth } from "../../context/auth";
-import { NookButton, NookText, Input, Image } from "@nook/ui";
+import { NookButton, NookText, Input, Image } from "@nook/app-ui";
 import { submitFrameAction } from "../../server/farcaster";
 import { useRouter } from "solito/navigation";
 import { EnableSignerDialog } from "../../features/farcaster/enable-signer/dialog";
@@ -22,7 +22,7 @@ import { Link } from "solito/link";
 export const EmbedFrame = ({
   cast,
   content,
-}: { cast?: FarcasterCast; content: UrlContentResponse }) => {
+}: { cast?: FarcasterCastResponse; content: UrlContentResponse }) => {
   const toast = useToastController();
   const [frame, setFrame] = useState<Frame | undefined>(content.frame);
   const [inputText, setInputText] = useState<string | undefined>();

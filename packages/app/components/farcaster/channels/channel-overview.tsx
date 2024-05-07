@@ -1,4 +1,4 @@
-import { NookText, View, XStack, YStack } from "@nook/ui";
+import { NookText, View, XStack, YStack } from "@nook/app-ui";
 import { Channel } from "@nook/common/types";
 import { FarcasterBioText } from "../../../components/farcaster/bio-text";
 import { formatNumber } from "../../../utils";

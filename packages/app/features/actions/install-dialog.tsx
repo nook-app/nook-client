@@ -1,5 +1,5 @@
 import { X } from "@tamagui/lucide-icons";
-import { NookButton, Dialog, XStack } from "@nook/ui";
+import { NookButton, Dialog, XStack } from "@nook/app-ui";
 import { useCallback, useState } from "react";
 import { CastAction } from "@nook/common/types";
 import { useAuth } from "../../context/auth";

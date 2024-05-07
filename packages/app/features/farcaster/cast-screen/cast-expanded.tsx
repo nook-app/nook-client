@@ -1,10 +1,17 @@
 "use client";
 
-import { NookText, View, XStack, YStack, ToggleGroup, Tooltip } from "@nook/ui";
+import {
+  NookText,
+  View,
+  XStack,
+  YStack,
+  ToggleGroup,
+  Tooltip,
+} from "@nook/app-ui";
 import { FarcasterUserDisplay } from "../../../components/farcaster/users/user-display";
-import { FarcasterCastText } from "../../../components/farcaster/casts/cast-text";
+import { FarcasterCastResponseText } from "../../../components/farcaster/casts/cast-text";
 import { Embeds } from "../../../components/embeds/Embed";
-import { FarcasterCastEngagement } from "../../../components/farcaster/casts/cast-engagement";
+import { FarcasterCastResponseEngagement } from "../../../components/farcaster/casts/cast-engagement";
 import { FarcasterChannelBadge } from "../../../components/farcaster/channels/channel-display";
 import { useCastReplies } from "../../../api/farcaster";
 import {
@@ -14,12 +21,16 @@ import {
   FarcasterShareButton,
 } from "../../../components/farcaster/casts/cast-actions";
 import { FarcasterCustomActionButton } from "../../../components/farcaster/casts/cast-custom-action";
-import { FarcasterCastDefaultDisplay } from "../../../components/farcaster/casts/cast-display";
-import { Display, FarcasterCast, FetchCastsResponse } from "@nook/common/types";
+import { FarcasterCastResponseDefaultDisplay } from "../../../components/farcaster/casts/cast-display";
+import {
+  Display,
+  FarcasterCastResponse,
+  FetchCastsResponse,
+} from "@nook/common/types";
 import { FarcasterInfiniteFeed } from "../cast-feed/infinite-feed";
 import { BarChartBig, Clock, Rocket } from "@tamagui/lucide-icons";
 import { useState } from "react";
-import { FarcasterCastKebabMenu } from "../../../components/farcaster/casts/cast-kebab-menu";
+import { FarcasterCastResponseKebabMenu } from "../../../components/farcaster/casts/cast-kebab-menu";
 import { Loading } from "../../../components/loading";
 
 function formatTimestampTime(timestamp: number) {
@@ -46,7 +57,7 @@ function formatTimestampDate(timestamp: number) {
 export const FarcasterExpandedCast = ({
   cast,
   initialData,
-}: { cast: FarcasterCast; initialData?: FetchCastsResponse }) => {
+}: { cast: FarcasterCastResponse; initialData?: FetchCastsResponse }) => {
   const [replySort, setReplySort] = useState<"best" | "top" | "new">("best");
   const { data, isLoading, hasNextPage, fetchNextPage, isFetchingNextPage } =
     useCastReplies(cast.hash, replySort, initialData);
@@ -82,7 +93,7 @@ const FarcasterExpandedCastHeader = ({
   replySort,
   onReplySortChange,
 }: {
-  cast: FarcasterCast;
+  cast: FarcasterCastResponse;
   replySort: "best" | "top" | "new";
   onReplySortChange: (sort: "best" | "top" | "new") => void;
 }) => {
@@ -92,7 +103,7 @@ const FarcasterExpandedCastHeader = ({
   return (
     <View>
       {cast.ancestors?.toReversed().map((ancestor) => (
-        <FarcasterCastDefaultDisplay
+        <FarcasterCastResponseDefaultDisplay
           key={ancestor.hash}
           cast={ancestor}
           isConnected
@@ -101,16 +112,16 @@ const FarcasterExpandedCastHeader = ({
       <YStack gap="$3" padding="$3">
         <XStack justifyContent="space-between">
           <FarcasterUserDisplay user={cast.user} asLink />
-          <FarcasterCastKebabMenu cast={cast} />
+          <FarcasterCastResponseKebabMenu cast={cast} />
         </XStack>
-        {renderText && <FarcasterCastText cast={cast} fontSize="$6" />}
+        {renderText && <FarcasterCastResponseText cast={cast} fontSize="$6" />}
         {renderEmbeds && <Embeds cast={cast} />}
         <XStack
           justifyContent="space-between"
           alignItems="center"
           flexWrap="wrap"
         >
-          <FarcasterCastEngagement
+          <FarcasterCastResponseEngagement
             cast={cast}
             types={["likes", "replies", "quotes", "recasts"]}
           />

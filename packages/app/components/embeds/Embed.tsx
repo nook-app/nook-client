@@ -4,7 +4,7 @@ import { EmbedUrl } from "./EmbedUrl";
 import { EmbedTwitter } from "./EmbedTwitter";
 import { Text, View, XStack, YStack } from "tamagui";
 import { EmbedNook } from "./EmbedNook";
-import { FarcasterCast, UrlContentResponse } from "@nook/common/types";
+import { FarcasterCastResponse, UrlContentResponse } from "@nook/common/types";
 import { EmbedCast } from "./EmbedCast";
 import { Link as LinkIcon } from "@tamagui/lucide-icons";
 import { Link } from "solito/link";
@@ -15,7 +15,7 @@ export const Embed = ({
   cast,
 }: {
   content: UrlContentResponse;
-  cast?: FarcasterCast;
+  cast?: FarcasterCastResponse;
 }) => {
   if (
     content.uri.startsWith("nook://") ||
@@ -57,7 +57,7 @@ export const Embed = ({
 export const Embeds = ({
   cast,
 }: {
-  cast: FarcasterCast;
+  cast: FarcasterCastResponse;
 }) => {
   const isAllImages = cast.embeds.every(
     (embed) =>

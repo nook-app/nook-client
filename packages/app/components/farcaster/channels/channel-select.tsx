@@ -12,7 +12,7 @@ import {
   XStack,
   YStack,
   useDebounceValue,
-} from "@nook/ui";
+} from "@nook/app-ui";
 import { FarcasterChannelDisplay } from "./channel-display";
 import { X } from "@tamagui/lucide-icons";
 import { Channel } from "@nook/common/types";

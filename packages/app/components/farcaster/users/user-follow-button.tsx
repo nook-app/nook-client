@@ -1,4 +1,4 @@
-import { NookButton, View } from "@nook/ui";
+import { NookButton, View } from "@nook/app-ui";
 import { useFollowUser } from "../../../hooks/useFollowUser";
 import { FarcasterUser } from "@nook/common/types";
 import { useAuth } from "../../../context/auth";

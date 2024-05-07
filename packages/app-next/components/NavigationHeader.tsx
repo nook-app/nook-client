@@ -1,6 +1,6 @@
 "use client";
 
-import { NookButton, NookText } from "@nook/ui";
+import { NookButton, NookText } from "@nook/app-ui";
 import { ArrowLeft } from "@tamagui/lucide-icons";
 import { useRouter } from "next/navigation";
 import { XStack } from "tamagui";

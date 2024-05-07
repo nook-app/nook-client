@@ -1,4 +1,4 @@
-import { Input, View } from "@nook/ui";
+import { Input, View } from "@nook/app-ui";
 import { Search } from "@tamagui/lucide-icons";
 import { TextInputProps } from "react-native";
 

@@ -1,5 +1,5 @@
 import { UrlContentResponse } from "@nook/common/types";
-import { Image, NookText, Text, View, XStack, YStack } from "@nook/ui";
+import { Image, NookText, Text, View, XStack, YStack } from "@nook/app-ui";
 import { Link as LinkIcon } from "@tamagui/lucide-icons";
 import { Link } from "solito/link";
 

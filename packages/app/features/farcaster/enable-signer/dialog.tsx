@@ -6,7 +6,7 @@ import {
   View,
   XStack,
   YStack,
-} from "@nook/ui";
+} from "@nook/app-ui";
 import QRCode from "qrcode.react";
 import { useEffect, useRef, useState } from "react";
 import { useAuth } from "../../../context/auth";

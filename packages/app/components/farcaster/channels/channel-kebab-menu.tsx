@@ -1,7 +1,7 @@
 import { Link, MoreHorizontal, Volume, VolumeX } from "@tamagui/lucide-icons";
 import { Channel } from "@nook/common/types";
 import { KebabMenu, KebabMenuItem } from "../../kebab-menu";
-import { Image, NookButton, useToastController } from "@nook/ui";
+import { Image, NookButton, useToastController } from "@nook/app-ui";
 import { useMuteChannel } from "../../../hooks/useMuteChannel";
 
 export const FarcasterChannelKebabMenu = ({

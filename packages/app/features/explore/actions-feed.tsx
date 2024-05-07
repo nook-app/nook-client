@@ -8,7 +8,7 @@ import {
   View,
   XStack,
   YStack,
-} from "@nook/ui";
+} from "@nook/app-ui";
 import { memo } from "react";
 import { CastAction } from "@nook/common/types";
 import { InfiniteScrollList } from "../../components/infinite-scroll-list";

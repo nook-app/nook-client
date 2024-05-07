@@ -1,19 +1,19 @@
 import { GetThemeValueForKey } from "@tamagui/core";
 import { Buffer } from "buffer";
-import { FarcasterCast } from "@nook/common/types";
+import { FarcasterCastResponse } from "@nook/common/types";
 import { TextLink } from "solito/link";
-import { NookText } from "@nook/ui";
+import { NookText } from "@nook/app-ui";
 import { FarcasterChannelTooltip } from "../channels/channel-display";
 import { FarcasterUserTooltip } from "../users/user-display";
 
-export const FarcasterCastText = ({
+export const FarcasterCastResponseText = ({
   cast,
   disableLinks,
   color = "$mauve12",
   fontSize = 15,
   selectable,
 }: {
-  cast: FarcasterCast;
+  cast: FarcasterCastResponse;
   disableLinks?: boolean;
   color?: string;
   fontSize?: string | number;

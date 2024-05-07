@@ -6,10 +6,11 @@ import {
   FarcasterCastEngagement,
   FarcasterUser,
 } from "./farcaster";
-import { RawNotificationResponse } from "./notifications";
+import { NotificationResponse, RawNotificationResponse } from "./notifications";
 import { TransactionDto } from "../onceupon";
 import { Nook } from "./nook";
-import { PendingCast } from "../prisma/nook";
+import { CastAction, PendingCast } from "../prisma/nook";
+import { TransactionResponse } from "./transactions";
 
 export type FarcasterCastResponse = {
   hash: string;
@@ -281,4 +282,34 @@ export type FarcasterTrendingCashtag = {
   powerBadgeCount3h: number;
   count1h: number;
   powerBadgeCount1h: number;
+};
+
+export type FetchCastsResponse = {
+  data: FarcasterCastResponse[];
+  nextCursor?: string;
+};
+
+export type FetchUsersResponse = {
+  data: FarcasterUser[];
+  nextCursor?: string;
+};
+
+export type FetchNotificationsResponse = {
+  data: NotificationResponse[];
+  nextCursor?: string;
+};
+
+export type FetchChannelsResponse = {
+  data: Channel[];
+  nextCursor?: string;
+};
+
+export type FetchCatActionsResponse = {
+  data: CastAction[];
+  nextCursor?: string;
+};
+
+export type FetchTransactionsResponse = {
+  data: TransactionResponse[];
+  nextCursor?: string;
 };

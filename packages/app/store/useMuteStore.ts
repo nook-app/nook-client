@@ -1,5 +1,9 @@
 import { create } from "zustand";
-import { Channel, FarcasterCast, FarcasterUser } from "@nook/common/types";
+import {
+  Channel,
+  FarcasterCastResponse,
+  FarcasterUser,
+} from "@nook/common/types";
 
 interface MuteStore {
   users: Record<string, boolean>;
@@ -13,7 +17,7 @@ interface MuteStore {
   unmuteWord: (word: string) => void;
   // re-using store for cast deletions
   casts: Record<string, boolean>;
-  deleteCast: (cast: FarcasterCast) => void;
+  deleteCast: (cast: FarcasterCastResponse) => void;
 }
 
 export const useMuteStore = create<MuteStore>((set, get) => ({
@@ -43,7 +47,7 @@ export const useMuteStore = create<MuteStore>((set, get) => ({
   unmuteWord: (word: string) => {
     set((state) => ({ words: { ...state.words, [word]: false } }));
   },
-  deleteCast: (cast: FarcasterCast) => {
+  deleteCast: (cast: FarcasterCastResponse) => {
     set((state) => ({ casts: { ...state.casts, [cast.hash]: true } }));
   },
 }));

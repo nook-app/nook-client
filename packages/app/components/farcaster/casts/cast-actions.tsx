@@ -1,4 +1,10 @@
-import { Dialog, Image, View, useTheme, useToastController } from "@nook/ui";
+import {
+  Dialog,
+  Image,
+  View,
+  useTheme,
+  useToastController,
+} from "@nook/app-ui";
 import {
   Heart,
   Image as ImageIcon,
@@ -9,7 +15,7 @@ import {
   Share,
 } from "@tamagui/lucide-icons";
 import { CreateCastDialog } from "../../../features/farcaster/create-cast/disalog";
-import { FarcasterCast } from "@nook/common/types";
+import { FarcasterCastResponse } from "@nook/common/types";
 import { useLikeCast } from "../../../hooks/useLikeCast";
 import { useRecastCast } from "../../../hooks/useRecastCast";
 import { KebabMenu, KebabMenuItem } from "../../kebab-menu";
@@ -18,7 +24,7 @@ import { useAuth } from "../../../context/auth";
 
 export const FarcasterReplyActionButton = ({
   cast,
-}: { cast: FarcasterCast }) => {
+}: { cast: FarcasterCastResponse }) => {
   const { session, login } = useAuth();
   return (
     <View
@@ -68,7 +74,7 @@ export const FarcasterReplyActionButton = ({
 
 export const FarcasterRecastActionButton = ({
   cast,
-}: { cast: FarcasterCast }) => {
+}: { cast: FarcasterCastResponse }) => {
   const theme = useTheme();
   const { recastCast, unrecastCast, isRecasted } = useRecastCast(cast);
   const { session, login } = useAuth();
@@ -176,7 +182,7 @@ const FarcasterQuoteMenuItem = ({ closeMenu }: { closeMenu?: () => void }) => {
 
 export const FarcasterLikeActionButton = ({
   cast,
-}: { cast: FarcasterCast }) => {
+}: { cast: FarcasterCastResponse }) => {
   const theme = useTheme();
   const { likeCast, unlikeCast, isLiked } = useLikeCast(cast);
   const { session, login } = useAuth();
@@ -224,7 +230,9 @@ export const FarcasterLikeActionButton = ({
   );
 };
 
-export const FarcasterShareButton = ({ cast }: { cast: FarcasterCast }) => {
+export const FarcasterShareButton = ({
+  cast,
+}: { cast: FarcasterCastResponse }) => {
   const toast = useToastController();
   return (
     <KebabMenu

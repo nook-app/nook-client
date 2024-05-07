@@ -1,6 +1,6 @@
 import { Buffer } from "buffer";
 import { TextLink } from "solito/link";
-import { NookText } from "@nook/ui";
+import { NookText } from "@nook/app-ui";
 
 export const FarcasterBioText = ({
   text,
