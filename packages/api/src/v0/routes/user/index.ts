@@ -2,11 +2,10 @@ import { FastifyInstance } from "fastify";
 import {
   SignInWithFarcasterRequest,
   SignInWithPasswordRequest,
-} from "../../../types";
+} from "../../../../types";
 import { UserService } from "../../services/user";
 import { UserMetadata } from "@nook/common/types";
 import { PrivyClient } from "@privy-io/server-auth";
-import { FarcasterAPIClient, SignerAPIClient } from "@nook/common/clients";
 import { createPublicClient, http, parseAbiItem } from "viem";
 import { optimism } from "viem/chains";
 import { CONTRACTS } from "@nook/common/utils";
@@ -20,9 +19,6 @@ const viemClient = createPublicClient({
 
 export const userRoutes = async (fastify: FastifyInstance) => {
   fastify.register(async (fastify: FastifyInstance) => {
-    const client = new SignerAPIClient();
-    const farcaster = new FarcasterAPIClient();
-
     const userService = new UserService(fastify);
     const privy = new PrivyClient(
       process.env.PRIVY_APP_ID as string,

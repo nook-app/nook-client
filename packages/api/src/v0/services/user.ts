@@ -4,7 +4,7 @@ import {
   createAppClient,
   viemConnector,
 } from "@farcaster/auth-client";
-import { SignInWithFarcasterRequest, TokenResponse } from "../../types";
+import { SignInWithFarcasterRequest, TokenResponse } from "../../../types";
 import { PrismaClient } from "@nook/common/prisma/nook";
 import { UserMetadata } from "@nook/common/types";
 

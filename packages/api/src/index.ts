@@ -1,24 +1,9 @@
 import fastify from "fastify";
 import { redisPlugin, nookPlugin } from "./plugins";
-import { userRoutes } from "./routes/user";
 import fastifyJwt from "@fastify/jwt";
 import fastifyCors from "@fastify/cors";
-import { farcasterRoutes } from "./routes/farcaster";
-import { farcasterSignerRoutes } from "./routes/farcaster/signer";
-import { frameRoutes } from "./routes/frames";
-import { contentRoutes } from "./routes/content";
-import { notificationsRoutes } from "./routes/notifications";
-import { degenRoutes } from "./routes/degen";
-import { transactionRoutes } from "./routes/transactions";
-import { flagRoutes } from "./routes/flags";
-import { discoverRoutes } from "./routes/discover";
-import { muteRoutes } from "./routes/user/mute";
-import { panelRoutes } from "./routes/panel";
-import { feedRoutes } from "./routes/feed";
-import { pendingCastRoutes } from "./routes/pending";
-import { farcasterFeedRoutes } from "./routes/farcaster/feed";
-import { farconRoutes } from "./routes/farcon/attendees";
-import { nftRoutes } from "./routes/nfts";
+import { registerV0Routes } from "./v0";
+import { registerV1Routes } from "./v1";
 
 const buildApp = () => {
   const app = fastify({
@@ -63,23 +48,8 @@ const buildApp = () => {
   app.register(nookPlugin);
   app.register(redisPlugin);
 
-  app.register(contentRoutes, { prefix: "/v0" });
-  app.register(userRoutes, { prefix: "/v0" });
-  app.register(farcasterRoutes, { prefix: "/v0" });
-  app.register(farcasterFeedRoutes, { prefix: "/v0" });
-  app.register(farcasterSignerRoutes, { prefix: "/v0" });
-  app.register(frameRoutes, { prefix: "/v0" });
-  app.register(transactionRoutes, { prefix: "/v0" });
-  app.register(notificationsRoutes, { prefix: "/v0" });
-  app.register(flagRoutes, { prefix: "/v0" });
-  app.register(degenRoutes, { prefix: "/v0" });
-  app.register(discoverRoutes, { prefix: "/v0" });
-  app.register(muteRoutes, { prefix: "/v0" });
-  app.register(panelRoutes, { prefix: "/v0" });
-  app.register(feedRoutes, { prefix: "/v0" });
-  app.register(pendingCastRoutes, { prefix: "/v0" });
-  app.register(farconRoutes, { prefix: "/v0" });
-  app.register(nftRoutes, { prefix: "/v0" });
+  registerV0Routes(app);
+  registerV1Routes(app);
 
   return app;
 };

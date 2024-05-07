@@ -1,5 +1,6 @@
 import fp from "fastify-plugin";
 import { PrismaClient } from "@nook/common/prisma/nook";
+import { PrismaClient as UserPrismaClient } from "@nook/common/prisma/user";
 import { RedisClient } from "@nook/common/clients";
 
 declare module "fastify" {
@@ -9,6 +10,9 @@ declare module "fastify" {
     };
     redis: {
       client: RedisClient;
+    };
+    user: {
+      client: UserPrismaClient;
     };
   }
 }
@@ -28,5 +32,14 @@ export const redisPlugin = fp(async (fastify, opts) => {
   fastify.decorate("redis", { client });
   fastify.addHook("onClose", async (fastify) => {
     await fastify.redis.client.close();
+  });
+});
+
+export const userPlugin = fp(async (fastify, opts) => {
+  const client = new UserPrismaClient();
+  await client.$connect();
+  fastify.decorate("user", { client });
+  fastify.addHook("onClose", async (fastify) => {
+    await fastify.user.client.$disconnect();
   });
 });
