@@ -35,13 +35,14 @@ export class ContentService {
 
     const missing = uris.filter((uri) => !contentMap[uri]);
     if (missing.length > 0) {
-      const fetchedContent = await this.client.urlContent.findMany({
-        where: {
-          uri: {
-            in: missing,
+      const fetchedContent =
+        await this.client.farcasterContentReference.findMany({
+          where: {
+            uri: {
+              in: missing,
+            },
           },
-        },
-      });
+        });
 
       for (const content of fetchedContent) {
         contentMap[content.uri] = {
@@ -87,17 +88,14 @@ export class ContentService {
     );
 
     for (const c of toUpsert) {
-      await this.client.urlContent.upsert({
+      await this.client.farcasterContentReference.updateMany({
         where: {
           uri: c.uri,
         },
-        create: {
+        data: {
           ...c,
-          metadata: (c.metadata || Prisma.DbNull) as Prisma.InputJsonValue,
-          frame: (c.frame || Prisma.DbNull) as Prisma.InputJsonValue,
-        },
-        update: {
-          ...c,
+          type: undefined,
+          contentType: c.type,
           metadata: (c.metadata || Prisma.DbNull) as Prisma.InputJsonValue,
           frame: (c.frame || Prisma.DbNull) as Prisma.InputJsonValue,
         },

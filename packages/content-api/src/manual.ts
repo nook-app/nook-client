@@ -15,17 +15,14 @@ const run = async () => {
 
   if (!content) return;
 
-  await client.urlContent.upsert({
+  await client.farcasterContentReference.updateMany({
     where: {
       uri: content.uri,
     },
-    create: {
+    data: {
       ...content,
-      metadata: (content.metadata || Prisma.DbNull) as Prisma.InputJsonValue,
-      frame: (content.frame || Prisma.DbNull) as Prisma.InputJsonValue,
-    },
-    update: {
-      ...content,
+      type: undefined,
+      contentType: content.type,
       metadata: (content.metadata || Prisma.DbNull) as Prisma.InputJsonValue,
       frame: (content.frame || Prisma.DbNull) as Prisma.InputJsonValue,
     },
