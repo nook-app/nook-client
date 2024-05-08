@@ -125,9 +125,8 @@ export const RootNavigation = ({ children }: { children: React.ReactNode }) => {
           <SessionItem />
         </View>
       </View>
-
       <MobileNavigation>
-        <View width={1000} maxWidth={1000} $md={{ width: "auto", flexGrow: 1 }}>
+        <View width={980} maxWidth={980} $md={{ width: "auto", flexGrow: 1 }}>
           {children}
         </View>
       </MobileNavigation>

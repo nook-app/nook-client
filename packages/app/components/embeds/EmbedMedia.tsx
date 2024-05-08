@@ -53,7 +53,7 @@ const EmbedSingleMedia = ({ content }: { content: UrlContentResponse }) => {
     content.type?.startsWith("video/") ||
     content.type?.startsWith("application/x-mpegURL")
   ) {
-    return <EmbedVideo content={content} />;
+    return <EmbedVideo uri={content.uri} />;
   }
 
   if (content.uri.includes("twitter.com") || content.uri.includes("x.com")) {

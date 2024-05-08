@@ -10,19 +10,6 @@ import {
 import { cookies } from "next/headers";
 import { makeRequest } from "../api/utils";
 
-export async function loginServer(session: Session) {
-  cookies().set("session", JSON.stringify(session), { secure: true });
-}
-
-export async function logoutServer() {
-  cookies().delete("session");
-}
-
-export async function getServerSession(): Promise<Session | undefined> {
-  const session = cookies().get("session");
-  return session?.value ? JSON.parse(session.value) : undefined;
-}
-
 export const loginUser = async (
   token: string,
 ): Promise<Session & { signer: GetSignerResponse }> => {

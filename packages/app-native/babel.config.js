@@ -1,32 +1,17 @@
 module.exports = (api) => {
   api.cache(true);
   return {
-    presets: [["babel-preset-expo", { jsxRuntime: "automatic" }]],
+    presets: ["babel-preset-expo"],
     plugins: [
-      require.resolve("expo-router/babel"),
       [
-        require.resolve("babel-plugin-module-resolver"),
+        "@tamagui/babel-plugin",
         {
-          root: ["../.."],
-          alias: {
-            app: "../../packages/app",
-            "@nook/app-ui": "../../packages/app-ui",
-          },
-          extensions: [".js", ".jsx", ".tsx", ".ios.js", ".android.js"],
+          components: ["tamagui"],
+          config: "../../packages/app-ui/src/tamagui.config.ts",
+          logTimings: true,
+          disableExtraction: process.env.NODE_ENV === "development",
         },
       ],
-      "react-native-reanimated/plugin",
-      ...(process.env.EAS_BUILD_PLATFORM === "android"
-        ? []
-        : [
-            [
-              "@tamagui/babel-plugin",
-              {
-                components: ["@nook/app-ui", "tamagui"],
-                config: "../../packages/app-ui/src/tamagui.config.ts",
-              },
-            ],
-          ]),
     ],
   };
 };

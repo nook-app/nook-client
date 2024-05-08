@@ -24,28 +24,5 @@
     "node_modules",
     "**/*.spec.ts",
     "**/*.test.ts"
-  ],
-  "references": [
-    {
-      "path": "./packages/content"
-    },
-    {
-      "path": "./packages/common"
-    },
-    {
-      "path": "./packages/content"
-    },
-    {
-      "path": "./packages/dashboard"
-    },
-    {
-      "path": "./packages/events"
-    },
-    {
-      "path": "./packages/farcaster"
-    },
-    {
-      "path": "./packages/sdk"
-    }
   ]
 }

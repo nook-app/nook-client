@@ -4,7 +4,7 @@ import { InstallAction } from "@nook/app/features/actions/install-action";
 import { notFound } from "next/navigation";
 import { PageNavigation } from "../../../components/PageNavigation";
 import { DefaultSidebar } from "@nook/app/features/home/default-sidebar";
-import { getServerSession } from "@nook/app/server/auth";
+import { getServerSession } from "@nook/app/server/session";
 
 const getActionMetadata = async (url: string) => {
   const res = await fetch(url);

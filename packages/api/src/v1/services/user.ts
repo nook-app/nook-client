@@ -4,6 +4,8 @@ import { FastifyInstance } from "fastify";
 import { createPublicClient, http, parseAbiItem } from "viem";
 import { optimism } from "viem/chains";
 
+const DEV_USER_FID = "20716";
+
 export class UserService {
   private client;
   private viemClient;
@@ -23,6 +25,10 @@ export class UserService {
       process.env.PRIVY_APP_SECRET as string,
     );
     this.jwt = fastify.jwt;
+  }
+
+  async loginUserWithPassword() {
+    return this.loginUserWithFarcaster(DEV_USER_FID);
   }
 
   async loginUser(token: string) {

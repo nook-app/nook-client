@@ -1,4 +1,4 @@
-import { getServerSession } from "@nook/app/server/auth";
+import { getServerSession } from "@nook/app/server/session";
 import { ReactNode } from "react";
 import { TabNavigation } from "@nook/app/features/tabs";
 

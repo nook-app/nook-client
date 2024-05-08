@@ -1,4 +1,4 @@
-import { getServerSession } from "@nook/app/server/auth";
+import { getServerSession } from "@nook/app/server/session";
 import { NavigationHeader } from "../../../components/NavigationHeader";
 import { notFound } from "next/navigation";
 import { TabNavigation } from "@nook/app/features/tabs";

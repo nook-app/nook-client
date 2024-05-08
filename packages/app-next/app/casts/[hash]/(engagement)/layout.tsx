@@ -1,5 +1,5 @@
 import { ReactNode } from "react";
-import { getServerSession } from "@nook/app/server/auth";
+import { getServerSession } from "@nook/app/server/session";
 import { TabNavigation } from "@nook/app/features/tabs";
 
 export default async function Cast({

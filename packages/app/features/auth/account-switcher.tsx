@@ -7,7 +7,7 @@ import {
   XStack,
   YStack,
 } from "@nook/app-ui";
-import { ReactNode, useCallback, useState } from "react";
+import { ReactNode, useEffect, useState } from "react";
 import { useAuth } from "../../context/auth";
 import { Session } from "@nook/common/types";
 import { useUsers } from "../../api/farcaster";
@@ -48,8 +48,11 @@ export const AccountSwitcher = ({ children }: { children: ReactNode }) => {
 const AccountSwitcherContent = () => {
   const { login, logout, user } = useAuth();
   const router = useRouter();
+  const [sessions, setSessions] = useState<Session[]>([]);
 
-  const sessions = getSessions();
+  useEffect(() => {
+    getSessions().then(setSessions);
+  }, []);
 
   return (
     <YStack width="$19">

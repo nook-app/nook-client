@@ -1,4 +1,3 @@
-import { Frame } from "frames.js";
 import { UrlContentResponse } from "./content";
 import {
   Channel,
@@ -11,6 +10,7 @@ import { TransactionDto } from "../onceupon";
 import { Nook } from "./nook";
 import { CastAction, PendingCast } from "../prisma/nook";
 import { TransactionResponse } from "./transactions";
+import { Frame } from "./frames";
 
 export type FarcasterCastResponse = {
   hash: string;
@@ -109,14 +109,22 @@ export type GetFarcasterUserFollowersRequest = {
 };
 
 export type GetSignerResponse = {
-  publicKey: string;
+  publicKey: `0x${string}`;
   token?: string;
   deeplinkUrl?: string;
   state?: string;
   requestFid?: string;
-  requestAddress?: string;
-  signature?: string;
+  requestAddress?: `0x${string}`;
+  signature?: `0x${string}`;
   deadline?: number;
+};
+
+export type PendingSignerResponse = {
+  publicKey: `0x${string}`;
+  requestFid: string;
+  deadline: number;
+  signature: `0x${string}`;
+  requestAddress: `0x${string}`;
 };
 
 export type ValidateSignerResponse = {
@@ -131,6 +139,7 @@ export type SubmitCastAddRequest = {
   castEmbedFid?: string;
   castEmbedHash?: string;
   embeds?: string[];
+  parsedEmbeds?: string[];
 };
 
 export type PendingCastRequest = SubmitCastAddRequest & {
@@ -162,11 +171,13 @@ export type SubmitReactionRemoveRequest = {
 export type SubmitLinkAddRequest = {
   linkType: string;
   targetFid: string;
+  username?: string;
 };
 
 export type SubmitLinkRemoveRequest = {
   linkType: string;
   targetFid: string;
+  username?: string;
 };
 
 export type SubmitUserDataAddRequest = {

@@ -1,4 +1,3 @@
-import { ReactNode } from "react";
 import { darkenColor, stringToColor } from "../utils";
 import { LinearGradient } from "@tamagui/linear-gradient";
 import { Image } from "@nook/app-ui";

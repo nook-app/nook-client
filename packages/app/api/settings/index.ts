@@ -13,3 +13,13 @@ export const useSettings = (session: Session | undefined) => {
     enabled: !!session,
   });
 };
+
+export const updateTheme = async (theme: string) => {
+  return await makeRequest("/user", {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ theme }),
+  });
+};

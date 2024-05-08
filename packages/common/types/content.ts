@@ -1,5 +1,5 @@
-import { Frame } from "frames.js";
 import { Metadata } from "metascraper";
+import { Frame } from "./frames";
 
 export type UrlContentResponse = {
   uri: string;
@@ -8,7 +8,7 @@ export type UrlContentResponse = {
   path?: string;
   query?: string;
   fragment?: string;
-  type?: string;
+  contentType?: string;
   length?: number;
   metadata?: Metadata;
   frame?: Frame;

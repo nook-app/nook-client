@@ -1,5 +1,5 @@
 import { TransactionFeedServer } from "@nook/app/features/transactions/transaction-feed-server";
-import { getServerSession } from "@nook/app/server/auth";
+import { getServerSession } from "@nook/app/server/session";
 import { UserFilterType } from "@nook/common/types";
 import { View } from "tamagui";
 

@@ -21,8 +21,6 @@ const run = async () => {
     },
     data: {
       ...content,
-      type: undefined,
-      contentType: content.type,
       metadata: (content.metadata || Prisma.DbNull) as Prisma.InputJsonValue,
       frame: (content.frame || Prisma.DbNull) as Prisma.InputJsonValue,
     },

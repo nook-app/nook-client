@@ -86,6 +86,7 @@ export type Channel = {
   imageUrl: string;
   channelId: string;
   creatorId?: string;
+  leadFid?: string;
   hostFids?: string[];
   followerCount?: number;
   createdAt: Date;

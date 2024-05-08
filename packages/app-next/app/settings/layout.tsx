@@ -1,4 +1,4 @@
-import { getServerSession } from "@nook/app/server/auth";
+import { getServerSession } from "@nook/app/server/session";
 import { PageNavigation } from "../../components/PageNavigation";
 import { notFound } from "next/navigation";
 

@@ -212,13 +212,13 @@ export class SignerService {
     }
 
     return {
-      publicKey: signer.publicKey,
+      publicKey: signer.publicKey as `0x${string}`,
       token: signer.token || undefined,
       deeplinkUrl: signer.deeplinkUrl || undefined,
       state: signer.state || undefined,
-      requestAddress: signer.requestAddress || undefined,
+      requestAddress: signer.requestAddress as `0x${string}` | undefined,
       requestFid: signer.requestFid || undefined,
-      signature: signer.signature || undefined,
+      signature: signer.signature as `0x${string}` | undefined,
       deadline: signer.deadline || undefined,
     };
   }

@@ -19,9 +19,6 @@ export const PageNavigation = ({
         borderLeftWidth="$0.5"
         borderRightColor="$borderColorBg"
         borderRightWidth="$0.5"
-        $lg={{
-          width: 300,
-        }}
       >
         {children}
       </View>

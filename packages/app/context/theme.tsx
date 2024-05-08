@@ -6,17 +6,13 @@ import {
   useMemo,
   useEffect,
 } from "react";
-import {
-  config,
-  TamaguiProvider as TamaguiProviderOG,
-  Theme,
-  ThemeName,
-} from "@nook/app-ui";
+import { config, TamaguiProvider, Theme, ThemeName } from "@nook/app-ui";
 import { NextThemeProvider, useRootTheme } from "@tamagui/next-theme";
 import { useServerInsertedHTML } from "next/navigation";
-import { updateTheme } from "../server/user";
 import { useAuth } from "./auth";
 import { updateSession } from "../utils/local-storage";
+import { updateTheme } from "../api/settings";
+import { updateServerSession } from "../server/session";
 
 type ThemeContextType = {
   rootTheme: "dark" | "light";
@@ -36,8 +32,7 @@ export const ThemeProvider = ({
   defaultTheme,
 }: SheetProviderProps) => {
   const [rootTheme, setRootTheme] = useRootTheme();
-
-  const [theme, setTheme] = useState<ThemeName>(defaultTheme || "pink");
+  const [theme, setTheme] = useState<ThemeName>(defaultTheme || "mauve");
   const { session } = useAuth();
 
   useEffect(() => {
@@ -63,15 +58,17 @@ export const ThemeProvider = ({
 
   const handleSetTheme = async (t: ThemeName) => {
     setTheme(t);
-    await updateTheme(t);
     if (session) {
-      updateSession({ ...session, theme: t });
+      await updateTheme(t);
+      const updatedSession = { ...session, theme: t };
+      await updateServerSession(updatedSession);
+      await updateSession(updatedSession);
     }
   };
 
   return (
     <NextThemeProvider onChangeTheme={setRootTheme as (name: string) => void}>
-      <TamaguiProviderOG
+      <TamaguiProvider
         config={config}
         disableInjectCSS
         themeClassNameOnRoot
@@ -86,7 +83,7 @@ export const ThemeProvider = ({
         >
           <Theme name={theme}>{contents}</Theme>
         </ThemeContext.Provider>
-      </TamaguiProviderOG>
+      </TamaguiProvider>
     </NextThemeProvider>
   );
 };

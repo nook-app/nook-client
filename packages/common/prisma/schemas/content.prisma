@@ -48,20 +48,3 @@ model FarcasterContentReference {
     @@index([hasFrame, fid, type, parentHash, timestamp(sort: Desc)])
     @@index([timestamp(sort: Desc), hasFrame, parentUrl, type, parentHash])
 }
-
-model UrlContent {
-    uri      String  @id
-    protocol String?
-    host     String?
-    path     String?
-    query    String?
-    fragment String?
-    type     String?
-    length   Int?
-    metadata Json?
-    hasFrame Boolean @default(false)
-    frame    Json?
-
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
-}

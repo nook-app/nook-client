@@ -3,8 +3,6 @@ import { NookButton, Dialog, XStack } from "@nook/app-ui";
 import { useCallback, useState } from "react";
 import { CastAction } from "@nook/common/types";
 import { useAuth } from "../../context/auth";
-import { installAction } from "../../server/settings";
-import { useQueryClient } from "@tanstack/react-query";
 import { InstallAction } from "./install-action";
 
 export const InstallActionDialog = ({

@@ -6,7 +6,6 @@ import { Link } from "solito/link";
 import { FarcasterBioText } from "../bio-text";
 import { ReactNode } from "react";
 import { UserHeader } from "../../../features/farcaster/user-profile/user-header";
-import { useUser } from "../../../api/farcaster";
 
 export const FarcasterUserTextDisplay = ({
   user,

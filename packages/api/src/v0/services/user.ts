@@ -4,9 +4,28 @@ import {
   createAppClient,
   viemConnector,
 } from "@farcaster/auth-client";
-import { SignInWithFarcasterRequest, TokenResponse } from "../../../types";
 import { PrismaClient } from "@nook/common/prisma/nook";
 import { UserMetadata } from "@nook/common/types";
+
+export type SignInWithFarcasterRequest = {
+  message: string;
+  signature: `0x${string}`;
+  nonce: string;
+};
+
+export type SignInWithPasswordRequest = {
+  username: string;
+  password: string;
+};
+
+export type TokenResponse = {
+  fid: string;
+  refreshToken: string;
+  token: string;
+  expiresAt: number;
+  theme: string;
+  isNewUser?: boolean;
+};
 
 const DEV_USER_FID = 20716;
 

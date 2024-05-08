@@ -14,8 +14,6 @@ import {
   User,
 } from "@nook/common/types";
 import {
-  loginServer,
-  logoutServer,
   loginUser,
   getSigner,
   validateSigner,
@@ -26,6 +24,7 @@ import {
 import { removeSession, updateSession } from "../utils/local-storage";
 import { useSettings } from "../api/settings";
 import { fetchUser } from "../api/farcaster";
+import { updateServerSession, deleteServerSession } from "../server/session";
 
 type AuthContextType = {
   session?: Session;
@@ -41,6 +40,7 @@ type AuthContextType = {
   setSigner: (signer: GetSignerResponse) => void;
   settings?: User;
   privyUser?: PrivyUser;
+  isInitializing: boolean;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -67,7 +67,7 @@ export const AuthProvider = ({
   const handleRefreshSigner = useCallback(async () => {
     if (!session) return;
 
-    if (!signer) {
+    if (!signer?.token) {
       const signer = await getSigner();
       await updateSigner(signer);
       setSigner(signer);
@@ -120,7 +120,7 @@ export const AuthProvider = ({
   });
 
   const handleSessionChange = useCallback(async (session: Session) => {
-    await loginServer(session);
+    await updateServerSession(session);
     setSession(session);
     getSigner().then((signer) => {
       setSigner(signer);
@@ -150,12 +150,12 @@ export const AuthProvider = ({
 
   const logout = useCallback(async () => {
     if (!session) return;
-    const remainingSessions = removeSession(session);
+    const remainingSessions = await removeSession(session);
     if (remainingSessions.length > 0) {
-      await loginServer(remainingSessions[0]);
+      await updateServerSession(remainingSessions[0]);
       await handleSessionChange(remainingSessions[0]);
     } else {
-      await logoutServer();
+      await deleteServerSession();
       setSession(undefined);
       setSigner(undefined);
       setUser(undefined);
@@ -178,6 +178,7 @@ export const AuthProvider = ({
         refreshSigner: handleRefreshSigner,
         refreshSignerByPublicKey: handleRefreshSignerByPublicKey,
         settings: data,
+        isInitializing: false,
       }}
     >
       {children}

@@ -1,14 +1,30 @@
 import { FastifyInstance } from "fastify";
-import {
-  SignInWithFarcasterRequest,
-  SignInWithPasswordRequest,
-} from "../../../../types";
 import { UserService } from "../../services/user";
 import { UserMetadata } from "@nook/common/types";
 import { PrivyClient } from "@privy-io/server-auth";
 import { createPublicClient, http, parseAbiItem } from "viem";
 import { optimism } from "viem/chains";
 import { CONTRACTS } from "@nook/common/utils";
+
+export type SignInWithFarcasterRequest = {
+  message: string;
+  signature: `0x${string}`;
+  nonce: string;
+};
+
+export type SignInWithPasswordRequest = {
+  username: string;
+  password: string;
+};
+
+export type TokenResponse = {
+  fid: string;
+  refreshToken: string;
+  token: string;
+  expiresAt: number;
+  theme: string;
+  isNewUser?: boolean;
+};
 
 const viemClient = createPublicClient({
   chain: optimism,

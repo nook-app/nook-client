@@ -2,6 +2,7 @@ export * from "./content";
 export * from "./events";
 export * from "./farcaster";
 export * from "./feed";
+export * from "./frames";
 export * from "./nook";
 export * from "./api";
 export * from "./notifications";

@@ -1,6 +1,6 @@
 import { FarcasterFilteredFeedServer } from "@nook/app/features/farcaster/cast-feed/filtered-feed-server";
 import { FarcasterTrendingFeed } from "@nook/app/features/farcaster/cast-feed/trending-feed";
-import { getServerSession } from "@nook/app/server/auth";
+import { getServerSession } from "@nook/app/server/session";
 import { fetchTrendingCasts } from "@nook/app/server/feed";
 import { UserFilterType } from "@nook/common/types";
 import { FARCON_FIDS } from "@nook/common/utils";

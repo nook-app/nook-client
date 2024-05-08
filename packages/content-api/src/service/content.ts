@@ -94,8 +94,6 @@ export class ContentService {
         },
         data: {
           ...c,
-          type: undefined,
-          contentType: c.type,
           metadata: (c.metadata || Prisma.DbNull) as Prisma.InputJsonValue,
           frame: (c.frame || Prisma.DbNull) as Prisma.InputJsonValue,
         },
@@ -155,7 +153,7 @@ export class ContentService {
         path: referencedContent?.path,
         query: referencedContent?.query,
         fragment: referencedContent?.fragment,
-        contentType: referencedContent?.type,
+        contentType: referencedContent?.contentType,
         length: referencedContent?.length,
         hasFrame: referencedContent?.hasFrame,
         metadata: (referencedContent?.metadata ||
@@ -177,7 +175,7 @@ export class ContentService {
         path: referencedContent?.path,
         query: referencedContent?.query,
         fragment: referencedContent?.fragment,
-        contentType: referencedContent?.type,
+        contentType: referencedContent?.contentType,
         length: referencedContent?.length,
         hasFrame: referencedContent?.hasFrame,
         metadata: (referencedContent?.metadata ||

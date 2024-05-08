@@ -19,8 +19,8 @@ export const Tabs = ({
       borderBottomWidth="$0.5"
       borderBottomColor="$borderColorBg"
       $platform-web={{
-        overflowX: "scroll",
-        overflowY: "scroll",
+        overflowX: "auto",
+        overflowY: "auto",
       }}
     >
       {tabs.map((tab, index) => (
@@ -48,7 +48,7 @@ const Tab = ({
           width: "100%",
           justifyContent: "center",
           alignItems: "center",
-          minWidth: 120,
+          minWidth: 100,
         },
       }}
     >

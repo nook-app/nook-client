@@ -12,8 +12,8 @@ import metascraperLogoFavicon from "metascraper-logo-favicon";
 import metascraperPublisher from "metascraper-publisher";
 import metascraperReadability from "metascraper-readability";
 import metascraperUrl from "metascraper-url";
-import { UrlContent } from "@nook/common/prisma/content";
 import { Frame, getFrame } from "frames.js";
+import { UrlContentResponse } from "@nook/common/types";
 
 export type UrlMetadata = {
   metadata?: Metadata;
@@ -37,9 +37,7 @@ const USER_AGENT_OVERRIDES: { [key: string]: string } = {
  */
 export const getUrlContent = async (
   uri: string,
-): Promise<UrlContent | undefined> => {
-  const date = new Date();
-
+): Promise<UrlContentResponse | undefined> => {
   let url: URL;
   try {
     url = new URL(uri);
@@ -51,20 +49,18 @@ export const getUrlContent = async (
     }
   }
 
-  const content: UrlContent = {
+  const content: UrlContentResponse = {
     uri,
     protocol: url.protocol,
     host: url.host,
     path: url.pathname,
     query: url.search,
     fragment: url.hash,
-    type: null,
-    length: null,
-    metadata: null,
+    contentType: undefined,
+    length: undefined,
+    metadata: undefined,
     hasFrame: false,
-    frame: null,
-    createdAt: date,
-    updatedAt: date,
+    frame: undefined,
   };
 
   try {
@@ -77,9 +73,9 @@ export const getUrlContent = async (
         return;
       }
 
-      content.type = metadata.contentType || null;
-      content.length = metadata.contentLength || null;
-      content.metadata = metadata.metadata || null;
+      content.contentType = metadata.contentType || undefined;
+      content.length = metadata.contentLength || undefined;
+      content.metadata = metadata.metadata || undefined;
 
       if (metadata.frame?.buttons && metadata.frame?.buttons.length > 0) {
         content.hasFrame = true;
@@ -91,7 +87,7 @@ export const getUrlContent = async (
     return content;
   }
 
-  if (!content.type) {
+  if (!content.contentType) {
     console.log(`[metadata] [${uri}] failed due to missing type`);
     return content;
   }
