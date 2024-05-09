@@ -11,7 +11,7 @@ import { CastAction } from "@nook/common/types";
 import { GradientIcon } from "../../components/gradient-icon";
 import { Dot, Trash } from "@tamagui/lucide-icons";
 import { useCallback, useState } from "react";
-import { installAction } from "../../server/settings";
+import { installAction } from "../../api/settings";
 import { useQueryClient } from "@tanstack/react-query";
 import { Link } from "solito/link";
 

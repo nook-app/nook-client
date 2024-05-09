@@ -21,7 +21,6 @@ import {
   FarcasterShareButton,
 } from "../../../components/farcaster/casts/cast-actions";
 import { FarcasterCustomActionButton } from "../../../components/farcaster/casts/cast-custom-action";
-import { FarcasterCastResponseDefaultDisplay } from "../../../components/farcaster/casts/cast-display";
 import {
   Display,
   FarcasterCastResponse,
@@ -32,6 +31,7 @@ import { BarChartBig, Clock, Rocket } from "@tamagui/lucide-icons";
 import { useState } from "react";
 import { FarcasterCastResponseKebabMenu } from "../../../components/farcaster/casts/cast-kebab-menu";
 import { Loading } from "../../../components/loading";
+import { FarcasterCastLink } from "../../../components/farcaster/casts/cast-link";
 
 function formatTimestampTime(timestamp: number) {
   const timeFormatter = new Intl.DateTimeFormat("en-US", {
@@ -64,27 +64,21 @@ export const FarcasterExpandedCast = ({
 
   const casts = data?.pages.flatMap((page) => page.data) ?? [];
 
-  if (isLoading) {
-    return <Loading />;
-  }
-
   return (
-    <View>
-      <FarcasterInfiniteFeed
-        casts={casts}
-        fetchNextPage={fetchNextPage}
-        isFetchingNextPage={isFetchingNextPage}
-        hasNextPage={hasNextPage}
-        displayMode={Display.REPLIES}
-        ListHeaderComponent={
-          <FarcasterExpandedCastHeader
-            cast={cast}
-            replySort={replySort}
-            onReplySortChange={setReplySort}
-          />
-        }
-      />
-    </View>
+    <FarcasterInfiniteFeed
+      casts={casts}
+      fetchNextPage={fetchNextPage}
+      isFetchingNextPage={isFetchingNextPage}
+      hasNextPage={hasNextPage}
+      displayMode={Display.REPLIES}
+      ListHeaderComponent={
+        <FarcasterExpandedCastHeader
+          cast={cast}
+          replySort={replySort}
+          onReplySortChange={setReplySort}
+        />
+      }
+    />
   );
 };
 
@@ -103,10 +97,10 @@ const FarcasterExpandedCastHeader = ({
   return (
     <View>
       {cast.ancestors?.toReversed().map((ancestor) => (
-        <FarcasterCastResponseDefaultDisplay
+        <FarcasterCastLink
           key={ancestor.hash}
           cast={ancestor}
-          isConnected
+          displayMode={Display.LIST}
         />
       ))}
       <YStack gap="$3" padding="$3">
@@ -120,18 +114,19 @@ const FarcasterExpandedCastHeader = ({
           justifyContent="space-between"
           alignItems="center"
           flexWrap="wrap"
+          $sm={{
+            flexDirection: "column-reverse",
+            alignItems: "flex-start",
+            gap: "$3",
+          }}
         >
           <FarcasterCastResponseEngagement
             cast={cast}
             types={["likes", "replies", "quotes", "recasts"]}
           />
           <XStack alignItems="center" gap="$2">
-            <NookText muted $xs={{ display: "none" }}>
-              {formatTimestampTime(cast.timestamp)}
-            </NookText>
-            <NookText muted $xs={{ display: "none" }}>
-              {" · "}
-            </NookText>
+            <NookText muted>{formatTimestampTime(cast.timestamp)}</NookText>
+            <NookText muted>{"·"}</NookText>
             <NookText muted>{formatTimestampDate(cast.timestamp)}</NookText>
             {cast.channel && (
               <FarcasterChannelBadge channel={cast.channel} asLink />

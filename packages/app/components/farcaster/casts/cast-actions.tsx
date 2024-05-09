@@ -60,7 +60,8 @@ export const FarcasterReplyActionButton = ({
         >
           <MessageSquare
             size={20}
-            opacity={0.4}
+            opacity={0.75}
+            color="$mauve11"
             $group-hover={{
               color: "$blue9",
               opacity: 1,
@@ -106,13 +107,13 @@ export const FarcasterRecastActionButton = ({
       >
         <Repeat2
           size={24}
-          opacity={isRecasted ? 1 : 0.4}
+          opacity={isRecasted ? 1 : 0.75}
           $group-hover={{
             color: "$green9",
             opacity: 1,
           }}
           strokeWidth={isRecasted ? 2.5 : 1.75}
-          color={isRecasted ? theme.green9.val : undefined}
+          color={isRecasted ? theme.green9.val : "$mauve11"}
         />
       </View>
     );
@@ -144,13 +145,13 @@ export const FarcasterRecastActionButton = ({
           >
             <Repeat2
               size={24}
-              opacity={isRecasted ? 1 : 0.4}
+              opacity={isRecasted ? 1 : 0.75}
               $group-hover={{
                 color: "$green9",
                 opacity: 1,
               }}
               strokeWidth={isRecasted ? 2.5 : 1.75}
-              color={isRecasted ? theme.green9.val : undefined}
+              color={isRecasted ? theme.green9.val : "$mauve11"}
             />
           </View>
         }
@@ -217,12 +218,12 @@ export const FarcasterLikeActionButton = ({
       >
         <Heart
           size={20}
-          opacity={isLiked ? 1 : 0.4}
+          opacity={isLiked ? 1 : 0.75}
           $group-hover={{
             color: "$red9",
             opacity: 1,
           }}
-          color={isLiked ? theme.red9.val : undefined}
+          color={isLiked ? theme.red9.val : "$mauve11"}
           fill={isLiked ? theme.red9.val : "transparent"}
         />
       </View>
@@ -253,7 +254,8 @@ export const FarcasterShareButton = ({
         >
           <Share
             size={20}
-            opacity={0.4}
+            opacity={0.75}
+            color="$mauve11"
             $group-hover={{
               color: "$color9",
               opacity: 1,

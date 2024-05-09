@@ -59,7 +59,7 @@ export const CreateCastMentions = ({ children }: { children: ReactNode }) => {
           <YStack width={350}>
             {(isChannelsLoading || isUsersLoading) && (
               <View padding="$4" justifyContent="center" alignItems="center">
-                <Spinner color="$color11" size="small" />
+                <Spinner size="small" />
               </View>
             )}
             {!isChannelsLoading &&

@@ -14,7 +14,7 @@ import { Dot, LayoutGrid, Search, Settings } from "@tamagui/lucide-icons";
 import { useCallback, useState } from "react";
 import { CastAction, FarcasterCastResponse } from "@nook/common/types";
 import { useAuth } from "../../../context/auth";
-import { submitFrameAction } from "../../../server/farcaster";
+import { submitFrameAction } from "../../../api/farcaster/actions";
 import { useRouter } from "solito/navigation";
 import { GradientIcon } from "../../gradient-icon";
 
@@ -66,7 +66,8 @@ export const FarcasterCustomActionButton = ({
           >
             <LayoutGrid
               size={20}
-              opacity={0.4}
+              opacity={0.75}
+              color="$mauve11"
               $group-hover={{
                 color: "$color9",
                 opacity: 1,

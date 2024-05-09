@@ -104,7 +104,7 @@ export const ChannelSelect = ({
             </XStack>
             {isLoading && (
               <View padding="$4" justifyContent="center" alignItems="center">
-                <Spinner color="$color11" size="small" />
+                <Spinner size="small" />
               </View>
             )}
             {showSearchResults &&

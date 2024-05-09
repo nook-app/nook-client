@@ -25,15 +25,15 @@ export const Embed = ({
   }
 
   if (
-    content.type?.startsWith("image/") ||
-    (!content.type && content.uri.includes("imgur.com"))
+    content.contentType?.startsWith("image/") ||
+    (!content.contentType && content.uri.includes("imgur.com"))
   ) {
     return <EmbedImage uri={content.uri} />;
   }
 
   if (
-    content.type?.startsWith("video/") ||
-    content.type?.startsWith("application/x-mpegURL") ||
+    content.contentType?.startsWith("video/") ||
+    content.contentType?.startsWith("application/x-mpegURL") ||
     content.uri.includes("youtube.com") ||
     content.uri.includes("youtu.be")
   ) {
@@ -61,8 +61,8 @@ export const Embeds = ({
 }) => {
   const isAllImages = cast.embeds.every(
     (embed) =>
-      embed.type?.startsWith("image/") ||
-      (!embed.type && embed.uri.includes("imgur.com")),
+      embed.contentType?.startsWith("image/") ||
+      (!embed.contentType && embed.uri.includes("imgur.com")),
   );
   if (isAllImages) {
     return (

@@ -5,6 +5,7 @@ import { AnimatePresence, Spinner, View } from "@nook/app-ui";
 import { InfiniteScrollList } from "../../../components/infinite-scroll-list";
 import { FarcasterCastResponseDisplay } from "../../../components/farcaster/casts/cast-display";
 import { useRouter } from "next/navigation";
+import { FarcasterCastLink } from "../../../components/farcaster/casts/cast-link";
 
 export const FarcasterInfiniteFeed = ({
   casts,
@@ -27,25 +28,10 @@ export const FarcasterInfiniteFeed = ({
     <InfiniteScrollList
       data={casts}
       renderItem={({ item }) => (
-        <AnimatePresence>
-          <View
-            enterStyle={{
-              opacity: 0,
-            }}
-            exitStyle={{
-              opacity: 0,
-            }}
-            animation="quick"
-            opacity={1}
-            scale={1}
-            y={0}
-          >
-            <FarcasterCastResponseDisplay
-              cast={item as FarcasterCastResponse}
-              displayMode={displayMode}
-            />
-          </View>
-        </AnimatePresence>
+        <FarcasterCastLink
+          cast={item as FarcasterCastResponse}
+          displayMode={displayMode}
+        />
       )}
       onEndReached={fetchNextPage}
       numColumns={displayMode === Display.GRID ? 3 : 1}

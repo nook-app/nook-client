@@ -189,8 +189,6 @@ const fetchUrlMetadata = async (url: string) => {
     htmlString: html,
   });
 
-  console.log(`[metadata] [${url}] reports: ${JSON.stringify(reports)}`);
-
   if (frame?.image && new Blob([frame?.image]).size < 256000) {
     urlMetadata.frame = frame;
   }

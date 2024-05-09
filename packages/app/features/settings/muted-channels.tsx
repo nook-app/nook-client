@@ -38,7 +38,7 @@ export const MutedChannels = ({ settings }: { settings: User }) => {
       <Separator borderColor="$borderColorBg" />
       {isLoading && (
         <View padding="$4" gap="$4">
-          <Spinner color="$color11" />
+          <Spinner />
         </View>
       )}
       {channels.map((channel) => (

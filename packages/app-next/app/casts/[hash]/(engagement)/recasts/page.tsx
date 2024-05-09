@@ -1,5 +1,5 @@
 import { FarcasterCastRecasts } from "@nook/app/features/farcaster/cast-screen/cast-recasts";
-import { fetchCastRecasts } from "@nook/app/server/feed";
+import { fetchCastRecasts } from "@nook/app/api/farcaster/casts";
 
 export default async function CastRecasts({
   params,

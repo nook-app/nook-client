@@ -1,7 +1,10 @@
-"use server";
+import { makeUrlRequest } from "../utils";
 
-import { makeRequest, makeUrlRequest } from "../api/utils";
-import { ImgurUploadResponse } from "@nook/common/types";
+export type ImgurUploadResponse = {
+  data: {
+    link: string;
+  };
+};
 
 export const uploadImage = async (
   image: string,

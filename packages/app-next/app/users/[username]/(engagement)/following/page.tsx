@@ -1,5 +1,5 @@
 import { FarcasterUserFollowing } from "@nook/app/features/farcaster/user-profile/user-following";
-import { fetchUserFollowing } from "@nook/app/server/feed";
+import { fetchUserFollowing } from "@nook/app/api/farcaster/users";
 
 export default async function User({
   params,

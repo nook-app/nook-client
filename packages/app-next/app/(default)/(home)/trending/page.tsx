@@ -1,6 +1,6 @@
 import { FarcasterTrendingFeed } from "@nook/app/features/farcaster/cast-feed/trending-feed";
 import { getServerSession } from "@nook/app/server/session";
-import { fetchTrendingCasts } from "@nook/app/server/feed";
+import { fetchTrendingCasts } from "@nook/app/api/farcaster/feed";
 
 export default async function Home() {
   const [session, trendingFeed] = await Promise.all([

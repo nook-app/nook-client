@@ -26,7 +26,7 @@ export type FeedContext = {
 export type FarcasterFeedRequest = {
   api?: string;
   filter: FarcasterFeedFilter;
-  context: FeedContext;
+  context?: FeedContext;
   cursor?: string;
 };
 
@@ -47,6 +47,8 @@ export enum Display {
   MASONRY = "MASONRY",
   FRAMES = "FRAMES",
   EMBEDS = "EMBEDS",
+  LIST = "LIST",
+  BORDERLESS = "BORDERLESS",
 }
 
 export type CreateFeedRequest = {

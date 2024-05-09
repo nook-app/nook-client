@@ -1,9 +1,15 @@
 import {
   SubmitCastAddRequest,
+  SubmitCastRemoveRequest,
+  SubmitFrameActionRequest,
+  SubmitFrameActionResponse,
   SubmitLinkAddRequest,
   SubmitLinkRemoveRequest,
   SubmitMessageError,
   SubmitMessageResponse,
+  SubmitReactionAddRequest,
+  SubmitReactionRemoveRequest,
+  SubmitUserDataAddRequest,
 } from "@nook/common/types";
 import { makeRequest } from "../utils";
 
@@ -38,19 +44,85 @@ export const submitCastAdd = async (
 export const submitLinkAdd = async (
   req: SubmitLinkAddRequest,
 ): Promise<SubmitMessageResponse | SubmitMessageError> => {
-  return await makeRequest("/signer/link-add", {
+  const response = await makeRequest("/signer/link-add", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
     body: JSON.stringify(req),
   });
+  return response;
 };
 
 export const submitLinkRemove = async (
   req: SubmitLinkRemoveRequest,
 ): Promise<SubmitMessageResponse | SubmitMessageError> => {
-  return await makeRequest("/signer/link-remove", {
+  const response = await makeRequest("/signer/link-remove", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(req),
+  });
+  return response;
+};
+
+export const submitCastRemove = async (
+  req: SubmitCastRemoveRequest,
+): Promise<SubmitMessageResponse | SubmitMessageError> => {
+  const response = await makeRequest("/signer/cast-remove", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(req),
+  });
+  return response;
+};
+
+export const submitReactionAdd = async (
+  req: SubmitReactionAddRequest,
+): Promise<SubmitMessageResponse | SubmitMessageError> => {
+  const response = await makeRequest("/signer/reaction-add", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(req),
+  });
+  return response;
+};
+
+export const submitReactionRemove = async (
+  req: SubmitReactionRemoveRequest,
+): Promise<SubmitMessageResponse | SubmitMessageError> => {
+  const response = await makeRequest("/signer/reaction-remove", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(req),
+  });
+  return response;
+};
+
+export const submitUserDataAdd = async (
+  req: SubmitUserDataAddRequest,
+): Promise<SubmitMessageResponse | SubmitMessageError> => {
+  const response = await makeRequest("/signer/user-data-add", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(req),
+  });
+  return response;
+};
+
+export const submitFrameAction = async (
+  req: SubmitFrameActionRequest,
+): Promise<SubmitFrameActionResponse | SubmitMessageError> => {
+  return await makeRequest("/frames/action", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

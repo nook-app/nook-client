@@ -47,7 +47,7 @@ const DeleteCast = ({
 
   return (
     <KebabMenuItem
-      Icon={isDeleting ? <Spinner color="$color11" /> : Trash}
+      Icon={isDeleting ? <Spinner /> : Trash}
       title="Delete cast"
       color="$red9"
       onPress={deleteCast}

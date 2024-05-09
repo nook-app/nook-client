@@ -16,10 +16,8 @@ import {
   loginUser,
   getSigner,
   validateSigner,
-  updateSigner,
-  updateUser,
   validateSignerByPublicKey,
-} from "../server/auth";
+} from "../api/auth";
 import {
   getSession,
   removeSession,
@@ -83,7 +81,6 @@ export const AuthProvider = ({
 
     if (!signer?.token) {
       const signer = await getSigner();
-      await updateSigner(signer);
       setSigner(signer);
       return signer.state;
     }
@@ -94,7 +91,6 @@ export const AuthProvider = ({
     }
 
     signer.state = validation.state;
-    await updateSigner(signer);
 
     return signer.state;
   }, [session, signer]);
@@ -104,7 +100,6 @@ export const AuthProvider = ({
 
     if (!signer) {
       const signer = await getSigner();
-      await updateSigner(signer);
       setSigner(signer);
       return signer.state;
     }
@@ -115,7 +110,6 @@ export const AuthProvider = ({
     }
 
     signer.state = validation.state;
-    await updateSigner(signer);
 
     return signer.state;
   }, [session, signer]);
@@ -133,11 +127,9 @@ export const AuthProvider = ({
     setSession(session);
     getSigner().then((signer) => {
       setSigner(signer);
-      updateSigner(signer);
     });
     fetchUser(session.fid).then((user) => {
       setUser(user);
-      updateUser(user);
     });
     await updateSession(session);
   }, []);

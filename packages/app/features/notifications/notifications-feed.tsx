@@ -9,16 +9,16 @@ import {
   XStack,
   YStack,
 } from "@nook/app-ui";
-import { NotificationResponse } from "@nook/common/types";
+import { Display, NotificationResponse } from "@nook/common/types";
 import { InfiniteScrollList } from "../../components/infinite-scroll-list";
 import { NamedExoticComponent, memo } from "react";
-import { FarcasterCastResponseDefaultDisplay } from "../../components/farcaster/casts/cast-display";
 import { useAuth } from "../../context/auth";
 import { Link, TextLink } from "solito/link";
 import { CdnAvatar } from "../../components/cdn-avatar";
 import { User, Repeat2, Heart } from "@tamagui/lucide-icons";
 import { useRouter } from "next/navigation";
 import { FarcasterCastResponseText } from "../../components/farcaster/casts/cast-text";
+import { FarcasterCastLink } from "../../components/farcaster/casts/cast-link";
 
 export const NotificationsInfiniteFeed = ({
   notifications,
@@ -81,9 +81,10 @@ const PostNotification = ({
   if (!notification.cast) return null;
   return (
     <Notification href={`/casts/${notification.cast?.hash}`}>
-      <View flex={1}>
-        <FarcasterCastResponseDefaultDisplay cast={notification.cast} />
-      </View>
+      <FarcasterCastLink
+        cast={notification.cast}
+        displayMode={Display.BORDERLESS}
+      />
     </Notification>
   );
 };
@@ -94,9 +95,10 @@ const MentionNotification = ({
   if (!notification.cast) return null;
   return (
     <Notification href={`/casts/${notification.cast?.hash}`}>
-      <View flex={1}>
-        <FarcasterCastResponseDefaultDisplay cast={notification.cast} />
-      </View>
+      <FarcasterCastLink
+        cast={notification.cast}
+        displayMode={Display.BORDERLESS}
+      />
     </Notification>
   );
 };
@@ -108,11 +110,14 @@ const ReplyNotification = ({
   return (
     <Notification href={`/casts/${notification.cast?.hash}`}>
       <View flex={1}>
-        <FarcasterCastResponseDefaultDisplay
+        <FarcasterCastLink
           cast={notification.cast.parent}
-          isConnected
+          displayMode={Display.LIST}
         />
-        <FarcasterCastResponseDefaultDisplay cast={notification.cast} />
+        <FarcasterCastLink
+          cast={notification.cast}
+          displayMode={Display.BORDERLESS}
+        />
       </View>
     </Notification>
   );
@@ -124,9 +129,10 @@ const QuoteNotification = ({
   if (!notification.cast) return null;
   return (
     <Notification href={`/casts/${notification.cast?.hash}`}>
-      <View flex={1}>
-        <FarcasterCastResponseDefaultDisplay cast={notification.cast} />
-      </View>
+      <FarcasterCastLink
+        cast={notification.cast}
+        displayMode={Display.BORDERLESS}
+      />
     </Notification>
   );
 };

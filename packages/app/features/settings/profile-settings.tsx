@@ -9,8 +9,8 @@ import {
 import { CdnAvatar } from "../../components/cdn-avatar";
 import { useRef, useState } from "react";
 import { useAuth } from "../../context/auth";
-import { submitUserDataAdd } from "../../server/farcaster";
-import { uploadImage } from "../../server/media";
+import { submitUserDataAdd } from "../../api/farcaster/actions";
+import { uploadImage } from "../../api/media";
 
 export const ProfileSettings = () => {
   const { user, setUser } = useAuth();
@@ -78,7 +78,7 @@ export const ProfileSettings = () => {
         disabledStyle={{ opacity: 0.5 }}
         onPress={handleSave}
       >
-        {loading ? <Spinner color="$color11" /> : "Save"}
+        {loading ? <Spinner /> : "Save"}
       </NookButton>
     </YStack>
   );
@@ -130,7 +130,7 @@ const UploadImageButton = ({
           width="100%"
           height="100%"
         >
-          {loading && <Spinner color="$color11" />}
+          {loading && <Spinner />}
         </View>
       </CdnAvatar>
     </View>

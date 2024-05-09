@@ -129,7 +129,7 @@ const SearchResults = ({
         alignItems="center"
       >
         {isLoading ? (
-          <Spinner color="$color11" size="small" />
+          <Spinner size="small" />
         ) : (
           <NookText muted fontSize="$4">
             Search for casts, users, or channels

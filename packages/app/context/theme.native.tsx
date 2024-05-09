@@ -19,8 +19,8 @@ import { getSession, updateSession } from "../utils/local-storage";
 
 type ThemeContextType = {
   rootTheme: "dark" | "light";
-  theme: ThemeName;
-  setTheme: (theme: ThemeName) => void;
+  theme: ThemeName | undefined;
+  setTheme: (theme: ThemeName | undefined) => void;
 };
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
@@ -30,7 +30,7 @@ type SheetProviderProps = {
 };
 
 export const ThemeProvider = ({ children }: SheetProviderProps) => {
-  const [theme, setTheme] = useState<ThemeName>("mauve");
+  const [theme, setTheme] = useState<ThemeName | undefined>(undefined);
   const colorScheme = useColorScheme();
 
   useEffect(() => {
@@ -42,7 +42,7 @@ export const ThemeProvider = ({ children }: SheetProviderProps) => {
     })();
   }, []);
 
-  const handleSetTheme = async (t: ThemeName) => {
+  const handleSetTheme = async (t: ThemeName | undefined) => {
     setTheme(t);
     const session = await getSession();
     if (session) {
@@ -63,7 +63,7 @@ export const ThemeProvider = ({ children }: SheetProviderProps) => {
             setTheme: handleSetTheme,
           }}
         >
-          {children}
+          <Theme name={theme}>{children}</Theme>
         </ThemeContext.Provider>
       </RNThemeProvider>
     </TamaguiProvider>

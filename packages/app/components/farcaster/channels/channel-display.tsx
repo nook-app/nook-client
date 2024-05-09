@@ -1,11 +1,9 @@
-import { NookText, Text, Tooltip, View, XStack, YStack } from "@nook/app-ui";
+import { NookText, Text, View, XStack, YStack } from "@nook/app-ui";
 import { Channel } from "@nook/common/types";
 import { Link } from "solito/link";
 import { CdnAvatar } from "../../cdn-avatar";
 import { FarcasterBioText } from "../bio-text";
-import { ReactNode } from "react";
-import { ChannelHeader } from "../../../features/farcaster/channel-profile/channel-header";
-import { ChannelOverview } from "./channel-overview";
+import { FarcasterChannelTooltip } from "./channel-tooltip";
 
 export const FarcasterChannelTextDisplay = ({
   channel,
@@ -114,44 +112,6 @@ export const FarcasterChannelAvatar = ({
   return Component;
 };
 
-export const FarcasterChannelTooltip = ({
-  channel,
-  children,
-}: {
-  channel: Channel;
-  children: ReactNode;
-}) => {
-  return (
-    <Tooltip delay={100}>
-      <Tooltip.Trigger asChild>{children}</Tooltip.Trigger>
-      <Tooltip.Content
-        enterStyle={{ x: 0, y: -5, opacity: 0, scale: 0.9 }}
-        exitStyle={{ x: 0, y: -5, opacity: 0, scale: 0.9 }}
-        scale={1}
-        x={0}
-        y={0}
-        opacity={1}
-        animation={[
-          "100ms",
-          {
-            opacity: {
-              overshootClamping: true,
-            },
-          },
-        ]}
-        backgroundColor="$color1"
-        borderColor="$borderColorBg"
-        borderWidth="$0.25"
-        padding="$0"
-        width={400}
-        $sm={{ width: "auto" }}
-      >
-        <ChannelOverview channel={channel} />
-      </Tooltip.Content>
-    </Tooltip>
-  );
-};
-
 export const FarcasterChannelBadge = ({
   channel,
   asLink,
@@ -161,12 +121,12 @@ export const FarcasterChannelBadge = ({
       gap="$1.5"
       alignItems="center"
       flexShrink={1}
-      backgroundColor="$color3"
+      backgroundColor="$color1"
       borderRadius="$6"
       paddingHorizontal="$2"
       paddingVertical="$1.5"
-      borderColor="$color7"
-      borderWidth="$0.5"
+      borderColor="$borderColorBg"
+      borderWidth="$0.25"
       hoverStyle={{
         // @ts-ignore
         transition: "all 0.2s ease-in-out",

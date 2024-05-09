@@ -4,7 +4,6 @@ import {
   useQuery,
   InfiniteData,
   useInfiniteQuery,
-  useQueryClient,
 } from "@tanstack/react-query";
 
 export const fetchUser = async (username: string): Promise<FarcasterUser> => {

@@ -3,7 +3,7 @@ import { FarcasterUser } from "@nook/common/types";
 import { useToastController } from "@nook/app-ui";
 import { useAuth } from "../context/auth";
 import { useMuteStore } from "../store/useMuteStore";
-import { muteUser, unmuteUser } from "../server/settings";
+import { muteUser, unmuteUser } from "../api/settings";
 
 export const useMuteUser = (user: FarcasterUser) => {
   const { settings, session, login } = useAuth();

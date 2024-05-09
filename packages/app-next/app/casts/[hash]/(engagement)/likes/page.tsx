@@ -1,5 +1,5 @@
 import { FarcasterCastLikes } from "@nook/app/features/farcaster/cast-screen/cast-likes";
-import { fetchCastLikes } from "@nook/app/server/feed";
+import { fetchCastLikes } from "@nook/app/api/farcaster/casts";
 
 export default async function CastLikes({
   params,

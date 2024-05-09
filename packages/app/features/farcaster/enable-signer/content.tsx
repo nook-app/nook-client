@@ -152,7 +152,7 @@ const EnableWithCustody = ({ address }: { address: `0x${string}` }) => {
           opacity: 0.5,
         }}
       >
-        {isConfirming ? <Spinner color="$color11" /> : "Enable Nook"}
+        {isConfirming ? <Spinner /> : "Enable Nook"}
       </NookButton>
     </YStack>
   );

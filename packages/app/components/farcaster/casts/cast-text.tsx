@@ -3,8 +3,8 @@ import { Buffer } from "buffer";
 import { FarcasterCastResponse } from "@nook/common/types";
 import { TextLink } from "solito/link";
 import { NookText } from "@nook/app-ui";
-import { FarcasterChannelTooltip } from "../channels/channel-display";
 import { FarcasterUserTooltip } from "../users/user-display";
+import { FarcasterChannelTooltip } from "../channels/channel-tooltip";
 
 export const FarcasterCastResponseText = ({
   cast,

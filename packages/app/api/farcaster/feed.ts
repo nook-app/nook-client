@@ -1,10 +1,14 @@
 import {
+  Channel,
   FarcasterFeedFilter,
   FarcasterFeedRequest,
   FetchCastsResponse,
 } from "@nook/common/types";
 import { makeRequest } from "../utils";
 import { InfiniteData, useInfiniteQuery } from "@tanstack/react-query";
+import { useUserStore } from "../../store/useUserStore";
+import { useChannelStore } from "../../store/useChannelStore";
+import { useCastStore } from "../../store/useCastStore";
 
 export const fetchCastFeed = async (
   req: FarcasterFeedRequest,
@@ -26,6 +30,9 @@ export const useCastFeed = (
   api?: string,
   initialData?: FetchCastsResponse,
 ) => {
+  const addUsers = useUserStore((state) => state.addUsers);
+  const addChannels = useChannelStore((state) => state.addChannels);
+  const addCasts = useCastStore((state) => state.addCasts);
   return useInfiniteQuery<
     FetchCastsResponse,
     unknown,
@@ -40,6 +47,14 @@ export const useCastFeed = (
         filter,
         cursor: pageParam,
       });
+      const users = data.data.map((cast) => cast.user);
+      addUsers(users);
+      const channels = data.data
+        .map((cast) => cast.channel)
+        .filter(Boolean) as Channel[];
+      addChannels(channels);
+      const casts = data.data.map((cast) => cast);
+      addCasts(casts);
       return data;
     },
     getNextPageParam: (lastPage) => lastPage.nextCursor,
@@ -58,7 +73,7 @@ export const fetchCastReplies = async (
   hash: string,
   mode: "best" | "new" | "top",
   cursor?: string,
-) => {
+): Promise<FetchCastsResponse> => {
   return await makeRequest(
     `/farcaster/casts/${hash}/replies${mode !== "best" ? `/${mode}` : ""}${
       cursor ? `?cursor=${cursor}` : ""
@@ -71,6 +86,9 @@ export const useCastReplies = (
   mode: "best" | "new" | "top",
   initialData?: FetchCastsResponse,
 ) => {
+  const addUsers = useUserStore((state) => state.addUsers);
+  const addChannels = useChannelStore((state) => state.addChannels);
+  const addCasts = useCastStore((state) => state.addCasts);
   return useInfiniteQuery<
     FetchCastsResponse,
     unknown,
@@ -81,6 +99,14 @@ export const useCastReplies = (
     queryKey: ["cast-replies", hash, mode],
     queryFn: async ({ pageParam }) => {
       const data = await fetchCastReplies(hash, mode, pageParam);
+      const users = data.data.map((cast) => cast.user);
+      addUsers(users);
+      const channels = data.data
+        .map((cast) => cast.channel)
+        .filter(Boolean) as Channel[];
+      addChannels(channels);
+      const casts = data.data.map((cast) => cast);
+      addCasts(casts);
       return data;
     },
     getNextPageParam: (lastPage) => lastPage.nextCursor,
@@ -99,7 +125,7 @@ export const useCastReplies = (
 export const fetchTrendingCasts = async (
   viewerFid?: string,
   cursor?: string,
-) => {
+): Promise<FetchCastsResponse> => {
   return await makeRequest("/panels", {
     method: "POST",
     headers: {
@@ -120,6 +146,9 @@ export const useTrendingCasts = (
   viewerFid?: string,
   initialData?: FetchCastsResponse,
 ) => {
+  const addUsers = useUserStore((state) => state.addUsers);
+  const addChannels = useChannelStore((state) => state.addChannels);
+  const addCasts = useCastStore((state) => state.addCasts);
   return useInfiniteQuery<
     FetchCastsResponse,
     unknown,
@@ -130,6 +159,14 @@ export const useTrendingCasts = (
     queryKey: ["trending"],
     queryFn: async ({ pageParam }) => {
       const data = await fetchTrendingCasts(viewerFid, pageParam);
+      const users = data.data.map((cast) => cast.user);
+      addUsers(users);
+      const channels = data.data
+        .map((cast) => cast.channel)
+        .filter(Boolean) as Channel[];
+      addChannels(channels);
+      const casts = data.data.map((cast) => cast);
+      addCasts(casts);
       return data;
     },
     getNextPageParam: (lastPage) => lastPage.nextCursor,

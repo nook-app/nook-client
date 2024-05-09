@@ -1,5 +1,6 @@
 import { FetchCastsResponse } from "@nook/common/types";
 import { fetchCasts } from "../farcaster";
+import { makeRequest } from "../utils";
 
 export const getUserHighlights = async (
   fid: string,

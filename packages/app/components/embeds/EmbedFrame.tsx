@@ -13,7 +13,7 @@ import { FarcasterCastResponse, UrlContentResponse } from "@nook/common/types";
 import { Frame, FrameButton } from "@nook/common/types";
 import { useAuth } from "../../context/auth";
 import { NookButton, NookText, Input, Image } from "@nook/app-ui";
-import { submitFrameAction } from "../../server/farcaster";
+import { submitFrameAction } from "../../api/farcaster/actions";
 import { useRouter } from "solito/navigation";
 import { EnableSignerDialog } from "../../features/farcaster/enable-signer/dialog";
 import { useTheme } from "../../context/theme";
@@ -207,12 +207,15 @@ const FrameButtonAction = ({
         <EnableSignerDialog>
           <NookButton
             backgroundColor={
-              ["light", "dark"].includes(theme) ? "$color12" : "$color7"
+              theme && ["light", "dark"].includes(theme)
+                ? "$color12"
+                : "$color7"
             }
             hoverStyle={{
-              backgroundColor: ["light", "dark"].includes(theme)
-                ? "$color11"
-                : "$color8",
+              backgroundColor:
+                theme && ["light", "dark"].includes(theme)
+                  ? "$color11"
+                  : "$color8",
               // @ts-ignore
               transition: "all 0.2s ease-in-out",
             }}
@@ -224,14 +227,17 @@ const FrameButtonAction = ({
                 <Zap
                   size={12}
                   color={
-                    ["light", "dark"].includes(theme) ? "$color1" : "$color12"
+                    theme && ["light", "dark"].includes(theme)
+                      ? "$color1"
+                      : "$color12"
                   }
                   fill={
-                    ["light", "dark"].includes(theme)
+                    theme && ["light", "dark"].includes(theme)
                       ? tamaguiTheme.color1.val
                       : tamaguiTheme.color12.val
                   }
-                />{" "}
+                  marginRight="$1"
+                />
               </>
             )}
             {button.label}
@@ -239,12 +245,14 @@ const FrameButtonAction = ({
             button.action === "post_redirect" ||
             button.action === "mint" ? (
               <>
-                {" "}
                 <ExternalLink
                   size={12}
                   color={
-                    ["light", "dark"].includes(theme) ? "$color1" : "$color12"
+                    theme && ["light", "dark"].includes(theme)
+                      ? "$color1"
+                      : "$color12"
                   }
+                  marginLeft="$1"
                 />
               </>
             ) : null}
@@ -263,29 +271,31 @@ const FrameButtonAction = ({
           onPress();
         }}
         backgroundColor={
-          ["light", "dark"].includes(theme) ? "$color12" : "$color7"
+          theme && ["light", "dark"].includes(theme) ? "$color12" : "$color7"
         }
         hoverStyle={{
-          backgroundColor: ["light", "dark"].includes(theme)
-            ? "$color11"
-            : "$color8",
+          backgroundColor:
+            theme && ["light", "dark"].includes(theme) ? "$color11" : "$color8",
           // @ts-ignore
           transition: "all 0.2s ease-in-out",
         }}
         fontWeight="500"
-        color={["light", "dark"].includes(theme) ? "$color1" : "white"}
+        color={theme && ["light", "dark"].includes(theme) ? "$color1" : "white"}
       >
         {button.action === "tx" && (
           <>
             <Zap
               size={12}
-              color={["light", "dark"].includes(theme) ? "$color1" : "white"}
+              color={
+                theme && ["light", "dark"].includes(theme) ? "$color1" : "white"
+              }
               fill={
-                ["light", "dark"].includes(theme)
+                theme && ["light", "dark"].includes(theme)
                   ? tamaguiTheme.color1.val
                   : tamaguiTheme.color12.val
               }
-            />{" "}
+              marginRight="$1"
+            />
           </>
         )}
         {button.label}
@@ -293,10 +303,12 @@ const FrameButtonAction = ({
         button.action === "post_redirect" ||
         button.action === "mint" ? (
           <>
-            {" "}
             <ExternalLink
               size={12}
-              color={["light", "dark"].includes(theme) ? "$color1" : "white"}
+              marginLeft="$1"
+              color={
+                theme && ["light", "dark"].includes(theme) ? "$color1" : "white"
+              }
             />
           </>
         ) : null}

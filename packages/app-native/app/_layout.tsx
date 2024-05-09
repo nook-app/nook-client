@@ -3,10 +3,10 @@ import { useFonts } from "expo-font";
 import { useEffect } from "react";
 import { ThemeProvider } from "@nook/app/context/theme";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { AuthProvider } from "@nook/app/context/auth";
 import { PrivyProvider } from "@privy-io/expo";
 import { SafeAreaProvider } from "react-native-safe-area-context";
+import "react-native-reanimated";
 
 export { ErrorBoundary } from "expo-router";
 
@@ -41,34 +41,32 @@ export default function RootLayout() {
 
 function RootLayoutNav() {
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
-      <QueryClientProvider client={queryClient}>
-        <PrivyProvider appId={"clsnxqma102qxbyt1ght4j14w"}>
-          <AuthProvider>
-            <ThemeProvider>
-              <SafeAreaProvider>
-                <Stack>
-                  <Stack.Screen
-                    name="(tabs)"
-                    options={{ headerShown: false, animation: "fade" }}
-                  />
-                  <Stack.Screen
-                    name="(login)"
-                    options={{
-                      headerShown: false,
-                      animation: "fade",
-                    }}
-                  />
-                  <Stack.Screen
-                    name="modal"
-                    options={{ presentation: "modal" }}
-                  />
-                </Stack>
-              </SafeAreaProvider>
-            </ThemeProvider>
-          </AuthProvider>
-        </PrivyProvider>
-      </QueryClientProvider>
-    </GestureHandlerRootView>
+    <QueryClientProvider client={queryClient}>
+      <PrivyProvider appId={"clsnxqma102qxbyt1ght4j14w"}>
+        <AuthProvider>
+          <ThemeProvider>
+            <SafeAreaProvider>
+              <Stack>
+                <Stack.Screen
+                  name="(drawer)"
+                  options={{ headerShown: false, animation: "fade" }}
+                />
+                <Stack.Screen
+                  name="(login)"
+                  options={{
+                    headerShown: false,
+                    animation: "fade",
+                  }}
+                />
+                <Stack.Screen
+                  name="modal"
+                  options={{ presentation: "modal" }}
+                />
+              </Stack>
+            </SafeAreaProvider>
+          </ThemeProvider>
+        </AuthProvider>
+      </PrivyProvider>
+    </QueryClientProvider>
   );
 }

@@ -20,7 +20,7 @@ import {
   Repeat2,
   User,
 } from "@tamagui/lucide-icons";
-import { markNotificationsRead } from "../../server/notifications";
+import { markNotificationsRead } from "../../api/notifications";
 import { useQueryClient } from "@tanstack/react-query";
 import { Loading } from "../../components/loading";
 

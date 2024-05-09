@@ -6,8 +6,8 @@ import {
   FarcasterCastResponse,
 } from "@nook/common/types";
 import { fetchCast } from "../../../api/farcaster";
-import { submitCastAdds } from "../../../server/farcaster";
-import { uploadImage } from "../../../server/media";
+import { submitCastAdds } from "../../../api/farcaster/actions";
+import { uploadImage } from "../../../api/media";
 
 const TEXT_LENGTH_LIMIT = 320;
 const EMBED_LIMIT = 2;

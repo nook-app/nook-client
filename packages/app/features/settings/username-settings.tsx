@@ -24,7 +24,7 @@ import {
 } from "wagmi";
 import { FnameTransfer } from "@nook/common/types";
 import { CONTRACTS } from "@nook/common/utils";
-import { submitUserDataAdd } from "../../server/farcaster";
+import { submitUserDataAdd } from "../../api/farcaster/actions";
 import { parseAbiItem } from "viem";
 
 export const UsernameSettings = () => {
@@ -246,7 +246,7 @@ export const UsernameSettings = () => {
               disabledStyle={{ opacity: 0.5 }}
               onPress={handleSave}
             >
-              {isLoading ? <Spinner color="$color11" /> : "Save"}
+              {isLoading ? <Spinner /> : "Save"}
             </NookButton>
           </XStack>
           <NookText color="$red9">{error}</NookText>
@@ -262,7 +262,7 @@ export const UsernameSettings = () => {
               disabled={isLoading}
               onPress={() => updateUsername(currentTransfer?.username)}
             >
-              {isLoading ? <Spinner color="$color11" /> : "Save"}
+              {isLoading ? <Spinner /> : "Save"}
             </NookButton>
           </XStack>
           <NookText color="$red9">Press save to sync your username</NookText>

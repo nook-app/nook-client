@@ -1,6 +1,6 @@
 import { FarcasterUserMutuals } from "@nook/app/features/farcaster/user-profile/user-mutuals";
 import { getServerSession } from "@nook/app/server/session";
-import { fetchUserMutuals } from "@nook/app/server/feed";
+import { fetchUserMutuals } from "@nook/app/api/farcaster/users";
 import { notFound } from "next/navigation";
 
 export default async function User({

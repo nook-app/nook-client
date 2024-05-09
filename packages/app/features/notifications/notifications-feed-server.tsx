@@ -1,4 +1,4 @@
-import { fetchNotifications } from "../../server/notifications";
+import { fetchNotifications } from "../../api/notifications";
 import {
   NotificationsAllFeed,
   NotificationsMentionsFeed,

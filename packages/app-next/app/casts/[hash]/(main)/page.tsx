@@ -1,6 +1,6 @@
 import { fetchCast } from "@nook/app/api/farcaster";
 import { FarcasterExpandedCast } from "@nook/app/features/farcaster/cast-screen/cast-expanded";
-import { fetchCastReplies } from "@nook/app/server/feed";
+import { fetchCastReplies } from "@nook/app/api/farcaster/feed";
 import { notFound } from "next/navigation";
 
 export default async function Cast({ params }: { params: { hash: string } }) {

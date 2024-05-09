@@ -92,7 +92,7 @@ const AccountSwitcherSessions = ({ sessions }: { sessions: Session[] }) => {
   const { session, setSession } = useAuth();
   const { data, isLoading } = useUsers(sessions?.map((session) => session.fid));
 
-  if (isLoading) return <Spinner color="$color11" />;
+  if (isLoading) return <Spinner />;
 
   return (
     <YStack>

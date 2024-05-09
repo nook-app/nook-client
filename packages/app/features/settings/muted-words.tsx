@@ -13,7 +13,7 @@ import {
 } from "@nook/app-ui";
 import { User } from "@nook/common/types";
 import { VolumeX } from "@tamagui/lucide-icons";
-import { muteWord, unmuteWord } from "../../server/settings";
+import { muteWord, unmuteWord } from "../../api/settings";
 import { useState } from "react";
 
 export const MutedWords = ({ settings }: { settings: User }) => {

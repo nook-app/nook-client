@@ -16,8 +16,8 @@ import { updateServerSession } from "../server/session";
 
 type ThemeContextType = {
   rootTheme: "dark" | "light";
-  theme: ThemeName;
-  setTheme: (theme: ThemeName) => void;
+  theme: ThemeName | undefined;
+  setTheme: (theme: ThemeName | undefined) => void;
 };
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
@@ -32,7 +32,7 @@ export const ThemeProvider = ({
   defaultTheme,
 }: SheetProviderProps) => {
   const [rootTheme, setRootTheme] = useRootTheme();
-  const [theme, setTheme] = useState<ThemeName>(defaultTheme || "mauve");
+  const [theme, setTheme] = useState<ThemeName | undefined>(defaultTheme);
   const { session } = useAuth();
 
   useEffect(() => {
@@ -56,7 +56,7 @@ export const ThemeProvider = ({
     return <>{children}</>;
   }, [children]);
 
-  const handleSetTheme = async (t: ThemeName) => {
+  const handleSetTheme = async (t: ThemeName | undefined) => {
     setTheme(t);
     if (session) {
       await updateTheme(t);

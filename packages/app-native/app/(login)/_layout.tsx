@@ -1,6 +1,7 @@
 import { Button, useTheme } from "@nook/app-ui";
 import { Stack, router } from "expo-router";
 import { ArrowLeft } from "@tamagui/lucide-icons";
+import { IconButton } from "../../components/IconButton";
 
 export default function LoginLayout() {
   const theme = useTheme();
@@ -12,18 +13,10 @@ export default function LoginLayout() {
         options={{
           title: "Sign in with Password",
           headerLeft: () => (
-            <Button
-              icon={ArrowLeft}
-              width="$2"
-              height="$2"
-              padding="$0"
-              borderRadius="$10"
-              scaleIcon={1.25}
-              onPress={router.back}
-            />
+            <IconButton icon={ArrowLeft} onPress={router.back} />
           ),
           headerStyle: {
-            backgroundColor: "transparent",
+            backgroundColor: theme.background.val,
           },
           headerShadowVisible: false,
         }}

@@ -12,14 +12,13 @@ import { Link, Redirect } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { ReactNode } from "react";
 import { Wallet2, Lock } from "@tamagui/lucide-icons";
-import { useTheme } from "@nook/app/context/theme";
 import { Href } from "expo-router/build/link/href";
 import { LinearGradient } from "@tamagui/linear-gradient";
+import { useTheme } from "@nook/app/context/theme";
 
 export default function LoginScreen() {
   const { session } = useAuth();
   const insets = useSafeAreaInsets();
-  const { theme } = useTheme();
 
   if (session) {
     return <Redirect href="/" />;
@@ -31,15 +30,13 @@ export default function LoginScreen() {
       alignItems="center"
       paddingBottom={insets.bottom}
       paddingHorizontal="$4"
-      theme={theme}
-      themeShallow
-      colors={["$color7", "$color1", "$color1", "$color1"]}
-      start={[0, 0]}
-      end={[0, 1]}
+      colors={["$color7", "$color1", "$color1"]}
+      start={[0, 1]}
+      end={[0, 0]}
     >
       <View flexGrow={1} justifyContent="center">
         <YStack alignItems="center">
-          <Text fontWeight="700" fontSize="$15" color="$color12">
+          <Text fontWeight="600" fontSize="$15" color="$color12">
             nook
           </Text>
           <Text textAlign="center" fontSize="$5">
@@ -60,11 +57,11 @@ export default function LoginScreen() {
           label="Sign in with Farcaster"
         />
         <LoginButton
-          icon={<Wallet2 strokeWidth={2.5} color="$color1" />}
+          icon={<Wallet2 strokeWidth={2.5} color="black" />}
           label="Sign in with Wallet"
         />
         <LoginButton
-          icon={<Lock strokeWidth={2.5} color="$color1" />}
+          icon={<Lock strokeWidth={2.5} color="black" />}
           label="Sign in with Password"
           href={{
             pathname: "/(login)/login/dev",
@@ -87,8 +84,13 @@ const LoginButton = ({
       borderRadius="$10"
       fontWeight="600"
       fontSize="$5"
-      backgroundColor="$color12"
-      color="$color1"
+      backgroundColor="white"
+      borderWidth="$0"
+      color="black"
+      pressStyle={{
+        backgroundColor: "white",
+        opacity: 0.9,
+      }}
     >
       <View
         position="absolute"
@@ -118,7 +120,7 @@ const LoginButton = ({
 const ThemeSelector = () => {
   const { setTheme } = useTheme();
 
-  const themes: ThemeName[] = [
+  const themes: (ThemeName | undefined)[] = [
     "pink",
     "red",
     "orange",
@@ -127,6 +129,7 @@ const ThemeSelector = () => {
     "blue",
     "purple",
     "mauve",
+    undefined,
   ];
 
   return (
@@ -142,17 +145,17 @@ const ThemeItem = ({
   theme,
   onPress,
 }: {
-  theme: ThemeName;
-  onPress: (theme: ThemeName) => void;
+  theme: ThemeName | undefined;
+  onPress: (theme: ThemeName | undefined) => void;
 }) => (
   <View
     theme={theme}
-    backgroundColor={"$color9"}
+    backgroundColor={theme ? "$color9" : "$color1"}
     width="$2"
     height="$2"
     borderRadius="$10"
     borderWidth="$1"
-    borderColor={"$color11"}
+    borderColor={theme ? "$color10" : "$mauve7"}
     onPress={() => onPress(theme)}
   />
 );

@@ -6,12 +6,10 @@ import { FarcasterCastResponseText } from "../../../components/farcaster/casts/c
 import {
   FarcasterUserAvatar,
   FarcasterUserDisplay,
-  FarcasterUserTextDisplay,
 } from "../../../components/farcaster/users/user-display";
 import { formatTimeAgo } from "../../../utils";
 import { FarcasterChannelBadge } from "../../../components/farcaster/channels/channel-display";
 import { Embeds } from "../../../components/embeds/Embed";
-import { useRouter } from "solito/navigation";
 import { FarcasterCastResponseEngagement } from "../../../components/farcaster/casts/cast-engagement";
 import {
   FarcasterLikeActionButton,
@@ -20,12 +18,12 @@ import {
   FarcasterShareButton,
 } from "../../../components/farcaster/casts/cast-actions";
 import { FarcasterCustomActionButton } from "../../../components/farcaster/casts/cast-custom-action";
-import { Link } from "solito/link";
 import { FarcasterCastResponseKebabMenu } from "./cast-kebab-menu";
 import { EmbedImage } from "../../embeds/EmbedImage";
 import { EmbedVideo } from "../../embeds/EmbedVideo";
 import { EmbedFrame } from "../../embeds/EmbedFrame";
 import { useMuteStore } from "../../../store/useMuteStore";
+import { FarcasterPowerBadge } from "../users/power-badge";
 
 export const FarcasterCastResponseDisplay = ({
   cast,
@@ -50,6 +48,10 @@ export const FarcasterCastResponseDisplay = ({
       return <FarcasterCastResponseMediaDisplay cast={cast} />;
     case Display.GRID:
       return <FarcasterCastResponseGridDisplay cast={cast} />;
+    case Display.LIST:
+      return <FarcasterCastResponseDefaultDisplay cast={cast} isConnected />;
+    case Display.BORDERLESS:
+      return <FarcasterCastResponseDefaultDisplay cast={cast} />;
     default:
       if (cast.parent && displayMode !== Display.REPLIES) {
         return (
@@ -73,16 +75,7 @@ export const FarcasterCastResponseDisplay = ({
 const FarcasterCastResponseFrameDisplay = ({
   cast,
 }: { cast: FarcasterCastResponse }) => {
-  const router = useRouter();
-
   const frameEmbed = cast.embeds.find((embed) => embed.frame);
-
-  const handlePress = () => {
-    const selection = window?.getSelection()?.toString();
-    if (!selection || selection.length === 0) {
-      router.push(`/casts/${cast.hash}`);
-    }
-  };
 
   if (!frameEmbed) {
     return null;
@@ -97,7 +90,6 @@ const FarcasterCastResponseFrameDisplay = ({
         transition: "all 0.2s ease-in-out",
         backgroundColor: "$color2",
       }}
-      onPress={handlePress}
       cursor="pointer"
       padding="$3"
       gap="$3"
@@ -136,7 +128,7 @@ const FarcasterCastResponseGridDisplay = ({
   cast,
 }: { cast: FarcasterCastResponse }) => {
   const imageEmbed = cast.embeds.find((embed) =>
-    embed.type?.startsWith("image"),
+    embed.contentType?.startsWith("image"),
   );
 
   if (!imageEmbed) {
@@ -144,45 +136,34 @@ const FarcasterCastResponseGridDisplay = ({
   }
 
   return (
-    <Link href={`/casts/${cast.hash}`}>
-      <View
-        borderRightWidth="$0.5"
-        borderBottomWidth="$0.5"
-        borderColor="$borderColor"
-        hoverStyle={{
-          // @ts-ignore
-          transition: "all 0.2s ease-in-out",
-          opacity: 0.75,
-        }}
-      >
-        <img
-          src={imageEmbed.uri}
-          alt=""
-          style={{ objectFit: "cover", aspectRatio: 1 }}
-        />
-      </View>
-    </Link>
+    <View
+      borderRightWidth="$0.5"
+      borderBottomWidth="$0.5"
+      borderColor="$borderColor"
+      hoverStyle={{
+        // @ts-ignore
+        transition: "all 0.2s ease-in-out",
+        opacity: 0.75,
+      }}
+    >
+      <img
+        src={imageEmbed.uri}
+        alt=""
+        style={{ objectFit: "cover", aspectRatio: 1 }}
+      />
+    </View>
   );
 };
 
 const FarcasterCastResponseMediaDisplay = ({
   cast,
 }: { cast: FarcasterCastResponse }) => {
-  const router = useRouter();
-
   const imageEmbed = cast.embeds.find((embed) =>
-    embed.type?.startsWith("image"),
+    embed.contentType?.startsWith("image"),
   );
   const videoEmbed = cast.embeds.find(
-    (embed) => embed.type === "application/x-mpegURL",
+    (embed) => embed.contentType === "application/x-mpegURL",
   );
-
-  const handlePress = () => {
-    const selection = window?.getSelection()?.toString();
-    if (!selection || selection.length === 0) {
-      router.push(`/casts/${cast.hash}`);
-    }
-  };
 
   if (!imageEmbed && !videoEmbed) {
     return null;
@@ -198,7 +179,6 @@ const FarcasterCastResponseMediaDisplay = ({
         transition: "all 0.2s ease-in-out",
         backgroundColor: "$color2",
       }}
-      onPress={handlePress}
       cursor="pointer"
     >
       <XStack justifyContent="space-between" padding="$3">
@@ -240,25 +220,10 @@ const FarcasterCastResponseMediaDisplay = ({
   );
 };
 
-export const FarcasterCastResponseDefaultDisplay = ({
+const FarcasterCastResponseDefaultDisplay = ({
   cast,
   isConnected,
 }: { cast: FarcasterCastResponse; isConnected?: boolean }) => {
-  const router = useRouter();
-
-  // @ts-ignore
-  const handlePress = (event) => {
-    const selection = window?.getSelection()?.toString();
-    if (!selection || selection.length === 0) {
-      if (event.ctrlKey || event.metaKey) {
-        // metaKey is for macOS
-        window.open(`/casts/${cast.hash}`, "_blank");
-      } else {
-        router.push(`/casts/${cast.hash}`);
-      }
-    }
-  };
-
   const renderText = cast.text || cast.mentions.length > 0;
   const renderEmbeds = cast.embeds.length > 0 || cast.embedCasts.length > 0;
   const renderEngagementBar =
@@ -274,11 +239,10 @@ export const FarcasterCastResponseDefaultDisplay = ({
         transition: "all 0.2s ease-in-out",
         backgroundColor: "$color2",
       }}
-      onPress={handlePress}
       cursor="pointer"
       padding="$3"
     >
-      <YStack alignItems="center" width="$4">
+      <YStack alignItems="center" width="$4" marginTop="$1">
         <FarcasterUserAvatar user={cast.user} size="$4" asLink />
         {isConnected && (
           <Separator
@@ -292,15 +256,36 @@ export const FarcasterCastResponseDefaultDisplay = ({
       </YStack>
       <YStack flex={1} gap="$2">
         <YStack gap="$1.5">
-          <XStack justifyContent="space-between">
-            <FarcasterUserTextDisplay
-              user={cast.user}
-              asLink
-              suffix={` · ${formatTimeAgo(cast.timestamp)}`}
-            />
-            <View position="absolute" right={0} top={0} marginTop="$-2">
-              <FarcasterCastResponseKebabMenu cast={cast} />
-            </View>
+          <XStack
+            justifyContent="space-between"
+            alignItems="center"
+            width="100%"
+          >
+            <XStack gap="$1.5" alignItems="center" flexShrink={1}>
+              <NookText fontWeight="700" numberOfLines={1} ellipsizeMode="tail">
+                {`${
+                  cast.user.displayName ||
+                  cast.user.username ||
+                  `!${cast.user.fid}`
+                }`}
+              </NookText>
+              <FarcasterPowerBadge
+                badge={cast.user.badges?.powerBadge ?? false}
+              />
+              <NookText
+                muted
+                numberOfLines={1}
+                ellipsizeMode="middle"
+                flexShrink={1}
+              >
+                {`${
+                  cast.user.username
+                    ? `@${cast.user.username}`
+                    : `!${cast.user.fid}`
+                } · ${formatTimeAgo(cast.timestamp)}`}
+              </NookText>
+            </XStack>
+            <FarcasterCastResponseKebabMenu cast={cast} />
           </XStack>
           {renderText && <FarcasterCastResponseText cast={cast} />}
         </YStack>

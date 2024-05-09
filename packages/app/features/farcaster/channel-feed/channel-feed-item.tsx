@@ -2,10 +2,8 @@ import { Channel } from "@nook/common/types";
 import { XStack, YStack } from "@nook/app-ui";
 import { memo } from "react";
 import { Link } from "solito/link";
-import {
-  FarcasterChannelDisplay,
-  FarcasterChannelTooltip,
-} from "../../../components/farcaster/channels/channel-display";
+import { FarcasterChannelDisplay } from "../../../components/farcaster/channels/channel-display";
+import { FarcasterChannelTooltip } from "../../../components/farcaster/channels/channel-tooltip";
 
 export const FarcasterChannelFeedItem = memo(
   ({ channel, withBio }: { channel: Channel; withBio?: boolean }) => {

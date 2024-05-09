@@ -38,7 +38,7 @@ export const MutedUsers = ({ settings }: { settings: User }) => {
       <Separator borderColor="$borderColorBg" />
       {isLoading && (
         <View padding="$4" gap="$4">
-          <Spinner color="$color11" />
+          <Spinner />
         </View>
       )}
       {users.map((user) => (

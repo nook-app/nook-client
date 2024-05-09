@@ -383,7 +383,7 @@ const CreateCastEmbeds = memo(({ index }: { index: number }) => {
     <YStack gap="$2">
       {((embeds.length === 0 && isFetchingEmbeds) || isUploadingImages) && (
         <View padding="$2">
-          <Spinner color="$color11" />
+          <Spinner />
         </View>
       )}
       {embeds.length > 0 && (

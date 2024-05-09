@@ -1,11 +1,11 @@
 import { EmbedMedia } from "./EmbedMedia";
 import { CdnAvatar } from "../cdn-avatar";
-import { FarcasterUserTextDisplay } from "../farcaster/users/user-display";
 import { NookText, View, XStack, YStack } from "@nook/app-ui";
 import { FarcasterCastResponseText } from "../farcaster/casts/cast-text";
 import { FarcasterCastResponse } from "@nook/common/types";
 import { formatTimeAgo } from "../../utils";
 import { useRouter } from "solito/navigation";
+import { FarcasterPowerBadge } from "../farcaster/users/power-badge";
 
 export const EmbedCast = ({
   cast,
@@ -19,7 +19,7 @@ export const EmbedCast = ({
   // @ts-ignore
   const handlePress = (event) => {
     if (disableLink) return;
-    const selection = window?.getSelection()?.toString();
+    const selection = window?.getSelection?.()?.toString();
     if (!selection || selection.length === 0) {
       if (event.ctrlKey || event.metaKey) {
         // metaKey is for macOS
@@ -56,8 +56,30 @@ export const EmbedCast = ({
           <View marginRight="$2">
             <CdnAvatar src={cast.user.pfp} size="$1" />
           </View>
-          <FarcasterUserTextDisplay user={cast.user} />
-          <NookText muted>{` · ${formatTimeAgo(cast.timestamp)}`}</NookText>
+          <XStack gap="$1.5" alignItems="center" flexShrink={1}>
+            <NookText fontWeight="700" numberOfLines={1} ellipsizeMode="tail">
+              {`${
+                cast.user.displayName ||
+                cast.user.username ||
+                `!${cast.user.fid}`
+              }`}
+            </NookText>
+            <FarcasterPowerBadge
+              badge={cast.user.badges?.powerBadge ?? false}
+            />
+            <NookText
+              muted
+              numberOfLines={1}
+              ellipsizeMode="middle"
+              flexShrink={1}
+            >
+              {`${
+                cast.user.username
+                  ? `@${cast.user.username}`
+                  : `!${cast.user.fid}`
+              } · ${formatTimeAgo(cast.timestamp)}`}
+            </NookText>
+          </XStack>
         </XStack>
         {(cast.text || cast.mentions.length > 0) && (
           <FarcasterCastResponseText cast={cast} disableLinks />

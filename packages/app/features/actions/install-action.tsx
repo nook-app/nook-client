@@ -11,7 +11,7 @@ import {
 } from "@nook/app-ui";
 import { GradientIcon } from "../../components/gradient-icon";
 import { useAuth } from "../../context/auth";
-import { installAction } from "../../server/settings";
+import { installAction } from "../../api/settings";
 import { useQueryClient } from "@tanstack/react-query";
 import { CastAction } from "@nook/common/types";
 import { useCallback } from "react";

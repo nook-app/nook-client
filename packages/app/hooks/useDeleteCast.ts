@@ -3,7 +3,7 @@ import { FarcasterCastResponse } from "@nook/common/types";
 import { useToastController } from "@nook/app-ui";
 import { useAuth } from "../context/auth";
 import { useMuteStore } from "../store/useMuteStore";
-import { submitCastRemove } from "../server/farcaster";
+import { submitCastRemove } from "../api/farcaster/actions";
 import { fetchCast } from "../api/farcaster";
 import { useParams, useRouter } from "solito/navigation";
 

@@ -258,7 +258,7 @@ const SubmitTransactionStep = () => {
             opacity: 0.5,
           }}
         >
-          {isConfirming ? <Spinner color="$color11" /> : "Create"}
+          {isConfirming ? <Spinner /> : "Create"}
         </NookButton>
       </YStack>
     </YStack>

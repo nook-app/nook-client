@@ -1,5 +1,13 @@
 import { useAuth } from "@nook/app/context/auth";
-import { Button, Input, Label, Spinner, Text, YStack } from "@nook/app-ui";
+import {
+  Button,
+  Input,
+  Label,
+  Spinner,
+  Text,
+  View,
+  YStack,
+} from "@nook/app-ui";
 import { Redirect } from "expo-router";
 import { useMutation } from "@tanstack/react-query";
 import { makeRequest } from "@nook/app/api/utils";
@@ -32,39 +40,44 @@ export default function LoginScreen() {
   }
 
   return (
-    <YStack gap="$2" width="100%" padding="$4" flex={1}>
-      <Text fontSize="$5">Enter your username and password to login.</Text>
-      <YStack>
-        <Label>Username</Label>
-        <Input value={username} onChangeText={setUsername} />
+    <View flex={1} backgroundColor="$background" padding="$4">
+      <YStack gap="$2">
+        <YStack theme="surface2">
+          <Label>Username</Label>
+          <Input value={username} onChangeText={setUsername} />
+        </YStack>
+        <YStack theme="surface2">
+          <Label>Password</Label>
+          <Input value={password} onChangeText={setPassword} />
+        </YStack>
+        <Button
+          height="$5"
+          width="100%"
+          borderRadius="$10"
+          fontWeight="600"
+          fontSize="$5"
+          backgroundColor="$mauve12"
+          borderWidth="$0"
+          color="$mauve1"
+          pressStyle={{
+            backgroundColor: "$mauve11",
+          }}
+          disabledStyle={{
+            backgroundColor: "$mauve10",
+          }}
+          disabled={isPending || !username || !password}
+          onPress={handleLogin}
+          marginTop="$4"
+        >
+          {isPending && <Spinner />}
+          {!isPending && "Sign in"}
+        </Button>
+        {error && (
+          <Text color="$red9" textAlign="center">
+            {error.message}
+          </Text>
+        )}
       </YStack>
-      <YStack>
-        <Label>Password</Label>
-        <Input value={password} onChangeText={setPassword} />
-      </YStack>
-      <Button
-        height="$5"
-        marginTop="$4"
-        borderRadius="$10"
-        fontWeight="500"
-        fontSize="$5"
-        disabled={isPending || !username || !password}
-        onPress={handleLogin}
-        color="$color12"
-        disabledStyle={{
-          backgroundColor: "$color1",
-          // @ts-ignore
-          color: "$mauve10",
-        }}
-      >
-        {isPending && <Spinner />}
-        {!isPending && "Sign in"}
-      </Button>
-      {error && (
-        <Text color="$red9" textAlign="center">
-          {error.message}
-        </Text>
-      )}
-    </YStack>
+    </View>
   );
 }

@@ -1,11 +1,4 @@
-import {
-  ListItem,
-  NookText,
-  Popover,
-  Separator,
-  View,
-  YGroup,
-} from "@nook/app-ui";
+import { ListItem, NookText, Popover, View, YGroup } from "@nook/app-ui";
 import { MoreHorizontal } from "@tamagui/lucide-icons";
 import {
   Children,
@@ -99,8 +92,8 @@ export const KebabMenuItem = ({
 const KebabButton = () => (
   <View
     cursor="pointer"
-    width="$2.5"
-    height="$2.5"
+    width="$1"
+    height="$1"
     justifyContent="center"
     alignItems="center"
     borderRadius="$10"
@@ -110,13 +103,12 @@ const KebabButton = () => (
       transition: "all 0.2s ease-in-out",
       backgroundColor: "$color3",
     }}
-    marginHorizontal="$-2"
   >
     {/* @ts-ignore */}
     <MoreHorizontal
       size={20}
-      opacity={0.4}
-      color="$mauve12"
+      opacity={0.75}
+      color="$mauve11"
       $group-hover={{
         transition: "all 0.2s ease-in-out",
         color: "$mauve12",

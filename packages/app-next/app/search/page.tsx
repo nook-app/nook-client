@@ -3,7 +3,8 @@ import { SearchHeader } from "@nook/app/features/search/search-header";
 import { FarcasterFilteredFeedServer } from "@nook/app/features/farcaster/cast-feed/filtered-feed-server";
 import { ChannelSearchFeed } from "@nook/app/features/farcaster/channel-feed/channel-search-feed";
 import { UserSearchFeed } from "@nook/app/features/farcaster/user-feed/user-search-feed";
-import { searchChannels, searchUsers } from "@nook/app/server/feed";
+import { searchChannels } from "@nook/app/api/farcaster/channels";
+import { searchUsers } from "@nook/app/api/farcaster/users";
 
 export default async function Search({
   searchParams,

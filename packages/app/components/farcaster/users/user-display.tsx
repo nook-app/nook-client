@@ -23,27 +23,21 @@ export const FarcasterUserTextDisplay = ({
   const Stack = orientation === "horizontal" ? XStack : YStack;
   const bio = user?.bio?.trim().replace(/\n\s*\n/g, "\n");
   const Component = (
-    <YStack flexShrink={1} gap="$1">
+    <YStack gap="$1" flexShrink={1}>
       <Stack
         gap={orientation === "horizontal" ? "$1.5" : "$1"}
-        flexShrink={1}
         alignItems={orientation === "horizontal" ? "center" : "flex-start"}
-        $xs={{ flexDirection: "column", alignItems: "flex-start", gap: "$1" }}
+        flexShrink={1}
       >
         <XStack gap="$1.5" alignItems="center" flexShrink={1}>
-          <NookText
-            fontWeight="600"
-            flexShrink={1}
-            numberOfLines={1}
-            ellipsizeMode="tail"
-          >
-            {`${user.displayName || user.username || `!${user.fid}`} `}
+          <NookText fontWeight="700" numberOfLines={1} ellipsizeMode="tail">
+            {`${user.displayName || user.username || `!${user.fid}`}`}
           </NookText>
           <FarcasterPowerBadge badge={user.badges?.powerBadge ?? false} />
         </XStack>
-        <NookText muted flexShrink={1} numberOfLines={1}>
-          {user.username ? ` @${user.username}` : ` !${user.fid}`}
-          {suffix ? ` ${suffix}` : ""}
+        <NookText muted numberOfLines={1} ellipsizeMode="middle" flexShrink={1}>
+          {user.username ? `@${user.username}` : `!${user.fid}`}
+          {suffix || ""}
         </NookText>
       </Stack>
       {withBio && bio && <FarcasterBioText text={bio} />}
@@ -166,12 +160,12 @@ export const FarcasterUserBadge = ({
       gap="$1.5"
       alignItems="center"
       flexShrink={1}
-      backgroundColor="$color3"
+      backgroundColor="$color1"
       borderRadius="$6"
       paddingHorizontal="$2"
       paddingVertical="$1.5"
-      borderColor="$color7"
-      borderWidth="$0.5"
+      borderColor="$borderColorBg"
+      borderWidth="$0.25"
       hoverStyle={{
         // @ts-ignore
         transition: "all 0.2s ease-in-out",

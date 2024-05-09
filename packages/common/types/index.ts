@@ -11,3 +11,24 @@ export * from "./lists";
 export * from "./user";
 export * from "./swap";
 export * from "./simplehash";
+
+export type FnameTransfer = {
+  id: string;
+  timestamp: number;
+  username: string;
+  owner: string;
+  from: number;
+  to: number;
+  user_signature: string;
+  server_signature: string;
+};
+
+export type SubmitFnameTransfer = {
+  name: string;
+  from: number;
+  to: number;
+  fid: number;
+  owner: string;
+  timestamp: number;
+  signature: string;
+};

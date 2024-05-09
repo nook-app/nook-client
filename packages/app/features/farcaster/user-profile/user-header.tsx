@@ -30,7 +30,7 @@ export const UserHeader = ({
           </ZoomableImage>
           <YStack gap="$1">
             <XStack gap="$1.5" alignItems="center">
-              <NookText fontWeight="600" fontSize="$6">
+              <NookText fontWeight="700" fontSize="$6">
                 {user.displayName || user.username}
               </NookText>
               <FarcasterPowerBadge badge={user.badges?.powerBadge ?? false} />
