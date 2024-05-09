@@ -1,8 +1,10 @@
 import { NookText, View } from "@nook/app-ui";
 import { useNotificationsCount } from "../../api/notifications";
+import { useAuth } from "../../context/auth";
 
 export const NotificationsCount = () => {
-  const { data } = useNotificationsCount();
+  const { session } = useAuth();
+  const { data } = useNotificationsCount(!!session?.fid);
 
   const count = data?.count || 0;
 
