@@ -17,6 +17,7 @@ export const FarcasterFilteredFeed = ({
   displayMode,
   paddingTop,
   paddingBottom,
+  asTabs,
 }: {
   api?: string;
   filter: FarcasterFeedFilter;
@@ -24,6 +25,7 @@ export const FarcasterFilteredFeed = ({
   displayMode?: Display;
   paddingTop?: number;
   paddingBottom?: number;
+  asTabs?: boolean;
 }) => {
   const [isRefetching, setIsRefetching] = useState(false);
   const {
@@ -58,6 +60,7 @@ export const FarcasterFilteredFeed = ({
       isRefetching={isRefetching}
       paddingTop={paddingTop}
       paddingBottom={paddingBottom}
+      asTabs={asTabs}
     />
   );
 };

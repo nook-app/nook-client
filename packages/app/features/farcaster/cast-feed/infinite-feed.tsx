@@ -17,6 +17,7 @@ export const FarcasterInfiniteFeed = ({
   isRefetching,
   paddingTop,
   paddingBottom,
+  asTabs,
 }: {
   casts: FarcasterCastResponse[];
   fetchNextPage?: () => void;
@@ -28,6 +29,7 @@ export const FarcasterInfiniteFeed = ({
   isRefetching: boolean;
   paddingTop?: number;
   paddingBottom?: number;
+  asTabs?: boolean;
 }) => {
   const router = useRouter();
 

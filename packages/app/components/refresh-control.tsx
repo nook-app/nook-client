@@ -1,7 +1,7 @@
 import { useTheme } from "@nook/app-ui";
 import { RefreshControl as RNRefreshControl } from "react-native";
 
-export const RefreshControl = ({
+export function RefreshControl({
   refreshing,
   onRefresh,
   paddingTop,
@@ -9,7 +9,7 @@ export const RefreshControl = ({
   refreshing: boolean;
   onRefresh: () => Promise<void>;
   paddingTop?: number;
-}) => {
+}) {
   const theme = useTheme();
   return (
     <RNRefreshControl
@@ -20,4 +20,4 @@ export const RefreshControl = ({
       progressViewOffset={paddingTop}
     />
   );
-};
+}

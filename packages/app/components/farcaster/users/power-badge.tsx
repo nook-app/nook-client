@@ -6,7 +6,7 @@ export const FarcasterPowerBadge = ({ badge }: { badge: boolean }) => {
 
   return (
     <View
-      backgroundColor="$color9"
+      backgroundColor="$color10"
       borderRadius="$12"
       width={12}
       height={12}

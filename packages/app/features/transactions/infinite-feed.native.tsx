@@ -1,21 +1,20 @@
-import { Display, FarcasterCastResponse } from "@nook/common/types";
-import { Separator, Spinner, View } from "@nook/app-ui";
+import { Transaction } from "@nook/common/types";
+import { AnimatePresence, Separator, Spinner, View } from "@nook/app-ui";
 import { FlashList } from "@shopify/flash-list";
-import { FarcasterCastLink } from "../../../components/farcaster/casts/cast-link";
-import { RefreshControl } from "../../../components/refresh-control";
 import { useCallback, useState } from "react";
 import { NativeScrollEvent, NativeSyntheticEvent } from "react-native";
-import { useScroll } from "../../../context/scroll";
 import { useScrollToTop } from "@react-navigation/native";
 import { useRef } from "react";
 import { Tabs } from "react-native-collapsible-tab-view";
+import { TransactionFeedItem } from "./transaction-feed-item";
+import { useScroll } from "../../context/scroll";
+import { RefreshControl } from "../../components/refresh-control";
 
-export const FarcasterInfiniteFeed = ({
-  casts,
+export const TransactionInfiniteFeed = ({
+  transactions,
   fetchNextPage,
   isFetchingNextPage,
   hasNextPage,
-  displayMode = Display.CASTS,
   ListHeaderComponent,
   refetch,
   isRefetching,
@@ -23,11 +22,10 @@ export const FarcasterInfiniteFeed = ({
   paddingBottom,
   asTabs,
 }: {
-  casts: FarcasterCastResponse[];
+  transactions: Transaction[];
   fetchNextPage?: () => void;
   isFetchingNextPage?: boolean;
   hasNextPage?: boolean;
-  displayMode?: Display;
   ListHeaderComponent?: JSX.Element;
   refetch: () => Promise<void>;
   isRefetching: boolean;
@@ -57,23 +55,37 @@ export const FarcasterInfiniteFeed = ({
     [lastScrollY, setIsScrolling],
   );
 
-  const List = asTabs ? Tabs.FlashList : FlashList;
+  const List = asTabs ? Tabs.FlatList : FlashList;
 
   return (
     <List
       ref={ref}
-      data={casts}
-      renderItem={({ item, index }) => {
-        return (
-          <FarcasterCastLink
-            cast={item as FarcasterCastResponse}
-            displayMode={displayMode}
-          />
-        );
-      }}
+      data={transactions}
+      renderItem={({ item }) => (
+        <AnimatePresence>
+          <View
+            enterStyle={{
+              opacity: 0,
+            }}
+            exitStyle={{
+              opacity: 0,
+            }}
+            animation="quick"
+            opacity={1}
+            scale={1}
+            y={0}
+          >
+            <TransactionFeedItem transaction={item as Transaction} />
+          </View>
+        </AnimatePresence>
+      )}
       ListHeaderComponent={ListHeaderComponent}
       ListFooterComponent={
-        <ListFooterComponent isFetchingNextPage={isFetchingNextPage} />
+        isFetchingNextPage ? (
+          <View marginVertical="$3">
+            <Spinner />
+          </View>
+        ) : null
       }
       refreshControl={
         <RefreshControl
@@ -82,11 +94,12 @@ export const FarcasterInfiniteFeed = ({
           paddingTop={paddingTop}
         />
       }
-      ItemSeparatorComponent={ItemSeparatorComponent}
+      ItemSeparatorComponent={() => (
+        <Separator width="100%" borderBottomColor="$borderColorBg" />
+      )}
       onEndReached={fetchNextPage}
       onEndReachedThreshold={5}
       estimatedItemSize={300}
-      numColumns={displayMode === Display.GRID ? 3 : 1}
       onScroll={handleScroll}
       scrollEventThrottle={128}
       contentContainerStyle={{
@@ -96,18 +109,3 @@ export const FarcasterInfiniteFeed = ({
     />
   );
 };
-
-function ItemSeparatorComponent() {
-  return <Separator width="100%" borderBottomColor="$borderColorBg" />;
-}
-
-function ListFooterComponent({
-  isFetchingNextPage,
-}: { isFetchingNextPage?: boolean }) {
-  if (!isFetchingNextPage) return null;
-  return (
-    <View marginVertical="$3">
-      <Spinner />
-    </View>
-  );
-}

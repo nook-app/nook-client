@@ -5,7 +5,7 @@ import { useCast } from "@nook/app/hooks/useCast";
 
 export default function CastScreen() {
   const { hash } = useLocalSearchParams();
-  const { cast } = useCast(hash as string);
+  const { cast } = useCast(hash as string, true);
 
   return (
     <View flex={1} backgroundColor="$color1">

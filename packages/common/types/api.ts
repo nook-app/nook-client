@@ -9,7 +9,7 @@ import { NotificationResponse, RawNotificationResponse } from "./notifications";
 import { TransactionDto } from "../onceupon";
 import { Nook } from "./nook";
 import { CastAction, PendingCast } from "../prisma/nook";
-import { TransactionResponse } from "./transactions";
+import { Transaction } from "./transactions";
 import { Frame } from "./frames";
 
 export type FarcasterCastResponse = {
@@ -321,6 +321,6 @@ export type FetchCatActionsResponse = {
 };
 
 export type FetchTransactionsResponse = {
-  data: TransactionResponse[];
+  data: Transaction[];
   nextCursor?: string;
 };

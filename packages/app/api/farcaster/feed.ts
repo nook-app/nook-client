@@ -5,7 +5,11 @@ import {
   FetchCastsResponse,
 } from "@nook/common/types";
 import { makeRequest } from "../utils";
-import { InfiniteData, useInfiniteQuery } from "@tanstack/react-query";
+import {
+  InfiniteData,
+  useInfiniteQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 import { useUserStore } from "../../store/useUserStore";
 import { useChannelStore } from "../../store/useChannelStore";
 import { useCastStore } from "../../store/useCastStore";
@@ -33,6 +37,11 @@ export const useCastFeed = (
   const addUsers = useUserStore((state) => state.addUsers);
   const addChannels = useChannelStore((state) => state.addChannels);
   const addCasts = useCastStore((state) => state.addCasts);
+  const queryClient = useQueryClient();
+  const cachedData = queryClient.getQueryData<
+    InfiniteData<FetchCastsResponse, string>
+  >(["castFeed", JSON.stringify(filter)]);
+
   return useInfiniteQuery<
     FetchCastsResponse,
     unknown,
@@ -42,7 +51,6 @@ export const useCastFeed = (
   >({
     queryKey: ["castFeed", JSON.stringify(filter)],
     queryFn: async ({ pageParam }) => {
-      console.log("yo");
       const data = await fetchCastFeed({
         api,
         filter,
@@ -64,7 +72,8 @@ export const useCastFeed = (
           pages: [initialData],
           pageParams: [undefined],
         }
-      : undefined,
+      : cachedData,
+    enabled: !cachedData,
     initialPageParam: initialData?.nextCursor,
     refetchOnWindowFocus: false,
   });

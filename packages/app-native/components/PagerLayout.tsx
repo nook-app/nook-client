@@ -22,7 +22,9 @@ import { ReactNode, useEffect, useRef, useState } from "react";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import PagerView from "react-native-pager-view";
 
-export const HEADER_HEIGHT = 94 + 40;
+export const NAVIGATION_HEIGHT = 94;
+export const TAB_HEIGHT = 40;
+export const HEADER_HEIGHT = NAVIGATION_HEIGHT + TAB_HEIGHT;
 
 export const PagerLayout = ({
   title,
@@ -42,7 +44,6 @@ export const PagerLayout = ({
   const indicatorPosition = useSharedValue(0);
   const textWidths = useRef(new Array(pages.length).fill(0));
   const textWidth = useSharedValue(0);
-  const textColor = useSharedValue(theme.mauve11.val);
 
   const headerHeight = useSharedValue(isScrolling ? 0 : HEADER_HEIGHT);
   const headerPaddingTop = useSharedValue(isScrolling ? 0 : insets.top);
@@ -165,6 +166,9 @@ export const PagerLayout = ({
                 }}
                 paddingHorizontal="$2"
                 paddingBottom="$3"
+                onPress={() => {
+                  ref.current?.setPage(index);
+                }}
               >
                 <View
                   onLayout={(event) => {
@@ -209,7 +213,7 @@ export const PagerLayout = ({
             .reduce((acc, width) => acc + width, 0);
           const currentTabWidth = tabWidths.current[position];
           const nextTabWidth =
-            tabWidths.current[position + 1] || currentTabWidth; // Handle edge case for the last tab
+            tabWidths.current[position + 1] || currentTabWidth;
           const interpolatedWidth =
             currentTabWidth + (nextTabWidth - currentTabWidth) * offset;
           const interpolatedPosition =
@@ -220,13 +224,12 @@ export const PagerLayout = ({
 
           const currentTextWidth = textWidths.current[position];
           const nextTextWidth =
-            textWidths.current[position + 1] || currentTextWidth; // Handle edge case for the last tab
+            textWidths.current[position + 1] || currentTextWidth;
           const interpolatedTextWidth =
             currentTextWidth + (nextTextWidth - currentTextWidth) * offset;
 
           textWidth.value = interpolatedTextWidth;
 
-          // Interpolate text color for current and next tab
           if (position < textColorValues.current.length - 1) {
             textColorValues.current[position].value = interpolateColor(
               offset,
@@ -240,7 +243,7 @@ export const PagerLayout = ({
             );
           }
         }}
-        useNext
+        useNext={false}
       >
         {pages.map(({ component }, index) => (
           <LazyLoadView key={index + 1} index={index} currentIndex={page}>
@@ -258,7 +261,7 @@ const LazyLoadView = ({
   children,
 }: { currentIndex: number; index: number; children: ReactNode }) => {
   const [rendered, setRendered] = useState(false);
-  const isActive = Math.abs(currentIndex - index) <= 1;
+  const isActive = Math.abs(currentIndex - index) <= 0;
 
   useEffect(() => {
     if (isActive && !rendered) setRendered(true);

@@ -135,7 +135,7 @@ const ThemeSelector = () => {
   return (
     <XStack justifyContent="space-around" marginTop="$4" width="100%">
       {themes.map((t, i) => (
-        <ThemeItem key={t} theme={t} onPress={setTheme} />
+        <ThemeItem key={t || i} theme={t} onPress={setTheme} />
       ))}
     </XStack>
   );
