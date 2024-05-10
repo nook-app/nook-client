@@ -10,7 +10,10 @@ export const fetchSettings = async () => {
 export const useSettings = (session: Session | undefined) => {
   return useQuery<User>({
     queryKey: ["settings"],
-    queryFn: fetchSettings,
+    queryFn: async () => {
+      const response = await fetchSettings();
+      return response || null;
+    },
     enabled: !!session,
   });
 };

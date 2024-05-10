@@ -7,6 +7,7 @@ import { AuthProvider } from "@nook/app/context/auth";
 import { PrivyProvider } from "@privy-io/expo";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import "react-native-reanimated";
+import { ScrollProvider } from "@nook/app/context/scroll";
 
 export { ErrorBoundary } from "expo-router";
 
@@ -46,23 +47,25 @@ function RootLayoutNav() {
         <AuthProvider>
           <ThemeProvider>
             <SafeAreaProvider>
-              <Stack>
-                <Stack.Screen
-                  name="(drawer)"
-                  options={{ headerShown: false, animation: "fade" }}
-                />
-                <Stack.Screen
-                  name="(login)"
-                  options={{
-                    headerShown: false,
-                    animation: "fade",
-                  }}
-                />
-                <Stack.Screen
-                  name="modal"
-                  options={{ presentation: "modal" }}
-                />
-              </Stack>
+              <ScrollProvider>
+                <Stack>
+                  <Stack.Screen
+                    name="(drawer)"
+                    options={{ headerShown: false, animation: "fade" }}
+                  />
+                  <Stack.Screen
+                    name="(login)"
+                    options={{
+                      headerShown: false,
+                      animation: "fade",
+                    }}
+                  />
+                  <Stack.Screen
+                    name="modal"
+                    options={{ presentation: "modal" }}
+                  />
+                </Stack>
+              </ScrollProvider>
             </SafeAreaProvider>
           </ThemeProvider>
         </AuthProvider>

@@ -52,7 +52,7 @@ export const FarcasterActionsFeed = ({
       ListFooterComponent={
         isFetchingNextPage ? (
           <View marginVertical="$3">
-            <Spinner size="small" color="$color9" />
+            <Spinner />
           </View>
         ) : null
       }

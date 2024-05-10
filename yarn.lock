@@ -5617,6 +5617,7 @@ __metadata:
     babel-preset-expo: "npm:^10.0.1"
     expo: "npm:^51.0.1"
     expo-application: "npm:~5.8.4"
+    expo-blur: "npm:~13.0.2"
     expo-constants: "npm:~15.4.6"
     expo-crypto: "npm:~12.8.1"
     expo-dev-client: "npm:~2.4.12"
@@ -5639,6 +5640,7 @@ __metadata:
     react-native-gesture-handler: "npm:~2.14.0"
     react-native-get-random-values: "npm:^1.11.0"
     react-native-modal: "npm:^13.0.1"
+    react-native-pager-view: "npm:^6.3.1"
     react-native-reanimated: "npm:~3.10.0"
     react-native-safe-area-context: "npm:4.6.3"
     react-native-screens: "npm:~3.22.0"
@@ -5702,7 +5704,7 @@ __metadata:
     "@privy-io/expo": "npm:^0.15.1"
     "@privy-io/react-auth": "npm:^1.60.6"
     "@privy-io/wagmi": "npm:^0.2.2"
-    "@shopify/flash-list": "npm:^1.6.4"
+    "@shopify/flash-list": "npm:^1.6.3"
     "@tamagui/animations-react-native": "npm:^1.97.0"
     "@tamagui/colors": "npm:^1.97.0"
     "@tamagui/font-inter": "npm:^1.97.0"
@@ -7318,7 +7320,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@shopify/flash-list@npm:^1.6.4":
+"@shopify/flash-list@npm:^1.6.3":
   version: 1.6.4
   resolution: "@shopify/flash-list@npm:1.6.4"
   dependencies:
@@ -16460,6 +16462,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"expo-blur@npm:~13.0.2":
+  version: 13.0.2
+  resolution: "expo-blur@npm:13.0.2"
+  peerDependencies:
+    expo: "*"
+  checksum: 10c0/1217af89cd8bc760440ba97999a74e6669dbb00349868c85630a9a6b337afbe2ac011357ed48aade5862dac533f4a96c8cde8a6b1a607beb3952a4dd9fb692f2
+  languageName: node
+  linkType: hard
+
 "expo-constants@npm:~15.4.3, expo-constants@npm:~15.4.6":
   version: 15.4.6
   resolution: "expo-constants@npm:15.4.6"
@@ -23969,6 +23980,16 @@ __metadata:
     react: "*"
     react-native: ">=0.65.0"
   checksum: 10c0/8ec5728c2a27eb31c97451968b4ecefdf005afda51fab2fc864fc442122573c70f7bf3fa0c6e3bd1d6aab3565c684104d1d30df916c3f9a6c7c3223e4d3b9249
+  languageName: node
+  linkType: hard
+
+"react-native-pager-view@npm:^6.3.1":
+  version: 6.3.1
+  resolution: "react-native-pager-view@npm:6.3.1"
+  peerDependencies:
+    react: "*"
+    react-native: "*"
+  checksum: 10c0/eecdf17d91545390222eaafb13e722bf9e53cf9835bd84e9dd4d5f73890cc8425cef7c38471f86959f0faafda8c3ce12ffcd9b39194070419b93dcc4ec60af15
   languageName: node
   linkType: hard
 

@@ -8,26 +8,44 @@ import {
 import { useCastFeed } from "../../../api/farcaster";
 import { FarcasterInfiniteFeed } from "./infinite-feed";
 import { Loading } from "../../../components/loading";
+import { useState } from "react";
 
 export const FarcasterFilteredFeed = ({
   api,
   filter,
   initialData,
   displayMode,
+  paddingTop,
+  paddingBottom,
 }: {
   api?: string;
   filter: FarcasterFeedFilter;
   initialData?: FetchCastsResponse;
   displayMode?: Display;
+  paddingTop?: number;
+  paddingBottom?: number;
 }) => {
-  const { data, isLoading, hasNextPage, fetchNextPage, isFetchingNextPage } =
-    useCastFeed(filter, api, initialData);
+  const [isRefetching, setIsRefetching] = useState(false);
+  const {
+    data,
+    isLoading,
+    hasNextPage,
+    fetchNextPage,
+    isFetchingNextPage,
+    refetch,
+  } = useCastFeed(filter, api, initialData);
 
   if (isLoading) {
     return <Loading />;
   }
 
   const casts = data?.pages.flatMap((page) => page.data) ?? [];
+
+  const handleRefresh = async () => {
+    setIsRefetching(true);
+    await refetch();
+    setIsRefetching(false);
+  };
 
   return (
     <FarcasterInfiniteFeed
@@ -36,6 +54,10 @@ export const FarcasterFilteredFeed = ({
       isFetchingNextPage={isFetchingNextPage}
       hasNextPage={hasNextPage}
       displayMode={displayMode}
+      refetch={handleRefresh}
+      isRefetching={isRefetching}
+      paddingTop={paddingTop}
+      paddingBottom={paddingBottom}
     />
   );
 };

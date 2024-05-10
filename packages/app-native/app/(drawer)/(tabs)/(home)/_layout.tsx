@@ -1,8 +1,7 @@
 import { Stack, router } from "expo-router";
-import { DrawerToggleButton } from "../../../../components/DrawerToggleButton";
 import { useTheme } from "@nook/app-ui";
 import { IconButton } from "../../../../components/IconButton";
-import { ArrowLeft, Search } from "@tamagui/lucide-icons";
+import { ArrowLeft } from "@tamagui/lucide-icons";
 
 export default function HomeLayout() {
   const theme = useTheme();
@@ -20,9 +19,7 @@ export default function HomeLayout() {
       <Stack.Screen
         name="index"
         options={{
-          title: "",
-          headerLeft: () => <DrawerToggleButton />,
-          headerRight: () => <IconButton icon={Search} onPress={() => {}} />,
+          headerShown: false,
         }}
       />
       <Stack.Screen

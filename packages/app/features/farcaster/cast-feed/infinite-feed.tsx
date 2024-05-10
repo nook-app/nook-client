@@ -1,9 +1,8 @@
 "use client";
 
 import { Display, FarcasterCastResponse } from "@nook/common/types";
-import { AnimatePresence, Spinner, View } from "@nook/app-ui";
+import { Separator, Spinner, View } from "@nook/app-ui";
 import { InfiniteScrollList } from "../../../components/infinite-scroll-list";
-import { FarcasterCastResponseDisplay } from "../../../components/farcaster/casts/cast-display";
 import { useRouter } from "next/navigation";
 import { FarcasterCastLink } from "../../../components/farcaster/casts/cast-link";
 
@@ -14,6 +13,10 @@ export const FarcasterInfiniteFeed = ({
   hasNextPage,
   displayMode = Display.CASTS,
   ListHeaderComponent,
+  refetch,
+  isRefetching,
+  paddingTop,
+  paddingBottom,
 }: {
   casts: FarcasterCastResponse[];
   fetchNextPage?: () => void;
@@ -21,6 +24,10 @@ export const FarcasterInfiniteFeed = ({
   hasNextPage?: boolean;
   displayMode?: Display;
   ListHeaderComponent?: JSX.Element;
+  refetch: () => Promise<void>;
+  isRefetching: boolean;
+  paddingTop?: number;
+  paddingBottom?: number;
 }) => {
   const router = useRouter();
 
@@ -38,10 +45,13 @@ export const FarcasterInfiniteFeed = ({
       ListFooterComponent={
         isFetchingNextPage ? (
           <View marginVertical="$3">
-            <Spinner size="small" color="$color9" />
+            <Spinner />
           </View>
         ) : null
       }
+      ItemSeparatorComponent={() => (
+        <Separator width="100%" borderBottomColor="$borderColorBg" />
+      )}
       ListHeaderComponent={ListHeaderComponent}
       onViewableItemsChanged={({ viewableItems }) => {
         const casts = viewableItems.map(

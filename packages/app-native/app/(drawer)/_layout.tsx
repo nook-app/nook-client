@@ -10,7 +10,7 @@ export default function Layout() {
         screenOptions={() => {
           return {
             headerShown: false,
-            swipeEnabled: pathname === "/",
+            swipeEnabled: false,
           };
         }}
       />

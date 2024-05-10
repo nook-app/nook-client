@@ -12,7 +12,7 @@
     "@privy-io/expo": "^0.15.1",
     "@privy-io/react-auth": "^1.60.6",
     "@privy-io/wagmi": "^0.2.2",
-    "@shopify/flash-list": "^1.6.4",
+    "@shopify/flash-list": "^1.6.3",
     "@tamagui/animations-react-native": "^1.97.0",
     "@tamagui/colors": "^1.97.0",
     "@tamagui/font-inter": "^1.97.0",

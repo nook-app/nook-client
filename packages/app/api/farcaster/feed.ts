@@ -42,6 +42,7 @@ export const useCastFeed = (
   >({
     queryKey: ["castFeed", JSON.stringify(filter)],
     queryFn: async ({ pageParam }) => {
+      console.log("yo");
       const data = await fetchCastFeed({
         api,
         filter,

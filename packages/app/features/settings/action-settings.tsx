@@ -92,7 +92,7 @@ const ActionItem = ({
             justifyContent="center"
             alignItems="center"
           >
-            <Spinner size="large" color="$color9" />
+            <Spinner />
           </View>
         )}
         {action && !loading && (

@@ -55,7 +55,7 @@ export const FarcasterCastResponseDisplay = ({
     default:
       if (cast.parent && displayMode !== Display.REPLIES) {
         return (
-          <View borderBottomWidth="$0.5" borderBottomColor="$borderColorBg">
+          <View>
             <FarcasterCastResponseDefaultDisplay
               cast={cast.parent}
               isConnected
@@ -64,11 +64,7 @@ export const FarcasterCastResponseDisplay = ({
           </View>
         );
       }
-      return (
-        <View borderBottomWidth="$0.5" borderBottomColor="$borderColorBg">
-          <FarcasterCastResponseDefaultDisplay cast={cast} />
-        </View>
-      );
+      return <FarcasterCastResponseDefaultDisplay cast={cast} />;
   }
 };
 
