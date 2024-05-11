@@ -29,7 +29,7 @@ export const HEADER_HEIGHT = NAVIGATION_HEIGHT + TAB_HEIGHT;
 export const PagerLayout = ({
   title,
   pages,
-}: { title: string; pages: { name: string; component: ReactNode }[] }) => {
+}: { title: ReactNode; pages: { name: string; component: ReactNode }[] }) => {
   const theme = useTamaguiTheme();
   const { rootTheme } = useTheme();
   const { isScrolling, setIsScrolling } = useScroll();

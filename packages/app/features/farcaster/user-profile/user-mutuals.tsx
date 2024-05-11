@@ -8,7 +8,12 @@ import { FarcasterUserInfiniteFeed } from "../user-feed/user-feed";
 export const FarcasterUserMutuals = ({
   username,
   initialData,
-}: { username: string; initialData?: FetchUsersResponse }) => {
+  asTabs,
+}: {
+  username: string;
+  initialData?: FetchUsersResponse;
+  asTabs?: boolean;
+}) => {
   const { data, isLoading, hasNextPage, fetchNextPage, isFetchingNextPage } =
     useUserMutuals(username, initialData);
 
@@ -24,6 +29,7 @@ export const FarcasterUserMutuals = ({
       fetchNextPage={fetchNextPage}
       isFetchingNextPage={isFetchingNextPage}
       hasNextPage={hasNextPage}
+      asTabs={asTabs}
     />
   );
 };

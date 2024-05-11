@@ -11,12 +11,12 @@ import { useEffect, useState } from "react";
 import { useToastController } from "@tamagui/toast";
 import { FarcasterCastResponse, UrlContentResponse } from "@nook/common/types";
 import { Frame, FrameButton } from "@nook/common/types";
-import { useAuth } from "../../context/auth";
+import { useAuth } from "../../../context/auth";
 import { NookButton, NookText, Input, Image } from "@nook/app-ui";
-import { submitFrameAction } from "../../api/farcaster/actions";
+import { submitFrameAction } from "../../../api/farcaster/actions";
 import { useRouter } from "solito/navigation";
-import { EnableSignerDialog } from "../../features/farcaster/enable-signer/dialog";
-import { useTheme } from "../../context/theme";
+import { EnableSignerDialog } from "../../../features/farcaster/enable-signer/dialog";
+import { useTheme } from "../../../context/theme";
 import { Link } from "solito/link";
 
 export const EmbedFrame = ({

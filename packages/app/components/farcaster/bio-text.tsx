@@ -5,7 +5,12 @@ import { NookText } from "@nook/app-ui";
 export const FarcasterBioText = ({
   text,
   selectable,
-}: { text: string; selectable?: boolean }) => {
+  numberOfLines,
+}: {
+  text: string;
+  selectable?: boolean;
+  numberOfLines?: number;
+}) => {
   const textParts = [];
 
   const textBuffer = Buffer.from(text.replaceAll(/\uFFFC/g, ""), "utf-8");
@@ -194,5 +199,9 @@ export const FarcasterBioText = ({
 
   textParts.reverse();
 
-  return <NookText selectable={selectable}>{textParts}</NookText>;
+  return (
+    <NookText selectable={selectable} numberOfLines={numberOfLines}>
+      {textParts}
+    </NookText>
+  );
 };

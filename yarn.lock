@@ -5645,6 +5645,7 @@ __metadata:
     "@nook/app": "npm:*"
     "@nook/app-ui": "npm:*"
     "@nook/common": "npm:*"
+    "@openspacelabs/react-native-zoomable-view": "npm:2.1.6"
     "@privy-io/expo": "npm:^0.15.1"
     "@react-native-async-storage/async-storage": "npm:^1.23.1"
     "@react-native-community/netinfo": "npm:11.1.0"
@@ -6071,6 +6072,18 @@ __metadata:
     mkdirp: "npm:^1.0.4"
     rimraf: "npm:^3.0.2"
   checksum: 10c0/02e946f3dafcc6743132fe2e0e2b585a96ca7265653a38df5a3e53fcf26c7c7a57fc0f861d7c689a23fdb6d6836c7eea5050c8086abf3c994feb2208d1514ff0
+  languageName: node
+  linkType: hard
+
+"@openspacelabs/react-native-zoomable-view@npm:2.1.6":
+  version: 2.1.6
+  resolution: "@openspacelabs/react-native-zoomable-view@npm:2.1.6"
+  dependencies:
+    prop-types: "npm:^15.7.2"
+  peerDependencies:
+    react: ">=16.8.0"
+    react-native: ">=0.54.0"
+  checksum: 10c0/1414c09e08bdea672638b8ce23400291bc3f67feb2f5bb7d5d4a10953a613f44f5ed2e92186a26c9e81678e5dc73234e6338357a3e2137af3b46f0302774fc19
   languageName: node
   linkType: hard
 

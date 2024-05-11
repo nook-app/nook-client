@@ -49,7 +49,7 @@ export const TransactionFeed = ({
   };
 
   return (
-    <View>
+    <View flexGrow={1}>
       <XStack
         justifyContent="space-around"
         padding="$2"

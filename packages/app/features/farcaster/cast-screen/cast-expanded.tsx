@@ -59,10 +59,17 @@ export const FarcasterExpandedCast = ({
   initialData,
 }: { cast: FarcasterCastResponse; initialData?: FetchCastsResponse }) => {
   const [replySort, setReplySort] = useState<"best" | "top" | "new">("best");
-  const { data, isLoading, hasNextPage, fetchNextPage, isFetchingNextPage } =
+  const [isRefetching, setIsRefetching] = useState(false);
+  const { data, hasNextPage, fetchNextPage, isFetchingNextPage, refetch } =
     useCastReplies(cast.hash, replySort, initialData);
 
   const casts = data?.pages.flatMap((page) => page.data) ?? [];
+
+  const handleRefresh = async () => {
+    setIsRefetching(true);
+    await refetch();
+    setIsRefetching(false);
+  };
 
   return (
     <FarcasterInfiniteFeed
@@ -78,6 +85,8 @@ export const FarcasterExpandedCast = ({
           onReplySortChange={setReplySort}
         />
       }
+      refetch={handleRefresh}
+      isRefetching={isRefetching}
     />
   );
 };
@@ -124,12 +133,15 @@ const FarcasterExpandedCastHeader = ({
             cast={cast}
             types={["likes", "replies", "quotes", "recasts"]}
           />
-          <XStack alignItems="center" gap="$2">
+          <XStack alignItems="center" gap="$1.5">
             <NookText muted>{formatTimestampTime(cast.timestamp)}</NookText>
             <NookText muted>{"·"}</NookText>
             <NookText muted>{formatTimestampDate(cast.timestamp)}</NookText>
             {cast.channel && (
-              <FarcasterChannelBadge channel={cast.channel} asLink />
+              <>
+                <NookText muted>{"·"}</NookText>
+                <FarcasterChannelBadge channel={cast.channel} asLink />
+              </>
             )}
           </XStack>
         </XStack>

@@ -34,9 +34,12 @@ export const useCastFeed = (
   api?: string,
   initialData?: FetchCastsResponse,
 ) => {
-  const addUsers = useUserStore((state) => state.addUsers);
-  const addChannels = useChannelStore((state) => state.addChannels);
-  const addCasts = useCastStore((state) => state.addCasts);
+  const addUsersFromCasts = useUserStore((state) => state.addUsersFromCasts);
+  const addChannelsFromCasts = useChannelStore(
+    (state) => state.addChannelsFromCasts,
+  );
+  const addCastsFromCasts = useCastStore((state) => state.addCastsFromCasts);
+
   const queryClient = useQueryClient();
   const cachedData = queryClient.getQueryData<
     InfiniteData<FetchCastsResponse, string>
@@ -56,14 +59,9 @@ export const useCastFeed = (
         filter,
         cursor: pageParam,
       });
-      const users = data.data.map((cast) => cast.user);
-      addUsers(users);
-      const channels = data.data
-        .map((cast) => cast.channel)
-        .filter(Boolean) as Channel[];
-      addChannels(channels);
-      const casts = data.data.map((cast) => cast);
-      addCasts(casts);
+      addUsersFromCasts(data.data);
+      addChannelsFromCasts(data.data);
+      addCastsFromCasts(data.data);
       return data;
     },
     getNextPageParam: (lastPage) => lastPage.nextCursor,

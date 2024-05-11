@@ -1,21 +1,20 @@
-import { Display, FarcasterCastResponse } from "@nook/common/types";
+import { NotificationResponse } from "@nook/common/types";
 import { Separator, Spinner, View } from "@nook/app-ui";
 import { FlashList } from "@shopify/flash-list";
-import { FarcasterCastLink } from "../../../components/farcaster/casts/cast-link";
-import { RefreshControl } from "../../../components/refresh-control";
 import { useCallback, useState } from "react";
 import { NativeScrollEvent, NativeSyntheticEvent } from "react-native";
-import { useScroll } from "../../../context/scroll";
 import { useScrollToTop } from "@react-navigation/native";
 import { useRef } from "react";
 import { Tabs } from "react-native-collapsible-tab-view";
+import { useScroll } from "../../context/scroll";
+import { NotificationItem } from "./notifications-item";
+import { RefreshControl } from "../../components/refresh-control";
 
-export const FarcasterInfiniteFeed = ({
-  casts,
+export const NotificationsInfiniteFeed = ({
+  notifications,
   fetchNextPage,
   isFetchingNextPage,
   hasNextPage,
-  displayMode = Display.CASTS,
   ListHeaderComponent,
   refetch,
   isRefetching,
@@ -23,11 +22,10 @@ export const FarcasterInfiniteFeed = ({
   paddingBottom,
   asTabs,
 }: {
-  casts: FarcasterCastResponse[];
-  fetchNextPage?: () => void;
-  isFetchingNextPage?: boolean;
-  hasNextPage?: boolean;
-  displayMode?: Display;
+  notifications: NotificationResponse[];
+  fetchNextPage: () => void;
+  isFetchingNextPage: boolean;
+  hasNextPage: boolean;
   ListHeaderComponent?: JSX.Element;
   refetch: () => Promise<void>;
   isRefetching: boolean;
@@ -35,7 +33,7 @@ export const FarcasterInfiniteFeed = ({
   paddingBottom?: number;
   asTabs?: boolean;
 }) => {
-  const { setIsScrolling, setActiveVideo } = useScroll();
+  const { setIsScrolling } = useScroll();
   const [lastScrollY, setLastScrollY] = useState(0);
 
   const ref = useRef(null);
@@ -59,35 +57,13 @@ export const FarcasterInfiniteFeed = ({
 
   const List = asTabs ? Tabs.FlashList : FlashList;
 
-  const handleViewableItemsChanged = useCallback(
-    ({
-      viewableItems,
-    }: { viewableItems: { item: FarcasterCastResponse }[] }) => {
-      const videos = viewableItems.flatMap(({ item }) =>
-        item.embeds.map(({ contentType, uri }) =>
-          contentType?.startsWith("video") ||
-          contentType?.startsWith("application/x-mpegURL")
-            ? uri
-            : null,
-        ),
-      );
-      setActiveVideo(videos.find((video) => video) || "");
-    },
-    [setActiveVideo],
-  );
-
   return (
     <List
       ref={ref}
-      data={casts}
-      renderItem={({ item, index }) => {
-        return (
-          <FarcasterCastLink
-            cast={item as FarcasterCastResponse}
-            displayMode={displayMode}
-          />
-        );
-      }}
+      data={notifications}
+      renderItem={({ item }) => (
+        <NotificationItem notification={item as NotificationResponse} />
+      )}
       ListHeaderComponent={ListHeaderComponent}
       ListFooterComponent={() =>
         isFetchingNextPage ? (
@@ -109,14 +85,12 @@ export const FarcasterInfiniteFeed = ({
       onEndReached={fetchNextPage}
       onEndReachedThreshold={5}
       estimatedItemSize={300}
-      numColumns={displayMode === Display.GRID ? 3 : 1}
       onScroll={handleScroll}
       scrollEventThrottle={128}
       contentContainerStyle={{
         paddingTop,
         paddingBottom,
       }}
-      onViewableItemsChanged={handleViewableItemsChanged}
     />
   );
 };

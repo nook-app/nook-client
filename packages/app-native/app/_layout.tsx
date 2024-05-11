@@ -9,6 +9,7 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import "react-native-reanimated";
 import { ScrollProvider } from "@nook/app/context/scroll";
 import { Audio } from "expo-av";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 export { ErrorBoundary } from "expo-router";
 
@@ -47,34 +48,41 @@ export default function RootLayout() {
 
 function RootLayoutNav() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <PrivyProvider appId={"clsnxqma102qxbyt1ght4j14w"}>
-        <AuthProvider>
-          <ThemeProvider>
-            <SafeAreaProvider>
-              <ScrollProvider>
-                <Stack>
-                  <Stack.Screen
-                    name="(drawer)"
-                    options={{ headerShown: false, animation: "fade" }}
-                  />
-                  <Stack.Screen
-                    name="(login)"
-                    options={{
-                      headerShown: false,
-                      animation: "fade",
-                    }}
-                  />
-                  <Stack.Screen
-                    name="modal"
-                    options={{ presentation: "modal" }}
-                  />
-                </Stack>
-              </ScrollProvider>
-            </SafeAreaProvider>
-          </ThemeProvider>
-        </AuthProvider>
-      </PrivyProvider>
-    </QueryClientProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <QueryClientProvider client={queryClient}>
+        <PrivyProvider appId={"clsnxqma102qxbyt1ght4j14w"}>
+          <AuthProvider>
+            <ThemeProvider>
+              <SafeAreaProvider>
+                <ScrollProvider>
+                  <Stack>
+                    <Stack.Screen
+                      name="(drawer)"
+                      options={{ headerShown: false, animation: "fade" }}
+                    />
+                    <Stack.Screen
+                      name="(login)"
+                      options={{
+                        headerShown: false,
+                        animation: "fade",
+                      }}
+                    />
+                    <Stack.Screen
+                      name="(modals)"
+                      options={{
+                        headerShown: false,
+                        animation: "fade",
+                        animationDuration: 100,
+                        presentation: "transparentModal",
+                      }}
+                    />
+                  </Stack>
+                </ScrollProvider>
+              </SafeAreaProvider>
+            </ThemeProvider>
+          </AuthProvider>
+        </PrivyProvider>
+      </QueryClientProvider>
+    </GestureHandlerRootView>
   );
 }

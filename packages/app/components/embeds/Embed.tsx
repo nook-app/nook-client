@@ -8,7 +8,7 @@ import { FarcasterCastResponse, UrlContentResponse } from "@nook/common/types";
 import { EmbedCast } from "./EmbedCast";
 import { Link as LinkIcon } from "@tamagui/lucide-icons";
 import { Link } from "solito/link";
-import { EmbedFrame } from "./EmbedFrame";
+import { EmbedFrame } from "./frames/EmbedFrame";
 import { Platform } from "react-native";
 
 export const Embed = ({

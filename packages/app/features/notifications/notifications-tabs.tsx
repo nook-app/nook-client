@@ -27,10 +27,26 @@ import { Loading } from "../../components/loading";
 export const NotificationsPriorityFeed = ({
   fid,
   initialData,
-}: { fid: string; initialData?: FetchNotificationsResponse }) => {
+  paddingTop,
+  paddingBottom,
+  asTabs,
+}: {
+  fid: string;
+  initialData?: FetchNotificationsResponse;
+  paddingTop?: number;
+  paddingBottom?: number;
+  asTabs?: boolean;
+}) => {
   const queryClient = useQueryClient();
-  const { data, isLoading, hasNextPage, fetchNextPage, isFetchingNextPage } =
-    usePriorityNotifications(fid, initialData);
+  const [isRefetching, setIsRefetching] = useState(false);
+  const {
+    data,
+    isLoading,
+    hasNextPage,
+    fetchNextPage,
+    isFetchingNextPage,
+    refetch,
+  } = usePriorityNotifications(fid, initialData);
 
   const notifications = data?.pages.flatMap((page) => page.data) ?? [];
 
@@ -44,12 +60,23 @@ export const NotificationsPriorityFeed = ({
     return <Loading />;
   }
 
+  const handleRefresh = async () => {
+    setIsRefetching(true);
+    await refetch();
+    setIsRefetching(false);
+  };
+
   return (
     <NotificationsInfiniteFeed
       notifications={notifications}
       fetchNextPage={fetchNextPage}
       isFetchingNextPage={isFetchingNextPage}
       hasNextPage={hasNextPage}
+      refetch={handleRefresh}
+      isRefetching={isRefetching}
+      paddingTop={paddingTop}
+      paddingBottom={paddingBottom}
+      asTabs={asTabs}
     />
   );
 };
@@ -57,9 +84,25 @@ export const NotificationsPriorityFeed = ({
 export const NotificationsMentionsFeed = ({
   fid,
   initialData,
-}: { fid: string; initialData?: FetchNotificationsResponse }) => {
-  const { data, isLoading, hasNextPage, fetchNextPage, isFetchingNextPage } =
-    useMentionsNotifications(fid, initialData);
+  paddingTop,
+  paddingBottom,
+  asTabs,
+}: {
+  fid: string;
+  initialData?: FetchNotificationsResponse;
+  paddingTop?: number;
+  paddingBottom?: number;
+  asTabs?: boolean;
+}) => {
+  const [isRefetching, setIsRefetching] = useState(false);
+  const {
+    data,
+    isLoading,
+    hasNextPage,
+    fetchNextPage,
+    isFetchingNextPage,
+    refetch,
+  } = useMentionsNotifications(fid, initialData);
 
   const notifications = data?.pages.flatMap((page) => page.data) ?? [];
 
@@ -67,12 +110,23 @@ export const NotificationsMentionsFeed = ({
     return <Loading />;
   }
 
+  const handleRefresh = async () => {
+    setIsRefetching(true);
+    await refetch();
+    setIsRefetching(false);
+  };
+
   return (
     <NotificationsInfiniteFeed
       notifications={notifications}
       fetchNextPage={fetchNextPage}
       isFetchingNextPage={isFetchingNextPage}
       hasNextPage={hasNextPage}
+      refetch={handleRefresh}
+      isRefetching={isRefetching}
+      paddingTop={paddingTop}
+      paddingBottom={paddingBottom}
+      asTabs={asTabs}
     />
   );
 };
@@ -80,14 +134,30 @@ export const NotificationsMentionsFeed = ({
 export const NotificationsAllFeed = ({
   fid,
   initialData,
-}: { fid: string; initialData?: FetchNotificationsResponse }) => {
+  paddingTop,
+  paddingBottom,
+  asTabs,
+}: {
+  fid: string;
+  initialData?: FetchNotificationsResponse;
+  paddingTop?: number;
+  paddingBottom?: number;
+  asTabs?: boolean;
+}) => {
   const [types, setTypes] = useState<NotificationType[]>([]);
-  const { data, isLoading, hasNextPage, fetchNextPage, isFetchingNextPage } =
-    useAllNotifications(
-      fid,
-      types,
-      types.length === 0 ? initialData : undefined,
-    );
+  const [isRefetching, setIsRefetching] = useState(false);
+  const {
+    data,
+    isLoading,
+    hasNextPage,
+    fetchNextPage,
+    isFetchingNextPage,
+    refetch,
+  } = useAllNotifications(
+    fid,
+    types,
+    types.length === 0 ? initialData : undefined,
+  );
 
   const notifications = data?.pages.flatMap((page) => page.data) ?? [];
 
@@ -134,8 +204,14 @@ export const NotificationsAllFeed = ({
     return <Loading />;
   }
 
+  const handleRefresh = async () => {
+    setIsRefetching(true);
+    await refetch();
+    setIsRefetching(false);
+  };
+
   return (
-    <View>
+    <View flexGrow={1}>
       <XStack
         justifyContent="space-around"
         padding="$2"
@@ -176,6 +252,11 @@ export const NotificationsAllFeed = ({
         fetchNextPage={fetchNextPage}
         isFetchingNextPage={isFetchingNextPage}
         hasNextPage={hasNextPage}
+        refetch={handleRefresh}
+        isRefetching={isRefetching}
+        paddingTop={paddingTop}
+        paddingBottom={paddingBottom}
+        asTabs={asTabs}
       />
     </View>
   );

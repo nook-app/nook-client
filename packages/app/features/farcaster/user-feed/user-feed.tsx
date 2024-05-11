@@ -1,25 +1,22 @@
 "use client";
 
-import { Display, FarcasterUser } from "@nook/common/types";
-import { AnimatePresence, Spinner, View, XStack, YStack } from "@nook/app-ui";
-import { FarcasterUserDisplay } from "../../../components/farcaster/users/user-display";
+import { FarcasterUser } from "@nook/common/types";
+import { AnimatePresence, Spinner, View } from "@nook/app-ui";
 import { InfiniteScrollList } from "../../../components/infinite-scroll-list";
-import { FarcasterUserFollowButton } from "../../../components/farcaster/users/user-follow-button";
-import { memo } from "react";
-import { Link } from "solito/link";
+import { FarcasterUserItem } from "./user-item";
 
 export const FarcasterUserInfiniteFeed = ({
   users,
   fetchNextPage,
   isFetchingNextPage,
   hasNextPage,
-  displayMode = Display.CASTS,
+  asTabs,
 }: {
   users: FarcasterUser[];
   fetchNextPage: () => void;
   isFetchingNextPage: boolean;
   hasNextPage: boolean;
-  displayMode?: Display;
+  asTabs?: boolean;
 }) => {
   return (
     <InfiniteScrollList
@@ -43,7 +40,6 @@ export const FarcasterUserInfiniteFeed = ({
         </AnimatePresence>
       )}
       onEndReached={fetchNextPage}
-      numColumns={displayMode === Display.GRID ? 3 : 1}
       ListFooterComponent={
         isFetchingNextPage ? (
           <View marginVertical="$3">
@@ -54,24 +50,3 @@ export const FarcasterUserInfiniteFeed = ({
     />
   );
 };
-
-const FarcasterUserItem = memo(({ user }: { user: FarcasterUser }) => {
-  return (
-    <Link href={`/users/${user.username}`}>
-      <YStack
-        gap="$2"
-        paddingHorizontal="$3.5"
-        paddingVertical="$3"
-        hoverStyle={{
-          transform: "all 0.2s ease-in-out",
-          backgroundColor: "$color2",
-        }}
-      >
-        <XStack justifyContent="space-between">
-          <FarcasterUserDisplay user={user} withBio />
-          <FarcasterUserFollowButton user={user} />
-        </XStack>
-      </YStack>
-    </Link>
-  );
-});

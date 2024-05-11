@@ -161,11 +161,6 @@ export const FarcasterUserBadge = ({
       alignItems="center"
       flexShrink={1}
       backgroundColor="$color1"
-      borderRadius="$6"
-      paddingHorizontal="$2"
-      paddingVertical="$1.5"
-      borderColor="$borderColorBg"
-      borderWidth="$0.25"
       hoverStyle={{
         // @ts-ignore
         transition: "all 0.2s ease-in-out",

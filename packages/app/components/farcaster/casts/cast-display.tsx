@@ -21,7 +21,7 @@ import { FarcasterCustomActionButton } from "../../../components/farcaster/casts
 import { FarcasterCastResponseKebabMenu } from "./cast-kebab-menu";
 import { EmbedImage } from "../../embeds/EmbedImage";
 import { EmbedVideo } from "../../embeds/EmbedVideo";
-import { EmbedFrame } from "../../embeds/EmbedFrame";
+import { EmbedFrame } from "../../embeds/frames/EmbedFrame";
 import { useMuteStore } from "../../../store/useMuteStore";
 import { FarcasterPowerBadge } from "../users/power-badge";
 
