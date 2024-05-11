@@ -35,7 +35,7 @@ export const FarcasterInfiniteFeed = ({
   paddingBottom?: number;
   asTabs?: boolean;
 }) => {
-  const { setIsScrolling } = useScroll();
+  const { setIsScrolling, setActiveVideo } = useScroll();
   const [lastScrollY, setLastScrollY] = useState(0);
 
   const ref = useRef(null);
@@ -58,6 +58,23 @@ export const FarcasterInfiniteFeed = ({
   );
 
   const List = asTabs ? Tabs.FlashList : FlashList;
+
+  const handleViewableItemsChanged = useCallback(
+    ({
+      viewableItems,
+    }: { viewableItems: { item: FarcasterCastResponse }[] }) => {
+      const videos = viewableItems.flatMap(({ item }) =>
+        item.embeds.map(({ contentType, uri }) =>
+          contentType?.startsWith("video") ||
+          contentType?.startsWith("application/x-mpegURL")
+            ? uri
+            : null,
+        ),
+      );
+      setActiveVideo(videos.find((video) => video) || "");
+    },
+    [setActiveVideo],
+  );
 
   return (
     <List
@@ -93,6 +110,7 @@ export const FarcasterInfiniteFeed = ({
         paddingTop,
         paddingBottom,
       }}
+      onViewableItemsChanged={handleViewableItemsChanged}
     />
   );
 };

@@ -8,6 +8,7 @@ import { PrivyProvider } from "@privy-io/expo";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import "react-native-reanimated";
 import { ScrollProvider } from "@nook/app/context/scroll";
+import { Audio } from "expo-av";
 
 export { ErrorBoundary } from "expo-router";
 
@@ -26,6 +27,10 @@ export default function RootLayout() {
     InterSemiBold: require("@tamagui/font-inter/otf/Inter-SemiBold.otf"),
     InterBold: require("@tamagui/font-inter/otf/Inter-Bold.otf"),
   });
+
+  useEffect(() => {
+    Audio.setAudioModeAsync({ playsInSilentModeIOS: true });
+  }, []);
 
   useEffect(() => {
     if (interLoaded || interError) {

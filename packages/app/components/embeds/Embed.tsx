@@ -9,6 +9,7 @@ import { EmbedCast } from "./EmbedCast";
 import { Link as LinkIcon } from "@tamagui/lucide-icons";
 import { Link } from "solito/link";
 import { EmbedFrame } from "./EmbedFrame";
+import { Platform } from "react-native";
 
 export const Embed = ({
   content,
@@ -34,8 +35,8 @@ export const Embed = ({
   if (
     content.contentType?.startsWith("video/") ||
     content.contentType?.startsWith("application/x-mpegURL") ||
-    content.uri.includes("youtube.com") ||
-    content.uri.includes("youtu.be")
+    (Platform.OS === "web" &&
+      (content.uri.includes("youtube.com") || content.uri.includes("youtu.be")))
   ) {
     return <EmbedVideo uri={content.uri} />;
   }

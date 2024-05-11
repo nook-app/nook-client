@@ -12,22 +12,28 @@ export const EmbedMedia = ({
 }) => {
   const isAllImages = cast.embeds.every(
     (embed) =>
-      embed.type?.startsWith("image/") ||
-      (!embed.type && embed.uri.includes("imgur.com")),
+      embed.contentType?.startsWith("image/") ||
+      (!embed.contentType && embed.uri.includes("imgur.com")),
   );
   if (isAllImages) {
     return (
       <EmbedImages
-        uris={cast.embeds.map(({ uri, type }) => formatToCDN(uri, { type }))}
+        uris={cast.embeds.map(({ uri, contentType }) =>
+          formatToCDN(uri, { type: contentType }),
+        )}
       />
     );
   }
 
   const sortedEmbeds = cast.embeds.sort((a, b) => {
     const aPriority =
-      a.type?.startsWith("image/") || a.type?.startsWith("video/") ? 1 : 0;
+      a.contentType?.startsWith("image/") || a.contentType?.startsWith("video/")
+        ? 1
+        : 0;
     const bPriority =
-      b.type?.startsWith("image/") || b.type?.startsWith("video/") ? 1 : 0;
+      b.contentType?.startsWith("image/") || b.contentType?.startsWith("video/")
+        ? 1
+        : 0;
     return aPriority - bPriority;
   });
 
@@ -42,16 +48,18 @@ export const EmbedMedia = ({
 
 const EmbedSingleMedia = ({ content }: { content: UrlContentResponse }) => {
   if (
-    content.type?.startsWith("image/") ||
-    (!content.type && content.uri.includes("imgur.com"))
+    content.contentType?.startsWith("image/") ||
+    (!content.contentType && content.uri.includes("imgur.com"))
   ) {
     return (
-      <EmbedImage uri={formatToCDN(content.uri, { type: content.type })} />
+      <EmbedImage
+        uri={formatToCDN(content.uri, { type: content.contentType })}
+      />
     );
   }
   if (
-    content.type?.startsWith("video/") ||
-    content.type?.startsWith("application/x-mpegURL")
+    content.contentType?.startsWith("video/") ||
+    content.contentType?.startsWith("application/x-mpegURL")
   ) {
     return <EmbedVideo uri={content.uri} />;
   }

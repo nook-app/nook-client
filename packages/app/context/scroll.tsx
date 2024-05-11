@@ -10,6 +10,8 @@ import { usePathname } from "expo-router";
 type ScrollContextType = {
   isScrolling: boolean;
   setIsScrolling: (scrolling: boolean) => void;
+  activeVideo: string | null;
+  setActiveVideo: (uri: string | null) => void;
 };
 
 const ScrollContext = createContext<ScrollContextType | undefined>(undefined);
@@ -20,6 +22,7 @@ type SheetProviderProps = {
 
 export const ScrollProvider = ({ children }: SheetProviderProps) => {
   const [isScrolling, setIsScrolling] = useState(false);
+  const [activeVideo, setActiveVideo] = useState<string | null>(null);
   const pathname = usePathname();
 
   useEffect(() => {
@@ -31,6 +34,8 @@ export const ScrollProvider = ({ children }: SheetProviderProps) => {
       value={{
         isScrolling,
         setIsScrolling,
+        activeVideo,
+        setActiveVideo,
       }}
     >
       {children}

@@ -206,44 +206,6 @@ export class ContentService {
       });
     }
 
-    for (const castEmbed of cast.embedCasts) {
-      for (const url of castEmbed.embeds) {
-        references.push({
-          fid: cast.user.fid,
-          hash: cast.hash,
-          parentFid: cast.parent?.user.fid,
-          parentHash: cast.parent?.hash,
-          parentUrl: cast.parentUrl,
-          uri: url.uri,
-          type: ContentReferenceType.Quote,
-          timestamp,
-          text: cast.text,
-          rootParentFid: cast.rootParentFid,
-          rootParentHash: cast.rootParentHash,
-          rootParentUrl: cast.rootParentUrl,
-        });
-      }
-    }
-
-    if (cast.parent) {
-      for (const url of cast.parent.embeds) {
-        references.push({
-          fid: cast.user.fid,
-          hash: cast.hash,
-          parentFid: cast.parent?.user.fid,
-          parentHash: cast.parent?.hash,
-          parentUrl: cast.parentUrl,
-          uri: url.uri,
-          type: ContentReferenceType.Quote,
-          timestamp,
-          text: cast.text,
-          rootParentFid: cast.rootParentFid,
-          rootParentHash: cast.rootParentHash,
-          rootParentUrl: cast.rootParentUrl,
-        });
-      }
-    }
-
     return references;
   }
 }

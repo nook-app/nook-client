@@ -2,6 +2,7 @@ import { UrlContentResponse } from "@nook/common/types";
 import { Image, NookText, Text, View, XStack, YStack } from "@nook/app-ui";
 import { Link as LinkIcon } from "@tamagui/lucide-icons";
 import { Link } from "solito/link";
+import { SvgUri } from "react-native-svg";
 
 export const EmbedUrl = ({ content }: { content: UrlContentResponse }) => {
   if (!content.metadata) return null;
@@ -27,14 +28,31 @@ export const EmbedUrl = ({ content }: { content: UrlContentResponse }) => {
             >
               <LinkIcon size={48} color="$mauve12" />
             </View>
-            <Image
-              source={{ uri: content.metadata.image }}
-              style={{
-                width: "100%",
-                height: "100%",
-                aspectRatio: 1.91,
-              }}
-            />
+            {content.metadata.image.endsWith(".svg") && (
+              <View
+                style={{
+                  width: "100%",
+                  height: "100%",
+                  aspectRatio: 1.91,
+                }}
+              >
+                <SvgUri
+                  uri={content.metadata.image}
+                  width="100%"
+                  height="100%"
+                />
+              </View>
+            )}
+            {!content.metadata.image.endsWith(".svg") && (
+              <Image
+                source={{ uri: content.metadata.image }}
+                style={{
+                  width: "100%",
+                  height: "100%",
+                  aspectRatio: 1.91,
+                }}
+              />
+            )}
           </View>
         )}
         <YStack gap="$1.5" padding="$2" backgroundColor="$color3">

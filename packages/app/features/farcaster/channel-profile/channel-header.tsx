@@ -11,7 +11,7 @@ import { FarcasterChannelKebabMenu } from "../../../components/farcaster/channel
 export const ChannelHeader = ({ channel }: { channel: Channel }) => {
   const bio = channel?.description?.trim().replace(/\n\s*\n/g, "\n");
   return (
-    <YStack gap="$3" padding="$4">
+    <YStack gap="$3" padding="$2.5">
       <View flexDirection="row" justifyContent="space-between">
         <XStack gap="$3" alignItems="center">
           <ZoomableImage uri={channel.imageUrl}>
