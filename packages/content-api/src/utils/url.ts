@@ -81,6 +81,8 @@ export const getUrlContent = async (
         content.hasFrame = true;
         content.frame = JSON.parse(JSON.stringify(metadata.frame));
       }
+    } else if (uri.startsWith("chain://")) {
+      return content;
     }
   } catch (e) {
     console.log(`[metadata] [${uri}] failed due to ${e}`);

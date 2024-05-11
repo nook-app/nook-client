@@ -10,6 +10,7 @@ export const FarcasterChannelTooltip = ({
   channel: Channel;
   children: ReactNode;
 }) => {
+  const bio = channel?.description?.trim().replace(/\n\s*\n/g, "\n");
   return (
     <Tooltip delay={100}>
       <Tooltip.Trigger asChild>{children}</Tooltip.Trigger>

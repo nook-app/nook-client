@@ -103,9 +103,11 @@ const FarcasterExpandedCastHeader = ({
   const renderText = cast.text || cast.mentions.length > 0;
   const renderEmbeds = cast.embeds.length > 0 || cast.embedCasts.length > 0;
 
+  console.log("2", cast.ancestors);
+
   return (
     <View>
-      {cast.ancestors?.toReversed().map((ancestor) => (
+      {cast.ancestors?.toReversed?.().map((ancestor) => (
         <FarcasterCastLink
           key={ancestor.hash}
           cast={ancestor}
