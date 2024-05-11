@@ -120,7 +120,7 @@ const CollapsibleLayoutHeader = ({
       const delta = currentScrollY - (previousScrollY ?? 0);
       if (delta > 0 && currentScrollY > 50) {
         runOnJS(setIsScrolling)(true);
-      } else if (delta < -50) {
+      } else if (delta < -25) {
         runOnJS(setIsScrolling)(false);
       }
     },

@@ -31,7 +31,7 @@ export default function UserScreen() {
         </XStack>
       }
       colors={colors}
-      header={<UserHeader user={user} size="$7" />}
+      header={<UserHeader user={user} size="$6" />}
       pages={[
         {
           name: "Casts",

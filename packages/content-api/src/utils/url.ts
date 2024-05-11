@@ -116,7 +116,7 @@ const scrapeMetadata = async (options: MetascraperOptions) => {
 
 const fetchUrlMetadata = async (url: string) => {
   const hostname = new URL(url).hostname;
-  let res = await Promise.race([
+  const res = await Promise.race([
     fetch(url, {
       headers: {
         "user-agent":
@@ -132,21 +132,6 @@ const fetchUrlMetadata = async (url: string) => {
       setTimeout(() => reject(new Error("Timed out getting frame")), 20000),
     ) as Promise<Error>,
   ]);
-
-  if (res instanceof Error) {
-    throw res;
-  }
-
-  if (res.redirected && !["x.com", "twitter.com"].includes(hostname)) {
-    res = await Promise.race([
-      fetch(url, {
-        redirect: "manual",
-      }) as Promise<Response>,
-      new Promise((_, reject) =>
-        setTimeout(() => reject(new Error("Timed out getting frame")), 20000),
-      ) as Promise<Error>,
-    ]);
-  }
 
   if (res instanceof Error) {
     throw res;

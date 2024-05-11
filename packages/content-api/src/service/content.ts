@@ -55,7 +55,7 @@ export class ContentService {
       await this.cache.setContents(Object.values(contentMap));
     }
 
-    const stillMissing = uris.filter((uri) => !contentMap[uri]);
+    const stillMissing = uris.filter((uri) => !contentMap[uri]?.contentType);
     if (stillMissing.length > 0) {
       const missingContent = await this.refreshContents(stillMissing);
       for (const content of missingContent) {
