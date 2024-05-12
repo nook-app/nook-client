@@ -6,12 +6,17 @@ import { formatNumber } from "@nook/app/utils";
 import { DrawerContentScrollView } from "@react-navigation/drawer";
 import { Link } from "expo-router";
 import { ComponentType } from "react";
-import { User } from "@tamagui/lucide-icons";
+import {
+  User,
+  Settings,
+  Image,
+  MousePointerSquare,
+} from "@tamagui/lucide-icons";
 import { Href } from "expo-router/build/link/href";
 
 export const SidebarLayout = () => {
   return (
-    <View flexGrow={1} backgroundColor="$color2">
+    <View flexGrow={1} backgroundColor="$color1">
       <DrawerContentScrollView>
         <View paddingHorizontal="$6" paddingVertical="$2">
           <SidebarUser />
@@ -72,17 +77,36 @@ const SidebarUser = () => {
 const SidebarNavigation = () => {
   const { user } = useAuth();
   return (
-    <YStack marginVertical="$4">
-      {user?.username && (
-        <SidebarNavigationItem
-          label="Profile"
-          Icon={User}
-          href={{
-            pathname: "/(drawer)/(tabs)/(home)/users/[username]",
-            params: { username: user.username },
-          }}
-        />
-      )}
+    <YStack marginVertical="$6" gap="$5">
+      <SidebarNavigationItem
+        label="Media"
+        Icon={Image}
+        href={{
+          pathname: "/(drawer)/(tabs)/(media)",
+        }}
+      />
+      <SidebarNavigationItem
+        label="Frames"
+        Icon={MousePointerSquare}
+        href={{
+          pathname: "/(drawer)/(tabs)/(frames)",
+        }}
+      />
+      <SidebarNavigationItem
+        label="Profile"
+        Icon={User}
+        href={{
+          pathname: "/(drawer)/(tabs)/(home)/users/[username]",
+          params: { username: user?.username },
+        }}
+      />
+      <SidebarNavigationItem
+        label="Settings"
+        Icon={Settings}
+        href={{
+          pathname: "/(settings)/settings",
+        }}
+      />
     </YStack>
   );
 };

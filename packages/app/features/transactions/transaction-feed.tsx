@@ -27,7 +27,14 @@ export const TransactionFeed = ({
   ListHeaderComponent?: JSX.Element;
 }) => {
   const [isRefetching, setIsRefetching] = useState(false);
-  const { data, isLoading, refetch } = useTransactionFeed(filter, initialData);
+  const {
+    data,
+    isLoading,
+    refetch,
+    fetchNextPage,
+    isFetchingNextPage,
+    hasNextPage,
+  } = useTransactionFeed(filter, initialData);
 
   const transactions = data?.pages.flatMap((page) => page.data) ?? [];
 
@@ -44,11 +51,14 @@ export const TransactionFeed = ({
   return (
     <TransactionInfiniteFeed
       transactions={transactions}
-      asTabs={asTabs}
+      fetchNextPage={fetchNextPage}
+      isFetchingNextPage={isFetchingNextPage}
+      hasNextPage={hasNextPage}
       refetch={handleRefresh}
       isRefetching={isRefetching}
       paddingTop={paddingTop}
       paddingBottom={paddingBottom}
+      asTabs={asTabs}
       ListHeaderComponent={ListHeaderComponent}
     />
   );

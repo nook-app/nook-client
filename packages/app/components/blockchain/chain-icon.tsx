@@ -4,7 +4,6 @@ import { CHAINS } from "../../utils/chains";
 export const ChainIcon = ({ chainId }: { chainId: number }) => {
   const chain = CHAINS[chainId];
 
-  console.log(chain);
   return (
     <View
       width={16}
