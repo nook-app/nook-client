@@ -10,12 +10,20 @@ export const FarcasterUserInfiniteFeed = ({
   fetchNextPage,
   isFetchingNextPage,
   hasNextPage,
+  refetch,
+  isRefetching,
+  paddingTop,
+  paddingBottom,
   asTabs,
 }: {
   users: FarcasterUser[];
   fetchNextPage: () => void;
   isFetchingNextPage: boolean;
   hasNextPage: boolean;
+  refetch: () => Promise<void>;
+  isRefetching: boolean;
+  paddingTop?: number;
+  paddingBottom?: number;
   asTabs?: boolean;
 }) => {
   return (

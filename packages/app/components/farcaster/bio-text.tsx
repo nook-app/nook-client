@@ -43,7 +43,7 @@ export const FarcasterBioText = ({
             e.stopPropagation();
           }}
         >
-          <Link href={url} target="_blank" asText>
+          <Link href={url} target="_blank" asText unpressable>
             <NookText
               color="$color11"
               fontWeight="500"
@@ -138,7 +138,7 @@ export const FarcasterBioText = ({
             e.stopPropagation();
           }}
         >
-          <Link href={`/channels/${mention.word.slice(1)}`} asText>
+          <Link href={`/channels/${mention.word.slice(1)}`} asText unpressable>
             <NookText
               color="$color11"
               fontWeight="500"
@@ -169,7 +169,7 @@ export const FarcasterBioText = ({
             e.stopPropagation();
           }}
         >
-          <Link href={`/users/${mention.word.slice(1)}`} asText>
+          <Link href={`/users/${mention.word.slice(1)}`} asText unpressable>
             <NookText
               color="$color11"
               fontWeight="500"

@@ -1,6 +1,6 @@
 import { Stack, router } from "expo-router";
 import { View, XStack } from "@nook/app-ui";
-import { ArrowLeft, Search, MoreHorizontal } from "@tamagui/lucide-icons";
+import { ArrowLeft } from "@tamagui/lucide-icons";
 import Animated, {
   Extrapolation,
   interpolate,
@@ -24,11 +24,13 @@ export const CollapsibleGradientLayout = ({
   header,
   pages,
   colors,
+  right,
 }: {
   title: ReactNode;
   header: ReactNode;
   pages: { name: string; component: ReactNode }[];
   colors: Colors;
+  right?: ReactNode;
 }) => {
   const renderHeader = useCallback(
     () => (
@@ -37,9 +39,10 @@ export const CollapsibleGradientLayout = ({
         header={header}
         pages={pages}
         colors={colors}
+        right={right}
       />
     ),
-    [title, header, pages, colors],
+    [title, header, pages, colors, right],
   );
 
   return <CollapsibleLayout renderHeader={renderHeader} pages={pages} />;
@@ -50,11 +53,13 @@ export const CollapsibleGradientHeader = ({
   header,
   pages,
   colors,
+  right,
 }: {
   title: ReactNode;
   header: ReactNode;
   pages: { name: string; component: ReactNode }[];
   colors: Colors;
+  right?: ReactNode;
 }) => {
   const { rootTheme } = useTheme();
   const scrollY = useCurrentTabScrollY();
@@ -175,10 +180,7 @@ export const CollapsibleGradientHeader = ({
                     {title}
                   </Animated.View>
                 </XStack>
-                <XStack gap="$2" justifyContent="flex-end">
-                  <IconButton icon={Search} onPress={() => {}} />
-                  <IconButton icon={MoreHorizontal} onPress={() => {}} />
-                </XStack>
+                {right}
               </XStack>
             </View>
           ),

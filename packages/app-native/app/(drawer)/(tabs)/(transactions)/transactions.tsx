@@ -8,6 +8,8 @@ import {
 } from "../../../../components/DisappearingLayout";
 import { useCallback, useState } from "react";
 import { TransactionChainSelector } from "@nook/app/features/transactions/transaction-chain-selector";
+import { NookText, View } from "@nook/app-ui";
+import { DrawerToggleButton } from "../../../../components/DrawerToggleButton";
 
 export default function TransactionsScreen() {
   const paddingBottom = useBottomTabBarHeight();
@@ -24,7 +26,20 @@ export default function TransactionsScreen() {
 
   return (
     <DisappearingLayout
-      title="Transactions"
+      title={
+        <View
+          flexDirection="row"
+          justifyContent="space-between"
+          alignItems="center"
+          paddingVertical="$2"
+        >
+          <DrawerToggleButton />
+          <NookText fontSize="$5" fontWeight="600">
+            Transactions
+          </NookText>
+          <View width="$2.5" />
+        </View>
+      }
       navigation={
         <TransactionChainSelector chains={chains} onPress={toggleChain} />
       }

@@ -1,16 +1,9 @@
 import {
-  NookText,
   Spinner,
   View,
   XStack,
-  YStack,
   useTheme as useTamaguiTheme,
 } from "@nook/app-ui";
-import { IconButton } from "./IconButton";
-import { Search } from "@tamagui/lucide-icons";
-import { DrawerToggleButton } from "./DrawerToggleButton";
-import { useTheme } from "@nook/app/context/theme";
-import { BlurView } from "expo-blur";
 import { useScroll } from "@nook/app/context/scroll";
 import Animated, {
   interpolateColor,
@@ -19,8 +12,8 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 import { ReactNode, useEffect, useRef, useState } from "react";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 import PagerView from "react-native-pager-view";
+import { DisappearingLayout } from "./DisappearingLayout";
 
 export const NAVIGATION_HEIGHT = 94;
 export const TAB_HEIGHT = 40;
@@ -29,11 +22,12 @@ export const HEADER_HEIGHT = NAVIGATION_HEIGHT + TAB_HEIGHT;
 export const PagerLayout = ({
   title,
   pages,
-}: { title: ReactNode; pages: { name: string; component: ReactNode }[] }) => {
+}: {
+  title: ReactNode;
+  pages: { name: string; component: ReactNode }[];
+}) => {
   const theme = useTamaguiTheme();
-  const { rootTheme } = useTheme();
-  const { isScrolling, setIsScrolling } = useScroll();
-  const insets = useSafeAreaInsets();
+  const { setIsScrolling } = useScroll();
 
   // @ts-ignore
   const ref = useRef<PagerView>(null);
@@ -44,46 +38,6 @@ export const PagerLayout = ({
   const indicatorPosition = useSharedValue(0);
   const textWidths = useRef(new Array(pages.length).fill(0));
   const textWidth = useSharedValue(0);
-
-  const fullHeaderHeight =
-    NAVIGATION_HEIGHT + (pages.length > 1 ? TAB_HEIGHT : 0);
-
-  const headerHeight = useSharedValue(isScrolling ? 0 : fullHeaderHeight);
-  const headerPaddingTop = useSharedValue(isScrolling ? 0 : insets.top);
-  const headerOpacity = useSharedValue(isScrolling ? 0 : 1);
-
-  useEffect(() => {
-    headerHeight.value = withTiming(isScrolling ? 0 : fullHeaderHeight, {
-      duration: 100,
-    });
-    headerPaddingTop.value = withTiming(isScrolling ? 0 : insets.top, {
-      duration: 100,
-    });
-    headerOpacity.value = withTiming(isScrolling ? 0 : 1, { duration: 100 });
-  }, [
-    isScrolling,
-    headerHeight,
-    headerPaddingTop,
-    insets.top,
-    headerOpacity,
-    fullHeaderHeight,
-  ]);
-
-  const animatedHeaderStyle = useAnimatedStyle(() => {
-    return {
-      height: headerHeight.value,
-      paddingTop: headerPaddingTop.value,
-      opacity: headerOpacity.value,
-      justifyContent: "flex-end",
-      position: "absolute",
-      zIndex: 1,
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      backgroundColor: "transparent",
-    };
-  });
 
   const animatedIndicatorStyle = useAnimatedStyle(() => {
     return {
@@ -120,95 +74,59 @@ export const PagerLayout = ({
   }, [page, theme.mauve11.val, theme.mauve12.val]);
 
   return (
-    <View flex={1} backgroundColor="$color1">
-      <Animated.View style={animatedHeaderStyle}>
-        <BlurView
-          intensity={25}
-          tint={rootTheme}
-          style={{
-            flexGrow: 1,
-            position: "absolute",
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-          }}
-        />
-        <View
-          backgroundColor="$color1"
-          flexGrow={1}
-          position="absolute"
-          top={0}
-          left={0}
-          right={0}
-          bottom={0}
-          opacity={0.75}
-          borderBottomWidth="$0.5"
-          borderBottomColor="$borderColorBg"
-        />
-        <YStack paddingHorizontal="$3">
-          <View
-            flexDirection="row"
-            justifyContent="space-between"
-            alignItems="center"
-            paddingVertical="$2"
-          >
-            <DrawerToggleButton />
-            <NookText fontSize="$5" fontWeight="600">
-              {title}
-            </NookText>
-            <IconButton icon={Search} onPress={() => {}} />
-          </View>
-          {pages.length > 1 && (
-            <XStack height={40}>
-              {pages.map(({ name }, index) => (
+    <DisappearingLayout
+      title={title}
+      navigation={
+        pages.length > 0 ? (
+          <XStack height={40}>
+            {pages.map(({ name }, index) => (
+              <View
+                key={name}
+                alignItems="center"
+                justifyContent="flex-end"
+                style={{ flex: 1 }}
+                onLayout={(event) => {
+                  const { width } = event.nativeEvent.layout;
+                  tabWidths.current[index] = width;
+                  if (index === page) {
+                    indicatorWidth.value = width;
+                    indicatorPosition.value = event.nativeEvent.layout.x;
+                  }
+                }}
+                paddingHorizontal="$2"
+                paddingBottom="$3"
+                onPress={() => {
+                  ref.current?.setPage(index);
+                }}
+              >
                 <View
-                  key={name}
-                  alignItems="center"
-                  justifyContent="flex-end"
-                  style={{ flex: 1 }}
                   onLayout={(event) => {
                     const { width } = event.nativeEvent.layout;
-                    tabWidths.current[index] = width;
+                    textWidths.current[index] = width + 10;
                     if (index === page) {
-                      indicatorWidth.value = width;
-                      indicatorPosition.value = event.nativeEvent.layout.x;
+                      textWidth.value = width + 10;
                     }
                   }}
-                  paddingHorizontal="$2"
-                  paddingBottom="$3"
-                  onPress={() => {
-                    ref.current?.setPage(index);
-                  }}
                 >
-                  <View
-                    onLayout={(event) => {
-                      const { width } = event.nativeEvent.layout;
-                      textWidths.current[index] = width + 10;
-                      if (index === page) {
-                        textWidth.value = width + 10;
-                      }
-                    }}
+                  <Animated.Text
+                    style={useAnimatedStyle(() => ({
+                      color: textColorValues.current[index].value,
+                      fontWeight: "600",
+                      fontSize: 15,
+                    }))}
                   >
-                    <Animated.Text
-                      style={useAnimatedStyle(() => ({
-                        color: textColorValues.current[index].value,
-                        fontWeight: "600",
-                        fontSize: 15,
-                      }))}
-                    >
-                      {name}
-                    </Animated.Text>
-                  </View>
+                    {name}
+                  </Animated.Text>
                 </View>
-              ))}
-              <Animated.View style={animatedIndicatorStyle}>
-                <Animated.View style={animatedTextIndicatorStyle} />
-              </Animated.View>
-            </XStack>
-          )}
-        </YStack>
-      </Animated.View>
+              </View>
+            ))}
+            <Animated.View style={animatedIndicatorStyle}>
+              <Animated.View style={animatedTextIndicatorStyle} />
+            </Animated.View>
+          </XStack>
+        ) : null
+      }
+    >
       <PagerView
         ref={ref}
         style={{ flex: 1 }}
@@ -263,7 +181,7 @@ export const PagerLayout = ({
           </LazyLoadView>
         ))}
       </PagerView>
-    </View>
+    </DisappearingLayout>
   );
 };
 

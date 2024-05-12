@@ -10,6 +10,9 @@ import { TransactionFeedWithChainSelector } from "@nook/app/features/transaction
 import { useImageColors } from "../../hooks/useImageColors";
 import { CollapsibleGradientLayout } from "../CollapsibleGradientLayout";
 import { Loading } from "@nook/app/components/loading";
+import { Link } from "@nook/app/components/link";
+import { IconButton } from "../IconButton";
+import { Search, MoreHorizontal } from "@tamagui/lucide-icons";
 
 export default function UserScreen() {
   const { username } = useLocalSearchParams();
@@ -126,6 +129,20 @@ export default function UserScreen() {
           ),
         },
       ]}
+      right={
+        <XStack gap="$2" justifyContent="flex-end">
+          <Link
+            href={{
+              pathname: "/search",
+              params: { user: JSON.stringify(user) },
+            }}
+            unpressable
+          >
+            <IconButton icon={Search} />
+          </Link>
+          <IconButton icon={MoreHorizontal} />
+        </XStack>
+      }
     />
   );
 }

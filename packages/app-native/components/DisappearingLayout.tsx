@@ -1,7 +1,4 @@
-import { NookText, View, YStack } from "@nook/app-ui";
-import { IconButton } from "./IconButton";
-import { Search } from "@tamagui/lucide-icons";
-import { DrawerToggleButton } from "./DrawerToggleButton";
+import { View, YStack } from "@nook/app-ui";
 import { useTheme } from "@nook/app/context/theme";
 import { BlurView } from "expo-blur";
 import { useScroll } from "@nook/app/context/scroll";
@@ -21,12 +18,16 @@ export const DisappearingLayout = ({
   title,
   navigation,
   children,
-}: { title: ReactNode; navigation: ReactNode; children: ReactNode }) => {
+}: {
+  title: ReactNode;
+  navigation?: ReactNode;
+  children: ReactNode;
+}) => {
   const { rootTheme } = useTheme();
   const { isScrolling } = useScroll();
   const insets = useSafeAreaInsets();
 
-  const fullHeaderHeight = HEADER_HEIGHT;
+  const fullHeaderHeight = navigation ? HEADER_HEIGHT : DEFAULT_HEIGHT;
 
   const headerHeight = useSharedValue(isScrolling ? 0 : fullHeaderHeight);
   const headerPaddingTop = useSharedValue(isScrolling ? 0 : insets.top);
@@ -89,22 +90,11 @@ export const DisappearingLayout = ({
           right={0}
           bottom={0}
           opacity={0.75}
-          borderBottomWidth="$0.5"
+          borderBottomWidth={navigation ? "$0.5" : "$0"}
           borderBottomColor="$borderColorBg"
         />
         <YStack paddingHorizontal="$3">
-          <View
-            flexDirection="row"
-            justifyContent="space-between"
-            alignItems="center"
-            paddingVertical="$2"
-          >
-            <DrawerToggleButton />
-            <NookText fontSize="$5" fontWeight="600">
-              {title}
-            </NookText>
-            <IconButton icon={Search} onPress={() => {}} />
-          </View>
+          {title}
           {navigation}
         </YStack>
       </Animated.View>

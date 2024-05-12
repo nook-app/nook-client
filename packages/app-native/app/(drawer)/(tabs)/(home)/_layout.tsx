@@ -23,6 +23,13 @@ export default function HomeLayout() {
         }}
       />
       <Stack.Screen
+        name="search/index"
+        options={{ headerShown: false }}
+        getId={({ params }) =>
+          `${params?.q}-${params?.user}-${params?.channel}`
+        }
+      />
+      <Stack.Screen
         name="channels/[channelId]/index"
         getId={({ params }) => params?.channelId}
         options={{ title: "", headerBackVisible: false }}

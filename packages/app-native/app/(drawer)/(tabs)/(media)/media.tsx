@@ -3,6 +3,8 @@ import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
 import { HEADER_HEIGHT, PagerLayout } from "../../../../components/PagerLayout";
 import { useAuth } from "@nook/app/context/auth";
 import { Display, UserFilterType } from "@nook/common/types";
+import { NookText, View } from "@nook/app-ui";
+import { DrawerToggleButton } from "../../../../components/DrawerToggleButton";
 
 export default function MediaScreen() {
   const paddingBottom = useBottomTabBarHeight();
@@ -12,7 +14,20 @@ export default function MediaScreen() {
 
   return (
     <PagerLayout
-      title="Media"
+      title={
+        <View
+          flexDirection="row"
+          justifyContent="space-between"
+          alignItems="center"
+          paddingVertical="$2"
+        >
+          <DrawerToggleButton />
+          <NookText fontSize="$5" fontWeight="600">
+            Media
+          </NookText>
+          <View width="$2.5" />
+        </View>
+      }
       pages={[
         {
           name: "Following",

@@ -3,6 +3,11 @@ import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
 import { HEADER_HEIGHT, PagerLayout } from "../../../../components/PagerLayout";
 import { useAuth } from "@nook/app/context/auth";
 import { UserFilterType } from "@nook/common/types";
+import { IconButton } from "../../../../components/IconButton";
+import { NookText, View } from "@nook/app-ui";
+import { DrawerToggleButton } from "../../../../components/DrawerToggleButton";
+import { Link } from "@nook/app/components/link";
+import { Search } from "@tamagui/lucide-icons";
 
 export default function HomeScreen() {
   const paddingBottom = useBottomTabBarHeight();
@@ -12,7 +17,27 @@ export default function HomeScreen() {
 
   return (
     <PagerLayout
-      title="Home"
+      title={
+        <View
+          flexDirection="row"
+          justifyContent="space-between"
+          alignItems="center"
+          paddingVertical="$2"
+        >
+          <DrawerToggleButton />
+          <NookText fontSize="$5" fontWeight="600">
+            Home
+          </NookText>
+          <Link
+            href={{
+              pathname: "/search",
+            }}
+            unpressable
+          >
+            <IconButton icon={Search} />
+          </Link>
+        </View>
+      }
       pages={[
         {
           name: "Following",

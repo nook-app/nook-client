@@ -9,12 +9,14 @@ export const Link = ({
   absolute,
   target,
   asText,
+  unpressable,
 }: {
   href: Href;
   children: React.ReactNode;
   absolute?: boolean;
   target?: string;
   asText?: boolean;
+  unpressable?: boolean;
 }) => {
   const [drawer, tabs, tab] = useSegments();
 
@@ -31,6 +33,14 @@ export const Link = ({
   }
 
   const memoChildren = useMemo(() => children, [children]);
+
+  if (unpressable) {
+    return (
+      <ExpoLink href={formattedHref} asChild>
+        {memoChildren}
+      </ExpoLink>
+    );
+  }
 
   return (
     <ExpoLink href={formattedHref} asChild>

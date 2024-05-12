@@ -1,17 +1,17 @@
 "use client";
 
-import { FarcasterUser } from "@nook/common/types";
+import { Channel } from "@nook/common/types";
 import { Spinner, View } from "@nook/app-ui";
-import { FarcasterUserItem } from "./user-item";
 import { useScroll } from "../../../context/scroll";
 import { useCallback, useRef, useState } from "react";
 import { NativeScrollEvent, NativeSyntheticEvent } from "react-native";
 import { FlashList } from "@shopify/flash-list";
 import { Tabs } from "react-native-collapsible-tab-view";
 import { RefreshControl } from "../../../components/refresh-control";
+import { FarcasterChannelFeedItem } from "./channel-feed-item";
 
-export const FarcasterUserInfiniteFeed = ({
-  users,
+export const FarcasterChannelInfiniteFeed = ({
+  channels,
   fetchNextPage,
   isFetchingNextPage,
   hasNextPage,
@@ -21,7 +21,7 @@ export const FarcasterUserInfiniteFeed = ({
   paddingBottom,
   asTabs,
 }: {
-  users: FarcasterUser[];
+  channels: Channel[];
   fetchNextPage: () => void;
   isFetchingNextPage: boolean;
   hasNextPage: boolean;
@@ -57,8 +57,10 @@ export const FarcasterUserInfiniteFeed = ({
   return (
     <List
       ref={ref}
-      data={users}
-      renderItem={({ item }) => <FarcasterUserItem user={item} />}
+      data={channels}
+      renderItem={({ item }) => (
+        <FarcasterChannelFeedItem channel={item as Channel} withBio />
+      )}
       ListFooterComponent={() =>
         isFetchingNextPage ? (
           <View marginVertical="$3">

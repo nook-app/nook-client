@@ -8,12 +8,14 @@ export const Link = ({
   absolute,
   target,
   asText,
+  unpressable,
 }: {
   href: Href;
   children: React.ReactNode;
   absolute?: boolean;
   target?: string;
   asText?: boolean;
+  unpressable?: boolean;
 }) => {
   const memoChildren = useMemo(() => children, [children]);
 

@@ -5,7 +5,7 @@ import { ArrowLeft } from "@tamagui/lucide-icons";
 export const IconButton = ({
   icon,
   onPress,
-}: { icon: ButtonProps["icon"]; onPress: () => void }) => (
+}: { icon: ButtonProps["icon"]; onPress?: () => void }) => (
   <Button
     icon={icon}
     width="$2.5"

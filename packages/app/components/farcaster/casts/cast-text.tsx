@@ -60,7 +60,7 @@ export const FarcasterCastResponseText = ({
               e.stopPropagation();
             }}
           >
-            <Link href={part} target="_blank" asText>
+            <Link href={part} target="_blank" asText unpressable>
               <NookText
                 color="$color11"
                 fontSize={
@@ -127,7 +127,11 @@ export const FarcasterCastResponseText = ({
               e.stopPropagation();
             }}
           >
-            <Link href={`/channels/${mention.channel.channelId}`} asText>
+            <Link
+              href={`/channels/${mention.channel.channelId}`}
+              asText
+              unpressable
+            >
               <NookText
                 color="$color11"
                 fontSize={
@@ -165,7 +169,7 @@ export const FarcasterCastResponseText = ({
               e.stopPropagation();
             }}
           >
-            <Link href={`/users/${mention.user.username}`} asText>
+            <Link href={`/users/${mention.user.username}`} asText unpressable>
               <NookText
                 color="$color11"
                 fontSize={

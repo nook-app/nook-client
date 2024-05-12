@@ -8,6 +8,9 @@ import { useChannel } from "@nook/app/hooks/useChannel";
 import { useImageColors } from "../../hooks/useImageColors";
 import { CollapsibleGradientLayout } from "../CollapsibleGradientLayout";
 import { Loading } from "@nook/app/components/loading";
+import { Link } from "@nook/app/components/link";
+import { IconButton } from "../IconButton";
+import { Search, MoreHorizontal } from "@tamagui/lucide-icons";
 
 export default function ChannelScreen() {
   const { channelId } = useLocalSearchParams();
@@ -117,6 +120,20 @@ export default function ChannelScreen() {
           ),
         },
       ]}
+      right={
+        <XStack gap="$2" justifyContent="flex-end">
+          <Link
+            href={{
+              pathname: "/search",
+              params: { channel: JSON.stringify(channel) },
+            }}
+            unpressable
+          >
+            <IconButton icon={Search} />
+          </Link>
+          <IconButton icon={MoreHorizontal} />
+        </XStack>
+      }
     />
   );
 }

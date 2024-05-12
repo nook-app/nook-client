@@ -121,7 +121,6 @@ export const FarcasterChannelBadge = ({
       gap="$1.5"
       alignItems="center"
       flexShrink={1}
-      backgroundColor="$color1"
       hoverStyle={{
         // @ts-ignore
         transition: "all 0.2s ease-in-out",
