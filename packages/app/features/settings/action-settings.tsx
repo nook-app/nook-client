@@ -10,10 +10,10 @@ import { useAuth } from "../../context/auth";
 import { CastAction } from "@nook/common/types";
 import { GradientIcon } from "../../components/gradient-icon";
 import { Dot, Trash } from "@tamagui/lucide-icons";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { installAction } from "../../api/settings";
 import { useQueryClient } from "@tanstack/react-query";
-import { Link } from "solito/link";
+import { Link } from "../../components/link";
 
 export const ActionSettings = () => {
   const { settings } = useAuth();
@@ -28,13 +28,10 @@ export const ActionSettings = () => {
   const bottomBar = actions?.slice(4);
 
   return (
-    <YStack gap="$4" padding="$4">
-      <YStack gap="$2">
-        <NookText variant="label">Actions</NookText>
-        <NookText muted>
-          Add custom actions to use on casts. Select on an action to remove it.
-        </NookText>
-      </YStack>
+    <YStack gap="$4" padding="$2.5">
+      <NookText muted>
+        Add custom actions to use on casts. Select on an action to remove it.
+      </NookText>
       <XStack gap="$5" justifyContent="space-around">
         {topBar?.map((a, i) => (
           <ActionItem key={`top-${i}`} action={a} index={i} />
@@ -59,12 +56,17 @@ const ActionItem = ({
   const [loading, setLoading] = useState(false);
   const queryClient = useQueryClient();
 
+  useEffect(() => {
+    if (!action) {
+      setLoading(false);
+    }
+  }, [action]);
+
   const handlePress = useCallback(
     async (index: number) => {
       setLoading(true);
       await installAction(index, null);
       queryClient.invalidateQueries({ queryKey: ["settings"] });
-      setLoading(false);
     },
     [queryClient],
   );

@@ -10,6 +10,8 @@ import "react-native-reanimated";
 import { ScrollProvider } from "@nook/app/context/scroll";
 import { Audio } from "expo-av";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { ToastProvider } from "@nook/app-ui";
+import { Toasts } from "../components/Toasts";
 
 export { ErrorBoundary } from "expo-router";
 
@@ -55,28 +57,31 @@ function RootLayoutNav() {
             <ThemeProvider>
               <SafeAreaProvider>
                 <ScrollProvider>
-                  <Stack>
-                    <Stack.Screen
-                      name="(drawer)"
-                      options={{ headerShown: false, animation: "fade" }}
-                    />
-                    <Stack.Screen
-                      name="(login)"
-                      options={{
-                        headerShown: false,
-                        animation: "fade",
-                      }}
-                    />
-                    <Stack.Screen
-                      name="(modals)"
-                      options={{
-                        headerShown: false,
-                        animation: "fade",
-                        animationDuration: 100,
-                        presentation: "transparentModal",
-                      }}
-                    />
-                  </Stack>
+                  <ToastProvider>
+                    <Toasts />
+                    <Stack>
+                      <Stack.Screen
+                        name="(drawer)"
+                        options={{ headerShown: false, animation: "fade" }}
+                      />
+                      <Stack.Screen
+                        name="(login)"
+                        options={{
+                          headerShown: false,
+                          animation: "fade",
+                        }}
+                      />
+                      <Stack.Screen
+                        name="(modals)"
+                        options={{
+                          headerShown: false,
+                          animation: "fade",
+                          animationDuration: 100,
+                          presentation: "transparentModal",
+                        }}
+                      />
+                    </Stack>
+                  </ToastProvider>
                 </ScrollProvider>
               </SafeAreaProvider>
             </ThemeProvider>

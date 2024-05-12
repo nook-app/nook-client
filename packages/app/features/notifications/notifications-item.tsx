@@ -1,13 +1,13 @@
-import { NookText, Theme, ThemeName, View, XStack, YStack } from "@nook/app-ui";
+import { NookText, View, XStack, YStack } from "@nook/app-ui";
 import { Display, NotificationResponse } from "@nook/common/types";
-import { NamedExoticComponent, memo } from "react";
+import { memo } from "react";
 import { useAuth } from "../../context/auth";
-import { Link, TextLink } from "solito/link";
 import { CdnAvatar } from "../../components/cdn-avatar";
 import { User, Repeat2, Heart } from "@tamagui/lucide-icons";
 import { FarcasterCastResponseText } from "../../components/farcaster/casts/cast-text";
 import { FarcasterCastLink } from "../../components/farcaster/casts/cast-link";
-import { useRouter } from "solito/navigation";
+import { Notification } from "./notification-link";
+import { Link } from "../../components/link";
 
 export const NotificationItem = memo(
   ({ notification }: { notification: NotificationResponse }) => {
@@ -40,7 +40,7 @@ const PostNotification = ({
     <Notification href={`/casts/${notification.cast?.hash}`}>
       <FarcasterCastLink
         cast={notification.cast}
-        displayMode={Display.BORDERLESS}
+        displayMode={Display.NOTIFICATION}
       />
     </Notification>
   );
@@ -52,10 +52,12 @@ const MentionNotification = ({
   if (!notification.cast) return null;
   return (
     <Notification href={`/casts/${notification.cast?.hash}`}>
-      <FarcasterCastLink
-        cast={notification.cast}
-        displayMode={Display.BORDERLESS}
-      />
+      <View flexGrow={1}>
+        <FarcasterCastLink
+          cast={notification.cast}
+          displayMode={Display.NOTIFICATION}
+        />
+      </View>
     </Notification>
   );
 };
@@ -66,14 +68,10 @@ const ReplyNotification = ({
   if (!notification.cast || !notification.cast.parent) return null;
   return (
     <Notification href={`/casts/${notification.cast?.hash}`}>
-      <View flex={1}>
-        <FarcasterCastLink
-          cast={notification.cast.parent}
-          displayMode={Display.LIST}
-        />
+      <View flexGrow={1}>
         <FarcasterCastLink
           cast={notification.cast}
-          displayMode={Display.BORDERLESS}
+          displayMode={Display.NOTIFICATION}
         />
       </View>
     </Notification>
@@ -86,10 +84,12 @@ const QuoteNotification = ({
   if (!notification.cast) return null;
   return (
     <Notification href={`/casts/${notification.cast?.hash}`}>
-      <FarcasterCastLink
-        cast={notification.cast}
-        displayMode={Display.BORDERLESS}
-      />
+      <View flexGrow={1}>
+        <FarcasterCastLink
+          cast={notification.cast}
+          displayMode={Display.NOTIFICATION}
+        />
+      </View>
     </Notification>
   );
 };
@@ -133,19 +133,19 @@ const LikeNotification = ({
           ))}
         </XStack>
         <NookText>
-          <TextLink href={`/users/${notification.users[0].username}`}>
+          <Link asText href={`/users/${notification.users[0].username}`}>
             <NookText fontWeight="700" color="$mauve12">
               {notification.users[0].username}
             </NookText>
-          </TextLink>
+          </Link>
           {notification.users.length > 1 && (
             <>
               <NookText> and </NookText>
-              <TextLink href={`/users/${user?.username}/followers`}>
+              <Link asText href={`/users/${user?.username}/followers`}>
                 <NookText fontWeight="700" color="$mauve12">{`${
                   notification.users.length - 1
                 } other${notification.users.length > 2 ? "s" : ""}`}</NookText>
-              </TextLink>
+              </Link>
             </>
           )}
           <NookText> liked</NookText>
@@ -208,19 +208,19 @@ const RecastNotification = ({
           ))}
         </XStack>
         <NookText>
-          <TextLink href={`/users/${notification.users[0].username}`}>
+          <Link asText href={`/users/${notification.users[0].username}`}>
             <NookText fontWeight="700" color="$mauve12">
               {notification.users[0].username}
             </NookText>
-          </TextLink>
+          </Link>
           {notification.users.length > 1 && (
             <>
               <NookText> and </NookText>
-              <TextLink href={`/users/${user?.username}/followers`}>
+              <Link asText href={`/users/${user?.username}/followers`}>
                 <NookText fontWeight="700" color="$mauve12">{`${
                   notification.users.length - 1
                 } other${notification.users.length > 2 ? "s" : ""}`}</NookText>
-              </TextLink>
+              </Link>
             </>
           )}
           <NookText> recasted</NookText>
@@ -278,87 +278,24 @@ const FollowNotification = ({
           ))}
         </XStack>
         <NookText>
-          <TextLink href={`/users/${notification.users[0].username}`}>
+          <Link asText href={`/users/${notification.users[0].username}`}>
             <NookText fontWeight="700" color="$mauve12">
               {notification.users[0].username}
             </NookText>
-          </TextLink>
+          </Link>
           {notification.users.length > 1 && (
             <>
               <NookText> and </NookText>
-              <TextLink href={`/users/${user?.username}/followers`}>
+              <Link asText href={`/users/${user?.username}/followers`}>
                 <NookText fontWeight="700" color="$mauve12">{`${
                   notification.users.length - 1
                 } other${notification.users.length > 2 ? "s" : ""}`}</NookText>
-              </TextLink>
+              </Link>
             </>
           )}
           <NookText> followed you</NookText>
         </NookText>
       </YStack>
     </Notification>
-  );
-};
-
-const Notification = ({
-  Icon,
-  children,
-  href,
-  theme,
-}: {
-  Icon?: NamedExoticComponent;
-  children: JSX.Element;
-  href: string;
-  theme?: string;
-}) => {
-  const router = useRouter();
-
-  // @ts-ignore
-  const handlePress = (event) => {
-    const selection = window?.getSelection()?.toString();
-    if (!selection || selection.length === 0) {
-      if (event.ctrlKey || event.metaKey) {
-        // metaKey is for macOS
-        window.open(href, "_blank");
-      } else {
-        router.push(href);
-      }
-    }
-  };
-
-  return (
-    <XStack
-      hoverStyle={{
-        // @ts-ignore
-        transition: "all 0.2s ease-in-out",
-        backgroundColor: "$color2",
-      }}
-      onPress={(e) => {
-        e.stopPropagation();
-        handlePress(e);
-      }}
-      paddingHorizontal="$2"
-      cursor="pointer"
-    >
-      {Icon && (
-        <Theme name={theme as ThemeName | undefined}>
-          <View width="$6" alignItems="flex-end" padding="$3">
-            <View
-              cursor="pointer"
-              width="$2.5"
-              height="$2.5"
-              justifyContent="center"
-              alignItems="center"
-              borderRadius="$10"
-              backgroundColor="$color3"
-            >
-              {/* @ts-ignore */}
-              <Icon color="$color9" size={18} />
-            </View>
-          </View>
-        </Theme>
-      )}
-      {children}
-    </XStack>
   );
 };

@@ -108,7 +108,7 @@ export const CollapsibleGradientHeader = ({
   });
 
   return (
-    <View flex={1} backgroundColor="$color1">
+    <View flexGrow={1} backgroundColor="$color1">
       <Stack.Screen
         options={{
           header: () => (

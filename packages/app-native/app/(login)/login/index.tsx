@@ -8,13 +8,14 @@ import {
   XStack,
   YStack,
 } from "@nook/app-ui";
-import { Link, Redirect } from "expo-router";
+import { Redirect } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { ReactNode } from "react";
 import { Wallet2, Lock } from "@tamagui/lucide-icons";
 import { Href } from "expo-router/build/link/href";
 import { LinearGradient } from "@tamagui/linear-gradient";
 import { useTheme } from "@nook/app/context/theme";
+import { Link } from "@nook/app/components/link";
 
 export default function LoginScreen() {
   const { session } = useAuth();
@@ -108,7 +109,7 @@ const LoginButton = ({
 
   if (href) {
     return (
-      <Link href={href} asChild>
+      <Link href={href} absolute>
         {Component}
       </Link>
     );
@@ -150,7 +151,7 @@ const ThemeItem = ({
 }) => (
   <View
     theme={theme}
-    backgroundColor={theme ? "$color9" : "$color1"}
+    backgroundColor={theme ? "$color9" : "$mauve1"}
     width="$2"
     height="$2"
     borderRadius="$10"

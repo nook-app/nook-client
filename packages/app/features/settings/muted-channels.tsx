@@ -1,20 +1,13 @@
 "use client";
 
-import {
-  NookText,
-  Separator,
-  Spinner,
-  View,
-  XStack,
-  YStack,
-} from "@nook/app-ui";
+import { NookText, Spinner, View, XStack, YStack } from "@nook/app-ui";
 import { Channel, User } from "@nook/common/types";
 import { useChannels } from "../../api/farcaster";
-import { Link } from "solito/link";
 import { VolumeX } from "@tamagui/lucide-icons";
 import { useEffect, useState } from "react";
 import { FarcasterChannelDisplay } from "../../components/farcaster/channels/channel-display";
 import { useMuteChannel } from "../../hooks/useMuteChannel";
+import { Link } from "../../components/link";
 
 export const MutedChannels = ({ settings }: { settings: User }) => {
   const { data, isLoading } = useChannels(settings.mutedChannels);
@@ -28,16 +21,15 @@ export const MutedChannels = ({ settings }: { settings: User }) => {
 
   return (
     <YStack>
-      <View padding="$4" gap="$4">
+      <View padding="$2.5" gap="$4">
         <NookText muted>
           Posts from muted channels won't show up across the app unless viewing
           the channel page. You can mute channels directly from the page or
           posts.
         </NookText>
       </View>
-      <Separator borderColor="$borderColorBg" />
       {isLoading && (
-        <View padding="$4" gap="$4">
+        <View padding="$2.5" gap="$4">
           <Spinner />
         </View>
       )}
@@ -54,7 +46,7 @@ const MutedChannel = ({ channel }: { channel: Channel }) => {
     <Link href={`/channels/${channel.channelId}`}>
       <XStack
         alignItems="center"
-        padding="$4"
+        padding="$2.5"
         hoverStyle={{
           backgroundColor: "$color2",
           transform: "all 0.2s ease-in-out",

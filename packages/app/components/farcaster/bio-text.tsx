@@ -1,6 +1,6 @@
 import { Buffer } from "buffer";
-import { TextLink } from "solito/link";
 import { NookText } from "@nook/app-ui";
+import { Link } from "../link";
 
 export const FarcasterBioText = ({
   text,
@@ -43,7 +43,7 @@ export const FarcasterBioText = ({
             e.stopPropagation();
           }}
         >
-          <TextLink href={url} target="_blank">
+          <Link href={url} target="_blank" asText>
             <NookText
               color="$color11"
               fontWeight="500"
@@ -54,7 +54,7 @@ export const FarcasterBioText = ({
             >
               {url}
             </NookText>
-          </TextLink>
+          </Link>
         </NookText>,
       );
 
@@ -138,7 +138,7 @@ export const FarcasterBioText = ({
             e.stopPropagation();
           }}
         >
-          <TextLink href={`/channels/${mention.word.slice(1)}`}>
+          <Link href={`/channels/${mention.word.slice(1)}`} asText>
             <NookText
               color="$color11"
               fontWeight="500"
@@ -149,7 +149,7 @@ export const FarcasterBioText = ({
             >
               {mention.word}
             </NookText>
-          </TextLink>
+          </Link>
         </NookText>,
       );
     } else {
@@ -169,7 +169,7 @@ export const FarcasterBioText = ({
             e.stopPropagation();
           }}
         >
-          <TextLink href={`/users/${mention.word.slice(1)}`}>
+          <Link href={`/users/${mention.word.slice(1)}`} asText>
             <NookText
               color="$color11"
               fontWeight="500"
@@ -180,7 +180,7 @@ export const FarcasterBioText = ({
             >
               {mention.word}
             </NookText>
-          </TextLink>
+          </Link>
         </NookText>,
       );
     }

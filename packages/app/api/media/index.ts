@@ -16,6 +16,6 @@ export const uploadImage = async (
       Authorization: "Client-ID c2593243d3ea679",
       "X-RapidApi-Key": "H6XlGK0RRnmshCkkElumAWvWjiBLp1ItTOBjsncst1BaYKMS8H",
     },
-    body: JSON.stringify({ image: image.split(",")[1] }),
+    body: JSON.stringify({ image }),
   });
 };

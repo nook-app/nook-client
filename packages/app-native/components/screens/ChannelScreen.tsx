@@ -7,6 +7,7 @@ import { formatToCDN } from "@nook/app/utils";
 import { useChannel } from "@nook/app/hooks/useChannel";
 import { useImageColors } from "../../hooks/useImageColors";
 import { CollapsibleGradientLayout } from "../CollapsibleGradientLayout";
+import { Loading } from "@nook/app/components/loading";
 
 export default function ChannelScreen() {
   const { channelId } = useLocalSearchParams();
@@ -18,7 +19,7 @@ export default function ChannelScreen() {
       : undefined,
   );
 
-  if (!channel) return null;
+  if (!channel) return <Loading />;
 
   return (
     <CollapsibleGradientLayout

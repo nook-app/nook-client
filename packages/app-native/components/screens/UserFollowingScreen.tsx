@@ -15,7 +15,7 @@ export default function UserFollowingScreen() {
   if (!user) return null;
 
   return (
-    <View paddingTop={insets.top} flex={1}>
+    <View paddingTop={insets.top} flexGrow={1} backgroundColor="$color1">
       <CollapsibleHeaderLayout
         title={user.displayName || (username as string)}
         pages={[

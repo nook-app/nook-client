@@ -18,10 +18,10 @@ import { CHAINS } from "../../utils/chains";
 import { KebabMenu, KebabMenuItem } from "../../components/kebab-menu";
 import { formatEther, formatUnits } from "viem";
 import { FarcasterPowerBadge } from "../../components/farcaster/users/power-badge";
-import { TextLink } from "solito/link";
 import { EmbedImage } from "../../components/embeds/EmbedImage";
 import { ChainBadge } from "../../components/blockchain/chain-badge";
 import { ChainIcon } from "../../components/blockchain/chain-icon";
+import { Link } from "../../components/link";
 
 export const TransactionFeedItem = ({
   transaction,
@@ -197,7 +197,7 @@ const TransactionText = ({ transaction }: { transaction: Transaction }) => {
               key={`var-${i}`}
             >
               <View display="inline-flex" marginRight="$1.5">
-                <TextLink href={`/users/${user.username}`}>
+                <Link asText href={`/users/${user.username}`}>
                   <XStack alignItems="center" gap="$1.5" cursor="pointer">
                     <CdnAvatar src={user.pfp} size="$0.8" />
                     <NookText fontWeight="600">{`${
@@ -207,7 +207,7 @@ const TransactionText = ({ transaction }: { transaction: Transaction }) => {
                       badge={user.badges?.powerBadge ?? false}
                     />
                   </XStack>
-                </TextLink>
+                </Link>
               </View>
             </FarcasterUserTooltip>,
           );
@@ -405,7 +405,8 @@ const TransactionText = ({ transaction }: { transaction: Transaction }) => {
 
       if (variable.type === "transaction") {
         textParts.push(
-          <TextLink
+          <Link
+            asText
             key={`var-${i}`}
             href={`https://www.onceupon.xyz/${variable.value}`}
             target="_blank"
@@ -420,14 +421,14 @@ const TransactionText = ({ transaction }: { transaction: Transaction }) => {
             >
               {formatAddress(variable.value)}
             </NookText>
-          </TextLink>,
+          </Link>,
         );
         continue;
       }
 
       if (variable.type === "link") {
         textParts.push(
-          <TextLink key={`var-${i}`} href={variable.link} target="_blank">
+          <Link asText key={`var-${i}`} href={variable.link} target="_blank">
             <NookText
               key={`var-${i}`}
               color="$mauve12"
@@ -441,7 +442,7 @@ const TransactionText = ({ transaction }: { transaction: Transaction }) => {
                 ? formatAddress(variable.value)
                 : variable.value}
             </NookText>
-          </TextLink>,
+          </Link>,
         );
         continue;
       }

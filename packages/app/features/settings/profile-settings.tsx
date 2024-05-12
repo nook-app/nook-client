@@ -1,16 +1,19 @@
 import {
+  Button,
   Input,
-  NookButton,
+  Label,
   NookText,
   Spinner,
   View,
   YStack,
+  useToastController,
 } from "@nook/app-ui";
 import { CdnAvatar } from "../../components/cdn-avatar";
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { useAuth } from "../../context/auth";
 import { submitUserDataAdd } from "../../api/farcaster/actions";
 import { uploadImage } from "../../api/media";
+import { ImagePicker } from "../../components/upload/image-picker";
 
 export const ProfileSettings = () => {
   const { user, setUser } = useAuth();
@@ -18,6 +21,7 @@ export const ProfileSettings = () => {
   const [bio, setBio] = useState(user?.bio || "");
   const [pfp, setPfp] = useState(user?.pfp || "");
   const [loading, setLoading] = useState(false);
+  const toast = useToastController();
 
   const isDisabled =
     !displayName ||
@@ -49,37 +53,50 @@ export const ProfileSettings = () => {
 
     setUser({ ...user, displayName, bio, pfp });
     setLoading(false);
+
+    toast.show("Profile updated!");
   };
 
   return (
-    <YStack gap="$4" padding="$4">
-      <YStack gap="$2">
-        <NookText variant="label">Profile Settings</NookText>
-        <NookText muted>
-          Set your profile picture, display name, and bio. You can change this
-          at anytime.
-        </NookText>
-      </YStack>
-      <YStack gap="$1">
-        <NookText muted>Profile Picture</NookText>
+    <YStack gap="$2" padding="$2.5">
+      <NookText muted>
+        Set your profile picture, display name, and bio. You can change this at
+        anytime.
+      </NookText>
+      <YStack theme="surface2">
+        <Label>Profile Picture</Label>
         <UploadImageButton image={pfp} onUpload={setPfp} />
       </YStack>
-      <YStack gap="$1">
-        <NookText muted>Display Name</NookText>
+      <YStack theme="surface2">
+        <Label>Display Name</Label>
         <Input value={displayName} onChangeText={setDisplayName} />
       </YStack>
-      <YStack gap="$1">
-        <NookText muted>Bio</NookText>
+      <YStack theme="surface2">
+        <Label>Bio</Label>
         <Input value={bio} onChangeText={setBio} />
       </YStack>
-      <NookButton
-        variant="action"
+      <Button
+        height="$4"
+        width="100%"
+        borderRadius="$10"
+        fontWeight="600"
+        fontSize="$5"
+        backgroundColor="$mauve12"
+        borderWidth="$0"
+        color="$mauve1"
+        pressStyle={{
+          backgroundColor: "$mauve11",
+        }}
+        disabledStyle={{
+          backgroundColor: "$mauve10",
+        }}
         disabled={loading || isDisabled}
-        disabledStyle={{ opacity: 0.5 }}
         onPress={handleSave}
+        marginTop="$4"
       >
-        {loading ? <Spinner /> : "Save"}
-      </NookButton>
+        {loading && <Spinner />}
+        {!loading && "Save"}
+      </Button>
     </YStack>
   );
 };
@@ -88,51 +105,34 @@ const UploadImageButton = ({
   image,
   onUpload,
 }: { image: string; onUpload: (url: string) => void }) => {
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const [loading, setLoading] = useState(false);
 
-  const handleImageSelect = async (
-    event: React.ChangeEvent<HTMLInputElement>,
-  ) => {
-    const file = event.target.files?.[0]; // Get only the first file
-    if (!file) return;
-
+  const handleSelect = async (newImage: string) => {
     setLoading(true);
-    const reader = new FileReader();
-    reader.onload = async (e) => {
-      if (e.target?.result) {
-        const result = await uploadImage(e.target.result as string);
-        onUpload(result.data.link);
-        setLoading(false);
-      }
-    };
-    reader.readAsDataURL(file);
+    const result = await uploadImage(newImage);
+    onUpload(result.data.link);
+    setLoading(false);
   };
 
   return (
-    <View
-      onPress={(e) => {
-        fileInputRef.current?.click();
-      }}
-      cursor="pointer"
-    >
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept="image/*"
-        style={{ display: "none" }}
-        onChange={handleImageSelect}
-      />
-      <CdnAvatar size="$7" src={image}>
+    <ImagePicker onSelect={handleSelect}>
+      <CdnAvatar size="$7" src={image} />
+      {loading && (
         <View
+          position="absolute"
+          top={0}
+          left={0}
+          bottom={0}
+          width="$7"
+          height="$7"
           justifyContent="center"
           alignItems="center"
-          width="100%"
-          height="100%"
+          backgroundColor="$color1"
+          opacity={0.75}
         >
-          {loading && <Spinner />}
+          <Spinner />
         </View>
-      </CdnAvatar>
-    </View>
+      )}
+    </ImagePicker>
   );
 };

@@ -1,10 +1,14 @@
 import { create } from "zustand";
-import { FarcasterCastResponse } from "@nook/common/types";
+import {
+  FarcasterCastResponse,
+  NotificationResponse,
+} from "@nook/common/types";
 
 interface CastStore {
   casts: Record<string, FarcasterCastResponse>;
   addCasts: (casts: FarcasterCastResponse[]) => void;
   addCastsFromCasts: (casts: FarcasterCastResponse[]) => void;
+  addCastsFromNotifications: (notifications: NotificationResponse[]) => void;
   likeCast: (cast: FarcasterCastResponse) => void;
   unlikeCast: (cast: FarcasterCastResponse) => void;
   recastCast: (cast: FarcasterCastResponse) => void;
@@ -27,6 +31,32 @@ export const useCastStore = create<CastStore>((set, get) => ({
   addCastsFromCasts: (inputCasts: FarcasterCastResponse[]) => {
     const currentCasts = get().casts;
     const casts = inputCasts.flatMap((cast) => {
+      const casts = [cast];
+      for (const embed of cast.embedCasts) {
+        casts.push(embed);
+      }
+      if (cast.parent) {
+        casts.push(cast.parent);
+        for (const embed of cast.parent.embedCasts) {
+          casts.push(embed);
+        }
+      }
+      return casts;
+    });
+    const newCasts = casts.reduce(
+      (acc, cast) => {
+        acc[cast.hash] = cast;
+        return acc;
+      },
+      {} as Record<string, FarcasterCastResponse>,
+    );
+    set({ casts: { ...currentCasts, ...newCasts } });
+  },
+  addCastsFromNotifications: (notifications: NotificationResponse[]) => {
+    const currentCasts = get().casts;
+    const casts = notifications.flatMap((notification) => {
+      if (!notification.cast) return [];
+      const cast = notification.cast;
       const casts = [cast];
       for (const embed of cast.embedCasts) {
         casts.push(embed);

@@ -73,7 +73,12 @@ const CollapsibleHeader = ({
   });
 
   return (
-    <View height={40} justifyContent="flex-end" backgroundColor="$color1">
+    <View
+      height={40}
+      justifyContent="flex-end"
+      backgroundColor="$color1"
+      paddingHorizontal="$3"
+    >
       <Animated.View style={headerTitleStyle}>
         <XStack justifyContent="space-between" alignItems="center">
           <IconButton icon={ArrowLeft} onPress={router.back} />

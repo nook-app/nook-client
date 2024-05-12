@@ -5,6 +5,9 @@ import {
 } from "@nook/common/types";
 import { makeRequest } from "../utils";
 import { InfiniteData, useInfiniteQuery } from "@tanstack/react-query";
+import { useCastStore } from "../../store/useCastStore";
+import { useUserStore } from "../../store/useUserStore";
+import { useChannelStore } from "../../store/useChannelStore";
 
 export const fetchNotifications = async (
   req: GetNotificationsRequest,
@@ -23,6 +26,15 @@ export const usePriorityNotifications = (
   fid: string,
   initialData?: FetchNotificationsResponse,
 ) => {
+  const addCastsFromNotifications = useCastStore(
+    (state) => state.addCastsFromNotifications,
+  );
+  const addUsersFromNotifications = useUserStore(
+    (state) => state.addUsersFromNotifications,
+  );
+  const addChannelsFromNotifications = useChannelStore(
+    (state) => state.addChannelsFromNotifications,
+  );
   return useInfiniteQuery<
     FetchNotificationsResponse,
     unknown,
@@ -33,6 +45,9 @@ export const usePriorityNotifications = (
     queryKey: ["notifications-priority", fid],
     queryFn: async ({ pageParam }) => {
       const data = await fetchNotifications({ fid, priority: true }, pageParam);
+      addCastsFromNotifications(data.data);
+      addUsersFromNotifications(data.data);
+      addChannelsFromNotifications(data.data);
       return data;
     },
     getNextPageParam: (lastPage) => lastPage.nextCursor,
@@ -51,6 +66,15 @@ export const useMentionsNotifications = (
   fid: string,
   initialData?: FetchNotificationsResponse,
 ) => {
+  const addCastsFromNotifications = useCastStore(
+    (state) => state.addCastsFromNotifications,
+  );
+  const addUsersFromNotifications = useUserStore(
+    (state) => state.addUsersFromNotifications,
+  );
+  const addChannelsFromNotifications = useChannelStore(
+    (state) => state.addChannelsFromNotifications,
+  );
   return useInfiniteQuery<
     FetchNotificationsResponse,
     unknown,
@@ -64,6 +88,9 @@ export const useMentionsNotifications = (
         { fid, types: ["MENTION", "QUOTE", "REPLY"] },
         pageParam,
       );
+      addCastsFromNotifications(data.data);
+      addUsersFromNotifications(data.data);
+      addChannelsFromNotifications(data.data);
       return data;
     },
     getNextPageParam: (lastPage) => lastPage.nextCursor,
@@ -83,6 +110,15 @@ export const useAllNotifications = (
   types?: NotificationType[],
   initialData?: FetchNotificationsResponse,
 ) => {
+  const addCastsFromNotifications = useCastStore(
+    (state) => state.addCastsFromNotifications,
+  );
+  const addUsersFromNotifications = useUserStore(
+    (state) => state.addUsersFromNotifications,
+  );
+  const addChannelsFromNotifications = useChannelStore(
+    (state) => state.addChannelsFromNotifications,
+  );
   return useInfiniteQuery<
     FetchNotificationsResponse,
     unknown,
@@ -96,6 +132,9 @@ export const useAllNotifications = (
         { fid, types: types && types.length > 0 ? types : undefined },
         pageParam,
       );
+      addCastsFromNotifications(data.data);
+      addUsersFromNotifications(data.data);
+      addChannelsFromNotifications(data.data);
       return data;
     },
     getNextPageParam: (lastPage) => lastPage.nextCursor,

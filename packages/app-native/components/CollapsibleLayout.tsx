@@ -49,7 +49,7 @@ export const CollapsibleLayout = ({
   );
 
   return (
-    <View flex={1} backgroundColor="$color1">
+    <View flexGrow={1} backgroundColor="$color1">
       <Tabs.Container
         initialTabName={pages[defaultIndex]?.name}
         renderHeader={renderHeader}

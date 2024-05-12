@@ -1,9 +1,9 @@
 import { NookText, Text, View, XStack, YStack } from "@nook/app-ui";
 import { Channel } from "@nook/common/types";
-import { Link } from "solito/link";
 import { CdnAvatar } from "../../cdn-avatar";
 import { FarcasterBioText } from "../bio-text";
 import { FarcasterChannelTooltip } from "./channel-tooltip";
+import { Link } from "../../link";
 
 export const FarcasterChannelTextDisplay = ({
   channel,

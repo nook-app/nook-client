@@ -2,7 +2,7 @@ import { Image } from "expo-image";
 import { useState } from "react";
 import { View, XStack, Image as TImage } from "tamagui";
 import { formatToCDN } from "../../utils";
-import { Link } from "expo-router";
+import { Link } from "../link";
 
 export const EmbedImages = ({ uris }: { uris: string[] }) => {
   if (uris.length === 1) {
@@ -22,7 +22,7 @@ export const EmbedImages = ({ uris }: { uris: string[] }) => {
               afterUrl: uris[index + 1],
             },
           }}
-          asChild
+          absolute
         >
           <View
             key={uri}
@@ -55,7 +55,7 @@ export const EmbedImage = ({
         pathname: "/image/[url]",
         params: { url: uri },
       }}
-      asChild
+      absolute
     >
       <View
         borderRadius={noBorderRadius ? "$0" : "$4"}

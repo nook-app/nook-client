@@ -3,10 +3,10 @@ import { NookText, XStack, YStack } from "@nook/app-ui";
 import { FarcasterUserAvatar } from "../../../components/farcaster/users/user-display";
 import { FarcasterUserFollowButton } from "../../../components/farcaster/users/user-follow-button";
 import { memo } from "react";
-import { Link } from "solito/link";
 import { FarcasterBioText } from "../../../components/farcaster/bio-text";
 import { FarcasterPowerBadge } from "../../../components/farcaster/users/power-badge";
 import { UserFollowBadge } from "../../../components/farcaster/users/user-follow-badge";
+import { Link } from "../../../components/link";
 
 export const FarcasterUserItem = memo(({ user }: { user: FarcasterUser }) => {
   const bio = user?.bio?.trim().replace(/\n\s*\n/g, "\n");

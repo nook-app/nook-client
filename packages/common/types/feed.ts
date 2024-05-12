@@ -48,7 +48,7 @@ export enum Display {
   FRAMES = "FRAMES",
   EMBEDS = "EMBEDS",
   LIST = "LIST",
-  BORDERLESS = "BORDERLESS",
+  NOTIFICATION = "NOTIFICATION",
 }
 
 export type CreateFeedRequest = {

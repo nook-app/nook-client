@@ -27,11 +27,13 @@ export const Toasts = () => {
         key={toast.id}
         duration={5000}
         backgroundColor={
-          ["light", "dark"].includes(theme) ? "$color12" : "$color9"
+          theme && ["light", "dark"].includes(theme) ? "$color12" : "$color9"
         }
       >
         <Toast.Title
-          color={["light", "dark"].includes(theme) ? "$color1" : "white"}
+          color={
+            theme && ["light", "dark"].includes(theme) ? "$color1" : "white"
+          }
           fontWeight="500"
         >
           {toast.title}

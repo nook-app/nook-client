@@ -1,4 +1,6 @@
 import { Button, ButtonProps } from "@nook/app-ui";
+import { router } from "expo-router";
+import { ArrowLeft } from "@tamagui/lucide-icons";
 
 export const IconButton = ({
   icon,
@@ -15,3 +17,7 @@ export const IconButton = ({
     backgroundColor="rgba(0,0,0,0.25)"
   />
 );
+
+export const BackButton = () => {
+  return <IconButton icon={ArrowLeft} onPress={router.back} />;
+};

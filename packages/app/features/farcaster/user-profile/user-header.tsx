@@ -4,7 +4,6 @@ import { NookText, View, XStack, YStack } from "@nook/app-ui";
 import { ZoomableImage } from "../../../components/zoomable-image";
 import { CdnAvatar } from "../../../components/cdn-avatar";
 import { FarcasterBioText } from "../../../components/farcaster/bio-text";
-import { Link } from "solito/link";
 import { formatNumber } from "../../../utils";
 import { FarcasterPowerBadge } from "../../../components/farcaster/users/power-badge";
 import { FarcasterUserFollowButton } from "../../../components/farcaster/users/user-follow-button";
@@ -12,6 +11,7 @@ import { UserFollowBadge } from "../../../components/farcaster/users/user-follow
 import { FarcasterUser } from "@nook/common/types";
 import { useAuth } from "../../../context/auth";
 import { FarcasterUserKebabMenu } from "../../../components/farcaster/users/user-kebab-menu";
+import { Link } from "../../../components/link";
 
 export const UserHeader = ({
   user,

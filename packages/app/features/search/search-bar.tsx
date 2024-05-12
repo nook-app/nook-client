@@ -16,7 +16,6 @@ import {
   FarcasterUserBadge,
   FarcasterUserDisplay,
 } from "../../components/farcaster/users/user-display";
-import { Link } from "solito/link";
 import {
   FarcasterChannelBadge,
   FarcasterChannelDisplay,
@@ -24,6 +23,7 @@ import {
 import { useRouter } from "solito/navigation";
 import { NativeSyntheticEvent, TextInputKeyPressEventData } from "react-native";
 import { Channel, FarcasterUser } from "@nook/common/types";
+import { Link } from "../../components/link";
 
 export const SearchBar = ({
   user,

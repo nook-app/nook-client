@@ -1,10 +1,10 @@
 import { GetThemeValueForKey } from "@tamagui/core";
 import { Buffer } from "buffer";
 import { FarcasterCastResponse } from "@nook/common/types";
-import { TextLink } from "solito/link";
 import { NookText } from "@nook/app-ui";
 import { FarcasterUserTooltip } from "../users/user-display";
 import { FarcasterChannelTooltip } from "../channels/channel-tooltip";
+import { Link } from "../../link";
 
 export const FarcasterCastResponseText = ({
   cast,
@@ -60,7 +60,7 @@ export const FarcasterCastResponseText = ({
               e.stopPropagation();
             }}
           >
-            <TextLink href={part} target="_blank">
+            <Link href={part} target="_blank" asText>
               <NookText
                 color="$color11"
                 fontSize={
@@ -76,7 +76,7 @@ export const FarcasterCastResponseText = ({
               >
                 {part}
               </NookText>
-            </TextLink>
+            </Link>
           </NookText>,
         );
       } else {
@@ -127,7 +127,7 @@ export const FarcasterCastResponseText = ({
               e.stopPropagation();
             }}
           >
-            <TextLink href={`/channels/${mention.channel.channelId}`}>
+            <Link href={`/channels/${mention.channel.channelId}`} asText>
               <NookText
                 color="$color11"
                 fontSize={
@@ -143,7 +143,7 @@ export const FarcasterCastResponseText = ({
               >
                 {label}
               </NookText>
-            </TextLink>
+            </Link>
           </NookText>
         </FarcasterChannelTooltip>,
       );
@@ -165,7 +165,7 @@ export const FarcasterCastResponseText = ({
               e.stopPropagation();
             }}
           >
-            <TextLink href={`/users/${mention.user.username}`}>
+            <Link href={`/users/${mention.user.username}`} asText>
               <NookText
                 color="$color11"
                 fontSize={
@@ -181,7 +181,7 @@ export const FarcasterCastResponseText = ({
               >
                 {label}
               </NookText>
-            </TextLink>
+            </Link>
           </NookText>
         </FarcasterUserTooltip>,
       );

@@ -228,7 +228,7 @@ export const UsernameSettings = () => {
     return null;
 
   return (
-    <YStack gap="$4" padding="$4">
+    <YStack gap="$4" padding="$2.5">
       <YStack gap="$2">
         <NookText variant="label">Username</NookText>
         <NookText muted>

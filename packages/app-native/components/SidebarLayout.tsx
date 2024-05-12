@@ -4,15 +4,16 @@ import { FarcasterUserAvatar } from "@nook/app/components/farcaster/users/user-d
 import { useAuth } from "@nook/app/context/auth";
 import { formatNumber } from "@nook/app/utils";
 import { DrawerContentScrollView } from "@react-navigation/drawer";
-import { Link } from "expo-router";
 import { ComponentType } from "react";
 import {
+  Home,
   User,
   Settings,
   Image,
   MousePointerSquare,
 } from "@tamagui/lucide-icons";
 import { Href } from "expo-router/build/link/href";
+import { Link } from "@nook/app/components/link";
 
 export const SidebarLayout = () => {
   return (
@@ -49,7 +50,10 @@ const SidebarUser = () => {
         </NookText>
       </YStack>
       <XStack gap="$2" marginTop="$3">
-        <Link href={`/users/${user.username}/following`}>
+        <Link
+          href={`/(drawer)/(tabs)/(home)/users/${user.username}/following`}
+          absolute
+        >
           <View flexDirection="row" alignItems="center" gap="$1">
             <NookText fontWeight="600" fontSize="$4">
               {formatNumber(user.engagement?.following || 0)}
@@ -59,7 +63,10 @@ const SidebarUser = () => {
             </NookText>
           </View>
         </Link>
-        <Link href={`/users/${user.username}/followers`}>
+        <Link
+          href={`/(drawer)/(tabs)/(home)/users/${user.username}/followers`}
+          absolute
+        >
           <View flexDirection="row" alignItems="center" gap="$1">
             <NookText fontWeight="600" fontSize="$4">
               {formatNumber(user.engagement?.followers || 0)}
@@ -79,17 +86,24 @@ const SidebarNavigation = () => {
   return (
     <YStack marginVertical="$6" gap="$5">
       <SidebarNavigationItem
+        label="Home"
+        Icon={Home}
+        href={{
+          pathname: "/(drawer)/(tabs)/(home)",
+        }}
+      />
+      <SidebarNavigationItem
         label="Media"
         Icon={Image}
         href={{
-          pathname: "/(drawer)/(tabs)/(media)",
+          pathname: "/(drawer)/(tabs)/(media)/media",
         }}
       />
       <SidebarNavigationItem
         label="Frames"
         Icon={MousePointerSquare}
         href={{
-          pathname: "/(drawer)/(tabs)/(frames)",
+          pathname: "/(drawer)/(tabs)/(frames)/frames",
         }}
       />
       <SidebarNavigationItem
@@ -104,7 +118,7 @@ const SidebarNavigation = () => {
         label="Settings"
         Icon={Settings}
         href={{
-          pathname: "/(settings)/settings",
+          pathname: "/(drawer)/(tabs)/(home)/settings",
         }}
       />
     </YStack>
@@ -121,7 +135,7 @@ const SidebarNavigationItem = ({
   href: Href;
 }) => {
   return (
-    <Link href={href}>
+    <Link href={href} absolute>
       <XStack
         borderRadius="$10"
         backgroundColor="transparent"
@@ -130,7 +144,7 @@ const SidebarNavigationItem = ({
       >
         <Icon color="$mauve12" size={24} />
         <NookText>
-          <NookText fontSize="$7" fontWeight="700">
+          <NookText fontSize="$7" fontWeight="600">
             {label}
           </NookText>
         </NookText>

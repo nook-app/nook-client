@@ -25,10 +25,12 @@ export default function HomeLayout() {
       <Stack.Screen
         name="channels/[channelId]/index"
         getId={({ params }) => params?.channelId}
+        options={{ title: "", headerBackVisible: false }}
       />
       <Stack.Screen
         name="users/[username]/index"
         getId={({ params }) => params?.username}
+        options={{ title: "", headerBackVisible: false }}
       />
       <Stack.Screen
         name="users/[username]/followers"
@@ -64,6 +66,35 @@ export default function HomeLayout() {
         name="casts/[hash]/quotes"
         options={{ title: "Quoted by" }}
         getId={({ params }) => params?.hash}
+      />
+      <Stack.Screen name="settings/index" options={{ title: "Settings" }} />
+      <Stack.Screen
+        name="settings/profile"
+        options={{ title: "Profile Settings" }}
+      />
+      <Stack.Screen
+        name="settings/theme"
+        options={{ title: "Theme Settings" }}
+      />
+      <Stack.Screen
+        name="settings/actions"
+        options={{ title: "Action Settings" }}
+      />
+      <Stack.Screen
+        name="settings/mute/index"
+        options={{ title: "Mute Settings" }}
+      />
+      <Stack.Screen
+        name="settings/mute/users"
+        options={{ title: "Muted users" }}
+      />
+      <Stack.Screen
+        name="settings/mute/channels"
+        options={{ title: "Muted channels" }}
+      />
+      <Stack.Screen
+        name="settings/mute/words"
+        options={{ title: "Muted words" }}
       />
     </Stack>
   );

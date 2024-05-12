@@ -74,6 +74,18 @@ export default function TabLayout() {
           tabBarShowLabel: false,
         }}
       />
+      <Tabs.Screen
+        name="(media)"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="(frames)"
+        options={{
+          href: null,
+        }}
+      />
     </Tabs>
   );
 }

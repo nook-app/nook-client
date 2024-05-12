@@ -1,7 +1,7 @@
 import { NookText, XStack } from "@nook/app-ui";
 import { FarcasterCastResponse } from "@nook/common/types";
-import { Link } from "solito/link";
 import { useCastStore } from "../../../store/useCastStore";
+import { Link } from "../../link";
 
 export type CastEngagementTypes = "replies" | "likes" | "quotes" | "recasts";
 

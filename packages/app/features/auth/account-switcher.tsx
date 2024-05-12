@@ -15,7 +15,7 @@ import { FarcasterUserDisplay } from "../../components/farcaster/users/user-disp
 import { Check } from "@tamagui/lucide-icons";
 import { useRouter } from "next/navigation";
 import { getSessions } from "../../utils/local-storage";
-import { Link } from "solito/link";
+import { Link } from "../../components/link";
 
 export const AccountSwitcher = ({ children }: { children: ReactNode }) => {
   return (

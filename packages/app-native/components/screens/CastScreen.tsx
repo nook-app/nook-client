@@ -10,7 +10,7 @@ export default function CastScreen() {
   const paddingBottom = useBottomTabBarHeight();
 
   return (
-    <View flex={1} backgroundColor="$color1">
+    <View flexGrow={1} backgroundColor="$color1">
       {cast && (
         <AnimatePresence>
           <View

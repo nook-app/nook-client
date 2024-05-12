@@ -9,6 +9,7 @@ import { formatToCDN } from "@nook/app/utils";
 import { TransactionFeedWithChainSelector } from "@nook/app/features/transactions/transaction-feed";
 import { useImageColors } from "../../hooks/useImageColors";
 import { CollapsibleGradientLayout } from "../CollapsibleGradientLayout";
+import { Loading } from "@nook/app/components/loading";
 
 export default function UserScreen() {
   const { username } = useLocalSearchParams();
@@ -18,7 +19,7 @@ export default function UserScreen() {
     user?.pfp ? formatToCDN(user.pfp, { width: 168 }) : undefined,
   );
 
-  if (!user) return null;
+  if (!user) return <Loading />;
 
   return (
     <CollapsibleGradientLayout
@@ -101,6 +102,7 @@ export default function UserScreen() {
                 },
                 contentTypes: ["image"],
               }}
+              displayMode={Display.GRID}
               asTabs
             />
           ),

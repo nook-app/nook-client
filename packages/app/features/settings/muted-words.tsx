@@ -1,12 +1,10 @@
 "use client";
 
 import {
-  Button,
   Input,
   NookButton,
   NookText,
   Popover,
-  Separator,
   View,
   XStack,
   YStack,
@@ -33,13 +31,17 @@ export const MutedWords = ({ settings }: { settings: User }) => {
 
   return (
     <YStack>
-      <XStack padding="$4" justifyContent="space-between" alignItems="center">
-        <NookText muted>
+      <XStack
+        padding="$2.5"
+        justifyContent="space-between"
+        alignItems="center"
+        gap="$2"
+      >
+        <NookText muted flexShrink={1}>
           Posts containing muted words won't show up across the app.
         </NookText>
         <AddMutedWord onSubmit={handleMuteWord} />
       </XStack>
-      <Separator borderColor="$borderColorBg" />
       {words.map((word) => (
         <MutedWord key={word} word={word} onPress={handleUnmuteWord} />
       ))}
@@ -54,7 +56,7 @@ const MutedWord = ({
   return (
     <XStack
       alignItems="center"
-      padding="$4"
+      padding="$2.5"
       hoverStyle={{
         backgroundColor: "$color2",
         transform: "all 0.2s ease-in-out",

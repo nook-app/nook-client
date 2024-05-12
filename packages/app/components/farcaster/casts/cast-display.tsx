@@ -7,7 +7,7 @@ import {
   FarcasterUserAvatar,
   FarcasterUserDisplay,
 } from "../../../components/farcaster/users/user-display";
-import { formatTimeAgo } from "../../../utils";
+import { formatTimeAgo, formatToCDN } from "../../../utils";
 import { FarcasterChannelBadge } from "../../../components/farcaster/channels/channel-display";
 import { Embeds } from "../../../components/embeds/Embed";
 import { FarcasterCastResponseEngagement } from "../../../components/farcaster/casts/cast-engagement";
@@ -24,6 +24,8 @@ import { EmbedVideo } from "../../embeds/EmbedVideo";
 import { EmbedFrame } from "../../embeds/frames/EmbedFrame";
 import { useMuteStore } from "../../../store/useMuteStore";
 import { FarcasterPowerBadge } from "../users/power-badge";
+import { Image } from "expo-image";
+import { FarcasterCastResponseGridDisplay } from "./cast-display-grid";
 
 export const FarcasterCastResponseDisplay = ({
   cast,
@@ -48,10 +50,10 @@ export const FarcasterCastResponseDisplay = ({
       return <FarcasterCastResponseMediaDisplay cast={cast} />;
     case Display.GRID:
       return <FarcasterCastResponseGridDisplay cast={cast} />;
+    case Display.NOTIFICATION:
+      return <FarcasterCastResponseNotificationDisplay cast={cast} />;
     case Display.LIST:
       return <FarcasterCastResponseDefaultDisplay cast={cast} isConnected />;
-    case Display.BORDERLESS:
-      return <FarcasterCastResponseDefaultDisplay cast={cast} />;
     default:
       if (cast.parent && displayMode !== Display.REPLIES) {
         return (
@@ -79,15 +81,13 @@ const FarcasterCastResponseFrameDisplay = ({
 
   return (
     <YStack
-      borderBottomWidth="$0.25"
-      borderBottomColor="$color4"
       hoverStyle={{
         // @ts-ignore
         transition: "all 0.2s ease-in-out",
         backgroundColor: "$color2",
       }}
       cursor="pointer"
-      padding="$3"
+      padding="$2.5"
       gap="$3"
     >
       <XStack justifyContent="space-between">
@@ -99,7 +99,7 @@ const FarcasterCastResponseFrameDisplay = ({
         <FarcasterCastResponseKebabMenu cast={cast} />
       </XStack>
       <EmbedFrame cast={cast} content={frameEmbed} />
-      <YStack padding="$2" gap="$2">
+      <YStack padding="$2.5" gap="$2">
         <XStack
           alignItems="center"
           justifyContent="space-between"
@@ -120,37 +120,6 @@ const FarcasterCastResponseFrameDisplay = ({
   );
 };
 
-const FarcasterCastResponseGridDisplay = ({
-  cast,
-}: { cast: FarcasterCastResponse }) => {
-  const imageEmbed = cast.embeds.find((embed) =>
-    embed.contentType?.startsWith("image"),
-  );
-
-  if (!imageEmbed) {
-    return null;
-  }
-
-  return (
-    <View
-      borderRightWidth="$0.5"
-      borderBottomWidth="$0.5"
-      borderColor="$borderColor"
-      hoverStyle={{
-        // @ts-ignore
-        transition: "all 0.2s ease-in-out",
-        opacity: 0.75,
-      }}
-    >
-      <img
-        src={imageEmbed.uri}
-        alt=""
-        style={{ objectFit: "cover", aspectRatio: 1 }}
-      />
-    </View>
-  );
-};
-
 const FarcasterCastResponseMediaDisplay = ({
   cast,
 }: { cast: FarcasterCastResponse }) => {
@@ -167,8 +136,6 @@ const FarcasterCastResponseMediaDisplay = ({
 
   return (
     <YStack
-      borderBottomWidth="$0.25"
-      borderBottomColor="$color4"
       paddingVertical="$1"
       hoverStyle={{
         // @ts-ignore
@@ -177,7 +144,7 @@ const FarcasterCastResponseMediaDisplay = ({
       }}
       cursor="pointer"
     >
-      <XStack justifyContent="space-between" padding="$3">
+      <XStack justifyContent="space-between" padding="$2.5">
         <FarcasterUserDisplay
           user={cast.user}
           size="$3"
@@ -187,7 +154,7 @@ const FarcasterCastResponseMediaDisplay = ({
       </XStack>
       {imageEmbed && <EmbedImage uri={imageEmbed.uri} noBorderRadius />}
       {videoEmbed && <EmbedVideo uri={videoEmbed.uri} noBorderRadius />}
-      <YStack padding="$3" gap="$2">
+      <YStack padding="$2.5" gap="$2">
         {(cast.text || cast.mentions.length > 0) && (
           <NookText>
             <NookText fontWeight="600" color="$mauve12">
@@ -213,6 +180,108 @@ const FarcasterCastResponseMediaDisplay = ({
         </XStack>
       </YStack>
     </YStack>
+  );
+};
+const FarcasterCastResponseNotificationDisplay = ({
+  cast,
+}: { cast: FarcasterCastResponse }) => {
+  const renderText = cast.text || cast.mentions.length > 0;
+  const renderEmbeds = cast.embeds.length > 0 || cast.embedCasts.length > 0;
+  const renderEngagementBar =
+    !!cast.channel ||
+    Object.values(cast.engagement || {}).some((value) => value > 0);
+
+  return (
+    <XStack
+      gap="$2"
+      transition="all 0.2s ease-in-out"
+      hoverStyle={{
+        // @ts-ignore
+        transition: "all 0.2s ease-in-out",
+        backgroundColor: "$color2",
+      }}
+      cursor="pointer"
+      padding="$3"
+    >
+      <YStack alignItems="center" width="$4" marginTop="$1">
+        <FarcasterUserAvatar user={cast.user} size="$4" asLink />
+      </YStack>
+      <YStack flex={1} gap="$2">
+        <YStack>
+          <XStack
+            justifyContent="space-between"
+            alignItems="center"
+            width="100%"
+          >
+            <XStack gap="$1.5" alignItems="center" flexShrink={1}>
+              <NookText fontWeight="700" numberOfLines={1} ellipsizeMode="tail">
+                {`${
+                  cast.user.displayName ||
+                  cast.user.username ||
+                  `!${cast.user.fid}`
+                }`}
+              </NookText>
+              <FarcasterPowerBadge
+                badge={cast.user.badges?.powerBadge ?? false}
+              />
+              <NookText
+                muted
+                numberOfLines={1}
+                ellipsizeMode="middle"
+                flexShrink={1}
+              >
+                {`${
+                  cast.user.username
+                    ? `@${cast.user.username}`
+                    : `!${cast.user.fid}`
+                } · ${formatTimeAgo(cast.timestamp)}`}
+              </NookText>
+            </XStack>
+            <FarcasterCastResponseKebabMenu cast={cast} />
+          </XStack>
+          {cast.parent && (
+            <NookText muted marginBottom="$1.5" fontSize="$4">
+              replying to{" "}
+              <NookText color="$color11" fontSize="$4">
+                {cast.parent.user.username
+                  ? `@${cast.parent.user.username}`
+                  : `!${cast.parent.user.fid}`}
+              </NookText>
+            </NookText>
+          )}
+          {renderText && <FarcasterCastResponseText cast={cast} />}
+        </YStack>
+        {renderEmbeds && <Embeds cast={cast} />}
+        <XStack
+          alignItems="center"
+          justifyContent="space-between"
+          marginHorizontal="$-2"
+        >
+          <XStack gap="$2" alignItems="center">
+            <FarcasterReplyActionButton cast={cast} />
+            <FarcasterRecastActionButton cast={cast} />
+            <FarcasterLikeActionButton cast={cast} />
+          </XStack>
+          <XStack gap="$2" alignItems="center">
+            <FarcasterCustomActionButton cast={cast} />
+            <FarcasterShareButton cast={cast} />
+          </XStack>
+        </XStack>
+        {renderEngagementBar && (
+          <XStack justifyContent="space-between" alignItems="center">
+            <FarcasterCastResponseEngagement
+              cast={cast}
+              types={["likes", "replies"]}
+            />
+            <View>
+              {cast.channel && (
+                <FarcasterChannelBadge channel={cast.channel} asLink />
+              )}
+            </View>
+          </XStack>
+        )}
+      </YStack>
+    </XStack>
   );
 };
 

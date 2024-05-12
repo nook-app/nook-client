@@ -8,7 +8,6 @@ import {
 import QRCode from "qrcode.react";
 import { useEffect, useRef } from "react";
 import { useAuth } from "../../../context/auth";
-import { Link } from "solito/link";
 import {
   WagmiProvider,
   useAccount,
@@ -22,6 +21,7 @@ import { CONTRACTS } from "@nook/common/utils";
 import { encodeAbiParameters, parseAbiItem } from "viem";
 import { Loading } from "../../../components/loading";
 import { wagmiConfig } from "../../../utils/wagmi";
+import { Link } from "../../../components/link";
 
 export const EnableSignerContent = ({ isOpen }: { isOpen: boolean }) => {
   return (

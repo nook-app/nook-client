@@ -16,7 +16,6 @@ import {
 } from "./context";
 import { usePrivy } from "@privy-io/react-auth";
 import { useUser } from "../../api/farcaster";
-import { Link, TextLink } from "solito/link";
 import { useTheme } from "../../context/theme";
 import { isAddress } from "viem";
 import { WagmiProvider } from "wagmi";
@@ -24,6 +23,7 @@ import { wagmiConfig } from "../../utils/wagmi";
 import { formatAddress } from "../../utils";
 import { useAuth } from "../../context/auth";
 import { useEffect } from "react";
+import { Link } from "../../components/link";
 
 export const SignupScreen = () => {
   return (
@@ -47,14 +47,14 @@ const SignupProgress = () => {
         const isActive = step === i;
         const isComplete = step > i;
 
-        const activeColor = ["light", "dark"].includes(theme)
-          ? "$color12"
-          : "$color9";
-        const activeTextColor = ["light", "dark"].includes(theme)
-          ? !isComplete
-            ? "$color12"
-            : "$color1"
-          : "white";
+        const activeColor =
+          theme && ["light", "dark"].includes(theme) ? "$color12" : "$color9";
+        const activeTextColor =
+          theme && ["light", "dark"].includes(theme)
+            ? !isComplete
+              ? "$color12"
+              : "$color1"
+            : "white";
         return (
           <View
             key={i}
@@ -140,11 +140,11 @@ const ConnectWalletStep = () => {
               />
               <NookText>
                 <NookText>This wallet already custodies </NookText>
-                <TextLink href={`/users/${data?.username || data.fid}`}>
+                <Link asText href={`/users/${data?.username || data.fid}`}>
                   <NookText fontWeight="700">
                     {data?.username ? `@${data.username}` : `!${data.fid}`}
                   </NookText>
-                </TextLink>
+                </Link>
               </NookText>
             </XStack>
             <Link href="/settings">

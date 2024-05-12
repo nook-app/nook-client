@@ -1,8 +1,7 @@
-import { AnimatePresence, Text, View } from "@nook/app-ui";
+import { AnimatePresence, View } from "@nook/app-ui";
 import { Display, FarcasterCastResponse } from "@nook/common/types";
 import { FarcasterCastResponseDisplay } from "./cast-display";
-import { Link } from "solito/link";
-import { FarcasterUserDisplay } from "../users/user-display";
+import { Link } from "../../link";
 
 export const FarcasterCastLink = ({
   cast,

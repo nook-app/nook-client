@@ -1,17 +1,14 @@
 import { NookText, View, XStack, YStack } from "@nook/app-ui";
 import { ChevronRight } from "@tamagui/lucide-icons";
 import { User } from "@nook/common/types";
-import { Link } from "solito/link";
+import { Link } from "../../components/link";
 
 export const MutedSettings = ({ settings }: { settings: User }) => {
   return (
-    <YStack gap="$4" paddingVertical="$4">
-      <YStack gap="$2" paddingHorizontal="$4">
-        <NookText variant="label">Mute</NookText>
-        <NookText muted>
-          Manage the words, accounts, and channels that you’ve muted or blocked.
-        </NookText>
-      </YStack>
+    <YStack gap="$4" paddingVertical="$2.5">
+      <NookText muted paddingHorizontal="$2.5">
+        Manage the words, accounts, and channels that you’ve muted or blocked.
+      </NookText>
       <YStack>
         <Link href="/settings/muted/users">
           <XStack

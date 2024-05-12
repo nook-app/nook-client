@@ -1,20 +1,13 @@
 "use client";
 
-import {
-  NookText,
-  Separator,
-  Spinner,
-  View,
-  XStack,
-  YStack,
-} from "@nook/app-ui";
+import { NookText, Spinner, View, XStack, YStack } from "@nook/app-ui";
 import { FarcasterUser, User } from "@nook/common/types";
 import { useUsers } from "../../api/farcaster";
 import { FarcasterUserDisplay } from "../../components/farcaster/users/user-display";
-import { Link } from "solito/link";
 import { VolumeX } from "@tamagui/lucide-icons";
 import { useEffect, useState } from "react";
 import { useMuteUser } from "../../hooks/useMuteUser";
+import { Link } from "../../components/link";
 
 export const MutedUsers = ({ settings }: { settings: User }) => {
   const { data, isLoading } = useUsers(settings.mutedUsers);
@@ -28,16 +21,15 @@ export const MutedUsers = ({ settings }: { settings: User }) => {
 
   return (
     <YStack>
-      <View padding="$4" gap="$4">
+      <View padding="$2.5" gap="$4">
         <NookText muted>
           Posts from muted accounts won't show up across the app unless viewing
           the user's profile. You can mute users directly from their profile or
           posts.
         </NookText>
       </View>
-      <Separator borderColor="$borderColorBg" />
       {isLoading && (
-        <View padding="$4" gap="$4">
+        <View padding="$2.5" gap="$4">
           <Spinner />
         </View>
       )}
@@ -54,7 +46,7 @@ const MutedUser = ({ user }: { user: FarcasterUser }) => {
     <Link href={`/users/${user.username}`}>
       <XStack
         alignItems="center"
-        padding="$4"
+        padding="$2.5"
         hoverStyle={{
           backgroundColor: "$color2",
           transform: "all 0.2s ease-in-out",

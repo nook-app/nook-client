@@ -1,10 +1,15 @@
 import { create } from "zustand";
-import { FarcasterCastResponse, FarcasterUser } from "@nook/common/types";
+import {
+  FarcasterCastResponse,
+  FarcasterUser,
+  NotificationResponse,
+} from "@nook/common/types";
 
 interface UserStore {
   users: Record<string, FarcasterUser>;
   addUsers: (users: FarcasterUser[]) => void;
   addUsersFromCasts: (casts: FarcasterCastResponse[]) => void;
+  addUsersFromNotifications: (notifications: NotificationResponse[]) => void;
   followUser: (user: FarcasterUser) => void;
   unfollowUser: (user: FarcasterUser) => void;
 }
@@ -26,6 +31,38 @@ export const useUserStore = create<UserStore>((set, get) => ({
     const currentUsers = get().users;
     const users = casts.flatMap((cast) => {
       const users = [cast.user];
+      for (const embed of cast.embedCasts) {
+        users.push(embed.user);
+      }
+      for (const mention of cast.mentions) {
+        users.push(mention.user);
+      }
+      if (cast.parent) {
+        users.push(cast.parent.user);
+        for (const embed of cast.parent.embedCasts) {
+          users.push(embed.user);
+        }
+        for (const mention of cast.parent.mentions) {
+          users.push(mention.user);
+        }
+      }
+      return users;
+    });
+    const newUsers = users.reduce(
+      (acc, user) => {
+        acc[user.username || user.fid] = user;
+        return acc;
+      },
+      {} as Record<string, FarcasterUser>,
+    );
+    set({ users: { ...currentUsers, ...newUsers } });
+  },
+  addUsersFromNotifications: (notifications: NotificationResponse[]) => {
+    const currentUsers = get().users;
+    const users = notifications.flatMap((notification) => {
+      const users = notification.users || [];
+      if (!notification.cast) return users;
+      const cast = notification.cast;
       for (const embed of cast.embedCasts) {
         users.push(embed.user);
       }
