@@ -4,9 +4,11 @@ import { Redirect, Tabs } from "expo-router";
 import { Home, Bell, Link, UserCircle2, Sparkle } from "@tamagui/lucide-icons";
 import { useTheme } from "@nook/app/context/theme";
 import { BlurView } from "expo-blur";
-import { View, useTheme as useTamaguiTheme } from "@nook/app-ui";
+import { NookText, View, useTheme as useTamaguiTheme } from "@nook/app-ui";
 import { Svg, Path } from "react-native-svg";
 import { useScroll } from "@nook/app/context/scroll";
+import { NotificationsCount } from "@nook/app/features/notifications/notifications-count";
+import { useNotificationsCount } from "@nook/app/api/notifications";
 
 export default function TabLayout() {
   const { session, isInitializing } = useAuth();
@@ -136,8 +138,44 @@ const TabBarDiscover = ({ focused }: { focused: boolean }) => {
 
 const TabBarNotifications = ({ focused }: { focused: boolean }) => {
   const theme = useTamaguiTheme();
+
+  const { data } = useNotificationsCount(true);
+
+  const count = data?.count || 0;
+
   return (
-    <Bell color="$mauve12" fill={focused ? theme.mauve12.val : "transparent"} />
+    <View width="$3" height="$2.5" justifyContent="center" alignItems="center">
+      <Bell
+        color="$mauve12"
+        fill={focused ? theme.mauve12.val : "transparent"}
+      />
+      {count > 0 && (
+        <View
+          borderRadius="$10"
+          backgroundColor="$color10"
+          justifyContent="center"
+          alignItems="center"
+          minWidth={count > 99 ? 8 : 16}
+          minHeight={count > 99 ? 8 : 16}
+          paddingHorizontal="$1"
+          position="absolute"
+          right={0}
+          top={0}
+        >
+          {count <= 99 && (
+            <NookText
+              fontWeight="600"
+              fontSize="$1"
+              color="white"
+              textAlign="center"
+              verticalAlign="middle"
+            >
+              {count}
+            </NookText>
+          )}
+        </View>
+      )}
+    </View>
   );
 };
 

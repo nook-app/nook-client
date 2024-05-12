@@ -1,4 +1,4 @@
-type Chain = {
+export type Chain = {
   chainId: number;
   id: string;
   name: string;
@@ -10,13 +10,13 @@ export const CHAINS: Record<number, Chain> = {
     chainId: 1,
     id: "ethereum",
     name: "Ethereum",
-    image: "/chains/ethereum.jpeg",
+    image: "/chains/ethereum.svg",
   },
   10: {
     chainId: 10,
     id: "optimism",
     name: "Optimism",
-    image: "/chains/optimism.jpeg",
+    image: "/chains/optimism.svg",
   },
   252: {
     chainId: 252,
@@ -52,7 +52,7 @@ export const CHAINS: Record<number, Chain> = {
     chainId: 8453,
     name: "Base",
     id: "base",
-    image: "/chains/base.jpeg",
+    image: "/chains/base.svg",
   },
   34443: {
     chainId: 34443,
@@ -70,7 +70,7 @@ export const CHAINS: Record<number, Chain> = {
     chainId: 7777777,
     name: "Zora",
     id: "zora",
-    image: "/chains/zora.jpeg",
+    image: "/chains/zora.svg",
   },
   666666666: {
     chainId: 666666666,

@@ -7,7 +7,7 @@ const run = async () => {
   const totalItems = 532_000;
 
   let batch = [];
-  for (let i = 1; i <= totalItems; i++) {
+  for (let i = 392000; i <= totalItems; i++) {
     batch.push({
       name: `backfill-${i}`,
       data: { fid: i.toString() },

@@ -229,7 +229,9 @@ const SessionItem = () => {
               variant="primary"
               backgroundColor="transparent"
               borderColor={
-                ["light", "dark"].includes(theme) ? "$color12" : "$color9"
+                theme && ["light", "dark"].includes(theme)
+                  ? "$color12"
+                  : "$color9"
               }
               width="100%"
               borderWidth="$1"
@@ -238,7 +240,9 @@ const SessionItem = () => {
                 fontWeight="700"
                 fontSize="$5"
                 color={
-                  ["light", "dark"].includes(theme) ? "$color12" : "$color12"
+                  theme && ["light", "dark"].includes(theme)
+                    ? "$color12"
+                    : "$color12"
                 }
               >
                 Create Account
@@ -254,14 +258,18 @@ const SessionItem = () => {
               padding="$0"
               backgroundColor="transparent"
               borderColor={
-                ["light", "dark"].includes(theme) ? "$color12" : "$color9"
+                theme && ["light", "dark"].includes(theme)
+                  ? "$color12"
+                  : "$color9"
               }
               borderWidth="$1"
             >
               <UserRoundPlus
                 size={24}
                 color={
-                  ["light", "dark"].includes(theme) ? "$color1" : "$color12"
+                  theme && ["light", "dark"].includes(theme)
+                    ? "$color1"
+                    : "$color12"
                 }
               />
             </NookButton>
@@ -272,13 +280,19 @@ const SessionItem = () => {
             variant="primary"
             onPress={login}
             backgroundColor={
-              ["light", "dark"].includes(theme) ? "$color12" : "$color9"
+              theme && ["light", "dark"].includes(theme)
+                ? "$color12"
+                : "$color9"
             }
           >
             <NookText
               fontWeight="700"
               fontSize="$5"
-              color={["light", "dark"].includes(theme) ? "$color1" : "$color12"}
+              color={
+                theme && ["light", "dark"].includes(theme)
+                  ? "$color1"
+                  : "$color12"
+              }
             >
               Sign In
             </NookText>
@@ -291,12 +305,18 @@ const SessionItem = () => {
             padding="$0"
             onPress={login}
             backgroundColor={
-              ["light", "dark"].includes(theme) ? "$color12" : "$color9"
+              theme && ["light", "dark"].includes(theme)
+                ? "$color12"
+                : "$color9"
             }
           >
             <LogIn
               size={24}
-              color={["light", "dark"].includes(theme) ? "$color1" : "$color12"}
+              color={
+                theme && ["light", "dark"].includes(theme)
+                  ? "$color1"
+                  : "$color12"
+              }
             />
           </NookButton>
         </View>

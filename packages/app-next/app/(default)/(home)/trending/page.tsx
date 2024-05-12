@@ -1,16 +1,13 @@
-import { FarcasterTrendingFeed } from "@nook/app/features/farcaster/cast-feed/trending-feed";
 import { getServerSession } from "@nook/app/server/session";
-import { fetchTrendingCasts } from "@nook/app/api/farcaster/feed";
+import { FarcasterFilteredFeedServer } from "@nook/app/features/farcaster/cast-feed/filtered-feed-server";
 
 export default async function Home() {
-  const [session, trendingFeed] = await Promise.all([
-    getServerSession(),
-    fetchTrendingCasts(),
-  ]);
+  const session = await getServerSession();
+  if (!session) return null;
   return (
-    <FarcasterTrendingFeed
-      viewerFid={session?.fid}
-      initialData={trendingFeed}
+    <FarcasterFilteredFeedServer
+      api="https://api.neynar.com/v2/farcaster/feed/trending"
+      filter={{}}
     />
   );
 }

@@ -4,7 +4,7 @@ export default function ProfileLayout() {
   return (
     <Stack>
       <Stack.Screen
-        name="index"
+        name="profile"
         options={{
           title: "Profile",
         }}

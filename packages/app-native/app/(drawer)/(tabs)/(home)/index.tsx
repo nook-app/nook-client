@@ -1,4 +1,3 @@
-import { FarcasterTrendingFeed } from "@nook/app/features/farcaster/cast-feed/trending-feed";
 import { FarcasterFilteredFeed } from "@nook/app/features/farcaster/cast-feed/filtered-feed";
 import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
 import { HEADER_HEIGHT, PagerLayout } from "../../../../components/PagerLayout";
@@ -46,9 +45,11 @@ export default function HomeScreen() {
         {
           name: "Trending",
           component: (
-            <FarcasterTrendingFeed
+            <FarcasterFilteredFeed
               paddingBottom={paddingBottom}
               paddingTop={HEADER_HEIGHT}
+              api="https://api.neynar.com/v2/farcaster/feed/trending"
+              filter={{}}
             />
           ),
         },

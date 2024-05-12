@@ -7,6 +7,7 @@ import {
   YStack,
   ToggleGroup,
   Tooltip,
+  Text,
 } from "@nook/app-ui";
 import { FarcasterUserDisplay } from "../../../components/farcaster/users/user-display";
 import { FarcasterCastResponseText } from "../../../components/farcaster/casts/cast-text";
@@ -57,7 +58,12 @@ function formatTimestampDate(timestamp: number) {
 export const FarcasterExpandedCast = ({
   cast,
   initialData,
-}: { cast: FarcasterCastResponse; initialData?: FetchCastsResponse }) => {
+  paddingBottom,
+}: {
+  cast: FarcasterCastResponse;
+  initialData?: FetchCastsResponse;
+  paddingBottom: number;
+}) => {
   const [replySort, setReplySort] = useState<"best" | "top" | "new">("best");
   const [isRefetching, setIsRefetching] = useState(false);
   const { data, hasNextPage, fetchNextPage, isFetchingNextPage, refetch } =
@@ -87,6 +93,7 @@ export const FarcasterExpandedCast = ({
       }
       refetch={handleRefresh}
       isRefetching={isRefetching}
+      paddingBottom={paddingBottom}
     />
   );
 };
@@ -103,11 +110,11 @@ const FarcasterExpandedCastHeader = ({
   const renderText = cast.text || cast.mentions.length > 0;
   const renderEmbeds = cast.embeds.length > 0 || cast.embedCasts.length > 0;
 
-  console.log("2", cast.ancestors);
+  const ancestors = cast.ancestors ? [...cast.ancestors].reverse() : undefined;
 
   return (
     <View>
-      {cast.ancestors?.toReversed?.().map((ancestor) => (
+      {ancestors?.map((ancestor) => (
         <FarcasterCastLink
           key={ancestor.hash}
           cast={ancestor}

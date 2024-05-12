@@ -4,9 +4,9 @@ export default function TransactionsLayout() {
   return (
     <Stack>
       <Stack.Screen
-        name="index"
+        name="transactions"
         options={{
-          title: "Transactions",
+          headerShown: false,
         }}
       />
     </Stack>

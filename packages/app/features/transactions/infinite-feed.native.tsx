@@ -55,7 +55,7 @@ export const TransactionInfiniteFeed = ({
     [lastScrollY, setIsScrolling],
   );
 
-  const List = asTabs ? Tabs.FlatList : FlashList;
+  const List = asTabs ? Tabs.FlashList : FlashList;
 
   return (
     <List

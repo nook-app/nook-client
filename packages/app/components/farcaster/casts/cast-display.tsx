@@ -251,7 +251,7 @@ const FarcasterCastResponseDefaultDisplay = ({
         )}
       </YStack>
       <YStack flex={1} gap="$2">
-        <YStack gap="$1.5">
+        <YStack>
           <XStack
             justifyContent="space-between"
             alignItems="center"

@@ -22,9 +22,6 @@ export const CollapsibleLayout = ({
       return (
         <MaterialTabBar
           {...props}
-          style={{
-            backgroundColor: theme.color1.val,
-          }}
           labelStyle={{
             fontWeight: "600",
             textTransform: "capitalize",
@@ -61,7 +58,8 @@ export const CollapsibleLayout = ({
           shadowOpacity: 0,
           elevation: 0,
           borderBottomWidth: 1,
-          borderBottomColor: theme.borderColor.val,
+          backgroundColor: theme.color1.val,
+          borderBottomColor: theme.borderColorBg.val,
         }}
         containerStyle={{
           backgroundColor: theme.color1.val,

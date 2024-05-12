@@ -69,6 +69,27 @@ export const farcasterFeedRoutes = async (fastify: FastifyInstance) => {
             });
           }
 
+          if (request.body.api.includes("api.neynar.com")) {
+            const response = await fetch(
+              `${request.body.api}?time_window=1h${
+                request.body.cursor ? `&cursor=${request.body.cursor}` : ""
+              }`,
+              {
+                headers: {
+                  accept: "application/json",
+                  api_key: process.env.NEYNAR_API_KEY as string,
+                },
+              },
+            );
+            const { casts, next } = await response.json();
+            const hashes = casts.map((cast: { hash: string }) => cast.hash);
+            const castResponse = await client.getCasts(hashes, viewerFid);
+            return reply.send({
+              data: castResponse.data,
+              nextCursor: next.cursor,
+            });
+          }
+
           const response = await fetch(request.body.api, {
             method: "POST",
             headers: {

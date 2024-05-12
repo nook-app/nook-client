@@ -4,7 +4,7 @@ export default function NotificationsLayout() {
   return (
     <Stack>
       <Stack.Screen
-        name="index"
+        name="notifications"
         options={{
           title: "Notifications",
           headerShown: false,

@@ -45,19 +45,29 @@ export const PagerLayout = ({
   const textWidths = useRef(new Array(pages.length).fill(0));
   const textWidth = useSharedValue(0);
 
-  const headerHeight = useSharedValue(isScrolling ? 0 : HEADER_HEIGHT);
+  const fullHeaderHeight =
+    NAVIGATION_HEIGHT + (pages.length > 1 ? TAB_HEIGHT : 0);
+
+  const headerHeight = useSharedValue(isScrolling ? 0 : fullHeaderHeight);
   const headerPaddingTop = useSharedValue(isScrolling ? 0 : insets.top);
   const headerOpacity = useSharedValue(isScrolling ? 0 : 1);
 
   useEffect(() => {
-    headerHeight.value = withTiming(isScrolling ? 0 : HEADER_HEIGHT, {
+    headerHeight.value = withTiming(isScrolling ? 0 : fullHeaderHeight, {
       duration: 100,
     });
     headerPaddingTop.value = withTiming(isScrolling ? 0 : insets.top, {
       duration: 100,
     });
     headerOpacity.value = withTiming(isScrolling ? 0 : 1, { duration: 100 });
-  }, [isScrolling, headerHeight, headerPaddingTop, insets.top, headerOpacity]);
+  }, [
+    isScrolling,
+    headerHeight,
+    headerPaddingTop,
+    insets.top,
+    headerOpacity,
+    fullHeaderHeight,
+  ]);
 
   const animatedHeaderStyle = useAnimatedStyle(() => {
     return {
@@ -149,52 +159,54 @@ export const PagerLayout = ({
             </NookText>
             <IconButton icon={Search} onPress={() => {}} />
           </View>
-          <XStack height={40}>
-            {pages.map(({ name }, index) => (
-              <View
-                key={name}
-                alignItems="center"
-                justifyContent="flex-end"
-                style={{ flex: 1 }}
-                onLayout={(event) => {
-                  const { width } = event.nativeEvent.layout;
-                  tabWidths.current[index] = width;
-                  if (index === page) {
-                    indicatorWidth.value = width;
-                    indicatorPosition.value = event.nativeEvent.layout.x;
-                  }
-                }}
-                paddingHorizontal="$2"
-                paddingBottom="$3"
-                onPress={() => {
-                  ref.current?.setPage(index);
-                }}
-              >
+          {pages.length > 1 && (
+            <XStack height={40}>
+              {pages.map(({ name }, index) => (
                 <View
+                  key={name}
+                  alignItems="center"
+                  justifyContent="flex-end"
+                  style={{ flex: 1 }}
                   onLayout={(event) => {
                     const { width } = event.nativeEvent.layout;
-                    textWidths.current[index] = width + 10;
+                    tabWidths.current[index] = width;
                     if (index === page) {
-                      textWidth.value = width + 10;
+                      indicatorWidth.value = width;
+                      indicatorPosition.value = event.nativeEvent.layout.x;
                     }
                   }}
+                  paddingHorizontal="$2"
+                  paddingBottom="$3"
+                  onPress={() => {
+                    ref.current?.setPage(index);
+                  }}
                 >
-                  <Animated.Text
-                    style={useAnimatedStyle(() => ({
-                      color: textColorValues.current[index].value,
-                      fontWeight: "600",
-                      fontSize: 15,
-                    }))}
+                  <View
+                    onLayout={(event) => {
+                      const { width } = event.nativeEvent.layout;
+                      textWidths.current[index] = width + 10;
+                      if (index === page) {
+                        textWidth.value = width + 10;
+                      }
+                    }}
                   >
-                    {name}
-                  </Animated.Text>
+                    <Animated.Text
+                      style={useAnimatedStyle(() => ({
+                        color: textColorValues.current[index].value,
+                        fontWeight: "600",
+                        fontSize: 15,
+                      }))}
+                    >
+                      {name}
+                    </Animated.Text>
+                  </View>
                 </View>
-              </View>
-            ))}
-            <Animated.View style={animatedIndicatorStyle}>
-              <Animated.View style={animatedTextIndicatorStyle} />
-            </Animated.View>
-          </XStack>
+              ))}
+              <Animated.View style={animatedIndicatorStyle}>
+                <Animated.View style={animatedTextIndicatorStyle} />
+              </Animated.View>
+            </XStack>
+          )}
         </YStack>
       </Animated.View>
       <PagerView

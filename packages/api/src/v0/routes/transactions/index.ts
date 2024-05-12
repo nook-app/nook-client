@@ -49,6 +49,11 @@ export const transactionRoutes = async (fastify: FastifyInstance) => {
         skip: 0,
       };
 
+      let chainIds = request.body.filter.chains;
+      if (!chainIds || chainIds.length === 0) {
+        chainIds = [0];
+      }
+
       const req: TransactionsControllerGetTransactionsRequest = {
         getTransactionDto: {
           contextAddresses,
@@ -59,7 +64,7 @@ export const transactionRoutes = async (fastify: FastifyInstance) => {
           functionSelectors: [],
           tokenTransfers: [],
           dateRange: { $lte: cursor.timestamp as number },
-          chainIds: request.body.filter.chains ?? [0],
+          chainIds,
         },
       };
 
@@ -126,7 +131,7 @@ export const transactionRoutes = async (fastify: FastifyInstance) => {
               skip: (cursor.skip as number) + 25,
             })
           : null;
-      return reply.send({ nextCursor, data: enrichedData?.reverse() || [] });
+      return reply.send({ nextCursor, data: enrichedData || [] });
     });
   });
 };

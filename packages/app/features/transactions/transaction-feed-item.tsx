@@ -20,6 +20,8 @@ import { formatEther, formatUnits } from "viem";
 import { FarcasterPowerBadge } from "../../components/farcaster/users/power-badge";
 import { TextLink } from "solito/link";
 import { EmbedImage } from "../../components/embeds/EmbedImage";
+import { ChainBadge } from "../../components/blockchain/chain-badge";
+import { ChainIcon } from "../../components/blockchain/chain-icon";
 
 export const TransactionFeedItem = ({
   transaction,
@@ -46,10 +48,8 @@ export const TransactionFeedItem = ({
         backgroundColor: "$color2",
       }}
       cursor="pointer"
-      padding="$3"
+      padding="$2.5"
       onPress={handlePress}
-      borderBottomWidth="$0.5"
-      borderBottomColor="$borderColorBg"
     >
       <YStack alignItems="center" width="$4">
         <FarcasterUserAvatar user={user} size="$4" asLink={!!user} />
@@ -101,7 +101,7 @@ export const TransactionFeedItem = ({
         <XStack justifyContent="space-between" alignItems="center">
           <View />
           <View>
-            <TransactionChainBadge chainId={transaction.chainId} />
+            <ChainBadge chainId={transaction.chainId} />
           </View>
         </XStack>
       </YStack>
@@ -389,7 +389,7 @@ const TransactionText = ({ transaction }: { transaction: Transaction }) => {
               display="inline-flex"
               marginRight="$1.5"
             >
-              <CdnAvatar src={chain.image} size="$0.8" absolute />
+              <ChainIcon chainId={chain.chainId} />
               <NookText fontWeight="600">{`${chain.name}`}</NookText>
             </XStack>,
           );
@@ -471,43 +471,4 @@ const TransactionEmbed = ({ transaction }: { transaction: Transaction }) => {
   const asset = Object.values(transaction.assetsEnriched)[0];
   if (!asset?.imageUrl) return null;
   return <EmbedImage uri={`${asset.imageUrl.split("?")[0]}?width=600`} />;
-};
-
-const TransactionChainBadge = ({ chainId }: { chainId: number }) => {
-  const chain = CHAINS[chainId];
-
-  if (!chain) {
-    return null;
-  }
-
-  return (
-    <XStack
-      gap="$1.5"
-      alignItems="center"
-      flexShrink={1}
-      backgroundColor="$color3"
-      borderRadius="$6"
-      paddingHorizontal="$2"
-      paddingVertical="$1.5"
-      borderColor="$color7"
-      borderWidth="$0.5"
-      hoverStyle={{
-        // @ts-ignore
-        transition: "all 0.2s ease-in-out",
-        backgroundColor: "$color4",
-      }}
-    >
-      <CdnAvatar src={chain.image} size="$0.8" absolute />
-      <View flexShrink={1}>
-        <NookText
-          numberOfLines={1}
-          ellipsizeMode="tail"
-          fontWeight="500"
-          fontSize="$3"
-        >
-          {chain.name}
-        </NookText>
-      </View>
-    </XStack>
-  );
 };

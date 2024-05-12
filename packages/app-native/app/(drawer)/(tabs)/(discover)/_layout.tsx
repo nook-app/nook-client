@@ -4,7 +4,7 @@ export default function DiscoverLayout() {
   return (
     <Stack>
       <Stack.Screen
-        name="index"
+        name="discover"
         options={{
           title: "Discover",
         }}

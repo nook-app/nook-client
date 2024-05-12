@@ -23,7 +23,12 @@ export const FarcasterCastResponseText = ({
 
   const textBuffer = Buffer.from(cast.text.replaceAll(/\uFFFC/g, ""), "utf-8");
 
-  const splitLinkParts = (text: string, index: number) => {
+  const splitLinkParts = (
+    text: string,
+    index: number,
+    trimStart?: boolean,
+    trimEnd?: boolean,
+  ) => {
     const splitParts: React.JSX.Element[] = [];
 
     if (text.length === 0) return splitParts;
@@ -75,6 +80,8 @@ export const FarcasterCastResponseText = ({
           </NookText>,
         );
       } else {
+        if (trimStart) part = part.trimStart();
+        if (trimEnd && splitParts.length === 0) part = part.trimEnd();
         splitParts.push(
           <NookText
             key={`${cast.hash}-${index}-${i}-${part}`}
@@ -184,7 +191,12 @@ export const FarcasterCastResponseText = ({
 
   if (index > 0) {
     textParts.push(
-      ...splitLinkParts(textBuffer.slice(0, index).toString("utf-8"), index),
+      ...splitLinkParts(
+        textBuffer.slice(0, index).toString("utf-8"),
+        index,
+        true,
+        textParts.length === 0,
+      ),
     );
   }
 

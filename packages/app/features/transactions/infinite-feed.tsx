@@ -57,6 +57,7 @@ export const TransactionInfiniteFeed = ({
           </View>
         ) : null
       }
+      ListHeaderComponent={ListHeaderComponent}
     />
   );
 };
