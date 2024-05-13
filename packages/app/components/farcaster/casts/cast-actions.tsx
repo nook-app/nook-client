@@ -1,14 +1,7 @@
-import {
-  Dialog,
-  Image,
-  View,
-  useTheme,
-  useToastController,
-} from "@nook/app-ui";
+import { Dialog, Popover, View, useTheme } from "@nook/app-ui";
 import {
   Heart,
-  Image as ImageIcon,
-  Link,
+  Image,
   MessageSquare,
   MessageSquareQuote,
   Repeat2,
@@ -18,9 +11,11 @@ import { CreateCastDialog } from "../../../features/farcaster/create-cast/disalo
 import { FarcasterCastResponse } from "@nook/common/types";
 import { useLikeCast } from "../../../hooks/useLikeCast";
 import { useRecastCast } from "../../../hooks/useRecastCast";
-import { KebabMenu, KebabMenuItem } from "../../kebab-menu";
 import { EnableSignerDialog } from "../../../features/farcaster/enable-signer/dialog";
 import { useAuth } from "../../../context/auth";
+import { Menu } from "../../menu/menu";
+import { MenuItem } from "../../menu/menu-item";
+import { CopyLink, OpenLink } from "../../menu/menu-actions";
 
 export const FarcasterReplyActionButton = ({
   cast,
@@ -127,36 +122,38 @@ export const FarcasterRecastActionButton = ({
         castEmbedFid: cast.user.fid,
       }}
     >
-      <KebabMenu
+      <Menu
         trigger={
-          <View
-            cursor="pointer"
-            width="$2.5"
-            height="$2.5"
-            justifyContent="center"
-            alignItems="center"
-            borderRadius="$10"
-            group
-            hoverStyle={{
-              // @ts-ignore
-              transition: "all 0.2s ease-in-out",
-              backgroundColor: "$color3",
-            }}
-          >
-            <Repeat2
-              size={24}
-              opacity={isRecasted ? 1 : 0.75}
-              $group-hover={{
-                color: "$green9",
-                opacity: 1,
+          <Popover.Trigger asChild>
+            <View
+              cursor="pointer"
+              width="$2.5"
+              height="$2.5"
+              justifyContent="center"
+              alignItems="center"
+              borderRadius="$10"
+              group
+              hoverStyle={{
+                // @ts-ignore
+                transition: "all 0.2s ease-in-out",
+                backgroundColor: "$color3",
               }}
-              strokeWidth={isRecasted ? 2.5 : 1.75}
-              color={isRecasted ? theme.green9.val : "$mauve11"}
-            />
-          </View>
+            >
+              <Repeat2
+                size={24}
+                opacity={isRecasted ? 1 : 0.75}
+                $group-hover={{
+                  color: "$green9",
+                  opacity: 1,
+                }}
+                strokeWidth={isRecasted ? 2.5 : 1.75}
+                color={isRecasted ? theme.green9.val : "$mauve11"}
+              />
+            </View>
+          </Popover.Trigger>
         }
       >
-        <KebabMenuItem
+        <MenuItem
           Icon={Repeat2}
           title="Recast"
           onPress={() => {
@@ -164,19 +161,15 @@ export const FarcasterRecastActionButton = ({
           }}
         />
         <FarcasterQuoteMenuItem />
-      </KebabMenu>
+      </Menu>
     </CreateCastDialog>
   );
 };
 
-const FarcasterQuoteMenuItem = ({ closeMenu }: { closeMenu?: () => void }) => {
+const FarcasterQuoteMenuItem = () => {
   return (
     <Dialog.Trigger>
-      <KebabMenuItem
-        Icon={MessageSquareQuote}
-        title="Quote"
-        closeMenu={closeMenu}
-      />
+      <MenuItem Icon={MessageSquareQuote} title="Quote" />
     </Dialog.Trigger>
   );
 };
@@ -238,55 +231,44 @@ export const FarcasterLikeActionButton = ({
 export const FarcasterShareButton = ({
   cast,
 }: { cast: FarcasterCastResponse }) => {
-  const toast = useToastController();
   return (
-    <KebabMenu
+    <Menu
       trigger={
-        <View
-          cursor="pointer"
-          width="$2.5"
-          height="$2.5"
-          justifyContent="center"
-          alignItems="center"
-          borderRadius="$10"
-          group
-          hoverStyle={{
-            // @ts-ignore
-            transition: "all 0.2s ease-in-out",
-            backgroundColor: "$color3",
-          }}
-        >
-          <Share
-            size={20}
-            opacity={0.75}
-            color="$mauve11"
-            $group-hover={{
-              color: "$color9",
-              opacity: 1,
+        <Popover.Trigger asChild>
+          <View
+            cursor="pointer"
+            width="$2.5"
+            height="$2.5"
+            justifyContent="center"
+            alignItems="center"
+            borderRadius="$10"
+            group
+            hoverStyle={{
+              // @ts-ignore
+              transition: "all 0.2s ease-in-out",
+              backgroundColor: "$color3",
             }}
-          />
-        </View>
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          >
+            <Share
+              size={20}
+              opacity={0.75}
+              color="$mauve11"
+              $group-hover={{
+                color: "$color9",
+                opacity: 1,
+              }}
+            />
+          </View>
+        </Popover.Trigger>
       }
     >
-      <KebabMenuItem
-        Icon={Link}
-        title="Copy link"
-        onPress={() => {
-          navigator.clipboard.writeText(
-            `https://nook.social/casts/${cast.hash}`,
-          );
-          toast.show("Link copied to clipboard");
-        }}
-      />
-      <KebabMenuItem
-        Icon={ImageIcon}
+      <CopyLink link={`https://nook.social/casts/${cast.hash}`} />
+      <OpenLink
+        link={`https://client.warpcast.com/v2/cast-image?castHash=${cast.hash}`}
+        Icon={Image}
         title="Share image"
-        onPress={() =>
-          window.open(
-            `https://client.warpcast.com/v2/cast-image?castHash=${cast.hash}`,
-          )
-        }
       />
-    </KebabMenu>
+    </Menu>
   );
 };

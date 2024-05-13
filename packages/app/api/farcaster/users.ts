@@ -4,6 +4,7 @@ import {
   useQuery,
   InfiniteData,
   useInfiniteQuery,
+  useQueryClient,
 } from "@tanstack/react-query";
 
 export const fetchUser = async (username: string): Promise<FarcasterUser> => {
@@ -34,13 +35,19 @@ export const fetchUsers = async (
 };
 
 export const useUsers = (fids: string[]) => {
+  const queryClient = useQueryClient();
+  const initialData = queryClient.getQueryData<FetchUsersResponse>([
+    "users",
+    fids.join(","),
+  ]);
   return useQuery<FetchUsersResponse>({
     queryKey: ["users", fids.join(",")],
     queryFn: async () => {
       const users = await fetchUsers(fids);
       return users;
     },
-    enabled: fids.length > 0,
+    enabled: fids.length > 0 && !initialData,
+    initialData,
   });
 };
 

@@ -1,13 +1,19 @@
 import {
-  FetchCatActionsResponse,
+  FetchCastActionsResponse,
   FnameTransfer,
   SubmitFnameTransfer,
 } from "@nook/common/types";
-import { InfiniteData, useInfiniteQuery } from "@tanstack/react-query";
+import {
+  InfiniteData,
+  useInfiniteQuery,
+  useQuery,
+} from "@tanstack/react-query";
+import { makeUrlRequest } from "../utils";
+import { useAuth } from "../../context/auth";
 
 export const getFarcasterActions = async (
   cursor?: string,
-): Promise<FetchCatActionsResponse> => {
+): Promise<FetchCastActionsResponse> => {
   const response = await fetch(
     `https://api.warpcast.com/v2/discover-actions?list=top&limit=25${
       cursor ? `&cursor=${cursor}` : ""
@@ -46,11 +52,11 @@ export const getFarcasterActions = async (
   };
 };
 
-export const useFarcasterActions = (initialData?: FetchCatActionsResponse) => {
+export const useFarcasterActions = (initialData?: FetchCastActionsResponse) => {
   return useInfiniteQuery<
-    FetchCatActionsResponse,
+    FetchCastActionsResponse,
     unknown,
-    InfiniteData<FetchCatActionsResponse>,
+    InfiniteData<FetchCastActionsResponse>,
     string[],
     string | undefined
   >({
@@ -114,4 +120,24 @@ export const submitFnameTransfer = async (transfer: SubmitFnameTransfer) => {
   if (!response.ok) {
     console.error(await response.text());
   }
+};
+
+export const fetchChannelFollowingStatus = async (
+  fid: string,
+  channelId: string,
+): Promise<{ result: { following: boolean } }> => {
+  return await makeUrlRequest(
+    `https://api.warpcast.com/v1/user-channel?fid=${fid}&channelId=${channelId}`,
+  );
+};
+
+export const useChannelFollowingStatus = (channelId: string) => {
+  const { session } = useAuth();
+  return useQuery({
+    queryKey: ["channel-following", session?.fid, channelId],
+    queryFn: async () => {
+      return await fetchChannelFollowingStatus(session?.fid ?? "", channelId);
+    },
+    enabled: !!session?.fid,
+  });
 };

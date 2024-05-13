@@ -15,13 +15,14 @@ import {
 } from "../../utils";
 import { CdnAvatar } from "../../components/cdn-avatar";
 import { CHAINS } from "../../utils/chains";
-import { KebabMenu, KebabMenuItem } from "../../components/kebab-menu";
 import { formatEther, formatUnits } from "viem";
 import { FarcasterPowerBadge } from "../../components/farcaster/users/power-badge";
 import { EmbedImage } from "../../components/embeds/EmbedImage";
 import { ChainBadge } from "../../components/blockchain/chain-badge";
 import { ChainIcon } from "../../components/blockchain/chain-icon";
 import { Link } from "../../components/link";
+import { Menu } from "../../components/menu/menu";
+import { OpenLink } from "../../components/menu/menu-actions";
 
 export const TransactionFeedItem = ({
   transaction,
@@ -56,44 +57,65 @@ export const TransactionFeedItem = ({
       </YStack>
       <YStack flex={1} gap="$2">
         <YStack gap="$1.5">
-          <XStack justifyContent="space-between">
+          <XStack
+            justifyContent="space-between"
+            alignItems="center"
+            width="100%"
+          >
             {user && (
-              <FarcasterUserTextDisplay
-                user={user}
-                asLink
-                suffix={` · ${formatTimeAgo(transaction.timestamp * 1000)}`}
-              />
+              <XStack gap="$1.5" alignItems="center" flexShrink={1}>
+                <NookText
+                  fontWeight="700"
+                  numberOfLines={1}
+                  ellipsizeMode="tail"
+                >
+                  {`${user.displayName || user.username || `!${user.fid}`}`}
+                </NookText>
+                <FarcasterPowerBadge badge={user.badges?.powerBadge ?? false} />
+                <NookText
+                  muted
+                  numberOfLines={1}
+                  ellipsizeMode="middle"
+                  flexShrink={1}
+                >
+                  {`${
+                    user.username ? `@${user.username}` : `!${user.fid}`
+                  } · ${formatTimeAgo(transaction.timestamp)}`}
+                </NookText>
+              </XStack>
             )}
             {!user && (
-              <NookText
-                fontWeight="600"
-                flexShrink={1}
-                numberOfLines={1}
-                ellipsizeMode="tail"
-              >
-                {formatAddress(transaction.from)}
-              </NookText>
+              <XStack gap="$1.5" alignItems="center" flexShrink={1}>
+                <NookText
+                  fontWeight="700"
+                  numberOfLines={1}
+                  ellipsizeMode="tail"
+                >
+                  {formatAddress(transaction.from)}
+                </NookText>
+                <NookText
+                  muted
+                  numberOfLines={1}
+                  ellipsizeMode="middle"
+                  flexShrink={1}
+                >
+                  {`· ${formatTimeAgo(transaction.timestamp)}`}
+                </NookText>
+              </XStack>
             )}
-            <View position="absolute" right={0} top={0} marginTop="$-2">
-              <KebabMenu>
-                <KebabMenuItem
-                  Icon={
-                    <CdnAvatar
-                      size="$1"
-                      src="https://www.onceupon.xyz/once-upon-mark.svg"
-                      absolute
-                    />
-                  }
-                  title={"View in OnceUpon"}
-                  onPress={() =>
-                    window.open(
-                      `https://www.onceupon.xyz/${transaction.hash}`,
-                      "_blank",
-                    )
-                  }
-                />
-              </KebabMenu>
-            </View>
+            <Menu>
+              <OpenLink
+                Icon={
+                  <CdnAvatar
+                    size="$1"
+                    src="https://www.onceupon.xyz/once-upon-mark.svg"
+                    absolute
+                  />
+                }
+                title={"View in OnceUpon"}
+                link={`https://www.onceupon.xyz/${transaction.hash}`}
+              />
+            </Menu>
           </XStack>
           <TransactionText transaction={transaction} />
           <TransactionEmbed transaction={transaction} />

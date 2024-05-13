@@ -18,7 +18,7 @@ import {
   FarcasterShareButton,
 } from "../../../components/farcaster/casts/cast-actions";
 import { FarcasterCustomActionButton } from "../../../components/farcaster/casts/cast-custom-action";
-import { FarcasterCastResponseKebabMenu } from "./cast-kebab-menu";
+import { FarcasterCastResponseMenu } from "./cast-menu";
 import { EmbedImage } from "../../embeds/EmbedImage";
 import { EmbedVideo } from "../../embeds/EmbedVideo";
 import { EmbedFrame } from "../../embeds/frames/EmbedFrame";
@@ -96,7 +96,7 @@ const FarcasterCastResponseFrameDisplay = ({
           size="$3"
           suffix={` · ${formatTimeAgo(cast.timestamp)}`}
         />
-        <FarcasterCastResponseKebabMenu cast={cast} />
+        <FarcasterCastResponseMenu cast={cast} />
       </XStack>
       <EmbedFrame cast={cast} content={frameEmbed} />
       <YStack padding="$2.5" gap="$2">
@@ -150,7 +150,7 @@ const FarcasterCastResponseMediaDisplay = ({
           size="$3"
           suffix={` · ${formatTimeAgo(cast.timestamp)}`}
         />
-        <FarcasterCastResponseKebabMenu cast={cast} />
+        <FarcasterCastResponseMenu cast={cast} />
       </XStack>
       {imageEmbed && <EmbedImage uri={imageEmbed.uri} noBorderRadius />}
       {videoEmbed && <EmbedVideo uri={videoEmbed.uri} noBorderRadius />}
@@ -237,7 +237,7 @@ const FarcasterCastResponseNotificationDisplay = ({
                 } · ${formatTimeAgo(cast.timestamp)}`}
               </NookText>
             </XStack>
-            <FarcasterCastResponseKebabMenu cast={cast} />
+            <FarcasterCastResponseMenu cast={cast} />
           </XStack>
           {cast.parent && (
             <NookText muted marginBottom="$1.5" fontSize="$4">
@@ -350,11 +350,15 @@ const FarcasterCastResponseDefaultDisplay = ({
                 } · ${formatTimeAgo(cast.timestamp)}`}
               </NookText>
             </XStack>
-            <FarcasterCastResponseKebabMenu cast={cast} />
+            <FarcasterCastResponseMenu cast={cast} />
           </XStack>
           {renderText && <FarcasterCastResponseText cast={cast} />}
+          {renderEmbeds && (
+            <YStack marginTop={renderText ? "$2" : "$1"} gap="$2">
+              <Embeds cast={cast} />
+            </YStack>
+          )}
         </YStack>
-        {renderEmbeds && <Embeds cast={cast} />}
         <XStack
           alignItems="center"
           justifyContent="space-between"

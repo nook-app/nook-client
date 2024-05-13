@@ -3,7 +3,7 @@ import { useUser } from "@nook/app/hooks/useUser";
 import { useLocalSearchParams } from "expo-router";
 import { FarcasterFilteredFeed } from "@nook/app/features/farcaster/cast-feed/filtered-feed";
 import { Display, UserFilterType } from "@nook/common/types";
-import { NookText, XStack } from "@nook/app-ui";
+import { NookText, Popover, XStack } from "@nook/app-ui";
 import { FarcasterPowerBadge } from "@nook/app/components/farcaster/users/power-badge";
 import { formatToCDN } from "@nook/app/utils";
 import { TransactionFeedWithChainSelector } from "@nook/app/features/transactions/transaction-feed";
@@ -13,6 +13,7 @@ import { Loading } from "@nook/app/components/loading";
 import { Link } from "@nook/app/components/link";
 import { IconButton } from "../IconButton";
 import { Search, MoreHorizontal } from "@tamagui/lucide-icons";
+import { FarcasterUserMenu } from "@nook/app/components/farcaster/users/user-menu";
 
 export default function UserScreen() {
   const { username } = useLocalSearchParams();
@@ -41,7 +42,7 @@ export default function UserScreen() {
         </XStack>
       }
       colors={colors}
-      header={<UserHeader user={user} size="$6" />}
+      header={<UserHeader user={user} size="$6" disableMenu />}
       pages={[
         {
           name: "Casts",
@@ -140,7 +141,14 @@ export default function UserScreen() {
           >
             <IconButton icon={Search} />
           </Link>
-          <IconButton icon={MoreHorizontal} />
+          <FarcasterUserMenu
+            user={user}
+            trigger={
+              <Popover.Trigger asChild>
+                <IconButton icon={MoreHorizontal} />
+              </Popover.Trigger>
+            }
+          />
         </XStack>
       }
     />

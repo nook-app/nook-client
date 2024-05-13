@@ -1,13 +1,13 @@
 "use client";
 
-import { FetchCatActionsResponse } from "@nook/common/types";
+import { FetchCastActionsResponse } from "@nook/common/types";
 import { useFarcasterActions } from "../../api/warpcast";
 import { FarcasterActionsFeed } from "./actions-feed";
 import { Loading } from "../../components/loading";
 
 export const ExploreActions = ({
   initialData,
-}: { initialData: FetchCatActionsResponse }) => {
+}: { initialData: FetchCastActionsResponse }) => {
   const { data, isLoading, hasNextPage, fetchNextPage, isFetchingNextPage } =
     useFarcasterActions(initialData);
 

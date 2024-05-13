@@ -43,7 +43,7 @@ export const useCastFeed = (
   const queryClient = useQueryClient();
   const cachedData = queryClient.getQueryData<
     InfiniteData<FetchCastsResponse, string>
-  >(["castFeed", JSON.stringify(filter)]);
+  >(["castFeed", JSON.stringify(filter), api || ""]);
 
   return useInfiniteQuery<
     FetchCastsResponse,
@@ -52,7 +52,7 @@ export const useCastFeed = (
     string[],
     string | undefined
   >({
-    queryKey: ["castFeed", JSON.stringify(filter)],
+    queryKey: ["castFeed", JSON.stringify(filter), api || ""],
     queryFn: async ({ pageParam }) => {
       const data = await fetchCastFeed({
         api,

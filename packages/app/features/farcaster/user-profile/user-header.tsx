@@ -1,6 +1,13 @@
 "use client";
 
-import { NookText, View, XStack, YStack } from "@nook/app-ui";
+import {
+  NookButton,
+  NookText,
+  Popover,
+  View,
+  XStack,
+  YStack,
+} from "@nook/app-ui";
 import { ZoomableImage } from "../../../components/zoomable-image";
 import { CdnAvatar } from "../../../components/cdn-avatar";
 import { FarcasterBioText } from "../../../components/farcaster/bio-text";
@@ -10,13 +17,15 @@ import { FarcasterUserFollowButton } from "../../../components/farcaster/users/u
 import { UserFollowBadge } from "../../../components/farcaster/users/user-follow-badge";
 import { FarcasterUser } from "@nook/common/types";
 import { useAuth } from "../../../context/auth";
-import { FarcasterUserKebabMenu } from "../../../components/farcaster/users/user-kebab-menu";
+import { FarcasterUserMenu } from "../../../components/farcaster/users/user-menu";
 import { Link } from "../../../components/link";
+import { MoreHorizontal } from "@tamagui/lucide-icons";
 
 export const UserHeader = ({
   user,
   size,
-}: { user: FarcasterUser; size?: string }) => {
+  disableMenu,
+}: { user: FarcasterUser; size?: string; disableMenu?: boolean }) => {
   const { session } = useAuth();
   const bio = user?.bio?.trim().replace(/\n\s*\n/g, "\n");
   return (
@@ -29,7 +38,23 @@ export const UserHeader = ({
             </View>
           </ZoomableImage>
           <XStack gap="$2">
-            <FarcasterUserKebabMenu user={user} />
+            {!disableMenu && (
+              <FarcasterUserMenu
+                user={user}
+                trigger={
+                  <Popover.Trigger asChild>
+                    <NookButton
+                      variant="active-action"
+                      width="$3"
+                      height="$3"
+                      padding="$0"
+                    >
+                      <MoreHorizontal size={20} color="$mauve12" />
+                    </NookButton>
+                  </Popover.Trigger>
+                }
+              />
+            )}
             <FarcasterUserFollowButton user={user} />
           </XStack>
         </XStack>

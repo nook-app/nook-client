@@ -25,8 +25,8 @@ export const FarcasterUserInfiniteFeed = ({
   fetchNextPage: () => void;
   isFetchingNextPage: boolean;
   hasNextPage: boolean;
-  refetch: () => Promise<void>;
-  isRefetching: boolean;
+  refetch?: () => Promise<void>;
+  isRefetching?: boolean;
   paddingTop?: number;
   paddingBottom?: number;
   asTabs?: boolean;
@@ -72,11 +72,13 @@ export const FarcasterUserInfiniteFeed = ({
       onScroll={handleScroll}
       scrollEventThrottle={128}
       refreshControl={
-        <RefreshControl
-          refreshing={isRefetching}
-          onRefresh={refetch}
-          paddingTop={paddingTop}
-        />
+        refetch && isRefetching ? (
+          <RefreshControl
+            refreshing={isRefetching}
+            onRefresh={refetch}
+            paddingTop={paddingTop}
+          />
+        ) : undefined
       }
       contentContainerStyle={{
         paddingTop,

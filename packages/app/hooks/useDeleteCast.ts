@@ -6,6 +6,7 @@ import { useMuteStore } from "../store/useMuteStore";
 import { submitCastRemove } from "../api/farcaster/actions";
 import { fetchCast } from "../api/farcaster";
 import { useParams, useRouter } from "solito/navigation";
+import { haptics } from "../utils/haptics";
 
 export const useDeleteCast = (cast: FarcasterCastResponse) => {
   const { session, login } = useAuth();
@@ -50,14 +51,16 @@ export const useDeleteCast = (cast: FarcasterCastResponse) => {
 
       setIsDeleting(false);
       toast.show("Cast deleted");
+      haptics.notificationSuccess();
 
-      if (params.hash === cast.hash) {
+      if (params?.hash === cast.hash) {
         router.push("/");
       }
     } catch (e) {
       toast.show("An error occurred. Try again later.");
+      haptics.notificationError();
     }
-  }, [cast, updateDelete, toast, session, login, router, params.hash]);
+  }, [cast, updateDelete, toast, session, login, router, params?.hash]);
 
   return {
     deleteCast: handleDeleteCast,

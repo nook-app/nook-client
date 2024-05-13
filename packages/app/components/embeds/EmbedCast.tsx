@@ -6,6 +6,7 @@ import { FarcasterCastResponse } from "@nook/common/types";
 import { formatTimeAgo } from "../../utils";
 import { FarcasterPowerBadge } from "../farcaster/users/power-badge";
 import { Link } from "../link";
+import { useRouter } from "solito/navigation";
 
 export const EmbedCast = ({
   cast,
@@ -14,59 +15,73 @@ export const EmbedCast = ({
   cast: FarcasterCastResponse;
   disableLink?: boolean;
 }) => {
+  const router = useRouter();
+
+  // @ts-ignore
+  const handlePress = (event) => {
+    const selection = window?.getSelection?.()?.toString();
+    if (!selection || selection.length === 0) {
+      if (event.ctrlKey || event.metaKey) {
+        // metaKey is for macOS
+        window.open(`/casts/${cast.hash}`, "_blank");
+      } else {
+        router.push(`/casts/${cast.hash}`);
+      }
+    }
+  };
+
   return (
-    <Link href={`/casts/${cast.hash}`}>
-      <View
-        cursor="pointer"
-        transition="all 0.2s ease-in-out"
-        hoverStyle={{
-          // @ts-ignore
-          transition: "all 0.2s ease-in-out",
-          backgroundColor: "$color2",
-        }}
+    <View
+      cursor="pointer"
+      transition="all 0.2s ease-in-out"
+      hoverStyle={{
+        // @ts-ignore
+        transition: "all 0.2s ease-in-out",
+        backgroundColor: "$color2",
+      }}
+      onPress={handlePress}
+    >
+      <YStack
+        borderWidth="$0.5"
+        borderColor="$borderColorBg"
+        borderRadius="$4"
+        padding="$2.5"
+        gap="$1"
       >
-        <YStack
-          borderWidth="$0.5"
-          borderColor="$borderColorBg"
-          borderRadius="$4"
-          padding="$2.5"
-          gap="$1"
-        >
-          <XStack alignItems="center">
-            <View marginRight="$2">
-              <CdnAvatar src={cast.user.pfp} size="$1" />
-            </View>
-            <XStack gap="$1.5" alignItems="center" flexShrink={1}>
-              <NookText fontWeight="700" numberOfLines={1} ellipsizeMode="tail">
-                {`${
-                  cast.user.displayName ||
-                  cast.user.username ||
-                  `!${cast.user.fid}`
-                }`}
-              </NookText>
-              <FarcasterPowerBadge
-                badge={cast.user.badges?.powerBadge ?? false}
-              />
-              <NookText
-                muted
-                numberOfLines={1}
-                ellipsizeMode="middle"
-                flexShrink={1}
-              >
-                {`${
-                  cast.user.username
-                    ? `@${cast.user.username}`
-                    : `!${cast.user.fid}`
-                } · ${formatTimeAgo(cast.timestamp)}`}
-              </NookText>
-            </XStack>
+        <XStack alignItems="center">
+          <View marginRight="$2">
+            <CdnAvatar src={cast.user.pfp} size="$1" />
+          </View>
+          <XStack gap="$1.5" alignItems="center" flexShrink={1}>
+            <NookText fontWeight="700" numberOfLines={1} ellipsizeMode="tail">
+              {`${
+                cast.user.displayName ||
+                cast.user.username ||
+                `!${cast.user.fid}`
+              }`}
+            </NookText>
+            <FarcasterPowerBadge
+              badge={cast.user.badges?.powerBadge ?? false}
+            />
+            <NookText
+              muted
+              numberOfLines={1}
+              ellipsizeMode="middle"
+              flexShrink={1}
+            >
+              {`${
+                cast.user.username
+                  ? `@${cast.user.username}`
+                  : `!${cast.user.fid}`
+              } · ${formatTimeAgo(cast.timestamp)}`}
+            </NookText>
           </XStack>
-          {(cast.text || cast.mentions.length > 0) && (
-            <FarcasterCastResponseText cast={cast} disableLinks />
-          )}
-          {cast.embeds.length > 0 && <EmbedMedia cast={cast} />}
-        </YStack>
-      </View>
-    </Link>
+        </XStack>
+        {(cast.text || cast.mentions.length > 0) && (
+          <FarcasterCastResponseText cast={cast} disableLinks />
+        )}
+        {cast.embeds.length > 0 && <EmbedMedia cast={cast} />}
+      </YStack>
+    </View>
   );
 };

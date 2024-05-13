@@ -20,8 +20,8 @@ export const FarcasterUserInfiniteFeed = ({
   fetchNextPage: () => void;
   isFetchingNextPage: boolean;
   hasNextPage: boolean;
-  refetch: () => Promise<void>;
-  isRefetching: boolean;
+  refetch?: () => Promise<void>;
+  isRefetching?: boolean;
   paddingTop?: number;
   paddingBottom?: number;
   asTabs?: boolean;

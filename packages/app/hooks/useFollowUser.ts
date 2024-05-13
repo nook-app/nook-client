@@ -3,6 +3,7 @@ import { FarcasterUser } from "@nook/common/types";
 import { useUserStore } from "../store/useUserStore";
 import { useToastController } from "@nook/app-ui";
 import { submitLinkAdd, submitLinkRemove } from "../api/farcaster/actions";
+import { haptics } from "../utils/haptics";
 
 export const useFollowUser = (user: FarcasterUser) => {
   const toast = useToastController();
@@ -15,6 +16,7 @@ export const useFollowUser = (user: FarcasterUser) => {
 
   const followUser = useCallback(async () => {
     updateFollow(user);
+    haptics.notificationSuccess();
     try {
       const response = await submitLinkAdd({
         linkType: "follow",
@@ -26,13 +28,15 @@ export const useFollowUser = (user: FarcasterUser) => {
       }
       toast.show(response.message);
     } catch (e) {
-      toast.show("An error occurred. Try again later.");
+      toast.show("An error occurred. Try again.");
+      haptics.notificationError();
     }
     updateUnfollow(user);
   }, [user, updateFollow, updateUnfollow, toast]);
 
   const unfollowUser = useCallback(async () => {
     updateUnfollow(user);
+    haptics.notificationSuccess();
     try {
       const response = await submitLinkRemove({
         linkType: "follow",
@@ -44,7 +48,8 @@ export const useFollowUser = (user: FarcasterUser) => {
       }
       toast.show(response.message);
     } catch (e) {
-      toast.show("An error occurred. Try again later.");
+      toast.show("An error occurred. Try again.");
+      haptics.notificationError();
     }
     updateFollow(user);
   }, [user, updateFollow, updateUnfollow, toast]);

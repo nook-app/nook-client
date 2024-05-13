@@ -4,6 +4,7 @@ import { useToastController } from "@nook/app-ui";
 import { useAuth } from "../context/auth";
 import { useMuteStore } from "../store/useMuteStore";
 import { muteUser, unmuteUser } from "../api/settings";
+import { haptics } from "../utils/haptics";
 
 export const useMuteUser = (user: FarcasterUser) => {
   const { settings, session, login } = useAuth();
@@ -21,11 +22,13 @@ export const useMuteUser = (user: FarcasterUser) => {
       return;
     }
     updateMute(user);
+    haptics.notificationSuccess();
     try {
       await muteUser(user.fid);
       return;
     } catch (e) {
-      toast.show("An error occurred. Try again later.");
+      toast.show("An error occurred. Try again.");
+      haptics.notificationError();
     }
     updateUnmute(user);
   }, [user, updateMute, updateUnmute, toast, session, login]);
@@ -37,11 +40,13 @@ export const useMuteUser = (user: FarcasterUser) => {
     }
 
     updateUnmute(user);
+    haptics.notificationSuccess();
     try {
       await unmuteUser(user.fid);
       return;
     } catch (e) {
-      toast.show("An error occurred. Try again later.");
+      toast.show("An error occurred. Try again.");
+      haptics.notificationError();
     }
     updateUnmute(user);
   }, [user, updateUnmute, toast, session, login]);

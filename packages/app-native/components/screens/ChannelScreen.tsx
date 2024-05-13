@@ -1,8 +1,11 @@
-import { ChannelHeader } from "@nook/app/features/farcaster/channel-profile/channel-header";
+import {
+  ChannelHeader,
+  ChannelHeaderV2,
+} from "@nook/app/features/farcaster/channel-profile/channel-header";
 import { useLocalSearchParams } from "expo-router";
 import { FarcasterFilteredFeed } from "@nook/app/features/farcaster/cast-feed/filtered-feed";
 import { ChannelFilterType, UserFilterType } from "@nook/common/types";
-import { NookText, XStack } from "@nook/app-ui";
+import { NookText, Popover, XStack } from "@nook/app-ui";
 import { formatToCDN } from "@nook/app/utils";
 import { useChannel } from "@nook/app/hooks/useChannel";
 import { useImageColors } from "../../hooks/useImageColors";
@@ -11,13 +14,14 @@ import { Loading } from "@nook/app/components/loading";
 import { Link } from "@nook/app/components/link";
 import { IconButton } from "../IconButton";
 import { Search, MoreHorizontal } from "@tamagui/lucide-icons";
+import { FarcasterChannelMenu } from "@nook/app/components/farcaster/channels/channel-menu";
 
 export default function ChannelScreen() {
   const { channelId } = useLocalSearchParams();
   const { channel } = useChannel(channelId as string);
 
   const colors = useImageColors(
-    channel.imageUrl
+    channel?.imageUrl
       ? formatToCDN(channel.imageUrl, { width: 168 })
       : undefined,
   );
@@ -34,7 +38,7 @@ export default function ChannelScreen() {
         </XStack>
       }
       colors={colors}
-      header={<ChannelHeader channel={channel} />}
+      header={<ChannelHeaderV2 channel={channel} size="$6" disableMenu />}
       pages={[
         {
           name: "Relevant",
@@ -131,7 +135,14 @@ export default function ChannelScreen() {
           >
             <IconButton icon={Search} />
           </Link>
-          <IconButton icon={MoreHorizontal} />
+          <FarcasterChannelMenu
+            channel={channel}
+            trigger={
+              <Popover.Trigger asChild>
+                <IconButton icon={MoreHorizontal} />
+              </Popover.Trigger>
+            }
+          />
         </XStack>
       }
     />

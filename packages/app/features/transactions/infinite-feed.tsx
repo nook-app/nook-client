@@ -1,7 +1,7 @@
 "use client";
 
 import { Transaction } from "@nook/common/types";
-import { AnimatePresence, Spinner, View } from "@nook/app-ui";
+import { AnimatePresence, Separator, Spinner, View } from "@nook/app-ui";
 import { TransactionFeedItem } from "./transaction-feed-item";
 import { InfiniteScrollList } from "../../components/infinite-scroll-list";
 
@@ -57,6 +57,9 @@ export const TransactionInfiniteFeed = ({
           </View>
         ) : null
       }
+      ItemSeparatorComponent={() => (
+        <Separator width="100%" borderBottomColor="$borderColorBg" />
+      )}
       ListHeaderComponent={ListHeaderComponent}
     />
   );

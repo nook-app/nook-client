@@ -5695,6 +5695,7 @@ __metadata:
     react-native-gesture-handler: "npm:~2.14.0"
     react-native-get-random-values: "npm:^1.11.0"
     react-native-image-colors: "npm:^2.4.0"
+    react-native-ios-modal: "npm:^0.1.8"
     react-native-modal: "npm:^13.0.1"
     react-native-pager-view: "npm:^6.3.0"
     react-native-reanimated: "npm:~3.6.2"
@@ -5787,6 +5788,7 @@ __metadata:
     js-cookie: "npm:^3.0.5"
     next: "npm:^14.2.3"
     qrcode.react: "npm:^3.1.0"
+    react-native-ios-modal: "npm:^0.1.8"
     react-native-safe-area-context: "npm:4.8.2"
     react-native-svg: "npm:14.1.0"
     react-native-webview: "npm:13.6.4"
@@ -24302,6 +24304,16 @@ __metadata:
     react: "*"
     react-native: "*"
   checksum: 10c0/d9c8a3f2853cab556cfb41cc9493cfae7b5498c7604cf3ffaf2a71e44c9b330bb9dc940e8d5fe1ad342fd8bd864b0b75f74fb91b6af9b356ccd801def30a7666
+  languageName: node
+  linkType: hard
+
+"react-native-ios-modal@npm:^0.1.8":
+  version: 0.1.8
+  resolution: "react-native-ios-modal@npm:0.1.8"
+  peerDependencies:
+    react: "*"
+    react-native: "*"
+  checksum: 10c0/a464a4664fb8f599d2175d4d8d817742e1ff57a85656eee3bb57adecb6d5956229f988c13b45345882d7a078b068d82f2889fc961eab4c4bc844082b20298118
   languageName: node
   linkType: hard
 

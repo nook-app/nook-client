@@ -30,7 +30,7 @@ import {
 import { FarcasterInfiniteFeed } from "../cast-feed/infinite-feed";
 import { BarChartBig, Clock, Rocket } from "@tamagui/lucide-icons";
 import { useState } from "react";
-import { FarcasterCastResponseKebabMenu } from "../../../components/farcaster/casts/cast-kebab-menu";
+import { FarcasterCastResponseMenu } from "../../../components/farcaster/casts/cast-menu";
 import { Loading } from "../../../components/loading";
 import { FarcasterCastLink } from "../../../components/farcaster/casts/cast-link";
 
@@ -124,7 +124,7 @@ const FarcasterExpandedCastHeader = ({
       <YStack gap="$3" padding="$3">
         <XStack justifyContent="space-between">
           <FarcasterUserDisplay user={cast.user} asLink />
-          <FarcasterCastResponseKebabMenu cast={cast} />
+          <FarcasterCastResponseMenu cast={cast} />
         </XStack>
         {renderText && <FarcasterCastResponseText cast={cast} fontSize="$6" />}
         {renderEmbeds && <Embeds cast={cast} />}
