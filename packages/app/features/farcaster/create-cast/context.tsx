@@ -1,23 +1,31 @@
 import { createContext, useContext, ReactNode, useState } from "react";
 import { useToastController } from "@tamagui/toast";
-import { Channel, SubmitCastAddRequest, FarcasterCast } from "../../../types";
+import {
+  Channel,
+  SubmitCastAddRequest,
+  FarcasterCast,
+  PendingCastRequest,
+} from "../../../types";
 import { fetchCast } from "../../../api/farcaster";
-import { submitCastAdds } from "../../../server/farcaster";
+import {
+  submitCastAdds,
+  submitPendingCastAdds,
+} from "../../../server/farcaster";
 import { uploadImage } from "../../../server/media";
 
 const TEXT_LENGTH_LIMIT = 320;
 const EMBED_LIMIT = 2;
 
 type CreateCastContextType = {
-  casts: SubmitCastAddRequest[];
-  thread: SubmitCastAddRequest;
+  casts: PendingCastRequest[];
+  thread: PendingCastRequest;
   allCastsValid: boolean;
   isCasting: boolean;
   cast: () => Promise<FarcasterCast | undefined>;
-  updateCast: (index: number, cast: SubmitCastAddRequest) => void;
+  updateCast: (index: number, cast: PendingCastRequest) => void;
   channel?: Channel;
   updateChannel: (channel?: Channel) => void;
-  activeCast: SubmitCastAddRequest;
+  activeCast: PendingCastRequest;
   activeIndex: number;
   setActiveIndex: (index: number) => void;
   uploadImages: (index: number, images: string[]) => Promise<void>;
@@ -30,6 +38,8 @@ type CreateCastContextType = {
   removeCast: (index: number) => void;
   count: number;
   reset: () => void;
+  setScheduledFor: (scheduledFor?: string) => void;
+  scheduledFor?: string;
 };
 
 const CreateCastContext = createContext<CreateCastContextType | undefined>(
@@ -47,11 +57,12 @@ export const CreateCastProvider = ({
   initialChannel,
   children,
 }: SheetProviderProps) => {
-  const [casts, setCasts] = useState<SubmitCastAddRequest[]>([initialCast]);
+  const [casts, setCasts] = useState<PendingCastRequest[]>([initialCast]);
   const [isCasting, setIsCasting] = useState(false);
   const [channel, setChannel] = useState<Channel | undefined>(initialChannel);
   const [activeIndex, setActiveIndex] = useState(0);
   const [isUploadingImages, setIsUploadingImages] = useState(false);
+  const [scheduledFor, setScheduledFor] = useState<string | undefined>();
   const toast = useToastController();
 
   const thread = casts[0];
@@ -70,19 +81,32 @@ export const CreateCastProvider = ({
     });
   };
 
+  const parseEmbeds = (cast: PendingCastRequest) => {
+    return (cast.embeds || [])
+      .concat(cast.parsedEmbeds || [])
+      .filter((value, index, self) => self.indexOf(value) === index)
+      .slice(0, EMBED_LIMIT);
+  };
+
+  const prepareCasts = (casts: PendingCastRequest[]) => {
+    return casts.map((cast) => ({
+      ...cast,
+      text: cast.text.trim(),
+      embeds: parseEmbeds(cast),
+    }));
+  };
+
   const handleCast = async (): Promise<FarcasterCast | undefined> => {
     setIsCasting(true);
 
-    const response = await submitCastAdds(
-      casts.map((cast) => ({
-        ...cast,
-        text: cast.text.trim(),
-        embeds: (cast.embeds || [])
-          .concat(cast.parsedEmbeds || [])
-          .filter((value, index, self) => self.indexOf(value) === index)
-          .slice(0, EMBED_LIMIT),
-      })),
-    );
+    const isScheduled = thread.scheduledFor != null;
+
+    let response;
+    if (isScheduled) {
+      response = await submitPendingCastAdds(prepareCasts(casts));
+    } else {
+      response = await submitCastAdds(prepareCasts(casts));
+    }
 
     if ("message" in response) {
       toast.show(response.message || "An unknown error occurred");
@@ -107,7 +131,7 @@ export const CreateCastProvider = ({
       return;
     }
 
-    return cast;
+    return cast as FarcasterCast;
   };
 
   const isValidCast = (cast: SubmitCastAddRequest) => {
@@ -203,6 +227,15 @@ export const CreateCastProvider = ({
     setCasts((prev) => prev.filter((_, i) => i !== index));
   };
 
+  const handleSetScheduledFor = (scheduledFor?: string) => {
+    setCasts((prev) => {
+      return prev.map((x) => {
+        return { ...x, scheduledFor };
+      });
+    });
+    setScheduledFor(scheduledFor);
+  };
+
   const reset = () => {
     setCasts([{ text: "" }]);
     setActiveIndex(0);
@@ -233,6 +266,8 @@ export const CreateCastProvider = ({
         removeCast: handleRemoveCast,
         count: casts.length,
         reset,
+        setScheduledFor: handleSetScheduledFor,
+        scheduledFor,
       }}
     >
       {children}

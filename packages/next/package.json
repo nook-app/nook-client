@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --port 3100",
+    "dev": "NODE_OPTIONS='--inspect=9229' next dev --port 3100",
     "build": "next build",
     "start": "next start",
     "serve": "NODE_ENV=production next start --port 8151",

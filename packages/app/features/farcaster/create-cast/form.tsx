@@ -18,7 +18,7 @@ import { CdnAvatar } from "../../../components/cdn-avatar";
 import { useAuth } from "../../../context/auth";
 import { ChevronDown, Image, X } from "@tamagui/lucide-icons";
 import { useParams, useRouter } from "solito/navigation";
-import { SubmitCastAddRequest, UrlContentResponse } from "../../../types";
+import { UrlContentResponse } from "../../../types";
 import { fetchChannel, useCast } from "../../../api/farcaster";
 import { fetchContent } from "../../../api/content";
 import { EmbedCast } from "../../../components/embeds/EmbedCast";
@@ -27,12 +27,11 @@ import { NativeSyntheticEvent, TextInputChangeEventData } from "react-native";
 import { ChannelSelect } from "../../../components/farcaster/channels/channel-select";
 import { CreateCastMentions } from "./mentions";
 import { useTheme } from "../../../context/theme";
-import { LmDatepicker } from "@tamagui-extras/date";
-import { DateTimePicker } from "./timepicker";
+import { LmDatepicker } from "./datepicker/LmDatepicker";
 import { LmTimePicker } from "./time";
 
 export const CreateCastEditor = ({ onSubmit }: { onSubmit?: () => void }) => {
-  const { activeCastLength } = useCreateCast();
+  const { activeCastLength, scheduledFor } = useCreateCast();
   return (
     <View>
       <View padding="$3" zIndex={1}>
@@ -48,27 +47,86 @@ export const CreateCastEditor = ({ onSubmit }: { onSubmit?: () => void }) => {
             fontWeight="500"
             fontSize="$4"
           >{`${activeCastLength} / 320`}</NookText>
-          <ScheduleButton />
+          <ScheduleButton scheduledFor={scheduledFor} />
           <CreateCastButton onSubmit={onSubmit} />
+          <AddCastButton />
         </XStack>
       </XStack>
     </View>
   );
 };
 
-const ScheduleButton = () => {
+const AddCastButton = () => {
+  const { addCast, activeIndex, activeCastLength } = useCreateCast();
+  return (
+    <NookButton
+      onPress={() => addCast(activeIndex)}
+      disabled={activeCastLength === 0}
+      disabledStyle={{
+        opacity: 0.5,
+      }}
+    >
+      Add
+    </NookButton>
+  );
+};
+
+const ScheduleButton = ({ scheduledFor }: { scheduledFor?: string }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const { setScheduledFor, thread } = useCreateCast();
+  const [date, setDate] = useState(new Date());
+  const [time, setTime] = useState({
+    hour: date.getHours() % 12,
+    minute: date.getMinutes(),
+    amPm: date.getHours() >= 12,
+  });
+
+  const createDate = () => {
+    const scheduledDate = new Date(date);
+
+    scheduledDate.setHours(time.amPm ? time.hour + 12 : time.hour);
+    scheduledDate.setMinutes(time.minute);
+    scheduledDate.setSeconds(0);
+    scheduledDate.setMilliseconds(0);
+
+    return scheduledDate;
+  };
+
+  const handleDateChange = (datePickerProps: { startDate: Date | null }) => {
+    const now = new Date();
+    if (datePickerProps.startDate !== null && datePickerProps.startDate < now) {
+      setDate(now);
+      datePickerProps.startDate = now;
+    } else {
+      setDate(
+        datePickerProps.startDate ? new Date(datePickerProps.startDate) : now,
+      );
+      datePickerProps.startDate = datePickerProps.startDate
+        ? new Date(datePickerProps.startDate)
+        : now;
+    }
+
+    setScheduledFor(createDate().toString());
+  };
+
+  const handleTimeChange = (time: {
+    hour: number;
+    minute: number;
+    amPm: boolean;
+  }) => {
+    setTime(time);
+    setScheduledFor(createDate().toString());
+  };
 
   return (
     <Popover placement="bottom" open={isOpen} onOpenChange={setIsOpen}>
       <Popover.Trigger asChild>
-        <NookButton>Schedule</NookButton>
+        <NookButton>{`${scheduledFor ? scheduledFor : "Schedule"}`}</NookButton>
       </Popover.Trigger>
       <Popover.Content>
         <NookText>Schedule</NookText>
-        <LmDatepicker />
-        <LmTimePicker time={new Date()} />
-        {/* <DateTimePicker type="time" /> */}
+        <LmDatepicker startDate={date} onChange={handleDateChange} />
+        <LmTimePicker time={time} setTime={handleTimeChange} />
       </Popover.Content>
     </Popover>
   );
@@ -169,15 +227,17 @@ const CreateCastButton = ({ onSubmit }: { onSubmit?: () => void }) => {
         ["light", "dark"].includes(theme) ? "$color12" : "$color9"
       }
     >
-      {isCasting ? (
-        <Spinner
-          color={["light", "dark"].includes(theme) ? "$color1" : "white"}
-        />
-      ) : thread.parentHash ? (
-        "Reply"
-      ) : (
-        "Cast"
-      )}
+      {`${thread.scheduledFor ? "Schedule " : ""}${
+        isCasting ? (
+          <Spinner
+            color={["light", "dark"].includes(theme) ? "$color1" : "white"}
+          />
+        ) : thread.parentHash ? (
+          "Reply"
+        ) : (
+          "Cast"
+        )
+      }`}
     </NookButton>
   );
 };
@@ -288,7 +348,10 @@ const CreateCastItem = ({ index }: { index: number }) => {
               scaleIcon={1.5}
               circular
               icon={X}
-              onPress={() => removeCast(index)}
+              onPress={(e) => {
+                e.stopPropagation();
+                removeCast(index);
+              }}
             />
           )}
         </YStack>

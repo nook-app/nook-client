@@ -53,6 +53,7 @@ module.exports = () => {
       "expo-linking",
       "expo-constants",
       "expo-modules-core",
+      "@tamagui-extras/date",
     ],
     experimental: {
       scrollRestoration: true,
@@ -60,6 +61,8 @@ module.exports = () => {
         bodySizeLimit: "10mb",
       },
     },
+
+    productionBrowserSourceMaps: true,
   };
 
   for (const plugin of plugins) {

@@ -46,7 +46,22 @@ export const submitCastAdd = async (
   });
 };
 
+export const submitPendingCastAdds = async (req: PendingCastRequest[]) => {
+  console.log("submit pending ");
+  if (req.length === 1) {
+    return await submitPendingCastAdd(req[0]);
+  }
+  return await makeRequest("/pending/thread", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ data: req }),
+  });
+};
+
 export const submitPendingCastAdd = async (req: PendingCastRequest) => {
+  console.log("submit pending single");
   return await makeRequest("/pending", {
     method: "POST",
     headers: {

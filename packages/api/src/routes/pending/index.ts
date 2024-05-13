@@ -56,5 +56,14 @@ export const pendingCastRoutes = async (fastify: FastifyInstance) => {
       }
       return reply.send(response);
     });
+
+    fastify.post<{
+      Body: PendingCastRequest[];
+      Reply: PendingCast[] | { error: string };
+    }>("/pending/thread", async (request, reply) => {
+      const { fid } = (await request.jwtDecode()) as { fid: string };
+      const response = await service.upsertThread(fid, request.body);
+      return reply.send(response);
+    });
   });
 };

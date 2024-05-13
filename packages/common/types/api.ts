@@ -135,6 +135,8 @@ export type SubmitCastAddRequest = {
 export type PendingCastRequest = SubmitCastAddRequest & {
   id: string;
   scheduledFor: string | null;
+  threadParent: string | null;
+  threadIndex: number | null;
 };
 
 export type PendingCastResponse = {

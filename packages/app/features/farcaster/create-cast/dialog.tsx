@@ -89,7 +89,6 @@ const DialogContent = ({
       >
         <Dialog.Overlay
           key="overlay"
-          animation="slow"
           opacity={0.75}
           enterStyle={{ opacity: 0 }}
           exitStyle={{ opacity: 0 }}

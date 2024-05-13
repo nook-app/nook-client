@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { Dispatch, SetStateAction, useState } from "react";
 import { useId } from "react";
 import { Input, XGroup, XStack } from "tamagui";
 import { usePopoverState } from "@tamagui-extras/core";
@@ -6,23 +6,15 @@ import { LmFormFieldContainer } from "@tamagui-extras/form";
 import { Select } from "@nook/ui";
 import { Check, ChevronDown } from "@tamagui/lucide-icons";
 interface LmTimePickerProps {
-  time: Date;
+  time: { hour: number; minute: number; amPm: boolean };
+  setTime: (x: { hour: number; minute: number; amPm: boolean }) => void;
 }
 
-export function LmTimePicker({ time }: LmTimePickerProps) {
-  const id = useId();
-  const [hour, setHour] = useState(
-    (time.getHours() % 12 || 12).toString().padStart(2, "0"),
-  );
-  const [amPm, setAmPm] = useState(time.getHours() >= 12 ? "PM" : "AM");
-  const [minute, setMinute] = useState(
-    time.getMinutes().toString().padStart(2, "0"),
-  );
+function formatTimeString(num: number) {
+  return num.toString().padStart(2, "0");
+}
 
-  console.log(`hour: ${hour}, minute: ${minute}`);
-
-  const [selectedTime, setSelectedTime] = useState(new Date());
-
+export function LmTimePicker(props: LmTimePickerProps) {
   const hours = Array.from({ length: 12 }, (_, i) =>
     (i + 1).toString().padStart(2, "0"),
   );
@@ -39,7 +31,17 @@ export function LmTimePicker({ time }: LmTimePickerProps) {
 
   return (
     <XStack>
-      <Select value={hour} onValueChange={setHour} disablePreventBodyScroll>
+      <Select
+        value={formatTimeString(props.time.hour)}
+        onValueChange={(hour) =>
+          props.setTime({
+            hour: parseInt(hour),
+            minute: props.time.minute,
+            amPm: props.time.amPm,
+          })
+        }
+        disablePreventBodyScroll
+      >
         <Select.Trigger width={220} iconAfter={ChevronDown}>
           <Select.Value placeholder="Something" />
         </Select.Trigger>
@@ -58,7 +60,17 @@ export function LmTimePicker({ time }: LmTimePickerProps) {
         </Select.Viewport>
       </Select>
 
-      <Select value={minute} onValueChange={setMinute} disablePreventBodyScroll>
+      <Select
+        value={formatTimeString(props.time.minute)}
+        onValueChange={(minute) =>
+          props.setTime({
+            hour: props.time.hour,
+            minute: parseInt(minute),
+            amPm: props.time.amPm,
+          })
+        }
+        disablePreventBodyScroll
+      >
         <Select.Trigger width={220} iconAfter={ChevronDown}>
           <Select.Value placeholder="Something" />
         </Select.Trigger>
@@ -77,7 +89,17 @@ export function LmTimePicker({ time }: LmTimePickerProps) {
         </Select.Viewport>
       </Select>
 
-      <Select value={amPm} onValueChange={setAmPm} disablePreventBodyScroll>
+      <Select
+        value={props.time.amPm ? "PM" : "AM"}
+        onValueChange={(amPm) =>
+          props.setTime({
+            hour: props.time.hour,
+            minute: props.time.minute,
+            amPm: amPm === "PM",
+          })
+        }
+        disablePreventBodyScroll
+      >
         <Select.Trigger width={220} iconAfter={ChevronDown}>
           <Select.Value placeholder="Something" />
         </Select.Trigger>
