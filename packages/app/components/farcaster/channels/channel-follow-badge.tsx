@@ -1,9 +1,13 @@
+"use client";
+
 import { NookText, View } from "@nook/app-ui";
 import { Channel } from "@nook/common/types";
 import { useChannelFollowingStatus } from "../../../api/warpcast";
+import { useAuth } from "../../../context/auth";
 
 export const ChannelFollowBadge = ({ channel }: { channel: Channel }) => {
-  const { data } = useChannelFollowingStatus(channel.channelId);
+  const { session } = useAuth();
+  const { data } = useChannelFollowingStatus(channel.channelId, session?.fid);
 
   if (!data?.result?.following) return null;
 

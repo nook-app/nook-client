@@ -2,9 +2,11 @@ import { Prisma, PrismaClient } from "@nook/common/prisma/content";
 import { ContentReferenceType } from "@nook/common/types";
 import { QueueName, getWorker } from "@nook/common/queues";
 import { getUrlContent } from "./utils";
+import { ContentCacheClient, RedisClient } from "@nook/common/clients";
 
 const run = async () => {
   const client = new PrismaClient();
+  const cache = new ContentCacheClient(new RedisClient());
 
   const fixContentForFid = async (fid: number) => {
     console.log(`[${fid}] fixing content`);
@@ -35,14 +37,20 @@ const run = async () => {
 
     console.log(`[${fid}] missing ${missingContentTypes.length}`);
 
-    const urls = missingContentTypes.map((content) => content.uri);
+    const urls = Array.from(
+      new Set(missingContentTypes.map((content) => content.uri)),
+    );
     for (let j = 0; j < urls.length; j += 10) {
       const batch = urls.slice(j, j + 10);
       await Promise.all(
         batch.map(async (url) => {
           console.log(`[${fid}] fetching ${url}`);
-          const content = await getUrlContent(url);
-          if (!content) return;
+          let content = await cache.getContent(url);
+          if (!content) {
+            content = await getUrlContent(url);
+            if (!content) return;
+            await cache.setContent(url, content);
+          }
           await client.farcasterContentReference.updateMany({
             where: {
               uri: content.uri,

@@ -9,7 +9,6 @@ import {
   useQuery,
 } from "@tanstack/react-query";
 import { makeUrlRequest } from "../utils";
-import { useAuth } from "../../context/auth";
 
 export const getFarcasterActions = async (
   cursor?: string,
@@ -131,13 +130,13 @@ export const fetchChannelFollowingStatus = async (
   );
 };
 
-export const useChannelFollowingStatus = (channelId: string) => {
-  const { session } = useAuth();
+export const useChannelFollowingStatus = (channelId: string, fid?: string) => {
   return useQuery({
-    queryKey: ["channel-following", session?.fid, channelId],
+    queryKey: ["channel-following", fid, channelId],
     queryFn: async () => {
-      return await fetchChannelFollowingStatus(session?.fid ?? "", channelId);
+      if (!fid) return;
+      return await fetchChannelFollowingStatus(fid, channelId);
     },
-    enabled: !!session?.fid,
+    enabled: !!fid,
   });
 };

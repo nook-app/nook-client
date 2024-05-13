@@ -10,7 +10,7 @@ export class ContentCacheClient {
     this.redis = redis;
   }
 
-  async getContent(url: string): Promise<UrlContentResponse> {
+  async getContent(url: string): Promise<UrlContentResponse | undefined> {
     return await this.redis.getJson(`${this.CONTENT_CACHE_PREFIX}:${url}`);
   }
 
