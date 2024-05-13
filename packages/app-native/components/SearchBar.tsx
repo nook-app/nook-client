@@ -2,6 +2,7 @@ import { Search } from "@tamagui/lucide-icons";
 import {
   ReactNode,
   memo,
+  useCallback,
   useEffect,
   useLayoutEffect,
   useRef,
@@ -15,6 +16,7 @@ import Animated, {
 } from "react-native-reanimated";
 import { useTheme, useWindowDimensions } from "tamagui";
 import { Input, Text, View, XStack } from "tamagui";
+import { useFocusEffect } from "expo-router";
 
 export const SearchBar = memo(
   ({
@@ -37,13 +39,15 @@ export const SearchBar = memo(
 
     const [isFocused, setIsFocused] = useState(false);
 
-    useLayoutEffect(() => {
-      if (autoFocus) {
-        setTimeout(() => {
-          inputRef.current?.focus();
-        }, 200);
-      }
-    }, [autoFocus]);
+    useFocusEffect(
+      useCallback(() => {
+        if (autoFocus) {
+          setTimeout(() => {
+            handleFocus();
+          }, 500);
+        }
+      }, [autoFocus]),
+    );
 
     const fadeAnim = useSharedValue(0);
     const fadeAnimReverse = useSharedValue(1);

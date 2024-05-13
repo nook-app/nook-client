@@ -1,4 +1,4 @@
-import { ListItem, NookText, Popover, View, YGroup } from "@nook/app-ui";
+import { Adapt, ListItem, NookText, Popover, View, YGroup } from "@nook/app-ui";
 import { MoreHorizontal } from "@tamagui/lucide-icons";
 import {
   Children,
@@ -30,7 +30,23 @@ export const KebabMenu = ({
       }}
     >
       <Popover placement="bottom" open={open} onOpenChange={setOpen}>
-        <Popover.Trigger>{trigger ? trigger : <KebabButton />}</Popover.Trigger>
+        <Popover.Trigger asChild>
+          {trigger ? trigger : <KebabButton />}
+        </Popover.Trigger>
+
+        <Adapt when="sm" platform="touch">
+          <Popover.Sheet modal dismissOnSnapToBottom>
+            <Popover.Sheet.Frame padding="$4">
+              <Adapt.Contents />
+            </Popover.Sheet.Frame>
+            <Popover.Sheet.Overlay
+              animation="lazy"
+              enterStyle={{ opacity: 0 }}
+              exitStyle={{ opacity: 0 }}
+            />
+          </Popover.Sheet>
+        </Adapt>
+
         <Popover.Content
           enterStyle={{ y: -10, opacity: 0 }}
           exitStyle={{ y: -10, opacity: 0 }}

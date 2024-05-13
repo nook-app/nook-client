@@ -34,57 +34,61 @@ const SidebarUser = () => {
   if (!user) return null;
 
   return (
-    <YStack>
-      <XStack justifyContent="space-between" alignItems="center" gap="$2">
-        <FarcasterUserAvatar size="$4" user={user} />
-      </XStack>
-      <YStack gap="$1.5" marginTop="$2">
-        <XStack gap="$1.5" alignItems="center">
-          <NookText fontSize="$5" fontWeight="700">
-            {user.displayName || user.username || `!${user.fid}`}
-          </NookText>
-          <FarcasterPowerBadge badge={user.badges?.powerBadge ?? false} />
+    <Link
+      href={{
+        pathname: "/users/[username]",
+        params: { username: user.username },
+      }}
+    >
+      <YStack>
+        <XStack justifyContent="space-between" alignItems="center" gap="$2">
+          <FarcasterUserAvatar size="$4" user={user} />
         </XStack>
-        <NookText muted>
-          {user.username ? `@${user.username}` : `!${user.fid}`}
-        </NookText>
+        <YStack gap="$1.5" marginTop="$2">
+          <XStack gap="$1.5" alignItems="center">
+            <NookText fontSize="$5" fontWeight="700">
+              {user.displayName || user.username || `!${user.fid}`}
+            </NookText>
+            <FarcasterPowerBadge badge={user.badges?.powerBadge ?? false} />
+          </XStack>
+          <NookText muted>
+            {user.username ? `@${user.username}` : `!${user.fid}`}
+          </NookText>
+        </YStack>
+        <XStack gap="$2" marginTop="$3">
+          <Link
+            href={`/(drawer)/(tabs)/(home)/users/${user.username}/following`}
+            absolute
+          >
+            <View flexDirection="row" alignItems="center" gap="$1">
+              <NookText fontWeight="600" fontSize="$4">
+                {formatNumber(user.engagement?.following || 0)}
+              </NookText>
+              <NookText muted fontSize="$4">
+                following
+              </NookText>
+            </View>
+          </Link>
+          <Link href={`/users/${user.username}/followers`}>
+            <View flexDirection="row" alignItems="center" gap="$1">
+              <NookText fontWeight="600" fontSize="$4">
+                {formatNumber(user.engagement?.followers || 0)}
+              </NookText>
+              <NookText muted fontSize="$4">
+                followers
+              </NookText>
+            </View>
+          </Link>
+        </XStack>
       </YStack>
-      <XStack gap="$2" marginTop="$3">
-        <Link
-          href={`/(drawer)/(tabs)/(home)/users/${user.username}/following`}
-          absolute
-        >
-          <View flexDirection="row" alignItems="center" gap="$1">
-            <NookText fontWeight="600" fontSize="$4">
-              {formatNumber(user.engagement?.following || 0)}
-            </NookText>
-            <NookText muted fontSize="$4">
-              following
-            </NookText>
-          </View>
-        </Link>
-        <Link
-          href={`/(drawer)/(tabs)/(home)/users/${user.username}/followers`}
-          absolute
-        >
-          <View flexDirection="row" alignItems="center" gap="$1">
-            <NookText fontWeight="600" fontSize="$4">
-              {formatNumber(user.engagement?.followers || 0)}
-            </NookText>
-            <NookText muted fontSize="$4">
-              followers
-            </NookText>
-          </View>
-        </Link>
-      </XStack>
-    </YStack>
+    </Link>
   );
 };
 
 const SidebarNavigation = () => {
   const { user } = useAuth();
   return (
-    <YStack marginVertical="$6" gap="$5">
+    <YStack marginVertical="$5">
       <SidebarNavigationItem
         label="Home"
         Icon={Home}
@@ -141,12 +145,11 @@ const SidebarNavigationItem = ({
         backgroundColor="transparent"
         alignItems="center"
         gap="$4"
+        paddingVertical="$3"
       >
         <Icon color="$mauve12" size={24} />
-        <NookText>
-          <NookText fontSize="$7" fontWeight="600">
-            {label}
-          </NookText>
+        <NookText fontSize="$7" fontWeight="700">
+          {label}
         </NookText>
       </XStack>
     </Link>

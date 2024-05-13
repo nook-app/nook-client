@@ -25,7 +25,7 @@ export const ThemeSettings = () => {
       <XStack justifyContent="space-around">
         {themes.slice(0, 5).map((t, i) => (
           <ThemeItem
-            key={t}
+            key={t || i}
             theme={t}
             isActive={myTheme === t}
             onPress={setTheme}
@@ -35,7 +35,7 @@ export const ThemeSettings = () => {
       <XStack justifyContent="space-around">
         {themes.slice(5).map((t, i) => (
           <ThemeItem
-            key={t}
+            key={t || i}
             theme={t}
             isActive={myTheme === t}
             onPress={setTheme}

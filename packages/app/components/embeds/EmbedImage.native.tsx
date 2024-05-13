@@ -23,6 +23,7 @@ export const EmbedImages = ({ uris }: { uris: string[] }) => {
             },
           }}
           absolute
+          unpressable
         >
           <View
             key={uri}
@@ -30,6 +31,7 @@ export const EmbedImages = ({ uris }: { uris: string[] }) => {
             overflow="hidden"
             width="50%"
             maxHeight={200}
+            backgroundColor="$color3"
           >
             <Image
               recyclingKey={uri}
@@ -56,6 +58,7 @@ export const EmbedImage = ({
         params: { url: uri },
       }}
       absolute
+      unpressable
     >
       <View
         borderRadius={noBorderRadius ? "$0" : "$4"}

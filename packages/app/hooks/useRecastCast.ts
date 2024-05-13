@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback } from "react";
 import { FarcasterCastResponse } from "@nook/common/types";
 import {
   submitReactionAdd,
@@ -6,6 +6,7 @@ import {
 } from "../api/farcaster/actions";
 import { useToastController } from "@nook/app-ui";
 import { useCastStore } from "../store/useCastStore";
+import { haptics } from "../utils/haptics";
 
 export const useRecastCast = (cast: FarcasterCastResponse) => {
   const toast = useToastController();
@@ -16,6 +17,7 @@ export const useRecastCast = (cast: FarcasterCastResponse) => {
 
   const recastCast = useCallback(async () => {
     updateRecast(cast);
+    haptics.notificationSuccess();
     try {
       const response = await submitReactionAdd({
         reactionType: 2,
@@ -27,13 +29,15 @@ export const useRecastCast = (cast: FarcasterCastResponse) => {
       }
       toast.show(response.message);
     } catch (e) {
-      toast.show("An error occurred. Try again later.");
+      toast.show("An error occurred. Try again.");
+      haptics.notificationError();
     }
     updateUnrecast(cast);
   }, [cast, updateRecast, updateUnrecast, toast]);
 
   const unrecastCast = useCallback(async () => {
     updateUnrecast(cast);
+    haptics.notificationSuccess();
     try {
       const response = await submitReactionRemove({
         reactionType: 2,
@@ -45,7 +49,8 @@ export const useRecastCast = (cast: FarcasterCastResponse) => {
       }
       toast.show(response.message);
     } catch (e) {
-      toast.show("An error occurred. Try again later.");
+      toast.show("An error occurred. Try again.");
+      haptics.notificationError();
     }
     updateRecast(cast);
   }, [cast, updateRecast, updateUnrecast, toast]);

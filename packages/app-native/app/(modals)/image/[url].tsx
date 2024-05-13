@@ -17,6 +17,7 @@ import Animated, {
 import * as FileSystem from "expo-file-system";
 import * as MediaLibrary from "expo-media-library";
 import { IconButton } from "../../../components/IconButton";
+import { formatToCDN } from "@nook/app/utils";
 
 export default function ImageModal() {
   const { beforeUrl, url, afterUrl } = useLocalSearchParams();
@@ -186,7 +187,7 @@ export default function ImageModal() {
           >
             <Image
               style={{ width: "100%", height: "100%", resizeMode: "contain" }}
-              source={{ uri: url as string }}
+              source={{ uri: formatToCDN(url) }}
             />
           </ReactNativeZoomableView>
         ))}

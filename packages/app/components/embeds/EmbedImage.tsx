@@ -11,7 +11,7 @@ export const EmbedImages = ({ uris }: { uris: string[] }) => {
     <XStack borderRadius="$4" overflow="hidden" gap="$2">
       {uris.map((uri, index) => (
         <View width="50%" key={uri}>
-          <EmbedImage uri={formatToCDN(uri)} />
+          <EmbedImage uri={uri} />
         </View>
       ))}
     </XStack>

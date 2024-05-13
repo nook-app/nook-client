@@ -1,9 +1,9 @@
 import { FastifyInstance } from "fastify";
-import { UserService } from "../services/user";
+import { AuthService } from "../services/auth";
 
 export const userRoutes = async (fastify: FastifyInstance) => {
   fastify.register(async (fastify: FastifyInstance) => {
-    const userService = new UserService(fastify);
+    const authService = new AuthService(fastify);
 
     fastify.post("/user/login", async (request, reply) => {
       const authorization = request.headers.authorization;
@@ -19,7 +19,7 @@ export const userRoutes = async (fastify: FastifyInstance) => {
       }
 
       try {
-        const response = await userService.loginUser(token);
+        const response = await authService.loginUser(token);
         if (!response) {
           return reply.code(401).send({ message: "Unauthorized" });
         }
@@ -43,7 +43,7 @@ export const userRoutes = async (fastify: FastifyInstance) => {
         }
 
         try {
-          const response = await userService.loginUserWithPassword();
+          const response = await authService.loginUserWithPassword();
           if (!response) {
             return reply.code(401).send({ message: "Unauthorized" });
           }

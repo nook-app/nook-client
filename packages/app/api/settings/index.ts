@@ -1,14 +1,14 @@
-import { Session, User } from "@nook/common/types";
+import { Session, UserSettings } from "@nook/common/types";
 import { makeRequest } from "../utils";
 import { useQuery } from "@tanstack/react-query";
 import { CastAction } from "@nook/common/types";
 
-export const fetchSettings = async () => {
-  return makeRequest("/user");
+export const fetchSettings = async (): Promise<UserSettings> => {
+  return makeRequest("/v1/user/settings");
 };
 
 export const useSettings = (session: Session | undefined) => {
-  return useQuery<User>({
+  return useQuery({
     queryKey: ["settings"],
     queryFn: async () => {
       const response = await fetchSettings();
@@ -19,7 +19,7 @@ export const useSettings = (session: Session | undefined) => {
 };
 
 export const updateTheme = async (theme: string | undefined) => {
-  return await makeRequest("/user", {
+  return await makeRequest("/v1/user/settings/theme", {
     method: "PATCH",
     headers: {
       "Content-Type": "application/json",
@@ -29,7 +29,7 @@ export const updateTheme = async (theme: string | undefined) => {
 };
 
 export const muteUser = async (mutedFid: string) => {
-  return await makeRequest("/mute/users", {
+  return await makeRequest("/v1/user/settings/mute/users", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -39,7 +39,7 @@ export const muteUser = async (mutedFid: string) => {
 };
 
 export const unmuteUser = async (mutedFid: string) => {
-  return await makeRequest("/mute/users", {
+  return await makeRequest("/v1/user/settings/mute/users", {
     method: "DELETE",
     headers: {
       "Content-Type": "application/json",
@@ -49,7 +49,7 @@ export const unmuteUser = async (mutedFid: string) => {
 };
 
 export const muteChannel = async (mutedParentUrl: string) => {
-  return await makeRequest("/mute/channels", {
+  return await makeRequest("/v1/user/settings/mute/channels", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -59,7 +59,7 @@ export const muteChannel = async (mutedParentUrl: string) => {
 };
 
 export const unmuteChannel = async (mutedParentUrl: string) => {
-  return await makeRequest("/mute/channels", {
+  return await makeRequest("/v1/user/settings/mute/channels", {
     method: "DELETE",
     headers: {
       "Content-Type": "application/json",
@@ -69,7 +69,7 @@ export const unmuteChannel = async (mutedParentUrl: string) => {
 };
 
 export const muteWord = async (mutedWord: string) => {
-  return await makeRequest("/mute/words", {
+  return await makeRequest("/v1/user/settings/mute/words", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -79,7 +79,7 @@ export const muteWord = async (mutedWord: string) => {
 };
 
 export const unmuteWord = async (mutedWord: string) => {
-  return await makeRequest("/mute/words", {
+  return await makeRequest("/v1/user/settings/mute/words", {
     method: "DELETE",
     headers: {
       "Content-Type": "application/json",
@@ -92,7 +92,7 @@ export const installAction = async (
   index: number,
   action: CastAction | null,
 ) => {
-  await makeRequest("/user/actions", {
+  await makeRequest("/v1/user/settings/actions", {
     method: "PUT",
     headers: {
       "Content-Type": "application/json",

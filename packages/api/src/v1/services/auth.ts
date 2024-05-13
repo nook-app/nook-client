@@ -6,7 +6,7 @@ import { optimism } from "viem/chains";
 
 const DEV_USER_FID = "20716";
 
-export class UserService {
+export class AuthService {
   private client;
   private viemClient;
   private privyClient;

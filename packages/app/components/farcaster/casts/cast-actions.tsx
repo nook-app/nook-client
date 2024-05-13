@@ -190,6 +190,7 @@ export const FarcasterLikeActionButton = ({
   return (
     <EnableSignerDialog>
       <View
+        animation="bouncy"
         cursor="pointer"
         width="$2.5"
         height="$2.5"
@@ -201,6 +202,9 @@ export const FarcasterLikeActionButton = ({
           // @ts-ignore
           transition: "all 0.2s ease-in-out",
           backgroundColor: "$color3",
+        }}
+        pressStyle={{
+          scale: 1.25,
         }}
         onPress={(e) => {
           e.preventDefault();

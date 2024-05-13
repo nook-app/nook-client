@@ -33,3 +33,11 @@ export type CastAction = {
   description?: string;
   aboutUrl?: string;
 };
+
+export type UserSettings = {
+  theme: string;
+  mutedUsers: string[];
+  mutedChannels: string[];
+  mutedWords: string[];
+  actions: CastActionInstall[];
+};

@@ -19,7 +19,7 @@ export default function LoginScreen() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
 
-  const { mutateAsync, data, isPending, error } = useMutation<Session>({
+  const { mutateAsync, isPending, error } = useMutation<Session>({
     mutationFn: () =>
       makeRequest("/v1/user/login/dev", {
         method: "POST",

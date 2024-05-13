@@ -7,7 +7,6 @@ import { BlurView } from "expo-blur";
 import { NookText, View, useTheme as useTamaguiTheme } from "@nook/app-ui";
 import { Svg, Path } from "react-native-svg";
 import { useScroll } from "@nook/app/context/scroll";
-import { NotificationsCount } from "@nook/app/features/notifications/notifications-count";
 import { useNotificationsCount } from "@nook/app/api/notifications";
 
 export default function TabLayout() {

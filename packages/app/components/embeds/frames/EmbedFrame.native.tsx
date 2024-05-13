@@ -1,24 +1,34 @@
-import { ExternalLink, Zap } from "@tamagui/lucide-icons";
+import { ExternalLink } from "@tamagui/lucide-icons";
+import { Image } from "expo-image";
+import { Linking } from "react-native";
+import { TapGestureHandler } from "react-native-gesture-handler";
 import {
-  Button,
   Spinner,
+  Input,
+  Button,
+  NookText,
   Text,
   View,
   XStack,
   YStack,
-  useTheme as useTamaguiTheme,
+  useTheme,
 } from "@nook/app-ui";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useToastController } from "@tamagui/toast";
-import { FarcasterCastResponse, UrlContentResponse } from "@nook/common/types";
-import { Frame, FrameButton } from "@nook/common/types";
-import { useAuth } from "../../../context/auth";
-import { NookButton, NookText, Input, Image } from "@nook/app-ui";
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from "react-native-reanimated";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { router } from "expo-router";
+import {
+  FarcasterCastResponse,
+  Frame,
+  FrameButton,
+  UrlContentResponse,
+} from "@nook/common/types";
 import { submitFrameAction } from "../../../api/farcaster/actions";
-import { useRouter } from "solito/navigation";
-import { EnableSignerDialog } from "../../../features/farcaster/enable-signer/dialog";
-import { useTheme } from "../../../context/theme";
-import { Link } from "solito/link";
 
 export const EmbedFrame = ({
   cast,
@@ -28,13 +38,23 @@ export const EmbedFrame = ({
   const [frame, setFrame] = useState<Frame | undefined>(content.frame);
   const [inputText, setInputText] = useState<string | undefined>();
   const [isLoading, setIsLoading] = useState(false);
-  const [opacity, setOpacity] = useState(1);
-  const { session, login, signer } = useAuth();
-  const router = useRouter();
+  const opacity = useSharedValue(1);
+  const frameRef = useRef(content.frame?.image);
+
+  if (frameRef.current !== content.frame?.image) {
+    setFrame(content.frame);
+    frameRef.current = content.frame?.image;
+  }
 
   useEffect(() => {
-    setOpacity(isLoading ? 0 : 1);
-  }, [isLoading]);
+    opacity.value = withTiming(isLoading ? 0 : 1, { duration: 500 });
+  }, [isLoading, opacity]);
+
+  const animatedStyle = useAnimatedStyle(() => {
+    return {
+      opacity: opacity.value,
+    };
+  });
 
   if (!frame) return null;
 
@@ -43,20 +63,20 @@ export const EmbedFrame = ({
 
   const handleLink = (url: string) => {
     if (url.includes("warpcast.com/~/add-cast-action")) {
-      const parsed = new URL(url);
-      const urlParams = new URLSearchParams(parsed.search);
-      router.push(`/~/add-cast-action?${urlParams.toString()}`);
+      const params = new URL(url).searchParams;
+      router.push({
+        pathname: "/~/add-cast-action",
+        params: {
+          ...Object.fromEntries(params),
+        },
+      });
     } else {
-      router.push(url);
+      Linking.openURL(url);
     }
   };
 
   const handlePress = async (frameButton: FrameButton, index: number) => {
     if (!frame) return;
-    if (!session) {
-      login();
-      return;
-    }
 
     const postUrl = frameButton.target ?? frame.postUrl ?? content.uri;
     if (
@@ -99,7 +119,12 @@ export const EmbedFrame = ({
 
   return (
     <YStack gap="$2">
-      <YStack borderRadius="$4" overflow="hidden">
+      <YStack
+        borderRadius="$4"
+        overflow="hidden"
+        borderWidth="$0.25"
+        borderColor="$borderColor"
+      >
         <View
           backgroundColor="$color2"
           justifyContent="center"
@@ -112,36 +137,31 @@ export const EmbedFrame = ({
         >
           {isLoading ? <Spinner /> : null}
         </View>
-        <View
-          style={{
-            opacity,
-            transition: "all 0.5s ease-in-out",
-          }}
-        >
+        <Animated.View style={animatedStyle}>
           {frame.image && (
-            <View
-              onPress={(e) => {
-                e.stopPropagation();
-              }}
-            >
-              <Link
+            <TapGestureHandler>
+              <View
                 style={{ position: "relative" }}
-                href={content.uri}
-                target="_blank"
+                onPress={() => Linking.openURL(content.uri)}
               >
                 <Image
+                  recyclingKey={frame.image}
                   source={{ uri: frame.image }}
                   style={{
                     aspectRatio: frame.imageAspectRatio === "1:1" ? 1 : 1.91,
                   }}
                 />
-              </Link>
-            </View>
+              </View>
+            </TapGestureHandler>
           )}
-          <YStack backgroundColor="$color3" padding="$2" gap="$2">
+          <YStack
+            backgroundColor="$color2"
+            padding="$2"
+            gap="$2"
+            theme="surface1"
+          >
             {frame.inputText && (
               <Input
-                theme="surface1"
                 value={inputText || ""}
                 onChangeText={setInputText}
                 placeholder={frame.inputText}
@@ -170,7 +190,7 @@ export const EmbedFrame = ({
               </XStack>
             )}
           </YStack>
-        </View>
+        </Animated.View>
       </YStack>
       {content.host && (
         <View alignSelf="flex-end">
@@ -187,95 +207,41 @@ const FrameButtonAction = ({
   button,
   onPress,
 }: { button: FrameButton; onPress: () => void }) => {
-  const { theme } = useTheme();
-  const tamaguiTheme = useTamaguiTheme();
-
-  const { session, signer } = useAuth();
-
-  if (session && signer?.state !== "completed") {
-    return (
-      <View flex={1} theme="surface4">
-        <EnableSignerDialog>
-          <Button>
-            {button.action === "tx" && (
-              <>
-                <Zap
-                  size={12}
-                  color={
-                    theme && ["light", "dark"].includes(theme)
-                      ? "$color1"
-                      : "$color12"
-                  }
-                  fill={
-                    theme && ["light", "dark"].includes(theme)
-                      ? tamaguiTheme.color1.val
-                      : tamaguiTheme.color12.val
-                  }
-                  marginRight="$1"
-                />
-              </>
-            )}
-            {button.label}
-            {button.action === "link" ||
-            button.action === "post_redirect" ||
-            button.action === "mint" ? (
-              <>
-                <ExternalLink
-                  size={12}
-                  color={
-                    theme && ["light", "dark"].includes(theme)
-                      ? "$color1"
-                      : "$color12"
-                  }
-                  marginLeft="$1"
-                />
-              </>
-            ) : null}
-          </Button>
-        </EnableSignerDialog>
-      </View>
-    );
-  }
-
+  const theme = useTheme();
   return (
     <View flex={1} theme="surface4">
-      <Button
-        onPress={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          onPress();
-        }}
-      >
-        {button.action === "tx" && (
-          <>
-            <Zap
-              size={12}
-              color={
-                theme && ["light", "dark"].includes(theme) ? "$color1" : "white"
-              }
-              fill={
-                theme && ["light", "dark"].includes(theme)
-                  ? tamaguiTheme.color1.val
-                  : tamaguiTheme.color12.val
-              }
-              marginRight="$1"
-            />
-          </>
-        )}
-        {button.label}
-        {button.action === "link" ||
-        button.action === "post_redirect" ||
-        button.action === "mint" ? (
-          <>
-            <ExternalLink
-              size={12}
-              marginLeft="$1"
-              color={
-                theme && ["light", "dark"].includes(theme) ? "$color1" : "white"
-              }
-            />
-          </>
-        ) : null}
+      <Button onPress={onPress}>
+        <Text
+          alignItems="center"
+          gap="$1.5"
+          flexShrink={1}
+          paddingHorizontal="$1"
+          flexWrap="nowrap"
+          numberOfLines={2}
+          textAlign="center"
+          fontWeight="500"
+        >
+          {button.action === "tx" && (
+            <>
+              <MaterialCommunityIcons
+                name="lightning-bolt"
+                size={12}
+                color={theme.mauve12.val}
+              />{" "}
+            </>
+          )}
+          <Text textAlign="center" fontWeight="500">
+            {button.label}
+          </Text>
+          {button.action === "link" ||
+          button.action === "post_redirect" ||
+          button.action === "mint" ? (
+            <>
+              {" "}
+              <ExternalLink size={12} />
+            </>
+          ) : null}
+        </Text>
       </Button>
     </View>
   );
