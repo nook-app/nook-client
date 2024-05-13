@@ -18,9 +18,11 @@ import { useTheme } from "../../../context/theme";
 export const CreateCastDialog = ({
   children,
   initialState,
+  noTrigger,
 }: {
   children?: React.ReactNode;
   initialState: SubmitCastAddRequest;
+  noTrigger?: boolean;
 }) => {
   const [isOpen, setIsOpen] = useState(false);
 
@@ -31,7 +33,11 @@ export const CreateCastDialog = ({
   return (
     <CreateCastProvider initialCast={initialState}>
       <Dialog modal disableRemoveScroll open={isOpen} onOpenChange={setIsOpen}>
-        <Dialog.Trigger asChild>{children}</Dialog.Trigger>
+        {noTrigger ? (
+          children
+        ) : (
+          <Dialog.Trigger asChild>{children}</Dialog.Trigger>
+        )}
         <Dialog.Portal
           justifyContent="flex-start"
           paddingTop="$10"
@@ -103,13 +109,17 @@ export const CreateCastButton = () => {
           <NookButton
             variant="primary"
             backgroundColor={
-              ["light", "dark"].includes(theme) ? "$color12" : "$color9"
+              theme && ["light", "dark"].includes(theme)
+                ? "$color12"
+                : "$color9"
             }
           >
             <NookText
               fontWeight="700"
               fontSize="$5"
-              color={["light", "dark"].includes(theme) ? "$color1" : "white"}
+              color={
+                theme && ["light", "dark"].includes(theme) ? "$color1" : "white"
+              }
             >
               Cast
             </NookText>
@@ -123,13 +133,19 @@ export const CreateCastButton = () => {
             width="$5"
             padding="$0"
             backgroundColor={
-              ["light", "dark"].includes(theme) ? "$color12" : "$color9"
+              theme && ["light", "dark"].includes(theme)
+                ? "$color12"
+                : "$color9"
             }
           >
             <NookText>
               <Pencil
                 size={24}
-                color={["light", "dark"].includes(theme) ? "$color1" : "white"}
+                color={
+                  theme && ["light", "dark"].includes(theme)
+                    ? "$color1"
+                    : "white"
+                }
               />
             </NookText>
           </NookButton>

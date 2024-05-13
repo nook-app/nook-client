@@ -21,6 +21,7 @@ export const useCastStore = create<CastStore>((set, get) => ({
     const currentCasts = get().casts;
     const newCasts = casts.reduce(
       (acc, cast) => {
+        if (currentCasts[cast.hash]) return acc;
         acc[cast.hash] = cast;
         return acc;
       },
@@ -45,6 +46,7 @@ export const useCastStore = create<CastStore>((set, get) => ({
     });
     const newCasts = casts.reduce(
       (acc, cast) => {
+        if (currentCasts[cast.hash]) return acc;
         acc[cast.hash] = cast;
         return acc;
       },
@@ -71,6 +73,7 @@ export const useCastStore = create<CastStore>((set, get) => ({
     });
     const newCasts = casts.reduce(
       (acc, cast) => {
+        if (currentCasts[cast.hash]) return acc;
         acc[cast.hash] = cast;
         return acc;
       },

@@ -121,6 +121,7 @@ export const FarcasterRecastActionButton = ({
         castEmbedHash: cast.hash,
         castEmbedFid: cast.user.fid,
       }}
+      noTrigger
     >
       <Menu
         trigger={
@@ -168,7 +169,7 @@ export const FarcasterRecastActionButton = ({
 
 const FarcasterQuoteMenuItem = () => {
   return (
-    <Dialog.Trigger>
+    <Dialog.Trigger asChild>
       <MenuItem Icon={MessageSquareQuote} title="Quote" />
     </Dialog.Trigger>
   );

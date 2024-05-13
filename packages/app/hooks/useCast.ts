@@ -15,11 +15,14 @@ export const useCast = (hash: string, skipCache = false) => {
       }
       return cast;
     },
-    enabled: skipCache || !storedCast,
+    enabled: !storedCast || (skipCache && !!storedCast?.parent),
   });
 
   return {
-    cast: skipCache ? data : storedCast || data,
+    cast:
+      !storedCast || (skipCache && !!storedCast?.parent)
+        ? data
+        : storedCast || data,
     isLoading,
     isError,
     error,

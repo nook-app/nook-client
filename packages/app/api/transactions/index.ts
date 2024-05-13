@@ -4,6 +4,7 @@ import {
 } from "@nook/common/types";
 import { makeRequest } from "../utils";
 import { InfiniteData, useInfiniteQuery } from "@tanstack/react-query";
+import { useUserStore } from "../../store/useUserStore";
 
 export const fetchTransactionFeed = async (
   filter: TransactionFeedFilter,
@@ -22,6 +23,7 @@ export const useTransactionFeed = (
   filter: TransactionFeedFilter,
   initialData?: FetchTransactionsResponse,
 ) => {
+  const addUsers = useUserStore((state) => state.addUsers);
   return useInfiniteQuery<
     FetchTransactionsResponse,
     unknown,
@@ -32,6 +34,8 @@ export const useTransactionFeed = (
     queryKey: ["txFeed", JSON.stringify(filter)],
     queryFn: async ({ pageParam }) => {
       const data = await fetchTransactionFeed(filter, pageParam);
+      const users = data.data.flatMap((tx) => Object.values(tx.users));
+      addUsers(users);
       return data;
     },
     getNextPageParam: (lastPage) => lastPage.nextCursor,

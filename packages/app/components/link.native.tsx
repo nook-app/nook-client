@@ -34,7 +34,7 @@ export const Link = ({
 
   const memoChildren = useMemo(() => children, [children]);
 
-  if (unpressable) {
+  if (asText || unpressable) {
     return (
       <ExpoLink href={formattedHref} asChild>
         {memoChildren}

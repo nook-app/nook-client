@@ -7,7 +7,7 @@ import {
   YStack,
   ToggleGroup,
   Tooltip,
-  Text,
+  ScrollView,
 } from "@nook/app-ui";
 import { FarcasterUserDisplay } from "../../../components/farcaster/users/user-display";
 import { FarcasterCastResponseText } from "../../../components/farcaster/casts/cast-text";
@@ -29,10 +29,10 @@ import {
 } from "@nook/common/types";
 import { FarcasterInfiniteFeed } from "../cast-feed/infinite-feed";
 import { BarChartBig, Clock, Rocket } from "@tamagui/lucide-icons";
-import { useState } from "react";
+import { Ref, useEffect, useRef, useState } from "react";
 import { FarcasterCastResponseMenu } from "../../../components/farcaster/casts/cast-menu";
-import { Loading } from "../../../components/loading";
 import { FarcasterCastLink } from "../../../components/farcaster/casts/cast-link";
+import { View as RNView, ScrollView as RNScrollView } from "react-native";
 
 function formatTimestampTime(timestamp: number) {
   const timeFormatter = new Intl.DateTimeFormat("en-US", {
@@ -69,6 +69,24 @@ export const FarcasterExpandedCast = ({
   const { data, hasNextPage, fetchNextPage, isFetchingNextPage, refetch } =
     useCastReplies(cast.hash, replySort, initialData);
 
+  const scrollViewRef = useRef<RNScrollView>(null);
+  const viewRef = useRef<RNView>(null);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (scrollViewRef.current && viewRef.current) {
+        viewRef.current.measureLayout(
+          // @ts-ignore
+          scrollViewRef.current,
+          (x, y, width, height) => {
+            scrollViewRef.current?.scrollTo({ x: 0, y: y, animated: true });
+          },
+        );
+      }
+    }, 100);
+    return () => clearTimeout(timer);
+  }, []);
+
   const casts = data?.pages.flatMap((page) => page.data) ?? [];
 
   const handleRefresh = async () => {
@@ -78,23 +96,24 @@ export const FarcasterExpandedCast = ({
   };
 
   return (
-    <FarcasterInfiniteFeed
-      casts={casts}
-      fetchNextPage={fetchNextPage}
-      isFetchingNextPage={isFetchingNextPage}
-      hasNextPage={hasNextPage}
-      displayMode={Display.REPLIES}
-      ListHeaderComponent={
-        <FarcasterExpandedCastHeader
-          cast={cast}
-          replySort={replySort}
-          onReplySortChange={setReplySort}
-        />
-      }
-      refetch={handleRefresh}
-      isRefetching={isRefetching}
-      paddingBottom={paddingBottom}
-    />
+    <ScrollView ref={scrollViewRef}>
+      <FarcasterExpandedCastHeader
+        cast={cast}
+        replySort={replySort}
+        onReplySortChange={setReplySort}
+        viewRef={viewRef}
+      />
+      <FarcasterInfiniteFeed
+        casts={casts}
+        fetchNextPage={fetchNextPage}
+        isFetchingNextPage={isFetchingNextPage}
+        hasNextPage={hasNextPage}
+        displayMode={Display.REPLIES}
+        refetch={handleRefresh}
+        isRefetching={isRefetching}
+        paddingBottom={paddingBottom}
+      />
+    </ScrollView>
   );
 };
 
@@ -102,10 +121,12 @@ const FarcasterExpandedCastHeader = ({
   cast,
   replySort,
   onReplySortChange,
+  viewRef,
 }: {
   cast: FarcasterCastResponse;
   replySort: "best" | "top" | "new";
   onReplySortChange: (sort: "best" | "top" | "new") => void;
+  viewRef: Ref<RNView>;
 }) => {
   const renderText = cast.text || cast.mentions.length > 0;
   const renderEmbeds = cast.embeds.length > 0 || cast.embedCasts.length > 0;
@@ -170,7 +191,11 @@ const FarcasterExpandedCastHeader = ({
         <FarcasterCustomActionButton cast={cast} />
         <FarcasterShareButton cast={cast} />
       </XStack>
-      <View borderBottomWidth="$0.5" borderBottomColor="$borderColorBg">
+      <View
+        borderBottomWidth="$0.5"
+        borderBottomColor="$borderColorBg"
+        ref={viewRef}
+      >
         <ToggleGroup
           type="single"
           borderWidth="$0"

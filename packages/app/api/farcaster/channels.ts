@@ -5,16 +5,19 @@ import {
   InfiniteData,
   useInfiniteQuery,
 } from "@tanstack/react-query";
+import { useChannelStore } from "../../store/useChannelStore";
 
 export const fetchChannel = async (channelId: string): Promise<Channel> => {
   return await makeRequest(`/farcaster/channels/${channelId}`);
 };
 
 export const useChannel = (channelId: string) => {
+  const addChannels = useChannelStore((state) => state.addChannels);
   return useQuery<Channel>({
     queryKey: ["channel", channelId],
     queryFn: async () => {
       const channel = await fetchChannel(channelId);
+      addChannels([channel]);
       return channel;
     },
     enabled: !!channelId,
@@ -28,9 +31,14 @@ export const fetchRecommendedChannels =
   };
 
 export const useRecommendedChannels = () => {
+  const addChannels = useChannelStore((state) => state.addChannels);
   return useQuery<FetchChannelsResponse>({
     queryKey: ["channels", "recommended"],
-    queryFn: fetchRecommendedChannels,
+    queryFn: async () => {
+      const channels = await fetchRecommendedChannels();
+      addChannels(channels.data);
+      return channels;
+    },
   });
 };
 
@@ -51,6 +59,7 @@ export const useSearchChannels = (
   limit?: number,
   initialData?: FetchChannelsResponse,
 ) => {
+  const addChannels = useChannelStore((state) => state.addChannels);
   return useInfiniteQuery<
     FetchChannelsResponse,
     unknown,
@@ -61,6 +70,7 @@ export const useSearchChannels = (
     queryKey: ["channels", "search", limit?.toString() || "", query],
     queryFn: async ({ pageParam }) => {
       const data = await searchChannels(query, pageParam, limit);
+      addChannels(data.data);
       return data;
     },
     getNextPageParam: (lastPage) => lastPage.nextCursor,
@@ -88,10 +98,12 @@ export const fetchChannels = async (
 };
 
 export const useChannels = (channelIds: string[]) => {
+  const addChannels = useChannelStore((state) => state.addChannels);
   return useQuery<FetchChannelsResponse>({
     queryKey: ["channels", channelIds.join(",")],
     queryFn: async () => {
       const channels = await fetchChannels(channelIds);
+      addChannels(channels.data);
       return channels;
     },
     enabled: channelIds.length > 0,

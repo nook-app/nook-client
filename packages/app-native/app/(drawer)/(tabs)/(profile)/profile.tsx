@@ -35,7 +35,7 @@ export default function ProfileScreen() {
         </XStack>
       }
       colors={colors}
-      header={<UserHeader user={user} size="$6" />}
+      header={<UserHeader user={user} size="$6" disableMenu />}
       pages={[
         {
           name: "Casts",

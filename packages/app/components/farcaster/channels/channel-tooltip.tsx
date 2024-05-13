@@ -1,7 +1,7 @@
 import { Tooltip } from "@nook/app-ui";
 import { Channel } from "@nook/common/types";
 import { ReactNode } from "react";
-import { ChannelOverview } from "./channel-overview";
+import { ChannelHeaderV2 } from "../../../features/farcaster/channel-profile/channel-header";
 
 export const FarcasterChannelTooltip = ({
   channel,
@@ -10,7 +10,6 @@ export const FarcasterChannelTooltip = ({
   channel: Channel;
   children: ReactNode;
 }) => {
-  const bio = channel?.description?.trim().replace(/\n\s*\n/g, "\n");
   return (
     <Tooltip delay={100}>
       <Tooltip.Trigger asChild>{children}</Tooltip.Trigger>
@@ -36,7 +35,7 @@ export const FarcasterChannelTooltip = ({
         width={400}
         $sm={{ width: "auto" }}
       >
-        <ChannelOverview channel={channel} />
+        <ChannelHeaderV2 channel={channel} size="$6" />
       </Tooltip.Content>
     </Tooltip>
   );

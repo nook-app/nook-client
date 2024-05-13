@@ -6,16 +6,19 @@ import {
   useInfiniteQuery,
   useQueryClient,
 } from "@tanstack/react-query";
+import { useUserStore } from "../../store/useUserStore";
 
 export const fetchUser = async (username: string): Promise<FarcasterUser> => {
   return await makeRequest(`/farcaster/users/${username}`);
 };
 
 export const useUser = (username: string) => {
+  const addUsers = useUserStore((state) => state.addUsers);
   return useQuery<FarcasterUser>({
     queryKey: ["user", username],
     queryFn: async () => {
       const user = await fetchUser(username);
+      addUsers([user]);
       return user;
     },
     enabled: !!username,
@@ -35,6 +38,7 @@ export const fetchUsers = async (
 };
 
 export const useUsers = (fids: string[]) => {
+  const addUsers = useUserStore((state) => state.addUsers);
   const queryClient = useQueryClient();
   const initialData = queryClient.getQueryData<FetchUsersResponse>([
     "users",
@@ -44,6 +48,7 @@ export const useUsers = (fids: string[]) => {
     queryKey: ["users", fids.join(",")],
     queryFn: async () => {
       const users = await fetchUsers(fids);
+      addUsers(users.data);
       return users;
     },
     enabled: fids.length > 0 && !initialData,
@@ -63,6 +68,7 @@ export const useUserFollowers = (
   username: string,
   initialData?: FetchUsersResponse,
 ) => {
+  const addUsers = useUserStore((state) => state.addUsers);
   return useInfiniteQuery<
     FetchUsersResponse,
     unknown,
@@ -73,6 +79,7 @@ export const useUserFollowers = (
     queryKey: ["user-followers", username],
     queryFn: async ({ pageParam }) => {
       const data = await fetchUserFollowers(username, pageParam);
+      addUsers(data.data);
       return data;
     },
     getNextPageParam: (lastPage) => lastPage.nextCursor,
@@ -98,6 +105,7 @@ export const useUserFollowing = (
   username: string,
   initialData?: FetchUsersResponse,
 ) => {
+  const addUsers = useUserStore((state) => state.addUsers);
   return useInfiniteQuery<
     FetchUsersResponse,
     unknown,
@@ -108,6 +116,7 @@ export const useUserFollowing = (
     queryKey: ["user-following", username],
     queryFn: async ({ pageParam }) => {
       const data = await fetchUserFollowing(username, pageParam);
+      addUsers(data.data);
       return data;
     },
     getNextPageParam: (lastPage) => lastPage.nextCursor,
@@ -131,6 +140,7 @@ export const useUserMutuals = (
   username: string,
   initialData?: FetchUsersResponse,
 ) => {
+  const addUsers = useUserStore((state) => state.addUsers);
   return useInfiniteQuery<
     FetchUsersResponse,
     unknown,
@@ -141,6 +151,7 @@ export const useUserMutuals = (
     queryKey: ["user-mutuals", username],
     queryFn: async ({ pageParam }) => {
       const data = await fetchUserMutuals(username, pageParam);
+      addUsers(data.data);
       return data;
     },
     getNextPageParam: (lastPage) => lastPage.nextCursor,
@@ -171,6 +182,7 @@ export const useSearchUsers = (
   limit?: number,
   initialData?: FetchUsersResponse,
 ) => {
+  const addUsers = useUserStore((state) => state.addUsers);
   return useInfiniteQuery<
     FetchUsersResponse,
     unknown,
@@ -181,6 +193,7 @@ export const useSearchUsers = (
     queryKey: ["users", "search", limit?.toString() || "", query],
     queryFn: async ({ pageParam }) => {
       const data = await searchUsers(query, pageParam, limit);
+      addUsers(data.data);
       return data;
     },
     getNextPageParam: (lastPage) => lastPage.nextCursor,

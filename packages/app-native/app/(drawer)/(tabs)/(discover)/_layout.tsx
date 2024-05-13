@@ -26,6 +26,11 @@ export default function DiscoverLayout() {
         options={{ title: "", headerBackVisible: false }}
       />
       <Stack.Screen
+        name="channels/[channelId]/hosts"
+        options={{ title: "Hosts" }}
+        getId={({ params }) => params?.channelId}
+      />
+      <Stack.Screen
         name="users/[username]/index"
         getId={({ params }) => params?.username}
         options={{ title: "", headerBackVisible: false }}

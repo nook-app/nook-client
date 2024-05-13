@@ -13,10 +13,12 @@ import { SearchInput } from "./search-input";
 import { useEffect, useRef, useState } from "react";
 import { useSearchPreview } from "../../api/discover";
 import {
+  FarcasterUserAvatar,
   FarcasterUserBadge,
   FarcasterUserDisplay,
 } from "../../components/farcaster/users/user-display";
 import {
+  FarcasterChannelAvatar,
   FarcasterChannelBadge,
   FarcasterChannelDisplay,
 } from "../../components/farcaster/channels/channel-display";
@@ -24,6 +26,9 @@ import { useRouter } from "solito/navigation";
 import { NativeSyntheticEvent, TextInputKeyPressEventData } from "react-native";
 import { Channel, FarcasterUser } from "@nook/common/types";
 import { Link } from "../../components/link";
+import { FarcasterPowerBadge } from "../../components/farcaster/users/power-badge";
+import { UserFollowBadge } from "../../components/farcaster/users/user-follow-badge";
+import { ChannelFollowBadge } from "../../components/farcaster/channels/channel-follow-badge";
 
 export const SearchBar = ({
   user,
@@ -113,7 +118,7 @@ export const SearchBar = ({
   );
 };
 
-const SearchResults = ({
+export const SearchResults = ({
   value,
   user,
   channel,
@@ -123,7 +128,7 @@ const SearchResults = ({
   if (!value || !data) {
     return (
       <View
-        width={350}
+        minWidth={350}
         padding="$4"
         justifyContent="center"
         alignItems="center"
@@ -140,14 +145,15 @@ const SearchResults = ({
   }
 
   return (
-    <YStack width={350}>
+    <YStack minWidth={350}>
       {channel && (
         <ChannelContextSearchResult channel={channel} value={value} />
       )}
       {user && <UserContextSearchResult value={value} user={user} />}
       <Link href={`/search?q=${encodeURIComponent(value)}`}>
         <View
-          padding="$3"
+          paddingVertical="$3"
+          paddingHorizontal="$2"
           hoverStyle={{
             backgroundColor: "$color4",
             // @ts-ignore
@@ -162,40 +168,123 @@ const SearchResults = ({
           </XStack>
         </View>
       </Link>
-      <Separator />
-      <NookText fontWeight="600" padding="$2" fontSize="$4">
-        Users
-      </NookText>
+      {data.users.length > 0 && (
+        <>
+          <Separator
+            width="100%"
+            borderBottomColor="$borderColorBg"
+            borderBottomWidth="$0.25"
+            marginVertical="$2"
+          />
+          <NookText
+            fontWeight="600"
+            paddingHorizontal="$2"
+            paddingBottom="$1"
+            fontSize="$4"
+          >
+            Users
+          </NookText>
+        </>
+      )}
       {data.users.slice(0, 5).map((user) => (
         <Link key={user.fid} href={`/users/${user.username}`}>
-          <View
-            padding="$3"
+          <XStack
+            gap="$2.5"
+            paddingHorizontal="$2.5"
+            paddingVertical="$2"
             hoverStyle={{
-              backgroundColor: "$color4",
-              // @ts-ignore
-              transition: "all 0.2s ease-in",
+              transform: "all 0.2s ease-in-out",
+              backgroundColor: "$color2",
             }}
           >
-            <FarcasterUserDisplay user={user} />
-          </View>
+            <FarcasterUserAvatar user={user} size="$4" />
+            <YStack flexShrink={1} gap="$1" flexGrow={1}>
+              <XStack justifyContent="space-between">
+                <YStack gap="$1">
+                  <XStack gap="$1.5" alignItems="center" flexShrink={1}>
+                    <NookText
+                      fontWeight="700"
+                      numberOfLines={1}
+                      ellipsizeMode="tail"
+                    >
+                      {`${user.displayName || user.username || `!${user.fid}`}`}
+                    </NookText>
+                    <FarcasterPowerBadge
+                      badge={user.badges?.powerBadge ?? false}
+                    />
+                  </XStack>
+                  <XStack gap="$1.5" alignItems="center" flexShrink={1}>
+                    <NookText
+                      muted
+                      numberOfLines={1}
+                      ellipsizeMode="middle"
+                      flexShrink={1}
+                    >
+                      {user.username ? `@${user.username}` : `!${user.fid}`}
+                    </NookText>
+                    <UserFollowBadge user={user} />
+                  </XStack>
+                </YStack>
+              </XStack>
+            </YStack>
+          </XStack>
         </Link>
       ))}
-      <Separator />
-      <NookText fontWeight="600" padding="$2" fontSize="$4">
-        Channels
-      </NookText>
+      {data.channels.length > 0 && (
+        <>
+          <Separator
+            width="100%"
+            borderBottomColor="$borderColorBg"
+            borderBottomWidth="$0.25"
+            marginVertical="$2"
+          />
+          <NookText
+            fontWeight="600"
+            paddingHorizontal="$2"
+            paddingBottom="$1"
+            fontSize="$4"
+          >
+            Channels
+          </NookText>
+        </>
+      )}
       {data.channels.slice(0, 5).map((channel) => (
         <Link key={channel.channelId} href={`/channels/${channel.channelId}`}>
-          <View
-            padding="$3"
+          <XStack
+            gap="$2.5"
+            paddingHorizontal="$2.5"
+            paddingVertical="$2"
             hoverStyle={{
-              backgroundColor: "$color4",
-              // @ts-ignore
-              transition: "all 0.2s ease-in",
+              transform: "all 0.2s ease-in-out",
+              backgroundColor: "$color2",
             }}
           >
-            <FarcasterChannelDisplay channel={channel} />
-          </View>
+            <FarcasterChannelAvatar channel={channel} size="$4" />
+            <YStack flexShrink={1} gap="$1" flexGrow={1}>
+              <XStack justifyContent="space-between">
+                <YStack gap="$1">
+                  <NookText
+                    fontWeight="700"
+                    numberOfLines={1}
+                    ellipsizeMode="tail"
+                  >
+                    {channel.name}
+                  </NookText>
+                  <XStack gap="$1.5" alignItems="center" flexShrink={1}>
+                    <NookText
+                      muted
+                      numberOfLines={1}
+                      ellipsizeMode="middle"
+                      flexShrink={1}
+                    >
+                      {`/${channel.channelId}`}
+                    </NookText>
+                    <ChannelFollowBadge channel={channel} />
+                  </XStack>
+                </YStack>
+              </XStack>
+            </YStack>
+          </XStack>
         </Link>
       ))}
     </YStack>
