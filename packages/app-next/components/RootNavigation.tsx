@@ -228,22 +228,14 @@ const SessionItem = () => {
             <NookButton
               variant="primary"
               backgroundColor="transparent"
-              borderColor={
-                theme && ["light", "dark"].includes(theme)
-                  ? "$color12"
-                  : "$color9"
-              }
+              borderColor={!theme ? "$color12" : "$color9"}
               width="100%"
               borderWidth="$1"
             >
               <NookText
                 fontWeight="700"
                 fontSize="$5"
-                color={
-                  theme && ["light", "dark"].includes(theme)
-                    ? "$color12"
-                    : "$color12"
-                }
+                color={!theme ? "$color12" : "$color12"}
               >
                 Create Account
               </NookText>
@@ -257,20 +249,12 @@ const SessionItem = () => {
               width="$5"
               padding="$0"
               backgroundColor="transparent"
-              borderColor={
-                theme && ["light", "dark"].includes(theme)
-                  ? "$color12"
-                  : "$color9"
-              }
+              borderColor={!theme ? "$color12" : "$color9"}
               borderWidth="$1"
             >
               <UserRoundPlus
                 size={24}
-                color={
-                  theme && ["light", "dark"].includes(theme)
-                    ? "$color1"
-                    : "$color12"
-                }
+                color={!theme ? "$color1" : "$color12"}
               />
             </NookButton>
           </Link>
@@ -279,20 +263,12 @@ const SessionItem = () => {
           <NookButton
             variant="primary"
             onPress={login}
-            backgroundColor={
-              theme && ["light", "dark"].includes(theme)
-                ? "$color12"
-                : "$color9"
-            }
+            backgroundColor={!theme ? "$color12" : "$color9"}
           >
             <NookText
               fontWeight="700"
               fontSize="$5"
-              color={
-                theme && ["light", "dark"].includes(theme)
-                  ? "$color1"
-                  : "$color12"
-              }
+              color={!theme ? "$color1" : "$color12"}
             >
               Sign In
             </NookText>
@@ -304,20 +280,9 @@ const SessionItem = () => {
             width="$5"
             padding="$0"
             onPress={login}
-            backgroundColor={
-              theme && ["light", "dark"].includes(theme)
-                ? "$color12"
-                : "$color9"
-            }
+            backgroundColor={!theme ? "$color12" : "$color9"}
           >
-            <LogIn
-              size={24}
-              color={
-                theme && ["light", "dark"].includes(theme)
-                  ? "$color1"
-                  : "$color12"
-              }
-            />
+            <LogIn size={24} color={!theme ? "$color1" : "$color12"} />
           </NookButton>
         </View>
       </YStack>
@@ -371,20 +336,12 @@ const CreateCastItem = () => {
           <EnableSignerDialog>
             <NookButton
               variant="primary"
-              backgroundColor={
-                theme && ["light", "dark"].includes(theme)
-                  ? "$color12"
-                  : "$color11"
-              }
+              backgroundColor={!theme ? "$color12" : "$color11"}
             >
               <NookText
                 fontWeight="700"
                 fontSize="$5"
-                color={
-                  theme && ["light", "dark"].includes(theme)
-                    ? "$color1"
-                    : "$color12"
-                }
+                color={!theme ? "$color1" : "$color12"}
               >
                 Enable Nook
               </NookText>
@@ -397,21 +354,10 @@ const CreateCastItem = () => {
               variant="primary"
               width="$5"
               padding="$0"
-              backgroundColor={
-                theme && ["light", "dark"].includes(theme)
-                  ? "$color12"
-                  : "$color11"
-              }
+              backgroundColor={!theme ? "$color12" : "$color11"}
             >
               <NookText>
-                <Pencil
-                  size={24}
-                  color={
-                    theme && ["light", "dark"].includes(theme)
-                      ? "$color1"
-                      : "$color12"
-                  }
-                />
+                <Pencil size={24} color={!theme ? "$color1" : "$color12"} />
               </NookText>
             </NookButton>
           </EnableSignerDialog>
@@ -426,18 +372,12 @@ const CreateCastItem = () => {
         <CreateCastDialog initialState={{ text: "" }}>
           <NookButton
             variant="primary"
-            backgroundColor={
-              theme && ["light", "dark"].includes(theme)
-                ? "$color12"
-                : "$color9"
-            }
+            backgroundColor={!theme ? "$color12" : "$color9"}
           >
             <NookText
               fontWeight="700"
               fontSize="$5"
-              color={
-                theme && ["light", "dark"].includes(theme) ? "$color1" : "white"
-              }
+              color={!theme ? "$color1" : "white"}
             >
               Cast
             </NookText>
@@ -450,21 +390,10 @@ const CreateCastItem = () => {
             variant="primary"
             width="$5"
             padding="$0"
-            backgroundColor={
-              theme && ["light", "dark"].includes(theme)
-                ? "$color12"
-                : "$color9"
-            }
+            backgroundColor={!theme ? "$color12" : "$color9"}
           >
             <NookText>
-              <Pencil
-                size={24}
-                color={
-                  theme && ["light", "dark"].includes(theme)
-                    ? "$color1"
-                    : "white"
-                }
-              />
+              <Pencil size={24} color={!theme ? "$color1" : "white"} />
             </NookText>
           </NookButton>
         </CreateCastDialog>

@@ -7,9 +7,12 @@
     "start": "npx expo start -c",
     "android": "npx expo run:android",
     "ios": "npx expo run:ios",
-    "eject": "npx expo eject"
+    "eject": "npx expo eject",
+    "build": "eas build --platform ios",
+    "build:preview": "eas build --platform ios --profile preview"
   },
   "dependencies": {
+    "@amplitude/analytics-react-native": "^1.4.8",
     "@ethersproject/shims": "^5.7.0",
     "@nook/app": "*",
     "@nook/app-ui": "*",

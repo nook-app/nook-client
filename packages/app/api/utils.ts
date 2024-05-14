@@ -1,19 +1,19 @@
 import { getServerSession } from "../server/session";
 import { getSession } from "../utils/local-storage";
 
-export const makeRequest = async (path: string, requestInit?: RequestInit) => {
-  const baseUrl =
-    process.env.NEXT_PUBLIC_API_BASE_URL ||
-    process.env.EXPO_PUBLIC_API_BASE_URL;
+// const BASE_URL =
+//   process.env.NEXT_PUBLIC_API_BASE_URL || process.env.EXPO_PUBLIC_API_BASE_URL;
+const BASE_URL = "https://nook-api.up.railway.app/v0";
 
+export const makeRequest = async (path: string, requestInit?: RequestInit) => {
   if (path.startsWith("/v1")) {
     return await makeUrlRequest(
-      `${baseUrl?.replace("/v0", "")}${path}`,
+      `${BASE_URL?.replace("/v0", "")}${path}`,
       requestInit,
     );
   }
 
-  return await makeUrlRequest(`${baseUrl}${path}`, requestInit);
+  return await makeUrlRequest(`${BASE_URL}${path}`, requestInit);
 };
 
 export const makeUrlRequest = async (

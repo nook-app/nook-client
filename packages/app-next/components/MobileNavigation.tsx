@@ -149,23 +149,12 @@ const MobileCreateButton = () => {
               position: "fixed",
             }}
             borderWidth="$0"
-            backgroundColor={
-              theme && ["light", "dark"].includes(theme)
-                ? "$color12"
-                : "$color9"
-            }
+            backgroundColor={!theme ? "$color12" : "$color9"}
             pressStyle={{
-              backgroundColor:
-                theme && ["light", "dark"].includes(theme)
-                  ? "$color11"
-                  : "$color10",
+              backgroundColor: !theme ? "$color11" : "$color10",
             }}
           >
-            <Pencil
-              color={
-                theme && ["light", "dark"].includes(theme) ? "$color1" : "white"
-              }
-            />
+            <Pencil color={!theme ? "$color1" : "white"} />
           </NookButton>
         </EnableSignerDialog>
       </View>
@@ -187,21 +176,12 @@ const MobileCreateButton = () => {
             position: "fixed",
           }}
           borderWidth="$0"
-          backgroundColor={
-            theme && ["light", "dark"].includes(theme) ? "$color12" : "$color9"
-          }
+          backgroundColor={!theme ? "$color12" : "$color9"}
           pressStyle={{
-            backgroundColor:
-              theme && ["light", "dark"].includes(theme)
-                ? "$color11"
-                : "$color10",
+            backgroundColor: !theme ? "$color11" : "$color10",
           }}
         >
-          <Pencil
-            color={
-              theme && ["light", "dark"].includes(theme) ? "$color1" : "white"
-            }
-          />
+          <Pencil color={!theme ? "$color1" : "white"} />
         </NookButton>
       </CreateCastDialog>
     </View>

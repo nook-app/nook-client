@@ -47,14 +47,12 @@ const SignupProgress = () => {
         const isActive = step === i;
         const isComplete = step > i;
 
-        const activeColor =
-          theme && ["light", "dark"].includes(theme) ? "$color12" : "$color9";
-        const activeTextColor =
-          theme && ["light", "dark"].includes(theme)
-            ? !isComplete
-              ? "$color12"
-              : "$color1"
-            : "white";
+        const activeColor = !theme ? "$color12" : "$color9";
+        const activeTextColor = !theme
+          ? !isComplete
+            ? "$color12"
+            : "$color1"
+          : "white";
         return (
           <View
             key={i}

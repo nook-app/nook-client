@@ -11,7 +11,7 @@ import {
   FetchNotificationsResponse,
   NotificationType,
 } from "@nook/common/types";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   AtSign,
   Heart,
@@ -23,7 +23,6 @@ import {
 import { markNotificationsRead } from "../../api/notifications";
 import { useQueryClient } from "@tanstack/react-query";
 import { Loading } from "../../components/loading";
-import { useFocusEffect } from "expo-router";
 
 export const NotificationsPriorityFeed = ({
   fid,
@@ -51,7 +50,7 @@ export const NotificationsPriorityFeed = ({
 
   const notifications = data?.pages.flatMap((page) => page.data) ?? [];
 
-  useFocusEffect(
+  useEffect(
     useCallback(() => {
       markNotificationsRead().then(() =>
         queryClient.invalidateQueries({ queryKey: ["notifications-count"] }),

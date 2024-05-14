@@ -201,15 +201,9 @@ const FrameButtonAction = ({
               <>
                 <Zap
                   size={12}
-                  color={
-                    theme && ["light", "dark"].includes(theme)
-                      ? "$color1"
-                      : "$color12"
-                  }
+                  color={!theme ? "$color1" : "$color12"}
                   fill={
-                    theme && ["light", "dark"].includes(theme)
-                      ? tamaguiTheme.color1.val
-                      : tamaguiTheme.color12.val
+                    !theme ? tamaguiTheme.color1.val : tamaguiTheme.color12.val
                   }
                   marginRight="$1"
                 />
@@ -222,11 +216,7 @@ const FrameButtonAction = ({
               <>
                 <ExternalLink
                   size={12}
-                  color={
-                    theme && ["light", "dark"].includes(theme)
-                      ? "$color1"
-                      : "$color12"
-                  }
+                  color={!theme ? "$color1" : "$color12"}
                   marginLeft="$1"
                 />
               </>
@@ -250,14 +240,8 @@ const FrameButtonAction = ({
           <>
             <Zap
               size={12}
-              color={
-                theme && ["light", "dark"].includes(theme) ? "$color1" : "white"
-              }
-              fill={
-                theme && ["light", "dark"].includes(theme)
-                  ? tamaguiTheme.color1.val
-                  : tamaguiTheme.color12.val
-              }
+              color={!theme ? "$color1" : "white"}
+              fill={!theme ? tamaguiTheme.color1.val : tamaguiTheme.color12.val}
               marginRight="$1"
             />
           </>
@@ -270,9 +254,7 @@ const FrameButtonAction = ({
             <ExternalLink
               size={12}
               marginLeft="$1"
-              color={
-                theme && ["light", "dark"].includes(theme) ? "$color1" : "white"
-              }
+              color={!theme ? "$color1" : "white"}
             />
           </>
         ) : null}

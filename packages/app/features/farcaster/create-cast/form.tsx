@@ -58,17 +58,11 @@ export const CreateCastButton = ({ onSubmit }: { onSubmit?: () => void }) => {
       disabledStyle={{
         opacity: 0.5,
       }}
-      color={theme && ["light", "dark"].includes(theme) ? "$color1" : "white"}
-      backgroundColor={
-        theme && ["light", "dark"].includes(theme) ? "$color12" : "$color9"
-      }
+      color={!theme ? "$color1" : "white"}
+      backgroundColor={!theme ? "$color12" : "$color9"}
     >
       {isCasting ? (
-        <Spinner
-          color={
-            theme && ["light", "dark"].includes(theme) ? "$color1" : "white"
-          }
-        />
+        <Spinner color={!theme ? "$color1" : "white"} />
       ) : thread.parentHash ? (
         "Reply"
       ) : (

@@ -38,10 +38,12 @@ const PostNotification = ({
   if (!notification.cast) return null;
   return (
     <Notification href={`/casts/${notification.cast?.hash}`}>
-      <FarcasterCastLink
-        cast={notification.cast}
-        displayMode={Display.NOTIFICATION}
-      />
+      <View flexShrink={1}>
+        <FarcasterCastLink
+          cast={notification.cast}
+          displayMode={Display.NOTIFICATION}
+        />
+      </View>
     </Notification>
   );
 };
@@ -52,7 +54,7 @@ const MentionNotification = ({
   if (!notification.cast) return null;
   return (
     <Notification href={`/casts/${notification.cast?.hash}`}>
-      <View flexGrow={1}>
+      <View flexShrink={1}>
         <FarcasterCastLink
           cast={notification.cast}
           displayMode={Display.NOTIFICATION}
@@ -68,7 +70,7 @@ const ReplyNotification = ({
   if (!notification.cast || !notification.cast.parent) return null;
   return (
     <Notification href={`/casts/${notification.cast?.hash}`}>
-      <View flexGrow={1}>
+      <View flexShrink={1}>
         <FarcasterCastLink
           cast={notification.cast}
           displayMode={Display.NOTIFICATION}
@@ -84,7 +86,7 @@ const QuoteNotification = ({
   if (!notification.cast) return null;
   return (
     <Notification href={`/casts/${notification.cast?.hash}`}>
-      <View flexGrow={1}>
+      <View flexShrink={1}>
         <FarcasterCastLink
           cast={notification.cast}
           displayMode={Display.NOTIFICATION}

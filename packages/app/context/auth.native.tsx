@@ -30,6 +30,7 @@ import {
   usePrivy,
   User as PrivyUser,
 } from "@privy-io/expo";
+import * as amplitude from "@amplitude/analytics-react-native";
 
 type AuthContextType = {
   session?: Session;
@@ -131,13 +132,9 @@ export const AuthProvider = ({
     fetchUser(session.fid).then((user) => {
       setUser(user);
     });
+    amplitude.init("7819c3ae9a7a78fc6835dcc60cdeb018", `fid:${session.fid}`);
     await updateSession(session);
   }, []);
-
-  useEffect(() => {
-    if (session?.fid) {
-    }
-  }, [session?.fid]);
 
   const loginViaPrivyToken = useCallback(async () => {
     const token = await getAccessToken();

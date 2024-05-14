@@ -39,6 +39,18 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@amplitude/analytics-client-common@npm:^1.2.2":
+  version: 1.2.2
+  resolution: "@amplitude/analytics-client-common@npm:1.2.2"
+  dependencies:
+    "@amplitude/analytics-connector": "npm:^1.5.0"
+    "@amplitude/analytics-core": "npm:^1.2.5"
+    "@amplitude/analytics-types": "npm:^1.3.4"
+    tslib: "npm:^2.4.1"
+  checksum: 10c0/baf881f05671dc6c1ee67431b6784a9f8c4a8eb1cccfbc7526f1a7a61ef892d6844f9715a4a2795b246438a91a353f1b96f2ba930c7dadeaf7232381fd4ad2d3
+  languageName: node
+  linkType: hard
+
 "@amplitude/analytics-client-common@npm:^2.1.5":
   version: 2.1.5
   resolution: "@amplitude/analytics-client-common@npm:2.1.5"
@@ -51,10 +63,20 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@amplitude/analytics-connector@npm:^1.4.8":
+"@amplitude/analytics-connector@npm:^1.4.8, @amplitude/analytics-connector@npm:^1.5.0":
   version: 1.5.0
   resolution: "@amplitude/analytics-connector@npm:1.5.0"
   checksum: 10c0/3514ed3c21f502d94bb059e062bb9d5fcb464eef669e04ae730ffcc0f3cd50e34b617686842cbbb5e010b76c1f07df30cfdb6da3d9e6c5507bcadc1318446273
+  languageName: node
+  linkType: hard
+
+"@amplitude/analytics-core@npm:^1.2.5":
+  version: 1.2.5
+  resolution: "@amplitude/analytics-core@npm:1.2.5"
+  dependencies:
+    "@amplitude/analytics-types": "npm:^1.3.4"
+    tslib: "npm:^2.4.1"
+  checksum: 10c0/f796d2ba6ec8b2e81fc6bef711bc8058c9392d862954eb037395a5d18d0645663e07e27afd75db5b3908ff1b34a016a508cc1c8c0604691c812271da055d8767
   languageName: node
   linkType: hard
 
@@ -65,6 +87,30 @@ __metadata:
     "@amplitude/analytics-types": "npm:^2.5.0"
     tslib: "npm:^2.4.1"
   checksum: 10c0/2f7dbb88bcd2227c7d74c07f91d6e04873a75d56167c99264eab910203ab147593fbd424ce3d1b959e45625d8fceb47947c4c921f63937cc5f5e4ed109676241
+  languageName: node
+  linkType: hard
+
+"@amplitude/analytics-react-native@npm:^1.4.8":
+  version: 1.4.8
+  resolution: "@amplitude/analytics-react-native@npm:1.4.8"
+  dependencies:
+    "@amplitude/analytics-client-common": "npm:^1.2.2"
+    "@amplitude/analytics-core": "npm:^1.2.5"
+    "@amplitude/analytics-types": "npm:^1.3.4"
+    "@amplitude/ua-parser-js": "npm:^0.7.31"
+    "@react-native-async-storage/async-storage": "npm:^1.17.11"
+    tslib: "npm:^2.4.1"
+  peerDependencies:
+    react: "*"
+    react-native: "*"
+  checksum: 10c0/020bb35d8279790bda6290ae5ea477d8c5529bb05f3371ec34851ee2c72cccbd53b806456af18ae44c87520fc7c33290a3d55286caa6e248c161269d9bec1850
+  languageName: node
+  linkType: hard
+
+"@amplitude/analytics-types@npm:^1.3.4":
+  version: 1.3.4
+  resolution: "@amplitude/analytics-types@npm:1.3.4"
+  checksum: 10c0/c5ee3fcf1ce6966bbecb5b1bc33b80a3b721b5d8d95b587cd0ccff4ad8225f06a25c5df244a37569d061cbc8ffec3dfe527eda426270bc8066041ee89f3e3a12
   languageName: node
   linkType: hard
 
@@ -83,6 +129,13 @@ __metadata:
     "@amplitude/analytics-types": "npm:^2.5.0"
     tslib: "npm:^2.4.1"
   checksum: 10c0/b65d578c3679282dd99ee3b11ce8c2b47637a4a73764d45a13e1dd7f7723fae6781f8f04a894d02ff345131e2dca2b0b9690f4ca5e345e3a82dbb665f4c5eb25
+  languageName: node
+  linkType: hard
+
+"@amplitude/ua-parser-js@npm:^0.7.31":
+  version: 0.7.33
+  resolution: "@amplitude/ua-parser-js@npm:0.7.33"
+  checksum: 10c0/9f44b78701655a3b1da9f0721324355ae5d1548c08c46a74b90cfa55de4fca40f97a3c90cb7ae46d405706f1383f7f8dda4b34aee5f9eb3f738c86a934ec1f8b
   languageName: node
   linkType: hard
 
@@ -5639,6 +5692,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@nook/app-native@workspace:packages/app-native"
   dependencies:
+    "@amplitude/analytics-react-native": "npm:^1.4.8"
     "@babel/core": "npm:^7.17.9"
     "@ethersproject/shims": "npm:^5.7.0"
     "@expo/metro-config": "npm:~0.10.0"
@@ -6550,7 +6604,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@react-native-async-storage/async-storage@npm:^1.23.1":
+"@react-native-async-storage/async-storage@npm:^1.17.11, @react-native-async-storage/async-storage@npm:^1.23.1":
   version: 1.23.1
   resolution: "@react-native-async-storage/async-storage@npm:1.23.1"
   dependencies:

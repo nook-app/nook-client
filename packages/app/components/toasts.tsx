@@ -26,16 +26,9 @@ export const Toasts = () => {
         exitStyle={{ opacity: 0 }}
         key={toast.id}
         duration={5000}
-        backgroundColor={
-          theme && ["light", "dark"].includes(theme) ? "$color12" : "$color9"
-        }
+        backgroundColor={!theme ? "$color12" : "$color9"}
       >
-        <Toast.Title
-          color={
-            theme && ["light", "dark"].includes(theme) ? "$color1" : "white"
-          }
-          fontWeight="500"
-        >
+        <Toast.Title color={!theme ? "$color1" : "white"} fontWeight="500">
           {toast.title}
         </Toast.Title>
         {toast.message && (
