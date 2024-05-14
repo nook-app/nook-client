@@ -8,7 +8,7 @@
     "android": "npx expo run:android",
     "ios": "npx expo run:ios",
     "eject": "npx expo eject",
-    "build": "eas build --platform ios",
+    "build:production": "eas build --platform ios",
     "build:preview": "eas build --platform ios --profile preview"
   },
   "dependencies": {

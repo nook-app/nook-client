@@ -1,9 +1,5 @@
 import { FastifyInstance } from "fastify";
-import {
-  FarcasterUser,
-  TransactionFeedRequest,
-  TransactionResponse,
-} from "@nook/common/types";
+import { FarcasterUser, TransactionFeedRequest } from "@nook/common/types";
 import {
   TransactionsApi,
   TransactionsControllerGetTransactionsRequest,
@@ -41,18 +37,16 @@ export const transactionRoutes = async (fastify: FastifyInstance) => {
       const contextAddresses: AddressTag[] = response?.data.map((address) => {
         return { address, toFromAll: "From" };
       });
-      const cursor = decodeCursor(request.body.cursor) ?? {
-        // use current timestamp for the lte dateRange and rely on skip to
-        // paginate from beginning of that timestamp
-        // subtract one just in case they're still indexing txs
-        timestamp: Math.floor(new Date().getTime() / 1000) - 1,
-        skip: 0,
-      };
+      const cursor = decodeCursor(request.body.cursor);
 
       let chainIds = request.body.filter.chains;
       if (!chainIds || chainIds.length === 0) {
         chainIds = [0];
       }
+
+      const timestamp = cursor?.timestamp
+        ? Number(cursor.timestamp)
+        : Math.floor(new Date().getTime() / 1000) - 1;
 
       const req: TransactionsControllerGetTransactionsRequest = {
         getTransactionDto: {
@@ -60,10 +54,10 @@ export const transactionRoutes = async (fastify: FastifyInstance) => {
           filterAddresses: [],
           sort: -1,
           limit: 25,
-          skip: cursor.skip as number,
+          skip: 0,
           functionSelectors: [],
           tokenTransfers: [],
-          dateRange: { $lte: cursor.timestamp as number },
+          dateRange: cursor?.timestamp ? { $lte: timestamp } : {},
           chainIds,
         },
       };
@@ -127,8 +121,7 @@ export const transactionRoutes = async (fastify: FastifyInstance) => {
       const nextCursor =
         rawData.length === 25
           ? encodeCursor({
-              timestamp: cursor.timestamp,
-              skip: (cursor.skip as number) + 25,
+              timestamp: rawData[rawData.length - 1].timestamp - 1,
             })
           : null;
       return reply.send({ nextCursor, data: enrichedData || [] });

@@ -1,28 +1,34 @@
-import { Channel, FarcasterUser } from "./farcaster";
-import { ERC20 } from "reverse-mirage";
+export type ListType = "USERS" | "PARENT_URLS" | "CASTS";
+export type ListItemType = "FID" | "ETH_ADDRESS" | "PARENT_URL" | "CAST_HASH";
+export type ListVisibility = "PUBLIC" | "PRIVATE";
 
-export type ListMetadata = {
-  creatorFid: string;
+export type List = {
+  id: string;
+  type: ListType;
+  creatorId: number;
   name: string;
-  description: string;
-  imageUrl: string;
-  visibility: "PUBLIC" | "PRIVATE" | "HIDDEN";
+  description?: string;
+  imageUrl?: string;
+  visibility: ListVisibility;
 };
 
-export type UserList = ListMetadata & {
+export type ListItem = {
+  listId: string;
+  type: ListItemType;
   id: string;
-  users: FarcasterUser[];
 };
 
-export type ChannelList = ListMetadata & {
-  id: string;
-  channels: Channel[];
+export type CreateListRequest = {
+  type: ListType;
+  name: string;
+  description?: string;
+  imageUrl?: string;
+  visibility: ListVisibility;
 };
 
-export type CreateUserListRequest = ListMetadata & {
-  fids: string[];
-};
-
-export type CreateChannelListRequest = ListMetadata & {
-  channelIds: string[];
+export type UpdateListRequest = {
+  name: string;
+  description?: string;
+  imageUrl?: string;
+  visibility: ListVisibility;
 };

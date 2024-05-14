@@ -1,0 +1,55 @@
+generator client {
+    provider = "prisma-client-js"
+    output   = "../generated/lists"
+}
+
+datasource db {
+    provider = "postgresql"
+    url      = env("LIST_DATABASE_URL")
+}
+
+model List {
+    id        String @id @default(uuid())
+    type      String
+    creatorId BigInt
+
+    name        String
+    description String?
+    imageUrl    String?
+    visibility  String
+
+    followerCount Int @default(0)
+    itemCount     Int @default(0)
+
+    items     ListItem[]
+    followers ListFollow[]
+
+    createdAt DateTime  @default(now())
+    updatedAt DateTime  @default(now()) @updatedAt
+    deletedAt DateTime?
+}
+
+model ListItem {
+    listId String
+    type   String
+    id     String
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @default(now()) @updatedAt
+
+    list List @relation(fields: [listId], references: [id])
+
+    @@id([listId, type, id])
+}
+
+model ListFollow {
+    listId String
+    userId BigInt
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @default(now()) @updatedAt
+
+    list List @relation(fields: [listId], references: [id])
+
+    @@id([listId, userId])
+}

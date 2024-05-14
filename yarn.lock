@@ -5977,9 +5977,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@nook/lists-api@workspace:packages/lists-api":
+"@nook/list-api@workspace:packages/list-api":
   version: 0.0.0-use.local
-  resolution: "@nook/lists-api@workspace:packages/lists-api"
+  resolution: "@nook/list-api@workspace:packages/list-api"
   dependencies:
     "@fastify/jwt": "npm:^8.0.0"
     "@nook/common": "npm:*"
