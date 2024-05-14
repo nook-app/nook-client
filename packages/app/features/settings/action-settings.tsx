@@ -1,4 +1,5 @@
 import {
+  Button,
   NookButton,
   NookText,
   Spinner,
@@ -42,8 +43,26 @@ export const ActionSettings = () => {
           <ActionItem key={`bottom-${i}`} action={a} index={i + 4} />
         ))}
       </XStack>
-      <Link href="/explore/actions">
-        <NookButton variant="action">Browse Actions</NookButton>
+      <Link href="/explore/actions" unpressable>
+        <Button
+          height="$4"
+          width="100%"
+          borderRadius="$10"
+          fontWeight="600"
+          fontSize="$5"
+          backgroundColor="$mauve12"
+          borderWidth="$0"
+          color="$mauve1"
+          pressStyle={{
+            backgroundColor: "$mauve11",
+          }}
+          disabledStyle={{
+            backgroundColor: "$mauve10",
+          }}
+          marginTop="$4"
+        >
+          Browse Actions
+        </Button>
       </Link>
     </YStack>
   );

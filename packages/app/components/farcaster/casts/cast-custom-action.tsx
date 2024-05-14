@@ -1,5 +1,4 @@
 import {
-  Image,
   NookButton,
   NookText,
   Popover,
@@ -7,7 +6,6 @@ import {
   View,
   XGroup,
   YGroup,
-  useTheme,
   useToastController,
 } from "@nook/app-ui";
 import { Dot, LayoutGrid, Search, Settings } from "@tamagui/lucide-icons";
@@ -15,15 +13,14 @@ import { useCallback, useState } from "react";
 import { CastAction, FarcasterCastResponse } from "@nook/common/types";
 import { useAuth } from "../../../context/auth";
 import { submitFrameAction } from "../../../api/farcaster/actions";
-import { useRouter } from "solito/navigation";
 import { GradientIcon } from "../../gradient-icon";
+import { Link } from "../../link";
 
 export const FarcasterCustomActionButton = ({
   cast,
 }: { cast: FarcasterCastResponse }) => {
   const [open, setOpen] = useState(false);
   const { settings, session } = useAuth();
-  const router = useRouter();
 
   const actions: (CastAction | null)[] = [];
   for (let i = 0; i < 8; i++) {
@@ -49,7 +46,7 @@ export const FarcasterCustomActionButton = ({
       }}
     >
       <Popover placement="bottom" open={open} onOpenChange={setOpen}>
-        <Popover.Trigger>
+        <Popover.Trigger asChild>
           <View
             cursor="pointer"
             width="$2.5"
@@ -119,26 +116,36 @@ export const FarcasterCustomActionButton = ({
             )}
             <XGroup disablePassBorderRadius={showTopBar ? "top" : undefined}>
               <XGroup.Item>
-                <NookButton
-                  flexGrow={1}
-                  backgroundColor="$color3"
-                  borderColor="$color5"
-                  borderWidth="$0.25"
-                  onPress={() => router.push("/settings/actions")}
-                >
-                  <Settings size={20} />
-                </NookButton>
+                <Link href={"/settings/actions"} unpressable>
+                  <NookButton
+                    flexGrow={1}
+                    backgroundColor="$color3"
+                    borderColor="$color5"
+                    borderWidth="$0.25"
+                    borderBottomRightRadius="$0"
+                    borderTopLeftRadius="$0"
+                    borderTopRightRadius="$0"
+                    onPress={close}
+                  >
+                    <Settings size={20} />
+                  </NookButton>
+                </Link>
               </XGroup.Item>
               <XGroup.Item>
-                <NookButton
-                  flexGrow={1}
-                  backgroundColor="$color3"
-                  borderColor="$color5"
-                  borderWidth="$0.25"
-                  onPress={() => router.push("/explore/actions")}
-                >
-                  <Search size={20} />
-                </NookButton>
+                <Link href={"/explore/actions"} unpressable>
+                  <NookButton
+                    flexGrow={1}
+                    backgroundColor="$color3"
+                    borderColor="$color5"
+                    borderWidth="$0.25"
+                    borderBottomLeftRadius="$0"
+                    borderTopLeftRadius="$0"
+                    borderTopRightRadius="$0"
+                    onPress={close}
+                  >
+                    <Search size={20} />
+                  </NookButton>
+                </Link>
               </XGroup.Item>
             </XGroup>
           </YGroup>

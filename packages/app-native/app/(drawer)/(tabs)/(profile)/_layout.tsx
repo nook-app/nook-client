@@ -65,6 +65,10 @@ export default function ProfileLayout() {
         options={{ title: "Quoted by" }}
         getId={({ params }) => params?.hash}
       />
+      <Stack.Screen
+        name="explore/actions"
+        options={{ title: "Explore Actions" }}
+      />
     </Stack>
   );
 }

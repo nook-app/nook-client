@@ -1,16 +1,8 @@
-import { Dialog, Popover, View, useTheme } from "@nook/app-ui";
-import {
-  Heart,
-  Image,
-  MessageSquare,
-  MessageSquareQuote,
-  Repeat2,
-  Share,
-} from "@tamagui/lucide-icons";
+import { Popover, View, useTheme } from "@nook/app-ui";
+import { Heart, Image, Repeat2, Share } from "@tamagui/lucide-icons";
 import {
   CreateCastQuoteTrigger,
   CreateCastReplyTrigger,
-  CreateCastTrigger,
 } from "../../../features/farcaster/create-cast/trigger";
 import { FarcasterCastResponse } from "@nook/common/types";
 import { useLikeCast } from "../../../hooks/useLikeCast";
@@ -18,7 +10,6 @@ import { useRecastCast } from "../../../hooks/useRecastCast";
 import { EnableSignerDialog } from "../../../features/farcaster/enable-signer/dialog";
 import { useAuth } from "../../../context/auth";
 import { Menu } from "../../menu/menu";
-import { MenuItem } from "../../menu/menu-item";
 import { CopyLink, OpenLink } from "../../menu/menu-actions";
 
 export const FarcasterReplyActionButton = ({
@@ -31,7 +22,7 @@ export const FarcasterRecastActionButton = ({
   cast,
 }: { cast: FarcasterCastResponse }) => {
   const theme = useTheme();
-  const { recastCast, unrecastCast, isRecasted } = useRecastCast(cast);
+  const { unrecastCast, isRecasted } = useRecastCast(cast);
   const { session, login } = useAuth();
 
   if (isRecasted || !session) {

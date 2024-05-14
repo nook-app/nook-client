@@ -1,5 +1,5 @@
 import { X } from "@tamagui/lucide-icons";
-import { NookButton, Dialog, XStack } from "@nook/app-ui";
+import { NookButton, Dialog, XStack, Adapt, Popover } from "@nook/app-ui";
 import { useCallback, useState } from "react";
 import { CastAction } from "@nook/common/types";
 import { useAuth } from "../../context/auth";
@@ -26,6 +26,24 @@ export const InstallActionDialog = ({
   return (
     <Dialog modal disableRemoveScroll open={isOpen} onOpenChange={setIsOpen}>
       <Dialog.Trigger asChild>{children}</Dialog.Trigger>
+
+      <Adapt when="sm" platform="touch">
+        <Popover.Sheet modal dismissOnSnapToBottom snapPointsMode="fit">
+          <Popover.Sheet.Overlay
+            animation="quick"
+            enterStyle={{ opacity: 0 }}
+            exitStyle={{ opacity: 0 }}
+          />
+          <Popover.Sheet.Frame
+            paddingBottom="$8"
+            paddingTop="$2"
+            backgroundColor="$color2"
+          >
+            <Adapt.Contents />
+          </Popover.Sheet.Frame>
+        </Popover.Sheet>
+      </Adapt>
+
       <Dialog.Portal
         justifyContent="flex-start"
         paddingTop="$10"

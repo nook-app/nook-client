@@ -2,7 +2,7 @@ import { useTheme } from "@nook/app-ui";
 import { Stack } from "expo-router";
 import { BackButton } from "../../../../components/IconButton";
 
-export default function DiscoverLayout() {
+export default function ExploreLayout() {
   const theme = useTheme();
   return (
     <Stack
@@ -15,7 +15,7 @@ export default function DiscoverLayout() {
       }}
     >
       <Stack.Screen
-        name="discover"
+        name="explore"
         options={{
           headerShown: false,
         }}

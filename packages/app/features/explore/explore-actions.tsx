@@ -7,7 +7,7 @@ import { Loading } from "../../components/loading";
 
 export const ExploreActions = ({
   initialData,
-}: { initialData: FetchCastActionsResponse }) => {
+}: { initialData?: FetchCastActionsResponse }) => {
   const { data, isLoading, hasNextPage, fetchNextPage, isFetchingNextPage } =
     useFarcasterActions(initialData);
 

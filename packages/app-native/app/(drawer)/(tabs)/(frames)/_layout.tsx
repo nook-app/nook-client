@@ -70,6 +70,10 @@ export default function FramesLayout() {
         options={{ title: "Quoted by" }}
         getId={({ params }) => params?.hash}
       />
+      <Stack.Screen
+        name="explore/actions"
+        options={{ title: "Explore Actions" }}
+      />
     </Stack>
   );
 }

@@ -108,6 +108,10 @@ export default function HomeLayout() {
         name="settings/mute/words"
         options={{ title: "Muted words" }}
       />
+      <Stack.Screen
+        name="explore/actions"
+        options={{ title: "Explore Actions" }}
+      />
     </Stack>
   );
 }

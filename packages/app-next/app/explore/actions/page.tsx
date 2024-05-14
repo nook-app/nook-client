@@ -8,7 +8,7 @@ export default async function Explore() {
   const actions = await getFarcasterActions();
   return (
     <>
-      <NavigationHeader title="Discover Actions" />
+      <NavigationHeader title="Explore Actions" />
       <ExploreActions initialData={actions} />
     </>
   );

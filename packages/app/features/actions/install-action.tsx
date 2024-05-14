@@ -58,12 +58,12 @@ export const InstallAction = ({
     <View>
       <XStack gap="$4" padding="$4">
         <GradientIcon label={action.name} size="$6" icon={action.icon} />
-        <View>
-          <NookText variant="label" fontSize="$9">
+        <YStack gap="$1" flexShrink={1}>
+          <NookText variant="label" fontSize="$8">
             {action.name}
           </NookText>
-          <NookText fontSize="$5">{action.description}</NookText>
-        </View>
+          <NookText muted>{action.description}</NookText>
+        </YStack>
       </XStack>
       <YStack gap="$5" padding="$4">
         <NookText fontWeight="500">Select an action to replace</NookText>
@@ -81,7 +81,7 @@ export const InstallAction = ({
               }}
               borderWidth="$0"
               overflow="hidden"
-              onClick={() => handlePress(i)}
+              onPress={() => handlePress(i)}
             >
               {a && <GradientIcon label={a?.name} size="$6" icon={a?.icon} />}
               {!a && (
@@ -127,7 +127,7 @@ export const InstallAction = ({
             </NookButton>
           ))}
         </XStack>
-      </YStack>{" "}
+      </YStack>
     </View>
   );
 };

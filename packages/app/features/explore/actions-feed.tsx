@@ -1,52 +1,36 @@
 "use client";
 
-import {
-  AnimatePresence,
-  NookButton,
-  NookText,
-  Spinner,
-  View,
-  XStack,
-  YStack,
-} from "@nook/app-ui";
-import { memo } from "react";
+import { Separator, Spinner, View } from "@nook/app-ui";
 import { CastAction } from "@nook/common/types";
 import { InfiniteScrollList } from "../../components/infinite-scroll-list";
-import { darkenColor, stringToColor } from "../../utils";
-import { GradientIcon } from "../../components/gradient-icon";
-import { InstallActionDialog } from "../actions/install-dialog";
+import { FarcasterActionItem } from "./actions-item";
 
 export const FarcasterActionsFeed = ({
   actions,
   fetchNextPage,
   isFetchingNextPage,
   hasNextPage,
+  refetch,
+  isRefetching,
+  paddingTop,
+  paddingBottom,
+  asTabs,
 }: {
   actions: CastAction[];
   fetchNextPage: () => void;
   isFetchingNextPage: boolean;
   hasNextPage: boolean;
+  refetch?: () => Promise<void>;
+  isRefetching?: boolean;
+  paddingTop?: number;
+  paddingBottom?: number;
+  asTabs?: boolean;
 }) => {
   return (
     <InfiniteScrollList
       data={actions}
       renderItem={({ item }) => (
-        <AnimatePresence>
-          <View
-            enterStyle={{
-              opacity: 0,
-            }}
-            exitStyle={{
-              opacity: 0,
-            }}
-            animation="quick"
-            opacity={1}
-            scale={1}
-            y={0}
-          >
-            <FarcasterActionItem action={item as CastAction} />
-          </View>
-        </AnimatePresence>
+        <FarcasterActionItem action={item as CastAction} />
       )}
       onEndReached={fetchNextPage}
       ListFooterComponent={
@@ -56,35 +40,9 @@ export const FarcasterActionsFeed = ({
           </View>
         ) : null
       }
+      ItemSeparatorComponent={() => (
+        <Separator width="100%" borderBottomColor="$borderColorBg" />
+      )}
     />
   );
 };
-
-const FarcasterActionItem = memo(({ action }: { action: CastAction }) => {
-  return (
-    <XStack
-      gap="$4"
-      paddingHorizontal="$3.5"
-      paddingVertical="$3"
-      hoverStyle={{
-        transform: "all 0.2s ease-in-out",
-        backgroundColor: "$color2",
-      }}
-      flexShrink={1}
-      borderBottomWidth="$0.5"
-      borderBottomColor="$borderColorBg"
-      justifyContent="space-between"
-    >
-      <XStack gap="$3" flexShrink={1}>
-        <GradientIcon label={action.name} size="$5" icon={action.icon} />
-        <YStack gap="$1" flexShrink={1}>
-          <NookText variant="label">{action.name}</NookText>
-          <NookText muted>{action.description}</NookText>
-        </YStack>
-      </XStack>
-      <InstallActionDialog action={action}>
-        <NookButton variant="action">Install</NookButton>
-      </InstallActionDialog>
-    </XStack>
-  );
-});

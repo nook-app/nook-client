@@ -50,10 +50,10 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="(discover)"
+        name="(explore)"
         options={{
-          title: "Discover",
-          tabBarIcon: (props) => <TabBarDiscover {...props} />,
+          title: "Explore",
+          tabBarIcon: (props) => <TabBarExplore {...props} />,
           tabBarShowLabel: false,
         }}
       />
@@ -137,7 +137,7 @@ const TabBarTransactions = ({ focused }: { focused: boolean }) => {
   return <Link color="$mauve12" strokeWidth={focused ? 2.5 : 2} />;
 };
 
-const TabBarDiscover = ({ focused }: { focused: boolean }) => {
+const TabBarExplore = ({ focused }: { focused: boolean }) => {
   const theme = useTamaguiTheme();
   return (
     <Sparkle
