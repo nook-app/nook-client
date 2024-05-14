@@ -47,8 +47,8 @@ const DeleteCast = ({ cast }: { cast: FarcasterCastResponse }) => {
   const { close } = useMenu();
 
   const handlePress = useCallback(async () => {
-    await deleteCast();
     close();
+    await deleteCast();
   }, [deleteCast, close]);
 
   if (!session || cast.user.fid !== session?.fid) {
@@ -101,13 +101,13 @@ const MuteUser = ({ user }: { user: FarcasterUser }) => {
     user.username ? `@${user.username}` : `!${user.fid}`
   }`;
 
-  const handlePress = useCallback(() => {
-    if (isMuted) {
-      unmuteUser();
-    } else {
-      muteUser();
-    }
+  const handlePress = useCallback(async () => {
     close();
+    if (isMuted) {
+      await unmuteUser();
+    } else {
+      await muteUser();
+    }
   }, [isMuted, unmuteUser, muteUser, close]);
 
   if (!session || user.fid === session?.fid) {
@@ -125,13 +125,13 @@ const MuteChannel = ({ channel }: { channel: Channel }) => {
   const Icon = isMuted ? Volume : VolumeX;
   const title = `${isMuted ? "Unmute" : "Mute"} /${channel.channelId}`;
 
-  const handlePress = useCallback(() => {
-    if (isMuted) {
-      unmuteChannel();
-    } else {
-      muteChannel();
-    }
+  const handlePress = useCallback(async () => {
     close();
+    if (isMuted) {
+      await unmuteChannel();
+    } else {
+      await muteChannel();
+    }
   }, [isMuted, unmuteChannel, muteChannel, close]);
 
   if (!session || !channel.channelId) {

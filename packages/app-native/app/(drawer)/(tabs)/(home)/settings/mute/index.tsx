@@ -3,9 +3,18 @@ import { Href } from "expo-router/build/link/href";
 import { ChevronRight } from "@tamagui/lucide-icons";
 import { useAuth } from "@nook/app/context/auth";
 import { Link } from "@nook/app/components/link";
+import { useMuteStore } from "@nook/app/store/useMuteStore";
 
 export default function MuteSettings() {
-  const { settings } = useAuth();
+  const users = useMuteStore(
+    (state) => Object.values(state.users).filter(Boolean).length,
+  );
+  const channels = useMuteStore(
+    (state) => Object.values(state.channels).filter(Boolean).length,
+  );
+  const words = useMuteStore(
+    (state) => Object.values(state.words).filter(Boolean).length,
+  );
   return (
     <YStack flexGrow={1} backgroundColor="$color1" gap="$4" paddingTop="$2.5">
       <NookText muted paddingHorizontal="$2.5">
@@ -13,17 +22,17 @@ export default function MuteSettings() {
       </NookText>
       <MuteSettingsItem
         title="Muted Users"
-        amount={settings?.mutedUsers.length || 0}
+        amount={users}
         href="/settings/mute/users"
       />
       <MuteSettingsItem
         title="Muted Channels"
-        amount={settings?.mutedChannels.length || 0}
+        amount={channels}
         href="/settings/mute/channels"
       />
       <MuteSettingsItem
         title="Muted Words"
-        amount={settings?.mutedWords.length || 0}
+        amount={words}
         href="/settings/mute/words"
       />
     </YStack>

@@ -3,6 +3,7 @@ import {
   Channel,
   FarcasterCastResponse,
   FarcasterUser,
+  UserSettings,
 } from "@nook/common/types";
 
 interface MuteStore {
@@ -15,6 +16,7 @@ interface MuteStore {
   unmuteUser: (user: FarcasterUser) => void;
   unmuteChannel: (channel: Channel) => void;
   unmuteWord: (word: string) => void;
+  updateFromSettings(settings: UserSettings): void;
   // re-using store for cast deletions
   casts: Record<string, boolean>;
   deleteCast: (cast: FarcasterCastResponse) => void;
@@ -27,7 +29,7 @@ export const useMuteStore = create<MuteStore>((set, get) => ({
   casts: {},
   muteUser: (user: FarcasterUser) => {
     set((state) => ({
-      users: { ...state.users, [user.username || user.fid]: true },
+      users: { ...state.users, [user.fid]: true },
     }));
   },
   muteChannel: (channel: Channel) => {
@@ -38,7 +40,7 @@ export const useMuteStore = create<MuteStore>((set, get) => ({
   },
   unmuteUser: (user: FarcasterUser) => {
     set((state) => ({
-      users: { ...state.users, [user.username || user.fid]: false },
+      users: { ...state.users, [user.fid]: false },
     }));
   },
   unmuteChannel: (channel: Channel) => {
@@ -49,5 +51,40 @@ export const useMuteStore = create<MuteStore>((set, get) => ({
   },
   deleteCast: (cast: FarcasterCastResponse) => {
     set((state) => ({ casts: { ...state.casts, [cast.hash]: true } }));
+  },
+  updateFromSettings: (settings: UserSettings) => {
+    const { mutedUsers, mutedChannels, mutedWords } = settings;
+    set((state) => ({
+      users: {
+        ...state.users,
+        ...mutedUsers.reduce(
+          (acc, user) => {
+            acc[user] = true;
+            return acc;
+          },
+          {} as Record<string, boolean>,
+        ),
+      },
+      channels: {
+        ...state.channels,
+        ...mutedChannels.reduce(
+          (acc, channel) => {
+            acc[channel] = true;
+            return acc;
+          },
+          {} as Record<string, boolean>,
+        ),
+      },
+      words: {
+        ...state.words,
+        ...mutedWords.reduce(
+          (acc, word) => {
+            acc[word] = true;
+            return acc;
+          },
+          {} as Record<string, boolean>,
+        ),
+      },
+    }));
   },
 }));

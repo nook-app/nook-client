@@ -162,8 +162,10 @@ export const AuthProvider = ({
   }, [session, handleSessionChange]);
 
   const login = useCallback(async () => {
-    await logout();
-    await loginWithFarcaster({ relyingParty: "https://nook.social" });
+    await logoutPrivy();
+    await loginWithFarcaster({
+      relyingParty: "https://nook.social",
+    });
   }, [logout, loginWithFarcaster]);
 
   return (

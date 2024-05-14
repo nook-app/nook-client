@@ -21,6 +21,7 @@ export const IconButton = forwardRef<
       scaleIcon={1.25}
       onPress={onPress}
       backgroundColor="rgba(0,0,0,0.25)"
+      color="white"
     />
   ),
 );

@@ -19,10 +19,10 @@ export const useMuteChannel = (channel: Channel) => {
       login();
       return;
     }
-    updateMute(channel);
-    haptics.notificationSuccess();
+    haptics.impactMedium();
     try {
       await muteChannel(channel.url);
+      updateMute(channel);
       return;
     } catch (e) {
       toast.show("An error occurred. Try again.");
@@ -37,10 +37,10 @@ export const useMuteChannel = (channel: Channel) => {
       return;
     }
 
-    updateUnmute(channel);
-    haptics.notificationSuccess();
+    haptics.impactMedium();
     try {
       await unmuteChannel(channel.url);
+      updateUnmute(channel);
       return;
     } catch (e) {
       toast.show("An error occurred. Try again.");

@@ -11,9 +11,12 @@ import {
   Settings,
   Image,
   MousePointerSquare,
+  UsersRound,
 } from "@tamagui/lucide-icons";
 import { Href } from "expo-router/build/link/href";
 import { Link } from "@nook/app/components/link";
+import { AccountSwitcher } from "@nook/app/features/auth/account-switcher";
+import { IconButton } from "./IconButton";
 
 export const SidebarLayout = () => {
   return (
@@ -34,16 +37,26 @@ const SidebarUser = () => {
   if (!user) return null;
 
   return (
-    <Link
-      href={{
-        pathname: "/users/[username]",
-        params: { username: user.username },
-      }}
-    >
-      <YStack>
-        <XStack justifyContent="space-between" alignItems="center" gap="$2">
+    <YStack>
+      <XStack justifyContent="space-between" alignItems="center" gap="$2">
+        <Link
+          href={{
+            pathname: "/users/[username]",
+            params: { username: user.username },
+          }}
+        >
           <FarcasterUserAvatar size="$4" user={user} />
-        </XStack>
+        </Link>
+        <AccountSwitcher>
+          <IconButton icon={UsersRound} />
+        </AccountSwitcher>
+      </XStack>
+      <Link
+        href={{
+          pathname: "/users/[username]",
+          params: { username: user.username },
+        }}
+      >
         <YStack gap="$1.5" marginTop="$2">
           <XStack gap="$1.5" alignItems="center">
             <NookText fontSize="$5" fontWeight="700">
@@ -55,33 +68,33 @@ const SidebarUser = () => {
             {user.username ? `@${user.username}` : `!${user.fid}`}
           </NookText>
         </YStack>
-        <XStack gap="$2" marginTop="$3">
-          <Link
-            href={`/(drawer)/(tabs)/(home)/users/${user.username}/following`}
-            absolute
-          >
-            <View flexDirection="row" alignItems="center" gap="$1">
-              <NookText fontWeight="600" fontSize="$4">
-                {formatNumber(user.engagement?.following || 0)}
-              </NookText>
-              <NookText muted fontSize="$4">
-                following
-              </NookText>
-            </View>
-          </Link>
-          <Link href={`/users/${user.username}/followers`}>
-            <View flexDirection="row" alignItems="center" gap="$1">
-              <NookText fontWeight="600" fontSize="$4">
-                {formatNumber(user.engagement?.followers || 0)}
-              </NookText>
-              <NookText muted fontSize="$4">
-                followers
-              </NookText>
-            </View>
-          </Link>
-        </XStack>
-      </YStack>
-    </Link>
+      </Link>
+      <XStack gap="$2" marginTop="$3">
+        <Link
+          href={`/(drawer)/(tabs)/(home)/users/${user.username}/following`}
+          absolute
+        >
+          <View flexDirection="row" alignItems="center" gap="$1">
+            <NookText fontWeight="600" fontSize="$4">
+              {formatNumber(user.engagement?.following || 0)}
+            </NookText>
+            <NookText muted fontSize="$4">
+              following
+            </NookText>
+          </View>
+        </Link>
+        <Link href={`/users/${user.username}/followers`}>
+          <View flexDirection="row" alignItems="center" gap="$1">
+            <NookText fontWeight="600" fontSize="$4">
+              {formatNumber(user.engagement?.followers || 0)}
+            </NookText>
+            <NookText muted fontSize="$4">
+              followers
+            </NookText>
+          </View>
+        </Link>
+      </XStack>
+    </YStack>
   );
 };
 

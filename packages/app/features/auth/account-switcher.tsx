@@ -1,5 +1,7 @@
 import {
+  Adapt,
   NookButton,
+  NookText,
   Popover,
   Separator,
   Spinner,
@@ -7,20 +9,46 @@ import {
   XStack,
   YStack,
 } from "@nook/app-ui";
-import { ReactNode, useEffect, useState } from "react";
+import { ReactNode, useCallback, useEffect, useState } from "react";
 import { useAuth } from "../../context/auth";
 import { Session } from "@nook/common/types";
 import { useUsers } from "../../api/farcaster";
 import { FarcasterUserDisplay } from "../../components/farcaster/users/user-display";
 import { Check } from "@tamagui/lucide-icons";
-import { useRouter } from "next/navigation";
 import { getSessions } from "../../utils/local-storage";
 import { Link } from "../../components/link";
+import { Platform } from "react-native";
 
 export const AccountSwitcher = ({ children }: { children: ReactNode }) => {
+  const [open, setOpen] = useState<boolean>(false);
+  const close = useCallback(() => setOpen(false), []);
+
   return (
-    <Popover placement="top" size="$5" allowFlip>
+    <Popover
+      placement="top"
+      size="$5"
+      allowFlip
+      open={open}
+      onOpenChange={setOpen}
+    >
       <Popover.Trigger asChild>{children}</Popover.Trigger>
+
+      <Adapt when="sm" platform="touch">
+        <Popover.Sheet modal dismissOnSnapToBottom snapPointsMode="fit">
+          <Popover.Sheet.Overlay
+            animation="quick"
+            enterStyle={{ opacity: 0 }}
+            exitStyle={{ opacity: 0 }}
+          />
+          <Popover.Sheet.Frame
+            paddingBottom="$8"
+            paddingTop="$2"
+            backgroundColor="$color2"
+          >
+            <Adapt.Contents />
+          </Popover.Sheet.Frame>
+        </Popover.Sheet>
+      </Adapt>
       <Popover.Content
         borderWidth={1}
         borderColor="$borderColorBg"
@@ -39,47 +67,73 @@ export const AccountSwitcher = ({ children }: { children: ReactNode }) => {
         paddingVertical="$2"
       >
         <Popover.Arrow borderWidth={1} borderColor="$borderColorBg" />
-        <AccountSwitcherContent />
+        <AccountSwitcherContent close={close} />
       </Popover.Content>
     </Popover>
   );
 };
 
-const AccountSwitcherContent = () => {
+const AccountSwitcherContent = ({ close }: { close: () => void }) => {
   const { login, logout, user } = useAuth();
-  const router = useRouter();
   const [sessions, setSessions] = useState<Session[]>([]);
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
 
   useEffect(() => {
-    getSessions().then(setSessions);
-  }, []);
+    if (user) {
+      getSessions().then(setSessions);
+      setIsLoggingIn(false);
+    }
+  }, [user]);
 
   return (
-    <YStack width="$19">
+    <YStack minWidth="$19">
       {sessions.length > 0 && (
         <>
-          <AccountSwitcherSessions sessions={sessions} />
+          <AccountSwitcherSessions sessions={sessions} close={close} />
           <Separator marginVertical="$2" />
         </>
       )}
-      <NookButton variant="ghost" height="$4" onPress={login}>
-        Add an existing account
+      <NookButton
+        variant="ghost"
+        height="$4"
+        onPress={() => {
+          login();
+          setIsLoggingIn(true);
+        }}
+      >
+        {isLoggingIn ? (
+          <XStack gap="$2">
+            <Spinner />
+            <NookText fontWeight="600" fontSize="$4">
+              Adding account...
+            </NookText>
+          </XStack>
+        ) : (
+          "Add an existing account"
+        )}
       </NookButton>
-      <Link href="/signup">
-        <NookButton variant="ghost" height="$4">
-          Create a new account
-        </NookButton>
-      </Link>
+      {Platform.OS === "web" && (
+        <Link href="/signup">
+          <NookButton variant="ghost" height="$4">
+            Create a new account
+          </NookButton>
+        </Link>
+      )}
       {user && (
         <>
+          <Link href={`/users/${user.username || user.fid}`} unpressable>
+            <NookButton variant="ghost" height="$4" onPress={close}>{`View ${
+              user.username ? `@${user.username}` : `!${user.fid}`
+            }`}</NookButton>
+          </Link>
           <NookButton
             variant="ghost"
             height="$4"
-            onPress={() => router.push(`/users/${user.username || user.fid}`)}
-          >{`View ${
-            user.username ? `@${user.username}` : `!${user.fid}`
-          }`}</NookButton>
-          <NookButton variant="ghost" height="$4" onPress={logout}>{`Log out ${
+            onPress={() => {
+              logout();
+              close();
+            }}
+          >{`Log out ${
             user.username ? `@${user.username}` : `!${user.fid}`
           }`}</NookButton>
         </>
@@ -88,7 +142,10 @@ const AccountSwitcherContent = () => {
   );
 };
 
-const AccountSwitcherSessions = ({ sessions }: { sessions: Session[] }) => {
+const AccountSwitcherSessions = ({
+  sessions,
+  close,
+}: { sessions: Session[]; close: () => void }) => {
   const { session, setSession } = useAuth();
   const { data, isLoading } = useUsers(sessions?.map((session) => session.fid));
 
@@ -106,7 +163,10 @@ const AccountSwitcherSessions = ({ sessions }: { sessions: Session[] }) => {
             height="$6"
             onPress={async () => {
               await setSession(userSession);
-              window.location.reload();
+              close();
+              if (Platform.OS === "web") {
+                window.location.reload();
+              }
             }}
             disabled={session?.fid === user.fid}
           >

@@ -10,6 +10,7 @@ export const Link = ({
   target,
   asText,
   unpressable,
+  onPress,
 }: {
   href: Href;
   children: React.ReactNode;
@@ -17,6 +18,7 @@ export const Link = ({
   target?: string;
   asText?: boolean;
   unpressable?: boolean;
+  onPress?: () => void;
 }) => {
   const [drawer, tabs, tab] = useSegments();
 
@@ -44,7 +46,7 @@ export const Link = ({
 
   return (
     <ExpoLink href={formattedHref} asChild>
-      <Pressable>{memoChildren}</Pressable>
+      <Pressable onPress={onPress}>{memoChildren}</Pressable>
     </ExpoLink>
   );
 };

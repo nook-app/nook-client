@@ -8,6 +8,7 @@ export default function LoginLayout() {
   return (
     <Stack>
       <Stack.Screen name="login/index" options={{ headerShown: false }} />
+      <Stack.Screen name="login/loading" options={{ headerShown: false }} />
       <Stack.Screen
         name="login/dev"
         options={{

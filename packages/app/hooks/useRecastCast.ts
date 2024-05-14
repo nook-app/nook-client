@@ -17,7 +17,7 @@ export const useRecastCast = (cast: FarcasterCastResponse) => {
 
   const recastCast = useCallback(async () => {
     updateRecast(cast);
-    haptics.notificationSuccess();
+    haptics.impactMedium();
     try {
       const response = await submitReactionAdd({
         reactionType: 2,
@@ -37,7 +37,7 @@ export const useRecastCast = (cast: FarcasterCastResponse) => {
 
   const unrecastCast = useCallback(async () => {
     updateUnrecast(cast);
-    haptics.notificationSuccess();
+    haptics.impactMedium();
     try {
       const response = await submitReactionRemove({
         reactionType: 2,

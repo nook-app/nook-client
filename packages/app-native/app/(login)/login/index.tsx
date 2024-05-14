@@ -2,6 +2,7 @@ import { useAuth } from "@nook/app/context/auth";
 import {
   Button,
   Image,
+  Spinner,
   Text,
   ThemeName,
   View,
@@ -10,16 +11,17 @@ import {
 } from "@nook/app-ui";
 import { Redirect } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { ReactNode } from "react";
-import { Wallet2, Lock } from "@tamagui/lucide-icons";
+import { ReactNode, useState } from "react";
+import { Lock } from "@tamagui/lucide-icons";
 import { Href } from "expo-router/build/link/href";
 import { LinearGradient } from "@tamagui/linear-gradient";
 import { useTheme } from "@nook/app/context/theme";
 import { Link } from "@nook/app/components/link";
 
 export default function LoginScreen() {
-  const { session } = useAuth();
+  const { session, login } = useAuth();
   const insets = useSafeAreaInsets();
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
 
   if (session) {
     return <Redirect href="/" />;
@@ -49,18 +51,26 @@ export default function LoginScreen() {
       <YStack gap="$3" alignItems="center" width="100%">
         <LoginButton
           icon={
-            <Image
-              source={require("../../../assets/farcaster.webp")}
-              width="100%"
-              height="100%"
-            />
+            isLoggingIn ? (
+              <Spinner />
+            ) : (
+              <Image
+                source={require("../../../assets/farcaster.webp")}
+                width="100%"
+                height="100%"
+              />
+            )
           }
           label="Sign in with Farcaster"
+          onPress={() => {
+            login();
+            setIsLoggingIn(true);
+          }}
         />
-        <LoginButton
+        {/* <LoginButton
           icon={<Wallet2 strokeWidth={2.5} color="black" />}
           label="Sign in with Wallet"
-        />
+        /> */}
         <LoginButton
           icon={<Lock strokeWidth={2.5} color="black" />}
           label="Sign in with Password"
@@ -77,7 +87,13 @@ const LoginButton = ({
   icon,
   label,
   href,
-}: { icon: ReactNode; label: string; href?: Href }) => {
+  onPress,
+}: {
+  icon: ReactNode;
+  label: string;
+  href?: Href;
+  onPress?: () => void;
+}) => {
   const Component = (
     <Button
       height="$5"
@@ -92,6 +108,7 @@ const LoginButton = ({
         backgroundColor: "white",
         opacity: 0.9,
       }}
+      onPress={onPress}
     >
       <View
         position="absolute"
@@ -109,7 +126,7 @@ const LoginButton = ({
 
   if (href) {
     return (
-      <Link href={href} absolute>
+      <Link href={href} absolute unpressable>
         {Component}
       </Link>
     );
@@ -119,7 +136,7 @@ const LoginButton = ({
 };
 
 const ThemeSelector = () => {
-  const { setTheme } = useTheme();
+  const { theme, setTheme } = useTheme();
 
   const themes: (ThemeName | undefined)[] = [
     "pink",
@@ -136,7 +153,12 @@ const ThemeSelector = () => {
   return (
     <XStack justifyContent="space-around" marginTop="$4" width="100%">
       {themes.map((t, i) => (
-        <ThemeItem key={t || i} theme={t} onPress={setTheme} />
+        <ThemeItem
+          key={t || i}
+          theme={t}
+          onPress={setTheme}
+          isActive={t === theme}
+        />
       ))}
     </XStack>
   );
@@ -145,9 +167,11 @@ const ThemeSelector = () => {
 const ThemeItem = ({
   theme,
   onPress,
+  isActive,
 }: {
   theme: ThemeName | undefined;
   onPress: (theme: ThemeName | undefined) => void;
+  isActive: boolean;
 }) => (
   <View
     theme={theme}
@@ -156,7 +180,7 @@ const ThemeItem = ({
     height="$2"
     borderRadius="$10"
     borderWidth="$1"
-    borderColor={theme ? "$color10" : "$mauve7"}
+    borderColor={isActive ? "$color12" : theme ? "$color10" : "$mauve7"}
     onPress={() => onPress(theme)}
   />
 );

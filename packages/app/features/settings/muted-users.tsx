@@ -5,19 +5,17 @@ import { FarcasterUser, User } from "@nook/common/types";
 import { useUsers } from "../../api/farcaster";
 import { FarcasterUserDisplay } from "../../components/farcaster/users/user-display";
 import { VolumeX } from "@tamagui/lucide-icons";
-import { useEffect, useState } from "react";
 import { useMuteUser } from "../../hooks/useMuteUser";
 import { Link } from "../../components/link";
+import { useMuteStore } from "../../store/useMuteStore";
 
 export const MutedUsers = ({ settings }: { settings: User }) => {
-  const { data, isLoading } = useUsers(settings.mutedUsers);
-  const [users, setUsers] = useState<FarcasterUser[]>([]);
-
-  useEffect(() => {
-    if (data) {
-      setUsers(data.data);
-    }
-  }, [data]);
+  const users = useMuteStore((state) => state.users);
+  const { data, isLoading } = useUsers(
+    Object.entries(users)
+      .filter(([_, muted]) => muted)
+      .map(([fid]) => fid),
+  );
 
   return (
     <YStack>
@@ -33,7 +31,7 @@ export const MutedUsers = ({ settings }: { settings: User }) => {
           <Spinner />
         </View>
       )}
-      {users.map((user) => (
+      {data?.data.map((user) => (
         <MutedUser key={user.fid} user={user} />
       ))}
     </YStack>
@@ -42,6 +40,12 @@ export const MutedUsers = ({ settings }: { settings: User }) => {
 
 const MutedUser = ({ user }: { user: FarcasterUser }) => {
   const { unmuteUser } = useMuteUser(user);
+  const isMuted = useMuteStore((state) => state.users[user.fid]);
+
+  if (!isMuted) {
+    return null;
+  }
+
   return (
     <Link href={`/users/${user.username}`}>
       <XStack

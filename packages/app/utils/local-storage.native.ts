@@ -12,12 +12,15 @@ export const getSession = async (): Promise<Session | undefined> => {
 };
 
 export const removeSession = async (session: Session): Promise<Session[]> => {
-  await SecureStore.deleteItemAsync("session");
   const sessions = await getSessions();
   const remainingSessions = sessions.filter(
     (s: Session) => s.fid !== session.fid,
   );
   await SecureStore.setItemAsync("sessions", JSON.stringify(remainingSessions));
+  await SecureStore.setItemAsync(
+    "session",
+    remainingSessions.length > 0 ? JSON.stringify(remainingSessions[0]) : "",
+  );
   return remainingSessions;
 };
 

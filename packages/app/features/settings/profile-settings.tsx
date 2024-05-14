@@ -13,7 +13,10 @@ import { useState } from "react";
 import { useAuth } from "../../context/auth";
 import { submitUserDataAdd } from "../../api/farcaster/actions";
 import { uploadImage } from "../../api/media";
-import { ImagePicker } from "../../components/upload/image-picker";
+import {
+  ImagePicker,
+  ImagePickerFile,
+} from "../../components/upload/image-picker";
 
 export const ProfileSettings = () => {
   const { user, setUser } = useAuth();
@@ -107,9 +110,9 @@ const UploadImageButton = ({
 }: { image: string; onUpload: (url: string) => void }) => {
   const [loading, setLoading] = useState(false);
 
-  const handleSelect = async (newImage: string) => {
+  const handleSelect = async (files: ImagePickerFile[]) => {
     setLoading(true);
-    const result = await uploadImage(newImage);
+    const result = await uploadImage(files[0].file);
     onUpload(result.data.link);
     setLoading(false);
   };

@@ -21,7 +21,6 @@ import {
   FarcasterUserAvatar,
   FarcasterUserDisplay,
 } from "@nook/app/components/farcaster/users/user-display";
-import { CreateCastButton } from "@nook/app/features/farcaster/create-cast/disalog";
 import { AccountSwitcher } from "@nook/app/features/auth/account-switcher";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -30,6 +29,7 @@ import { useTheme } from "@nook/app/context/theme";
 import { EnableSignerDialog } from "@nook/app/features/farcaster/enable-signer/dialog";
 import { NotificationsCount } from "@nook/app/features/notifications/notifications-count";
 import { ReactNode } from "react";
+import { CreateCastDialog } from "@nook/app/features/farcaster/create-cast/dialog";
 
 export type NookNavigationItem = {
   label: string;
@@ -422,7 +422,53 @@ const CreateCastItem = () => {
 
   return (
     <View marginTop="$4">
-      <CreateCastButton />
+      <View display="flex" $lg={{ display: "none" }}>
+        <CreateCastDialog initialState={{ text: "" }}>
+          <NookButton
+            variant="primary"
+            backgroundColor={
+              theme && ["light", "dark"].includes(theme)
+                ? "$color12"
+                : "$color9"
+            }
+          >
+            <NookText
+              fontWeight="700"
+              fontSize="$5"
+              color={
+                theme && ["light", "dark"].includes(theme) ? "$color1" : "white"
+              }
+            >
+              Cast
+            </NookText>
+          </NookButton>
+        </CreateCastDialog>
+      </View>
+      <View display="none" $lg={{ display: "flex" }}>
+        <CreateCastDialog initialState={{ text: "" }}>
+          <NookButton
+            variant="primary"
+            width="$5"
+            padding="$0"
+            backgroundColor={
+              theme && ["light", "dark"].includes(theme)
+                ? "$color12"
+                : "$color9"
+            }
+          >
+            <NookText>
+              <Pencil
+                size={24}
+                color={
+                  theme && ["light", "dark"].includes(theme)
+                    ? "$color1"
+                    : "white"
+                }
+              />
+            </NookText>
+          </NookButton>
+        </CreateCastDialog>
+      </View>
     </View>
   );
 };

@@ -13,20 +13,27 @@ import { User } from "@nook/common/types";
 import { VolumeX } from "@tamagui/lucide-icons";
 import { muteWord, unmuteWord } from "../../api/settings";
 import { useState } from "react";
+import { useMuteStore } from "../../store/useMuteStore";
 
 export const MutedWords = ({ settings }: { settings: User }) => {
-  const [words, setWords] = useState<string[]>(settings.mutedWords);
+  const words = useMuteStore((state) =>
+    Object.entries(state.words)
+      .filter(([_, muted]) => muted)
+      .map(([word]) => word),
+  );
+  const muteWordStore = useMuteStore((state) => state.muteWord);
+  const unmuteWordStore = useMuteStore((state) => state.unmuteWord);
 
   const handleUnmuteWord = async (word: string) => {
     await unmuteWord(word);
-    setWords((prev) => prev.filter((w) => w !== word));
+    unmuteWordStore(word);
   };
 
   const handleMuteWord = async (word: string) => {
     if (!word) return;
     if (words.includes(word)) return;
     await muteWord(word);
-    setWords((prev) => [...prev, word]);
+    muteWordStore(word);
   };
 
   return (
@@ -99,11 +106,10 @@ const MutedWord = ({
 const AddMutedWord = ({ onSubmit }: { onSubmit: (word: string) => void }) => {
   const [word, setWord] = useState("");
   return (
-    <Popover size="$5" allowFlip>
+    <Popover size="$5" allowFlip placement="bottom-end">
       <Popover.Trigger asChild>
         <NookButton variant="action">Add word</NookButton>
       </Popover.Trigger>
-
       <Popover.Content
         borderWidth={1}
         borderColor="$borderColorBg"
@@ -119,27 +125,25 @@ const AddMutedWord = ({ onSubmit }: { onSubmit: (word: string) => void }) => {
           },
         ]}
         padding="$3"
+        width={200}
       >
         <Popover.Arrow borderWidth={1} borderColor="$borderColorBg" />
 
-        <YStack space="$3">
-          <XStack space="$3">
+        <YStack gap="$3" width="100%">
+          <XStack gap="$3" theme="surface2">
             <Input
-              size="$3"
+              flexGrow={1}
               placeholder="Enter word or phrase..."
               borderColor="$color5"
               focusVisibleStyle={{ outlineWidth: 0 }}
               value={word}
               onChangeText={setWord}
+              autoFocus
             />
           </XStack>
 
           <Popover.Close asChild>
-            <NookButton
-              size="$3"
-              onPress={() => onSubmit(word)}
-              borderWidth="$0"
-            >
+            <NookButton onPress={() => onSubmit(word)} borderWidth="$0">
               Mute Word
             </NookButton>
           </Popover.Close>

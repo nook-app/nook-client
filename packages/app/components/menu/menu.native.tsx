@@ -66,7 +66,6 @@ const MenuInner = ({
             enterStyle={{ opacity: 0 }}
             exitStyle={{ opacity: 0 }}
           />
-          <Popover.Sheet.Handle backgroundColor="$color2" opacity={1} />
           <Popover.Sheet.Frame
             paddingBottom="$8"
             paddingTop="$2"

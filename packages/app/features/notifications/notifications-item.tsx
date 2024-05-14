@@ -116,7 +116,7 @@ const LikeNotification = ({
           $platform-web={{ overflowX: "scroll", scrollbarWidth: "none" }}
         >
           {notification.users.slice(0, 8).map((user, i) => (
-            <Link key={user.fid} href={`/users/${user.username}`}>
+            <Link key={`${user.fid}-${i}`} href={`/users/${user.username}`}>
               <CdnAvatar src={user.pfp} size="$2.5">
                 <View
                   position="absolute"
@@ -191,7 +191,7 @@ const RecastNotification = ({
           $platform-web={{ overflowX: "scroll", scrollbarWidth: "none" }}
         >
           {notification.users.slice(0, 8).map((user, i) => (
-            <Link key={user.fid} href={`/users/${user.username}`}>
+            <Link key={`${user.fid}-${i}`} href={`/users/${user.username}`}>
               <CdnAvatar src={user.pfp} size="$2.5">
                 <View
                   position="absolute"
@@ -261,7 +261,7 @@ const FollowNotification = ({
           $platform-web={{ overflowX: "scroll", scrollbarWidth: "none" }}
         >
           {notification.users.slice(0, 8).map((user, i) => (
-            <Link key={user.fid} href={`/users/${user.username}`}>
+            <Link key={`${user.fid}-${i}`} href={`/users/${user.username}`}>
               <CdnAvatar src={user.pfp} size="$2.5">
                 <View
                   position="absolute"

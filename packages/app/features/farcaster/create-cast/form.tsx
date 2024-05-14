@@ -15,106 +15,23 @@ import { useCreateCast } from "./context";
 import { memo, useCallback, useEffect, useRef, useState } from "react";
 import { CdnAvatar } from "../../../components/cdn-avatar";
 import { useAuth } from "../../../context/auth";
-import { ChevronDown, Image, X } from "@tamagui/lucide-icons";
+import { ChevronDown, X } from "@tamagui/lucide-icons";
 import { useParams, useRouter } from "solito/navigation";
-import { SubmitCastAddRequest, UrlContentResponse } from "@nook/common/types";
+import { UrlContentResponse } from "@nook/common/types";
 import { fetchChannel, useCast } from "../../../api/farcaster";
 import { fetchContent } from "../../../api/content";
 import { EmbedCast } from "../../../components/embeds/EmbedCast";
 import { Embed } from "../../../components/embeds/Embed";
-import { NativeSyntheticEvent, TextInputChangeEventData } from "react-native";
+import {
+  NativeSyntheticEvent,
+  Platform,
+  TextInputChangeEventData,
+} from "react-native";
 import { ChannelSelect } from "../../../components/farcaster/channels/channel-select";
 import { CreateCastMentions } from "./mentions";
 import { useTheme } from "../../../context/theme";
 
-export const CreateCastEditor = ({ onSubmit }: { onSubmit?: () => void }) => {
-  const { activeCastLength } = useCreateCast();
-  return (
-    <View>
-      <View padding="$3" zIndex={1}>
-        <CreateCastItem index={0} />
-      </View>
-      <XStack justifyContent="space-between" padding="$1">
-        <XStack>
-          <UploadImageButton />
-        </XStack>
-        <XStack alignItems="center" gap="$3">
-          <NookText
-            color={activeCastLength > 320 ? "$red11" : "$mauve11"}
-            fontWeight="500"
-            fontSize="$4"
-          >{`${activeCastLength} / 320`}</NookText>
-          <CreateCastButton onSubmit={onSubmit} />
-        </XStack>
-      </XStack>
-    </View>
-  );
-};
-
-const UploadImageButton = () => {
-  const { uploadImages, activeEmbedLimit, activeIndex } = useCreateCast();
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
-  const handleImageSelect = async (
-    event: React.ChangeEvent<HTMLInputElement>,
-  ) => {
-    const files = event.target.files;
-    if (!files || files.length === 0) return;
-
-    const fileCount = Math.min(files.length, activeEmbedLimit);
-    const newImages: string[] = [];
-    for (let i = 0; i < fileCount; i++) {
-      const file = files[i];
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        if (e.target?.result) {
-          newImages.push(e.target.result as string);
-        }
-        if (newImages.length === fileCount) {
-          uploadImages(activeIndex, newImages);
-        }
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  return (
-    <View
-      cursor="pointer"
-      width="$3"
-      height="$3"
-      justifyContent="center"
-      alignItems="center"
-      borderRadius="$10"
-      hoverStyle={{
-        // @ts-ignore
-        transition: "all 0.2s ease-in-out",
-        backgroundColor: "$color3",
-      }}
-      pressStyle={{
-        // @ts-ignore
-        transition: "all 0.2s ease-in-out",
-        backgroundColor: "$color4",
-      }}
-      onPress={(e) => {
-        e.stopPropagation();
-        fileInputRef.current?.click();
-      }}
-    >
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept="image/*"
-        multiple
-        style={{ display: "none" }}
-        onChange={handleImageSelect}
-      />
-      <Image size={24} color="$color12" />
-    </View>
-  );
-};
-
-const CreateCastButton = ({ onSubmit }: { onSubmit?: () => void }) => {
+export const CreateCastButton = ({ onSubmit }: { onSubmit?: () => void }) => {
   const { allCastsValid, isCasting, cast, reset, thread } = useCreateCast();
   const toast = useToastController();
   const router = useRouter();
@@ -141,14 +58,16 @@ const CreateCastButton = ({ onSubmit }: { onSubmit?: () => void }) => {
       disabledStyle={{
         opacity: 0.5,
       }}
-      color={["light", "dark"].includes(theme) ? "$color1" : "white"}
+      color={theme && ["light", "dark"].includes(theme) ? "$color1" : "white"}
       backgroundColor={
-        ["light", "dark"].includes(theme) ? "$color12" : "$color9"
+        theme && ["light", "dark"].includes(theme) ? "$color12" : "$color9"
       }
     >
       {isCasting ? (
         <Spinner
-          color={["light", "dark"].includes(theme) ? "$color1" : "white"}
+          color={
+            theme && ["light", "dark"].includes(theme) ? "$color1" : "white"
+          }
         />
       ) : thread.parentHash ? (
         "Reply"
@@ -159,8 +78,7 @@ const CreateCastButton = ({ onSubmit }: { onSubmit?: () => void }) => {
   );
 };
 
-const CreateCastItem = ({ index }: { index: number }) => {
-  const theme = useTheme();
+export const CreateCastItem = ({ index }: { index: number }) => {
   const { updateText, activeIndex, removeCast, setActiveIndex, casts, cast } =
     useCreateCast();
   const { user } = useAuth();
@@ -180,6 +98,7 @@ const CreateCastItem = ({ index }: { index: number }) => {
   const handleInput = (
     event: NativeSyntheticEvent<TextInputChangeEventData>,
   ) => {
+    if (Platform.OS !== "web") return;
     const target = event.target;
     // @ts-ignore
     target.style.height = "inherit";
@@ -279,11 +198,19 @@ const CreateCastChannelSelector = () => {
   const { thread, channel, updateChannel } = useCreateCast();
   const params = useParams();
 
+  const fetchAndSetChannel = useCallback(
+    async (channelId: string) => {
+      const channel = await fetchChannel(channelId);
+      updateChannel(channel);
+    },
+    [updateChannel],
+  );
+
   useEffect(() => {
-    if (params.channelId) {
-      fetchChannel(params.channelId as string).then(updateChannel);
+    if (params?.channelId) {
+      fetchAndSetChannel(params.channelId as string);
     }
-  }, [params.channelId, updateChannel]);
+  }, [params?.channelId, fetchAndSetChannel]);
 
   if (thread.parentHash) return null;
 
@@ -305,7 +232,7 @@ const CreateCastChannelSelector = () => {
         >
           <XStack alignItems="center" gap="$1.5">
             {channel?.imageUrl && (
-              <CdnAvatar src={channel.imageUrl} size="$0.95" />
+              <CdnAvatar src={channel.imageUrl} size="$0.9" />
             )}
             <NookText color="$color12" fontWeight="600" fontSize="$2">
               {channel?.name || "Channel"}
@@ -411,7 +338,7 @@ const PostEmbedsDisplay = ({
   onRemove: (content: string) => void;
 }) => {
   const isAllImages = embeds.every((content) =>
-    content.type?.startsWith("image/"),
+    content.contentType?.startsWith("image/"),
   );
   if (isAllImages && embeds.length > 1) {
     return (

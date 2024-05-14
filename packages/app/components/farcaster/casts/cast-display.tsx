@@ -36,7 +36,7 @@ export const FarcasterCastResponseDisplay = ({
   const deletedCasts = useMuteStore((state) => state.casts);
 
   if (
-    mutedUsers[cast.user.username || cast.user.fid] ||
+    mutedUsers[cast.user.fid] ||
     (cast.channel && mutedChannels[cast.channel.url]) ||
     deletedCasts[cast.hash]
   ) {

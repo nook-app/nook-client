@@ -26,7 +26,6 @@ export const useDeleteCast = (cast: FarcasterCastResponse) => {
     }
 
     setIsDeleting(true);
-    updateDelete(cast);
     try {
       await submitCastRemove({
         hash: cast.hash,
@@ -51,7 +50,8 @@ export const useDeleteCast = (cast: FarcasterCastResponse) => {
 
       setIsDeleting(false);
       toast.show("Cast deleted");
-      haptics.notificationSuccess();
+      haptics.impactMedium();
+      updateDelete(cast);
 
       if (params?.hash === cast.hash) {
         router.push("/");

@@ -1,6 +1,5 @@
 import { darkenColor, stringToColor } from "../utils";
 import { LinearGradient } from "@tamagui/linear-gradient";
-import { Image } from "@nook/app-ui";
 import { SvgUri } from "react-native-svg";
 
 export const GradientIcon = ({

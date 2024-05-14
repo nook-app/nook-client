@@ -7,6 +7,8 @@ export const formatToCDN = (
   url: string,
   opts?: { width?: number; type?: string },
 ) => {
+  if (url.startsWith("data:")) return url;
+
   const params = ["c_fill"];
 
   if (opts?.type === "image/gif" || url.includes(".gif")) {
@@ -19,7 +21,7 @@ export const formatToCDN = (
     params.push(`w_${opts.width}`);
   }
 
-  return `${CDN_BASE_URL}/${params.join(",")}/${url}`;
+  return `${CDN_BASE_URL}/${params.join(",")}/${encodeURIComponent(url)}`;
 };
 
 export function formatTimeAgo(timestamp: number) {

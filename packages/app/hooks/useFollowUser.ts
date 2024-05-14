@@ -16,7 +16,7 @@ export const useFollowUser = (user: FarcasterUser) => {
 
   const followUser = useCallback(async () => {
     updateFollow(user);
-    haptics.notificationSuccess();
+    haptics.impactMedium();
     try {
       const response = await submitLinkAdd({
         linkType: "follow",
@@ -36,7 +36,7 @@ export const useFollowUser = (user: FarcasterUser) => {
 
   const unfollowUser = useCallback(async () => {
     updateUnfollow(user);
-    haptics.notificationSuccess();
+    haptics.impactMedium();
     try {
       const response = await submitLinkRemove({
         linkType: "follow",

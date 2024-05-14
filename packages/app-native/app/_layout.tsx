@@ -72,11 +72,21 @@ function RootLayoutNav() {
                         }}
                       />
                       <Stack.Screen
-                        name="(modals)"
+                        name="(modals)/image/[url]"
                         options={{
                           headerShown: false,
                           animation: "fade",
                           animationDuration: 100,
+                          presentation: "transparentModal",
+                          contentStyle: {
+                            backgroundColor: "rgba(0, 0, 0, 0.90)",
+                          },
+                        }}
+                      />
+                      <Stack.Screen
+                        name="(modals)/create/cast"
+                        options={{
+                          headerShown: false,
                           presentation: "transparentModal",
                         }}
                       />

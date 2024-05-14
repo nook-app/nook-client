@@ -33,7 +33,7 @@ export default function NotificationsScreen() {
       }
       pages={[
         {
-          name: "Following",
+          name: "Priority",
           component: (
             <NotificationsPriorityFeed
               paddingBottom={paddingBottom}

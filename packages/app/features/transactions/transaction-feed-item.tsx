@@ -4,7 +4,6 @@ import { NookText, View, XStack, YStack } from "@nook/app-ui";
 import { Transaction } from "@nook/common/types";
 import {
   FarcasterUserAvatar,
-  FarcasterUserTextDisplay,
   FarcasterUserTooltip,
 } from "../../components/farcaster/users/user-display";
 import {
@@ -80,7 +79,7 @@ export const TransactionFeedItem = ({
                 >
                   {`${
                     user.username ? `@${user.username}` : `!${user.fid}`
-                  } · ${formatTimeAgo(transaction.timestamp)}`}
+                  } · ${formatTimeAgo(transaction.timestamp * 1000)}`}
                 </NookText>
               </XStack>
             )}
@@ -99,7 +98,7 @@ export const TransactionFeedItem = ({
                   ellipsizeMode="middle"
                   flexShrink={1}
                 >
-                  {`· ${formatTimeAgo(transaction.timestamp)}`}
+                  {`· ${formatTimeAgo(transaction.timestamp * 1000)}`}
                 </NookText>
               </XStack>
             )}

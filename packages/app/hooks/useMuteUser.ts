@@ -21,10 +21,10 @@ export const useMuteUser = (user: FarcasterUser) => {
       login();
       return;
     }
-    updateMute(user);
-    haptics.notificationSuccess();
+    haptics.impactMedium();
     try {
       await muteUser(user.fid);
+      updateMute(user);
       return;
     } catch (e) {
       toast.show("An error occurred. Try again.");
@@ -39,10 +39,10 @@ export const useMuteUser = (user: FarcasterUser) => {
       return;
     }
 
-    updateUnmute(user);
-    haptics.notificationSuccess();
+    haptics.impactMedium();
     try {
       await unmuteUser(user.fid);
+      updateUnmute(user);
       return;
     } catch (e) {
       toast.show("An error occurred. Try again.");

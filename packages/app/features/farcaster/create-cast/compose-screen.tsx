@@ -1,8 +1,9 @@
 "use client";
 
-import { View } from "@nook/app-ui";
+import { ScrollView, View } from "@nook/app-ui";
 import { CreateCastProvider } from "./context";
-import { CreateCastEditor } from "./form";
+import { CreateCastItem } from "./form";
+import { CreateCastActionBar } from "./action-bar";
 
 export const ComposeScreen = (props: {
   text?: string;
@@ -15,9 +16,18 @@ export const ComposeScreen = (props: {
         embeds: props["embeds[]"]?.split(",") ?? [],
       }}
     >
-      <View padding="$3">
-        <CreateCastEditor />
-      </View>
+      <ScrollView
+        keyboardDismissMode="interactive"
+        keyboardShouldPersistTaps="always"
+        $platform-web={{
+          maxHeight: "75vh",
+        }}
+      >
+        <View padding="$3" zIndex={1}>
+          <CreateCastItem index={0} />
+        </View>
+      </ScrollView>
+      <CreateCastActionBar />
     </CreateCastProvider>
   );
 };

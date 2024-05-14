@@ -4,7 +4,6 @@ import { FarcasterUserAvatar } from "@nook/app/components/farcaster/users/user-d
 import { useAuth } from "@nook/app/context/auth";
 import { useTheme } from "@nook/app/context/theme";
 import { AccountSwitcher } from "@nook/app/features/auth/account-switcher";
-import { CreateCastDialog } from "@nook/app/features/farcaster/create-cast/disalog";
 import { EnableSignerDialog } from "@nook/app/features/farcaster/enable-signer/dialog";
 import {
   NookButton,
@@ -19,6 +18,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ReactNode } from "react";
 import { NAVIGATION, NookNavigationItem } from "./RootNavigation";
+import { CreateCastDialog } from "@nook/app/features/farcaster/create-cast/dialog";
 
 export const MobileNavigation = ({ children }: { children: ReactNode }) => {
   return (

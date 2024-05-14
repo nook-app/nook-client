@@ -8,6 +8,7 @@ import { NookText, View } from "@nook/app-ui";
 import { DrawerToggleButton } from "../../../../components/DrawerToggleButton";
 import { Link } from "@nook/app/components/link";
 import { Search } from "@tamagui/lucide-icons";
+import { ActionButton } from "../../../../components/ActionButton";
 
 export default function HomeScreen() {
   const paddingBottom = useBottomTabBarHeight();
@@ -16,69 +17,72 @@ export default function HomeScreen() {
   if (!session?.fid) return null;
 
   return (
-    <PagerLayout
-      title={
-        <View
-          flexDirection="row"
-          justifyContent="space-between"
-          alignItems="center"
-          paddingVertical="$2"
-        >
-          <DrawerToggleButton />
-          <NookText fontSize="$5" fontWeight="600">
-            Home
-          </NookText>
-          <Link
-            href={{
-              pathname: "/search",
-            }}
-            unpressable
+    <>
+      <PagerLayout
+        title={
+          <View
+            flexDirection="row"
+            justifyContent="space-between"
+            alignItems="center"
+            paddingVertical="$2"
           >
-            <IconButton icon={Search} />
-          </Link>
-        </View>
-      }
-      pages={[
-        {
-          name: "Following",
-          component: (
-            <FarcasterFilteredFeed
-              paddingBottom={paddingBottom}
-              paddingTop={HEADER_HEIGHT}
-              filter={{
-                users: {
-                  type: UserFilterType.FOLLOWING,
-                  data: {
-                    fid: session?.fid,
-                  },
-                },
+            <DrawerToggleButton />
+            <NookText fontSize="$5" fontWeight="600">
+              Home
+            </NookText>
+            <Link
+              href={{
+                pathname: "/search",
               }}
-            />
-          ),
-        },
-        {
-          name: "For you",
-          component: (
-            <FarcasterFilteredFeed
-              paddingBottom={paddingBottom}
-              paddingTop={HEADER_HEIGHT}
-              api={`https://graph.cast.k3l.io/casts/personalized/popular/${session?.fid}`}
-              filter={{}}
-            />
-          ),
-        },
-        {
-          name: "Trending",
-          component: (
-            <FarcasterFilteredFeed
-              paddingBottom={paddingBottom}
-              paddingTop={HEADER_HEIGHT}
-              api="https://api.neynar.com/v2/farcaster/feed/trending"
-              filter={{}}
-            />
-          ),
-        },
-      ]}
-    />
+              unpressable
+            >
+              <IconButton icon={Search} />
+            </Link>
+          </View>
+        }
+        pages={[
+          {
+            name: "Following",
+            component: (
+              <FarcasterFilteredFeed
+                paddingBottom={paddingBottom}
+                paddingTop={HEADER_HEIGHT}
+                filter={{
+                  users: {
+                    type: UserFilterType.FOLLOWING,
+                    data: {
+                      fid: session?.fid,
+                    },
+                  },
+                }}
+              />
+            ),
+          },
+          {
+            name: "For you",
+            component: (
+              <FarcasterFilteredFeed
+                paddingBottom={paddingBottom}
+                paddingTop={HEADER_HEIGHT}
+                api={`https://graph.cast.k3l.io/casts/personalized/popular/${session?.fid}`}
+                filter={{}}
+              />
+            ),
+          },
+          {
+            name: "Trending",
+            component: (
+              <FarcasterFilteredFeed
+                paddingBottom={paddingBottom}
+                paddingTop={HEADER_HEIGHT}
+                api="https://api.neynar.com/v2/farcaster/feed/trending"
+                filter={{}}
+              />
+            ),
+          },
+        ]}
+      />
+      <ActionButton bottom={paddingBottom} />
+    </>
   );
 }

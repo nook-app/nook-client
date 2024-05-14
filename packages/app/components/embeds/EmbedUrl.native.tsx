@@ -3,6 +3,7 @@ import { Image, NookText, View, XStack, YStack } from "@nook/app-ui";
 import { Link as LinkIcon } from "@tamagui/lucide-icons";
 import { Link } from "solito/link";
 import { SvgUri } from "react-native-svg";
+import { formatToCDN } from "../../utils";
 
 export const EmbedUrl = ({ content }: { content: UrlContentResponse }) => {
   if (!content.metadata) return null;
@@ -45,7 +46,7 @@ export const EmbedUrl = ({ content }: { content: UrlContentResponse }) => {
             )}
             {!content.metadata.image.endsWith(".svg") && (
               <Image
-                source={{ uri: content.metadata.image }}
+                source={{ uri: formatToCDN(content.metadata.image) }}
                 style={{
                   width: "100%",
                   height: "100%",

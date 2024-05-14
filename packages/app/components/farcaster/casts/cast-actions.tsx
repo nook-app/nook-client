@@ -7,7 +7,11 @@ import {
   Repeat2,
   Share,
 } from "@tamagui/lucide-icons";
-import { CreateCastDialog } from "../../../features/farcaster/create-cast/disalog";
+import {
+  CreateCastQuoteTrigger,
+  CreateCastReplyTrigger,
+  CreateCastTrigger,
+} from "../../../features/farcaster/create-cast/trigger";
 import { FarcasterCastResponse } from "@nook/common/types";
 import { useLikeCast } from "../../../hooks/useLikeCast";
 import { useRecastCast } from "../../../hooks/useRecastCast";
@@ -20,52 +24,7 @@ import { CopyLink, OpenLink } from "../../menu/menu-actions";
 export const FarcasterReplyActionButton = ({
   cast,
 }: { cast: FarcasterCastResponse }) => {
-  const { session, login } = useAuth();
-  return (
-    <View
-      onPress={(e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        if (!session) {
-          login();
-          return;
-        }
-      }}
-    >
-      <CreateCastDialog
-        initialState={{
-          text: "",
-          parentFid: cast.user.fid,
-          parentHash: cast.hash,
-        }}
-      >
-        <View
-          cursor="pointer"
-          width="$2.5"
-          height="$2.5"
-          justifyContent="center"
-          alignItems="center"
-          borderRadius="$10"
-          group
-          hoverStyle={{
-            // @ts-ignore
-            transition: "all 0.2s ease-in-out",
-            backgroundColor: "$color3",
-          }}
-        >
-          <MessageSquare
-            size={20}
-            opacity={0.75}
-            color="$mauve11"
-            $group-hover={{
-              color: "$blue9",
-              opacity: 1,
-            }}
-          />
-        </View>
-      </CreateCastDialog>
-    </View>
-  );
+  return <CreateCastReplyTrigger cast={cast} />;
 };
 
 export const FarcasterRecastActionButton = ({
@@ -114,65 +73,7 @@ export const FarcasterRecastActionButton = ({
     );
   }
 
-  return (
-    <CreateCastDialog
-      initialState={{
-        text: "",
-        castEmbedHash: cast.hash,
-        castEmbedFid: cast.user.fid,
-      }}
-      noTrigger
-    >
-      <Menu
-        trigger={
-          <Popover.Trigger asChild>
-            <View
-              cursor="pointer"
-              width="$2.5"
-              height="$2.5"
-              justifyContent="center"
-              alignItems="center"
-              borderRadius="$10"
-              group
-              hoverStyle={{
-                // @ts-ignore
-                transition: "all 0.2s ease-in-out",
-                backgroundColor: "$color3",
-              }}
-            >
-              <Repeat2
-                size={24}
-                opacity={isRecasted ? 1 : 0.75}
-                $group-hover={{
-                  color: "$green9",
-                  opacity: 1,
-                }}
-                strokeWidth={isRecasted ? 2.5 : 1.75}
-                color={isRecasted ? theme.green9.val : "$mauve11"}
-              />
-            </View>
-          </Popover.Trigger>
-        }
-      >
-        <MenuItem
-          Icon={Repeat2}
-          title="Recast"
-          onPress={() => {
-            recastCast();
-          }}
-        />
-        <FarcasterQuoteMenuItem />
-      </Menu>
-    </CreateCastDialog>
-  );
-};
-
-const FarcasterQuoteMenuItem = () => {
-  return (
-    <Dialog.Trigger asChild>
-      <MenuItem Icon={MessageSquareQuote} title="Quote" />
-    </Dialog.Trigger>
-  );
+  return <CreateCastQuoteTrigger cast={cast} />;
 };
 
 export const FarcasterLikeActionButton = ({

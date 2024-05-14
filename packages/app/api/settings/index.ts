@@ -2,16 +2,19 @@ import { Session, UserSettings } from "@nook/common/types";
 import { makeRequest } from "../utils";
 import { useQuery } from "@tanstack/react-query";
 import { CastAction } from "@nook/common/types";
+import { useMuteStore } from "../../store/useMuteStore";
 
 export const fetchSettings = async (): Promise<UserSettings> => {
   return makeRequest("/v1/user/settings");
 };
 
 export const useSettings = (session: Session | undefined) => {
+  const updateFromSettings = useMuteStore((state) => state.updateFromSettings);
   return useQuery({
     queryKey: ["settings"],
     queryFn: async () => {
       const response = await fetchSettings();
+      if (response) updateFromSettings(response);
       return response || null;
     },
     enabled: !!session,

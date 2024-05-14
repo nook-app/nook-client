@@ -2,22 +2,20 @@
 
 import { NookText, Spinner, View, XStack, YStack } from "@nook/app-ui";
 import { Channel, User } from "@nook/common/types";
-import { useChannels } from "../../api/farcaster";
 import { VolumeX } from "@tamagui/lucide-icons";
-import { useEffect, useState } from "react";
 import { FarcasterChannelDisplay } from "../../components/farcaster/channels/channel-display";
 import { useMuteChannel } from "../../hooks/useMuteChannel";
 import { Link } from "../../components/link";
+import { useMuteStore } from "../../store/useMuteStore";
+import { useChannelUrls } from "../../api/farcaster";
 
 export const MutedChannels = ({ settings }: { settings: User }) => {
-  const { data, isLoading } = useChannels(settings.mutedChannels);
-  const [channels, setChannels] = useState<Channel[]>([]);
-
-  useEffect(() => {
-    if (data) {
-      setChannels(data.data);
-    }
-  }, [data]);
+  const channels = useMuteStore((state) => state.channels);
+  const { data, isLoading } = useChannelUrls(
+    Object.entries(channels)
+      .filter(([_, muted]) => muted)
+      .map(([url]) => url),
+  );
 
   return (
     <YStack>
@@ -33,7 +31,7 @@ export const MutedChannels = ({ settings }: { settings: User }) => {
           <Spinner />
         </View>
       )}
-      {channels.map((channel) => (
+      {data?.data.map((channel) => (
         <MutedChannel key={channel.channelId} channel={channel} />
       ))}
     </YStack>
@@ -42,6 +40,13 @@ export const MutedChannels = ({ settings }: { settings: User }) => {
 
 const MutedChannel = ({ channel }: { channel: Channel }) => {
   const { unmuteChannel } = useMuteChannel(channel);
+
+  const isMuted = useMuteStore((state) => state.channels[channel.url]);
+
+  if (!isMuted) {
+    return null;
+  }
+
   return (
     <Link href={`/channels/${channel.channelId}`}>
       <XStack
