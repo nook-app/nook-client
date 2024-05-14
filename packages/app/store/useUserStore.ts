@@ -62,7 +62,7 @@ export const useUserStore = create<UserStore>((set, get) => ({
   addUsersFromNotifications: (notifications: NotificationResponse[]) => {
     const currentUsers = get().users;
     const users = notifications.flatMap((notification) => {
-      const users = notification.users || [];
+      const users = [...(notification.users || [])];
       if (!notification.cast) return users;
       const cast = notification.cast;
       for (const embed of cast.embedCasts) {

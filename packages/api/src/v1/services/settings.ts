@@ -12,7 +12,7 @@ export class SettingsService {
   }
 
   async getSettings(fid: string) {
-    const settings = await this.client.user.findFirst({
+    let settings = await this.client.user.findFirst({
       where: {
         fid,
       },
@@ -30,7 +30,25 @@ export class SettingsService {
     });
 
     if (!settings) {
-      return;
+      settings = await this.client.user.create({
+        data: {
+          fid,
+          signedUpAt: new Date(),
+          loggedInAt: new Date(),
+          refreshToken: "",
+        },
+        select: {
+          theme: true,
+          mutedUsers: true,
+          mutedParentUrls: true,
+          mutedWords: true,
+          actions: {
+            include: {
+              action: true,
+            },
+          },
+        },
+      });
     }
 
     return {

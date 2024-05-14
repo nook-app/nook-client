@@ -29,6 +29,8 @@ import {
   UrlContentResponse,
 } from "@nook/common/types";
 import { submitFrameAction } from "../../../api/farcaster/actions";
+import { EnableSignerDialog } from "../../../features/farcaster/enable-signer/dialog";
+import { useAuth } from "../../../context/auth";
 
 export const EmbedFrame = ({
   cast,
@@ -208,41 +210,55 @@ const FrameButtonAction = ({
   onPress,
 }: { button: FrameButton; onPress: () => void }) => {
   const theme = useTheme();
+  const { signer } = useAuth();
+
+  const Component = (
+    <Button onPress={signer?.state === "completed" ? onPress : undefined}>
+      <Text
+        alignItems="center"
+        gap="$1.5"
+        flexShrink={1}
+        paddingHorizontal="$1"
+        flexWrap="nowrap"
+        numberOfLines={2}
+        textAlign="center"
+        fontWeight="500"
+      >
+        {button.action === "tx" && (
+          <>
+            <MaterialCommunityIcons
+              name="lightning-bolt"
+              size={12}
+              color={theme.mauve12.val}
+            />{" "}
+          </>
+        )}
+        <Text textAlign="center" fontWeight="500">
+          {button.label}
+        </Text>
+        {button.action === "link" ||
+        button.action === "post_redirect" ||
+        button.action === "mint" ? (
+          <>
+            {" "}
+            <ExternalLink size={12} />
+          </>
+        ) : null}
+      </Text>
+    </Button>
+  );
+
+  if (signer?.state === "completed") {
+    return (
+      <View flex={1} theme="surface4">
+        {Component}
+      </View>
+    );
+  }
+
   return (
     <View flex={1} theme="surface4">
-      <Button onPress={onPress}>
-        <Text
-          alignItems="center"
-          gap="$1.5"
-          flexShrink={1}
-          paddingHorizontal="$1"
-          flexWrap="nowrap"
-          numberOfLines={2}
-          textAlign="center"
-          fontWeight="500"
-        >
-          {button.action === "tx" && (
-            <>
-              <MaterialCommunityIcons
-                name="lightning-bolt"
-                size={12}
-                color={theme.mauve12.val}
-              />{" "}
-            </>
-          )}
-          <Text textAlign="center" fontWeight="500">
-            {button.label}
-          </Text>
-          {button.action === "link" ||
-          button.action === "post_redirect" ||
-          button.action === "mint" ? (
-            <>
-              {" "}
-              <ExternalLink size={12} />
-            </>
-          ) : null}
-        </Text>
-      </Button>
+      <EnableSignerDialog>{Component}</EnableSignerDialog>
     </View>
   );
 };

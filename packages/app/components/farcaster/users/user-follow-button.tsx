@@ -16,6 +16,33 @@ export const FarcasterUserFollowButton = ({
     return null;
   }
 
+  if (signer?.state === "completed") {
+    return (
+      <View
+        onPress={(e) => {
+          e.preventDefault();
+        }}
+      >
+        <NookButton
+          onPress={(e) => {
+            if (!session) {
+              login();
+              return;
+            }
+            if (isFollowing) {
+              unfollowUser();
+            } else {
+              followUser();
+            }
+          }}
+          variant={isFollowing ? "active-action" : "action"}
+        >
+          {isFollowing ? "Unfollow" : "Follow"}
+        </NookButton>
+      </View>
+    );
+  }
+
   return (
     <View
       onPress={(e) => {
@@ -28,14 +55,6 @@ export const FarcasterUserFollowButton = ({
             if (!session) {
               login();
               return;
-            }
-            if (!signer || signer?.state !== "completed") {
-              return;
-            }
-            if (isFollowing) {
-              unfollowUser();
-            } else {
-              followUser();
             }
           }}
           variant={isFollowing ? "active-action" : "action"}

@@ -125,15 +125,17 @@ export const AuthProvider = ({
   });
 
   const handleSessionChange = useCallback(async (session: Session) => {
-    setSession(session);
-    getSigner().then((signer) => {
-      setSigner(signer);
-    });
-    fetchUser(session.fid).then((user) => {
-      setUser(user);
-    });
-    amplitude.init("7819c3ae9a7a78fc6835dcc60cdeb018", `fid:${session.fid}`);
     await updateSession(session);
+    setSession(session);
+    await Promise.all([
+      getSigner().then((signer) => {
+        setSigner(signer);
+      }),
+      fetchUser(session.fid).then((user) => {
+        setUser(user);
+      }),
+    ]);
+    amplitude.init("7819c3ae9a7a78fc6835dcc60cdeb018", `fid:${session.fid}`);
   }, []);
 
   const loginViaPrivyToken = useCallback(async () => {

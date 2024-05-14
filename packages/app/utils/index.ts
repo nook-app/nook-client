@@ -8,14 +8,9 @@ export const formatToCDN = (
   opts?: { width?: number; type?: string },
 ) => {
   if (url.startsWith("data:")) return url;
+  // if (url.includes("imagedelivery.net")) return url;
 
   const params = ["c_fill"];
-
-  if (opts?.type === "image/gif" || url.includes(".gif")) {
-    params.push("f_gif");
-  } else {
-    params.push("f_jpg");
-  }
 
   if (opts?.width) {
     params.push(`w_${opts.width}`);

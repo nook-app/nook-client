@@ -11,6 +11,8 @@ import { EnableSignerDialog } from "../../../features/farcaster/enable-signer/di
 import { useAuth } from "../../../context/auth";
 import { Menu } from "../../menu/menu";
 import { CopyLink, OpenLink } from "../../menu/menu-actions";
+import { useCallback } from "react";
+import { Platform } from "react-native";
 
 export const FarcasterReplyActionButton = ({
   cast,
@@ -23,10 +25,10 @@ export const FarcasterRecastActionButton = ({
 }: { cast: FarcasterCastResponse }) => {
   const theme = useTheme();
   const { unrecastCast, isRecasted } = useRecastCast(cast);
-  const { session, login } = useAuth();
+  const { session, login, signer } = useAuth();
 
   if (isRecasted || !session) {
-    return (
+    const Component = (
       <View
         cursor="pointer"
         width="$2.5"
@@ -34,21 +36,32 @@ export const FarcasterRecastActionButton = ({
         justifyContent="center"
         alignItems="center"
         borderRadius="$10"
-        group
+        group={Platform.OS === "web" ?? undefined}
         hoverStyle={{
           // @ts-ignore
           transition: "all 0.2s ease-in-out",
           backgroundColor: "$color3",
         }}
-        onPress={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          if (!session) {
-            login();
-            return;
-          }
-          unrecastCast();
-        }}
+        pressStyle={
+          signer?.state === "completed"
+            ? {
+                scale: 1.25,
+              }
+            : undefined
+        }
+        onPress={
+          signer?.state === "completed"
+            ? (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                if (!session) {
+                  login();
+                  return;
+                }
+                unrecastCast();
+              }
+            : undefined
+        }
       >
         <Repeat2
           size={24}
@@ -62,6 +75,12 @@ export const FarcasterRecastActionButton = ({
         />
       </View>
     );
+
+    if (signer?.state === "completed") {
+      return Component;
+    }
+
+    return <EnableSignerDialog>{Component}</EnableSignerDialog>;
   }
 
   return <CreateCastQuoteTrigger cast={cast} />;
@@ -72,53 +91,66 @@ export const FarcasterLikeActionButton = ({
 }: { cast: FarcasterCastResponse }) => {
   const theme = useTheme();
   const { likeCast, unlikeCast, isLiked } = useLikeCast(cast);
-  const { session, login } = useAuth();
-  return (
-    <EnableSignerDialog>
-      <View
-        animation="bouncy"
-        cursor="pointer"
-        width="$2.5"
-        height="$2.5"
-        justifyContent="center"
-        alignItems="center"
-        borderRadius="$10"
-        group
-        hoverStyle={{
-          // @ts-ignore
-          transition: "all 0.2s ease-in-out",
-          backgroundColor: "$color3",
+  const { session, login, signer } = useAuth();
+
+  const Component = (
+    <View
+      animation="bouncy"
+      cursor="pointer"
+      width="$2.5"
+      height="$2.5"
+      justifyContent="center"
+      alignItems="center"
+      borderRadius="$10"
+      group={Platform.OS === "web" ?? undefined}
+      hoverStyle={{
+        // @ts-ignore
+        transition: "all 0.2s ease-in-out",
+        backgroundColor: "$color3",
+      }}
+      pressStyle={
+        signer?.state === "completed"
+          ? {
+              scale: 1.25,
+            }
+          : undefined
+      }
+      onPress={
+        signer?.state === "completed"
+          ? (e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              if (!session) {
+                login();
+                return;
+              }
+              if (isLiked) {
+                unlikeCast();
+              } else {
+                likeCast();
+              }
+            }
+          : undefined
+      }
+    >
+      <Heart
+        size={20}
+        opacity={isLiked ? 1 : 0.75}
+        $group-hover={{
+          color: "$red9",
+          opacity: 1,
         }}
-        pressStyle={{
-          scale: 1.25,
-        }}
-        onPress={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          if (!session) {
-            login();
-            return;
-          }
-          if (isLiked) {
-            unlikeCast();
-          } else {
-            likeCast();
-          }
-        }}
-      >
-        <Heart
-          size={20}
-          opacity={isLiked ? 1 : 0.75}
-          $group-hover={{
-            color: "$red9",
-            opacity: 1,
-          }}
-          color={isLiked ? theme.red9.val : "$mauve11"}
-          fill={isLiked ? theme.red9.val : "transparent"}
-        />
-      </View>
-    </EnableSignerDialog>
+        color={isLiked ? theme.red9.val : "$mauve11"}
+        fill={isLiked ? theme.red9.val : "transparent"}
+      />
+    </View>
   );
+
+  if (signer?.state === "completed") {
+    return Component;
+  }
+
+  return <EnableSignerDialog>{Component}</EnableSignerDialog>;
 };
 
 export const FarcasterShareButton = ({

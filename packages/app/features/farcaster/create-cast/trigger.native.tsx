@@ -15,6 +15,8 @@ import { Menu } from "../../../components/menu/menu";
 import { MenuItem } from "../../../components/menu/menu-item";
 import { useRecastCast } from "../../../hooks/useRecastCast";
 import { useMenu } from "../../../components/menu/context";
+import { useAuth } from "../../../context/auth";
+import { router } from "expo-router";
 
 export const CreateCastTrigger = ({
   children,
@@ -25,12 +27,19 @@ export const CreateCastTrigger = ({
   initialState: SubmitCastAddRequest;
   noTrigger?: boolean;
 }) => {
+  const { signer } = useAuth();
   return (
     <Link
-      href={{
-        pathname: "/create/cast",
-        params: initialState,
-      }}
+      href={
+        signer?.state === "completed"
+          ? {
+              pathname: "/create/cast",
+              params: initialState,
+            }
+          : {
+              pathname: "/enable-signer",
+            }
+      }
       absolute
       onPress={() => haptics.selection()}
     >
@@ -73,6 +82,8 @@ export const CreateCastQuoteTrigger = ({
 }) => {
   const theme = useTheme();
   const { recastCast, isRecasted } = useRecastCast(cast);
+  const { signer } = useAuth();
+
   return (
     <Menu
       trigger={
@@ -109,7 +120,12 @@ export const CreateCastQuoteTrigger = ({
         Icon={Repeat2}
         title="Recast"
         onPress={() => {
-          recastCast();
+          if (signer?.state === "completed") {
+            recastCast();
+          } else {
+            haptics.selection();
+            router.push("/enable-signer");
+          }
         }}
       />
       <CreateCastQuoteTriggerMenuItem cast={cast} />
@@ -121,16 +137,24 @@ const CreateCastQuoteTriggerMenuItem = ({
   cast,
 }: { cast: FarcasterCastResponse }) => {
   const { close } = useMenu();
+  const { signer } = useAuth();
+
   return (
     <Link
-      href={{
-        pathname: "/create/cast",
-        params: {
-          text: "",
-          castEmbedHash: cast.hash,
-          castEmbedFid: cast.user.fid,
-        },
-      }}
+      href={
+        signer?.state === "completed"
+          ? {
+              pathname: "/create/cast",
+              params: {
+                text: "",
+                castEmbedHash: cast.hash,
+                castEmbedFid: cast.user.fid,
+              },
+            }
+          : {
+              pathname: "/enable-signer",
+            }
+      }
       absolute
       onPress={() => {
         haptics.selection();

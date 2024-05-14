@@ -192,73 +192,54 @@ const FrameButtonAction = ({
 
   const { session, signer } = useAuth();
 
-  if (session && signer?.state !== "completed") {
+  const Component = (
+    <Button
+      onPress={
+        signer?.state === "completed"
+          ? (e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              onPress();
+            }
+          : undefined
+      }
+    >
+      {button.action === "tx" && (
+        <>
+          <Zap
+            size={12}
+            color={!theme ? "$color1" : "$color12"}
+            fill={!theme ? tamaguiTheme.color1.val : tamaguiTheme.color12.val}
+            marginRight="$1"
+          />
+        </>
+      )}
+      {button.label}
+      {button.action === "link" ||
+      button.action === "post_redirect" ||
+      button.action === "mint" ? (
+        <>
+          <ExternalLink
+            size={12}
+            color={!theme ? "$color1" : "$color12"}
+            marginLeft="$1"
+          />
+        </>
+      ) : null}
+    </Button>
+  );
+
+  if (signer?.state === "completed") {
     return (
       <View flex={1} theme="surface4">
-        <EnableSignerDialog>
-          <Button>
-            {button.action === "tx" && (
-              <>
-                <Zap
-                  size={12}
-                  color={!theme ? "$color1" : "$color12"}
-                  fill={
-                    !theme ? tamaguiTheme.color1.val : tamaguiTheme.color12.val
-                  }
-                  marginRight="$1"
-                />
-              </>
-            )}
-            {button.label}
-            {button.action === "link" ||
-            button.action === "post_redirect" ||
-            button.action === "mint" ? (
-              <>
-                <ExternalLink
-                  size={12}
-                  color={!theme ? "$color1" : "$color12"}
-                  marginLeft="$1"
-                />
-              </>
-            ) : null}
-          </Button>
-        </EnableSignerDialog>
+        {Component}
       </View>
     );
   }
 
   return (
     <View flex={1} theme="surface4">
-      <Button
-        onPress={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          onPress();
-        }}
-      >
-        {button.action === "tx" && (
-          <>
-            <Zap
-              size={12}
-              color={!theme ? "$color1" : "white"}
-              fill={!theme ? tamaguiTheme.color1.val : tamaguiTheme.color12.val}
-              marginRight="$1"
-            />
-          </>
-        )}
-        {button.label}
-        {button.action === "link" ||
-        button.action === "post_redirect" ||
-        button.action === "mint" ? (
-          <>
-            <ExternalLink
-              size={12}
-              marginLeft="$1"
-              color={!theme ? "$color1" : "white"}
-            />
-          </>
-        ) : null}
-      </Button>
+      <EnableSignerDialog>{Component}</EnableSignerDialog>
     </View>
   );
 };

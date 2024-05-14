@@ -41,7 +41,11 @@ export const CreateCastButton = ({ onSubmit }: { onSubmit?: () => void }) => {
     const response = await cast();
     if (response) {
       toast.show("Successfully casted!");
-      router.push(`/casts/${response.hash}`);
+      if (Platform.OS === "web") {
+        router.push(`/casts/${response.hash}`);
+      } else {
+        router.push(`/(drawer)/(tabs)/(home)/casts/${response.hash}`);
+      }
     }
     onSubmit?.();
     reset();

@@ -36,6 +36,7 @@ export const CdnAvatar = ({
           recyclingKey={formattedSrc}
           source={{ uri: formattedSrc }}
           style={{ width: "100%", height: "100%" }}
+          allowDownscaling={false}
         />
       )}
       {formattedSrc?.endsWith(".svg") && (

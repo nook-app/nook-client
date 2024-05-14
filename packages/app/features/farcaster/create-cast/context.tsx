@@ -1,4 +1,10 @@
-import { createContext, useContext, ReactNode, useState } from "react";
+import {
+  createContext,
+  useContext,
+  ReactNode,
+  useState,
+  useCallback,
+} from "react";
 import { useToastController } from "@tamagui/toast";
 import {
   Channel,
@@ -126,14 +132,14 @@ export const CreateCastProvider = ({
     return true;
   };
 
-  const handleUpdateChannel = (channel?: Channel) => {
+  const handleUpdateChannel = useCallback((channel?: Channel) => {
     setChannel(channel);
     setCasts((prev) => {
       const newCasts = [...prev];
       newCasts[0] = { ...newCasts[0], parentUrl: channel?.url };
       return newCasts;
     });
-  };
+  }, []);
 
   const handleUploadImages = async (index: number, images: string[]) => {
     setIsUploadingImages(true);

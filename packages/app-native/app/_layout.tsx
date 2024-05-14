@@ -92,6 +92,13 @@ function RootLayoutNav() {
                             presentation: "transparentModal",
                           }}
                         />
+                        <Stack.Screen
+                          name="(modals)/enable-signer"
+                          options={{
+                            headerShown: false,
+                            presentation: "transparentModal",
+                          }}
+                        />
                       </Stack>
                     </ToastProvider>
                   </ScrollProvider>

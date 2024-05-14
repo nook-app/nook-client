@@ -9,7 +9,8 @@ import { makeRequest } from "../utils";
 export const loginUser = async (
   token: string,
 ): Promise<Session & { signer: GetSignerResponse }> => {
-  return await makeRequest("/user/login/privy", {
+  return await makeRequest("/v1/user/login", {
+    method: "POST",
     headers: {
       Authorization: `Bearer ${token}`,
     },

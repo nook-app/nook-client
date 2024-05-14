@@ -1,14 +1,10 @@
 import { AlertDialog, NookButton, XStack } from "@nook/app-ui";
-import { useEffect, useState } from "react";
+import { ReactNode, useEffect, useState } from "react";
 import { useAuth } from "../../../context/auth";
 import { X } from "@tamagui/lucide-icons";
 import { EnableSignerContent } from "./content";
 
-export const EnableSignerDialog = ({
-  children,
-}: {
-  children?: React.ReactNode;
-}) => {
+export const EnableSignerDialog = ({ children }: { children: ReactNode }) => {
   const { session, signer } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
 

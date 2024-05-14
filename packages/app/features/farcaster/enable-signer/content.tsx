@@ -23,7 +23,7 @@ import { Loading } from "../../../components/loading";
 import { wagmiConfig } from "../../../utils/wagmi";
 import { Link } from "../../../components/link";
 
-export const EnableSignerContent = ({ isOpen }: { isOpen: boolean }) => {
+export const EnableSignerContent = ({ isOpen }: { isOpen?: boolean }) => {
   return (
     <WagmiProvider config={wagmiConfig}>
       <EnableSignerContentInner isOpen={isOpen} />
@@ -31,7 +31,7 @@ export const EnableSignerContent = ({ isOpen }: { isOpen: boolean }) => {
   );
 };
 
-const EnableSignerContentInner = ({ isOpen }: { isOpen: boolean }) => {
+const EnableSignerContentInner = ({ isOpen }: { isOpen?: boolean }) => {
   const { session } = useAuth();
   const { address } = useAccount();
   const { data } = useReadContract({
@@ -158,7 +158,7 @@ const EnableWithCustody = ({ address }: { address: `0x${string}` }) => {
   );
 };
 
-const EnableWithWarpcast = ({ isOpen }: { isOpen: boolean }) => {
+const EnableWithWarpcast = ({ isOpen }: { isOpen?: boolean }) => {
   const { signer, refreshSigner } = useAuth();
   const pollingRef = useRef<NodeJS.Timeout>();
 

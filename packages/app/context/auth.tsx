@@ -122,15 +122,17 @@ export const AuthProvider = ({
   const handleSessionChange = useCallback(async (session: Session) => {
     await updateServerSession(session);
     setSession(session);
-    getSigner().then((signer) => {
-      setSigner(signer);
-      updateSigner(signer);
-    });
-    fetchUser(session.fid).then((user) => {
-      setUser(user);
-      updateUser(user);
-    });
     updateSession(session);
+    await Promise.all([
+      getSigner().then((signer) => {
+        setSigner(signer);
+        updateSigner(signer);
+      }),
+      fetchUser(session.fid).then((user) => {
+        setUser(user);
+        updateUser(user);
+      }),
+    ]);
   }, []);
 
   useEffect(() => {

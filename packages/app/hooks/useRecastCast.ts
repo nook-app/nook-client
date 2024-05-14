@@ -16,7 +16,6 @@ export const useRecastCast = (cast: FarcasterCastResponse) => {
   const updateUnrecast = useCastStore((state) => state.unrecastCast);
 
   const recastCast = useCallback(async () => {
-    updateRecast(cast);
     haptics.impactMedium();
     try {
       const response = await submitReactionAdd({
@@ -24,6 +23,7 @@ export const useRecastCast = (cast: FarcasterCastResponse) => {
         targetFid: cast.user.fid,
         targetHash: cast.hash,
       });
+      updateRecast(cast);
       if (!("message" in response)) {
         return;
       }
@@ -36,7 +36,6 @@ export const useRecastCast = (cast: FarcasterCastResponse) => {
   }, [cast, updateRecast, updateUnrecast, toast]);
 
   const unrecastCast = useCallback(async () => {
-    updateUnrecast(cast);
     haptics.impactMedium();
     try {
       const response = await submitReactionRemove({
@@ -44,6 +43,7 @@ export const useRecastCast = (cast: FarcasterCastResponse) => {
         targetFid: cast.user.fid,
         targetHash: cast.hash,
       });
+      updateUnrecast(cast);
       if (!("message" in response)) {
         return;
       }

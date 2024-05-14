@@ -1,18 +1,23 @@
-import { View } from "@nook/app-ui";
+import { TamaguiElement, View } from "@nook/app-ui";
 import { Plus } from "@tamagui/lucide-icons";
 import { Link } from "@nook/app/components/link";
-import { router, useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams } from "expo-router";
 import { useScroll } from "@nook/app/context/scroll";
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
   withTiming,
 } from "react-native-reanimated";
-import { useEffect } from "react";
+import { forwardRef, useEffect } from "react";
+import { useAuth } from "@nook/app/context/auth";
+import { useTheme } from "@nook/app/context/theme";
 
 export const ActionButton = ({ bottom }: { bottom: number }) => {
   const { isScrolling } = useScroll();
   const { channelId } = useLocalSearchParams();
+  const { signer } = useAuth();
+  const { theme } = useTheme();
+
   //   const animation = useSharedValue(0);
   //   const [open, setOpen] = useState(false);
 
@@ -89,30 +94,38 @@ export const ActionButton = ({ bottom }: { bottom: number }) => {
             </Animated.View>
           </TouchableOpacity>
         ))} */}
-        <Button
-          onPress={() =>
-            router.push({
-              pathname: "/create/cast",
-              params: { text: "", channelId },
-            })
+        <Link
+          href={
+            signer?.state === "completed"
+              ? {
+                  pathname: "/create/cast",
+                  params: { text: "", channelId },
+                }
+              : {
+                  pathname: "/enable-signer",
+                }
           }
+          unpressable
+          absolute
         >
-          <Plus color="white" />
-        </Button>
+          <Button>
+            <Plus color={!theme ? "$color1" : "white"} />
+          </Button>
+        </Link>
       </Animated.View>
     </View>
   );
 };
 
-const Button = ({
-  children,
-  onPress,
-  onLongPress,
-}: {
-  children: React.ReactNode;
-  onPress: () => void;
-  onLongPress?: () => void;
-}) => {
+const Button = forwardRef<
+  TamaguiElement,
+  {
+    children: React.ReactNode;
+    onPress?: () => void;
+    onLongPress?: () => void;
+  }
+>(({ children, onPress, onLongPress }, ref) => {
+  const { theme } = useTheme();
   return (
     <View
       width="$5"
@@ -120,7 +133,7 @@ const Button = ({
       position="absolute"
       bottom="$3"
       right="$3"
-      backgroundColor="$color9"
+      backgroundColor={!theme ? "$color12" : "$color9"}
       justifyContent="center"
       alignItems="center"
       borderRadius="$10"
@@ -133,8 +146,9 @@ const Button = ({
       animation="100ms"
       onPress={onPress}
       onLongPress={onLongPress}
+      ref={ref}
     >
       {children}
     </View>
   );
-};
+});

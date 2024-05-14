@@ -91,7 +91,6 @@ export const CreateCastQuoteTrigger = ({
   cast: FarcasterCastResponse;
 }) => {
   const theme = useTheme();
-  const { recastCast, isRecasted } = useRecastCast(cast);
   return (
     <CreateCastTrigger
       initialState={{
@@ -120,36 +119,42 @@ export const CreateCastQuoteTrigger = ({
             >
               <Repeat2
                 size={24}
-                opacity={isRecasted ? 1 : 0.75}
+                opacity={0.75}
                 $group-hover={{
                   color: "$green9",
                   opacity: 1,
                 }}
-                strokeWidth={isRecasted ? 2.5 : 1.75}
-                color={isRecasted ? theme.green9.val : "$mauve11"}
+                strokeWidth={1.75}
+                color={"$mauve11"}
               />
             </View>
           </Popover.Trigger>
         }
       >
-        <MenuItem
-          Icon={Repeat2}
-          title="Recast"
-          onPress={() => {
-            recastCast();
-          }}
-        />
-        <CreateCastQuoteTriggerMenuItem />
+        <CreateCastQuoteTriggerMenuItem cast={cast} />
       </Menu>
     </CreateCastTrigger>
   );
 };
 
-const CreateCastQuoteTriggerMenuItem = () => {
+const CreateCastQuoteTriggerMenuItem = ({
+  cast,
+}: { cast: FarcasterCastResponse }) => {
   const { close } = useMenu();
+  const { recastCast } = useRecastCast(cast);
   return (
-    <Dialog.Trigger asChild>
-      <MenuItem Icon={MessageSquareQuote} title="Quote" onPress={close} />
-    </Dialog.Trigger>
+    <>
+      <MenuItem
+        Icon={Repeat2}
+        title="Recast"
+        onPress={() => {
+          close();
+          recastCast();
+        }}
+      />
+      <Dialog.Trigger asChild>
+        <MenuItem Icon={MessageSquareQuote} title="Quote" onPress={close} />
+      </Dialog.Trigger>
+    </>
   );
 };

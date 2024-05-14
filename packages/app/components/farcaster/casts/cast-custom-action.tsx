@@ -15,12 +15,13 @@ import { useAuth } from "../../../context/auth";
 import { submitFrameAction } from "../../../api/farcaster/actions";
 import { GradientIcon } from "../../gradient-icon";
 import { Link } from "../../link";
+import { EnableSignerDialog } from "../../../features/farcaster/enable-signer/dialog";
 
 export const FarcasterCustomActionButton = ({
   cast,
 }: { cast: FarcasterCastResponse }) => {
   const [open, setOpen] = useState(false);
-  const { settings, session } = useAuth();
+  const { settings, session, signer } = useAuth();
 
   const actions: (CastAction | null)[] = [];
   for (let i = 0; i < 8; i++) {
@@ -46,32 +47,61 @@ export const FarcasterCustomActionButton = ({
       }}
     >
       <Popover placement="bottom" open={open} onOpenChange={setOpen}>
-        <Popover.Trigger asChild>
-          <View
-            cursor="pointer"
-            width="$2.5"
-            height="$2.5"
-            justifyContent="center"
-            alignItems="center"
-            borderRadius="$10"
-            group
-            hoverStyle={{
-              // @ts-ignore
-              transition: "all 0.2s ease-in-out",
-              backgroundColor: "$color3",
-            }}
-          >
-            <LayoutGrid
-              size={20}
-              opacity={0.75}
-              color="$mauve11"
-              $group-hover={{
-                color: "$color9",
-                opacity: 1,
+        {signer?.state === "completed" ? (
+          <Popover.Trigger asChild>
+            <View
+              cursor="pointer"
+              width="$2.5"
+              height="$2.5"
+              justifyContent="center"
+              alignItems="center"
+              borderRadius="$10"
+              group
+              hoverStyle={{
+                // @ts-ignore
+                transition: "all 0.2s ease-in-out",
+                backgroundColor: "$color3",
               }}
-            />
-          </View>
-        </Popover.Trigger>
+            >
+              <LayoutGrid
+                size={20}
+                opacity={0.75}
+                color="$mauve11"
+                $group-hover={{
+                  color: "$color9",
+                  opacity: 1,
+                }}
+              />
+            </View>
+          </Popover.Trigger>
+        ) : (
+          <EnableSignerDialog>
+            <View
+              cursor="pointer"
+              width="$2.5"
+              height="$2.5"
+              justifyContent="center"
+              alignItems="center"
+              borderRadius="$10"
+              group
+              hoverStyle={{
+                // @ts-ignore
+                transition: "all 0.2s ease-in-out",
+                backgroundColor: "$color3",
+              }}
+            >
+              <LayoutGrid
+                size={20}
+                opacity={0.75}
+                color="$mauve11"
+                $group-hover={{
+                  color: "$color9",
+                  opacity: 1,
+                }}
+              />
+            </View>
+          </EnableSignerDialog>
+        )}
         <Popover.Content
           bordered
           enterStyle={{ y: -10, opacity: 0 }}

@@ -25,6 +25,7 @@ import { Menu } from "../../menu/menu";
 import { MenuItem } from "../../menu/menu-item";
 import { useMenu } from "../../menu/context";
 import { Linking, Platform } from "react-native";
+import { Link } from "../../link";
 
 export const FarcasterCastResponseMenu = ({
   cast,
@@ -145,17 +146,10 @@ const ViewCastEngagements = ({ cast }: { cast: FarcasterCastResponse }) => {
   const router = useRouter();
   const { close } = useMenu();
 
-  const handlePress = useCallback(() => {
-    router.push(`/casts/${cast.hash}/likes`);
-    close();
-  }, [cast.hash, router, close]);
-
   return (
-    <MenuItem
-      Icon={BarChart2}
-      title="View cast engagements"
-      onPress={handlePress}
-    />
+    <Link href={`/casts/${cast.hash}/likes`} onPress={close}>
+      <MenuItem Icon={BarChart2} title="View cast engagements" />
+    </Link>
   );
 };
 
