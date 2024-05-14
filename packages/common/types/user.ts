@@ -40,4 +40,9 @@ export type UserSettings = {
   mutedChannels: string[];
   mutedWords: string[];
   actions: CastActionInstall[];
+  notifications?: {
+    disabled: boolean;
+    receive: boolean;
+    onlyPowerBadge: boolean;
+  };
 };

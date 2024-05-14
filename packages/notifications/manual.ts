@@ -52,6 +52,7 @@ export const run = async () => {
         fid,
         type: type?.toUpperCase(),
         deletedAt: null,
+        powerBadge: true,
         sourceFid: {
           not: fid,
         },

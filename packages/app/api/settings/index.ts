@@ -11,7 +11,7 @@ export const fetchSettings = async (): Promise<UserSettings> => {
 export const useSettings = (session: Session | undefined) => {
   const updateFromSettings = useMuteStore((state) => state.updateFromSettings);
   return useQuery({
-    queryKey: ["settings"],
+    queryKey: ["settings", session?.fid],
     queryFn: async () => {
       const response = await fetchSettings();
       if (response) updateFromSettings(response);

@@ -10,7 +10,7 @@ import {
   FarcasterUser,
   GetSignerResponse,
   Session,
-  User,
+  UserSettings,
 } from "@nook/common/types";
 import {
   loginUser,
@@ -43,7 +43,7 @@ type AuthContextType = {
   setUser: (user: FarcasterUser) => void;
   signer?: GetSignerResponse;
   setSigner: (signer: GetSignerResponse) => void;
-  settings?: User;
+  settings?: UserSettings;
   privyUser?: PrivyUser;
   isInitializing: boolean;
 };

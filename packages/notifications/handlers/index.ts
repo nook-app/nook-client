@@ -52,7 +52,9 @@ export const getNotificationsHandler = async () => {
     ]);
 
     const isFollowing = following.includes(notification.sourceFid);
-    const ignoreMessage = !isFollowing && !isPowerBadge;
+    const ignoreMessage =
+      (!isFollowing && !isPowerBadge) ||
+      notification.fid === notification.sourceFid;
 
     await client.notification.upsert({
       where: {

@@ -1,19 +1,29 @@
 import { FastifyInstance } from "fastify";
 import { SettingsService } from "../services/settings";
 import { CastActionV1Request, CastActionV2Request } from "@nook/common/types";
+import { NotificationsAPIClient } from "@nook/common/clients";
 
 export const settingsRoutes = async (fastify: FastifyInstance) => {
   fastify.register(async (fastify: FastifyInstance) => {
     const settingsService = new SettingsService(fastify);
+    const notificationsApi = new NotificationsAPIClient();
 
     fastify.get("/user/settings", async (request, reply) => {
       const { fid } = (await request.jwtDecode()) as { fid: string };
       try {
-        const settings = await settingsService.getSettings(fid);
+        const [settings, notifications] = await Promise.all([
+          settingsService.getSettings(fid),
+          notificationsApi.getNotificationUser(
+            request.headers.authorization as string,
+          ),
+        ]);
         if (!settings) {
           return reply.send({});
         }
-        return reply.send(settings);
+        return reply.send({
+          ...settings,
+          notifications,
+        });
       } catch (e) {
         console.error(e);
         return reply.code(500).send({ message: (e as Error).message });

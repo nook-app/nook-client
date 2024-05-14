@@ -74,6 +74,10 @@ export default function NotificationsLayout() {
         name="explore/actions"
         options={{ title: "Explore Actions" }}
       />
+      <Stack.Screen
+        name="settings/notifications"
+        options={{ title: "Notifications Settings" }}
+      />
     </Stack>
   );
 }

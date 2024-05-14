@@ -40,7 +40,7 @@ export default function Settings() {
       />
       <SettingsItem
         title="Notifications"
-        description="Manage the kinds of notifications you receive from Nook."
+        description="Manage the kinds of notifications you receive."
         Icon={Bell}
         href="/settings/notifications"
       />

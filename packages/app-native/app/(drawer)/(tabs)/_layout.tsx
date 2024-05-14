@@ -31,6 +31,7 @@ export default function TabLayout() {
           position: "absolute",
           opacity: isScrolling ? 0.5 : 1,
         },
+        tabBarShowLabel: false,
       }}
     >
       <Tabs.Screen
@@ -38,7 +39,6 @@ export default function TabLayout() {
         options={{
           title: "Home",
           tabBarIcon: (props) => <TabBarHome {...props} />,
-          tabBarShowLabel: false,
         }}
       />
       <Tabs.Screen
@@ -46,7 +46,6 @@ export default function TabLayout() {
         options={{
           title: "Transactions",
           tabBarIcon: (props) => <TabBarTransactions {...props} />,
-          tabBarShowLabel: false,
         }}
       />
       <Tabs.Screen
@@ -54,7 +53,6 @@ export default function TabLayout() {
         options={{
           title: "Explore",
           tabBarIcon: (props) => <TabBarExplore {...props} />,
-          tabBarShowLabel: false,
         }}
       />
       <Tabs.Screen
@@ -62,7 +60,6 @@ export default function TabLayout() {
         options={{
           title: "Notifications",
           tabBarIcon: (props) => <TabBarNotifications {...props} />,
-          tabBarShowLabel: false,
         }}
       />
       <Tabs.Screen
@@ -70,7 +67,6 @@ export default function TabLayout() {
         options={{
           title: "Profile",
           tabBarIcon: (props) => <TabBarProfile {...props} />,
-          tabBarShowLabel: false,
         }}
       />
       <Tabs.Screen

@@ -142,7 +142,7 @@ const FarcasterExpandedCastHeader = ({
           displayMode={Display.LIST}
         />
       ))}
-      <YStack gap="$3" padding="$3">
+      <YStack gap="$3" padding="$3" ref={viewRef}>
         <XStack justifyContent="space-between">
           <FarcasterUserDisplay user={cast.user} asLink />
           <FarcasterCastResponseMenu cast={cast} />
@@ -191,11 +191,7 @@ const FarcasterExpandedCastHeader = ({
         <FarcasterCustomActionButton cast={cast} />
         <FarcasterShareButton cast={cast} />
       </XStack>
-      <View
-        borderBottomWidth="$0.5"
-        borderBottomColor="$borderColorBg"
-        ref={viewRef}
-      >
+      <View borderBottomWidth="$0.5" borderBottomColor="$borderColorBg">
         <ToggleGroup
           type="single"
           borderWidth="$0"

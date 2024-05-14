@@ -85,6 +85,10 @@ export default function HomeLayout() {
         options={{ title: "Profile Settings" }}
       />
       <Stack.Screen
+        name="settings/notifications"
+        options={{ title: "Notifications Settings" }}
+      />
+      <Stack.Screen
         name="settings/theme"
         options={{ title: "Theme Settings" }}
       />
