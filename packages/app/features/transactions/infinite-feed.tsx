@@ -1,9 +1,9 @@
 "use client";
 
 import { Transaction } from "@nook/common/types";
-import { AnimatePresence, Separator, Spinner, View } from "@nook/app-ui";
-import { TransactionFeedItem } from "./transaction-feed-item";
+import { Separator, Spinner, View } from "@nook/app-ui";
 import { InfiniteScrollList } from "../../components/infinite-scroll-list";
+import { TransactionLink } from "./transaction-link";
 
 export const TransactionInfiniteFeed = ({
   transactions,
@@ -32,22 +32,7 @@ export const TransactionInfiniteFeed = ({
     <InfiniteScrollList
       data={transactions}
       renderItem={({ item }) => (
-        <AnimatePresence>
-          <View
-            enterStyle={{
-              opacity: 0,
-            }}
-            exitStyle={{
-              opacity: 0,
-            }}
-            animation="quick"
-            opacity={1}
-            scale={1}
-            y={0}
-          >
-            <TransactionFeedItem transaction={item as Transaction} />
-          </View>
-        </AnimatePresence>
+        <TransactionLink transaction={item as Transaction} />
       )}
       onEndReached={fetchNextPage}
       ListFooterComponent={

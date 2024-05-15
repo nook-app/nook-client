@@ -32,8 +32,7 @@ export const useRecastCast = (cast: FarcasterCastResponse) => {
       toast.show("An error occurred. Try again.");
       haptics.notificationError();
     }
-    updateUnrecast(cast);
-  }, [cast, updateRecast, updateUnrecast, toast]);
+  }, [cast, updateRecast, toast]);
 
   const unrecastCast = useCallback(async () => {
     haptics.impactMedium();
@@ -52,8 +51,7 @@ export const useRecastCast = (cast: FarcasterCastResponse) => {
       toast.show("An error occurred. Try again.");
       haptics.notificationError();
     }
-    updateRecast(cast);
-  }, [cast, updateRecast, updateUnrecast, toast]);
+  }, [cast, updateUnrecast, toast]);
 
   return {
     recastCast,

@@ -3,6 +3,7 @@ import {
   CreateListRequest,
   UpdateListRequest,
   ListItem,
+  GetListsRequest,
 } from "@nook/common/types";
 import { ListsService } from "../service/lists";
 
@@ -10,11 +11,20 @@ export const listsRoutes = async (fastify: FastifyInstance) => {
   fastify.register(async (fastify: FastifyInstance) => {
     const listService = new ListsService(fastify);
 
-    fastify.post<{ Body: { userId: number } }>(
+    fastify.post<{ Body: GetListsRequest }>(
       "/lists/created",
       async (request, reply) => {
+        let viewerId: number | undefined;
         try {
-          const data = await listService.getCreatedLists(request.body.userId);
+          const { id } = (await request.jwtDecode()) as { id: number };
+          viewerId = id;
+        } catch (error) {}
+
+        try {
+          const data = await listService.getCreatedLists(
+            request.body,
+            viewerId,
+          );
           return reply.send({ data });
         } catch (error) {
           console.error(error);
@@ -23,11 +33,20 @@ export const listsRoutes = async (fastify: FastifyInstance) => {
       },
     );
 
-    fastify.post<{ Body: { userId: number } }>(
+    fastify.post<{ Body: GetListsRequest }>(
       "/lists/followed",
       async (request, reply) => {
+        let viewerId: number | undefined;
         try {
-          const data = await listService.getFollowedLists(request.body.userId);
+          const { id } = (await request.jwtDecode()) as { id: number };
+          viewerId = id;
+        } catch (error) {}
+
+        try {
+          const data = await listService.getFollowedLists(
+            request.body,
+            viewerId,
+          );
           return reply.send({ data });
         } catch (error) {
           console.error(error);
@@ -163,6 +182,34 @@ export const listsRoutes = async (fastify: FastifyInstance) => {
             return reply.code(403).send({ message: "Forbidden" });
           }
           await listService.removeItem(request.body);
+          return reply.send({});
+        } catch (error) {
+          console.error(error);
+          return reply.code(500).send({ message: "Internal Server Error" });
+        }
+      },
+    );
+
+    fastify.put<{ Params: { listId: string } }>(
+      "/lists/:listId/follow",
+      async (request, reply) => {
+        try {
+          const { id } = (await request.jwtDecode()) as { id: number };
+          await listService.followList(id, request.params.listId);
+          return reply.send({});
+        } catch (error) {
+          console.error(error);
+          return reply.code(500).send({ message: "Internal Server Error" });
+        }
+      },
+    );
+
+    fastify.delete<{ Params: { listId: string } }>(
+      "/lists/:listId/follow",
+      async (request, reply) => {
+        try {
+          const { id } = (await request.jwtDecode()) as { id: number };
+          await listService.unfollowList(id, request.params.listId);
           return reply.send({});
         } catch (error) {
           console.error(error);

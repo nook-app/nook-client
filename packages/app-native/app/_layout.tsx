@@ -93,10 +93,24 @@ function RootLayoutNav() {
                           }}
                         />
                         <Stack.Screen
+                          name="(modals)/create/list"
+                          options={{
+                            headerShown: false,
+                            presentation: "transparentModal",
+                          }}
+                        />
+                        <Stack.Screen
                           name="(modals)/enable-signer"
                           options={{
                             headerShown: false,
                             presentation: "transparentModal",
+                          }}
+                        />
+                        <Stack.Screen
+                          name="+not-found"
+                          options={{
+                            headerShown: false,
+                            animation: "fade",
                           }}
                         />
                       </Stack>

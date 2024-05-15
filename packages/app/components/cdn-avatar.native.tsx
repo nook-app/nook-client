@@ -31,7 +31,7 @@ export const CdnAvatar = ({
       justifyContent="center"
     >
       {children}
-      {!formattedSrc?.endsWith(".svg") && (
+      {formattedSrc && !formattedSrc?.endsWith(".svg") && (
         <Image
           recyclingKey={formattedSrc}
           source={{ uri: formattedSrc }}

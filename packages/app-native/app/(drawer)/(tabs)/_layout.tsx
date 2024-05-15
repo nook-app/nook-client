@@ -1,7 +1,7 @@
 import { Loading } from "@nook/app/components/loading";
 import { useAuth } from "@nook/app/context/auth";
 import { Redirect, Tabs } from "expo-router";
-import { Home, Bell, Link, UserCircle2, Sparkle } from "@tamagui/lucide-icons";
+import { Home, Bell, Link, UserCircle2, Search } from "@tamagui/lucide-icons";
 import { useTheme } from "@nook/app/context/theme";
 import { BlurView } from "expo-blur";
 import { NookText, View, useTheme as useTamaguiTheme } from "@nook/app-ui";
@@ -136,9 +136,10 @@ const TabBarTransactions = ({ focused }: { focused: boolean }) => {
 const TabBarExplore = ({ focused }: { focused: boolean }) => {
   const theme = useTamaguiTheme();
   return (
-    <Sparkle
+    <Search
       color="$mauve12"
-      fill={focused ? theme.mauve12.val : "transparent"}
+      // fill={focused ? theme.mauve12.val : "transparent"}
+      strokeWidth={focused ? 3 : 2}
     />
   );
 };

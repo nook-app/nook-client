@@ -2,6 +2,7 @@ import { create } from "zustand";
 import {
   Channel,
   FarcasterCastResponse,
+  List,
   NotificationResponse,
 } from "@nook/common/types";
 
@@ -10,6 +11,7 @@ interface ChannelStore {
   addChannels: (channels: Channel[]) => void;
   addChannelsFromCasts: (casts: FarcasterCastResponse[]) => void;
   addChannelsFromNotifications: (notifications: NotificationResponse[]) => void;
+  addChannelsFromLists: (lists: List[]) => void;
 }
 
 export const useChannelStore = create<ChannelStore>((set, get) => ({
@@ -88,6 +90,20 @@ export const useChannelStore = create<ChannelStore>((set, get) => ({
     });
     const newChannels = channels.reduce(
       (acc, channel) => {
+        if (acc[channel.channelId]) return acc;
+        acc[channel.channelId] = channel;
+        return acc;
+      },
+      {} as Record<string, Channel>,
+    );
+    set({ channels: { ...currentChannels, ...newChannels } });
+  },
+  addChannelsFromLists: (lists: List[]) => {
+    const currentChannels = get().channels;
+    const channels = lists.flatMap((list) => list.channels);
+    const newChannels = channels.reduce(
+      (acc, channel) => {
+        if (!channel) return acc;
         if (acc[channel.channelId]) return acc;
         acc[channel.channelId] = channel;
         return acc;

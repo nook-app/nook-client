@@ -6,8 +6,9 @@ import { formatToCDN } from "../../../utils";
 export const FarcasterCastResponseGridDisplay = ({
   cast,
 }: { cast: FarcasterCastResponse }) => {
-  const imageEmbed = cast.embeds.find((embed) =>
-    embed.contentType?.startsWith("image"),
+  const imageEmbed = cast.embeds.find(
+    (embed) =>
+      embed.contentType?.startsWith("image") || embed.uri.startsWith("data:"),
   );
 
   if (!imageEmbed) {

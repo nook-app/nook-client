@@ -4,7 +4,7 @@ import { FarcasterUserAvatar } from "@nook/app/components/farcaster/users/user-d
 import { useAuth } from "@nook/app/context/auth";
 import { formatNumber } from "@nook/app/utils";
 import { DrawerContentScrollView } from "@react-navigation/drawer";
-import { ComponentType } from "react";
+import { ComponentType, useEffect, useState } from "react";
 import {
   Home,
   User,
@@ -12,11 +12,16 @@ import {
   Image,
   MousePointerSquare,
   UsersRound,
+  MenuSquare,
+  ArrowUp,
 } from "@tamagui/lucide-icons";
 import { Href } from "expo-router/build/link/href";
 import { Link } from "@nook/app/components/link";
 import { AccountSwitcher } from "@nook/app/features/auth/account-switcher";
 import { IconButton } from "./IconButton";
+import * as Updates from "expo-updates";
+import { TouchableOpacity } from "react-native-gesture-handler";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export const SidebarLayout = () => {
   return (
@@ -27,6 +32,7 @@ export const SidebarLayout = () => {
           <SidebarNavigation />
         </View>
       </DrawerContentScrollView>
+      <SidebarUpdate />
     </View>
   );
 };
@@ -124,6 +130,13 @@ const SidebarNavigation = () => {
         }}
       />
       <SidebarNavigationItem
+        label="Lists"
+        Icon={MenuSquare}
+        href={{
+          pathname: "/(drawer)/(tabs)/(home)/lists",
+        }}
+      />
+      <SidebarNavigationItem
         label="Profile"
         Icon={User}
         href={{
@@ -166,5 +179,52 @@ const SidebarNavigationItem = ({
         </NookText>
       </XStack>
     </Link>
+  );
+};
+
+const SidebarUpdate = () => {
+  const [updateAvailable, setUpdateAvailable] = useState(false);
+  const insets = useSafeAreaInsets();
+
+  useEffect(() => {
+    if (__DEV__) return;
+    async function checkForUpdate() {
+      const update = await Updates.checkForUpdateAsync();
+      setUpdateAvailable(update.isAvailable);
+    }
+
+    checkForUpdate();
+    const interval = setInterval(checkForUpdate, 300000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  if (!updateAvailable) return null;
+
+  const handleUpdate = async () => {
+    await Updates.fetchUpdateAsync();
+    await Updates.reloadAsync();
+  };
+
+  return (
+    <View
+      style={{ position: "absolute", bottom: insets.bottom, right: 0, left: 0 }}
+    >
+      <TouchableOpacity onPress={handleUpdate}>
+        <XStack
+          borderRadius="$10"
+          backgroundColor="transparent"
+          alignItems="center"
+          gap="$4"
+          paddingVertical="$3"
+          paddingHorizontal="$6"
+        >
+          <ArrowUp color="$mauve12" size={24} />
+          <NookText fontSize="$7" fontWeight="700">
+            Update App
+          </NookText>
+        </XStack>
+      </TouchableOpacity>
+    </View>
   );
 };

@@ -3,6 +3,7 @@ import {
   FarcasterCastResponse,
   FarcasterUser,
   NotificationResponse,
+  List,
 } from "@nook/common/types";
 
 interface UserStore {
@@ -10,6 +11,7 @@ interface UserStore {
   addUsers: (users: FarcasterUser[]) => void;
   addUsersFromCasts: (casts: FarcasterCastResponse[]) => void;
   addUsersFromNotifications: (notifications: NotificationResponse[]) => void;
+  addUsersFromLists(lists: List[]): void;
   followUser: (user: FarcasterUser) => void;
   unfollowUser: (user: FarcasterUser) => void;
 }
@@ -84,6 +86,20 @@ export const useUserStore = create<UserStore>((set, get) => ({
     });
     const newUsers = users.reduce(
       (acc, user) => {
+        if (acc[user.username || user.fid]) return acc;
+        acc[user.username || user.fid] = user;
+        return acc;
+      },
+      {} as Record<string, FarcasterUser>,
+    );
+    set({ users: { ...currentUsers, ...newUsers } });
+  },
+  addUsersFromLists: (lists: List[]) => {
+    const currentUsers = get().users;
+    const users = lists.flatMap((list) => list.users);
+    const newUsers = users.reduce(
+      (acc, user) => {
+        if (!user) return acc;
         if (acc[user.username || user.fid]) return acc;
         acc[user.username || user.fid] = user;
         return acc;

@@ -33,9 +33,8 @@ export const FarcasterActionItem = memo(
           y={0}
         >
           <XStack
-            gap="$3"
-            paddingHorizontal="$3.5"
-            paddingVertical="$3"
+            gap="$2.5"
+            padding="$2.5"
             hoverStyle={{
               transform: "all 0.2s ease-in-out",
               backgroundColor: "$color2",

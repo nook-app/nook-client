@@ -1,15 +1,30 @@
-export type ListType = "USERS" | "PARENT_URLS" | "CASTS";
-export type ListItemType = "FID" | "ETH_ADDRESS" | "PARENT_URL" | "CAST_HASH";
-export type ListVisibility = "PUBLIC" | "PRIVATE";
+import { Channel, FarcasterUser } from "./farcaster";
+import { Display } from "./feed";
 
-export type List = {
-  id: string;
-  type: ListType;
-  creatorId: number;
+export enum ListType {
+  USERS = "USERS",
+  PARENT_URLS = "PARENT_URLS",
+  CASTS = "CASTS",
+}
+
+export enum ListItemType {
+  FID = "FID",
+  ETH_ADDRESS = "ETH_ADDRESS",
+  PARENT_URL = "PARENT_URL",
+  CAST_HASH = "CAST_HASH",
+}
+
+export enum ListVisibility {
+  PUBLIC = "PUBLIC",
+  PRIVATE = "PRIVATE",
+}
+
+type ListMetadata = {
   name: string;
   description?: string;
   imageUrl?: string;
   visibility: ListVisibility;
+  displayMode?: Display;
 };
 
 export type ListItem = {
@@ -18,17 +33,25 @@ export type ListItem = {
   id: string;
 };
 
-export type CreateListRequest = {
+export type List = ListMetadata & {
+  id: string;
   type: ListType;
-  name: string;
-  description?: string;
-  imageUrl?: string;
-  visibility: ListVisibility;
+  creatorId: number;
+  followerCount: number;
+  itemCount: number;
+  items: ListItem[];
+  users?: FarcasterUser[];
+  channels?: Channel[];
 };
 
-export type UpdateListRequest = {
-  name: string;
-  description?: string;
-  imageUrl?: string;
-  visibility: ListVisibility;
+export type CreateListRequest = ListMetadata & {
+  type: ListType;
+};
+
+export type UpdateListRequest = ListMetadata;
+
+export type GetListsRequest = {
+  userId: number;
+  type: ListType;
+  cursor?: string;
 };

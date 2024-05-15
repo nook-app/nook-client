@@ -92,6 +92,8 @@ export interface GetTransactionDto {
      * @memberof GetTransactionDto
      */
     blockNumber?: number;
+
+    contextActions?: Array<string>;
 }
 
 

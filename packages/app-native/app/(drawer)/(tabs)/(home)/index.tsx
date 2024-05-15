@@ -8,7 +8,7 @@ import { NookText, View } from "@nook/app-ui";
 import { DrawerToggleButton } from "../../../../components/DrawerToggleButton";
 import { Link } from "@nook/app/components/link";
 import { Search } from "@tamagui/lucide-icons";
-import { ActionButton } from "../../../../components/ActionButton";
+import { CreateActionButton } from "../../../../components/ActionButton";
 
 export default function HomeScreen() {
   const paddingBottom = useBottomTabBarHeight();
@@ -82,7 +82,7 @@ export default function HomeScreen() {
           },
         ]}
       />
-      <ActionButton bottom={paddingBottom} />
+      <CreateActionButton />
     </>
   );
 }

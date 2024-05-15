@@ -1,5 +1,5 @@
 import { TamaguiElement, View } from "@nook/app-ui";
-import { Plus } from "@tamagui/lucide-icons";
+import { Plus, MenuSquare } from "@tamagui/lucide-icons";
 import { Link } from "@nook/app/components/link";
 import { useLocalSearchParams } from "expo-router";
 import { useScroll } from "@nook/app/context/scroll";
@@ -8,15 +8,92 @@ import Animated, {
   useSharedValue,
   withTiming,
 } from "react-native-reanimated";
-import { forwardRef, useEffect } from "react";
+import { ComponentType, ReactNode, forwardRef, useEffect } from "react";
 import { useAuth } from "@nook/app/context/auth";
 import { useTheme } from "@nook/app/context/theme";
+import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
 
-export const ActionButton = ({ bottom }: { bottom: number }) => {
-  const { isScrolling } = useScroll();
+export const CreateActionButton = () => {
   const { channelId } = useLocalSearchParams();
   const { signer } = useAuth();
+
+  return (
+    <ActionButton>
+      <Link
+        href={
+          signer?.state === "completed"
+            ? {
+                pathname: "/create/cast",
+                params: { text: "", channelId },
+              }
+            : {
+                pathname: "/enable-signer",
+              }
+        }
+        unpressable
+        absolute
+      >
+        <Button Icon={Plus} />
+      </Link>
+    </ActionButton>
+  );
+};
+
+export const CreateListButton = () => {
+  return (
+    <ActionButton>
+      <Link
+        href={{
+          pathname: "/create/list",
+        }}
+        unpressable
+        absolute
+      >
+        <Button Icon={MenuSquare} />
+      </Link>
+    </ActionButton>
+  );
+};
+
+const Button = forwardRef<
+  TamaguiElement,
+  {
+    Icon: ComponentType<{ color: string }>;
+    onPress?: () => void;
+    onLongPress?: () => void;
+  }
+>(({ Icon, onPress, onLongPress }, ref) => {
   const { theme } = useTheme();
+  return (
+    <View
+      width="$5"
+      height="$5"
+      position="absolute"
+      bottom="$3"
+      right="$3"
+      backgroundColor={!theme ? "$color12" : "$color9"}
+      justifyContent="center"
+      alignItems="center"
+      borderRadius="$10"
+      shadowRadius={5}
+      shadowOffset={{ width: 0, height: 0 }}
+      shadowColor="$shadowColor"
+      pressStyle={{
+        scale: 0.75,
+      }}
+      animation="100ms"
+      onPress={onPress}
+      onLongPress={onLongPress}
+      ref={ref}
+    >
+      <Icon color={!theme ? "$color1" : "white"} />
+    </View>
+  );
+});
+
+export const ActionButton = ({ children }: { children: ReactNode }) => {
+  const { isScrolling } = useScroll();
+  const bottom = useBottomTabBarHeight();
 
   //   const animation = useSharedValue(0);
   //   const [open, setOpen] = useState(false);
@@ -94,61 +171,8 @@ export const ActionButton = ({ bottom }: { bottom: number }) => {
             </Animated.View>
           </TouchableOpacity>
         ))} */}
-        <Link
-          href={
-            signer?.state === "completed"
-              ? {
-                  pathname: "/create/cast",
-                  params: { text: "", channelId },
-                }
-              : {
-                  pathname: "/enable-signer",
-                }
-          }
-          unpressable
-          absolute
-        >
-          <Button>
-            <Plus color={!theme ? "$color1" : "white"} />
-          </Button>
-        </Link>
+        {children}
       </Animated.View>
     </View>
   );
 };
-
-const Button = forwardRef<
-  TamaguiElement,
-  {
-    children: React.ReactNode;
-    onPress?: () => void;
-    onLongPress?: () => void;
-  }
->(({ children, onPress, onLongPress }, ref) => {
-  const { theme } = useTheme();
-  return (
-    <View
-      width="$5"
-      height="$5"
-      position="absolute"
-      bottom="$3"
-      right="$3"
-      backgroundColor={!theme ? "$color12" : "$color9"}
-      justifyContent="center"
-      alignItems="center"
-      borderRadius="$10"
-      shadowRadius={5}
-      shadowOffset={{ width: 0, height: 0 }}
-      shadowColor="$shadowColor"
-      pressStyle={{
-        scale: 0.75,
-      }}
-      animation="100ms"
-      onPress={onPress}
-      onLongPress={onLongPress}
-      ref={ref}
-    >
-      {children}
-    </View>
-  );
-});

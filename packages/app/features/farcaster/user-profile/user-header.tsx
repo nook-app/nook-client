@@ -20,6 +20,9 @@ import { useAuth } from "../../../context/auth";
 import { FarcasterUserMenu } from "../../../components/farcaster/users/user-menu";
 import { Link } from "../../../components/link";
 import { MoreHorizontal } from "@tamagui/lucide-icons";
+import { useUserStore } from "../../../store/useUserStore";
+import { useEffect } from "react";
+import { fetchUser } from "../../../api/farcaster";
 
 export const UserHeader = ({
   user,
@@ -100,8 +103,18 @@ export const UserHeader = ({
 
 const MutualsPreview = ({ user }: { user: FarcasterUser }) => {
   const { session } = useAuth();
+  const mutuals = useUserStore(
+    (state) => state.users[user.username || user.fid]?.context?.mutuals,
+  );
+  const addUsers = useUserStore((state) => state.addUsers);
 
-  const mutuals = user?.context?.mutuals;
+  useEffect(() => {
+    if (!mutuals) {
+      fetchUser(user.username || user.fid).then((user) => {
+        addUsers([user]);
+      });
+    }
+  }, [mutuals, addUsers, user]);
 
   if (!session || !mutuals) return null;
 

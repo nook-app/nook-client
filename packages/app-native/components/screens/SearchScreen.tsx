@@ -1,4 +1,4 @@
-import { ScrollView, View, XStack } from "@nook/app-ui";
+import { ScrollView, View, XStack, YStack } from "@nook/app-ui";
 import { router, useLocalSearchParams, useSegments } from "expo-router";
 import { BackButton, IconButton } from "../IconButton";
 import { SearchBar } from "../SearchBar";
@@ -9,8 +9,11 @@ import { FarcasterUserBadge } from "@nook/app/components/farcaster/users/user-di
 import { FarcasterChannelBadge } from "@nook/app/components/farcaster/channels/channel-display";
 import { SearchResults } from "@nook/app/features/search/search-bar";
 import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
+import { useRecommendedChannels } from "@nook/app/api/farcaster";
+import { Channel } from "@nook/common/types";
+import { FarcasterChannelFeedItem } from "@nook/app/features/farcaster/channel-feed/channel-feed-item";
 
-export default function SearchScreen() {
+export default function SearchScreen({ isExplore }: { isExplore?: boolean }) {
   const paddingBottom = useBottomTabBarHeight();
   const [drawer, tabs, tab] = useSegments();
   const { q, user, channel } = useLocalSearchParams() as {
@@ -36,7 +39,7 @@ export default function SearchScreen() {
         paddingTop={insets.top}
         alignItems="center"
       >
-        <BackButton />
+        {!isExplore && <BackButton />}
         <SearchBar
           query={query}
           setQuery={setQuery}
@@ -47,7 +50,7 @@ export default function SearchScreen() {
             });
           }}
           prefix={prefix}
-          autoFocus={!q}
+          autoFocus={!isExplore && !q}
           right={
             q ? (
               <View paddingLeft="$2">
@@ -61,12 +64,32 @@ export default function SearchScreen() {
         keyboardDismissMode="on-drag"
         contentContainerStyle={{ paddingBottom }}
       >
-        <SearchResults
-          value={query}
-          user={user ? JSON.parse(user) : undefined}
-          channel={channel ? JSON.parse(channel) : undefined}
-        />
+        {query ? (
+          <SearchResults
+            value={query}
+            user={user ? JSON.parse(user) : undefined}
+            channel={channel ? JSON.parse(channel) : undefined}
+          />
+        ) : (
+          <RecommendedChannels />
+        )}
       </ScrollView>
     </View>
   );
 }
+
+const RecommendedChannels = () => {
+  const { data } = useRecommendedChannels();
+
+  return (
+    <YStack>
+      {data?.data.map((channel: Channel) => (
+        <FarcasterChannelFeedItem
+          key={channel.channelId}
+          channel={channel}
+          withBio
+        />
+      ))}
+    </YStack>
+  );
+};

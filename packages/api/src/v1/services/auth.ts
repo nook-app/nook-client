@@ -40,6 +40,7 @@ export class AuthService {
     }
 
     if (user.wallet) {
+      return this.loginUserWithWallet(user.wallet.address);
     }
   }
 
@@ -88,7 +89,7 @@ export class AuthService {
     }
 
     return {
-      id: user.id,
+      id: Number(user.id),
       fid,
       token: this.generateToken(user.id.toString(), fid),
       refreshToken,

@@ -12,6 +12,7 @@ import { PendingCast } from "../prisma/nook";
 import { Transaction } from "./transactions";
 import { Frame } from "./frames";
 import { CastAction } from "./user";
+import { List } from "./lists";
 
 export type FarcasterCastResponse = {
   hash: string;
@@ -323,5 +324,10 @@ export type FetchCastActionsResponse = {
 
 export type FetchTransactionsResponse = {
   data: Transaction[];
+  nextCursor?: string;
+};
+
+export type FetchListsResponse = {
+  data: List[];
   nextCursor?: string;
 };

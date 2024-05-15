@@ -1,14 +1,14 @@
 import { Transaction } from "@nook/common/types";
-import { AnimatePresence, Separator, Spinner, View } from "@nook/app-ui";
+import { Separator, Spinner, View } from "@nook/app-ui";
 import { FlashList } from "@shopify/flash-list";
 import { useCallback, useState } from "react";
 import { NativeScrollEvent, NativeSyntheticEvent } from "react-native";
 import { useScrollToTop } from "@react-navigation/native";
 import { useRef } from "react";
 import { Tabs } from "react-native-collapsible-tab-view";
-import { TransactionFeedItem } from "./transaction-feed-item";
 import { useScroll } from "../../context/scroll";
 import { RefreshControl } from "../../components/refresh-control";
+import { TransactionLink } from "./transaction-link";
 
 export const TransactionInfiniteFeed = ({
   transactions,
@@ -62,22 +62,7 @@ export const TransactionInfiniteFeed = ({
       ref={ref}
       data={transactions}
       renderItem={({ item }) => (
-        <AnimatePresence>
-          <View
-            enterStyle={{
-              opacity: 0,
-            }}
-            exitStyle={{
-              opacity: 0,
-            }}
-            animation="quick"
-            opacity={1}
-            scale={1}
-            y={0}
-          >
-            <TransactionFeedItem transaction={item as Transaction} />
-          </View>
-        </AnimatePresence>
+        <TransactionLink transaction={item as Transaction} />
       )}
       ListHeaderComponent={ListHeaderComponent}
       ListFooterComponent={

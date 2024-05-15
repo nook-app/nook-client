@@ -1,4 +1,4 @@
-import { Image, Link } from "@tamagui/lucide-icons";
+import { Link } from "@tamagui/lucide-icons";
 import { NamedExoticComponent, useCallback } from "react";
 import { useToastController } from "@nook/app-ui";
 import { useMenu } from "./context";
@@ -35,5 +35,5 @@ export const OpenLink = ({
     close();
   }, [link, close]);
 
-  return <MenuItem Icon={Image} title="Share image" onPress={handlePress} />;
+  return <MenuItem Icon={Icon} title={title} onPress={handlePress} />;
 };

@@ -1,5 +1,5 @@
 import { useAuth } from "../../../context/auth";
-import { Volume, VolumeX } from "@tamagui/lucide-icons";
+import { MenuSquare, Volume, VolumeX } from "@tamagui/lucide-icons";
 import { FarcasterUser } from "@nook/common/types";
 import { Image } from "@nook/app-ui";
 import { useMuteUser } from "../../../hooks/useMuteUser";
@@ -8,6 +8,7 @@ import { ReactNode, useCallback } from "react";
 import { MenuItem } from "../../menu/menu-item";
 import { Menu } from "../../menu/menu";
 import { CopyLink, OpenLink } from "../../menu/menu-actions";
+import { Link } from "../../link";
 
 export const FarcasterUserMenu = ({
   user,
@@ -15,6 +16,7 @@ export const FarcasterUserMenu = ({
 }: { user: FarcasterUser; trigger: ReactNode }) => {
   return (
     <Menu trigger={trigger}>
+      <AddUserToList user={user} />
       <MuteUser user={user} />
       <CopyLink link={`https://nook.social/users/${user.username}`} />
       <OpenLink
@@ -52,4 +54,25 @@ const MuteUser = ({ user }: { user: FarcasterUser }) => {
   }
 
   return <MenuItem Icon={Icon} title={title} onPress={handlePress} />;
+};
+
+const AddUserToList = ({ user }: { user: FarcasterUser }) => {
+  const { session } = useAuth();
+  const { close } = useMenu();
+
+  if (!session) {
+    return null;
+  }
+
+  return (
+    <Link
+      href={{
+        pathname: "/lists/manage",
+        params: { user: JSON.stringify(user) },
+      }}
+      onPress={close}
+    >
+      <MenuItem Icon={MenuSquare} title="Add/remove from user list" />
+    </Link>
+  );
 };

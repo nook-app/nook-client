@@ -20,22 +20,13 @@ import { EmbedImage } from "../../components/embeds/EmbedImage";
 import { ChainBadge } from "../../components/blockchain/chain-badge";
 import { ChainIcon } from "../../components/blockchain/chain-icon";
 import { Link } from "../../components/link";
-import { Menu } from "../../components/menu/menu";
-import { OpenLink } from "../../components/menu/menu-actions";
+import { TransactionMenu } from "./tranasction-menu";
 
-export const TransactionFeedItem = ({
+export const TransactionDisplay = ({
   transaction,
 }: {
   transaction: Transaction;
 }) => {
-  // @ts-ignore
-  const handlePress = (event) => {
-    const selection = window?.getSelection()?.toString();
-    if (!selection || selection.length === 0) {
-      window.open(`https://www.onceupon.xyz/${transaction.hash}`, "_blank");
-    }
-  };
-
   const user = transaction.users[transaction.from];
 
   return (
@@ -49,7 +40,6 @@ export const TransactionFeedItem = ({
       }}
       cursor="pointer"
       padding="$2.5"
-      onPress={handlePress}
     >
       <YStack alignItems="center" width="$4">
         <FarcasterUserAvatar user={user} size="$4" asLink={!!user} />
@@ -102,19 +92,7 @@ export const TransactionFeedItem = ({
                 </NookText>
               </XStack>
             )}
-            <Menu>
-              <OpenLink
-                Icon={
-                  <CdnAvatar
-                    size="$1"
-                    src="https://www.onceupon.xyz/once-upon-mark.svg"
-                    absolute
-                  />
-                }
-                title={"View in OnceUpon"}
-                link={`https://www.onceupon.xyz/${transaction.hash}`}
-              />
-            </Menu>
+            <TransactionMenu transaction={transaction} />
           </XStack>
           <TransactionText transaction={transaction} />
           <TransactionEmbed transaction={transaction} />

@@ -26,8 +26,7 @@ export const useChannel = (channelId: string) => {
 
 export const fetchRecommendedChannels =
   async (): Promise<FetchChannelsResponse> => {
-    // return await makeRequest("/farcaster/channels/recommended");
-    return await makeRequest("/farcaster/users/0/recommended-channels");
+    return await makeRequest("/farcaster/channels/recommended");
   };
 
 export const useRecommendedChannels = () => {

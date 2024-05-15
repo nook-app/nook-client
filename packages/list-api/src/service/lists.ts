@@ -4,6 +4,8 @@ import {
   CreateListRequest,
   UpdateListRequest,
   ListItem,
+  GetListsRequest,
+  ListVisibility,
 } from "@nook/common/types";
 
 export class ListsService {
@@ -13,10 +15,20 @@ export class ListsService {
     this.client = fastify.lists.client;
   }
 
-  async getCreatedLists(creatorId: number) {
+  async getCreatedLists(req: GetListsRequest, viewerId?: number) {
+    let visibility = {};
+    if (req.userId !== viewerId) {
+      visibility = {
+        in: [ListVisibility.PUBLIC],
+      };
+    }
+
     return await this.client.list.findMany({
       where: {
-        creatorId,
+        creatorId: req.userId,
+        type: req.type,
+        visibility,
+        deletedAt: null,
       },
       include: {
         items: true,
@@ -24,14 +36,24 @@ export class ListsService {
     });
   }
 
-  async getFollowedLists(userId: number) {
+  async getFollowedLists(req: GetListsRequest, viewerId?: number) {
+    let visibility = {};
+    if (req.userId !== viewerId) {
+      visibility = {
+        in: [ListVisibility.PUBLIC],
+      };
+    }
+
     return await this.client.list.findMany({
       where: {
         followers: {
           some: {
-            userId,
+            userId: req.userId,
           },
         },
+        type: req.type,
+        visibility,
+        deletedAt: null,
       },
       include: {
         items: true,
@@ -59,6 +81,8 @@ export class ListsService {
         description: list.description,
         imageUrl: list.imageUrl,
         visibility: list.visibility,
+        displayMode: list.displayMode,
+        followerCount: 1,
         followers: {
           create: {
             userId: creatorId,
@@ -78,6 +102,7 @@ export class ListsService {
         description: list.description,
         imageUrl: list.imageUrl,
         visibility: list.visibility,
+        displayMode: list.displayMode,
       },
     });
   }
@@ -122,11 +147,60 @@ export class ListsService {
   }
 
   async removeItem(item: ListItem) {
-    return this.client.listItem.deleteMany({
+    await this.client.listItem.deleteMany({
       where: {
         listId: item.listId,
         type: item.type,
         id: item.id,
+      },
+    });
+    await this.client.list.update({
+      where: {
+        id: item.listId,
+      },
+      data: {
+        itemCount: {
+          decrement: 1,
+        },
+      },
+    });
+  }
+
+  async followList(userId: number, listId: string) {
+    return this.client.list.update({
+      where: {
+        id: listId,
+      },
+      data: {
+        followerCount: {
+          increment: 1,
+        },
+        followers: {
+          create: {
+            userId,
+          },
+        },
+      },
+    });
+  }
+
+  async unfollowList(userId: number, listId: string) {
+    return this.client.list.update({
+      where: {
+        id: listId,
+      },
+      data: {
+        followerCount: {
+          decrement: 1,
+        },
+        followers: {
+          delete: {
+            listId_userId: {
+              userId,
+              listId,
+            },
+          },
+        },
       },
     });
   }

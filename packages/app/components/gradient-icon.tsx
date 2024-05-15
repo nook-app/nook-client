@@ -1,6 +1,7 @@
 import { darkenColor, stringToColor } from "../utils";
 import { LinearGradient } from "@tamagui/linear-gradient";
 import { Image } from "@nook/app-ui";
+import { ReactNode } from "react";
 
 export const GradientIcon = ({
   icon,
@@ -8,11 +9,15 @@ export const GradientIcon = ({
   size,
   iconSize,
   noBorderRadius,
+  borderRadius,
+  children,
 }: {
-  icon: string;
+  icon?: string;
+  children?: ReactNode;
   label: string;
   size?: string;
   iconSize?: number;
+  borderRadius?: string;
   noBorderRadius?: boolean;
 }) => {
   const color = stringToColor(label);
@@ -22,7 +27,8 @@ export const GradientIcon = ({
     <LinearGradient
       width={size || "$5"}
       height={size || "$5"}
-      borderRadius={noBorderRadius ? "$0" : "$4"}
+      // @ts-ignore
+      borderRadius={borderRadius || (noBorderRadius ? "$0" : "$4")}
       colors={[backgroundColor, color]}
       start={[1, 1]}
       end={[0, 0]}
@@ -30,14 +36,18 @@ export const GradientIcon = ({
       alignItems="center"
       padding="$2.5"
     >
-      <Image
-        source={{
-          uri: `https://raw.githubusercontent.com/primer/octicons/main/icons/${icon}-24.svg`,
-        }}
-        width="100%"
-        height="100%"
-        tintColor="white"
-      />
+      {icon ? (
+        <Image
+          source={{
+            uri: `https://raw.githubusercontent.com/primer/octicons/main/icons/${icon}-24.svg`,
+          }}
+          width="100%"
+          height="100%"
+          tintColor="white"
+        />
+      ) : (
+        children
+      )}
     </LinearGradient>
   );
 };

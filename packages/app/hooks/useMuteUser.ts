@@ -30,8 +30,7 @@ export const useMuteUser = (user: FarcasterUser) => {
       toast.show("An error occurred. Try again.");
       haptics.notificationError();
     }
-    updateUnmute(user);
-  }, [user, updateMute, updateUnmute, toast, session, login]);
+  }, [user, updateMute, toast, session, login]);
 
   const handleUnmuteUser = useCallback(async () => {
     if (!session) {
@@ -48,7 +47,6 @@ export const useMuteUser = (user: FarcasterUser) => {
       toast.show("An error occurred. Try again.");
       haptics.notificationError();
     }
-    updateUnmute(user);
   }, [user, updateUnmute, toast, session, login]);
 
   return {

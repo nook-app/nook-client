@@ -28,8 +28,7 @@ export const useMuteChannel = (channel: Channel) => {
       toast.show("An error occurred. Try again.");
       haptics.notificationError();
     }
-    updateUnmute(channel);
-  }, [channel, updateMute, updateUnmute, toast, session, login]);
+  }, [channel, updateMute, toast, session, login]);
 
   const handleUnmuteChannel = useCallback(async () => {
     if (!session) {
@@ -46,7 +45,6 @@ export const useMuteChannel = (channel: Channel) => {
       toast.show("An error occurred. Try again.");
       haptics.notificationError();
     }
-    updateUnmute(channel);
   }, [channel, updateUnmute, toast, session, login]);
 
   return {

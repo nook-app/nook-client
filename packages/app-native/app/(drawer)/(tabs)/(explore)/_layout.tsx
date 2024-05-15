@@ -15,6 +15,10 @@ export default function ExploreLayout() {
       }}
     >
       <Stack.Screen
+        name="explore/index"
+        options={{ title: "Explore", headerShown: false }}
+      />
+      <Stack.Screen
         name="channels/[channelId]/index"
         getId={({ params }) => params?.channelId}
         options={{ title: "", headerBackVisible: false }}
@@ -64,10 +68,29 @@ export default function ExploreLayout() {
         options={{ title: "Quoted by" }}
         getId={({ params }) => params?.hash}
       />
-      <Stack.Screen name="explore/index" options={{ title: "Explore" }} />
       <Stack.Screen
         name="explore/actions"
         options={{ title: "Explore Actions" }}
+      />
+      <Stack.Screen name="lists/index" options={{ headerShown: false }} />
+      <Stack.Screen name="lists/manage" options={{ title: "Lists" }} />
+      <Stack.Screen
+        name="lists/[listId]/index"
+        options={{ title: "", headerBackVisible: false }}
+        getId={({ params }) => params?.listId}
+      />
+      <Stack.Screen
+        name="lists/[listId]/items"
+        options={{ title: "List" }}
+        getId={({ params }) => params?.listId}
+      />
+      <Stack.Screen
+        name="lists/[listId]/settings/index"
+        options={{ title: "Edit List" }}
+      />
+      <Stack.Screen
+        name="lists/[listId]/settings/items"
+        options={{ headerShown: false }}
       />
     </Stack>
   );

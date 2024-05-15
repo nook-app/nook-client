@@ -17,6 +17,7 @@ model List {
     description String?
     imageUrl    String?
     visibility  String
+    displayMode String?
 
     followerCount Int @default(0)
     itemCount     Int @default(0)

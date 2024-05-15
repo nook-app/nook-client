@@ -15,7 +15,7 @@ import { Link } from "@nook/app/components/link";
 import { IconButton } from "../IconButton";
 import { Search, MoreHorizontal } from "@tamagui/lucide-icons";
 import { FarcasterChannelMenu } from "@nook/app/components/farcaster/channels/channel-menu";
-import { ActionButton } from "../ActionButton";
+import { CreateActionButton } from "../ActionButton";
 import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
 
 export default function ChannelScreen() {
@@ -150,7 +150,7 @@ export default function ChannelScreen() {
           </XStack>
         }
       />
-      <ActionButton bottom={paddingBottom} />
+      <CreateActionButton />
     </>
   );
 }

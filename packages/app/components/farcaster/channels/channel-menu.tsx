@@ -1,6 +1,6 @@
-import { MoreHorizontal, Volume, VolumeX } from "@tamagui/lucide-icons";
+import { MenuSquare, Volume, VolumeX } from "@tamagui/lucide-icons";
 import { Channel } from "@nook/common/types";
-import { Image, NookButton, Popover } from "@nook/app-ui";
+import { Image } from "@nook/app-ui";
 import { useMuteChannel } from "../../../hooks/useMuteChannel";
 import { Menu } from "../../menu/menu";
 import { MenuItem } from "../../menu/menu-item";
@@ -8,6 +8,7 @@ import { useAuth } from "../../../context/auth";
 import { useMenu } from "../../menu/context";
 import { ReactNode, useCallback } from "react";
 import { CopyLink, OpenLink } from "../../menu/menu-actions";
+import { Link } from "../../link";
 
 export const FarcasterChannelMenu = ({
   channel,
@@ -50,4 +51,25 @@ const MuteChannel = ({ channel }: { channel: Channel }) => {
   }
 
   return <MenuItem Icon={Icon} title={title} onPress={handlePress} />;
+};
+
+const AddChannelToList = ({ channel }: { channel: Channel }) => {
+  const { session } = useAuth();
+  const { close } = useMenu();
+
+  if (!session) {
+    return null;
+  }
+
+  return (
+    <Link
+      href={{
+        pathname: "/lists/manage",
+        params: { channel: JSON.stringify(channel) },
+      }}
+      onPress={close}
+    >
+      <MenuItem Icon={MenuSquare} title="Add/remove from channel list" />
+    </Link>
+  );
 };

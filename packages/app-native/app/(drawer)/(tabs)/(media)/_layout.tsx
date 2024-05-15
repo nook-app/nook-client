@@ -74,6 +74,26 @@ export default function MediaLayout() {
         name="explore/actions"
         options={{ title: "Explore Actions" }}
       />
+      <Stack.Screen name="lists/index" options={{ headerShown: false }} />
+      <Stack.Screen name="lists/manage" options={{ title: "Lists" }} />
+      <Stack.Screen
+        name="lists/[listId]/index"
+        options={{ title: "", headerBackVisible: false }}
+        getId={({ params }) => params?.listId}
+      />
+      <Stack.Screen
+        name="lists/[listId]/items"
+        options={{ title: "List" }}
+        getId={({ params }) => params?.listId}
+      />
+      <Stack.Screen
+        name="lists/[listId]/settings/index"
+        options={{ title: "Edit List" }}
+      />
+      <Stack.Screen
+        name="lists/[listId]/settings/items"
+        options={{ headerShown: false }}
+      />
     </Stack>
   );
 }

@@ -52,6 +52,7 @@ export const transactionRoutes = async (fastify: FastifyInstance) => {
         getTransactionDto: {
           contextAddresses,
           filterAddresses: [],
+          contextActions: ["-RECEIVED_AIRDROP"],
           sort: -1,
           limit: 25,
           skip: 0,

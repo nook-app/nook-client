@@ -1,6 +1,7 @@
 import { useAuth } from "../../../context/auth";
 import {
   BarChart2,
+  MenuSquare,
   Trash,
   UserMinus,
   UserPlus,
@@ -11,6 +12,7 @@ import {
   Channel,
   FarcasterCastResponse,
   FarcasterUser,
+  ListType,
 } from "@nook/common/types";
 import { useRouter } from "solito/navigation";
 import { useCallback } from "react";
@@ -34,6 +36,8 @@ export const FarcasterCastResponseMenu = ({
     <Menu>
       <DeleteCast cast={cast} />
       <FollowUser cast={cast} />
+      <AddUserToList user={cast.user} />
+      {cast.channel && <AddChannelToList channel={cast.channel} />}
       <MuteUser user={cast.user} />
       {cast.channel && <MuteChannel channel={cast.channel} />}
       <ViewCastEngagements cast={cast} />
@@ -63,6 +67,48 @@ const DeleteCast = ({ cast }: { cast: FarcasterCastResponse }) => {
       color="$red9"
       onPress={handlePress}
     />
+  );
+};
+
+const AddUserToList = ({ user }: { user: FarcasterUser }) => {
+  const { session } = useAuth();
+  const { close } = useMenu();
+
+  if (!session) {
+    return null;
+  }
+
+  return (
+    <Link
+      href={{
+        pathname: "/lists/manage",
+        params: { user: JSON.stringify(user) },
+      }}
+      onPress={close}
+    >
+      <MenuItem Icon={MenuSquare} title="Add/remove from user list" />
+    </Link>
+  );
+};
+
+const AddChannelToList = ({ channel }: { channel: Channel }) => {
+  const { session } = useAuth();
+  const { close } = useMenu();
+
+  if (!session) {
+    return null;
+  }
+
+  return (
+    <Link
+      href={{
+        pathname: "/lists/manage",
+        params: { channel: JSON.stringify(channel) },
+      }}
+      onPress={close}
+    >
+      <MenuItem Icon={MenuSquare} title="Add/remove from channel list" />
+    </Link>
   );
 };
 
