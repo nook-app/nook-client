@@ -94,8 +94,7 @@ export const TransactionDisplay = ({
             )}
             <TransactionMenu transaction={transaction} />
           </XStack>
-          <TransactionText transaction={transaction} />
-          <TransactionEmbed transaction={transaction} />
+          <TransactionContent transaction={transaction} />
         </YStack>
         <XStack justifyContent="space-between" alignItems="center">
           <View />
@@ -105,6 +104,45 @@ export const TransactionDisplay = ({
         </XStack>
       </YStack>
     </XStack>
+  );
+};
+
+const TransactionContent = ({ transaction }: { transaction: Transaction }) => {
+  const contextAction = Object.values(transaction.context.variables).find(
+    (v) => v.type === "contextAction",
+  );
+  const value = contextAction?.value;
+  const theme = value ? stringToTheme(value) : undefined;
+  return (
+    <YStack
+      borderWidth="$0.5"
+      borderColor="$borderColorBg"
+      borderRadius="$4"
+      overflow="hidden"
+    >
+      <View
+        theme={theme}
+        backgroundColor="$color2"
+        borderTopLeftRadius="$4"
+        borderTopRightRadius="$4"
+        justifyContent="center"
+        alignItems="center"
+        padding="$1"
+      >
+        <NookText
+          color="$color11"
+          textTransform="lowercase"
+          fontWeight="600"
+          fontSize={15}
+        >
+          {value?.replaceAll("_", " ") || "unknown"}
+        </NookText>
+      </View>
+      <TransactionEmbed transaction={transaction} />
+      <View padding="$2">
+        <TransactionText transaction={transaction} />
+      </View>
+    </YStack>
   );
 };
 
@@ -121,8 +159,8 @@ const TransactionText = ({ transaction }: { transaction: Transaction }) => {
     if (i % 2 === 0) {
       if (parts[i]) {
         textParts.push(
-          <NookText key={`text-${i}`} marginRight="$1.5" color="$mauve12">
-            {parts[i]}
+          <NookText key={`text-${i}`} color="$mauve12">
+            {parts[i]}{" "}
           </NookText>,
         );
       }
@@ -133,27 +171,10 @@ const TransactionText = ({ transaction }: { transaction: Transaction }) => {
 
       const variable = variables[parts[i]];
       if (!variable) {
-        return <NookText>{summary}</NookText>;
+        return <NookText> {summary}</NookText>;
       }
 
       if (variable.type === "contextAction") {
-        const theme = stringToTheme(variable.value);
-        textParts.push(
-          <NookText
-            key={`var-${i}`}
-            theme={theme}
-            color="$color11"
-            backgroundColor="$color3"
-            paddingHorizontal="$2"
-            paddingVertical="$0.5"
-            textTransform="lowercase"
-            borderRadius="$10"
-            marginRight="$1.5"
-            fontWeight="500"
-          >
-            {variable.value.replaceAll("_", " ")}
-          </NookText>,
-        );
         continue;
       }
 
@@ -162,11 +183,10 @@ const TransactionText = ({ transaction }: { transaction: Transaction }) => {
           <NookText
             key={`var-${i}`}
             color="$mauve12"
-            marginRight="$1.5"
             whiteSpace="nowrap"
             fontWeight="600"
           >
-            {`${(+formatEther(BigInt(variable.value))).toFixed(4)} ETH`}
+            {`${(+formatEther(BigInt(variable.value))).toFixed(4)} ETH`}{" "}
           </NookText>,
         );
         continue;
@@ -177,11 +197,10 @@ const TransactionText = ({ transaction }: { transaction: Transaction }) => {
           <NookText
             key={`var-${i}`}
             color="$mauve12"
-            marginRight="$1.5"
             whiteSpace="nowrap"
             fontWeight="600"
           >
-            {`${(+formatEther(BigInt(variable.value))).toFixed(4)} DEGEN`}
+            {`${(+formatEther(BigInt(variable.value))).toFixed(4)} DEGEN`}{" "}
           </NookText>,
         );
         continue;
@@ -195,17 +214,17 @@ const TransactionText = ({ transaction }: { transaction: Transaction }) => {
               user={transaction.users[variable.value]}
               key={`var-${i}`}
             >
-              <View display="inline-flex" marginRight="$1.5">
+              <View display="inline-flex">
                 <Link asText href={`/users/${user.username}`}>
-                  <XStack alignItems="center" gap="$1.5" cursor="pointer">
-                    <CdnAvatar src={user.pfp} size="$0.8" />
+                  <NookText>
+                    <CdnAvatar src={user.pfp} size="$0.8" />{" "}
                     <NookText fontWeight="600">{`${
                       user.displayName || user.username || `!${user.fid}`
                     } `}</NookText>
                     <FarcasterPowerBadge
                       badge={user.badges?.powerBadge ?? false}
-                    />
-                  </XStack>
+                    />{" "}
+                  </NookText>
                 </Link>
               </View>
             </FarcasterUserTooltip>,
@@ -221,11 +240,10 @@ const TransactionText = ({ transaction }: { transaction: Transaction }) => {
             <NookText
               key={`var-${i}`}
               color="$mauve12"
-              marginRight="$1.5"
               whiteSpace="nowrap"
               fontWeight="600"
             >
-              {enrichedParty.ensNew.handle}
+              {enrichedParty.ensNew.handle}{" "}
             </NookText>,
           );
           continue;
@@ -236,24 +254,18 @@ const TransactionText = ({ transaction }: { transaction: Transaction }) => {
             <NookText
               key={`var-${i}`}
               color="$mauve12"
-              marginRight="$1.5"
               whiteSpace="nowrap"
               fontWeight="600"
             >
-              {enrichedParty.label.public}
+              {enrichedParty.label.public}{" "}
             </NookText>,
           );
           continue;
         }
 
         textParts.push(
-          <NookText
-            key={`var-${i}`}
-            color="$mauve12"
-            marginRight="$1.5"
-            whiteSpace="nowrap"
-          >
-            {formatAddress(variable.value)}
+          <NookText key={`var-${i}`} color="$mauve12" whiteSpace="nowrap">
+            {formatAddress(variable.value)}{" "}
           </NookText>,
         );
         continue;
@@ -262,26 +274,24 @@ const TransactionText = ({ transaction }: { transaction: Transaction }) => {
       if (variable.type === "erc1155") {
         const id = `${variable.token}-${variable.tokenId}`;
         const asset = transaction.assetsEnriched[id];
-        const party = transaction.enrichedParties[variable.token]?.find(
+        const party = transaction.enrichedParties?.[variable.token]?.find(
           ({ label }) => label,
         );
 
         textParts.push(
-          <XStack
-            alignItems="center"
-            gap="$1.5"
-            display="inline-flex"
-            key={id}
-            marginRight="$1.5"
-          >
+          <NookText key={id}>
             <NookText fontWeight="600" color="$mauve12">
-              {variable.value}
+              {variable.value}{" "}
             </NookText>
-            {asset && <CdnAvatar src={asset.imageUrl} size="$0.8" absolute />}
+            {asset && (
+              <>
+                <CdnAvatar src={asset.imageUrl} size="$0.8" absolute />{" "}
+              </>
+            )}
             <NookText fontWeight="600" color="$mauve12">{`${
               party?.label?.public || formatAddress(variable.token)
-            }`}</NookText>
-          </XStack>,
+            } `}</NookText>
+          </NookText>,
         );
         continue;
       }
@@ -289,19 +299,17 @@ const TransactionText = ({ transaction }: { transaction: Transaction }) => {
       if (variable.type === "erc721") {
         const id = `${variable.token}-${variable.tokenId}`;
         const asset = transaction.assetsEnriched[id];
-        const party = transaction.enrichedParties[variable.token]?.find(
-          ({ label }) => label,
+        const party = transaction.enrichedParties?.[variable.token]?.find(
+          (x) => x?.label,
         );
 
         textParts.push(
-          <XStack
-            alignItems="center"
-            gap="$1.5"
-            display="inline-flex"
-            key={id}
-            marginRight="$1.5"
-          >
-            {asset && <CdnAvatar src={asset.imageUrl} size="$0.8" absolute />}
+          <NookText key={id}>
+            {asset && (
+              <>
+                <CdnAvatar src={asset.imageUrl} size="$0.8" absolute />{" "}
+              </>
+            )}
             {variable.tokenId && (
               <NookText fontWeight="600" color="$mauve12">{`${
                 party?.label?.public
@@ -315,50 +323,44 @@ const TransactionText = ({ transaction }: { transaction: Transaction }) => {
                         ? formatAddress(variable.tokenId)
                         : variable.tokenId
                     }`
-              }`}</NookText>
+              } `}</NookText>
             )}
             {!variable.tokenId && (
               <NookText fontWeight="600" color="$mauve12">{`${
                 party?.label?.public
                   ? `${party.label.public}`
                   : `${formatAddress(variable.token)}`
-              }`}</NookText>
+              } `}</NookText>
             )}
-          </XStack>,
+          </NookText>,
         );
         continue;
       }
 
       if (variable.type === "erc20") {
         const id = `${variable.token}-${variable.tokenId}`;
-        const party = transaction.enrichedParties[variable.token]?.find(
-          ({ label }) => label,
+        const party = transaction.enrichedParties?.[variable.token]?.find(
+          (x) => x?.label,
         );
 
         textParts.push(
-          <XStack
-            alignItems="center"
-            gap="$1.5"
-            display="inline-flex"
-            key={id}
-            marginRight="$1.5"
-          >
+          <NookText key={id}>
             <NookText fontWeight="600" color="$mauve12">
               {formatNumber(
                 +(+formatUnits(
                   BigInt(variable.value),
                   party?.decimals || 18,
                 )).toFixed(4),
-              )}
+              )}{" "}
             </NookText>
             <NookText
               fontWeight="600"
               color="$mauve12"
               textTransform="uppercase"
-            >{`${
-              party?.label?.public || formatAddress(variable.token)
-            }`}</NookText>
-          </XStack>,
+            >
+              {`${party?.label?.public || formatAddress(variable.token)}`}{" "}
+            </NookText>
+          </NookText>,
         );
         continue;
       }
@@ -368,10 +370,9 @@ const TransactionText = ({ transaction }: { transaction: Transaction }) => {
           <NookText
             key={`var-${i}`}
             color="$mauve12"
-            marginRight="$1.5"
             fontWeight={variable.emphasis ? "600" : "400"}
           >
-            {`${formatNumber(+variable.value)} ${variable.unit}`}
+            {`${formatNumber(+variable.value)} ${variable.unit}`}{" "}
           </NookText>,
         );
         continue;
@@ -381,21 +382,17 @@ const TransactionText = ({ transaction }: { transaction: Transaction }) => {
         const chain = CHAINS[variable.value as unknown as number];
         if (chain) {
           textParts.push(
-            <XStack
-              key={`var-${i}`}
-              alignItems="center"
-              gap="$1.5"
-              display="inline-flex"
-              marginRight="$1.5"
-            >
-              <ChainIcon chainId={chain.chainId} />
-              <NookText fontWeight="600">{`${chain.name}`}</NookText>
-            </XStack>,
+            <>
+              <NookText>
+                <ChainIcon chainId={chain.chainId} />{" "}
+              </NookText>
+              <NookText fontWeight="600">{`${chain.name} `}</NookText>
+            </>,
           );
         } else {
           textParts.push(
-            <NookText key={`var-${i}`} color="$mauve12" marginRight="$1.5">
-              {variable.value}
+            <NookText key={`var-${i}`} color="$mauve12">
+              {variable.value}{" "}
             </NookText>,
           );
         }
@@ -413,12 +410,11 @@ const TransactionText = ({ transaction }: { transaction: Transaction }) => {
             <NookText
               key={`var-${i}`}
               color="$mauve12"
-              marginRight="$1.5"
               hoverStyle={{
                 textDecorationLine: "underline",
               }}
             >
-              {formatAddress(variable.value)}
+              {formatAddress(variable.value)}{" "}
             </NookText>
           </Link>,
         );
@@ -431,7 +427,6 @@ const TransactionText = ({ transaction }: { transaction: Transaction }) => {
             <NookText
               key={`var-${i}`}
               color="$mauve12"
-              marginRight="$1.5"
               hoverStyle={{
                 textDecorationLine: "underline",
               }}
@@ -439,7 +434,7 @@ const TransactionText = ({ transaction }: { transaction: Transaction }) => {
             >
               {variable.truncate
                 ? formatAddress(variable.value)
-                : variable.value}
+                : variable.value}{" "}
             </NookText>
           </Link>,
         );
@@ -450,17 +445,16 @@ const TransactionText = ({ transaction }: { transaction: Transaction }) => {
         <NookText
           key={`var-${i}`}
           color="$mauve12"
-          marginRight="$1.5"
           fontWeight={variable.emphasis ? "600" : "400"}
         >
-          {variable.value}
+          {variable.value}{" "}
         </NookText>,
       );
     }
   }
 
   return (
-    <NookText lineHeight={20} color="$mauve12" fontSize={15}>
+    <NookText lineHeight={24} color="$mauve12" fontSize={15}>
       {textParts}
     </NookText>
   );
@@ -470,5 +464,11 @@ const TransactionEmbed = ({ transaction }: { transaction: Transaction }) => {
   if (!transaction.assetsEnriched) return null;
   const asset = Object.values(transaction.assetsEnriched)[0];
   if (!asset?.imageUrl) return null;
-  return <EmbedImage uri={`${asset.imageUrl.split("?")[0]}?width=600`} />;
+  return (
+    <EmbedImage
+      uri={`${asset.imageUrl.split("?")[0]}?width=600`}
+      noBorderRadius
+      skipCdn
+    />
+  );
 };

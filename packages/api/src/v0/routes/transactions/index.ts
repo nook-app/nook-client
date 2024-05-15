@@ -34,14 +34,29 @@ export const transactionRoutes = async (fastify: FastifyInstance) => {
         return reply.status(404).send({ message: "Addresses not found" });
       }
 
-      const contextAddresses: AddressTag[] = response?.data.map((address) => {
-        return { address, toFromAll: "From" };
-      });
+      const addressToFid = response?.data.reduce(
+        (acc, { fid, address }) => {
+          acc[address] = fid;
+          return acc;
+        },
+        {} as Record<string, string>,
+      );
+
+      const contextAddresses: AddressTag[] = Object.keys(addressToFid).map(
+        (address) => ({ address, toFromAll: "From" }),
+      );
+
       const cursor = decodeCursor(request.body.cursor);
 
       let chainIds = request.body.filter.chains;
       if (!chainIds || chainIds.length === 0) {
         chainIds = [0];
+      }
+
+      let contextActions = request.body.filter.contextActions;
+      if (!contextActions || contextActions.length === 0) {
+        // contextActions = ["-RECEIVED_AIRDROP"];
+        contextActions = ["MINTED", "BOUGHT"];
       }
 
       const timestamp = cursor?.timestamp
@@ -52,7 +67,7 @@ export const transactionRoutes = async (fastify: FastifyInstance) => {
         getTransactionDto: {
           contextAddresses,
           filterAddresses: [],
-          contextActions: ["-RECEIVED_AIRDROP"],
+          contextActions,
           sort: -1,
           limit: 25,
           skip: 0,
@@ -70,18 +85,8 @@ export const transactionRoutes = async (fastify: FastifyInstance) => {
         return reply.send({ nextCursor: null, data: [] });
       }
 
-      const allEnrichedParties = rawData
-        .flatMap((tx) =>
-          tx?.enrichedParties ? Object.values(tx.enrichedParties) : [],
-        )
-        .flat();
-
-      const fids = allEnrichedParties
-        .map((party) => party?.farcaster?.fid?.toString())
-        .filter(Boolean) as string[];
-
       const users = await farcasterClient.getUsers(
-        { fids: Array.from(new Set(fids)) },
+        { fids: Array.from(new Set(Object.values(addressToFid))) },
         viewerFid,
       );
 
@@ -99,16 +104,16 @@ export const transactionRoutes = async (fastify: FastifyInstance) => {
       const enrichedData = rawData.map((tx) => {
         const users: Record<string, FarcasterUser> = {};
 
-        if (!tx.enrichedParties) return { ...tx, users: {} };
-
         if (userMap[tx.from]) {
           users[tx.from] = userMap[tx.from];
         }
 
-        for (const party of Object.entries(tx.enrichedParties)) {
-          for (const info of party[1]) {
-            if (info.farcaster?.fid) {
-              users[party[0]] = userMap[info.farcaster.fid];
+        if (tx.enrichedParties) {
+          for (const party of Object.entries(tx.enrichedParties)) {
+            for (const info of party[1]) {
+              if (info.farcaster?.fid) {
+                users[party[0]] = userMap[info.farcaster.fid];
+              }
             }
           }
         }

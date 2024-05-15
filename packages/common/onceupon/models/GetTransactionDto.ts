@@ -153,6 +153,7 @@ export function GetTransactionDtoToJSON(value?: GetTransactionDto | null): any {
     return {
         
         'contextAddresses': ((value['contextAddresses'] as Array<any>).map(AddressTagToJSON)),
+        'contextActions': value['contextActions'],
         'filterAddresses': ((value['filterAddresses'] as Array<any>).map(AddressTagToJSON)),
         'dateRange': DateRangeToJSON(value['dateRange']),
         'sort': value['sort'],

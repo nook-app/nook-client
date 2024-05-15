@@ -12,6 +12,9 @@ export const FarcasterPowerBadge = ({ badge }: { badge: boolean }) => {
       height={12}
       alignItems="center"
       justifyContent="center"
+      $platform-web={{
+        display: "inline-flex",
+      }}
     >
       <Zap size={8} color="white" fill="white" />
     </View>

@@ -1204,7 +1204,10 @@ export class FarcasterService {
       },
     });
 
-    return addresses.map((address) => address.address);
+    return addresses.map((address) => ({
+      fid: address.fid.toString(),
+      address: address.address,
+    }));
   }
 
   async getFidsForAddresses(addresses: string[]) {

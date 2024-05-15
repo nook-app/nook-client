@@ -1,6 +1,6 @@
 import { fetchTransactionFeed } from "../../api/transactions";
 import { TransactionFeedFilter } from "@nook/common/types";
-import { TransactionFeedWithChainSelector } from "./transaction-feed";
+import { TransactionFeedWithGroupSelector } from "./transaction-feed";
 
 export const TransactionFeedServer = async ({
   filter,
@@ -14,7 +14,7 @@ export const TransactionFeedServer = async ({
   }
 
   return (
-    <TransactionFeedWithChainSelector
+    <TransactionFeedWithGroupSelector
       filter={filter}
       initialData={initialData}
     />

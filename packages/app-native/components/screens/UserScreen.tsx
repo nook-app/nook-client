@@ -6,7 +6,7 @@ import { Display, UserFilterType } from "@nook/common/types";
 import { NookText, Popover, XStack } from "@nook/app-ui";
 import { FarcasterPowerBadge } from "@nook/app/components/farcaster/users/power-badge";
 import { formatToCDN } from "@nook/app/utils";
-import { TransactionFeedWithChainSelector } from "@nook/app/features/transactions/transaction-feed";
+import { TransactionFeedWithGroupSelector } from "@nook/app/features/transactions/transaction-feed";
 import { useImageColors } from "../../hooks/useImageColors";
 import { CollapsibleGradientLayout } from "../CollapsibleGradientLayout";
 import { Loading } from "@nook/app/components/loading";
@@ -80,7 +80,7 @@ export default function UserScreen() {
         {
           name: "Transactions",
           component: (
-            <TransactionFeedWithChainSelector
+            <TransactionFeedWithGroupSelector
               filter={{
                 users: {
                   type: UserFilterType.FIDS,

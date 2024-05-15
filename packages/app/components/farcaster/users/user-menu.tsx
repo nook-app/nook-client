@@ -9,6 +9,7 @@ import { MenuItem } from "../../menu/menu-item";
 import { Menu } from "../../menu/menu";
 import { CopyLink, OpenLink } from "../../menu/menu-actions";
 import { Link } from "../../link";
+import { Platform } from "react-native";
 
 export const FarcasterUserMenu = ({
   user,
@@ -60,7 +61,7 @@ const AddUserToList = ({ user }: { user: FarcasterUser }) => {
   const { session } = useAuth();
   const { close } = useMenu();
 
-  if (!session) {
+  if (!session || Platform.OS === "web") {
     return null;
   }
 

@@ -178,7 +178,9 @@ export class FarcasterAPIClient extends BaseAPIClient {
     return response.json();
   }
 
-  async getUserAddresses(req: UserFilter): Promise<{ data: string[] }> {
+  async getUserAddresses(
+    req: UserFilter,
+  ): Promise<{ data: { fid: string; address: string }[] }> {
     const response = await this.makeRequest("/users/addresses", {
       method: "POST",
       body: JSON.stringify(req),

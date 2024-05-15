@@ -21,7 +21,8 @@ export const EmbedImages = ({ uris }: { uris: string[] }) => {
 export const EmbedImage = ({
   uri,
   noBorderRadius,
-}: { uri: string; noBorderRadius?: boolean }) => {
+  skipCdn,
+}: { uri: string; noBorderRadius?: boolean; skipCdn?: boolean }) => {
   return (
     <View
       borderRadius={noBorderRadius ? "$0" : "$4"}
@@ -32,7 +33,7 @@ export const EmbedImage = ({
       }}
     >
       <ZoomableImage uri={uri}>
-        <img src={formatToCDN(uri)} alt="" />
+        <img src={skipCdn ? uri : formatToCDN(uri)} alt="" />
       </ZoomableImage>
     </View>
   );

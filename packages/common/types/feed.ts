@@ -68,6 +68,7 @@ export type TransactionFeedRequest = {
 export type TransactionFeedFilter = {
   users?: UserFilter;
   chains?: number[];
+  contextActions?: string[];
 };
 
 export type NftFeedRequest = {

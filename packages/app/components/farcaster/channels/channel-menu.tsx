@@ -9,6 +9,7 @@ import { useMenu } from "../../menu/context";
 import { ReactNode, useCallback } from "react";
 import { CopyLink, OpenLink } from "../../menu/menu-actions";
 import { Link } from "../../link";
+import { Platform } from "react-native";
 
 export const FarcasterChannelMenu = ({
   channel,
@@ -16,6 +17,7 @@ export const FarcasterChannelMenu = ({
 }: { channel: Channel; trigger: ReactNode }) => {
   return (
     <Menu trigger={trigger}>
+      <AddChannelToList channel={channel} />
       <MuteChannel channel={channel} />
       <CopyLink link={`https://nook.social/channels/${channel.channelId}`} />
       <OpenLink
@@ -57,7 +59,7 @@ const AddChannelToList = ({ channel }: { channel: Channel }) => {
   const { session } = useAuth();
   const { close } = useMenu();
 
-  if (!session) {
+  if (!session || Platform.OS === "web") {
     return null;
   }
 

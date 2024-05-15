@@ -6,21 +6,15 @@ import {
   DisappearingLayout,
   HEADER_HEIGHT,
 } from "../../../../components/DisappearingLayout";
-import { useCallback, useState } from "react";
-import { TransactionChainSelector } from "@nook/app/features/transactions/transaction-chain-selector";
+import { useState } from "react";
+import { TransactionGroupSelector } from "@nook/app/features/transactions/transaction-group-selector";
 import { NookText, View } from "@nook/app-ui";
 import { DrawerToggleButton } from "../../../../components/DrawerToggleButton";
 
 export default function TransactionsScreen() {
   const paddingBottom = useBottomTabBarHeight();
-  const [chains, setChains] = useState<number[]>([]);
+  const [contextActions, setContextActions] = useState<string[] | undefined>();
   const { session } = useAuth();
-
-  const toggleChain = useCallback((chain: number) => {
-    setChains((prev) =>
-      prev.includes(chain) ? prev.filter((c) => c !== chain) : [...prev, chain],
-    );
-  }, []);
 
   if (!session?.fid) return null;
 
@@ -40,9 +34,7 @@ export default function TransactionsScreen() {
           <View width="$2.5" />
         </View>
       }
-      navigation={
-        <TransactionChainSelector chains={chains} onPress={toggleChain} />
-      }
+      navigation={<TransactionGroupSelector onPress={setContextActions} />}
     >
       <TransactionFeed
         paddingBottom={paddingBottom}
@@ -54,7 +46,7 @@ export default function TransactionsScreen() {
               fid: session?.fid,
             },
           },
-          chains,
+          contextActions,
         }}
       />
     </DisappearingLayout>

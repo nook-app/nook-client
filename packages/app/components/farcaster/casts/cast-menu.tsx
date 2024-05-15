@@ -74,7 +74,7 @@ const AddUserToList = ({ user }: { user: FarcasterUser }) => {
   const { session } = useAuth();
   const { close } = useMenu();
 
-  if (!session) {
+  if (!session || Platform.OS === "web") {
     return null;
   }
 
@@ -95,7 +95,7 @@ const AddChannelToList = ({ channel }: { channel: Channel }) => {
   const { session } = useAuth();
   const { close } = useMenu();
 
-  if (!session) {
+  if (!session || Platform.OS === "web") {
     return null;
   }
 

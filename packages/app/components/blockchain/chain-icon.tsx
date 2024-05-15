@@ -9,8 +9,8 @@ export const ChainIcon = ({ chainId }: { chainId: number }) => {
       width={16}
       height={16}
       borderRadius="$10"
-      backgroundColor="$color3"
       overflow="hidden"
+      display="inline-flex"
     >
       <img
         src={chain.image}

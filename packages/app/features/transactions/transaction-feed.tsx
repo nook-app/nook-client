@@ -10,6 +10,7 @@ import { TransactionInfiniteFeed } from "./infinite-feed";
 import { Loading } from "../../components/loading";
 import { View } from "@nook/app-ui";
 import { TransactionChainSelector } from "./transaction-chain-selector";
+import { TransactionGroupSelector } from "./transaction-group-selector";
 
 export const TransactionFeed = ({
   filter,
@@ -98,6 +99,40 @@ export const TransactionFeedWithChainSelector = ({
       ListHeaderComponent={
         <View borderBottomWidth="$0.5" borderColor="$borderColorBg">
           <TransactionChainSelector chains={chains} onPress={toggleChain} />
+        </View>
+      }
+    />
+  );
+};
+
+export const TransactionFeedWithGroupSelector = ({
+  filter,
+  initialData,
+  asTabs,
+  paddingTop,
+  paddingBottom,
+}: {
+  filter: TransactionFeedFilter;
+  initialData?: FetchTransactionsResponse;
+  asTabs?: boolean;
+  paddingTop?: number;
+  paddingBottom?: number;
+}) => {
+  const [contextActions, setContextActions] = useState<string[] | undefined>();
+
+  return (
+    <TransactionFeed
+      filter={{
+        ...filter,
+        contextActions,
+      }}
+      initialData={!contextActions ? initialData : undefined}
+      asTabs={asTabs}
+      paddingTop={paddingTop}
+      paddingBottom={paddingBottom}
+      ListHeaderComponent={
+        <View borderBottomWidth="$0.5" borderColor="$borderColorBg">
+          <TransactionGroupSelector onPress={setContextActions} />
         </View>
       }
     />

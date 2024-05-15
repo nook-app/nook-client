@@ -19,7 +19,7 @@ export const CdnAvatar = ({
       : src;
 
   return (
-    <Avatar circular size={size}>
+    <Avatar circular size={size} display="inline-flex">
       <Avatar.Image src={formattedSrc || undefined} key={formattedSrc} />
       <Avatar.Fallback backgroundColor="$color3">{children}</Avatar.Fallback>
     </Avatar>
