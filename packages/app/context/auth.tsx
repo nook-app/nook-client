@@ -21,7 +21,11 @@ import {
   updateUser,
   validateSignerByPublicKey,
 } from "../server/auth";
-import { removeSession, updateSession } from "../utils/local-storage";
+import {
+  getSession,
+  removeSession,
+  updateSession,
+} from "../utils/local-storage";
 import { useSettings } from "../api/settings";
 import { fetchUser } from "../api/farcaster";
 import { updateServerSession, deleteServerSession } from "../server/session";
@@ -63,6 +67,14 @@ export const AuthProvider = ({
   const [user, setUser] = useState<FarcasterUser | undefined>(defaultUser);
   const { getAccessToken, logout: logoutPrivy, user: privyUser } = usePrivy();
   const { data } = useSettings(session);
+
+  useEffect(() => {
+    getSession().then((session) => {
+      if (session) {
+        handleSessionChange(session);
+      }
+    });
+  }, []);
 
   const handleRefreshSigner = useCallback(async () => {
     if (!session) return;
@@ -134,11 +146,6 @@ export const AuthProvider = ({
       }),
     ]);
   }, []);
-
-  useEffect(() => {
-    if (session?.fid) {
-    }
-  }, [session?.fid]);
 
   const loginViaPrivyToken = useCallback(async () => {
     const token = await getAccessToken();

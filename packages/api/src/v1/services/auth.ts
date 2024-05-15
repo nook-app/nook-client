@@ -1,3 +1,11 @@
+import {
+  ChannelFilterType,
+  FarcasterFeedFilter,
+  ListItemType,
+  ListType,
+  ListVisibility,
+  UserFilterType,
+} from "@nook/common/types";
 import { CONTRACTS } from "@nook/common/utils";
 import { PrivyClient } from "@privy-io/server-auth";
 import { FastifyInstance } from "fastify";
@@ -12,6 +20,10 @@ export class AuthService {
   private privyClient;
   private jwt;
 
+  // TODO: Remove after migration period
+  private listClient;
+  private nookClient;
+
   constructor(fastify: FastifyInstance) {
     this.client = fastify.user.client;
     this.viemClient = createPublicClient({
@@ -25,6 +37,8 @@ export class AuthService {
       process.env.PRIVY_APP_SECRET as string,
     );
     this.jwt = fastify.jwt;
+    this.listClient = fastify.list.client;
+    this.nookClient = fastify.nook.client;
   }
 
   async loginUserWithPassword() {
@@ -88,8 +102,10 @@ export class AuthService {
       });
     }
 
+    await this.migrateLists(fid, user.id);
+
     return {
-      id: Number(user.id),
+      id: user.id,
       fid,
       token: this.generateToken(user.id.toString(), fid),
       refreshToken,
@@ -131,5 +147,74 @@ export class AuthService {
       },
       { expiresIn },
     );
+  }
+
+  async migrateLists(fid: string, id: bigint) {
+    const feeds = await this.nookClient.feed.findMany({
+      where: {
+        fid,
+        deletedAt: null,
+      },
+    });
+
+    if (feeds.length === 0) {
+      return;
+    }
+
+    for (const feed of feeds) {
+      const filter = feed.filter as FarcasterFeedFilter;
+      if (filter.users && filter.users.type === UserFilterType.FIDS) {
+        await this.listClient.list.create({
+          data: {
+            creatorId: id,
+            type: ListType.USERS,
+            name: feed.name,
+            visibility: ListVisibility.PRIVATE,
+            displayMode: feed.display,
+            followerCount: 1,
+            followers: {
+              create: {
+                userId: id,
+              },
+            },
+            itemCount: filter.users.data.fids.length,
+            items: {
+              create: filter.users.data.fids.map((fid) => ({
+                type: ListItemType.FID,
+                id: fid,
+              })),
+            },
+          },
+        });
+      }
+
+      if (
+        filter.channels &&
+        filter.channels.type === ChannelFilterType.CHANNEL_URLS
+      ) {
+        await this.listClient.list.create({
+          data: {
+            creatorId: id,
+            type: ListType.PARENT_URLS,
+            name: feed.name,
+            visibility: ListVisibility.PRIVATE,
+            displayMode: feed.display,
+            followerCount: 1,
+            followers: {
+              create: {
+                userId: id,
+              },
+            },
+            itemCount: filter.channels.data.urls.length,
+            items: {
+              create: filter.channels.data.urls.map((url) => ({
+                type: ListItemType.PARENT_URL,
+                id: url,
+              })),
+            },
+          },
+        });
+      }
+    }
   }
 }

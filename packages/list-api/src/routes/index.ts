@@ -14,9 +14,9 @@ export const listsRoutes = async (fastify: FastifyInstance) => {
     fastify.post<{ Body: GetListsRequest }>(
       "/lists/created",
       async (request, reply) => {
-        let viewerId: number | undefined;
+        let viewerId: string | undefined;
         try {
-          const { id } = (await request.jwtDecode()) as { id: number };
+          const { id } = (await request.jwtDecode()) as { id: string };
           viewerId = id;
         } catch (error) {}
 
@@ -36,9 +36,9 @@ export const listsRoutes = async (fastify: FastifyInstance) => {
     fastify.post<{ Body: GetListsRequest }>(
       "/lists/followed",
       async (request, reply) => {
-        let viewerId: number | undefined;
+        let viewerId: string | undefined;
         try {
-          const { id } = (await request.jwtDecode()) as { id: number };
+          const { id } = (await request.jwtDecode()) as { id: string };
           viewerId = id;
         } catch (error) {}
 
@@ -59,7 +59,7 @@ export const listsRoutes = async (fastify: FastifyInstance) => {
       "/lists",
       async (request, reply) => {
         try {
-          const { id } = (await request.jwtDecode()) as { id: number };
+          const { id } = (await request.jwtDecode()) as { id: string };
           const data = await listService.createList(id, request.body);
           return reply.send(data);
         } catch (error) {
@@ -73,7 +73,7 @@ export const listsRoutes = async (fastify: FastifyInstance) => {
       "/lists/:listId",
       async (request, reply) => {
         try {
-          const { id } = (await request.jwtDecode()) as { id: number };
+          const { id } = (await request.jwtDecode()) as { id: string };
           const list = await listService.getList(request.params.listId);
           if (
             !list ||
@@ -94,7 +94,7 @@ export const listsRoutes = async (fastify: FastifyInstance) => {
       "/lists/:listId",
       async (request, reply) => {
         try {
-          const { id } = (await request.jwtDecode()) as { id: number };
+          const { id } = (await request.jwtDecode()) as { id: string };
           const list = await listService.getList(request.params.listId);
           if (
             !list ||
@@ -119,7 +119,7 @@ export const listsRoutes = async (fastify: FastifyInstance) => {
       "/lists/:listId",
       async (request, reply) => {
         try {
-          const { id } = (await request.jwtDecode()) as { id: number };
+          const { id } = (await request.jwtDecode()) as { id: string };
           const list = await listService.getList(request.params.listId);
           if (
             !list ||
@@ -144,7 +144,7 @@ export const listsRoutes = async (fastify: FastifyInstance) => {
       "/lists/:listId/items",
       async (request, reply) => {
         try {
-          const { id } = (await request.jwtDecode()) as { id: number };
+          const { id } = (await request.jwtDecode()) as { id: string };
           const list = await listService.getList(request.params.listId);
           if (
             !list ||
@@ -169,7 +169,7 @@ export const listsRoutes = async (fastify: FastifyInstance) => {
       "/lists/:listId/items",
       async (request, reply) => {
         try {
-          const { id } = (await request.jwtDecode()) as { id: number };
+          const { id } = (await request.jwtDecode()) as { id: string };
           const list = await listService.getList(request.params.listId);
           if (
             !list ||
@@ -194,7 +194,7 @@ export const listsRoutes = async (fastify: FastifyInstance) => {
       "/lists/:listId/follow",
       async (request, reply) => {
         try {
-          const { id } = (await request.jwtDecode()) as { id: number };
+          const { id } = (await request.jwtDecode()) as { id: string };
           await listService.followList(id, request.params.listId);
           return reply.send({});
         } catch (error) {
@@ -208,7 +208,7 @@ export const listsRoutes = async (fastify: FastifyInstance) => {
       "/lists/:listId/follow",
       async (request, reply) => {
         try {
-          const { id } = (await request.jwtDecode()) as { id: number };
+          const { id } = (await request.jwtDecode()) as { id: string };
           await listService.unfollowList(id, request.params.listId);
           return reply.send({});
         } catch (error) {

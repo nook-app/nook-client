@@ -65,18 +65,6 @@ export const AuthProvider = ({
   const { getAccessToken, logout: logoutPrivy, user: privyUser } = usePrivy();
   const { data } = useSettings(session);
 
-  useEffect(() => {
-    getSession().then((session) => {
-      if (session) {
-        handleSessionChange(session).then(() => {
-          setIsInitializing(false);
-        });
-      } else {
-        setIsInitializing(false);
-      }
-    });
-  }, []);
-
   const handleRefreshSigner = useCallback(async () => {
     if (!session) return;
 
@@ -166,6 +154,23 @@ export const AuthProvider = ({
       relyingParty: "https://nook.social",
     });
   }, [logout, loginWithFarcaster]);
+
+  useEffect(() => {
+    getSession().then((session) => {
+      if (session) {
+        if (!session.id) {
+          removeSession(session);
+          setIsInitializing(false);
+          return;
+        }
+        handleSessionChange(session).then(() => {
+          setIsInitializing(false);
+        });
+      } else {
+        setIsInitializing(false);
+      }
+    });
+  }, [handleSessionChange]);
 
   return (
     <AuthContext.Provider

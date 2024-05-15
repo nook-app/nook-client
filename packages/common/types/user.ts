@@ -18,7 +18,7 @@ export type CastActionInstall = {
 };
 
 export type Session = {
-  id: number;
+  id: string;
   fid: string;
   token: string;
   refreshToken: string;

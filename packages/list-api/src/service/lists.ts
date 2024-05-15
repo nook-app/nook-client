@@ -15,7 +15,7 @@ export class ListsService {
     this.client = fastify.lists.client;
   }
 
-  async getCreatedLists(req: GetListsRequest, viewerId?: number) {
+  async getCreatedLists(req: GetListsRequest, viewerId?: string) {
     let visibility = {};
     if (req.userId !== viewerId) {
       visibility = {
@@ -25,7 +25,7 @@ export class ListsService {
 
     return await this.client.list.findMany({
       where: {
-        creatorId: req.userId,
+        creatorId: BigInt(req.userId),
         type: req.type,
         visibility,
         deletedAt: null,
@@ -36,7 +36,7 @@ export class ListsService {
     });
   }
 
-  async getFollowedLists(req: GetListsRequest, viewerId?: number) {
+  async getFollowedLists(req: GetListsRequest, viewerId?: string) {
     let visibility = {};
     if (req.userId !== viewerId) {
       visibility = {
@@ -48,7 +48,7 @@ export class ListsService {
       where: {
         followers: {
           some: {
-            userId: req.userId,
+            userId: BigInt(req.userId),
           },
         },
         type: req.type,
@@ -72,10 +72,10 @@ export class ListsService {
     });
   }
 
-  async createList(creatorId: number, list: CreateListRequest) {
+  async createList(creatorId: string, list: CreateListRequest) {
     return await this.client.list.create({
       data: {
-        creatorId,
+        creatorId: BigInt(creatorId),
         type: list.type,
         name: list.name,
         description: list.description,
@@ -85,7 +85,7 @@ export class ListsService {
         followerCount: 1,
         followers: {
           create: {
-            userId: creatorId,
+            userId: BigInt(creatorId),
           },
         },
       },
@@ -166,7 +166,7 @@ export class ListsService {
     });
   }
 
-  async followList(userId: number, listId: string) {
+  async followList(userId: string, listId: string) {
     return this.client.list.update({
       where: {
         id: listId,
@@ -177,14 +177,14 @@ export class ListsService {
         },
         followers: {
           create: {
-            userId,
+            userId: BigInt(userId),
           },
         },
       },
     });
   }
 
-  async unfollowList(userId: number, listId: string) {
+  async unfollowList(userId: string, listId: string) {
     return this.client.list.update({
       where: {
         id: listId,
@@ -196,7 +196,7 @@ export class ListsService {
         followers: {
           delete: {
             listId_userId: {
-              userId,
+              userId: BigInt(userId),
               listId,
             },
           },

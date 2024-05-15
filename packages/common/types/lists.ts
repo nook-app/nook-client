@@ -36,7 +36,7 @@ export type ListItem = {
 export type List = ListMetadata & {
   id: string;
   type: ListType;
-  creatorId: number;
+  creatorId: string;
   followerCount: number;
   itemCount: number;
   items: ListItem[];
@@ -51,7 +51,7 @@ export type CreateListRequest = ListMetadata & {
 export type UpdateListRequest = ListMetadata;
 
 export type GetListsRequest = {
-  userId: number;
+  userId: string;
   type: ListType;
   cursor?: string;
 };
