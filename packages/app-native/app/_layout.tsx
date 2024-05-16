@@ -18,10 +18,6 @@ export { ErrorBoundary } from "expo-router";
 
 const queryClient = new QueryClient();
 
-export const unstable_settings = {
-  initialRouteName: "(tabs)",
-};
-
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {

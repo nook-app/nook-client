@@ -142,7 +142,7 @@ const FarcasterExpandedCastHeader = ({
           displayMode={Display.LIST}
         />
       ))}
-      <YStack gap="$3" padding="$3" ref={viewRef}>
+      <YStack gap="$3" padding="$2.5" ref={viewRef}>
         <XStack justifyContent="space-between">
           <FarcasterUserDisplay user={cast.user} asLink />
           <FarcasterCastResponseMenu cast={cast} />
@@ -191,15 +191,24 @@ const FarcasterExpandedCastHeader = ({
         <FarcasterCustomActionButton cast={cast} />
         <FarcasterShareButton cast={cast} />
       </XStack>
-      <View borderBottomWidth="$0.5" borderBottomColor="$borderColorBg">
+      <XStack
+        borderBottomWidth="$0.5"
+        borderBottomColor="$borderColorBg"
+        alignItems="center"
+        justifyContent="space-between"
+        paddingLeft="$2.5"
+      >
+        <NookText muted fontWeight="500" fontSize="$4" color="$mauve10">
+          Sort replies
+        </NookText>
         <ToggleGroup
           type="single"
           borderWidth="$0"
           width="auto"
           alignSelf="flex-end"
           justifyContent="center"
-          margin="$2"
           size="$3"
+          borderRadius="$0"
           value={replySort}
           onValueChange={(value) =>
             onReplySortChange((value as "best" | "top" | "new") || replySort)
@@ -213,7 +222,19 @@ const FarcasterExpandedCastHeader = ({
             <Tooltip delay={100} placement="top" key={value}>
               <Tooltip.Trigger>
                 <ToggleGroup.Item value={value}>
-                  <Icon size={16} />
+                  <XStack gap="$2" alignItems="center">
+                    <Icon
+                      size={16}
+                      color={value === replySort ? "$color12" : "$mauve10"}
+                    />
+                    <NookText
+                      fontSize="$4"
+                      fontWeight="500"
+                      color={value === replySort ? "$color12" : "$mauve10"}
+                    >
+                      {label}
+                    </NookText>
+                  </XStack>
                 </ToggleGroup.Item>
               </Tooltip.Trigger>
               <Tooltip.Content
@@ -240,7 +261,7 @@ const FarcasterExpandedCastHeader = ({
             </Tooltip>
           ))}
         </ToggleGroup>
-      </View>
+      </XStack>
     </View>
   );
 };

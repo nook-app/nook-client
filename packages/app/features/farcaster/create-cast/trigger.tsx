@@ -91,6 +91,7 @@ export const CreateCastQuoteTrigger = ({
   cast: FarcasterCastResponse;
 }) => {
   const theme = useTheme();
+  const { isRecasted } = useRecastCast(cast);
   return (
     <CreateCastTrigger
       initialState={{
@@ -119,13 +120,13 @@ export const CreateCastQuoteTrigger = ({
             >
               <Repeat2
                 size={24}
-                opacity={0.75}
+                opacity={isRecasted ? 1 : 0.75}
                 $group-hover={{
                   color: "$green9",
                   opacity: 1,
                 }}
-                strokeWidth={1.75}
-                color={"$mauve11"}
+                strokeWidth={isRecasted ? 2.5 : 1.75}
+                color={isRecasted ? theme.green9.val : "$mauve11"}
               />
             </View>
           </Popover.Trigger>
@@ -141,15 +142,19 @@ const CreateCastQuoteTriggerMenuItem = ({
   cast,
 }: { cast: FarcasterCastResponse }) => {
   const { close } = useMenu();
-  const { recastCast } = useRecastCast(cast);
+  const { recastCast, unrecastCast, isRecasted } = useRecastCast(cast);
   return (
     <>
       <MenuItem
         Icon={Repeat2}
-        title="Recast"
+        title={isRecasted ? "Unrecast" : "Recast"}
         onPress={() => {
           close();
-          recastCast();
+          if (isRecasted) {
+            unrecastCast();
+          } else {
+            recastCast();
+          }
         }}
       />
       <Dialog.Trigger asChild>

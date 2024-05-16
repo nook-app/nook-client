@@ -81,7 +81,7 @@ export const ListForm = ({
       if (allowedType) {
         router.back();
       } else {
-        router.push(`/(drawer)/(tabs)/(home)/lists/${newList.id}`);
+        router.push(`/(drawer)/(tabs)/(a)/lists/${newList.id}`);
       }
     }
   };

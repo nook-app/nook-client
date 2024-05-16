@@ -43,7 +43,7 @@ export const FarcasterBioText = ({
             e.stopPropagation();
           }}
         >
-          <Link href={url} target="_blank" asText unpressable>
+          <Link href={url} target="_blank" asText unpressable isExternal>
             <NookText
               color="$color11"
               fontWeight="500"

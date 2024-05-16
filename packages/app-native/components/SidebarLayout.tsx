@@ -77,7 +77,7 @@ const SidebarUser = () => {
       </Link>
       <XStack gap="$2" marginTop="$3">
         <Link
-          href={`/(drawer)/(tabs)/(home)/users/${user.username}/following`}
+          href={`/(drawer)/(tabs)/(a)/users/${user.username}/following`}
           absolute
         >
           <View flexDirection="row" alignItems="center" gap="$1">
@@ -112,7 +112,7 @@ const SidebarNavigation = () => {
         label="Home"
         Icon={Home}
         href={{
-          pathname: "/(drawer)/(tabs)/(home)",
+          pathname: "/(drawer)/(tabs)/(a)",
         }}
       />
       <SidebarNavigationItem
@@ -133,14 +133,14 @@ const SidebarNavigation = () => {
         label="Lists"
         Icon={MenuSquare}
         href={{
-          pathname: "/(drawer)/(tabs)/(home)/lists",
+          pathname: "/(drawer)/(tabs)/(a)/lists",
         }}
       />
       <SidebarNavigationItem
         label="Profile"
         Icon={User}
         href={{
-          pathname: "/(drawer)/(tabs)/(home)/users/[username]",
+          pathname: "/(drawer)/(tabs)/(a)/users/[username]",
           params: { username: user?.username },
         }}
       />
@@ -148,7 +148,7 @@ const SidebarNavigation = () => {
         label="Settings"
         Icon={Settings}
         href={{
-          pathname: "/(drawer)/(tabs)/(home)/settings",
+          pathname: "/(drawer)/(tabs)/(a)/settings",
         }}
       />
     </YStack>

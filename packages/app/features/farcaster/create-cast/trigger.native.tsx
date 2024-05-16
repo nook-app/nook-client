@@ -80,10 +80,8 @@ export const CreateCastQuoteTrigger = ({
 }: {
   cast: FarcasterCastResponse;
 }) => {
+  const { isRecasted } = useRecastCast(cast);
   const theme = useTheme();
-  const { recastCast, isRecasted } = useRecastCast(cast);
-  const { signer } = useAuth();
-
   return (
     <Menu
       trigger={
@@ -116,18 +114,6 @@ export const CreateCastQuoteTrigger = ({
         </Popover.Trigger>
       }
     >
-      <MenuItem
-        Icon={Repeat2}
-        title="Recast"
-        onPress={() => {
-          if (signer?.state === "completed") {
-            recastCast();
-          } else {
-            haptics.selection();
-            router.push("/enable-signer");
-          }
-        }}
-      />
       <CreateCastQuoteTriggerMenuItem cast={cast} />
     </Menu>
   );
@@ -136,32 +122,48 @@ export const CreateCastQuoteTrigger = ({
 const CreateCastQuoteTriggerMenuItem = ({
   cast,
 }: { cast: FarcasterCastResponse }) => {
-  const { close } = useMenu();
+  const { recastCast, unrecastCast, isRecasted } = useRecastCast(cast);
   const { signer } = useAuth();
+  const { close } = useMenu();
 
   return (
-    <Link
-      href={
-        signer?.state === "completed"
-          ? {
-              pathname: "/create/cast",
-              params: {
-                text: "",
-                castEmbedHash: cast.hash,
-                castEmbedFid: cast.user.fid,
-              },
-            }
-          : {
-              pathname: "/enable-signer",
-            }
-      }
-      absolute
-      onPress={() => {
-        haptics.selection();
-        close();
-      }}
-    >
-      <MenuItem Icon={MessageSquareQuote} title="Quote" />
-    </Link>
+    <>
+      <MenuItem
+        Icon={Repeat2}
+        title={isRecasted ? "Unrecast" : "Recast"}
+        onPress={() => {
+          close();
+          if (signer?.state === "completed") {
+            isRecasted ? unrecastCast() : recastCast();
+          } else {
+            haptics.selection();
+            router.push("/enable-signer");
+          }
+        }}
+      />
+      <Link
+        href={
+          signer?.state === "completed"
+            ? {
+                pathname: "/create/cast",
+                params: {
+                  text: "",
+                  castEmbedHash: cast.hash,
+                  castEmbedFid: cast.user.fid,
+                },
+              }
+            : {
+                pathname: "/enable-signer",
+              }
+        }
+        absolute
+        onPress={() => {
+          haptics.selection();
+          close();
+        }}
+      >
+        <MenuItem Icon={MessageSquareQuote} title="Quote" />
+      </Link>
+    </>
   );
 };

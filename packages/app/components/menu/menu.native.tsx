@@ -60,7 +60,12 @@ const MenuInner = ({
         </Popover.Trigger>
       )}
       <Adapt when="sm" platform="touch">
-        <Popover.Sheet modal dismissOnSnapToBottom snapPointsMode="fit">
+        <Popover.Sheet
+          modal
+          dismissOnSnapToBottom
+          snapPointsMode="fit"
+          animation="100ms"
+        >
           <Popover.Sheet.Overlay
             animation="quick"
             enterStyle={{ opacity: 0 }}

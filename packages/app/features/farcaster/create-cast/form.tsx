@@ -44,7 +44,7 @@ export const CreateCastButton = ({ onSubmit }: { onSubmit?: () => void }) => {
       if (Platform.OS === "web") {
         router.push(`/casts/${response.hash}`);
       } else {
-        router.push(`/(drawer)/(tabs)/(home)/casts/${response.hash}`);
+        router.push(`/(drawer)/(tabs)/(a)/casts/${response.hash}`);
       }
     }
     onSubmit?.();

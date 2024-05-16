@@ -13,9 +13,11 @@
       "resizeMode": "contain",
       "backgroundColor": "#161719"
     },
-    "assetBundlePatterns": ["**/*"],
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "ios": {
-      "buildNumber": "29",
+      "buildNumber": "32",
       "supportsTablet": true,
       "bundleIdentifier": "social.nook",
       "associatedDomains": [
@@ -45,7 +47,11 @@
       "bundler": "metro",
       "favicon": "./assets/icon.png"
     },
-    "plugins": ["expo-secure-store", "expo-font", "expo-media-library"],
+    "plugins": [
+      "expo-secure-store",
+      "expo-font",
+      "expo-media-library"
+    ],
     "runtimeVersion": "0.1.0",
     "updates": {
       "requestHeaders": {

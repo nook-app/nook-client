@@ -30,6 +30,7 @@ import { EnableSignerDialog } from "@nook/app/features/farcaster/enable-signer/d
 import { NotificationsCount } from "@nook/app/features/notifications/notifications-count";
 import { ReactNode } from "react";
 import { CreateCastDialog } from "@nook/app/features/farcaster/create-cast/dialog";
+import { FarcasterPowerBadge } from "@nook/app/components/farcaster/users/power-badge";
 
 export type NookNavigationItem = {
   label: string;
@@ -297,11 +298,35 @@ const SessionItem = () => {
             <XStack
               justifyContent="space-between"
               alignItems="center"
-              flexGrow={1}
               $lg={{ display: "none" }}
+              flexShrink={1}
+              flexGrow={1}
+              gap="$4"
             >
-              <FarcasterUserDisplay user={user} />
-              <MoreHorizontal color="$mauve12" size={16} />
+              <XStack gap="$2.5" alignItems="center" flexShrink={1}>
+                <FarcasterUserAvatar user={user} size="$4" />
+                <YStack flexShrink={1}>
+                  <XStack gap="$1.5" alignItems="center">
+                    <NookText
+                      fontWeight="700"
+                      numberOfLines={1}
+                      ellipsizeMode="tail"
+                      flexShrink={1}
+                    >
+                      {`${user.displayName || user.username || `!${user.fid}`}`}
+                    </NookText>
+                    <FarcasterPowerBadge
+                      badge={user.badges?.powerBadge ?? false}
+                    />
+                  </XStack>
+                  <NookText muted numberOfLines={1} ellipsizeMode="middle">
+                    {user.username ? `@${user.username}` : `!${user.fid}`}
+                  </NookText>
+                </YStack>
+              </XStack>
+              <View width={16}>
+                <MoreHorizontal color="$mauve12" size={16} />
+              </View>
             </XStack>
           </NookButton>
         </AccountSwitcher>

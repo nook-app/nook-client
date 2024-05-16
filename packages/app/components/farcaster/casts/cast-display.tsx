@@ -7,7 +7,7 @@ import {
   FarcasterUserAvatar,
   FarcasterUserDisplay,
 } from "../../../components/farcaster/users/user-display";
-import { formatTimeAgo, formatToCDN } from "../../../utils";
+import { formatTimeAgo } from "../../../utils";
 import { FarcasterChannelBadge } from "../../../components/farcaster/channels/channel-display";
 import { Embeds } from "../../../components/embeds/Embed";
 import { FarcasterCastResponseEngagement } from "../../../components/farcaster/casts/cast-engagement";
@@ -24,7 +24,6 @@ import { EmbedVideo } from "../../embeds/EmbedVideo";
 import { EmbedFrame } from "../../embeds/frames/EmbedFrame";
 import { useMuteStore } from "../../../store/useMuteStore";
 import { FarcasterPowerBadge } from "../users/power-badge";
-import { Image } from "expo-image";
 import { FarcasterCastResponseGridDisplay } from "./cast-display-grid";
 
 export const FarcasterCastResponseDisplay = ({
@@ -201,7 +200,7 @@ const FarcasterCastResponseNotificationDisplay = ({
         backgroundColor: "$color2",
       }}
       cursor="pointer"
-      padding="$3"
+      padding="$2.5"
     >
       <YStack alignItems="center" width="$4" marginTop="$1">
         <FarcasterUserAvatar user={cast.user} size="$4" asLink />
@@ -305,7 +304,7 @@ const FarcasterCastResponseDefaultDisplay = ({
         backgroundColor: "$color2",
       }}
       cursor="pointer"
-      padding="$3"
+      padding="$2.5"
     >
       <YStack alignItems="center" width="$4" marginTop="$1">
         <FarcasterUserAvatar user={cast.user} size="$4" asLink />

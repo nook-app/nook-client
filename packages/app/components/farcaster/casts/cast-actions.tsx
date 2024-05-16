@@ -23,11 +23,9 @@ export const FarcasterReplyActionButton = ({
 export const FarcasterRecastActionButton = ({
   cast,
 }: { cast: FarcasterCastResponse }) => {
-  const theme = useTheme();
-  const { unrecastCast, isRecasted } = useRecastCast(cast);
   const { session, login, signer } = useAuth();
 
-  if (isRecasted || !session) {
+  if (!session) {
     const Component = (
       <View
         cursor="pointer"
@@ -42,36 +40,17 @@ export const FarcasterRecastActionButton = ({
           transition: "all 0.2s ease-in-out",
           backgroundColor: "$color3",
         }}
-        pressStyle={
-          signer?.state === "completed"
-            ? {
-                scale: 1.25,
-              }
-            : undefined
-        }
-        onPress={
-          signer?.state === "completed"
-            ? (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                if (!session) {
-                  login();
-                  return;
-                }
-                unrecastCast();
-              }
-            : undefined
-        }
+        onPress={login}
       >
         <Repeat2
           size={24}
-          opacity={isRecasted ? 1 : 0.75}
+          opacity={0.75}
           $group-hover={{
             color: "$green9",
             opacity: 1,
           }}
-          strokeWidth={isRecasted ? 2.5 : 1.75}
-          color={isRecasted ? theme.green9.val : "$mauve11"}
+          strokeWidth={1.75}
+          color={"$mauve11"}
         />
       </View>
     );

@@ -168,6 +168,7 @@ const MutualsPreview = ({ user }: { user: FarcasterUser }) => {
           $group-hover={{
             textDecoration: "underline",
           }}
+          flexShrink={1}
         >
           {label}
         </NookText>

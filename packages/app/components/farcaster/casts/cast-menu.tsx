@@ -12,9 +12,7 @@ import {
   Channel,
   FarcasterCastResponse,
   FarcasterUser,
-  ListType,
 } from "@nook/common/types";
-import { useRouter } from "solito/navigation";
 import { useCallback } from "react";
 import { useUser } from "../../../api/farcaster";
 import { Spinner, View } from "@nook/app-ui";
@@ -26,8 +24,9 @@ import { useDeleteCast } from "../../../hooks/useDeleteCast";
 import { Menu } from "../../menu/menu";
 import { MenuItem } from "../../menu/menu-item";
 import { useMenu } from "../../menu/context";
-import { Linking, Platform } from "react-native";
+import { Platform } from "react-native";
 import { Link } from "../../link";
+import { OpenLink } from "../../menu/menu-actions";
 
 export const FarcasterCastResponseMenu = ({
   cast,
@@ -189,7 +188,6 @@ const MuteChannel = ({ channel }: { channel: Channel }) => {
 };
 
 const ViewCastEngagements = ({ cast }: { cast: FarcasterCastResponse }) => {
-  const router = useRouter();
   const { close } = useMenu();
 
   return (
@@ -201,29 +199,16 @@ const ViewCastEngagements = ({ cast }: { cast: FarcasterCastResponse }) => {
 
 const CastSource = ({ cast }: { cast: FarcasterCastResponse }) => {
   const { data } = useUser(cast.appFid || "");
-  const { close } = useMenu();
-
-  const handlePress = useCallback(() => {
-    const url = `https://warpcast.com/~/conversations/${cast.hash}`;
-    if (Platform.OS === "web") {
-      window.open(url);
-    } else {
-      Linking.openURL(url);
-    }
-    close();
-  }, [cast.hash, close]);
-
-  if (!data) return null;
 
   return (
-    <MenuItem
+    <OpenLink
       Icon={
         <View minWidth="$0.9">
-          <CdnAvatar size="$0.9" src={data.pfp} />
+          <CdnAvatar size="$0.9" src={data?.pfp} />
         </View>
       }
-      title={`Casted via ${data.displayName}`}
-      onPress={handlePress}
+      title={data ? `Casted via ${data.displayName}` : ""}
+      link={`https://warpcast.com/~/conversations/${cast.hash}`}
     />
   );
 };

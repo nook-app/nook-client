@@ -35,7 +35,7 @@ export default function TabLayout() {
       }}
     >
       <Tabs.Screen
-        name="(home)"
+        name="(a)"
         options={{
           title: "Home",
           tabBarIcon: (props) => <TabBarHome {...props} />,

@@ -60,7 +60,7 @@ export const FarcasterCastResponseText = ({
               e.stopPropagation();
             }}
           >
-            <Link href={part} target="_blank" asText unpressable>
+            <Link href={part} target="_blank" asText unpressable isExternal>
               <NookText
                 color="$color11"
                 fontSize={
@@ -80,7 +80,7 @@ export const FarcasterCastResponseText = ({
           </NookText>,
         );
       } else {
-        if (trimStart) part = part.trimStart();
+        if (trimStart && i === parts.length - 1) part = part.trimStart();
         if (trimEnd && splitParts.length === 0) part = part.trimEnd();
         splitParts.push(
           <NookText

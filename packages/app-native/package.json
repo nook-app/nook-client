@@ -9,7 +9,9 @@
     "ios": "npx expo run:ios",
     "eject": "npx expo eject",
     "build:production": "eas build --platform ios",
-    "build:preview": "eas build --platform ios --profile preview"
+    "build:preview": "eas build --platform ios --profile preview",
+    "build:submit": "eas submit --platform ios",
+    "push": "eas update"
   },
   "dependencies": {
     "@amplitude/analytics-react-native": "^1.4.8",

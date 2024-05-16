@@ -10,6 +10,7 @@ export const Link = ({
   asText,
   unpressable,
   onPress,
+  isExternal,
 }: {
   href: Href;
   children: React.ReactNode;
@@ -18,6 +19,7 @@ export const Link = ({
   asText?: boolean;
   unpressable?: boolean;
   onPress?: () => void;
+  isExternal?: boolean;
 }) => {
   const memoChildren = useMemo(() => children, [children]);
 
