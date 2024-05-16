@@ -102,7 +102,7 @@ export class PendingCastService {
     const parentId = parent.id || randomUUID();
     const scheduledFor = this._validateScheduledFor(parent.scheduledFor);
 
-    const idk = await this.client.pendingCast.upsert({
+    const threadParent = await this.client.pendingCast.upsert({
       where: { id: parentId, fid },
       update: {
         ...parent,
@@ -166,7 +166,7 @@ export class PendingCastService {
         threadChildren: true,
       },
     });
-    return [idk, ...idk.threadChildren];
+    return [threadParent, ...threadParent.threadChildren];
   }
 
   _validateScheduledFor(scheduledFor: string | null) {
