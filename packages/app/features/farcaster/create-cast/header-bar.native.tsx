@@ -1,6 +1,6 @@
 import { NookButton, XStack } from "@nook/app-ui";
 import { X } from "@tamagui/lucide-icons";
-import { CreateCastButton } from "./form";
+import { CreateCastButton, CreateCastChannelSelector } from "./form";
 
 export const CreateCastHeaderBar = ({ onClose }: { onClose: () => void }) => {
   return (
@@ -19,7 +19,10 @@ export const CreateCastHeaderBar = ({ onClose }: { onClose: () => void }) => {
         }}
         onPress={onClose}
       />
-      <CreateCastButton />
+      <XStack gap="$3" alignItems="center">
+        <CreateCastChannelSelector />
+        <CreateCastButton />
+      </XStack>
     </XStack>
   );
 };

@@ -1,4 +1,4 @@
-import { ReactNode, useEffect, useState } from "react";
+import { ReactNode, useEffect, useMemo, useState } from "react";
 import {
   useRecommendedChannels,
   useSearchChannels,
@@ -21,8 +21,9 @@ import {
 } from "./channel-display";
 import { X } from "@tamagui/lucide-icons";
 import { Channel } from "@nook/common/types";
-import { Keyboard, KeyboardAvoidingView } from "react-native";
+import { Keyboard, KeyboardAvoidingView, Platform } from "react-native";
 import { ChannelFollowBadge } from "./channel-follow-badge";
+import { FullWindowOverlay } from "react-native-screens";
 
 export const ChannelSelect = ({
   channel,
@@ -41,12 +42,31 @@ export const ChannelSelect = ({
     if (open) Keyboard.dismiss();
   }, [open]);
 
+  const containerComponent = useMemo(
+    () => (props: { children: ReactNode }) =>
+      Platform.OS === "ios" ? (
+        <FullWindowOverlay>
+          <View f={1} pe="box-none">
+            {props.children}
+          </View>
+        </FullWindowOverlay>
+      ) : (
+        props.children
+      ),
+    [],
+  );
+
   return (
     <Popover size="$5" allowFlip open={open} onOpenChange={setOpen}>
       <Popover.Trigger asChild>{children}</Popover.Trigger>
 
       <Adapt when="sm" platform="touch">
-        <Popover.Sheet modal dismissOnSnapToBottom>
+        <Popover.Sheet
+          modal
+          dismissOnSnapToBottom
+          animation="100ms"
+          containerComponent={containerComponent}
+        >
           <Popover.Sheet.Overlay
             animation="quick"
             enterStyle={{ opacity: 0 }}

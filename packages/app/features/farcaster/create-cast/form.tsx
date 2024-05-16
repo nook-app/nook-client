@@ -133,7 +133,7 @@ export const CreateCastItem = ({ index }: { index: number }) => {
           />
         </YStack>
         <YStack gap="$3" marginTop="$1.5" width="100%" flexShrink={1}>
-          <CreateCastChannelSelector />
+          {Platform.OS === "web" && <CreateCastChannelSelector />}
           <View>
             <TextArea
               ref={inputRef}
@@ -142,7 +142,7 @@ export const CreateCastItem = ({ index }: { index: number }) => {
               onChange={handleInput}
               placeholder={index > 0 ? "Add another post" : "What's happening?"}
               placeholderTextColor="$mauve11"
-              fontSize="$7"
+              fontSize="$6"
               padding="$0"
               borderWidth="$0"
               borderRadius="$0"
@@ -158,6 +158,7 @@ export const CreateCastItem = ({ index }: { index: number }) => {
               rows={1}
               $platform-web={{
                 resize: "none",
+                fontSize: "$7",
               }}
               onKeyPress={handleKeyDown}
             />
@@ -192,7 +193,7 @@ export const CreateCastItem = ({ index }: { index: number }) => {
   );
 };
 
-const CreateCastChannelSelector = () => {
+export const CreateCastChannelSelector = () => {
   const { thread, channel, updateChannel } = useCreateCast();
   const params = useParams();
 

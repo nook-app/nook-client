@@ -10,10 +10,11 @@ import {
 } from "@nook/app-ui";
 import { useCreateCast } from "./context";
 import { FarcasterChannelDisplay } from "../../../components/farcaster/channels/channel-display";
-import { ReactNode } from "react";
+import { ReactNode, useMemo } from "react";
 import { FarcasterUserDisplay } from "../../../components/farcaster/users/user-display";
-import { KeyboardAvoidingView } from "react-native";
+import { KeyboardAvoidingView, Platform } from "react-native";
 import { SubmitCastAddRequest } from "@nook/common/types";
+import { FullWindowOverlay } from "react-native-screens";
 
 export const CreateCastMentions = ({ children }: { children: ReactNode }) => {
   const { activeCast, updateText, activeIndex } = useCreateCast();
@@ -22,6 +23,20 @@ export const CreateCastMentions = ({ children }: { children: ReactNode }) => {
   const isUserMention = lastWord?.startsWith("@");
 
   const search = useDebounceValue(lastWord?.slice(1) || "", 500);
+
+  const containerComponent = useMemo(
+    () => (props: { children: ReactNode }) =>
+      Platform.OS === "ios" ? (
+        <FullWindowOverlay>
+          <View f={1} pe="box-none">
+            {props.children}
+          </View>
+        </FullWindowOverlay>
+      ) : (
+        props.children
+      ),
+    [],
+  );
 
   return (
     <Popover
@@ -33,7 +48,13 @@ export const CreateCastMentions = ({ children }: { children: ReactNode }) => {
       <Popover.Trigger>{children}</Popover.Trigger>
 
       <Adapt when="sm" platform="touch">
-        <Popover.Sheet modal dismissOnSnapToBottom snapPoints={[70]}>
+        <Popover.Sheet
+          modal
+          dismissOnSnapToBottom
+          snapPoints={[70]}
+          animation="100ms"
+          containerComponent={containerComponent}
+        >
           <Popover.Sheet.Frame
             paddingBottom="$8"
             paddingTop="$2"
