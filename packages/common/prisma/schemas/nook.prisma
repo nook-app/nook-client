@@ -168,23 +168,30 @@ model UserMutedParentUrl {
 }
 
 model PendingCast {
-    id            String    @id @default(uuid())
-    fid           String
-    text          String
-    parentUrl     String?
-    parentFid     String?
-    parentHash    String?
-    castEmbedFid  String?
-    castEmbedHash String?
-    embeds        String[]
-    scheduledFor  DateTime?
-    publishedAt   DateTime?
-    attemptedAt   DateTime?
+    id             String        @id @default(uuid())
+    fid            String
+    textHash       String
+    text           String
+    parentUrl      String?
+    parentFid      String?
+    parentHash     String?
+    castEmbedFid   String?
+    castEmbedHash  String?
+    embeds         String[]
+    scheduledFor   DateTime?
+    publishedAt    DateTime?
+    attemptedAt    DateTime?
+    threadParent   PendingCast?  @relation("ThreadRelation", fields: [threadParentId], references: [id])
+    threadParentId String?
+    threadChildren PendingCast[] @relation("ThreadRelation")
+    threadIndex    Int?
 
     createdAt DateTime  @default(now())
     updatedAt DateTime  @updatedAt
     deletedAt DateTime?
 
+    @@unique([threadParentId, threadIndex])
+    @@unique([fid, textHash, threadParentId])
     @@index([scheduledFor])
     @@index([fid, scheduledFor])
 }
