@@ -1,6 +1,7 @@
 import { PrismaClient } from "@nook/common/prisma/nook";
 import { PendingCastRequest, PendingCastResponse } from "@nook/common/types";
 import { decodeCursor, encodeCursor } from "@nook/common/utils";
+import { createHash, randomUUID } from "crypto";
 import { FastifyInstance } from "fastify";
 
 const MAX_PAGE_SIZE = 25;
@@ -67,6 +68,7 @@ export class PendingCastService {
         castEmbedHash: pendingCast.castEmbedHash,
         embeds: pendingCast.embeds,
         scheduledFor: scheduledFor,
+        textHash: createHash("md5").update(pendingCast.text).digest("hex"),
       },
     });
   }
@@ -92,6 +94,79 @@ export class PendingCastService {
     return this.client.pendingCast.delete({
       where: { id: pendingCastId, fid },
     });
+  }
+
+  async upsertThread(fid: string, pendingCast: PendingCastRequest[]) {
+    const parent = pendingCast[0];
+    const children = pendingCast.slice(1);
+    const parentId = parent.id || randomUUID();
+    const scheduledFor = this._validateScheduledFor(parent.scheduledFor);
+
+    const threadParent = await this.client.pendingCast.upsert({
+      where: { id: parentId, fid },
+      update: {
+        ...parent,
+        threadParent: undefined,
+        textHash: createHash("md5").update(parent.text).digest("hex"),
+        threadParentId: null,
+        threadIndex: 0,
+        scheduledFor: scheduledFor,
+        threadChildren: {
+          deleteMany: {
+            threadParentId: parentId,
+            threadIndex: { gt: children.length },
+          },
+          upsert: children
+            ? children.map((child, i) => ({
+                where: {
+                  id: child.id,
+                  fid,
+                },
+                create: {
+                  ...child,
+                  fid: fid,
+                  textHash: createHash("md5").update(child.text).digest("hex"),
+                  threadParentId: parentId,
+                  threadIndex: i + 1,
+                  scheduledFor: scheduledFor,
+                },
+                update: {
+                  ...child,
+                  textHash: createHash("md5").update(child.text).digest("hex"),
+                  threadParentId: parentId,
+                  threadIndex: i + 1,
+                  scheduledFor: scheduledFor,
+                },
+              }))
+            : [],
+        },
+      },
+      create: {
+        ...parent,
+        id: parentId,
+        fid,
+        textHash: createHash("md5").update(parent.text).digest("hex"),
+        threadIndex: 0,
+        threadParent: undefined,
+        threadParentId: null,
+        scheduledFor: scheduledFor,
+        threadChildren: {
+          create: children
+            ? children.map((child) => ({
+                ...child,
+                fid: fid,
+                threadParentId: parentId,
+                textHash: createHash("md5").update(child.text).digest("hex"),
+                scheduledFor: scheduledFor,
+              }))
+            : [],
+        },
+      },
+      include: {
+        threadChildren: true,
+      },
+    });
+    return [threadParent, ...threadParent.threadChildren];
   }
 
   _validateScheduledFor(scheduledFor: string | null) {
