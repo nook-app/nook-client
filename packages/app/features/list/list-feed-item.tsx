@@ -62,6 +62,16 @@ export const ListFeedItem = memo(({ list }: { list: List }) => {
                     )} ${
                       storeList.type === ListType.USERS ? "user" : "channel"
                     }${storeList.itemCount === 1 ? "" : "s"}`}</NookText>
+                    <View
+                      paddingVertical="$1"
+                      paddingHorizontal="$2"
+                      borderRadius="$2"
+                      backgroundColor="$color5"
+                    >
+                      <NookText fontSize="$2" fontWeight="500">
+                        {list.visibility}
+                      </NookText>
+                    </View>
                   </XStack>
                 </YStack>
               </XStack>

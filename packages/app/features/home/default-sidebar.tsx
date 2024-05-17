@@ -2,10 +2,11 @@
 
 import { YStack } from "@nook/app-ui";
 import { SearchBar } from "../search/search-bar";
-import { Channel } from "@nook/common/types";
 import { RecommendedChannels } from "./recommended-channels";
+import { useRecommendedChannels } from "../../api/farcaster";
 
-export const DefaultSidebar = ({ channels }: { channels?: Channel[] }) => {
+export const DefaultSidebar = () => {
+  const { data } = useRecommendedChannels();
   return (
     <YStack
       padding="$3"
@@ -16,7 +17,7 @@ export const DefaultSidebar = ({ channels }: { channels?: Channel[] }) => {
       }}
     >
       <SearchBar />
-      {channels && <RecommendedChannels channels={channels} />}
+      {data?.data && <RecommendedChannels channels={data.data} />}
     </YStack>
   );
 };

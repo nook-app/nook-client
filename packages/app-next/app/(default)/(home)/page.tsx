@@ -5,6 +5,8 @@ import { UserFilterType } from "@nook/common/types";
 export default async function Home() {
   const session = await getServerSession();
 
+  console.log("1");
+
   if (session) {
     return (
       <FarcasterFilteredFeedServer

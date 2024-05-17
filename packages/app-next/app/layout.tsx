@@ -4,10 +4,8 @@ import { Metadata } from "next";
 import { RootNavigation } from "../components/RootNavigation";
 import { Providers } from "./providers";
 import { getServerSession } from "@nook/app/server/session";
-import { getSigner } from "@nook/app/server/auth";
+import { getSignerFromStorage, getUser } from "@nook/app/server/auth";
 import { ReactNode } from "react";
-import { fetchUser } from "@nook/app/api/farcaster";
-import { headers } from "next/headers";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://nook.social"),
@@ -87,28 +85,16 @@ export default async function RootLayout({
   );
 }
 
-async function Component({ children }: { children: ReactNode }) {
-  const [session] = await Promise.all([getServerSession()]);
-
-  const host = headers().get("host");
-  const subdomain = host?.split(".")[0];
-
-  if (!session) {
-    return (
-      <Providers nook={subdomain}>
-        <RootNavigation>{children}</RootNavigation>
-      </Providers>
-    );
-  }
-
-  const [user, signer] = await Promise.all([
-    fetchUser(session.fid),
-    getSigner(),
+const Component = async ({ children }: { children: ReactNode }) => {
+  const [session, user, signer] = await Promise.all([
+    getServerSession(),
+    getUser(),
+    getSignerFromStorage(),
   ]);
 
   return (
-    <Providers session={session} user={user} signer={signer} nook={subdomain}>
+    <Providers session={session} user={user} signer={signer}>
       <RootNavigation>{children}</RootNavigation>
     </Providers>
   );
-}
+};

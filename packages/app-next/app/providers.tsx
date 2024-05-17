@@ -14,20 +14,18 @@ import { usePathname } from "next/navigation";
 const queryClient = new QueryClient();
 export const Providers = ({
   children,
-  nook,
   session,
   user,
   signer,
 }: {
   children: React.ReactNode;
-  nook?: string;
   session?: Session;
   user?: FarcasterUser;
   signer?: GetSignerResponse;
 }) => {
   return (
     <PrivyLoginProvider>
-      <OtherProviders nook={nook} session={session} user={user} signer={signer}>
+      <OtherProviders session={session} user={user} signer={signer}>
         {children}
       </OtherProviders>
     </PrivyLoginProvider>
@@ -37,13 +35,11 @@ export const Providers = ({
 const OtherProviders = memo(
   ({
     children,
-    nook,
     session,
     user,
     signer,
   }: {
     children: React.ReactNode;
-    nook?: string;
     session?: Session;
     user?: FarcasterUser;
     signer?: GetSignerResponse;
