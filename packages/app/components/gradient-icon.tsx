@@ -1,6 +1,6 @@
 import { darkenColor, stringToColor } from "../utils";
 import { LinearGradient } from "@tamagui/linear-gradient";
-import { Image } from "@nook/app-ui";
+import { Image, View } from "@nook/app-ui";
 import { ReactNode } from "react";
 
 export const GradientIcon = ({
@@ -46,7 +46,7 @@ export const GradientIcon = ({
           tintColor="white"
         />
       ) : (
-        children
+        <View>{children}</View>
       )}
     </LinearGradient>
   );

@@ -1,18 +1,16 @@
 import { useCallback } from "react";
-import { FarcasterUser, ListItemType } from "@nook/common/types";
+import { FarcasterUser, List, ListItemType } from "@nook/common/types";
 import { useToastController } from "@nook/app-ui";
 import { useAuth } from "../context/auth";
 import { haptics } from "../utils/haptics";
 import { useListStore } from "../store/useListStore";
 import { addToList, removeFromList } from "../api/list";
 
-export const useAddUserToList = (listId: string, user: FarcasterUser) => {
+export const useAddUserToList = (list: List, user: FarcasterUser) => {
   const { session, login } = useAuth();
   const toast = useToastController();
 
-  const isAdded = useListStore((state) =>
-    state.lists[listId]?.users?.some((u) => u.fid === user.fid),
-  );
+  const storeList = useListStore((state) => state.lists[list.id]);
   const addUserStore = useListStore((state) => state.addUserToList);
   const removeUserStore = useListStore((state) => state.removeUserFromList);
 
@@ -21,11 +19,11 @@ export const useAddUserToList = (listId: string, user: FarcasterUser) => {
       login();
       return;
     }
-    addUserStore(listId, user);
+    addUserStore(list, user);
     haptics.impactMedium();
     try {
-      await addToList(listId, {
-        listId,
+      await addToList(list.id, {
+        listId: list.id,
         type: ListItemType.FID,
         id: user.fid,
       });
@@ -34,19 +32,19 @@ export const useAddUserToList = (listId: string, user: FarcasterUser) => {
       toast.show("An error occurred. Try again.");
       haptics.notificationError();
     }
-    removeUserStore(listId, user);
-  }, [user, listId, addUserStore, removeUserStore, toast, session, login]);
+    removeUserStore(list, user);
+  }, [user, list, addUserStore, removeUserStore, toast, session, login]);
 
   const handleRemoveUser = useCallback(async () => {
     if (!session) {
       login();
       return;
     }
-    removeUserStore(listId, user);
+    removeUserStore(list, user);
     haptics.impactMedium();
     try {
-      await removeFromList(listId, {
-        listId,
+      await removeFromList(list.id, {
+        listId: list.id,
         type: ListItemType.FID,
         id: user.fid,
       });
@@ -55,12 +53,15 @@ export const useAddUserToList = (listId: string, user: FarcasterUser) => {
       toast.show("An error occurred. Try again.");
       haptics.notificationError();
     }
-    addUserStore(listId, user);
-  }, [user, listId, removeUserStore, addUserStore, toast, session, login]);
+    addUserStore(list, user);
+  }, [user, list, removeUserStore, addUserStore, toast, session, login]);
 
   return {
     addUser: handleAddUser,
     removeUser: handleRemoveUser,
-    isAdded: isAdded ?? false,
+    isAdded:
+      storeList?.users?.some((u) => u.fid === user.fid) ??
+      list.users?.some((u) => u.fid === user.fid) ??
+      false,
   };
 };

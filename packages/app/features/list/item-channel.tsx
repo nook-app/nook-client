@@ -1,4 +1,4 @@
-import { Channel } from "@nook/common/types";
+import { Channel, List } from "@nook/common/types";
 import { NookButton, NookText, XStack, YStack } from "@nook/app-ui";
 import { memo } from "react";
 import { FarcasterBioText } from "../../components/farcaster/bio-text";
@@ -8,7 +8,11 @@ import { ChannelFollowBadge } from "../../components/farcaster/channels/channel-
 import { useAddChannelToList } from "../../hooks/useAddChannelToList";
 
 export const ItemChannel = memo(
-  ({ listId, channel }: { listId: string; channel: Channel }) => {
+  ({ list, channel }: { list: List; channel: Channel }) => {
+    const { addChannel, removeChannel, isAdded } = useAddChannelToList(
+      list,
+      channel,
+    );
     const bio = channel.description?.trim().replace(/\n\s*\n/g, "\n");
     return (
       <Link href={`/users/${channel.channelId}`}>
@@ -45,7 +49,12 @@ export const ItemChannel = memo(
                   <ChannelFollowBadge channel={channel} />
                 </XStack>
               </YStack>
-              <ChannelButton listId={listId} channel={channel} />
+              <NookButton
+                onPress={isAdded ? removeChannel : addChannel}
+                variant={isAdded ? "active-action" : "action"}
+              >
+                {isAdded ? "Remove" : "Add"}
+              </NookButton>
             </XStack>
             {bio && <FarcasterBioText text={bio} numberOfLines={3} />}
           </YStack>
@@ -54,22 +63,3 @@ export const ItemChannel = memo(
     );
   },
 );
-
-const ChannelButton = ({
-  listId,
-  channel,
-}: { listId: string; channel: Channel }) => {
-  const { addChannel, removeChannel, isAdded } = useAddChannelToList(
-    listId,
-    channel,
-  );
-
-  return (
-    <NookButton
-      onPress={isAdded ? removeChannel : addChannel}
-      variant={isAdded ? "active-action" : "action"}
-    >
-      {isAdded ? "Remove" : "Add"}
-    </NookButton>
-  );
-};

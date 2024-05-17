@@ -1,7 +1,7 @@
-import { FarcasterUser } from "@nook/common/types";
+import { FarcasterUser, List } from "@nook/common/types";
 import { NookButton, NookText, XStack, YStack } from "@nook/app-ui";
 import { FarcasterUserAvatar } from "../../components/farcaster/users/user-display";
-import { memo } from "react";
+import { memo, useState } from "react";
 import { FarcasterBioText } from "../../components/farcaster/bio-text";
 import { FarcasterPowerBadge } from "../../components/farcaster/users/power-badge";
 import { UserFollowBadge } from "../../components/farcaster/users/user-follow-badge";
@@ -9,7 +9,9 @@ import { Link } from "../../components/link";
 import { useAddUserToList } from "../../hooks/useAddUserToList";
 
 export const ItemUser = memo(
-  ({ listId, user }: { listId: string; user: FarcasterUser }) => {
+  ({ list, user }: { list: List; user: FarcasterUser }) => {
+    const { addUser, removeUser, isAdded } = useAddUserToList(list, user);
+
     const bio = user?.bio?.trim().replace(/\n\s*\n/g, "\n");
     return (
       <Link href={`/users/${user.username}`}>
@@ -49,7 +51,19 @@ export const ItemUser = memo(
                   <UserFollowBadge user={user} />
                 </XStack>
               </YStack>
-              <UserButton listId={listId} user={user} />
+              <NookButton
+                onPress={(e) => {
+                  e.preventDefault();
+                  if (isAdded) {
+                    removeUser();
+                  } else {
+                    addUser();
+                  }
+                }}
+                variant={isAdded ? "active-action" : "action"}
+              >
+                {isAdded ? "Remove" : "Add"}
+              </NookButton>
             </XStack>
             {bio && <FarcasterBioText text={bio} numberOfLines={3} />}
           </YStack>
@@ -58,19 +72,3 @@ export const ItemUser = memo(
     );
   },
 );
-
-const UserButton = ({
-  listId,
-  user,
-}: { listId: string; user: FarcasterUser }) => {
-  const { addUser, removeUser, isAdded } = useAddUserToList(listId, user);
-
-  return (
-    <NookButton
-      onPress={isAdded ? removeUser : addUser}
-      variant={isAdded ? "active-action" : "action"}
-    >
-      {isAdded ? "Remove" : "Add"}
-    </NookButton>
-  );
-};

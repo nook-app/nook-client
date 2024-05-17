@@ -14,7 +14,7 @@ export default function ListItemsScreen() {
 
   return (
     <View flex={1} backgroundColor="$color1">
-      <ItemFeed listId={list.id} paddingBottom={paddingBottom} />
+      <ItemFeed list={list} paddingBottom={paddingBottom} />
     </View>
   );
 }

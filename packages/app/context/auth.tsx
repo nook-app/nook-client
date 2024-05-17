@@ -14,7 +14,6 @@ import {
   UserSettings,
 } from "@nook/common/types";
 import {
-  loginUser,
   getSigner,
   validateSigner,
   updateSigner,
@@ -29,6 +28,7 @@ import {
 import { useSettings } from "../api/settings";
 import { fetchUser } from "../api/farcaster";
 import { updateServerSession, deleteServerSession } from "../server/session";
+import { loginUser } from "../api/auth";
 
 type AuthContextType = {
   session?: Session;
@@ -67,14 +67,6 @@ export const AuthProvider = ({
   const [user, setUser] = useState<FarcasterUser | undefined>(defaultUser);
   const { getAccessToken, logout: logoutPrivy, user: privyUser } = usePrivy();
   const { data } = useSettings(session);
-
-  useEffect(() => {
-    getSession().then((session) => {
-      if (session) {
-        handleSessionChange(session);
-      }
-    });
-  }, []);
 
   const handleRefreshSigner = useCallback(async () => {
     if (!session) return;
@@ -170,6 +162,18 @@ export const AuthProvider = ({
       setUser(undefined);
     }
   }, [session, handleSessionChange]);
+
+  useEffect(() => {
+    getSession().then((session) => {
+      if (session) {
+        if (!session.id) {
+          removeSession(session);
+          return;
+        }
+        handleSessionChange(session);
+      }
+    });
+  }, [handleSessionChange]);
 
   return (
     <AuthContext.Provider

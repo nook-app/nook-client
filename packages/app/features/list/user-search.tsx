@@ -1,50 +1,34 @@
-import { useCallback, useRef, useState } from "react";
-import { useScroll } from "../../context/scroll";
-import { NativeScrollEvent, NativeSyntheticEvent } from "react-native";
+"use client";
+
+import { useState } from "react";
 import { useSearchUsers } from "../../api/farcaster";
 import { Input, Separator, Spinner, View } from "@nook/app-ui";
-import { FlashList } from "@shopify/flash-list";
 import { ItemUser } from "./item-user";
+import { InfiniteScrollList } from "../../components/infinite-scroll-list";
+import { FarcasterUser, List } from "@nook/common/types";
+import { Loading } from "../../components/loading";
 
 export const ListUserSearch = ({
-  listId,
+  list,
   paddingTop,
   paddingBottom,
 }: {
-  listId: string;
+  list: List;
   paddingTop?: number;
   paddingBottom?: number;
 }) => {
-  const { setIsScrolling } = useScroll();
-  const [lastScrollY, setLastScrollY] = useState(0);
-  const ref = useRef(null);
-
   const [query, setQuery] = useState("");
-  const { data, isFetchingNextPage, fetchNextPage } = useSearchUsers(query);
-
-  const handleScroll = useCallback(
-    (event: NativeSyntheticEvent<NativeScrollEvent>) => {
-      const currentScrollY = event.nativeEvent.contentOffset.y;
-      const delta = currentScrollY - lastScrollY;
-
-      if (delta > 0 && currentScrollY > 50) {
-        setIsScrolling(true);
-      } else if (delta < -50) {
-        setIsScrolling(false);
-      }
-
-      setLastScrollY(currentScrollY);
-    },
-    [lastScrollY, setIsScrolling],
-  );
+  const { data, isLoading, isFetchingNextPage, fetchNextPage } =
+    useSearchUsers(query);
 
   const users = data?.pages.flatMap((page) => page.data) ?? [];
 
   return (
-    <FlashList
-      ref={ref}
+    <InfiniteScrollList
       data={users}
-      renderItem={({ item }) => <ItemUser listId={listId} user={item} />}
+      renderItem={({ item }) => (
+        <ItemUser list={list} user={item as FarcasterUser} />
+      )}
       ListHeaderComponent={
         <View theme="surface2" padding="$2.5">
           <Input
@@ -66,14 +50,7 @@ export const ListUserSearch = ({
       )}
       onEndReached={fetchNextPage}
       onEndReachedThreshold={5}
-      estimatedItemSize={300}
-      onScroll={handleScroll}
-      scrollEventThrottle={128}
-      contentContainerStyle={{
-        paddingTop,
-        paddingBottom,
-      }}
-      keyboardDismissMode="on-drag"
+      ListEmptyComponent={isLoading ? <Loading /> : undefined}
     />
   );
 };

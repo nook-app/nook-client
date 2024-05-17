@@ -1,18 +1,16 @@
 import { useCallback } from "react";
-import { Channel, ListItemType } from "@nook/common/types";
+import { Channel, List, ListItemType } from "@nook/common/types";
 import { useToastController } from "@nook/app-ui";
 import { useAuth } from "../context/auth";
 import { haptics } from "../utils/haptics";
 import { useListStore } from "../store/useListStore";
 import { addToList, removeFromList } from "../api/list";
 
-export const useAddChannelToList = (listId: string, channel: Channel) => {
+export const useAddChannelToList = (list: List, channel: Channel) => {
   const { session, login } = useAuth();
   const toast = useToastController();
 
-  const isAdded = useListStore((state) =>
-    state.lists[listId]?.channels?.some((c) => c.url === channel.url),
-  );
+  const storeList = useListStore((state) => state.lists[list.id]);
   const addChannelStore = useListStore((state) => state.addChannelToList);
   const removeChannelStore = useListStore(
     (state) => state.removeChannelFromList,
@@ -25,18 +23,18 @@ export const useAddChannelToList = (listId: string, channel: Channel) => {
     }
     haptics.impactMedium();
     try {
-      await addToList(listId, {
-        listId,
+      await addToList(list.id, {
+        listId: list.id,
         type: ListItemType.PARENT_URL,
         id: channel.url,
       });
-      addChannelStore(listId, channel);
+      addChannelStore(list, channel);
       return;
     } catch (e) {
       toast.show("An error occurred. Try again.");
       haptics.notificationError();
     }
-  }, [channel, listId, addChannelStore, toast, session, login]);
+  }, [channel, list, addChannelStore, toast, session, login]);
 
   const handleRemoveChannel = useCallback(async () => {
     if (!session) {
@@ -46,22 +44,25 @@ export const useAddChannelToList = (listId: string, channel: Channel) => {
 
     haptics.impactMedium();
     try {
-      await removeFromList(listId, {
-        listId,
+      await removeFromList(list.id, {
+        listId: list.id,
         type: ListItemType.PARENT_URL,
         id: channel.url,
       });
-      removeChannelStore(listId, channel);
+      removeChannelStore(list, channel);
       return;
     } catch (e) {
       toast.show("An error occurred. Try again.");
       haptics.notificationError();
     }
-  }, [channel, listId, removeChannelStore, toast, session, login]);
+  }, [channel, list, removeChannelStore, toast, session, login]);
 
   return {
     addChannel: handleAddChannel,
     removeChannel: handleRemoveChannel,
-    isAdded: isAdded ?? false,
+    isAdded:
+      storeList?.channels?.some((c) => c.url === channel.url) ??
+      list.channels?.some((c) => c.url === channel.url) ??
+      false,
   };
 };

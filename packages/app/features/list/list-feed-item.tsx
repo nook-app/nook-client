@@ -1,12 +1,5 @@
 import { List, ListType } from "@nook/common/types";
-import {
-  AnimatePresence,
-  Button,
-  NookText,
-  View,
-  XStack,
-  YStack,
-} from "@nook/app-ui";
+import { AnimatePresence, NookText, View, XStack, YStack } from "@nook/app-ui";
 import { memo } from "react";
 import { GradientIcon } from "../../components/gradient-icon";
 import { Link } from "../../components/link";
@@ -15,8 +8,8 @@ import { CdnAvatar } from "../../components/cdn-avatar";
 import { useListStore } from "../../store/useListStore";
 
 export const ListFeedItem = memo(({ list }: { list: List }) => {
+  const storeList = useListStore((state) => state.lists[list.id]);
   const deletedLists = useListStore((state) => state.deletedLists);
-  const itemCount = useListStore((state) => state.lists[list.id]?.itemCount);
   if (deletedLists[list.id]) return null;
 
   return (
@@ -33,7 +26,7 @@ export const ListFeedItem = memo(({ list }: { list: List }) => {
         scale={1}
         y={0}
       >
-        <Link href={`/lists/${list.id}`}>
+        <Link href={`/lists/${storeList.id}`}>
           <XStack
             gap="$2.5"
             padding="$2.5"
@@ -43,15 +36,17 @@ export const ListFeedItem = memo(({ list }: { list: List }) => {
             }}
             alignItems="center"
           >
-            {list.imageUrl && <CdnAvatar src={list.imageUrl} size="$5" />}
-            {!list.imageUrl && (
-              <GradientIcon label={list.name} size="$5" borderRadius="$10">
+            {storeList.imageUrl && (
+              <CdnAvatar src={storeList.imageUrl} size="$5" />
+            )}
+            {!storeList.imageUrl && (
+              <GradientIcon label={storeList.name} size="$5" borderRadius="$10">
                 <NookText
                   textTransform="uppercase"
                   fontWeight="700"
                   fontSize="$8"
                 >
-                  {list.name.slice(0, 1)}
+                  {storeList.name.slice(0, 1)}
                 </NookText>
               </GradientIcon>
             )}
@@ -59,17 +54,19 @@ export const ListFeedItem = memo(({ list }: { list: List }) => {
               <XStack justifyContent="space-between" gap="$2">
                 <YStack flexShrink={1}>
                   <NookText variant="label" fontSize="$6">
-                    {list.name}
+                    {storeList.name}
                   </NookText>
                   <XStack gap="$2">
-                    <NookText muted>{`${formatNumber(itemCount || 0)} ${
-                      list.type === ListType.USERS ? "user" : "channel"
-                    }${itemCount === 1 ? "" : "s"}`}</NookText>
+                    <NookText muted>{`${formatNumber(
+                      storeList.itemCount || 0,
+                    )} ${
+                      storeList.type === ListType.USERS ? "user" : "channel"
+                    }${storeList.itemCount === 1 ? "" : "s"}`}</NookText>
                   </XStack>
                 </YStack>
               </XStack>
-              {list.description && (
-                <NookText numberOfLines={1}>{list.description}</NookText>
+              {storeList.description && (
+                <NookText numberOfLines={1}>{storeList.description}</NookText>
               )}
             </YStack>
           </XStack>

@@ -9,11 +9,14 @@ import {
   ListType,
 } from "@nook/common/types";
 import { Loading } from "../../components/loading";
+import { useCallback, useRef, useState } from "react";
 import { useFollowedLists } from "../../api/list";
+import { useScroll } from "../../context/scroll";
+import { NativeScrollEvent, NativeSyntheticEvent } from "react-native";
 import { Separator } from "@nook/app-ui";
 import { ManageListItem } from "./manage-list-item";
+import { FlashList } from "@shopify/flash-list";
 import { ListEmptyState } from "./list-empty-state";
-import { InfiniteScrollList } from "../../components/infinite-scroll-list";
 
 export const ManageListFeed = ({
   filter,
@@ -34,6 +37,27 @@ export const ManageListFeed = ({
 }) => {
   const { data, isLoading } = useFollowedLists(filter, initialData);
 
+  const { setIsScrolling } = useScroll();
+  const [lastScrollY, setLastScrollY] = useState(0);
+
+  const ref = useRef(null);
+
+  const handleScroll = useCallback(
+    (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+      const currentScrollY = event.nativeEvent.contentOffset.y;
+      const delta = currentScrollY - lastScrollY;
+
+      if (delta > 0 && currentScrollY > 50) {
+        setIsScrolling(true);
+      } else if (delta < -50) {
+        setIsScrolling(false);
+      }
+
+      setLastScrollY(currentScrollY);
+    },
+    [lastScrollY, setIsScrolling],
+  );
+
   if (isLoading) {
     return <Loading />;
   }
@@ -41,16 +65,23 @@ export const ManageListFeed = ({
   const lists = data?.pages.flatMap((page) => page.data) ?? [];
 
   return (
-    <InfiniteScrollList
+    <FlashList
+      ref={ref}
       data={lists}
       renderItem={({ item }) => (
-        <ManageListItem list={item as List} user={user} channel={channel} />
+        <ManageListItem list={item} user={user} channel={channel} />
       )}
       ItemSeparatorComponent={() => (
         <Separator width="100%" borderBottomColor="$borderColorBg" />
       )}
       onEndReachedThreshold={5}
       estimatedItemSize={300}
+      onScroll={handleScroll}
+      scrollEventThrottle={128}
+      contentContainerStyle={{
+        paddingTop,
+        paddingBottom,
+      }}
       ListEmptyComponent={
         <ListEmptyState type={user ? ListType.USERS : ListType.PARENT_URLS} />
       }

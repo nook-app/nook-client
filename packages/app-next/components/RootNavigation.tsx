@@ -15,6 +15,7 @@ import {
   Bell,
   User,
   Settings,
+  MenuSquare,
 } from "@tamagui/lucide-icons";
 import { useAuth } from "@nook/app/context/auth";
 import {
@@ -73,6 +74,12 @@ export const NAVIGATION: NookNavigationItem[] = [
     Icon: Bell,
     href: "/notifications",
     right: <NotificationsCount />,
+    auth: true,
+  },
+  {
+    label: "Lists",
+    Icon: MenuSquare,
+    href: "/lists",
     auth: true,
   },
   {

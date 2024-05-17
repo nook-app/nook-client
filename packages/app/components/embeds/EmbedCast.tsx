@@ -19,6 +19,8 @@ export const EmbedCast = ({
 
   // @ts-ignore
   const handlePress = (event) => {
+    event.preventDefault();
+    event.stopPropagation();
     const selection = window?.getSelection?.()?.toString();
     if (!selection || selection.length === 0) {
       if (event.ctrlKey || event.metaKey) {

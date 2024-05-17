@@ -7,10 +7,10 @@ interface ListStore {
   addLists: (lists: List[]) => void;
   updateList: (list: List) => void;
   deleteList: (listId: string) => void;
-  addUserToList: (listId: string, user: FarcasterUser) => void;
-  removeUserFromList: (listId: string, user: FarcasterUser) => void;
-  addChannelToList: (listId: string, channel: Channel) => void;
-  removeChannelFromList: (listId: string, channel: Channel) => void;
+  addUserToList: (list: List, user: FarcasterUser) => void;
+  removeUserFromList: (list: List, user: FarcasterUser) => void;
+  addChannelToList: (list: List, channel: Channel) => void;
+  removeChannelFromList: (list: List, channel: Channel) => void;
 }
 
 export const useListStore = create<ListStore>((set, get) => ({
@@ -38,15 +38,17 @@ export const useListStore = create<ListStore>((set, get) => ({
       deletedLists: { ...state.deletedLists, [listId]: true },
     }));
   },
-  addUserToList: (listId: string, user: FarcasterUser) => {
-    const currentList = get().lists[listId];
-    if (!currentList) return;
+  addUserToList: (list: List, user: FarcasterUser) => {
+    let currentList = get().lists[list.id];
+    if (!currentList) {
+      currentList = list;
+    }
     const users = currentList.users || [];
     if (users.some((u) => u.fid === user.fid)) return;
     set({
       lists: {
         ...get().lists,
-        [listId]: {
+        [list.id]: {
           ...currentList,
           itemCount: currentList.itemCount + 1,
           users: [...users, user],
@@ -54,14 +56,16 @@ export const useListStore = create<ListStore>((set, get) => ({
       },
     });
   },
-  removeUserFromList: (listId: string, user: FarcasterUser) => {
-    const currentList = get().lists[listId];
-    if (!currentList) return;
+  removeUserFromList: (list: List, user: FarcasterUser) => {
+    let currentList = get().lists[list.id];
+    if (!currentList) {
+      currentList = list;
+    }
     const users = currentList.users || [];
     set({
       lists: {
         ...get().lists,
-        [listId]: {
+        [list.id]: {
           ...currentList,
           itemCount: currentList.itemCount - 1,
           users: users.filter((u) => u.fid !== user.fid),
@@ -69,15 +73,17 @@ export const useListStore = create<ListStore>((set, get) => ({
       },
     });
   },
-  addChannelToList: (listId: string, channel: Channel) => {
-    const currentList = get().lists[listId];
-    if (!currentList) return;
+  addChannelToList: (list: List, channel: Channel) => {
+    let currentList = get().lists[list.id];
+    if (!currentList) {
+      currentList = list;
+    }
     const channels = currentList.channels || [];
     if (channels.some((c) => c.url === channel.url)) return;
     set({
       lists: {
         ...get().lists,
-        [listId]: {
+        [list.id]: {
           ...currentList,
           itemCount: currentList.itemCount + 1,
           channels: [...channels, channel],
@@ -85,14 +91,16 @@ export const useListStore = create<ListStore>((set, get) => ({
       },
     });
   },
-  removeChannelFromList: (listId: string, channel: Channel) => {
-    const currentList = get().lists[listId];
-    if (!currentList) return;
+  removeChannelFromList: (list: List, channel: Channel) => {
+    let currentList = get().lists[list.id];
+    if (!currentList) {
+      currentList = list;
+    }
     const channels = currentList.channels || [];
     set({
       lists: {
         ...get().lists,
-        [listId]: {
+        [list.id]: {
           ...currentList,
           itemCount: currentList.itemCount - 1,
           channels: channels.filter((c) => c.url !== channel.url),

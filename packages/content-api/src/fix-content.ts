@@ -35,13 +35,22 @@ const run = async () => {
       },
     );
 
-    console.log(`[${fid}] missing ${missingContentTypes.length}`);
+    const filteredMissingContentTypes = missingContentTypes.filter(
+      ({ uri }) =>
+        !uri.startsWith("https://altumbase.com") &&
+        !uri.startsWith("https://stats-frame.degen.tips") &&
+        !uri.startsWith("https://docs.google.com") &&
+        !uri.startsWith("https://localhost:3000") &&
+        !uri.startsWith("https://frame.fifire.xyz"),
+    );
+
+    console.log(`[${fid}] missing ${filteredMissingContentTypes.length}`);
 
     const urls = Array.from(
-      new Set(missingContentTypes.map((content) => content.uri)),
+      new Set(filteredMissingContentTypes.map((content) => content.uri)),
     );
     for (let j = 0; j < urls.length; j += 10) {
-      const batch = urls.slice(j, j + 10);
+      const batch = urls.slice(j, j + 5);
       await Promise.all(
         batch.map(async (url) => {
           console.log(`[${fid}] fetching ${url}`);
@@ -57,6 +66,10 @@ const run = async () => {
             },
             data: {
               ...content,
+              type: undefined,
+              uri: undefined,
+              hash: undefined,
+              fid: undefined,
               metadata: (content.metadata ||
                 Prisma.DbNull) as Prisma.InputJsonValue,
               frame: (content.frame || Prisma.DbNull) as Prisma.InputJsonValue,
@@ -68,6 +81,11 @@ const run = async () => {
 
     console.log(`[${fid}] fixed content`);
   };
+
+  if (process.argv[2]) {
+    await fixContentForFid(Number(process.argv[2]));
+    return;
+  }
 
   const worker = getWorker(QueueName.Backfill, async (job) => {
     await fixContentForFid(Number(job.data.fid));

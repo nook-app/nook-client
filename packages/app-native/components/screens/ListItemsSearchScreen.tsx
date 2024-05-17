@@ -46,7 +46,7 @@ export default function ListItemsSearchScreen() {
               name: "Search",
               component: (
                 <ListUserSearch
-                  listId={list.id}
+                  list={list}
                   paddingTop={HEADER_HEIGHT}
                   paddingBottom={paddingBottom}
                 />
@@ -56,7 +56,7 @@ export default function ListItemsSearchScreen() {
               name: "Search",
               component: (
                 <ListChannelSearch
-                  listId={list.id}
+                  list={list}
                   paddingTop={HEADER_HEIGHT}
                   paddingBottom={paddingBottom}
                 />
@@ -66,7 +66,7 @@ export default function ListItemsSearchScreen() {
           name: list.type === ListType.USERS ? "Users" : "Channels",
           component: (
             <ItemFeed
-              listId={list.id}
+              list={list}
               paddingTop={HEADER_HEIGHT}
               paddingBottom={paddingBottom}
             />

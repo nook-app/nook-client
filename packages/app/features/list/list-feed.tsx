@@ -37,7 +37,7 @@ export const ListFeed = ({
     return <Loading />;
   }
 
-  const casts = data?.pages.flatMap((page) => page.data) ?? [];
+  const lists = data?.pages.flatMap((page) => page.data) ?? [];
 
   const handleRefresh = async () => {
     setIsRefetching(true);
@@ -47,7 +47,7 @@ export const ListFeed = ({
 
   return (
     <ListInfiniteFeed
-      lists={casts}
+      lists={lists}
       fetchNextPage={fetchNextPage}
       isFetchingNextPage={isFetchingNextPage}
       hasNextPage={hasNextPage}

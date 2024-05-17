@@ -1,3 +1,5 @@
+"use client";
+
 import {
   Button,
   Input,
@@ -7,6 +9,7 @@ import {
   Spinner,
   Switch,
   Text,
+  Theme,
   View,
   XStack,
   YStack,
@@ -33,7 +36,8 @@ import { useQueryClient } from "@tanstack/react-query";
 export const ListForm = ({
   list,
   allowedType,
-}: { list?: List; allowedType?: ListType }) => {
+  onSubmit,
+}: { list?: List; allowedType?: ListType; onSubmit?: () => void }) => {
   const [name, setName] = useState(list?.name || "");
   const [description, setDescription] = useState(list?.description || "");
   const [image, setImage] = useState(list?.imageUrl || "");
@@ -78,10 +82,12 @@ export const ListForm = ({
       queryClient.invalidateQueries({ queryKey: ["followedUserLists", type] });
       setLoading(false);
       toast.show("List created!");
-      if (allowedType) {
+      if (onSubmit) {
+        onSubmit();
+      } else if (allowedType) {
         router.back();
       } else {
-        router.push(`/(drawer)/(tabs)/(a)/lists/${newList.id}`);
+        router.push(`/lists/${newList.id}`);
       }
     }
   };
@@ -158,6 +164,11 @@ export const ListForm = ({
         backgroundColor="$mauve12"
         borderWidth="$0"
         color="$mauve1"
+        hoverStyle={{
+          backgroundColor: "$mauve11",
+          // @ts-ignore
+          transition: "all 0.2s ease-in-out",
+        }}
         pressStyle={{
           backgroundColor: "$mauve11",
         }}
@@ -172,29 +183,35 @@ export const ListForm = ({
         {!loading && "Save"}
       </Button>
       {list && (
-        <Button
-          theme="red"
-          height="$4"
-          width="100%"
-          borderRadius="$10"
-          fontWeight="600"
-          fontSize="$5"
-          backgroundColor="$color8"
-          borderWidth="$0"
-          color="$color12"
-          pressStyle={{
-            backgroundColor: "$color7",
-          }}
-          disabledStyle={{
-            backgroundColor: "$color6",
-          }}
-          disabled={loading || deleting || isDisabled}
-          onPress={handleDelete}
-          marginTop="$4"
-        >
-          {deleting && <Spinner />}
-          {!deleting && "Delete"}
-        </Button>
+        <Theme name="red">
+          <Button
+            height="$4"
+            width="100%"
+            borderRadius="$10"
+            fontWeight="600"
+            fontSize="$5"
+            backgroundColor="$color8"
+            borderWidth="$0"
+            color="$color12"
+            hoverStyle={{
+              backgroundColor: "$color7",
+              // @ts-ignore
+              transition: "all 0.2s ease-in-out",
+            }}
+            pressStyle={{
+              backgroundColor: "$color7",
+            }}
+            disabledStyle={{
+              backgroundColor: "$color6",
+            }}
+            disabled={loading || deleting || isDisabled}
+            onPress={handleDelete}
+            marginTop="$4"
+          >
+            {deleting && <Spinner />}
+            {!deleting && "Delete"}
+          </Button>
+        </Theme>
       )}
     </YStack>
   );
@@ -216,7 +233,12 @@ const UploadImageButton = ({
   return (
     <ImagePicker onSelect={handleSelect}>
       <CdnAvatar size="$7" src={image}>
-        <View justifyContent="center" alignItems="center" opacity={0.5}>
+        <View
+          justifyContent="center"
+          alignItems="center"
+          opacity={0.5}
+          flexGrow={1}
+        >
           <NookText muted fontSize="$3" fontWeight="500">
             optional
           </NookText>

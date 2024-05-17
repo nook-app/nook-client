@@ -72,13 +72,19 @@ export const listsRoutes = async (fastify: FastifyInstance) => {
     fastify.get<{ Params: { listId: string } }>(
       "/lists/:listId",
       async (request, reply) => {
+        let viewerId: string | undefined;
         try {
           const { id } = (await request.jwtDecode()) as { id: string };
+          viewerId = id;
+        } catch (error) {}
+
+        try {
           const list = await listService.getList(request.params.listId);
           if (
             !list ||
             list.deletedAt ||
-            (list.visibility === "PRIVATE" && list.creatorId !== BigInt(id))
+            (list.visibility === "PRIVATE" &&
+              (!viewerId || list.creatorId !== BigInt(viewerId)))
           ) {
             return reply.code(404).send({ message: "List not found" });
           }

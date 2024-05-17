@@ -13,7 +13,7 @@ import {
   FarcasterCastResponse,
   FarcasterUser,
 } from "@nook/common/types";
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
 import { useUser } from "../../../api/farcaster";
 import { Spinner, View } from "@nook/app-ui";
 import { useFollowUser } from "../../../hooks/useFollowUser";
@@ -27,21 +27,50 @@ import { useMenu } from "../../menu/context";
 import { Platform } from "react-native";
 import { Link } from "../../link";
 import { OpenLink } from "../../menu/menu-actions";
+import { ManageListDialog } from "../../../features/list/manage-list-dialog";
 
 export const FarcasterCastResponseMenu = ({
   cast,
 }: { cast: FarcasterCastResponse }) => {
+  const [manageUserListDialogOpen, setManageUserListDialogOpen] =
+    useState(false);
+  const [manageChannelListDialogOpen, setManageChannelListDialogOpen] =
+    useState(false);
   return (
-    <Menu>
-      <DeleteCast cast={cast} />
-      <FollowUser cast={cast} />
-      <AddUserToList user={cast.user} />
-      {cast.channel && <AddChannelToList channel={cast.channel} />}
-      <MuteUser user={cast.user} />
-      {cast.channel && <MuteChannel channel={cast.channel} />}
-      <ViewCastEngagements cast={cast} />
-      {cast.appFid && <CastSource cast={cast} />}
-    </Menu>
+    <>
+      <Menu>
+        <DeleteCast cast={cast} />
+        <FollowUser cast={cast} />
+        <AddUserToList
+          user={cast.user}
+          onPress={() => setManageUserListDialogOpen(true)}
+        />
+        {cast.channel && (
+          <AddChannelToList
+            channel={cast.channel}
+            onPress={() => setManageChannelListDialogOpen(true)}
+          />
+        )}
+        <MuteUser user={cast.user} />
+        {cast.channel && <MuteChannel channel={cast.channel} />}
+        <ViewCastEngagements cast={cast} />
+        {cast.appFid && <CastSource cast={cast} />}
+      </Menu>
+      {Platform.OS === "web" && (
+        <ManageListDialog
+          user={cast.user}
+          open={manageUserListDialogOpen}
+          setOpen={setManageUserListDialogOpen}
+        />
+      )}
+      {Platform.OS === "web" && cast.channel && (
+        <ManageListDialog
+          channel={cast.channel}
+          open={manageChannelListDialogOpen}
+          setOpen={setManageChannelListDialogOpen}
+        />
+      )}
+    </>
   );
 };
 
@@ -69,12 +98,28 @@ const DeleteCast = ({ cast }: { cast: FarcasterCastResponse }) => {
   );
 };
 
-const AddUserToList = ({ user }: { user: FarcasterUser }) => {
+const AddUserToList = ({
+  user,
+  onPress,
+}: { user: FarcasterUser; onPress: () => void }) => {
   const { session } = useAuth();
   const { close } = useMenu();
 
-  if (!session || Platform.OS === "web") {
+  if (!session) {
     return null;
+  }
+
+  if (Platform.OS === "web") {
+    return (
+      <MenuItem
+        Icon={MenuSquare}
+        title="Add/remove from user list"
+        onPress={() => {
+          onPress();
+          close();
+        }}
+      />
+    );
   }
 
   return (
@@ -90,12 +135,28 @@ const AddUserToList = ({ user }: { user: FarcasterUser }) => {
   );
 };
 
-const AddChannelToList = ({ channel }: { channel: Channel }) => {
+const AddChannelToList = ({
+  channel,
+  onPress,
+}: { channel: Channel; onPress: () => void }) => {
   const { session } = useAuth();
   const { close } = useMenu();
 
-  if (!session || Platform.OS === "web") {
+  if (!session) {
     return null;
+  }
+
+  if (Platform.OS === "web") {
+    return (
+      <MenuItem
+        Icon={MenuSquare}
+        title="Add/remove from channel list"
+        onPress={() => {
+          onPress();
+          close();
+        }}
+      />
+    );
   }
 
   return (
