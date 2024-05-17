@@ -1,11 +1,10 @@
 import { FastifyInstance } from "fastify";
-import { FarcasterAPIClient, NookCacheClient } from "@nook/common/clients";
+import { FarcasterAPIClient } from "@nook/common/clients";
 import { FarcasterFeedRequest } from "@nook/common/types/feed";
 
 export const farcasterFeedRoutes = async (fastify: FastifyInstance) => {
   fastify.register(async (fastify: FastifyInstance) => {
     const client = new FarcasterAPIClient();
-    const cache = new NookCacheClient(fastify.redis.client);
 
     fastify.post<{ Body: FarcasterFeedRequest }>(
       "/farcaster/casts/feed",
@@ -16,28 +15,12 @@ export const farcasterFeedRoutes = async (fastify: FastifyInstance) => {
           viewerFid = fid;
         } catch (e) {}
 
-        let mutes: string[] = [];
-        if (viewerFid) {
-          try {
-            mutes = await cache.getUserMutes(viewerFid);
-          } catch (e) {}
-        }
-
         try {
           if (!request.body.api) {
             const response = await client.getCastFeed({
               ...request.body,
               context: {
                 viewerFid,
-                mutedChannels: mutes
-                  .filter((m) => m.startsWith("channel:"))
-                  .map((m) => m.split(":")[1]),
-                mutedUsers: mutes
-                  .filter((m) => m.startsWith("user:"))
-                  .map((m) => m.split(":")[1]),
-                mutedWords: mutes
-                  .filter((m) => m.startsWith("word:"))
-                  .map((m) => m.split(":")[1]),
               },
             });
             return reply.send(response);

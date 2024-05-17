@@ -1,4 +1,8 @@
-import { ContentAPIClient, FarcasterCacheClient } from "@nook/common/clients";
+import {
+  ContentAPIClient,
+  FarcasterCacheClient,
+  NookCacheClient,
+} from "@nook/common/clients";
 import {
   FarcasterCast,
   Prisma,
@@ -27,10 +31,12 @@ export class FeedService {
   private client: PrismaClient;
   private cache: FarcasterCacheClient;
   private content: ContentAPIClient;
+  private nook: NookCacheClient;
 
   constructor(fastify: FastifyInstance) {
     this.client = fastify.farcaster.client;
     this.cache = new FarcasterCacheClient(fastify.redis.client);
+    this.nook = new NookCacheClient(fastify.redis.client);
     this.content = new ContentAPIClient();
   }
 
@@ -81,12 +87,44 @@ export class FeedService {
       conditions.push(`(${queryConditions.join(" OR ")})`);
     }
 
-    if (users) {
-      conditions.push(...(await this.getUserFilter(users)));
+    const [userCondition, channelCondition, muteCondition] = await Promise.all([
+      this.getUserFilter(users),
+      this.getChannelFilter(channels),
+      this.getMuteFilter(context?.viewerFid),
+    ]);
+
+    if (userCondition) {
+      conditions.push(userCondition);
+    }
+    if (channelCondition) {
+      conditions.push(channelCondition);
+    }
+    if (muteCondition?.words) {
+      conditions.push(
+        `NOT (${muteCondition.words
+          .map(
+            (word) =>
+              `to_tsvector('english', "text") @@ to_tsquery('english', '${sanitizeInput(
+                word,
+              ).replaceAll(" ", "<->")}')`,
+          )
+          .join(" OR ")})`,
+      );
     }
 
-    if (channels) {
-      conditions.push(...(await this.getChannelFilter(channels)));
+    if (muteCondition?.users) {
+      conditions.push(
+        `"fid" NOT IN (${muteCondition.users
+          .map((fid) => BigInt(fid))
+          .join(",")})`,
+      );
+    }
+
+    if (muteCondition?.channels) {
+      if (onlyReplies)
+        conditions.push(
+          `"rootParentUrl" NOT IN ('${muteCondition.channels.join("','")}')`,
+        );
     }
 
     if (cursor) {
@@ -108,34 +146,6 @@ export class FeedService {
       conditions.push(`"parentHash" IS NOT NULL`);
     } else if (!includeReplies) {
       conditions.push(`"parentHash" IS NULL`);
-    }
-
-    if (context?.mutedWords && context.mutedWords.length > 0) {
-      conditions.push(
-        `NOT (${context.mutedWords
-          .map(
-            (word) =>
-              `to_tsvector('english', "text") @@ to_tsquery('english', '${sanitizeInput(
-                word,
-              ).replaceAll(" ", "<->")}')`,
-          )
-          .join(" OR ")})`,
-      );
-    }
-
-    if (context?.mutedUsers && context.mutedUsers.length > 0) {
-      conditions.push(
-        `"FarcasterCast"."fid" NOT IN (${context.mutedUsers
-          .map((fid) => BigInt(fid))
-          .join(",")})`,
-      );
-    }
-
-    if (context?.mutedChannels && context.mutedChannels.length > 0) {
-      if (onlyReplies)
-        conditions.push(
-          `"rootParentUrl" NOT IN ('${context.mutedChannels.join("','")}')`,
-        );
     }
 
     const casts = await this.client.$queryRaw<
@@ -212,12 +222,44 @@ export class FeedService {
       conditions.push(`(${queryConditions.join(" OR ")})`);
     }
 
-    if (users) {
-      conditions.push(...(await this.getUserFilter(users)));
+    const [userCondition, channelCondition, muteCondition] = await Promise.all([
+      this.getUserFilter(users),
+      this.getChannelFilter(channels),
+      this.getMuteFilter(context?.viewerFid),
+    ]);
+
+    if (userCondition) {
+      conditions.push(userCondition);
+    }
+    if (channelCondition) {
+      conditions.push(channelCondition);
+    }
+    if (muteCondition?.words) {
+      conditions.push(
+        `NOT (${muteCondition.words
+          .map(
+            (word) =>
+              `to_tsvector('english', "text") @@ to_tsquery('english', '${sanitizeInput(
+                word,
+              ).replaceAll(" ", "<->")}')`,
+          )
+          .join(" OR ")})`,
+      );
     }
 
-    if (channels) {
-      conditions.push(...(await this.getChannelFilter(channels)));
+    if (muteCondition?.users) {
+      conditions.push(
+        `"fid" NOT IN (${muteCondition.users
+          .map((fid) => BigInt(fid))
+          .join(",")})`,
+      );
+    }
+
+    if (muteCondition?.channels) {
+      if (onlyReplies)
+        conditions.push(
+          `"rootParentUrl" NOT IN ('${muteCondition.channels.join("','")}')`,
+        );
     }
 
     if (cursor) {
@@ -233,34 +275,6 @@ export class FeedService {
       conditions.push(`"parentHash" IS NOT NULL`);
     } else if (!includeReplies) {
       conditions.push(`"parentHash" IS NULL`);
-    }
-
-    if (context?.mutedWords && context.mutedWords.length > 0) {
-      conditions.push(
-        `NOT (${context.mutedWords
-          .map(
-            (word) =>
-              `to_tsvector('english', "text") @@ to_tsquery('english', '${sanitizeInput(
-                word,
-              ).replaceAll(" ", "<->")}')`,
-          )
-          .join(" OR ")})`,
-      );
-    }
-
-    if (context?.mutedUsers && context.mutedUsers.length > 0) {
-      conditions.push(
-        `"fid" NOT IN (${context.mutedUsers
-          .map((fid) => BigInt(fid))
-          .join(",")})`,
-      );
-    }
-
-    if (context?.mutedChannels && context.mutedChannels.length > 0) {
-      if (onlyReplies)
-        conditions.push(
-          `"rootParentUrl" NOT IN ('${context.mutedChannels.join("','")}')`,
-        );
     }
 
     const casts = await this.client.$queryRaw<FarcasterCast[]>(
@@ -326,17 +340,21 @@ export class FeedService {
       );
     }
 
-    if (users) {
-      conditions.push(...(await this.getUserFilter(users)));
-    }
+    const [userCondition, channelCondition, muteCondition] = await Promise.all([
+      this.getUserFilter(users),
+      this.getChannelFilter(channels),
+      this.getMuteFilter(context?.viewerFid),
+    ]);
 
-    if (channels) {
-      conditions.push(...(await this.getChannelFilter(channels)));
+    if (userCondition) {
+      conditions.push(userCondition);
     }
-
-    if (muteWords) {
+    if (channelCondition) {
+      conditions.push(channelCondition);
+    }
+    if (muteCondition?.words) {
       conditions.push(
-        `NOT (${muteWords
+        `NOT (${muteCondition.words
           .map(
             (word) =>
               `to_tsvector('english', "text") @@ to_tsquery('english', '${sanitizeInput(
@@ -345,6 +363,21 @@ export class FeedService {
           )
           .join(" OR ")})`,
       );
+    }
+
+    if (muteCondition?.users) {
+      conditions.push(
+        `"fid" NOT IN (${muteCondition.users
+          .map((fid) => BigInt(fid))
+          .join(",")})`,
+      );
+    }
+
+    if (muteCondition?.channels) {
+      if (onlyReplies)
+        conditions.push(
+          `"rootParentUrl" NOT IN ('${muteCondition.channels.join("','")}')`,
+        );
     }
 
     if (cursor) {
@@ -387,23 +420,22 @@ export class FeedService {
     };
   }
 
-  async getUserFilter(users: UserFilter) {
-    const conditions: string[] = [];
+  async getUserFilter(users?: UserFilter) {
+    if (!users) return;
+
     switch (users.type) {
       case UserFilterType.FOLLOWING: {
         const fids = await this.getFollowingFids(users.data.fid);
         if (fids.length > 0) {
-          conditions.push(`"FarcasterCast"."fid" IN (${fids.join(",")})`);
+          return `"FarcasterCast"."fid" IN (${fids.join(",")})`;
         }
         break;
       }
       case UserFilterType.FIDS:
         if (users.data.fids.length > 0) {
-          conditions.push(
-            `"FarcasterCast"."fid" IN (${users.data.fids
-              .map((fid) => BigInt(fid))
-              .join(",")})`,
-          );
+          return `"FarcasterCast"."fid" IN (${users.data.fids
+            .map((fid) => BigInt(fid))
+            .join(",")})`;
         }
         break;
       case UserFilterType.POWER_BADGE: {
@@ -416,14 +448,9 @@ export class FeedService {
         for (const fid of holders) {
           set.add(BigInt(fid));
         }
-
-        conditions.push(
-          `"FarcasterCast"."fid" IN (${Array.from(set).join(",")})`,
-        );
-        break;
+        return `"FarcasterCast"."fid" IN (${Array.from(set).join(",")})`;
       }
     }
-    return conditions;
   }
 
   async getFollowingFids(fid: string) {
@@ -445,25 +472,50 @@ export class FeedService {
     return following.map((link) => link.targetFid);
   }
 
-  async getChannelFilter(channels: ChannelFilter) {
-    const conditions: string[] = [];
+  async getChannelFilter(channels?: ChannelFilter) {
+    if (!channels) return;
+
     switch (channels.type) {
       case ChannelFilterType.CHANNEL_IDS: {
         const response = (
           await this.cache.getChannels(channels.data.channelIds)
         ).filter(Boolean) as Channel[];
-        conditions.push(
-          `"rootParentUrl" IN ('${response.map((c) => c.url).join("','")}')`,
-        );
-        break;
+        return `"rootParentUrl" IN ('${response
+          .map((c) => c.url)
+          .join("','")}')`;
       }
       case ChannelFilterType.CHANNEL_URLS: {
-        conditions.push(
-          `"rootParentUrl" IN ('${channels.data.urls.join("','")}')`,
-        );
-        break;
+        return `"rootParentUrl" IN ('${channels.data.urls.join("','")}')`;
       }
     }
-    return conditions;
+  }
+
+  async getMuteFilter(fid?: string) {
+    if (!fid) return;
+
+    let mutes: string[] = [];
+    if (fid) {
+      try {
+        mutes = await this.nook.getUserMutes(fid);
+      } catch (e) {}
+    }
+
+    const channels = mutes
+      .filter((m) => m.startsWith("channel:"))
+      .map((m) => m.split(":")[1]);
+
+    const users = mutes
+      .filter((m) => m.startsWith("user:"))
+      .map((m) => m.split(":")[1]);
+
+    const words = mutes
+      .filter((m) => m.startsWith("word:"))
+      .map((m) => m.split(":")[1]);
+
+    return {
+      channels: channels.length > 0 ? channels : undefined,
+      users: users.length > 0 ? users : undefined,
+      words: words.length > 0 ? words : undefined,
+    };
   }
 }

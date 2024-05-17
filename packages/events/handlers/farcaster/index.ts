@@ -112,7 +112,7 @@ export class FarcasterProcessor {
 
     if (cast.parentHash) {
       promises.push(
-        this.cacheClient.resetCastEngagement(cast.parentHash, "replies"),
+        this.cacheClient.updateCastEngagement(cast.parentHash, "replies", 1),
       );
       promises.push(
         this.cacheClient.updateCastReplyScore(
@@ -171,7 +171,7 @@ export class FarcasterProcessor {
     }
 
     for (const { hash } of cast.embedCasts) {
-      promises.push(this.cacheClient.resetCastEngagement(hash, "quotes"));
+      promises.push(this.cacheClient.updateCastEngagement(hash, "quotes", 1));
     }
 
     const notifications = parseNotificationsFromCast(cast);
@@ -190,7 +190,7 @@ export class FarcasterProcessor {
 
     if (cast.parentHash) {
       promises.push(
-        this.cacheClient.resetCastEngagement(cast.parentHash, "replies"),
+        this.cacheClient.updateCastEngagement(cast.parentHash, "replies", -1),
       );
       if (cast.parent?.parentHash && cast.user.fid === cast.parent?.parentFid) {
         promises.push(
@@ -214,7 +214,7 @@ export class FarcasterProcessor {
     }
 
     for (const { hash } of cast.embedCasts) {
-      promises.push(this.cacheClient.resetCastEngagement(hash, "quotes"));
+      promises.push(this.cacheClient.updateCastEngagement(hash, "quotes", -1));
     }
 
     const notifications = parseNotificationsFromCast(cast);
@@ -263,28 +263,27 @@ export class FarcasterProcessor {
           ),
         );
       }
-
       promises.push(
-        this.cacheClient.resetCastEngagement(data.targetHash, "likes"),
+        this.cacheClient.updateCastEngagement(data.targetHash, "likes", 1),
       );
       promises.push(
-        this.cacheClient.setCastContexts(
-          "likes",
+        this.cacheClient.updateCastContext(
           data.fid.toString(),
-          [data.targetHash],
-          [true],
+          data.targetHash,
+          "likes",
+          true,
         ),
       );
     } else if (data.reactionType === 2) {
       promises.push(
-        this.cacheClient.resetCastEngagement(data.targetHash, "recasts"),
+        this.cacheClient.updateCastEngagement(data.targetHash, "recasts", 1),
       );
       promises.push(
-        this.cacheClient.setCastContexts(
-          "recasts",
+        this.cacheClient.updateCastContext(
           data.fid.toString(),
-          [data.targetHash],
-          [true],
+          data.targetHash,
+          "recasts",
+          true,
         ),
       );
     }
@@ -331,28 +330,27 @@ export class FarcasterProcessor {
           ),
         );
       }
-
       promises.push(
-        this.cacheClient.resetCastEngagement(data.targetHash, "likes"),
+        this.cacheClient.updateCastEngagement(data.targetHash, "likes", -1),
       );
       promises.push(
-        this.cacheClient.setCastContexts(
-          "likes",
+        this.cacheClient.updateCastContext(
           data.fid.toString(),
-          [data.targetHash],
-          [false],
+          data.targetHash,
+          "likes",
+          false,
         ),
       );
     } else if (data.reactionType === 2) {
       promises.push(
-        this.cacheClient.resetCastEngagement(data.targetHash, "recasts"),
+        this.cacheClient.updateCastEngagement(data.targetHash, "recasts", -1),
       );
       promises.push(
-        this.cacheClient.setCastContexts(
-          "recasts",
+        this.cacheClient.updateCastContext(
           data.fid.toString(),
-          [data.targetHash],
-          [false],
+          data.targetHash,
+          "recasts",
+          false,
         ),
       );
     }
@@ -371,23 +369,25 @@ export class FarcasterProcessor {
     const promises = [];
     if (data.linkType === "follow") {
       promises.push(
-        this.cacheClient.incrementUserEngagement(
+        this.cacheClient.updateUserEngagement(
           data.fid.toString(),
           "following",
+          1,
         ),
       );
       promises.push(
-        this.cacheClient.incrementUserEngagement(
+        this.cacheClient.updateUserEngagement(
           data.targetFid.toString(),
           "followers",
+          1,
         ),
       );
       promises.push(
-        this.cacheClient.setUserContexts(
-          "following",
+        this.cacheClient.updateUserContext(
+          data.targetFid.toString(),
           data.fid.toString(),
-          [data.targetFid.toString()],
-          [true],
+          "following",
+          true,
         ),
       );
       promises.push(
@@ -414,23 +414,25 @@ export class FarcasterProcessor {
     const promises = [];
     if (data.linkType === "follow") {
       promises.push(
-        this.cacheClient.decrementUserEngagement(
+        this.cacheClient.updateUserEngagement(
           data.fid.toString(),
           "following",
+          -1,
         ),
       );
       promises.push(
-        this.cacheClient.decrementUserEngagement(
+        this.cacheClient.updateUserEngagement(
           data.targetFid.toString(),
           "followers",
+          -1,
         ),
       );
       promises.push(
-        this.cacheClient.setUserContexts(
-          "following",
+        this.cacheClient.updateUserContext(
+          data.targetFid.toString(),
           data.fid.toString(),
-          [data.targetFid.toString()],
-          [false],
+          "following",
+          false,
         ),
       );
       promises.push(

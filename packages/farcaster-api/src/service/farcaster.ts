@@ -17,6 +17,10 @@ import {
   FarcasterUserBadges,
   UserFilter,
   UserFilterType,
+  FarcasterCastEngagement,
+  FarcasterCastContext,
+  FarcasterUserEngagement,
+  FarcasterUserContext,
 } from "@nook/common/types";
 import {
   getCastEmbeds,
@@ -769,7 +773,7 @@ export class FarcasterService {
       viewerFid,
     );
 
-    const allCasts = relatedRawCasts.concat(casts);
+    const allCasts = Array.from(new Set(relatedRawCasts.concat(casts)));
 
     const fids = new Set<string>();
     for (const cast of allCasts) {
@@ -782,7 +786,7 @@ export class FarcasterService {
     const channelIds = new Set<string>();
     for (const cast of allCasts) {
       const potentialChannelMentions = cast.text
-        .split(" ")
+        .split(/\s+/)
         .filter((word) => word.startsWith("/"));
       for (const mention of potentialChannelMentions) {
         const channelId = mention.slice(1).trim();
@@ -804,43 +808,18 @@ export class FarcasterService {
       }
     }
 
-    const [
-      isLiked,
-      isRecasted,
-      appFids,
-      likes,
-      recasts,
-      replies,
-      quotes,
-      users,
-      embeds,
-      channels,
-    ] = await Promise.all([
-      this.getCastIsLiked(
-        allCasts.map((cast) => cast.hash),
-        viewerFid,
-      ),
-      this.getCastIsRecasted(
-        allCasts.map((cast) => cast.hash),
-        viewerFid,
-      ),
-      this.getCastSignerAppFids(allCasts),
-      this.getCastLikeCounts(allCasts.map((cast) => cast.hash)),
-      this.getCastRecastCounts(allCasts.map((cast) => cast.hash)),
-      this.getCastReplyCounts(allCasts.map((cast) => cast.hash)),
-      this.getCastQuoteCounts(allCasts.map((cast) => cast.hash)),
-      this.getUsers(Array.from(fids), viewerFid),
-      this.contentClient.getContents(Array.from(embedUrls)),
-      this.getChannels(Array.from(channelUrls), Array.from(channelIds)),
-    ]);
-
-    const castToIndex = allCasts.reduce(
-      (acc, cast, index) => {
-        acc[cast.hash] = index;
-        return acc;
-      },
-      {} as Record<string, number>,
-    );
+    const [appFids, context, engagement, channels, users, embeds] =
+      await Promise.all([
+        this.getCastSignerAppFids(allCasts),
+        this.getCastContext(
+          allCasts.map((cast) => cast.hash),
+          viewerFid,
+        ),
+        this.getCastEngagement(allCasts.map((cast) => cast.hash)),
+        this.getChannels(Array.from(channelUrls), Array.from(channelIds)),
+        this.getUsers(Array.from(fids), viewerFid),
+        this.contentClient.getContents(Array.from(embedUrls)),
+      ]);
 
     const userMap = users.reduce(
       (acc, user) => {
@@ -852,7 +831,7 @@ export class FarcasterService {
 
     const channelMap = channels.reduce(
       (acc, channel) => {
-        if (!channel) return acc;
+        if (!channel || Object.keys(channel).length === 0) return acc;
         acc[channel.url] = channel;
         acc[channel.channelId] = channel;
         return acc;
@@ -869,7 +848,7 @@ export class FarcasterService {
     );
 
     const castMap = allCasts.reduce(
-      (acc, cast) => {
+      (acc, cast, i) => {
         const potentialChannelMentions = cast.text.split(" ").reduce(
           (acc, word) => {
             if (word.startsWith("/")) {
@@ -913,16 +892,8 @@ export class FarcasterService {
           ancestors: [],
           thread: [],
           appFid: cast.appFid || appFids[cast.signer],
-          context: {
-            liked: isLiked[castToIndex[cast.hash]],
-            recasted: isRecasted[castToIndex[cast.hash]],
-          },
-          engagement: {
-            likes: likes[castToIndex[cast.hash]],
-            recasts: recasts[castToIndex[cast.hash]],
-            replies: replies[castToIndex[cast.hash]],
-            quotes: quotes[castToIndex[cast.hash]],
-          },
+          context: context[i],
+          engagement: engagement[i],
         };
         return acc;
       },
@@ -1000,35 +971,37 @@ export class FarcasterService {
     const missingUrls = urls?.filter((url) => !channelMap[url]) || [];
     const missingIds = ids?.filter((id) => !channelMap[id]) || [];
 
-    if (missingUrls.length > 0 || missingIds.length > 0) {
-      const data = await this.client.farcasterParentUrl.findMany({
-        where: {
-          OR: [
-            {
-              channelId: {
-                in: missingIds,
-              },
+    if (missingUrls.length === 0 && missingIds.length === 0) {
+      return keys.map((key) => channelMap[key]);
+    }
+
+    const data = await this.client.farcasterParentUrl.findMany({
+      where: {
+        OR: [
+          {
+            channelId: {
+              in: missingIds,
             },
-            {
-              url: {
-                in: missingUrls,
-              },
+          },
+          {
+            url: {
+              in: missingUrls,
             },
-          ],
-        },
-      });
+          },
+        ],
+      },
+    });
 
-      const fetchedChannels = data.map((channel) => ({
-        ...channel,
-        creatorId: channel.creatorId?.toString(),
-      }));
+    const fetchedChannels = data.map((channel) => ({
+      ...channel,
+      creatorId: channel.creatorId?.toString(),
+    }));
 
-      await this.cache.setChannels(fetchedChannels);
+    await this.cache.setChannels(fetchedChannels);
 
-      for (const channel of fetchedChannels) {
-        channelMap[channel.url] = channel;
-        channelMap[channel.channelId] = channel;
-      }
+    for (const channel of fetchedChannels) {
+      channelMap[channel.url] = channel;
+      channelMap[channel.channelId] = channel;
     }
 
     const stillMissingUrls = missingUrls.filter((url) => !channelMap[url]);
@@ -1099,6 +1072,11 @@ export class FarcasterService {
       }
 
       await this.cache.setChannels(upsertedChannels);
+    }
+
+    const stillMissingKeys = keys.filter((key) => !channelMap[key]);
+    if (stillMissingKeys.length > 0) {
+      await this.cache.setNotChannels(stillMissingKeys);
     }
 
     return keys.map((key) => channelMap[key]);
@@ -1285,26 +1263,17 @@ export class FarcasterService {
   async getUsers(fids: string[], viewerFid?: string): Promise<FarcasterUser[]> {
     if (fids.length === 0) return [];
 
-    const [users, powerBadges, followers, following, isFollowing, isFollower] =
-      await Promise.all([
-        this.getUserDatas(fids),
-        this.getUserBadges(fids),
-        this.getUserFollowerCounts(fids),
-        this.getUserFollowingCounts(fids),
-        this.getUserIsFollowing(fids, viewerFid),
-        this.getUserIsFollower(fids, viewerFid),
-      ]);
+    const [users, powerBadges, context, engagement] = await Promise.all([
+      this.getUserDatas(fids),
+      this.getUserBadges(fids),
+      this.getUserContext(fids, viewerFid),
+      this.getUserEngagement(fids),
+    ]);
 
     return users.map((user, i) => ({
       ...user,
-      engagement: {
-        followers: followers[i],
-        following: following[i],
-      },
-      context: {
-        following: isFollowing[i],
-        followers: isFollower[i],
-      },
+      engagement: engagement[i],
+      context: context[i],
       badges: powerBadges[i] || { powerBadge: false },
     }));
   }
@@ -1378,193 +1347,139 @@ export class FarcasterService {
     return users;
   }
 
-  async getUserFollowerCounts(fids: string[]): Promise<number[]> {
-    const counts = await this.cache.getUserEngagements("followers", fids);
-    const countMap = counts.reduce(
-      (acc, count, i) => {
-        if (count === undefined) return acc;
-        acc[fids[i]] = count;
+  async getUserEngagement(fids: string[]) {
+    const cached = await this.cache.getUserEngagement(fids);
+    const cacheMap = cached.reduce(
+      (acc, engagement, i) => {
+        if (!engagement) return acc;
+        acc[fids[i]] = engagement;
         return acc;
       },
-      {} as Record<string, number>,
+      {} as Record<string, FarcasterUserEngagement>,
     );
 
-    const missing = fids.filter((fid) => countMap[fid] === undefined);
-
-    if (missing.length > 0) {
-      const fetchedCounts = await this.client.farcasterUserStats.findMany({
-        where: { fid: { in: missing.map((fid) => BigInt(fid)) } },
-      });
-
-      await this.cache.setUserEngagements(
-        "followers",
-        fetchedCounts.map((count) => count.fid.toString()),
-        fetchedCounts.map((count) => count.followers),
-      );
-
-      for (const count of fetchedCounts) {
-        countMap[count.fid.toString()] = count.followers;
-      }
+    const missing = fids.filter((fid) => !cacheMap[fid]);
+    if (missing.length === 0) {
+      return fids.map((fid) => cacheMap[fid]);
     }
 
-    return fids.map((fid) => countMap[fid] || 0);
+    const fetched = await this.client.farcasterUserStats.findMany({
+      where: { fid: { in: missing.map((fid) => BigInt(fid)) } },
+      select: {
+        fid: true,
+        followers: true,
+        following: true,
+      },
+    });
+
+    const fetchedMap = fetched.reduce(
+      (acc, engagement) => {
+        acc[engagement.fid.toString()] = engagement;
+        return acc;
+      },
+      {} as Record<string, FarcasterUserEngagement>,
+    );
+
+    const emptyState = {
+      followers: 0,
+      following: 0,
+    };
+
+    const stillMissing = missing.filter((fid) => !fetchedMap[fid]);
+    for (const fid of stillMissing) {
+      fetchedMap[fid] = emptyState;
+    }
+
+    await this.cache.setUserEngagement(
+      Object.entries(fetchedMap).map(([fid, engagement]) => ({
+        fid,
+        ...engagement,
+      })),
+    );
+
+    return fids.map((fid) => cacheMap[fid] || fetchedMap[fid]);
   }
 
-  async getUserFollowingCounts(fids: string[]): Promise<number[]> {
-    const counts = await this.cache.getUserEngagements("following", fids);
-    const countMap = counts.reduce(
-      (acc, count, i) => {
-        if (count === undefined) return acc;
-        acc[fids[i]] = count;
+  async getUserContext(
+    fids: string[],
+    viewerFid?: string,
+  ): Promise<FarcasterUserContext[]> {
+    if (!viewerFid) return [];
+
+    const cached = await this.cache.getUserContext(viewerFid, fids);
+
+    const cacheMap = cached.reduce(
+      (acc, context, i) => {
+        if (!context) return acc;
+        acc[fids[i]] = context;
         return acc;
       },
-      {} as Record<string, number>,
+      {} as Record<string, FarcasterUserContext>,
     );
 
-    const missing = fids.filter((fid) => countMap[fid] === undefined);
-
-    if (missing.length > 0) {
-      const fetchedCounts = await this.client.farcasterUserStats.findMany({
-        where: { fid: { in: missing.map((fid) => BigInt(fid)) } },
-      });
-
-      await this.cache.setUserEngagements(
-        "following",
-        fetchedCounts.map((count) => count.fid.toString()),
-        fetchedCounts.map((count) => count.following),
-      );
-
-      for (const count of fetchedCounts) {
-        countMap[count.fid.toString()] = count.following;
-      }
+    const missing = fids.filter((fid) => !cacheMap[fid]);
+    if (missing.length === 0) {
+      return fids.map((fid) => cacheMap[fid]);
     }
 
-    return fids.map((fid) => countMap[fid] || 0);
+    const fetched = await this.client.farcasterLink.findMany({
+      where: {
+        OR: [
+          {
+            fid: BigInt(viewerFid),
+            targetFid: {
+              in: missing.map((fid) => BigInt(fid)),
+            },
+            deletedAt: null,
+          },
+          {
+            targetFid: BigInt(viewerFid),
+            fid: {
+              in: missing.map((fid) => BigInt(fid)),
+            },
+            deletedAt: null,
+          },
+        ],
+      },
+    });
+
+    const fetchedMap = fetched.reduce(
+      (acc, link) => {
+        const fid = link.fid.toString();
+        const targetFid = link.targetFid.toString();
+        const key = fid === viewerFid ? targetFid : fid;
+        if (!acc[key]) {
+          acc[key] = { following: false, followers: false };
+        }
+        if (fid === viewerFid) {
+          acc[key].following = true;
+        } else {
+          acc[key].followers = true;
+        }
+        return acc;
+      },
+      {} as Record<string, FarcasterUserContext>,
+    );
+
+    const stillMissing = missing.filter((fid) => !fetchedMap[fid]);
+    for (const fid of stillMissing) {
+      fetchedMap[fid] = { following: false, followers: false };
+    }
+
+    await this.cache.setUserContext(
+      viewerFid,
+      Object.entries(fetchedMap).map(([fid, context]) => ({
+        fid,
+        ...context,
+      })),
+    );
+
+    return fids.map((fid) => cacheMap[fid] || fetchedMap[fid]);
   }
 
   async getUserBadges(fids: string[]): Promise<FarcasterUserBadges[]> {
     const powerBadges = await this.cache.getUserPowerBadges(fids);
     return powerBadges.map((powerBadge) => ({ powerBadge }));
-  }
-
-  async getUserIsFollower(
-    fids: string[],
-    viewerFid?: string,
-  ): Promise<boolean[]> {
-    if (!viewerFid) return [];
-
-    const isFollower = await this.cache.getUserContexts(
-      "followers",
-      viewerFid,
-      fids,
-    );
-    const isFollowerMap = isFollower.reduce(
-      (acc, follower, i) => {
-        if (follower === undefined) return acc;
-        acc[fids[i]] = follower;
-        return acc;
-      },
-      {} as Record<string, boolean>,
-    );
-
-    const missing = fids.filter((fid) => isFollowerMap[fid] === undefined);
-
-    if (missing.length > 0) {
-      const fetchedIsFollower = await this.client.farcasterLink.findMany({
-        where: {
-          linkType: "follow",
-          targetFid: BigInt(viewerFid),
-          fid: {
-            in: missing.map((fid) => BigInt(fid)),
-          },
-          deletedAt: null,
-        },
-      });
-
-      await this.cache.setUserContexts(
-        "followers",
-        viewerFid,
-        fetchedIsFollower.map((link) => link.fid.toString()),
-        fetchedIsFollower.map(() => true),
-      );
-
-      for (const link of fetchedIsFollower) {
-        isFollowerMap[link.fid.toString()] = true;
-      }
-    }
-
-    const stillMissing = fids.filter((fid) => isFollowerMap[fid] === undefined);
-    if (stillMissing.length > 0) {
-      await this.cache.setUserContexts(
-        "followers",
-        viewerFid,
-        stillMissing,
-        stillMissing.map(() => false),
-      );
-    }
-
-    return fids.map((fid) => isFollowerMap[fid] || false);
-  }
-
-  async getUserIsFollowing(
-    fids: string[],
-    viewerFid?: string,
-  ): Promise<boolean[]> {
-    if (!viewerFid) return [];
-
-    const isFollowing = await this.cache.getUserContexts(
-      "following",
-      viewerFid,
-      fids,
-    );
-    const isFollowingMap = isFollowing.reduce(
-      (acc, following, i) => {
-        if (following === undefined) return acc;
-        acc[fids[i]] = following;
-        return acc;
-      },
-      {} as Record<string, boolean>,
-    );
-
-    const missing = fids.filter((fid) => isFollowingMap[fid] === undefined);
-
-    if (missing.length > 0) {
-      const fetchedIsFollowing = await this.client.farcasterLink.findMany({
-        where: {
-          linkType: "follow",
-          fid: BigInt(viewerFid),
-          targetFid: {
-            in: missing.map((fid) => BigInt(fid)),
-          },
-          deletedAt: null,
-        },
-      });
-
-      await this.cache.setUserContexts(
-        "following",
-        viewerFid,
-        fetchedIsFollowing.map((link) => link.targetFid.toString()),
-        fetchedIsFollowing.map(() => true),
-      );
-
-      for (const link of fetchedIsFollowing) {
-        isFollowingMap[link.targetFid.toString()] = true;
-      }
-    }
-
-    const stillMissing = fids.filter(
-      (fid) => isFollowingMap[fid] === undefined,
-    );
-    if (stillMissing.length > 0) {
-      await this.cache.setUserContexts(
-        "following",
-        viewerFid,
-        stillMissing,
-        stillMissing.map(() => false),
-      );
-    }
-
-    return fids.map((fid) => isFollowingMap[fid] || false);
   }
 
   async getUserFollowers(
@@ -1709,269 +1624,137 @@ export class FarcasterService {
     return addresses.map((address) => address.address);
   }
 
-  async getCastLikeCounts(hashes: string[]): Promise<number[]> {
-    const counts = await this.cache.getCastEngagements("likes", hashes);
-    const countMap = counts.reduce(
-      (acc, count, i) => {
-        if (count === undefined) return acc;
-        acc[hashes[i]] = count;
+  async getCastEngagement(
+    hashes: string[],
+  ): Promise<FarcasterCastEngagement[]> {
+    const cached = await this.cache.getCastEngagement(hashes);
+    const cacheMap = cached.reduce(
+      (acc, engagement, i) => {
+        if (!engagement) return acc;
+        acc[hashes[i]] = engagement;
         return acc;
       },
-      {} as Record<string, number>,
+      {} as Record<string, FarcasterCastEngagement>,
     );
 
-    const missing = hashes.filter((hash) => countMap[hash] === undefined);
-
-    if (missing.length > 0) {
-      const fetchedCounts = await this.client.farcasterCastStats.findMany({
-        where: {
-          hash: {
-            in: missing,
-          },
-        },
-      });
-
-      await this.cache.setCastEngagements(
-        "likes",
-        fetchedCounts.map((count) => count.hash),
-        fetchedCounts.map((count) => count.likes),
-      );
-
-      for (const count of fetchedCounts) {
-        countMap[count.hash] = count.likes;
-      }
+    const missing = hashes.filter((hash) => !cacheMap[hash]);
+    if (missing.length === 0) {
+      return hashes.map((hash) => cacheMap[hash]);
     }
 
-    return hashes.map((hash) => countMap[hash] || 0);
-  }
+    const fetched = await this.client.farcasterCastStats.findMany({
+      where: {
+        hash: {
+          in: missing,
+        },
+      },
+      select: {
+        hash: true,
+        likes: true,
+        recasts: true,
+        replies: true,
+        quotes: true,
+      },
+    });
 
-  async getCastRecastCounts(hashes: string[]): Promise<number[]> {
-    const counts = await this.cache.getCastEngagements("recasts", hashes);
-    const countMap = counts.reduce(
-      (acc, count, i) => {
-        if (count === undefined) return acc;
-        acc[hashes[i]] = count;
+    const fetchedMap = fetched.reduce(
+      (acc, engagement) => {
+        acc[engagement.hash] = engagement;
         return acc;
       },
-      {} as Record<string, number>,
+      {} as Record<string, FarcasterCastEngagement>,
     );
 
-    const missing = hashes.filter((hash) => countMap[hash] === undefined);
+    const emptyState = {
+      likes: 0,
+      recasts: 0,
+      replies: 0,
+      quotes: 0,
+    };
 
-    if (missing.length > 0) {
-      const fetchedCounts = await this.client.farcasterCastStats.findMany({
-        where: {
-          hash: {
-            in: missing,
-          },
-        },
-      });
-
-      await this.cache.setCastEngagements(
-        "recasts",
-        fetchedCounts.map((count) => count.hash),
-        fetchedCounts.map((count) => count.recasts),
-      );
-
-      for (const count of fetchedCounts) {
-        countMap[count.hash] = count.recasts;
-      }
+    const stillMissing = missing.filter((hash) => !fetchedMap[hash]);
+    for (const hash of stillMissing) {
+      fetchedMap[hash] = emptyState;
     }
 
-    return hashes.map((hash) => countMap[hash] || 0);
-  }
-
-  async getCastReplyCounts(hashes: string[]): Promise<number[]> {
-    const counts = await this.cache.getCastEngagements("replies", hashes);
-    const countMap = counts.reduce(
-      (acc, count, i) => {
-        if (count === undefined) return acc;
-        acc[hashes[i]] = count;
-        return acc;
-      },
-      {} as Record<string, number>,
+    await this.cache.setCastEngagement(
+      Object.entries(fetchedMap).map(([hash, engagement]) => ({
+        hash,
+        ...engagement,
+      })),
     );
 
-    const missing = hashes.filter((hash) => countMap[hash] === undefined);
-
-    if (missing.length > 0) {
-      const fetchedCounts = await this.client.farcasterCastStats.findMany({
-        where: {
-          hash: {
-            in: missing,
-          },
-        },
-      });
-
-      await this.cache.setCastEngagements(
-        "replies",
-        fetchedCounts.map((count) => count.hash),
-        fetchedCounts.map((count) => count.replies),
-      );
-
-      for (const count of fetchedCounts) {
-        countMap[count.hash] = count.replies;
-      }
-    }
-
-    return hashes.map((hash) => countMap[hash] || 0);
+    return hashes.map((hash) => cacheMap[hash] || fetchedMap[hash]);
   }
 
-  async getCastQuoteCounts(hashes: string[]): Promise<number[]> {
-    const counts = await this.cache.getCastEngagements("quotes", hashes);
-    const countMap = counts.reduce(
-      (acc, count, i) => {
-        if (count === undefined) return acc;
-        acc[hashes[i]] = count;
-        return acc;
-      },
-      {} as Record<string, number>,
-    );
-
-    const missing = hashes.filter((hash) => countMap[hash] === undefined);
-
-    if (missing.length > 0) {
-      const fetchedCounts = await this.client.farcasterCastStats.findMany({
-        where: {
-          hash: {
-            in: missing,
-          },
-        },
-      });
-
-      await this.cache.setCastEngagements(
-        "quotes",
-        fetchedCounts.map((count) => count.hash),
-        fetchedCounts.map((count) => count.quotes),
-      );
-
-      for (const count of fetchedCounts) {
-        countMap[count.hash] = count.quotes;
-      }
-    }
-
-    return hashes.map((hash) => countMap[hash] || 0);
-  }
-
-  async getCastIsLiked(
+  async getCastContext(
     hashes: string[],
     viewerFid?: string,
-  ): Promise<boolean[]> {
+  ): Promise<FarcasterCastContext[]> {
     if (!viewerFid) return [];
 
-    const isLiked = await this.cache.getCastContexts(
-      "likes",
-      viewerFid,
-      hashes,
-    );
-    const isLikedMap = isLiked.reduce(
-      (acc, liked, i) => {
-        if (liked === undefined) return acc;
-        acc[hashes[i]] = liked;
+    const cached = await this.cache.getCastContext(viewerFid, hashes);
+
+    const cacheMap = cached.reduce(
+      (acc, context, i) => {
+        if (!context) return acc;
+        acc[hashes[i]] = context;
         return acc;
       },
-      {} as Record<string, boolean>,
+      {} as Record<string, FarcasterCastContext>,
     );
 
-    const missing = hashes.filter((hash) => isLikedMap[hash] === undefined);
-    if (missing.length > 0) {
-      const fetchedIsLiked = await this.client.farcasterCastReaction.findMany({
-        where: {
-          reactionType: 1,
-          fid: BigInt(viewerFid),
-          targetHash: {
-            in: missing,
-          },
-          deletedAt: null,
+    const missing = hashes.filter((hash) => !cacheMap[hash]);
+    if (missing.length === 0) {
+      return hashes.map((hash) => cacheMap[hash]);
+    }
+
+    const fetched = await this.client.farcasterCastReaction.findMany({
+      where: {
+        fid: BigInt(viewerFid),
+        targetHash: {
+          in: missing,
         },
-      });
+        deletedAt: null,
+      },
+    });
 
-      await this.cache.setCastContexts(
-        "likes",
-        viewerFid,
-        fetchedIsLiked.map((reaction) => reaction.targetHash),
-        fetchedIsLiked.map(() => true),
-      );
-
-      for (const reaction of fetchedIsLiked) {
-        isLikedMap[reaction.targetHash] = true;
-      }
-    }
-
-    const stillMissing = hashes.filter(
-      (hash) => isLikedMap[hash] === undefined,
-    );
-    if (stillMissing.length > 0) {
-      await this.cache.setCastContexts(
-        "likes",
-        viewerFid,
-        stillMissing,
-        stillMissing.map(() => false),
-      );
-    }
-
-    return hashes.map((hash) => isLikedMap[hash] || false);
-  }
-
-  async getCastIsRecasted(
-    hashes: string[],
-    viewerFid?: string,
-  ): Promise<boolean[]> {
-    if (!viewerFid) return [];
-
-    const isRecasted = await this.cache.getCastContexts(
-      "recasts",
-      viewerFid,
-      hashes,
-    );
-    const isRecastedMap = isRecasted.reduce(
-      (acc, recasted, i) => {
-        if (recasted === undefined) return acc;
-        acc[hashes[i]] = recasted;
+    const fetchedMap = fetched.reduce(
+      (acc, reaction) => {
+        if (!acc[reaction.targetHash]) {
+          acc[reaction.targetHash] = {
+            liked: false,
+            recasted: false,
+          };
+        }
+        if (reaction.reactionType === 1) {
+          acc[reaction.targetHash].liked = true;
+        }
+        if (reaction.reactionType === 2) {
+          acc[reaction.targetHash].recasted = true;
+        }
         return acc;
       },
-      {} as Record<string, boolean>,
+      {} as Record<string, FarcasterCastContext>,
     );
 
-    const missing = hashes.filter((hash) => isRecastedMap[hash] === undefined);
-    if (missing.length > 0) {
-      const fetchedIsRecasted =
-        await this.client.farcasterCastReaction.findMany({
-          where: {
-            reactionType: 2,
-            fid: BigInt(viewerFid),
-            targetHash: {
-              in: missing,
-            },
-            deletedAt: null,
-          },
-        });
-
-      await this.cache.setCastContexts(
-        "recasts",
-        viewerFid,
-        fetchedIsRecasted.map((reaction) => reaction.targetHash),
-        fetchedIsRecasted.map(() => true),
-      );
-
-      for (const reaction of fetchedIsRecasted) {
-        isRecastedMap[reaction.targetHash] = true;
-      }
+    const stillMissing = missing.filter((hash) => !fetchedMap[hash]);
+    for (const hash of stillMissing) {
+      fetchedMap[hash] = {
+        liked: false,
+        recasted: false,
+      };
     }
 
-    const stillMissing = hashes.filter(
-      (hash) => isRecastedMap[hash] === undefined,
+    await this.cache.setCastContext(
+      viewerFid,
+      Object.entries(fetchedMap).map(([hash, context]) => ({
+        hash,
+        ...context,
+      })),
     );
-    if (stillMissing.length > 0) {
-      await this.cache.setCastContexts(
-        "recasts",
-        viewerFid,
-        stillMissing,
-        stillMissing.map(() => false),
-      );
-    }
 
-    return hashes.map((hash) => isRecastedMap[hash] || false);
+    return hashes.map((hash) => cacheMap[hash] || fetchedMap[hash]);
   }
 
   async getCastLikes(

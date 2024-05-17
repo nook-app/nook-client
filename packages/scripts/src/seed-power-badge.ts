@@ -1,9 +1,7 @@
 import { FarcasterCacheClient, RedisClient } from "@nook/common/clients";
-import { PrismaClient } from "@nook/common/prisma/notifications";
 
 export const run = async () => {
   const client = new FarcasterCacheClient(new RedisClient());
-  const notifications = new PrismaClient();
 
   const response = await fetch("https://api.warpcast.com/v2/power-badge-users");
 
@@ -31,18 +29,6 @@ export const run = async () => {
   console.log(delta);
 
   console.log(`Added ${delta.length} new power badge users`);
-
-  for (const fid of delta) {
-    await notifications.notification.updateMany({
-      where: {
-        sourceFid: fid.toString(),
-      },
-      data: {
-        powerBadge: true,
-      },
-    });
-    console.log(fid);
-  }
 };
 
 run()

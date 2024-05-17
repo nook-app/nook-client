@@ -5,7 +5,11 @@ import {
   CastContextType,
   CastEngagementType,
   Channel,
+  FarcasterCastContext,
+  FarcasterCastEngagement,
   FarcasterTrendingCashtag,
+  FarcasterUserContext,
+  FarcasterUserEngagement,
   FarcasterUserMutualsPreview,
   UserContextType,
   UserEngagementType,
@@ -24,6 +28,10 @@ export class FarcasterCacheClient {
   CAST_REPLIES_CACHE_PREFIX = "farcaster:cast:replies";
   CAST_REPLIES_NEW_CACHE_PREFIX = "farcaster:cast:replies:new";
   CAST_REPLIES_TOP_CACHE_PREFIX = "farcaster:cast:replies:top";
+  CAST_ENGAGEMENT_CACHE_PREFIX = "farcaster:cast:engagement";
+  CAST_CONTEXT_CACHE_PREFIX = "farcaster:cast:context";
+  USER_ENGAGEMENT_CACHE_PREFIX = "farcaster:user:engagement";
+  USER_CONTEXT_CACHE_PREFIX = "farcaster:user:context";
 
   constructor(redis: RedisClient) {
     this.redis = redis;
@@ -54,57 +62,97 @@ export class FarcasterCacheClient {
     await this.redis.del(`${this.CAST_CACHE_PREFIX}:${hash}`);
   }
 
-  async getCastEngagements(
-    type: CastEngagementType,
+  async getCastEngagement(
     hashes: string[],
-  ): Promise<(number | undefined)[]> {
-    return await this.redis.mgetNumber(
-      hashes.map((hash) => `${this.CAST_CACHE_PREFIX}:${hash}:${type}`),
+  ): Promise<(FarcasterCastEngagement | undefined)[]> {
+    return await this.redis.mgetJson(
+      hashes.map((hash) => `${this.CAST_ENGAGEMENT_CACHE_PREFIX}:${hash}`),
     );
   }
 
-  async setCastEngagements(
-    type: CastEngagementType,
-    hashes: string[],
-    values: number[],
+  async setCastEngagement(
+    data: (FarcasterCastEngagement & { hash: string })[],
   ) {
-    await this.redis.msetNumber(
-      hashes.map((hash, i) => [
-        `${this.CAST_CACHE_PREFIX}:${hash}:${type}`,
-        values[i],
+    await this.redis.msetJson(
+      data.map((engagement) => [
+        `${this.CAST_ENGAGEMENT_CACHE_PREFIX}:${engagement.hash}`,
+        engagement,
       ]),
       86400,
     );
   }
 
-  async getCastContexts(
-    type: CastContextType,
-    fid: string,
-    hashes: string[],
-  ): Promise<(boolean | undefined)[]> {
-    const result = await this.redis.mget(
-      hashes.map((hash) => `${this.CAST_CACHE_PREFIX}:${hash}:${type}:${fid}`),
-    );
-    return result.map((value) => {
-      if (value === "1") return true;
-      if (value === "0") return false;
-      return undefined;
-    });
+  async updateCastEngagement(
+    hash: string,
+    type: CastEngagementType,
+    value: number,
+  ) {
+    const key = `${this.CAST_ENGAGEMENT_CACHE_PREFIX}:${hash}`;
+    const data = (await this.redis.getJson(key)) as
+      | FarcasterCastEngagement
+      | undefined;
+    if (!data) return;
+
+    if (type === "likes") {
+      data.likes += value;
+    }
+    if (type === "recasts") {
+      data.recasts += value;
+    }
+    if (type === "replies") {
+      data.replies += value;
+    }
+    if (type === "quotes") {
+      data.quotes += value;
+    }
+
+    await this.redis.setJson(key, data, 86400);
   }
 
-  async setCastContexts(
-    type: CastContextType,
-    fid: string,
+  async getCastContext(
+    viewerFid: string,
     hashes: string[],
-    values: boolean[],
+  ): Promise<(FarcasterCastContext | undefined)[]> {
+    return await this.redis.mgetJson(
+      hashes.map(
+        (hash) => `${this.CAST_CONTEXT_CACHE_PREFIX}:${hash}:${viewerFid}`,
+      ),
+    );
+  }
+
+  async setCastContext(
+    viewerFid: string,
+    data: (FarcasterCastContext & { hash: string })[],
   ) {
-    await this.redis.mset(
-      hashes.map((hash, i) => [
-        `${this.CAST_CACHE_PREFIX}:${hash}:${type}:${fid}`,
-        values[i] ? "1" : "0",
+    await this.redis.msetJson(
+      data.map((context) => [
+        `${this.CAST_CONTEXT_CACHE_PREFIX}:${context.hash}:${viewerFid}`,
+        context,
       ]),
       86400,
     );
+  }
+
+  async updateCastContext(
+    viewerFid: string,
+    hash: string,
+    type: CastContextType,
+    value: boolean,
+  ) {
+    const key = `${this.CAST_CONTEXT_CACHE_PREFIX}:${hash}:${viewerFid}`;
+    const data = (await this.redis.getJson(key)) as
+      | FarcasterCastContext
+      | undefined;
+    if (!data) return;
+
+    if (type === "likes") {
+      data.liked = value;
+    }
+    if (type === "recasts") {
+      data.recasted = value;
+    }
+
+    await this.redis.setJson(key, data, 86400);
   }
 
   async getUser(fid: string): Promise<BaseFarcasterUser> {
@@ -130,82 +178,96 @@ export class FarcasterCacheClient {
     );
   }
 
-  async getUserEngagements(
-    type: UserEngagementType,
+  async getUserEngagement(
     fids: string[],
-  ): Promise<(number | undefined)[]> {
-    return await this.redis.mgetNumber(
-      fids.map((fid) => `${this.USER_CACHE_PREFIX}:${fid}:${type}`),
+  ): Promise<(FarcasterUserEngagement | undefined)[]> {
+    return await this.redis.mgetJson(
+      fids.map((fid) => `${this.USER_ENGAGEMENT_CACHE_PREFIX}:${fid}`),
     );
   }
 
-  async setUserEngagements(
-    type: UserEngagementType,
-    fids: string[],
-    values: number[],
-  ) {
-    await this.redis.msetNumber(
-      fids.map((fid, i) => [
-        `${this.USER_CACHE_PREFIX}:${fid}:${type}`,
-        values[i],
+  async setUserEngagement(data: (FarcasterUserEngagement & { fid: string })[]) {
+    await this.redis.msetJson(
+      data.map((engagement) => [
+        `${this.USER_ENGAGEMENT_CACHE_PREFIX}:${engagement.fid}`,
+        engagement,
       ]),
       86400,
     );
   }
 
-  async getUserContexts(
-    type: UserContextType,
+  async updateUserEngagement(
     fid: string,
-    targetFids: string[],
-  ): Promise<(boolean | undefined)[]> {
-    const result = await this.redis.mget(
-      targetFids.map(
-        (targetFid) =>
-          `${this.USER_CACHE_PREFIX}:${
-            type === "following" ? fid : targetFid
-          }:following:${type === "following" ? targetFid : fid}`,
+    type: UserEngagementType,
+    value: number,
+  ) {
+    const key = `${this.USER_ENGAGEMENT_CACHE_PREFIX}:${fid}`;
+    const data = (await this.redis.getJson(key)) as
+      | FarcasterUserEngagement
+      | undefined;
+    if (!data) return;
+
+    if (type === "followers") {
+      data.followers += value;
+    }
+    if (type === "following") {
+      data.following += value;
+    }
+
+    await this.redis.setJson(key, data, 86400);
+  }
+
+  async getUserContext(
+    viewerFid: string,
+    fids: string[],
+  ): Promise<(FarcasterUserContext | undefined)[]> {
+    return await this.redis.mgetJson(
+      fids.map(
+        (fid) => `${this.USER_CONTEXT_CACHE_PREFIX}:${fid}:${viewerFid}`,
       ),
     );
-    return result.map((value) => {
-      if (value === "1") return true;
-      if (value === "0") return false;
-      return undefined;
-    });
   }
 
-  async setUserContexts(
-    type: UserContextType,
-    fid: string,
-    targetFids: string[],
-    values: boolean[],
+  async setUserContext(
+    viewerFid: string,
+    data: (FarcasterUserContext & { fid: string })[],
   ) {
-    await this.redis.mset(
-      targetFids.map((targetFid, i) => [
-        `${this.USER_CACHE_PREFIX}:${
-          type === "following" ? fid : targetFid
-        }:following:${type === "following" ? targetFid : fid}`,
-        values[i] ? "1" : "0",
+    await this.redis.msetJson(
+      data.map((context) => [
+        `${this.USER_CONTEXT_CACHE_PREFIX}:${context.fid}:${viewerFid}`,
+        context,
       ]),
       86400,
     );
   }
 
-  async resetCastEngagement(hash: string, type: CastEngagementType) {
-    await this.redis.del(`${this.CAST_CACHE_PREFIX}:${hash}:${type}`);
+  async updateUserContext(
+    fid: string,
+    viewerFid: string,
+    type: UserContextType,
+    value: boolean,
+  ) {
+    const key = `${this.USER_CONTEXT_CACHE_PREFIX}:${fid}:${viewerFid}`;
+    const data = (await this.redis.getJson(key)) as
+      | FarcasterUserContext
+      | undefined;
+    if (!data) return;
+
+    if (type === "following") {
+      data.following = value;
+    }
+
+    if (type === "followers") {
+      data.followers = value;
+    }
+
+    await this.redis.setJson(key, data, 86400);
   }
 
-  async incrementUserEngagement(fid: string, type: UserEngagementType) {
-    const key = `${this.USER_CACHE_PREFIX}:${fid}:${type}`;
-    if (await this.redis.exists(key)) {
-      await this.redis.increment(key);
-    }
-  }
-
-  async decrementUserEngagement(fid: string, type: UserEngagementType) {
-    const key = `${this.USER_CACHE_PREFIX}:${fid}:${type}`;
-    if (await this.redis.exists(key)) {
-      await this.redis.decrement(key);
-    }
+  async resetUserContext(fid: string, viewerFid: string) {
+    await this.redis.del(
+      `${this.USER_CONTEXT_CACHE_PREFIX}:${fid}:${viewerFid}`,
+    );
   }
 
   async getChannels(keys: string[]): Promise<(Channel | undefined)[]> {
@@ -219,6 +281,16 @@ export class FarcasterCacheClient {
       channels.flatMap((channel) => [
         [`${this.CHANNEL_CACHE_PREFIX}:${channel.url}`, channel],
         [`${this.CHANNEL_CACHE_PREFIX}:${channel.channelId}`, channel],
+      ]),
+      86400,
+    );
+  }
+
+  async setNotChannels(keys: string[]) {
+    await this.redis.msetJson(
+      keys.map((key) => [
+        `${this.CHANNEL_CACHE_PREFIX}:${key}`,
+        { channelId: key },
       ]),
       86400,
     );
