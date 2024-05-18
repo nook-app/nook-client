@@ -14,7 +14,7 @@ import { ReactNode, useCallback } from "react";
 import { useCurrentTabScrollY } from "react-native-collapsible-tab-view";
 import { useTheme } from "@nook/app/context/theme";
 import { IconButton } from "./IconButton";
-import { Colors } from "../hooks/useImageColors";
+import { useImageColors } from "../hooks/useImageColors";
 import { LinearGradient } from "@tamagui/linear-gradient";
 import { useScroll } from "@nook/app/context/scroll";
 import { CollapsibleLayout } from "./CollapsibleLayout";
@@ -23,13 +23,13 @@ export const CollapsibleGradientLayout = ({
   title,
   header,
   pages,
-  colors,
+  src,
   right,
 }: {
   title: ReactNode;
   header: ReactNode;
   pages: { name: string; component: ReactNode }[];
-  colors: Colors;
+  src?: string;
   right?: ReactNode;
 }) => {
   const renderHeader = useCallback(
@@ -38,11 +38,11 @@ export const CollapsibleGradientLayout = ({
         title={title}
         header={header}
         pages={pages}
-        colors={colors}
+        src={src}
         right={right}
       />
     ),
-    [title, header, pages, colors, right],
+    [title, header, pages, src, right],
   );
 
   return <CollapsibleLayout renderHeader={renderHeader} pages={pages} />;
@@ -52,13 +52,13 @@ export const CollapsibleGradientHeader = ({
   title,
   header,
   pages,
-  colors,
+  src,
   right,
 }: {
   title: ReactNode;
   header: ReactNode;
   pages: { name: string; component: ReactNode }[];
-  colors: Colors;
+  src?: string;
   right?: ReactNode;
 }) => {
   const { rootTheme } = useTheme();
@@ -137,25 +137,7 @@ export const CollapsibleGradientHeader = ({
                   headerBackgroundStyle,
                 ]}
               >
-                <LinearGradient
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 1 }}
-                  colors={[
-                    colors.backgroundColor,
-                    colors.primaryColor,
-                    colors.secondaryColor,
-                    colors.backgroundColor,
-                  ]}
-                  style={{
-                    position: "absolute",
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    bottom: 0,
-                    flex: 1,
-                    opacity: 0.5,
-                  }}
-                />
+                <Gradient src={src} />
                 <BlurView
                   intensity={50}
                   tint={rootTheme}
@@ -188,5 +170,30 @@ export const CollapsibleGradientHeader = ({
       />
       {header}
     </View>
+  );
+};
+
+const Gradient = ({ src }: { src?: string }) => {
+  const colors = useImageColors(src);
+  return (
+    <LinearGradient
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 1 }}
+      colors={[
+        colors.backgroundColor,
+        colors.primaryColor,
+        colors.secondaryColor,
+        colors.backgroundColor,
+      ]}
+      style={{
+        position: "absolute",
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        flex: 1,
+        opacity: 0.5,
+      }}
+    />
   );
 };

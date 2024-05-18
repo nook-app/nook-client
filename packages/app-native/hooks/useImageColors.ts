@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { getColors } from "react-native-image-colors";
 import { useTheme } from "@nook/app-ui";
+import { darkenColor, stringToColor } from "@nook/app/utils";
 
 export type Colors = {
   backgroundColor: string;
@@ -42,7 +43,18 @@ export const useImageColors = (uri?: string) => {
         });
       }
     };
-    getAndSet();
+    if (uri?.startsWith("http")) {
+      getAndSet();
+    } else if (uri) {
+      const color = stringToColor(uri);
+      const backgroundColor = darkenColor(color);
+      setColors({
+        backgroundColor,
+        primaryColor: color,
+        secondaryColor: color,
+        detailColor: backgroundColor,
+      });
+    }
   }, [uri]);
 
   return colors;

@@ -8,15 +8,13 @@ import {
   ListType,
   UserFilterType,
 } from "@nook/common/types";
-import { Button, NookText, Popover, View, XStack, YStack } from "@nook/app-ui";
-import { darkenColor, formatToCDN, stringToColor } from "@nook/app/utils";
+import { Button, NookText, Popover, XStack, YStack } from "@nook/app-ui";
 import { Loading } from "@nook/app/components/loading";
 import { ListHeader } from "@nook/app/features/list/list-header";
 import { useAuth } from "@nook/app/context/auth";
 import { Settings, UserPlus } from "@tamagui/lucide-icons";
 import { Link } from "@nook/app/components/link";
 import { Tabs } from "react-native-collapsible-tab-view";
-import { useImageColors } from "../../hooks/useImageColors";
 import { CollapsibleGradientLayout } from "../CollapsibleGradientLayout";
 import { IconButton } from "../IconButton";
 import { Menu } from "@nook/app/components/menu/menu";
@@ -37,14 +35,7 @@ export default function ListScreen() {
   const { list } = useList(listId as string);
   const { session } = useAuth();
 
-  const colors = useImageColors(
-    list?.imageUrl ? formatToCDN(list.imageUrl, { width: 168 }) : undefined,
-  );
-
   if (!list) return <Loading />;
-
-  const color = stringToColor(list.name);
-  const backgroundColor = darkenColor(color);
 
   return (
     <CollapsibleGradientLayout
@@ -61,16 +52,7 @@ export default function ListScreen() {
           </NookText>
         </XStack>
       }
-      colors={
-        list.imageUrl
-          ? colors
-          : {
-              backgroundColor,
-              primaryColor: color,
-              secondaryColor: color,
-              detailColor: backgroundColor,
-            }
-      }
+      src={list.imageUrl || list.name}
       header={<ListHeader list={list} />}
       pages={getPages({ list })}
       right={

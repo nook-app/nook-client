@@ -17,7 +17,7 @@
       "**/*"
     ],
     "ios": {
-      "buildNumber": "33",
+      "buildNumber": "34",
       "supportsTablet": true,
       "bundleIdentifier": "social.nook",
       "associatedDomains": [

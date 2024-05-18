@@ -53,6 +53,7 @@ export const useUserStore = create<UserStore>((set, get) => ({
     });
     const newUsers = users.reduce(
       (acc, user) => {
+        if (currentUsers[user.username || user.fid]) return acc;
         if (acc[user.username || user.fid]) return acc;
         acc[user.username || user.fid] = user;
         return acc;
@@ -86,6 +87,7 @@ export const useUserStore = create<UserStore>((set, get) => ({
     });
     const newUsers = users.reduce(
       (acc, user) => {
+        if (currentUsers[user.username || user.fid]) return acc;
         if (acc[user.username || user.fid]) return acc;
         acc[user.username || user.fid] = user;
         return acc;
