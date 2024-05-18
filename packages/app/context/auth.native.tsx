@@ -5,6 +5,7 @@ import {
   ReactNode,
   useCallback,
   useEffect,
+  useMemo,
 } from "react";
 import {
   FarcasterUser,
@@ -31,6 +32,7 @@ import {
   User as PrivyUser,
 } from "@privy-io/expo";
 import * as amplitude from "@amplitude/analytics-react-native";
+import { useGlobalSearchParams, usePathname } from "expo-router";
 
 type AuthContextType = {
   session?: Session;
@@ -64,6 +66,12 @@ export const AuthProvider = ({
   const [isInitializing, setIsInitializing] = useState(true);
   const { getAccessToken, logout: logoutPrivy, user: privyUser } = usePrivy();
   const { data } = useSettings(session);
+  const pathname = usePathname();
+  const params = useGlobalSearchParams();
+
+  useEffect(() => {
+    amplitude.track("pageview", { pathname, params });
+  }, [pathname, params]);
 
   const handleRefreshSigner = useCallback(async () => {
     if (!session) return;
@@ -123,7 +131,8 @@ export const AuthProvider = ({
         setUser(user);
       }),
     ]);
-    amplitude.init("7819c3ae9a7a78fc6835dcc60cdeb018", `fid:${session.fid}`);
+    amplitude.init("7819c3ae9a7a78fc6835dcc60cdeb018", `user:${session.id}`);
+    amplitude.track("login", { fid: session.fid });
   }, []);
 
   const loginViaPrivyToken = useCallback(async () => {

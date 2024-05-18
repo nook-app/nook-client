@@ -5,23 +5,18 @@ import { FarcasterFilteredFeed } from "@nook/app/features/farcaster/cast-feed/fi
 import { Display, UserFilterType } from "@nook/common/types";
 import { NookText, Popover, XStack } from "@nook/app-ui";
 import { FarcasterPowerBadge } from "@nook/app/components/farcaster/users/power-badge";
-import { formatToCDN } from "@nook/app/utils";
 import { TransactionFeedWithGroupSelector } from "@nook/app/features/transactions/transaction-feed";
-import { useImageColors } from "../../hooks/useImageColors";
 import { CollapsibleGradientLayout } from "../CollapsibleGradientLayout";
 import { Loading } from "@nook/app/components/loading";
 import { Link } from "@nook/app/components/link";
 import { IconButton } from "../IconButton";
 import { Search, MoreHorizontal } from "@tamagui/lucide-icons";
 import { FarcasterUserMenu } from "@nook/app/components/farcaster/users/user-menu";
+import { formatToCDN } from "@nook/app/utils";
 
 export default function UserScreen() {
   const { username } = useLocalSearchParams();
   const { user } = useUser(username as string);
-
-  const colors = useImageColors(
-    user?.pfp ? formatToCDN(user.pfp, { width: 168 }) : undefined,
-  );
 
   if (!user) return <Loading />;
 
@@ -41,7 +36,7 @@ export default function UserScreen() {
           <FarcasterPowerBadge badge={user.badges?.powerBadge ?? false} />
         </XStack>
       }
-      colors={colors}
+      src={user.pfp ? formatToCDN(user.pfp, { width: 168 }) : undefined}
       header={<UserHeader user={user} size="$6" disableMenu />}
       pages={[
         {

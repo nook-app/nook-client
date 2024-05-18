@@ -5,16 +5,11 @@ import { NookText, XStack } from "@nook/app-ui";
 import { FarcasterPowerBadge } from "@nook/app/components/farcaster/users/power-badge";
 import { formatToCDN } from "@nook/app/utils";
 import { TransactionFeed } from "@nook/app/features/transactions/transaction-feed";
-import { useImageColors } from "../../../../hooks/useImageColors";
 import { CollapsibleGradientLayout } from "../../../../components/CollapsibleGradientLayout";
 import { useAuth } from "@nook/app/context/auth";
 
 export default function ProfileScreen() {
   const { user } = useAuth();
-
-  const colors = useImageColors(
-    user?.pfp ? formatToCDN(user.pfp, { width: 168 }) : undefined,
-  );
 
   if (!user) return null;
 
@@ -34,7 +29,7 @@ export default function ProfileScreen() {
           <FarcasterPowerBadge badge={user.badges?.powerBadge ?? false} />
         </XStack>
       }
-      colors={colors}
+      src={user?.pfp ? formatToCDN(user.pfp, { width: 168 }) : undefined}
       header={<UserHeader user={user} size="$6" disableMenu />}
       pages={[
         {
