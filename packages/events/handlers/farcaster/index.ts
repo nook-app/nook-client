@@ -100,13 +100,6 @@ export class FarcasterProcessor {
     if (!cast) return;
 
     const promises = [];
-    promises.push(
-      this.contentClient.addContentReferences({
-        ...cast,
-        ancestors: undefined,
-        thread: undefined,
-      }),
-    );
 
     if (
       data.parentHash &&
@@ -193,11 +186,21 @@ export class FarcasterProcessor {
     const promises = [];
     promises.push(this.cacheClient.removeCast(data.hash));
     promises.push(
-      this.contentClient.removeContentReferences({
-        ...cast,
-        ancestors: undefined,
-        thread: undefined,
-      }),
+      this.contentClient.deleteReferences(
+        cast.embeds.map((e) => ({
+          fid: cast.user.fid.toString(),
+          hash: cast.hash,
+          parentFid: cast.parent?.user.fid,
+          parentHash: cast.parent?.hash,
+          parentUrl: cast.parentUrl,
+          uri: e.uri,
+          timestamp: new Date(cast.timestamp),
+          text: cast.text,
+          rootParentFid: cast.rootParentFid,
+          rootParentHash: cast.rootParentHash,
+          rootParentUrl: cast.rootParentUrl,
+        })),
+      ),
     );
 
     if (cast.parentHash) {

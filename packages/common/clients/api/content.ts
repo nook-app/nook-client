@@ -1,5 +1,5 @@
 import {
-  FarcasterCastResponse,
+  FarcasterContentReference,
   GetContentsResponse,
   UrlContentResponse,
 } from "../../types";
@@ -26,26 +26,13 @@ export class ContentAPIClient extends BaseAPIClient {
     return response.json();
   }
 
-  async getContents(
-    uris: string[],
-    cached?: boolean,
+  async getReferences(
+    references: FarcasterContentReference[],
+    skipFetch?: boolean,
   ): Promise<GetContentsResponse> {
-    const response = await this.makeRequest("/content", {
-      method: "POST",
-      body: JSON.stringify({ uris, cached }),
-    });
-
-    if (!response.ok) {
-      throw new Error(response.statusText);
-    }
-
-    return response.json();
-  }
-
-  async addContentReferences(cast: FarcasterCastResponse) {
     const response = await this.makeRequest("/content/references", {
       method: "POST",
-      body: JSON.stringify(cast),
+      body: JSON.stringify({ references, skipFetch }),
     });
 
     if (!response.ok) {
@@ -55,10 +42,10 @@ export class ContentAPIClient extends BaseAPIClient {
     return response.json();
   }
 
-  async removeContentReferences(cast: FarcasterCastResponse) {
+  async deleteReferences(references: FarcasterContentReference[]) {
     const response = await this.makeRequest("/content/references", {
       method: "DELETE",
-      body: JSON.stringify(cast),
+      body: JSON.stringify({ references }),
     });
 
     if (!response.ok) {

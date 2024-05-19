@@ -1,12 +1,6 @@
-import {
-  EntityEvent,
-  EntityEventData,
-  EventService,
-  FarcasterEventType,
-} from "@nook/common/types";
+import { EntityEvent, EntityEventData, EventService } from "@nook/common/types";
 import { Job } from "bullmq";
 import { FarcasterProcessor } from "./farcaster";
-import { QueueName, publishEvent } from "@nook/common/queues";
 
 export const getEventsHandler = async () => {
   const farcasterProcessor = new FarcasterProcessor();

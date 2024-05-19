@@ -1,10 +1,11 @@
 import { RedisClient } from "./base";
-import { UrlContentResponse } from "../../types";
+import { FarcasterContentReference, UrlContentResponse } from "../../types";
 
 export class ContentCacheClient {
   private redis: RedisClient;
 
   CONTENT_CACHE_PREFIX = "content";
+  REFERENCE_CACHE_PREFIX = "reference";
 
   constructor(redis: RedisClient) {
     this.redis = redis;
@@ -37,6 +38,30 @@ export class ContentCacheClient {
         content,
       ]),
       86400,
+    );
+  }
+
+  async getReferences(
+    references: FarcasterContentReference[],
+  ): Promise<(UrlContentResponse | undefined)[]> {
+    return await this.redis.mgetJson(
+      references.map(
+        (reference) =>
+          `${this.REFERENCE_CACHE_PREFIX}:${reference.hash}:${reference.uri}`,
+      ),
+    );
+  }
+
+  async setReferences(
+    references: FarcasterContentReference[],
+    contents: UrlContentResponse[],
+  ) {
+    await this.redis.msetJson(
+      references.map((reference, i) => [
+        `${this.REFERENCE_CACHE_PREFIX}:${reference.hash}:${reference.uri}`,
+        contents[i],
+      ]),
+      24 * 60 * 60 * 3,
     );
   }
 }

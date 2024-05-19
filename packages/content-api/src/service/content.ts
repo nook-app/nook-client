@@ -2,9 +2,7 @@ import { ContentCacheClient } from "@nook/common/clients";
 import { Metadata } from "metascraper";
 import { Prisma, PrismaClient } from "@nook/common/prisma/content";
 import {
-  ContentReferenceResponse,
-  ContentReferenceType,
-  FarcasterCastResponse,
+  FarcasterContentReference,
   UrlContentResponse,
 } from "@nook/common/types";
 import { FastifyInstance } from "fastify";
@@ -23,197 +21,194 @@ export class ContentService {
     this.cache = new ContentCacheClient(fastify.redis.client);
   }
 
-  async getContents(
-    uris: string[],
-    cached?: boolean,
-  ): Promise<UrlContentResponse[]> {
-    const contents = await this.cache.getContents(uris);
-    const contentMap = contents.reduce(
-      (acc, content, index) => {
-        if (!content) return acc;
-        acc[uris[index]] = content;
-        return acc;
-      },
-      {} as Record<string, UrlContentResponse>,
-    );
-
-    const missing = uris.filter((uri) => !contentMap[uri]);
-    if (missing.length > 0) {
-      const fetchedContent =
-        await this.client.farcasterContentReference.findMany({
-          where: {
-            uri: {
-              in: missing,
-            },
-          },
-        });
-
-      for (const content of fetchedContent) {
-        contentMap[content.uri] = {
-          ...content,
-          metadata: content.metadata as Metadata,
-          frame: content.frame as Frame,
-        } as UrlContentResponse;
-      }
-
-      await this.cache.setContents(Object.values(contentMap));
-    }
-
-    const stillMissing = uris.filter((uri) => !contentMap[uri]?.contentType);
-    if (stillMissing.length > 0) {
-      if (cached) {
-        await Promise.all(stillMissing.map(publishContent));
-      } else {
-        const missingContent = await this.refreshContents(stillMissing);
-        for (const content of missingContent) {
-          contentMap[content.uri] = content;
-        }
-      }
-    }
+  async getContents(uris: string[]): Promise<UrlContentResponse[]> {
+    const contentMap = await this.getOrFetchContent(uris);
 
     return uris
       .map((uri) => contentMap[uri])
       .filter(Boolean) as UrlContentResponse[];
   }
 
-  async refreshContents(uris: string[]): Promise<UrlContentResponse[]> {
-    const result = await Promise.all(uris.map((uri) => getUrlContent(uri)));
-    const resultMap = result.reduce(
-      (acc, content) => {
+  async getReferences(
+    references: FarcasterContentReference[],
+    skipFetch?: boolean,
+  ) {
+    const cachedReferences = await this.cache.getReferences(references);
+    const cacheMap = cachedReferences.reduce(
+      (acc, content, index) => {
         if (!content) return acc;
-        acc[content.uri] = {
-          ...content,
-          metadata: content?.metadata as Metadata,
-          frame: content?.frame as Frame,
-        } as UrlContentResponse;
+        const reference = references[index];
+        acc[`${reference.hash}:${reference.uri}`] = content;
         return acc;
       },
       {} as Record<string, UrlContentResponse>,
     );
 
-    const toUpsert = Object.values(resultMap).filter(
-      (content) => content.metadata,
+    const missing = references.filter(
+      (reference) =>
+        !cacheMap[`${reference.hash}:${reference.uri}`]?.contentType,
     );
 
-    for (const c of toUpsert) {
-      await this.client.farcasterContentReference.updateMany({
+    if (missing.length > 0) {
+      const fetched = await this.client.farcasterContentReference.findMany({
         where: {
-          uri: c.uri,
-        },
-        data: {
-          ...c,
-          metadata: (c.metadata || Prisma.DbNull) as Prisma.InputJsonValue,
-          frame: (c.frame || Prisma.DbNull) as Prisma.InputJsonValue,
+          OR: missing.map((reference) => ({
+            fid: BigInt(reference.fid),
+            hash: reference.hash,
+            type: "EMBED",
+            uri: reference.uri,
+          })),
         },
       });
+
+      for (const content of fetched) {
+        if (!content.contentType) continue;
+        cacheMap[`${content.hash}:${content.uri}`] = {
+          uri: content.uri,
+          protocol: content.protocol,
+          host: content.host,
+          path: content.path,
+          query: content.query,
+          fragment: content.fragment,
+          contentType: content.contentType,
+          length: content.length,
+          metadata: content.metadata as Metadata,
+          frame: content.frame as Frame,
+          hasFrame: content.hasFrame,
+        } as UrlContentResponse;
+      }
+
+      await this.cache.setReferences(references, Object.values(cacheMap));
     }
 
-    await this.cache.setContents(Object.values(resultMap));
+    const stillMissing = missing.filter(
+      (reference) =>
+        !cacheMap[`${reference.hash}:${reference.uri}`]?.contentType,
+    );
 
-    return uris
-      .map((uri) => resultMap[uri])
-      .filter(Boolean) as UrlContentResponse[];
-  }
+    if (stillMissing.length > 0) {
+      const contentMap = await this.getOrFetchContent(
+        stillMissing.map((reference) => reference.uri),
+        skipFetch,
+      );
 
-  async addReferencedContent(cast: FarcasterCastResponse) {
-    const references = this.parseReferencedContent(cast);
-    await Promise.all(
-      references.map((reference) => this.upsertReferencedContent(reference)),
+      const data = stillMissing.map((reference) => ({
+        ...reference,
+        ...contentMap[reference.uri],
+        fid: BigInt(reference.fid),
+        parentFid: reference.parentFid
+          ? BigInt(reference.parentFid)
+          : undefined,
+        rootParentFid: reference.rootParentFid
+          ? BigInt(reference.rootParentFid)
+          : undefined,
+        metadata: (contentMap[reference.uri]?.metadata ||
+          Prisma.DbNull) as Prisma.InputJsonValue,
+        frame: (contentMap[reference.uri]?.frame ||
+          Prisma.DbNull) as Prisma.InputJsonValue,
+        type: "EMBED",
+      }));
+
+      await this.client.farcasterContentReference.createMany({
+        data,
+        skipDuplicates: true,
+      });
+
+      for (const value of data) {
+        cacheMap[`${value.hash}:${value.uri}`] = contentMap[value.uri];
+      }
+
+      await this.cache.setReferences(references, Object.values(cacheMap));
+
+      const toQueue = stillMissing.filter(
+        (reference) => !contentMap[reference.uri],
+      );
+
+      if (skipFetch) {
+        await Promise.all(
+          toQueue.map((reference) => publishContent(reference)),
+        );
+      }
+    }
+
+    const stillStillMissing = stillMissing.filter(
+      (reference) =>
+        !cacheMap[`${reference.hash}:${reference.uri}`]?.contentType,
+    );
+
+    return references.map(
+      (reference) => cacheMap[`${reference.hash}:${reference.uri}`],
     );
   }
 
-  async removeReferencedContent(cast: FarcasterCastResponse) {
-    const references = this.parseReferencedContent(cast);
+  async getOrFetchContent(uris: string[], skipFetch?: boolean) {
+    const uniqueUris = Array.from(new Set(uris));
+    const cached = await this.cache.getContents(uniqueUris);
+    const contentMap = cached.reduce(
+      (acc, content, index) => {
+        if (!content) return acc;
+        acc[uniqueUris[index]] = content;
+        return acc;
+      },
+      {} as Record<string, UrlContentResponse>,
+    );
+
+    const fetchedUris = uniqueUris.filter((uri) => !contentMap[uri]);
+    if (fetchedUris.length > 0) {
+      const contents = await this.client.farcasterContentReference.findMany({
+        where: {
+          uri: {
+            in: fetchedUris,
+          },
+        },
+      });
+
+      const formatted = contents.map(
+        (content) =>
+          ({
+            ...content,
+            metadata: content.metadata as Metadata,
+            frame: content.frame as Frame,
+          }) as UrlContentResponse,
+      );
+
+      for (const content of formatted) {
+        contentMap[content.uri] = content;
+      }
+
+      await this.cache.setContents(
+        formatted.filter(Boolean) as UrlContentResponse[],
+      );
+    }
+
+    const missingUris = fetchedUris.filter((uri) => !contentMap[uri]);
+    if (missingUris.length > 0 && !skipFetch) {
+      const contents = await Promise.all(
+        missingUris.map((uri) => getUrlContent(uri)),
+      );
+      for (const content of contents) {
+        if (!content) continue;
+        contentMap[content.uri] = content;
+      }
+
+      await this.cache.setContents(
+        contents.filter(Boolean) as UrlContentResponse[],
+      );
+    }
+
+    return contentMap;
+  }
+
+  async deleteReferences(references: FarcasterContentReference[]) {
     await this.client.farcasterContentReference.deleteMany({
       where: {
         OR: references.map((reference) => ({
           fid: BigInt(reference.fid),
           hash: reference.hash,
-          type: reference.type,
+          type: "EMBED",
           uri: reference.uri,
         })),
       },
     });
-  }
-
-  async upsertReferencedContent(reference: ContentReferenceResponse) {
-    const referencedContent = (await this.getContents([reference.uri]))[0];
-    await this.client.farcasterContentReference.upsert({
-      where: {
-        uri_fid_hash_type: {
-          fid: BigInt(reference.fid),
-          hash: reference.hash,
-          type: reference.type,
-          uri: reference.uri,
-        },
-      },
-      create: {
-        ...reference,
-        fid: BigInt(reference.fid),
-        parentFid: reference.parentFid
-          ? BigInt(reference.parentFid)
-          : undefined,
-        rootParentFid: reference.rootParentFid
-          ? BigInt(reference.rootParentFid)
-          : undefined,
-        protocol: referencedContent?.protocol,
-        host: referencedContent?.host,
-        path: referencedContent?.path,
-        query: referencedContent?.query,
-        fragment: referencedContent?.fragment,
-        contentType: referencedContent?.contentType,
-        length: referencedContent?.length,
-        hasFrame: referencedContent?.hasFrame,
-        metadata: (referencedContent?.metadata ||
-          Prisma.DbNull) as Prisma.InputJsonValue,
-        frame: (referencedContent?.frame ||
-          Prisma.DbNull) as Prisma.InputJsonValue,
-      },
-      update: {
-        ...reference,
-        fid: BigInt(reference.fid),
-        parentFid: reference.parentFid
-          ? BigInt(reference.parentFid)
-          : undefined,
-        rootParentFid: reference.rootParentFid
-          ? BigInt(reference.rootParentFid)
-          : undefined,
-        protocol: referencedContent?.protocol,
-        host: referencedContent?.host,
-        path: referencedContent?.path,
-        query: referencedContent?.query,
-        fragment: referencedContent?.fragment,
-        contentType: referencedContent?.contentType,
-        length: referencedContent?.length,
-        hasFrame: referencedContent?.hasFrame,
-        metadata: (referencedContent?.metadata ||
-          Prisma.DbNull) as Prisma.InputJsonValue,
-        frame: (referencedContent?.frame ||
-          Prisma.DbNull) as Prisma.InputJsonValue,
-      },
-    });
-  }
-
-  parseReferencedContent(cast: FarcasterCastResponse) {
-    const timestamp = new Date(cast.timestamp);
-    const references: ContentReferenceResponse[] = [];
-    for (const url of cast.embeds) {
-      references.push({
-        fid: cast.user.fid,
-        hash: cast.hash,
-        parentFid: cast.parent?.user.fid,
-        parentHash: cast.parent?.hash,
-        parentUrl: cast.parentUrl,
-        uri: url.uri,
-        type: ContentReferenceType.Embed,
-        timestamp,
-        text: cast.text,
-        rootParentFid: cast.rootParentFid,
-        rootParentHash: cast.rootParentHash,
-        rootParentUrl: cast.rootParentUrl,
-      });
-    }
-
-    return references;
   }
 }

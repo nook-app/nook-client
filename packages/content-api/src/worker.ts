@@ -1,25 +1,19 @@
 import { Prisma, PrismaClient } from "@nook/common/prisma/content";
 import { QueueName, getWorker } from "@nook/common/queues";
 import { getUrlContent } from "./utils";
+import { ContentService } from "./service/content";
+import { FarcasterContentReference } from "@nook/common/types";
+import { ContentAPIClient } from "@nook/common/clients";
 
 const run = async () => {
-  const client = new PrismaClient();
+  const api = new ContentAPIClient();
 
   const worker = getWorker(QueueName.Content, async (job) => {
-    const uri = job.data.uri;
-    const result = await getUrlContent(uri);
-    if (!result) return;
+    const reference = job.data as FarcasterContentReference;
 
-    await client.farcasterContentReference.updateMany({
-      where: {
-        uri,
-      },
-      data: {
-        ...result,
-        metadata: (result.metadata || Prisma.DbNull) as Prisma.InputJsonValue,
-        frame: (result.frame || Prisma.DbNull) as Prisma.InputJsonValue,
-      },
-    });
+    await api.getReferences([reference]);
+
+    console.log(`[${job.id}] processed`);
   });
 
   worker.on("failed", (job, err) => {

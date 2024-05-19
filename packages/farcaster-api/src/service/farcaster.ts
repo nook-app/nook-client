@@ -820,7 +820,24 @@ export class FarcasterService {
         this.getCastEngagement(allCasts.map((cast) => cast.hash)),
         this.getChannels(Array.from(channelUrls), Array.from(channelIds)),
         this.getUsers(Array.from(fids), viewerFid),
-        this.contentClient.getContents(Array.from(embedUrls), true),
+        this.contentClient.getReferences(
+          allCasts.flatMap((cast) =>
+            cast.embedUrls.map((uri) => ({
+              fid: cast.fid,
+              hash: cast.hash,
+              parentFid: cast.parentFid,
+              parentHash: cast.parentHash,
+              parentUrl: cast.parentUrl,
+              uri,
+              timestamp: new Date(cast.timestamp),
+              text: cast.text,
+              rootParentFid: cast.rootParentFid,
+              rootParentHash: cast.rootParentHash,
+              rootParentUrl: cast.rootParentUrl,
+            })),
+          ),
+          true,
+        ),
       ]);
 
     const userMap = users.reduce(
@@ -843,6 +860,7 @@ export class FarcasterService {
 
     const embedMap = embeds.data.reduce(
       (acc, embed) => {
+        if (!embed) return acc;
         acc[embed.uri] = embed;
         return acc;
       },

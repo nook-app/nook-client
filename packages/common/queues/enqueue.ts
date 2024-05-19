@@ -3,6 +3,7 @@ import {
   EntityEvent,
   EntityEventData,
   EventSource,
+  FarcasterContentReference,
   Notification,
 } from "../types";
 
@@ -47,18 +48,12 @@ export const publishNotification = async (notification: Notification) => {
   });
 };
 
-export const publishContent = async (uri: string) => {
+export const publishContent = async (reference: FarcasterContentReference) => {
   const queue = getQueue(QueueName.Content);
-  await queue.add(
-    uri,
-    {
-      uri,
+  await queue.add(reference.uri, reference, {
+    jobId: reference.uri,
+    removeOnComplete: {
+      count: 10000,
     },
-    {
-      jobId: uri,
-      removeOnComplete: {
-        count: 10000,
-      },
-    },
-  );
+  });
 };

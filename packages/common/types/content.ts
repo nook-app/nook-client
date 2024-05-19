@@ -15,23 +15,21 @@ export type UrlContentResponse = {
   hasFrame?: boolean;
 };
 
-export enum ContentReferenceType {
-  Embed = "EMBED",
-  Reply = "REPLY",
-  Quote = "QUOTE",
-}
-
-export type ContentReferenceResponse = {
+export type FarcasterContentReference = {
   fid: string;
   hash: string;
   parentFid?: string;
   parentHash?: string;
   parentUrl?: string;
-  uri: string;
-  type: ContentReferenceType;
   timestamp: Date;
   text?: string;
   rootParentFid?: string;
   rootParentHash?: string;
   rootParentUrl?: string;
+  uri: string;
+};
+
+export type FarcasterContentReferenceRequest = {
+  references: FarcasterContentReference[];
+  skipFetch?: boolean;
 };

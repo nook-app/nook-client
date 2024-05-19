@@ -33,7 +33,9 @@
     "native": "cd packages/expo && yarn start",
     "next": "yarn workspace @nook/app-next dev"
   },
-  "workspaces": ["packages/*"],
+  "workspaces": [
+    "packages/*"
+  ],
   "devDependencies": {
     "@biomejs/biome": "1.4.1",
     "@types/jest": "^29.5.11",
