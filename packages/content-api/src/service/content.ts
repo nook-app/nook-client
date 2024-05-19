@@ -109,10 +109,22 @@ export class ContentService {
         type: "EMBED",
       }));
 
-      await this.client.farcasterContentReference.createMany({
-        data,
-        skipDuplicates: true,
-      });
+      await Promise.all(
+        data.map((content) =>
+          this.client.farcasterContentReference.upsert({
+            where: {
+              uri_fid_hash_type: {
+                fid: content.fid,
+                hash: content.hash,
+                type: content.type,
+                uri: content.uri,
+              },
+            },
+            create: content,
+            update: content,
+          }),
+        ),
+      );
 
       for (const value of data) {
         cacheMap[`${value.hash}:${value.uri}`] = contentMap[value.uri];
@@ -131,11 +143,6 @@ export class ContentService {
       }
     }
 
-    const stillStillMissing = stillMissing.filter(
-      (reference) =>
-        !cacheMap[`${reference.hash}:${reference.uri}`]?.contentType,
-    );
-
     return references.map(
       (reference) => cacheMap[`${reference.hash}:${reference.uri}`],
     );
@@ -146,7 +153,7 @@ export class ContentService {
     const cached = await this.cache.getContents(uniqueUris);
     const contentMap = cached.reduce(
       (acc, content, index) => {
-        if (!content) return acc;
+        if (!content?.contentType) return acc;
         acc[uniqueUris[index]] = content;
         return acc;
       },
@@ -173,11 +180,14 @@ export class ContentService {
       );
 
       for (const content of formatted) {
+        if (!content.contentType) continue;
         contentMap[content.uri] = content;
       }
 
       await this.cache.setContents(
-        formatted.filter(Boolean) as UrlContentResponse[],
+        formatted
+          .filter((content) => content.contentType)
+          .filter(Boolean) as UrlContentResponse[],
       );
     }
 
