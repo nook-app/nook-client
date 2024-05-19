@@ -12,11 +12,15 @@ export const feedRoutes = async (fastify: FastifyInstance) => {
       Body: FarcasterFeedRequest;
       Querystring: { cursor?: string };
     }>("/feed/casts", async (request, reply) => {
+      console.time("getCastFeed");
       const response = await service.getCastFeed(request.body);
+      console.timeEnd("getCastFeed");
+      console.time("getCastsFromData");
       const casts = await farcasterService.getCastsFromData(
         response.data,
         request.body.context?.viewerFid,
       );
+      console.timeEnd("getCastsFromData");
       reply.send({
         data: casts,
         nextCursor: response.nextCursor,

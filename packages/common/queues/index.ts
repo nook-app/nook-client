@@ -12,6 +12,7 @@ export enum QueueName {
   EventsPriority = "events-priority",
   Notifications = "notifications",
   ScheduledCast = "scheduled-cast",
+  Content = "content",
 }
 
 type QueueType = {
@@ -21,6 +22,7 @@ type QueueType = {
   [QueueName.EventsPriority]: EntityEvent<EntityEventData>;
   [QueueName.Notifications]: Notification;
   [QueueName.ScheduledCast]: PendingCast;
+  [QueueName.Content]: { uri: string };
 };
 
 const connection = new Redis({

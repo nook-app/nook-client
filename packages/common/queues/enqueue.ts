@@ -46,3 +46,19 @@ export const publishNotification = async (notification: Notification) => {
     },
   });
 };
+
+export const publishContent = async (uri: string) => {
+  const queue = getQueue(QueueName.Content);
+  await queue.add(
+    uri,
+    {
+      uri,
+    },
+    {
+      jobId: uri,
+      removeOnComplete: {
+        count: 10000,
+      },
+    },
+  );
+};

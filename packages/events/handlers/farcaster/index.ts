@@ -100,7 +100,13 @@ export class FarcasterProcessor {
     if (!cast) return;
 
     const promises = [];
-    promises.push(this.contentClient.addContentReferences(cast));
+    promises.push(
+      this.contentClient.addContentReferences({
+        ...cast,
+        ancestors: undefined,
+        thread: undefined,
+      }),
+    );
 
     if (
       data.parentHash &&
@@ -186,7 +192,13 @@ export class FarcasterProcessor {
 
     const promises = [];
     promises.push(this.cacheClient.removeCast(data.hash));
-    promises.push(this.contentClient.removeContentReferences(cast));
+    promises.push(
+      this.contentClient.removeContentReferences({
+        ...cast,
+        ancestors: undefined,
+        thread: undefined,
+      }),
+    );
 
     if (cast.parentHash) {
       promises.push(

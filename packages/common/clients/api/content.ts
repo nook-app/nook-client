@@ -26,10 +26,13 @@ export class ContentAPIClient extends BaseAPIClient {
     return response.json();
   }
 
-  async getContents(uris: string[]): Promise<GetContentsResponse> {
+  async getContents(
+    uris: string[],
+    cached?: boolean,
+  ): Promise<GetContentsResponse> {
     const response = await this.makeRequest("/content", {
       method: "POST",
-      body: JSON.stringify({ uris }),
+      body: JSON.stringify({ uris, cached }),
     });
 
     if (!response.ok) {

@@ -56,12 +56,14 @@ export class FarcasterService {
   private cache: FarcasterCacheClient;
   private contentClient: ContentAPIClient;
   private hub: HubRpcClient;
+  private writeClient: PrismaClient;
 
   constructor(fastify: FastifyInstance) {
     this.client = fastify.farcaster.client;
     this.cache = new FarcasterCacheClient(fastify.redis.client);
     this.contentClient = new ContentAPIClient();
     this.hub = getSSLHubRpcClient(process.env.HUB_RPC_ENDPOINT as string);
+    this.writeClient = fastify.farcasterWrite.client;
   }
 
   async getUserFollowingFids(fid: string) {
@@ -818,7 +820,7 @@ export class FarcasterService {
         this.getCastEngagement(allCasts.map((cast) => cast.hash)),
         this.getChannels(Array.from(channelUrls), Array.from(channelIds)),
         this.getUsers(Array.from(fids), viewerFid),
-        this.contentClient.getContents(Array.from(embedUrls)),
+        this.contentClient.getContents(Array.from(embedUrls), true),
       ]);
 
     const userMap = users.reduce(
@@ -1050,7 +1052,7 @@ export class FarcasterService {
             creatorId: channel.leadFid?.toString(),
           };
 
-          await this.client.farcasterParentUrl.upsert({
+          await this.writeClient.farcasterParentUrl.upsert({
             where: {
               url: channel.url,
             },
@@ -1426,15 +1428,17 @@ export class FarcasterService {
       where: {
         OR: [
           {
-            fid: BigInt(viewerFid),
-            targetFid: {
+            linkType: "follow",
+            targetFid: BigInt(viewerFid),
+            fid: {
               in: missing.map((fid) => BigInt(fid)),
             },
             deletedAt: null,
           },
           {
-            targetFid: BigInt(viewerFid),
-            fid: {
+            linkType: "follow",
+            fid: BigInt(viewerFid),
+            targetFid: {
               in: missing.map((fid) => BigInt(fid)),
             },
             deletedAt: null,
@@ -1443,7 +1447,7 @@ export class FarcasterService {
       },
     });
 
-    const fetchedMap = fetched.reduce(
+    const fetchedMap = fetched.flat().reduce(
       (acc, link) => {
         const fid = link.fid.toString();
         const targetFid = link.targetFid.toString();
@@ -1712,6 +1716,9 @@ export class FarcasterService {
     const fetched = await this.client.farcasterCastReaction.findMany({
       where: {
         fid: BigInt(viewerFid),
+        reactionType: {
+          in: [0, 1],
+        },
         targetHash: {
           in: missing,
         },

@@ -10,6 +10,7 @@ import {
 import { FastifyInstance } from "fastify";
 import { getUrlContent } from "../utils";
 import { Frame } from "frames.js";
+import { publishContent } from "@nook/common/queues";
 
 export const MAX_PAGE_SIZE = 25;
 
@@ -22,7 +23,10 @@ export class ContentService {
     this.cache = new ContentCacheClient(fastify.redis.client);
   }
 
-  async getContents(uris: string[]): Promise<UrlContentResponse[]> {
+  async getContents(
+    uris: string[],
+    cached?: boolean,
+  ): Promise<UrlContentResponse[]> {
     const contents = await this.cache.getContents(uris);
     const contentMap = contents.reduce(
       (acc, content, index) => {
@@ -57,9 +61,13 @@ export class ContentService {
 
     const stillMissing = uris.filter((uri) => !contentMap[uri]?.contentType);
     if (stillMissing.length > 0) {
-      const missingContent = await this.refreshContents(stillMissing);
-      for (const content of missingContent) {
-        contentMap[content.uri] = content;
+      if (cached) {
+        await Promise.all(stillMissing.map(publishContent));
+      } else {
+        const missingContent = await this.refreshContents(stillMissing);
+        for (const content of missingContent) {
+          contentMap[content.uri] = content;
+        }
       }
     }
 

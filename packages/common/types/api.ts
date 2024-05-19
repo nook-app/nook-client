@@ -95,10 +95,12 @@ export type GetFarcasterUsersResponse = {
 
 export type GetContentRequest = {
   uri: string;
+  cached?: boolean;
 };
 
 export type GetContentsRequest = {
   uris: string[];
+  cached?: boolean;
 };
 
 export type GetContentsResponse = {

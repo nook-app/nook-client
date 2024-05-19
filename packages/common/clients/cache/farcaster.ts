@@ -32,6 +32,8 @@ export class FarcasterCacheClient {
   USER_ENGAGEMENT_CACHE_PREFIX = "farcaster:user:engagement";
   USER_CONTEXT_CACHE_PREFIX = "farcaster:user:context";
 
+  TTL = 24 * 60 * 60 * 3;
+
   constructor(redis: RedisClient) {
     this.redis = redis;
   }
@@ -47,13 +49,17 @@ export class FarcasterCacheClient {
   }
 
   async setCast(hash: string, cast: BaseFarcasterCast) {
-    await this.redis.setJson(`${this.CAST_CACHE_PREFIX}:${hash}`, cast, 86400);
+    await this.redis.setJson(
+      `${this.CAST_CACHE_PREFIX}:${hash}`,
+      cast,
+      this.TTL,
+    );
   }
 
   async setCasts(casts: BaseFarcasterCast[]) {
     await this.redis.msetJson(
       casts.map((cast) => [`${this.CAST_CACHE_PREFIX}:${cast.hash}`, cast]),
-      86400,
+      this.TTL,
     );
   }
 
@@ -77,7 +83,7 @@ export class FarcasterCacheClient {
         `${this.CAST_ENGAGEMENT_CACHE_PREFIX}:${engagement.hash}`,
         engagement,
       ]),
-      86400,
+      this.TTL,
     );
   }
 
@@ -105,7 +111,7 @@ export class FarcasterCacheClient {
       data.quotes += value;
     }
 
-    await this.redis.setJson(key, data, 86400);
+    await this.redis.setJson(key, data, this.TTL);
   }
 
   async getCastContext(
@@ -128,7 +134,7 @@ export class FarcasterCacheClient {
         `${this.CAST_CONTEXT_CACHE_PREFIX}:${context.hash}:${viewerFid}`,
         context,
       ]),
-      86400,
+      this.TTL,
     );
   }
 
@@ -151,7 +157,7 @@ export class FarcasterCacheClient {
       data.recasted = value;
     }
 
-    await this.redis.setJson(key, data, 86400);
+    await this.redis.setJson(key, data, this.TTL);
   }
 
   async getUser(fid: string): Promise<BaseFarcasterUser> {
@@ -167,13 +173,17 @@ export class FarcasterCacheClient {
   }
 
   async setUser(fid: string, user: BaseFarcasterUser) {
-    await this.redis.setJson(`${this.USER_CACHE_PREFIX}:${fid}`, user, 86400);
+    await this.redis.setJson(
+      `${this.USER_CACHE_PREFIX}:${fid}`,
+      user,
+      this.TTL,
+    );
   }
 
   async setUsers(users: BaseFarcasterUser[]) {
     await this.redis.msetJson(
       users.map((user) => [`${this.USER_CACHE_PREFIX}:${user.fid}`, user]),
-      86400,
+      this.TTL,
     );
   }
 
@@ -191,7 +201,7 @@ export class FarcasterCacheClient {
         `${this.USER_ENGAGEMENT_CACHE_PREFIX}:${engagement.fid}`,
         engagement,
       ]),
-      86400,
+      this.TTL,
     );
   }
 
@@ -213,7 +223,7 @@ export class FarcasterCacheClient {
       data.following += value;
     }
 
-    await this.redis.setJson(key, data, 86400);
+    await this.redis.setJson(key, data, this.TTL);
   }
 
   async getUserContext(
@@ -236,7 +246,7 @@ export class FarcasterCacheClient {
         `${this.USER_CONTEXT_CACHE_PREFIX}:${context.fid}:${viewerFid}`,
         context,
       ]),
-      86400,
+      this.TTL,
     );
   }
 
@@ -260,7 +270,7 @@ export class FarcasterCacheClient {
       data.followers = value;
     }
 
-    await this.redis.setJson(key, data, 86400);
+    await this.redis.setJson(key, data, this.TTL);
   }
 
   async resetUserContext(fid: string, viewerFid: string) {
@@ -281,7 +291,7 @@ export class FarcasterCacheClient {
         [`${this.CHANNEL_CACHE_PREFIX}:${channel.url}`, channel],
         [`${this.CHANNEL_CACHE_PREFIX}:${channel.channelId}`, channel],
       ]),
-      86400,
+      this.TTL,
     );
   }
 
@@ -291,7 +301,7 @@ export class FarcasterCacheClient {
         `${this.CHANNEL_CACHE_PREFIX}:${key}`,
         { channelId: key },
       ]),
-      86400,
+      this.TTL,
     );
   }
 
@@ -312,7 +322,11 @@ export class FarcasterCacheClient {
   }
 
   async setAppFidBySigner(pubkey: string, user: string) {
-    await this.redis.set(`${this.CLIENT_CACHE_PREFIX}:${pubkey}`, user, 86400);
+    await this.redis.set(
+      `${this.CLIENT_CACHE_PREFIX}:${pubkey}`,
+      user,
+      this.TTL,
+    );
   }
 
   async removeAppFidBySigner(pubkey: string) {
@@ -350,7 +364,7 @@ export class FarcasterCacheClient {
     await this.redis.addMembers(
       `${this.USER_CACHE_PREFIX}:mutuals:${fid}:${targetFid}`,
       mutuals,
-      86400,
+      this.TTL,
     );
   }
 
@@ -477,7 +491,7 @@ export class FarcasterCacheClient {
     await this.redis.setJson(
       `${this.CAST_CACHE_PREFIX}:${hash}:thread`,
       thread,
-      86400,
+      this.TTL,
     );
   }
 
@@ -559,7 +573,7 @@ export class FarcasterCacheClient {
         `farcaster:username:${username}`,
         fids[i],
       ]),
-      86400,
+      this.TTL,
     );
   }
 }

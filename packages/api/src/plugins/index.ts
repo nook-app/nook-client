@@ -18,6 +18,9 @@ declare module "fastify" {
     list: {
       client: ListPrismaClient;
     };
+    feed: {
+      client: RedisClient;
+    };
   }
 }
 
@@ -54,5 +57,14 @@ export const listPlugin = fp(async (fastify, opts) => {
   fastify.decorate("list", { client });
   fastify.addHook("onClose", async (fastify) => {
     await fastify.list.client.$disconnect();
+  });
+});
+
+export const feedPlugin = fp(async (fastify, opts) => {
+  const client = new RedisClient("feed");
+  await client.connect();
+  fastify.decorate("feed", { client });
+  fastify.addHook("onClose", async (fastify) => {
+    await fastify.feed.client.close();
   });
 });
