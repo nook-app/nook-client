@@ -209,7 +209,11 @@ export const CreateCastProvider = ({
 
   const handleRemoveCast = (index: number) => {
     if (casts.length === 1) return;
-    setActiveIndex(index - 1);
+    if (index === casts.length - 1) {
+      setActiveIndex(index - 1);
+    } else {
+      setActiveIndex(index);
+    }
     setCasts((prev) => prev.filter((_, i) => i !== index));
   };
 
