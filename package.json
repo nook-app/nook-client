@@ -15,6 +15,7 @@
     "start:dashboard": "yarn workspace @nook/dashboard start",
     "start:farcaster:consumer": "yarn workspace @nook/farcaster start:consumer",
     "start:farcaster:publisher": "yarn workspace @nook/farcaster start:publisher",
+    "start:content:worker": "yarn workspace @nook/content-api start:worker",
     "start:events": "yarn workspace @nook/events start",
     "start:notifications": "yarn workspace @nook/notifications start",
     "start:farcaster:api": "yarn workspace @nook/farcaster-api start",
@@ -32,9 +33,7 @@
     "native": "cd packages/expo && yarn start",
     "next": "yarn workspace @nook/app-next dev"
   },
-  "workspaces": [
-    "packages/*"
-  ],
+  "workspaces": ["packages/*"],
   "devDependencies": {
     "@biomejs/biome": "1.4.1",
     "@types/jest": "^29.5.11",
