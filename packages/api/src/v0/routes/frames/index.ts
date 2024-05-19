@@ -1,61 +1,11 @@
 import { FastifyInstance } from "fastify";
-import {
-  CastActionV1Request,
-  CastActionV2Request,
-  FramePayload,
-  SubmitFrameActionRequest,
-} from "@nook/common/types";
+import { FramePayload, SubmitFrameActionRequest } from "@nook/common/types";
 import { SignerAPIClient } from "@nook/common/clients";
 import { getFrame } from "frames.js";
-import { ActionsService } from "../../services/actions";
-import { CastAction } from "@nook/common/prisma/nook";
 
 export const frameRoutes = async (fastify: FastifyInstance) => {
   fastify.register(async (fastify: FastifyInstance) => {
     const signerClient = new SignerAPIClient();
-    const actionsService = new ActionsService(fastify);
-
-    fastify.get<{ Querystring: { query?: string; cursor?: string } }>(
-      "/actions",
-      async (request, reply) => {
-        const data = await actionsService.searchActions(
-          request.query.query,
-          request.query.cursor,
-        );
-        return reply.send(data);
-      },
-    );
-
-    fastify.put<{
-      Body: {
-        index: number;
-        actionId?: string;
-        action: CastActionV1Request | CastActionV2Request | null;
-      };
-    }>("/user/actions", async (request, reply) => {
-      const { fid } = (await request.jwtDecode()) as { fid: string };
-      await actionsService.addUserAction(
-        fid,
-        request.body.index,
-        request.body.action,
-      );
-      return reply.send({ message: "Success" });
-    });
-
-    fastify.get("/user/actions", async (request, reply) => {
-      const { fid } = (await request.jwtDecode()) as { fid: string };
-      const actions = await actionsService.getUserActions(fid);
-      const indexToAction = actions.reduce(
-        (acc, { index, action }) => {
-          acc[index] = action;
-          return acc;
-        },
-        {} as Record<number, CastAction>,
-      );
-      return reply.send({
-        data: Array.from({ length: 8 }, (_, i) => indexToAction[i] || null),
-      });
-    });
 
     fastify.post<{ Body: SubmitFrameActionRequest }>(
       "/frames/action",

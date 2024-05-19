@@ -7,7 +7,6 @@ import {
   Channel,
   FarcasterCastContext,
   FarcasterCastEngagement,
-  FarcasterTrendingCashtag,
   FarcasterUserContext,
   FarcasterUserEngagement,
   FarcasterUserMutualsPreview,
@@ -488,14 +487,6 @@ export class FarcasterCacheClient {
 
   async resetCastThread(hash: string) {
     await this.redis.del(`${this.CAST_CACHE_PREFIX}:${hash}:thread`);
-  }
-
-  async setTrendingCashtags(data: FarcasterTrendingCashtag[]) {
-    await this.redis.setJson("farcaster:trending-cashtags", data);
-  }
-
-  async getTrendingCashtags(): Promise<FarcasterTrendingCashtag[]> {
-    return await this.redis.getJson("farcaster:trending-cashtags");
   }
 
   async addCastReplies(

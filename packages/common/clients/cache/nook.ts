@@ -1,5 +1,4 @@
 import { RedisClient } from "./base";
-import { Nook } from "../../types";
 
 export class NookCacheClient {
   private redis: RedisClient;
@@ -9,14 +8,6 @@ export class NookCacheClient {
 
   constructor(redis: RedisClient) {
     this.redis = redis;
-  }
-
-  async getNook(nookId: string): Promise<Nook> {
-    return await this.redis.getJson(`${this.NOOK_CACHE_PREFIX}:${nookId}`);
-  }
-
-  async setNook(nookId: string, nook: Nook) {
-    await this.redis.setJson(`${this.NOOK_CACHE_PREFIX}:${nookId}`, nook);
   }
 
   async getUserMutes(userId: string): Promise<string[]> {

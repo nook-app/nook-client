@@ -30,15 +30,6 @@ export type FarcasterFeedRequest = {
   cursor?: string;
 };
 
-export type PanelRequest = {
-  id: string;
-  fid: string;
-  type: string;
-  key: string;
-  context: FeedContext;
-  cursor?: string;
-};
-
 export enum Display {
   CASTS = "CASTS",
   REPLIES = "REPLIES",
@@ -50,15 +41,6 @@ export enum Display {
   LIST = "LIST",
   NOTIFICATION = "NOTIFICATION",
 }
-
-export type CreateFeedRequest = {
-  name: string;
-  api?: string;
-  icon?: string;
-  filter: FarcasterFeedFilter;
-  type?: string;
-  display?: Display;
-};
 
 export type TransactionFeedRequest = {
   filter: TransactionFeedFilter;

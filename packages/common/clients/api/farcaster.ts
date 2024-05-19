@@ -7,9 +7,6 @@ import {
   GetFarcasterUsersRequest,
   GetFarcasterChannelsRequest,
   GetFarcasterChannelsResponse,
-  ShelfDataRequest,
-  FarcasterPostArgs,
-  ShelfDataResponse,
   UserFilter,
 } from "../../types";
 import { FarcasterFeedRequest } from "../../types/feed";
@@ -388,40 +385,8 @@ export class FarcasterAPIClient extends BaseAPIClient {
     return response.json();
   }
 
-  async getNewPosts(
-    req: ShelfDataRequest<FarcasterPostArgs>,
-  ): Promise<ShelfDataResponse<FarcasterCastResponse>> {
-    const response = await this.makeRequest("/feed/posts/new", {
-      method: "POST",
-      body: JSON.stringify(req),
-    });
-
-    if (!response.ok) {
-      throw new Error(response.statusText);
-    }
-
-    return response.json();
-  }
-
-  async getCastFeed(
-    req: FarcasterFeedRequest,
-  ): Promise<ShelfDataResponse<FarcasterCastResponse>> {
+  async getCastFeed(req: FarcasterFeedRequest): Promise<FarcasterCastResponse> {
     const response = await this.makeRequest("/feed/casts", {
-      method: "POST",
-      body: JSON.stringify(req),
-    });
-
-    if (!response.ok) {
-      throw new Error(response.statusText);
-    }
-
-    return response.json();
-  }
-
-  async getTopCastFeed(
-    req: FarcasterFeedRequest,
-  ): Promise<ShelfDataResponse<FarcasterCastResponse>> {
-    const response = await this.makeRequest("/feed/casts/top", {
       method: "POST",
       body: JSON.stringify(req),
     });

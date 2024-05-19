@@ -1,17 +1,9 @@
 import { FastifyInstance } from "fastify";
-import { ContentAPIClient, FarcasterAPIClient } from "@nook/common/clients";
-import {
-  ChannelFilterType,
-  FarcasterPostArgs,
-  ShelfDataRequest,
-  UserFilterType,
-} from "@nook/common/types";
-import { FarcasterFeedRequest } from "@nook/common/types/feed";
+import { FarcasterAPIClient } from "@nook/common/clients";
 
 export const farcasterRoutes = async (fastify: FastifyInstance) => {
   fastify.register(async (fastify: FastifyInstance) => {
     const client = new FarcasterAPIClient();
-    const content = new ContentAPIClient();
 
     fastify.post<{ Body: { hashes: string[] } }>(
       "/farcaster/casts",
@@ -213,111 +205,6 @@ export const farcasterRoutes = async (fastify: FastifyInstance) => {
     );
 
     fastify.get<{ Params: { fid: string }; Querystring: { cursor?: string } }>(
-      "/farcaster/users/:fid/posts",
-      async (request, reply) => {
-        let viewerFid: string | undefined;
-        try {
-          const { fid } = (await request.jwtDecode()) as { fid: string };
-          viewerFid = fid;
-        } catch (e) {}
-        const response = await client.getNewPosts({
-          data: {
-            users: {
-              type: UserFilterType.FIDS,
-              data: {
-                fids: [request.params.fid],
-              },
-            },
-          },
-          cursor: request.query.cursor,
-          context: { viewerFid },
-        });
-        reply.send(response);
-      },
-    );
-
-    fastify.get<{ Params: { fid: string }; Querystring: { cursor?: string } }>(
-      "/farcaster/users/:fid/replies",
-      async (request, reply) => {
-        let viewerFid: string | undefined;
-        try {
-          const { fid } = (await request.jwtDecode()) as { fid: string };
-          viewerFid = fid;
-        } catch (e) {}
-        const response = await client.getNewPosts({
-          data: {
-            users: {
-              type: UserFilterType.FIDS,
-              data: {
-                fids: [request.params.fid],
-              },
-            },
-            onlyReplies: true,
-          },
-          cursor: request.query.cursor,
-          context: { viewerFid },
-        });
-        reply.send(response);
-      },
-    );
-
-    fastify.get<{ Params: { fid: string }; Querystring: { cursor?: string } }>(
-      "/farcaster/users/:fid/media",
-      async (request, reply) => {
-        let viewerFid: string | undefined;
-        try {
-          const { fid } = (await request.jwtDecode()) as { fid: string };
-          viewerFid = fid;
-        } catch (e) {}
-        const response = await content.getNewMedia({
-          data: {
-            users: {
-              type: UserFilterType.FIDS,
-              data: {
-                fids: [request.params.fid],
-              },
-            },
-          },
-          cursor: request.query.cursor,
-          context: { viewerFid },
-        });
-        const casts = await client.getCasts(response.data, viewerFid);
-        reply.send({
-          data: casts.data,
-          nextCursor: response.nextCursor,
-        });
-      },
-    );
-
-    fastify.get<{ Params: { fid: string }; Querystring: { cursor?: string } }>(
-      "/farcaster/users/:fid/frames",
-      async (request, reply) => {
-        let viewerFid: string | undefined;
-        try {
-          const { fid } = (await request.jwtDecode()) as { fid: string };
-          viewerFid = fid;
-        } catch (e) {}
-        const response = await content.getNewFrames({
-          data: {
-            users: {
-              type: UserFilterType.FIDS,
-              data: {
-                fids: [request.params.fid],
-              },
-            },
-          },
-          cursor: request.query.cursor,
-          context: { viewerFid },
-        });
-        const casts = await client.getCasts(response.data, viewerFid);
-        reply.send({
-          data: casts.data,
-          nextCursor: response.nextCursor,
-        });
-      },
-    );
-
-    fastify.get<{ Params: { fid: string }; Querystring: { cursor?: string } }>(
       "/farcaster/users/:fid/mutuals",
       async (request, reply) => {
         let viewerFid: string | undefined;
@@ -432,102 +319,6 @@ export const farcasterRoutes = async (fastify: FastifyInstance) => {
       reply.send(response);
     });
 
-    fastify.get<{
-      Params: { channelId: string };
-      Querystring: { cursor?: string };
-    }>("/farcaster/channels/:channelId/posts", async (request, reply) => {
-      let viewerFid: string | undefined;
-      try {
-        const { fid } = (await request.jwtDecode()) as { fid: string };
-        viewerFid = fid;
-      } catch (e) {}
-      const response = await client.getNewPosts({
-        data: {
-          channels: {
-            type: ChannelFilterType.CHANNEL_IDS,
-            data: {
-              channelIds: [request.params.channelId],
-            },
-          },
-          includeReplies: true,
-        },
-        cursor: request.query.cursor,
-        context: { viewerFid },
-      });
-      reply.send(response);
-    });
-
-    fastify.get<{
-      Params: { channelId: string };
-      Querystring: { cursor?: string };
-    }>("/farcaster/channels/:channelId/media", async (request, reply) => {
-      let viewerFid: string | undefined;
-      try {
-        const { fid } = (await request.jwtDecode()) as { fid: string };
-        viewerFid = fid;
-      } catch (e) {}
-      const response = await content.getNewMedia({
-        data: {
-          channels: {
-            type: ChannelFilterType.CHANNEL_IDS,
-            data: {
-              channelIds: [request.params.channelId],
-            },
-          },
-        },
-        cursor: request.query.cursor,
-        context: { viewerFid },
-      });
-      const casts = await client.getCasts(response.data, viewerFid);
-      reply.send({
-        data: casts.data,
-        nextCursor: response.nextCursor,
-      });
-    });
-
-    fastify.get<{ Querystring: { query?: string; cursor?: string } }>(
-      "/farcaster/casts",
-      async (request, reply) => {
-        let viewerFid: string | undefined;
-        try {
-          const { fid } = (await request.jwtDecode()) as { fid: string };
-          viewerFid = fid;
-        } catch (e) {}
-        const response = await client.getNewPosts({
-          data: {
-            query: request.query.query || "",
-          },
-          cursor: request.query.cursor,
-          context: { viewerFid },
-        });
-        reply.send(response);
-      },
-    );
-
-    fastify.get<{ Params: { fid: string } }>(
-      "/farcaster/users/:fid/recommended-channels",
-      async (request, reply) => {
-        const { fid } = (await request.jwtDecode()) as { fid: string };
-        const response = await fetch(
-          `https://api.neynar.com/v2/farcaster/channel/user?fid=${fid}`,
-          {
-            headers: {
-              accept: "application/json",
-              api_key: process.env.NEYNAR_API_KEY as string,
-            },
-          },
-        );
-        if (!response.ok) {
-          reply.status(500);
-          return;
-        }
-        const { channels } = await response.json();
-        const urls = channels.map((channel: { url: string }) => channel.url);
-        const data = await client.getChannels({ parentUrls: urls });
-        reply.send(data);
-      },
-    );
-
     fastify.get("/farcaster/channels/recommended", async (request, reply) => {
       const { fid } = (await request.jwtDecode()) as { fid: string };
       const response = await fetch(
@@ -549,19 +340,15 @@ export const farcasterRoutes = async (fastify: FastifyInstance) => {
       reply.send(data);
     });
 
-    fastify.post<{ Body: ShelfDataRequest<FarcasterPostArgs> }>(
-      "/farcaster/casts/new",
+    fastify.get<{ Querystring: { query: string } }>(
+      "/search/preview",
       async (request, reply) => {
-        let viewerFid: string | undefined;
-        try {
-          const { fid } = (await request.jwtDecode()) as { fid: string };
-          viewerFid = fid;
-        } catch (e) {}
-        const response = await client.getNewPosts({
-          ...request.body,
-          context: { viewerFid },
-        });
-        reply.send(response);
+        const [users, channels] = await Promise.all([
+          client.searchUsers(request.query.query),
+          client.searchChannels(request.query.query),
+        ]);
+
+        return reply.send({ users: users.data, channels: channels.data });
       },
     );
   });

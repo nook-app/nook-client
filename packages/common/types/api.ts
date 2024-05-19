@@ -7,7 +7,6 @@ import {
 } from "./farcaster";
 import { NotificationResponse, RawNotificationResponse } from "./notifications";
 import { TransactionDto } from "../onceupon";
-import { Nook } from "./nook";
 import { PendingCast } from "../prisma/nook";
 import { Transaction } from "./transactions";
 import { Frame } from "./frames";
@@ -279,22 +278,6 @@ export type NftsByIdsOrRangeRequest = {
 export type GetNftsResponse = {
   nfts: TransactionDto[];
   next_cursor?: string;
-};
-
-export type GetNooksResponse = {
-  data: Nook[];
-  nextCursor?: string;
-};
-
-export type FarcasterTrendingCashtag = {
-  cashtag: string;
-  score: number;
-  count6h: number;
-  powerBadgeCount6h: number;
-  count3h: number;
-  powerBadgeCount3h: number;
-  count1h: number;
-  powerBadgeCount1h: number;
 };
 
 export type FetchCastsResponse = {

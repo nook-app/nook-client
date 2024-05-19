@@ -1,6 +1,5 @@
 import { FarcasterCastResponse } from "./api";
 import { FarcasterUser } from "./farcaster";
-import { ShelfArgs, ShelfType } from "./nook";
 
 export type BaseNotification = {
   fid: string;
@@ -114,15 +113,4 @@ export type NotificationPreferences = {
   disabled: boolean;
   receive: boolean;
   onlyPowerBadge: boolean;
-};
-
-export type ShelfNotification = {
-  users?: string[];
-  parentUrls?: string[];
-  keywords?: string[];
-  embedUrls?: string[];
-  mutedKeywords?: string[];
-  includeReplies?: boolean;
-  onlyReplies?: boolean;
-  powerBadge?: boolean;
 };

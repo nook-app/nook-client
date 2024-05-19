@@ -3,10 +3,6 @@ import { Prisma, PrismaClient } from "@nook/common/prisma/content";
 import {
   ChannelFilter,
   ChannelFilterType,
-  FarcasterEmbedArgs,
-  FarcasterFrameArgs,
-  FarcasterMediaArgs,
-  ShelfDataRequest,
   UserFilter,
   UserFilterType,
 } from "@nook/common/types";
@@ -29,44 +25,6 @@ export class FeedService {
     this.client = fastify.content.client;
     this.farcaster = new FarcasterAPIClient();
     this.farcasterCache = new FarcasterCacheClient(fastify.redis.client);
-  }
-
-  async getNewEmbeds(req: ShelfDataRequest<FarcasterEmbedArgs>) {
-    const conditions: string[] = [];
-
-    if (req.data.urls) {
-      for (const filter of req.data.urls) {
-        conditions.push(`"content"."uri" ILIKE '%${sanitizeInput(filter)}%'`);
-      }
-    }
-
-    return this.getNewContent(
-      req,
-      conditions.length > 0 ? [`(${conditions.join(" OR ")})`] : [],
-    );
-  }
-
-  async getNewFrames(req: ShelfDataRequest<FarcasterFrameArgs>) {
-    const conditions: string[] = [];
-
-    if (req.data.urls) {
-      for (const filter of req.data.urls) {
-        conditions.push(`"content"."uri" ILIKE '%${sanitizeInput(filter)}%'`);
-      }
-    }
-
-    const finalConditions = [`"content"."hasFrame"`];
-    if (conditions.length > 0) {
-      finalConditions.push(`(${conditions.join(" OR ")})`);
-    }
-
-    return this.getNewContent(req, finalConditions);
-  }
-
-  async getNewMedia(req: ShelfDataRequest<FarcasterMediaArgs>) {
-    return this.getNewContent(req, [
-      `("content"."type" ILIKE 'image%' OR "content"."type" ILIKE 'video%')`,
-    ]);
   }
 
   async getContentFeed(req: FarcasterFeedRequest) {
@@ -163,67 +121,6 @@ export class FeedService {
         `
             SELECT DISTINCT "reference".hash, "reference".timestamp
             FROM "FarcasterContentReference" AS "reference"
-            WHERE ${conditions.join(" AND ")}
-            ORDER BY "reference"."timestamp" DESC
-            LIMIT ${MAX_PAGE_SIZE}
-          `,
-      ]),
-    );
-
-    return {
-      data: casts.map((cast) => cast.hash),
-      nextCursor:
-        casts.length === MAX_PAGE_SIZE
-          ? encodeCursor({
-              timestamp: casts[casts.length - 1]?.timestamp.getTime(),
-            })
-          : undefined,
-    };
-  }
-
-  async getNewContent(
-    req: ShelfDataRequest<FarcasterMediaArgs>,
-    baseConditions: string[],
-  ) {
-    const { data, context, cursor } = req;
-    const { users, channels, includeReplies, onlyReplies } = data;
-
-    const conditions: string[] = [
-      ...baseConditions,
-      `"reference"."type" = 'EMBED'`,
-    ];
-
-    if (users) {
-      conditions.push(...(await this.getUserFilter(users)));
-    }
-
-    if (channels) {
-      conditions.push(...(await this.getChannelFilter(channels)));
-    }
-
-    if (cursor) {
-      const decodedCursor = decodeCursor(cursor);
-      if (decodedCursor) {
-        conditions.push(
-          `"timestamp" < '${new Date(decodedCursor.timestamp).toISOString()}'`,
-        );
-      }
-    }
-
-    if (onlyReplies) {
-      conditions.push(`"parentHash" IS NOT NULL`);
-    } else if (!includeReplies) {
-      conditions.push(`"parentHash" IS NULL`);
-    }
-
-    const casts = await this.client.$queryRaw<
-      { hash: string; timestamp: Date }[]
-    >(
-      Prisma.sql([
-        `
-            SELECT DISTINCT "reference".hash, "reference".timestamp
-            FROM "FarcasterContentReference" AS "reference"
-            LEFT JOIN "UrlContent" AS "content" ON "reference"."uri" = "content"."uri"
             WHERE ${conditions.join(" AND ")}
             ORDER BY "reference"."timestamp" DESC
             LIMIT ${MAX_PAGE_SIZE}
