@@ -18,22 +18,11 @@ jobs:
         with:
           node-version: '20'
         
-        
-      - name: install turbo and turbo-ignore globally
-        run: |
-          npm i -g turbo
-          npm i -g turbo-ignore
-     
-      - name: try thing on its own
-        run: |
-          echo $(ls -a)
-          turbo run "build" --filter="scheduler...[HEAD^]" --dry=json
-
       - name: Check turbo-ignore for changes
         id: turbo_ignore
         continue-on-error: true
         run: |
-          turbo-ignore scheduler
+          npx turbo-ignore scheduler
  
       - name: Railway Deploy
         if: steps.turbo_ignore.outcome == 'failure'
