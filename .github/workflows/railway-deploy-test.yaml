@@ -19,15 +19,8 @@ jobs:
         id: turbo_ignore
         continue-on-error: true
         run: |
-          npx turbo-ignore scheduler 2> turbo_ignore_error.log
-  
-      - name: Upload turbo-ignore error log
-        if: steps.turbo_ignore.outcome == 'failure'
-        uses: actions/upload-artifact@v2
-        with:
-          name: turbo-ignore-error-log
-          path: turbo_ignore_error.log
-
+          npx turbo-ignore scheduler
+ 
       - name: Railway Deploy
         if: steps.turbo_ignore.outcome == 'failure'
         uses: bervProject/railway-deploy@0.1.2-beta
