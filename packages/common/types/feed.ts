@@ -14,6 +14,7 @@ export type FarcasterFeedFilter = {
   includeReplies?: boolean;
   onlyReplies?: boolean;
   onlyFrames?: boolean;
+  minTimestamp?: number;
 };
 
 export type FeedContext = {
@@ -28,6 +29,7 @@ export type FarcasterFeedRequest = {
   filter: FarcasterFeedFilter;
   context?: FeedContext;
   cursor?: string;
+  limit?: number;
 };
 
 export enum Display {

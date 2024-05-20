@@ -256,12 +256,21 @@ export class RedisClient {
     await pipeline.exec();
   }
 
-  async batchAddToSet(key: string, values: { value: string; score: number }[]) {
+  async batchAddToSet(
+    key: string,
+    // biome-ignore lint/suspicious/noExplicitAny: generic setter
+    values: { value: any; score: number }[],
+    ex?: number,
+  ) {
     const pipeline = this.redis.pipeline();
     for (const value of values) {
       pipeline.zadd(key, value.score, value.value);
     }
-    pipeline.expire(key, 60 * 60 * 24);
+    if (ex) {
+      pipeline.expire(key, ex);
+    } else {
+      pipeline.zremrangebyrank(key, 0, -1000);
+    }
     await pipeline.exec();
   }
 
@@ -300,6 +309,7 @@ export class RedisClient {
       25,
     );
   }
+
   async getAllSetData(key: string) {
     const results = await this.redis.zrange(key, 0, -1, "WITHSCORES");
 

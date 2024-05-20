@@ -8,6 +8,7 @@ import {
   GetFarcasterChannelsRequest,
   GetFarcasterChannelsResponse,
   UserFilter,
+  FetchCastsResponse,
 } from "../../types";
 import { FarcasterFeedRequest } from "../../types/feed";
 import { BaseAPIClient } from "./base";
@@ -385,8 +386,21 @@ export class FarcasterAPIClient extends BaseAPIClient {
     return response.json();
   }
 
-  async getCastFeed(req: FarcasterFeedRequest): Promise<FarcasterCastResponse> {
+  async getCastFeed(req: FarcasterFeedRequest): Promise<FetchCastsResponse> {
     const response = await this.makeRequest("/feed/casts", {
+      method: "POST",
+      body: JSON.stringify(req),
+    });
+
+    if (!response.ok) {
+      throw new Error(response.statusText);
+    }
+
+    return response.json();
+  }
+
+  async getFeed(req: FarcasterFeedRequest): Promise<FetchCastsResponse> {
+    const response = await this.makeRequest("/feed", {
       method: "POST",
       body: JSON.stringify(req),
     });

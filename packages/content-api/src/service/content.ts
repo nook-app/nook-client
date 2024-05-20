@@ -116,7 +116,7 @@ export class ContentService {
               uri_fid_hash_type: {
                 fid: content.fid,
                 hash: content.hash,
-                type: content.type,
+                type: "EMBED",
                 uri: content.uri,
               },
             },

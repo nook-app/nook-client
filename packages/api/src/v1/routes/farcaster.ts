@@ -1,13 +1,13 @@
 import { FarcasterFeedRequest } from "@nook/common/types";
 import { FastifyInstance } from "fastify";
-import { FarcasterService } from "../services/farcaster";
+import { FarcasterAPIClient } from "@nook/common/clients";
 
 export const farcasterRoutes = async (fastify: FastifyInstance) => {
   fastify.register(async (fastify: FastifyInstance) => {
-    const farcasterService = new FarcasterService(fastify);
+    const api = new FarcasterAPIClient();
 
-    fastify.put<{ Body: FarcasterFeedRequest }>(
-      "/feed/farcaster",
+    fastify.post<{ Body: FarcasterFeedRequest }>(
+      "/feeds/farcaster",
       async (request, reply) => {
         let viewerFid: string | undefined;
         try {
@@ -15,7 +15,7 @@ export const farcasterRoutes = async (fastify: FastifyInstance) => {
           viewerFid = fid;
         } catch (e) {}
 
-        const response = await farcasterService.getFeed({
+        const response = await api.getFeed({
           ...request.body,
           context: {
             viewerFid,

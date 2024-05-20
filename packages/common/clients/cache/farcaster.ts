@@ -7,12 +7,22 @@ import {
   Channel,
   FarcasterCastContext,
   FarcasterCastEngagement,
+  FarcasterFeedFilter,
+  FarcasterFeedRequest,
   FarcasterUserContext,
   FarcasterUserEngagement,
   FarcasterUserMutualsPreview,
   UserContextType,
   UserEngagementType,
 } from "../../types";
+import { createHash } from "crypto";
+import { decodeCursor } from "../../utils";
+
+type FeedCacheItem = {
+  fid: string;
+  hash: string;
+  timestamp: number;
+};
 
 export class FarcasterCacheClient {
   private redis: RedisClient;
@@ -31,6 +41,7 @@ export class FarcasterCacheClient {
   CAST_CONTEXT_CACHE_PREFIX = "farcaster:cast:context";
   USER_ENGAGEMENT_CACHE_PREFIX = "farcaster:user:engagement";
   USER_CONTEXT_CACHE_PREFIX = "farcaster:user:context";
+  FEED_CACHE_PREFIX = "feed:farcaster";
 
   TTL = 24 * 60 * 60 * 3;
 
@@ -511,6 +522,7 @@ export class FarcasterCacheClient {
     await this.redis.batchAddToSet(
       `${this.getCastReplyPrefix(type)}:${hash}`,
       replies.map(({ hash, score }) => ({ value: hash, score })),
+      this.TTL,
     );
   }
 
@@ -575,5 +587,38 @@ export class FarcasterCacheClient {
       ]),
       this.TTL,
     );
+  }
+
+  async getFeedFromCache(
+    request: FarcasterFeedRequest,
+  ): Promise<FeedCacheItem[]> {
+    const key = await this.getFeedKey(request.filter);
+    const decodedCursor = decodeCursor(request.cursor);
+    const cursor = decodedCursor ? Number(decodedCursor.timestamp) : undefined;
+    const response = await this.redis.getSet(key, cursor);
+
+    const items = [];
+    for (let i = 0; i < response.length; i += 2) {
+      items.push(JSON.parse(response[i]));
+    }
+
+    return items;
+  }
+
+  async addToFeedCache(request: FarcasterFeedRequest, items: FeedCacheItem[]) {
+    const key = await this.getFeedKey(request.filter);
+    await this.redis.batchAddToSet(
+      key,
+      items.map((item) => ({
+        value: JSON.stringify(item),
+        score: item.timestamp,
+      })),
+    );
+  }
+
+  async getFeedKey(filter: FarcasterFeedFilter) {
+    return `${this.FEED_CACHE_PREFIX}:${createHash("md5")
+      .update(JSON.stringify(filter))
+      .digest("hex")}`;
   }
 }

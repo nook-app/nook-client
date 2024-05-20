@@ -39,7 +39,7 @@ export class FeedService {
   }
 
   async getCastFeed(req: FarcasterFeedRequest) {
-    const { filter, context, cursor } = req;
+    const { filter, context, cursor, limit } = req;
     const {
       channels,
       users,
@@ -49,6 +49,7 @@ export class FeedService {
       includeReplies,
       onlyReplies,
       onlyFrames,
+      minTimestamp,
     } = filter;
 
     if (
@@ -134,6 +135,12 @@ export class FeedService {
       }
     }
 
+    if (minTimestamp) {
+      conditions.push(
+        `"timestamp" > '${new Date(minTimestamp).toISOString()}'`,
+      );
+    }
+
     if (onlyReplies) {
       conditions.push(`"parentHash" IS NOT NULL`);
     } else if (!includeReplies) {
@@ -147,7 +154,7 @@ export class FeedService {
             FROM "FarcasterCast"
             WHERE ${conditions.join(" AND ")}
             ORDER BY "timestamp" DESC
-            LIMIT ${MAX_PAGE_SIZE}
+            LIMIT ${limit || MAX_PAGE_SIZE}
           `,
       ]),
     );
@@ -260,5 +267,64 @@ export class FeedService {
       users: users.length > 0 ? users : undefined,
       words: words.length > 0 ? words : undefined,
     };
+  }
+
+  async getFeed(request: FarcasterFeedRequest) {
+    const cachedFeed = await this.cache.getFeedFromCache(request);
+
+    const minTimestamp =
+      cachedFeed.length > 0
+        ? Math.max(...cachedFeed.map((item) => item.timestamp))
+        : undefined;
+    const maxTimestamp =
+      cachedFeed.length > 0
+        ? Math.min(...cachedFeed.map((item) => item.timestamp))
+        : undefined;
+
+    const [newCasts, oldCasts] = await Promise.all([
+      this.getFeedFromStorage(request, minTimestamp, Date.now()),
+      cachedFeed.length !== MAX_PAGE_SIZE
+        ? this.getFeedFromStorage(
+            request,
+            undefined,
+            maxTimestamp,
+            MAX_PAGE_SIZE - cachedFeed.length,
+          )
+        : { data: [] },
+    ]);
+
+    return {
+      newCasts: newCasts.data,
+      currentCasts: cachedFeed.map((item) => item.hash),
+      oldCasts: oldCasts?.data || [],
+    };
+  }
+
+  async getFeedFromStorage(
+    request: FarcasterFeedRequest,
+    minTimestamp?: number,
+    maxTimestamp?: number,
+    limit = MAX_PAGE_SIZE,
+  ) {
+    const response = await this.getCastFeed({
+      ...request,
+      filter: {
+        ...request.filter,
+        minTimestamp,
+      },
+      cursor: maxTimestamp
+        ? encodeCursor({ timestamp: maxTimestamp })
+        : request.cursor,
+      limit,
+    });
+    await this.cache.addToFeedCache(
+      request,
+      response.data.map((cast) => ({
+        fid: cast.fid.toString(),
+        hash: cast.hash,
+        timestamp: cast.timestamp.getTime(),
+      })),
+    );
+    return response;
   }
 }

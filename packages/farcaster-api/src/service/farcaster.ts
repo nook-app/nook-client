@@ -713,6 +713,7 @@ export class FarcasterService {
   async getCastsFromData(
     data: DBFarcasterCast[],
     viewerFid?: string,
+    extraHashes?: string[],
   ): Promise<FarcasterCastResponse[]> {
     const casts = data.map((cast, i) => ({
       hash: cast.hash,
@@ -727,17 +728,24 @@ export class FarcasterService {
       signer: cast.signer,
     }));
 
-    return await this.getCasts(casts, viewerFid);
+    return await this.getCasts(casts, viewerFid, undefined, extraHashes);
   }
 
   async getCasts(
     casts: BaseFarcasterCast[],
     viewerFid?: string,
     ancestorsFor?: string[],
+    extraHashes?: string[],
   ) {
     let thread: string[] = [];
 
     const hashes = new Set<string>();
+    if (extraHashes) {
+      for (const hash of extraHashes) {
+        hashes.add(hash);
+      }
+    }
+
     for (const rawCast of casts) {
       if (rawCast.parentHash) {
         hashes.add(rawCast.parentHash);
@@ -920,7 +928,7 @@ export class FarcasterService {
       {} as Record<string, FarcasterCastResponse>,
     );
 
-    return casts.map((cast) => {
+    const castsToReturn = casts.map((cast) => {
       if (ancestorsFor?.includes(cast.hash)) {
         castMap[cast.hash].ancestors = cast.ancestors
           ?.map((hash) => castMap[hash])
@@ -932,6 +940,12 @@ export class FarcasterService {
 
       return castMap[cast.hash];
     });
+
+    if (extraHashes) {
+      castsToReturn.push(...extraHashes.map((hash) => castMap[hash]));
+    }
+
+    return castsToReturn;
   }
 
   async searchChannels(query: string, limit?: number, cursor?: string) {
