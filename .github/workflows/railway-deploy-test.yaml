@@ -1,4 +1,4 @@
-name: 'Your Workflow Name'
+name: 'Deploy Scheduler'
 
 on: workflow_dispatch
 
@@ -9,9 +9,22 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
+    
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '14'
+        
+      - name: check turbo-ignore for changes
+        id: turbo_ignore
+        continue-on-error: true
+        run: |
+          npx turbo-ignore scheduler
 
       - name: Railway Deploy
+        if: steps.turbo_ignore.outcome == 'failure'
         uses: bervProject/railway-deploy@0.1.2-beta
         with:
           railway_token: ${{ secrets.RAILWAY_TOKEN }}
           service: "scheduler"
+
