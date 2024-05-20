@@ -14,13 +14,7 @@ jobs:
         uses: actions/setup-node@v2
         with:
           node-version: '14'
-    
-      - name: Install Yarn
-        run: npm install -g yarn
-  
-      - name: Install dependencies
-        run: yarn install
-  
+   
       - name: Check turbo-ignore for changes
         id: turbo_ignore
         continue-on-error: true
