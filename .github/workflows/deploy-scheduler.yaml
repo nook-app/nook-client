@@ -1,8 +1,9 @@
 name: 'Deploy Scheduler'
 
 on: 
-  push
-
+  push:
+    branches:
+      - main
 jobs:
   deploy:
     runs-on: ubuntu-latest
