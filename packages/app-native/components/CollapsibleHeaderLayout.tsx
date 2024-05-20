@@ -1,7 +1,7 @@
 import { router } from "expo-router";
 import { NookText, View, XStack } from "@nook/app-ui";
 import { ArrowLeft } from "@tamagui/lucide-icons";
-import { useCallback } from "react";
+import { ReactNode, useCallback } from "react";
 import { CollapsibleLayout } from "./CollapsibleLayout";
 import { IconButton } from "./IconButton";
 import { useCurrentTabScrollY } from "react-native-collapsible-tab-view";
@@ -18,14 +18,16 @@ export const CollapsibleHeaderLayout = ({
   title,
   pages,
   defaultIndex = 0,
+  right,
 }: {
   title: string;
-  pages: { name: string; component: React.ReactNode }[];
+  pages: { name: string; component: ReactNode }[];
   defaultIndex?: number;
+  right?: ReactNode;
 }) => {
   const renderHeader = useCallback(
-    () => <CollapsibleHeader title={title} />,
-    [title],
+    () => <CollapsibleHeader title={title} right={right} />,
+    [title, right],
   );
 
   return (
@@ -39,8 +41,10 @@ export const CollapsibleHeaderLayout = ({
 
 const CollapsibleHeader = ({
   title,
+  right,
 }: {
   title: string;
+  right?: ReactNode;
 }) => {
   const scrollY = useCurrentTabScrollY();
 
@@ -85,7 +89,7 @@ const CollapsibleHeader = ({
           <NookText fontSize="$5" fontWeight="600">
             {title}
           </NookText>
-          <View />
+          {right || <View width="$2.5" />}
         </XStack>
       </Animated.View>
     </View>

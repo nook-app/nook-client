@@ -4,7 +4,7 @@ import { FarcasterUserAvatar } from "@nook/app/components/farcaster/users/user-d
 import { useAuth } from "@nook/app/context/auth";
 import { formatNumber } from "@nook/app/utils";
 import { DrawerContentScrollView } from "@react-navigation/drawer";
-import { ComponentType, useEffect, useState } from "react";
+import { ComponentType, memo, useEffect, useState } from "react";
 import {
   Home,
   User,
@@ -23,7 +23,7 @@ import * as Updates from "expo-updates";
 import { TouchableOpacity } from "react-native-gesture-handler";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-export const SidebarLayout = () => {
+export const SidebarLayout = memo(() => {
   return (
     <View flexGrow={1} backgroundColor="$color1">
       <DrawerContentScrollView>
@@ -35,7 +35,7 @@ export const SidebarLayout = () => {
       <SidebarUpdate />
     </View>
   );
-};
+});
 
 const SidebarUser = () => {
   const { user } = useAuth();

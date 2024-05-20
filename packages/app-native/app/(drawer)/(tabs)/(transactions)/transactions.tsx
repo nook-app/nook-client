@@ -2,24 +2,19 @@ import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
 import { useAuth } from "@nook/app/context/auth";
 import { UserFilterType } from "@nook/common/types";
 import { TransactionFeed } from "@nook/app/features/transactions/transaction-feed";
-import {
-  DisappearingLayout,
-  HEADER_HEIGHT,
-} from "../../../../components/DisappearingLayout";
-import { useState } from "react";
-import { TransactionGroupSelector } from "@nook/app/features/transactions/transaction-group-selector";
+import { HEADER_HEIGHT } from "../../../../components/DisappearingLayout";
 import { NookText, View } from "@nook/app-ui";
 import { DrawerToggleButton } from "../../../../components/DrawerToggleButton";
+import { PagerLayout } from "../../../../components/PagerLayout";
 
 export default function TransactionsScreen() {
   const paddingBottom = useBottomTabBarHeight();
-  const [contextActions, setContextActions] = useState<string[] | undefined>();
   const { session } = useAuth();
 
   if (!session?.fid) return null;
 
   return (
-    <DisappearingLayout
+    <PagerLayout
       title={
         <View
           flexDirection="row"
@@ -34,21 +29,62 @@ export default function TransactionsScreen() {
           <View width="$2.5" />
         </View>
       }
-      navigation={<TransactionGroupSelector onPress={setContextActions} />}
-    >
-      <TransactionFeed
-        paddingBottom={paddingBottom}
-        paddingTop={HEADER_HEIGHT}
-        filter={{
-          users: {
-            type: UserFilterType.FOLLOWING,
-            data: {
-              fid: session?.fid,
-            },
-          },
-          contextActions,
-        }}
-      />
-    </DisappearingLayout>
+      pages={[
+        {
+          name: "NFTs",
+          component: (
+            <TransactionFeed
+              paddingBottom={paddingBottom}
+              paddingTop={HEADER_HEIGHT}
+              filter={{
+                users: {
+                  type: UserFilterType.FOLLOWING,
+                  data: {
+                    fid: session?.fid,
+                  },
+                },
+                contextActions: ["MINTED"],
+              }}
+            />
+          ),
+        },
+        {
+          name: "Tokens",
+          component: (
+            <TransactionFeed
+              paddingBottom={paddingBottom}
+              paddingTop={HEADER_HEIGHT}
+              filter={{
+                users: {
+                  type: UserFilterType.FOLLOWING,
+                  data: {
+                    fid: session?.fid,
+                  },
+                },
+                contextActions: ["SWAPPED"],
+              }}
+            />
+          ),
+        },
+        {
+          name: "All",
+          component: (
+            <TransactionFeed
+              paddingBottom={paddingBottom}
+              paddingTop={HEADER_HEIGHT}
+              filter={{
+                users: {
+                  type: UserFilterType.FOLLOWING,
+                  data: {
+                    fid: session?.fid,
+                  },
+                },
+                contextActions: ["-RECEIVED_AIRDROP"],
+              }}
+            />
+          ),
+        },
+      ]}
+    />
   );
 }

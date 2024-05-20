@@ -46,7 +46,6 @@ export const FarcasterBioText = ({
           <Link href={url} target="_blank" asText unpressable isExternal>
             <NookText
               color="$color11"
-              fontWeight="500"
               hoverStyle={{
                 // @ts-ignore
                 textDecoration: "underline",
@@ -141,7 +140,6 @@ export const FarcasterBioText = ({
           <Link href={`/channels/${mention.word.slice(1)}`} asText unpressable>
             <NookText
               color="$color11"
-              fontWeight="500"
               hoverStyle={{
                 // @ts-ignore
                 textDecoration: "underline",
@@ -172,7 +170,6 @@ export const FarcasterBioText = ({
           <Link href={`/users/${mention.word.slice(1)}`} asText unpressable>
             <NookText
               color="$color11"
-              fontWeight="500"
               hoverStyle={{
                 // @ts-ignore
                 textDecoration: "underline",

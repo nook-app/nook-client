@@ -108,9 +108,11 @@ export const TransactionDisplay = ({
 };
 
 const TransactionContent = ({ transaction }: { transaction: Transaction }) => {
-  const contextAction = Object.values(transaction.context.variables).find(
-    (v) => v.type === "contextAction",
-  );
+  const contextAction = transaction.context.variables
+    ? Object.values(transaction.context.variables).find(
+        (v) => v.type === "contextAction",
+      )
+    : undefined;
   const value = contextAction?.value;
   const theme = value ? stringToTheme(value) : undefined;
   return (

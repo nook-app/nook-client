@@ -22,6 +22,7 @@ export const useUserStore = create<UserStore>((set, get) => ({
     const currentUsers = get().users;
     const newUsers = users.reduce(
       (acc, user) => {
+        if (currentUsers[user.username || user.fid]) return acc;
         if (acc[user.username || user.fid]) return acc;
         acc[user.username || user.fid] = user;
         return acc;

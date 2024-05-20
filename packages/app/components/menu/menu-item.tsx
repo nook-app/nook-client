@@ -3,12 +3,14 @@ import {
   NookText,
   Separator,
   TamaguiElement,
+  View,
   YGroup,
 } from "@nook/app-ui";
 import { NamedExoticComponent, forwardRef } from "react";
 
 interface MenuItemProps {
-  Icon: NamedExoticComponent | JSX.Element;
+  Icon?: NamedExoticComponent | JSX.Element;
+  image?: JSX.Element;
   title: string;
   color?: string;
   onPress?: () => void;
@@ -16,7 +18,7 @@ interface MenuItemProps {
 }
 
 export const MenuItem = forwardRef<TamaguiElement, MenuItemProps>(
-  ({ Icon, title, color, onPress, hideSeparator }, ref) => (
+  ({ Icon, image, title, color, onPress, hideSeparator }, ref) => (
     <YGroup.Item key={title}>
       <ListItem
         hoverTheme
@@ -28,6 +30,7 @@ export const MenuItem = forwardRef<TamaguiElement, MenuItemProps>(
         justifyContent="flex-start"
         scaleIcon={1.2}
       >
+        {image && <View width="$2.5">{image}</View>}
         <NookText cursor="pointer" color={color} fontWeight="500">
           {title}
         </NookText>

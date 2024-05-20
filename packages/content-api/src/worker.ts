@@ -1,7 +1,4 @@
-import { Prisma, PrismaClient } from "@nook/common/prisma/content";
 import { QueueName, getWorker } from "@nook/common/queues";
-import { getUrlContent } from "./utils";
-import { ContentService } from "./service/content";
 import { FarcasterContentReference } from "@nook/common/types";
 import { ContentAPIClient } from "@nook/common/clients";
 

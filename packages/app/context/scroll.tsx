@@ -4,6 +4,7 @@ import {
   ReactNode,
   useState,
   useEffect,
+  useMemo,
 } from "react";
 import { usePathname } from "expo-router";
 
@@ -29,16 +30,21 @@ export const ScrollProvider = ({ children }: SheetProviderProps) => {
     if (pathname) setIsScrolling(false);
   }, [pathname]);
 
+  const memoChildren = useMemo(() => children, [children]);
+
+  const value = useMemo(
+    () => ({
+      isScrolling,
+      setIsScrolling,
+      activeVideo,
+      setActiveVideo,
+    }),
+    [isScrolling, activeVideo],
+  );
+
   return (
-    <ScrollContext.Provider
-      value={{
-        isScrolling,
-        setIsScrolling,
-        activeVideo,
-        setActiveVideo,
-      }}
-    >
-      {children}
+    <ScrollContext.Provider value={value}>
+      {memoChildren}
     </ScrollContext.Provider>
   );
 };

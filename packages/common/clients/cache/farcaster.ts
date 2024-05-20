@@ -216,6 +216,10 @@ export class FarcasterCacheClient {
     );
   }
 
+  async deleteUserEngagement(fid: string) {
+    await this.redis.del(`${this.USER_ENGAGEMENT_CACHE_PREFIX}:${fid}`);
+  }
+
   async updateUserEngagement(
     fid: string,
     type: UserEngagementType,
@@ -391,6 +395,10 @@ export class FarcasterCacheClient {
       fids,
       60 * 60,
     );
+  }
+
+  async deleteUserFollowingFids(fid: string) {
+    await this.redis.del(`${this.USER_FOLLOWING_FIDS_CACHE_PREFIX}:${fid}`);
   }
 
   async getUserFollowersFids(fid: string): Promise<string[]> {

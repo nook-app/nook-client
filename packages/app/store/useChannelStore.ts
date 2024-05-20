@@ -20,6 +20,7 @@ export const useChannelStore = create<ChannelStore>((set, get) => ({
     const currentChannels = get().channels;
     const newChannels = channels.reduce(
       (acc, channel) => {
+        if (currentChannels[channel.channelId]) return acc;
         if (acc[channel.channelId]) return acc;
         acc[channel.channelId] = channel;
         return acc;

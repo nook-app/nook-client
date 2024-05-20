@@ -67,7 +67,7 @@ const MenuInner = ({
           animation="100ms"
         >
           <Popover.Sheet.Overlay
-            animation="quick"
+            animation="100ms"
             enterStyle={{ opacity: 0 }}
             exitStyle={{ opacity: 0 }}
           />

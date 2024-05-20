@@ -8,6 +8,7 @@ import { NookText, View, useTheme as useTamaguiTheme } from "@nook/app-ui";
 import { Svg, Path } from "react-native-svg";
 import { useScroll } from "@nook/app/context/scroll";
 import { useNotificationsCount } from "@nook/app/api/notifications";
+import { memo } from "react";
 
 export default function TabLayout() {
   const { session, isInitializing } = useAuth();
@@ -85,7 +86,7 @@ export default function TabLayout() {
   );
 }
 
-const TabBarBackground = () => {
+const TabBarBackground = memo(() => {
   const { rootTheme } = useTheme();
 
   return (
@@ -105,9 +106,9 @@ const TabBarBackground = () => {
       />
     </BlurView>
   );
-};
+});
 
-const TabBarHome = ({ focused }: { focused: boolean }) => {
+const TabBarHome = memo(({ focused }: { focused: boolean }) => {
   const theme = useTamaguiTheme();
   if (focused) {
     return (
@@ -127,14 +128,13 @@ const TabBarHome = ({ focused }: { focused: boolean }) => {
   }
 
   return <Home color="$mauve12" />;
-};
+});
 
-const TabBarTransactions = ({ focused }: { focused: boolean }) => {
+const TabBarTransactions = memo(({ focused }: { focused: boolean }) => {
   return <Link color="$mauve12" strokeWidth={focused ? 2.5 : 2} />;
-};
+});
 
-const TabBarExplore = ({ focused }: { focused: boolean }) => {
-  const theme = useTamaguiTheme();
+const TabBarExplore = memo(({ focused }: { focused: boolean }) => {
   return (
     <Search
       color="$mauve12"
@@ -142,9 +142,9 @@ const TabBarExplore = ({ focused }: { focused: boolean }) => {
       strokeWidth={focused ? 3 : 2}
     />
   );
-};
+});
 
-const TabBarNotifications = ({ focused }: { focused: boolean }) => {
+const TabBarNotifications = memo(({ focused }: { focused: boolean }) => {
   const { session } = useAuth();
   const theme = useTamaguiTheme();
 
@@ -186,8 +186,8 @@ const TabBarNotifications = ({ focused }: { focused: boolean }) => {
       )}
     </View>
   );
-};
+});
 
-const TabBarProfile = ({ focused }: { focused: boolean }) => {
+const TabBarProfile = memo(({ focused }: { focused: boolean }) => {
   return <UserCircle2 color="$mauve12" strokeWidth={focused ? 2.5 : 2} />;
-};
+});

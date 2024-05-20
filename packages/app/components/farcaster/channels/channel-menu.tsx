@@ -1,13 +1,12 @@
 import { MenuSquare, Volume, VolumeX } from "@tamagui/lucide-icons";
 import { Channel } from "@nook/common/types";
-import { Image } from "@nook/app-ui";
 import { useMuteChannel } from "../../../hooks/useMuteChannel";
 import { Menu } from "../../menu/menu";
 import { MenuItem } from "../../menu/menu-item";
 import { useAuth } from "../../../context/auth";
 import { useMenu } from "../../menu/context";
 import { ReactNode, useCallback } from "react";
-import { CopyLink, OpenLink } from "../../menu/menu-actions";
+import { CopyLink, OpenWarpcast } from "../../menu/menu-actions";
 import { Link } from "../../link";
 import { Platform } from "react-native";
 
@@ -20,12 +19,8 @@ export const FarcasterChannelMenu = ({
       <AddChannelToList channel={channel} />
       <MuteChannel channel={channel} />
       <CopyLink link={`https://nook.social/channels/${channel.channelId}`} />
-      <OpenLink
+      <OpenWarpcast
         link={`https://warpcast.com/~/channel/${channel.channelId}`}
-        Icon={
-          <Image source={{ uri: "/warpcast.svg" }} width={14} height={14} />
-        }
-        title="View on Warpcast"
       />
     </Menu>
   );

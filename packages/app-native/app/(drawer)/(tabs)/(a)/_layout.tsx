@@ -1,5 +1,5 @@
 import { Stack, router } from "expo-router";
-import { useTheme } from "@nook/app-ui";
+import { View, useTheme } from "@nook/app-ui";
 import { IconButton } from "../../../../components/IconButton";
 import { ArrowLeft } from "@tamagui/lucide-icons";
 
@@ -32,7 +32,7 @@ export default function HomeLayout() {
       <Stack.Screen
         name="channels/[channelId]/index"
         getId={({ params }) => params?.channelId}
-        options={{ title: "", headerBackVisible: false }}
+        options={{ headerShown: false }}
       />
       <Stack.Screen
         name="channels/[channelId]/hosts"
@@ -42,7 +42,7 @@ export default function HomeLayout() {
       <Stack.Screen
         name="users/[username]/index"
         getId={({ params }) => params?.username}
-        options={{ title: "", headerBackVisible: false }}
+        options={{ headerShown: false }}
       />
       <Stack.Screen
         name="users/[username]/followers"
@@ -125,7 +125,7 @@ export default function HomeLayout() {
       <Stack.Screen name="lists/manage" options={{ title: "Lists" }} />
       <Stack.Screen
         name="lists/[listId]/index"
-        options={{ title: "", headerBackVisible: false }}
+        options={{ headerShown: false }}
         getId={({ params }) => params?.listId}
       />
       <Stack.Screen

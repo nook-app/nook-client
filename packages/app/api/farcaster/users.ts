@@ -12,13 +12,15 @@ export const fetchUser = async (username: string): Promise<FarcasterUser> => {
   return await makeRequest(`/farcaster/users/${username}`);
 };
 
-export const useUser = (username: string) => {
+export const useUser = (username: string, disableCache?: boolean) => {
   const addUsers = useUserStore((state) => state.addUsers);
   return useQuery<FarcasterUser>({
     queryKey: ["user", username],
     queryFn: async () => {
       const user = await fetchUser(username);
-      addUsers([user]);
+      if (!disableCache) {
+        addUsers([user]);
+      }
       return user;
     },
     enabled: !!username,

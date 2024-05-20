@@ -1,10 +1,12 @@
 import { Link } from "@tamagui/lucide-icons";
 import { NamedExoticComponent, useCallback } from "react";
-import { useToastController } from "@nook/app-ui";
+import { Image, View, useToastController } from "@nook/app-ui";
 import { useMenu } from "./context";
 import { MenuItem } from "./menu-item";
 import * as Clipboard from "expo-clipboard";
 import { Linking } from "react-native";
+import { useUser } from "../../api/farcaster";
+import { CdnAvatar } from "../cdn-avatar";
 
 export const CopyLink = ({ link }: { link: string }) => {
   const toast = useToastController();
@@ -22,10 +24,12 @@ export const CopyLink = ({ link }: { link: string }) => {
 export const OpenLink = ({
   link,
   Icon,
+  image,
   title,
 }: {
   link: string;
-  Icon: NamedExoticComponent | JSX.Element;
+  Icon?: NamedExoticComponent | JSX.Element;
+  image?: JSX.Element;
   title: string;
 }) => {
   const { close } = useMenu();
@@ -35,5 +39,26 @@ export const OpenLink = ({
     close();
   }, [link, close]);
 
-  return <MenuItem Icon={Icon} title={title} onPress={handlePress} />;
+  return (
+    <MenuItem Icon={Icon} image={image} title={title} onPress={handlePress} />
+  );
+};
+
+export const OpenWarpcast = ({
+  link,
+}: {
+  link: string;
+}) => {
+  const { data } = useUser("9152");
+  return (
+    <OpenLink
+      link={link}
+      image={
+        <View minWidth="$0.9">
+          <CdnAvatar size="$0.9" src={data?.pfp} />
+        </View>
+      }
+      title="View on Warpcast"
+    />
+  );
 };

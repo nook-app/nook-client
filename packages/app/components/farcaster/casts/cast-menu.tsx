@@ -263,7 +263,7 @@ const CastSource = ({ cast }: { cast: FarcasterCastResponse }) => {
 
   return (
     <OpenLink
-      Icon={
+      image={
         <View minWidth="$0.9">
           <CdnAvatar size="$0.9" src={data?.pfp} />
         </View>

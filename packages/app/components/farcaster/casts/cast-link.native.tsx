@@ -16,7 +16,7 @@ export const FarcasterCastLink = ({
         exitStyle={{
           opacity: 0,
         }}
-        animation="quick"
+        animation="100ms"
         opacity={1}
         scale={1}
         y={0}

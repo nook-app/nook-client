@@ -1,6 +1,6 @@
-import { Image, Link } from "@tamagui/lucide-icons";
+import { Link } from "@tamagui/lucide-icons";
 import { NamedExoticComponent, useCallback } from "react";
-import { useToastController } from "@nook/app-ui";
+import { Image, useToastController } from "@nook/app-ui";
 import { useMenu } from "./context";
 import { MenuItem } from "./menu-item";
 
@@ -20,10 +20,12 @@ export const CopyLink = ({ link }: { link: string }) => {
 export const OpenLink = ({
   link,
   Icon,
+  image,
   title,
 }: {
   link: string;
-  Icon: NamedExoticComponent | JSX.Element;
+  Icon?: NamedExoticComponent | JSX.Element;
+  image?: JSX.Element;
   title: string;
 }) => {
   const { close } = useMenu();
@@ -33,5 +35,21 @@ export const OpenLink = ({
     close();
   }, [link, close]);
 
-  return <MenuItem Icon={Icon} title={title} onPress={handlePress} />;
+  return (
+    <MenuItem Icon={Icon} image={image} title={title} onPress={handlePress} />
+  );
+};
+
+export const OpenWarpcast = ({
+  link,
+}: {
+  link: string;
+}) => {
+  return (
+    <OpenLink
+      link={link}
+      Icon={<Image source={{ uri: "/warpcast.svg" }} width={14} height={14} />}
+      title="View on Warpcast"
+    />
+  );
 };

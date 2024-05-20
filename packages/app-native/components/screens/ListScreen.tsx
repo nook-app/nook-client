@@ -1,5 +1,5 @@
 import { useList } from "@nook/app/hooks/useList";
-import { useLocalSearchParams } from "expo-router";
+import { useFocusEffect, useLocalSearchParams } from "expo-router";
 import { FarcasterFilteredFeed } from "@nook/app/features/farcaster/cast-feed/filtered-feed";
 import {
   ChannelFilterType,
@@ -19,11 +19,11 @@ import { CollapsibleGradientLayout } from "../CollapsibleGradientLayout";
 import { IconButton } from "../IconButton";
 import { TransactionFeed } from "@nook/app/features/transactions/transaction-feed";
 import { ListMenu } from "@nook/app/features/list/list-menu";
+import { memo, useCallback, useState } from "react";
 
 export default function ListScreen() {
   const { listId } = useLocalSearchParams();
   const { list } = useList(listId as string);
-  const { session } = useAuth();
 
   if (!list) return <Loading />;
 
@@ -45,20 +45,7 @@ export default function ListScreen() {
       src={list.imageUrl || list.name}
       header={<ListHeader list={list} disableMenu />}
       pages={getPages({ list })}
-      right={
-        session?.id === list.creatorId ? (
-          <XStack gap="$2">
-            <ListMenu
-              list={list}
-              trigger={
-                <Popover.Trigger asChild>
-                  <IconButton icon={MoreHorizontal} />
-                </Popover.Trigger>
-              }
-            />
-          </XStack>
-        ) : undefined
-      }
+      right={<Menu list={list} />}
     />
   );
 }
@@ -214,3 +201,25 @@ const getDisplayModeFilters = (displayMode?: Display) => {
   }
   return {};
 };
+
+const Menu = memo(({ list }: { list: List }) => {
+  const { session } = useAuth();
+  const [showMenu, setShowMenu] = useState(false);
+
+  useFocusEffect(useCallback(() => setShowMenu(true), []));
+
+  if (session?.fid !== list.creatorId) return null;
+
+  if (!showMenu) return <IconButton icon={MoreHorizontal} />;
+
+  return (
+    <ListMenu
+      list={list}
+      trigger={
+        <Popover.Trigger asChild>
+          <IconButton icon={MoreHorizontal} />
+        </Popover.Trigger>
+      }
+    />
+  );
+});

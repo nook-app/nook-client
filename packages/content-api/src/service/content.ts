@@ -38,6 +38,7 @@ export class ContentService {
       (acc, content, index) => {
         if (!content) return acc;
         const reference = references[index];
+        if (reference.uri !== content.uri) return acc;
         acc[`${reference.hash}:${reference.uri}`] = content;
         return acc;
       },

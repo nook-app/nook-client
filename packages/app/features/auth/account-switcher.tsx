@@ -36,7 +36,7 @@ export const AccountSwitcher = ({ children }: { children: ReactNode }) => {
       <Adapt when="sm" platform="touch">
         <Popover.Sheet modal dismissOnSnapToBottom snapPointsMode="fit">
           <Popover.Sheet.Overlay
-            animation="quick"
+            animation="100ms"
             enterStyle={{ opacity: 0 }}
             exitStyle={{ opacity: 0 }}
           />

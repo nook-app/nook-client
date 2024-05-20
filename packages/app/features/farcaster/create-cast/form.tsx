@@ -117,7 +117,7 @@ export const CreateCastItem = ({ index }: { index: number }) => {
       <XStack
         gap="$3"
         opacity={activeIndex === index ? 1 : 0.4}
-        animation="quick"
+        animation="100ms"
         onPress={handleFocusOnPress}
         minHeight="$10"
       >

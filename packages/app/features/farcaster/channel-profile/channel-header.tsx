@@ -18,6 +18,7 @@ import { MoreHorizontal } from "@tamagui/lucide-icons";
 import { ChannelFollowBadge } from "../../../components/farcaster/channels/channel-follow-badge";
 import { useUsers } from "../../../api/farcaster";
 import { Link } from "../../../components/link";
+import { memo } from "react";
 
 export const ChannelHeader = ({
   channel,
@@ -85,76 +86,78 @@ export const ChannelHeader = ({
   );
 };
 
-export const ChannelHeaderV2 = ({
-  channel,
-  size,
-  disableMenu,
-}: { channel: Channel; size?: string; disableMenu?: boolean }) => {
-  const bio = channel?.description?.trim().replace(/\n\s*\n/g, "\n");
-  return (
-    <YStack gap="$3" padding="$2.5">
-      <YStack gap="$2">
-        <XStack justifyContent="space-between" gap="$2">
-          <ZoomableImage uri={channel.imageUrl}>
-            <View cursor="pointer">
-              <CdnAvatar src={channel.imageUrl} size={size || "$10"} />
-            </View>
-          </ZoomableImage>
-          <XStack gap="$2">
-            {!disableMenu && (
-              <FarcasterChannelMenu
-                channel={channel}
-                trigger={
-                  <Popover.Trigger asChild>
-                    <NookButton
-                      variant="active-action"
-                      width="$3"
-                      height="$3"
-                      padding="$0"
-                    >
-                      <MoreHorizontal size={20} color="$mauve12" />
-                    </NookButton>
-                  </Popover.Trigger>
-                }
-              />
-            )}
+export const ChannelHeaderV2 = memo(
+  ({
+    channel,
+    size,
+    disableMenu,
+  }: { channel: Channel; size?: string; disableMenu?: boolean }) => {
+    const bio = channel?.description?.trim().replace(/\n\s*\n/g, "\n");
+    return (
+      <YStack gap="$3" padding="$2.5">
+        <YStack gap="$2">
+          <XStack justifyContent="space-between" gap="$2">
+            <ZoomableImage uri={channel.imageUrl}>
+              <View cursor="pointer">
+                <CdnAvatar src={channel.imageUrl} size={size || "$10"} />
+              </View>
+            </ZoomableImage>
+            <XStack gap="$2">
+              {!disableMenu && (
+                <FarcasterChannelMenu
+                  channel={channel}
+                  trigger={
+                    <Popover.Trigger asChild>
+                      <NookButton
+                        variant="active-action"
+                        width="$3"
+                        height="$3"
+                        padding="$0"
+                      >
+                        <MoreHorizontal size={20} color="$mauve12" />
+                      </NookButton>
+                    </Popover.Trigger>
+                  }
+                />
+              )}
+            </XStack>
           </XStack>
-        </XStack>
-        <YStack gap="$1">
-          <XStack gap="$1.5" alignItems="center">
-            <NookText fontWeight="700" fontSize="$6">
-              {channel.name}
-            </NookText>
-          </XStack>
-          <XStack gap="$2" alignItems="center">
-            <NookText muted>{`/${channel.channelId}`}</NookText>
-            <ChannelFollowBadge channel={channel} />
-          </XStack>
+          <YStack gap="$1">
+            <XStack gap="$1.5" alignItems="center">
+              <NookText fontWeight="700" fontSize="$6">
+                {channel.name}
+              </NookText>
+            </XStack>
+            <XStack gap="$2" alignItems="center">
+              <NookText muted>{`/${channel.channelId}`}</NookText>
+              <ChannelFollowBadge channel={channel} />
+            </XStack>
+          </YStack>
         </YStack>
+        {bio && <FarcasterBioText text={bio} selectable />}
+        <XStack gap="$2">
+          <View flexDirection="row" alignItems="center" gap="$1">
+            <NookText fontWeight="600">
+              {formatNumber(channel.followerCount || 0)}
+            </NookText>
+            <NookText muted>followers</NookText>
+          </View>
+          <View flexDirection="row" alignItems="center" gap="$1">
+            <NookText fontWeight="600">
+              {new Date(channel.createdAt).toLocaleDateString("en-US", {
+                month: "short",
+                day: "numeric",
+                year: "numeric",
+              })}
+            </NookText>
+            <NookText muted>created</NookText>
+          </View>
+        </XStack>
+        <HostsPreview channel={channel} />
       </YStack>
-      {bio && <FarcasterBioText text={bio} selectable />}
-      <XStack gap="$2">
-        <View flexDirection="row" alignItems="center" gap="$1">
-          <NookText fontWeight="600">
-            {formatNumber(channel.followerCount || 0)}
-          </NookText>
-          <NookText muted>followers</NookText>
-        </View>
-        <View flexDirection="row" alignItems="center" gap="$1">
-          <NookText fontWeight="600">
-            {new Date(channel.createdAt).toLocaleDateString("en-US", {
-              month: "short",
-              day: "numeric",
-              year: "numeric",
-            })}
-          </NookText>
-          <NookText muted>created</NookText>
-        </View>
-      </XStack>
-      <HostsPreview channel={channel} />
-    </YStack>
-  );
-};
+    );
+  },
+);
 
 const HostsPreview = ({ channel }: { channel: Channel }) => {
   const fids = [];

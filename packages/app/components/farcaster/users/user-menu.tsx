@@ -1,13 +1,12 @@
 import { useAuth } from "../../../context/auth";
 import { MenuSquare, Volume, VolumeX } from "@tamagui/lucide-icons";
 import { FarcasterUser } from "@nook/common/types";
-import { Image } from "@nook/app-ui";
 import { useMuteUser } from "../../../hooks/useMuteUser";
 import { useMenu } from "../../menu/context";
 import { ReactNode, useCallback } from "react";
 import { MenuItem } from "../../menu/menu-item";
 import { Menu } from "../../menu/menu";
-import { CopyLink, OpenLink } from "../../menu/menu-actions";
+import { CopyLink, OpenWarpcast } from "../../menu/menu-actions";
 import { Link } from "../../link";
 import { Platform } from "react-native";
 
@@ -21,13 +20,7 @@ export const FarcasterUserMenu = ({
       <MuteUser user={user} />
       <ViewFeed user={user} />
       <CopyLink link={`https://nook.social/users/${user.username}`} />
-      <OpenLink
-        link={`https://warpcast.com/${user.username}`}
-        Icon={
-          <Image source={{ uri: "/warpcast.svg" }} width={14} height={14} />
-        }
-        title="View on Warpcast"
-      />
+      <OpenWarpcast link={`https://warpcast.com/${user.username}`} />
     </Menu>
   );
 };

@@ -1,10 +1,12 @@
 import { View, useTheme as useTamaguiTheme } from "@nook/app-ui";
-import { ReactElement, ReactNode, useCallback } from "react";
+import { ReactElement, ReactNode, useCallback, useState } from "react";
 import {
   MaterialTabBar,
   TabBarProps,
   Tabs,
 } from "react-native-collapsible-tab-view";
+import { NAVIGATION_HEIGHT } from "./PagerLayout";
+import { useFocusEffect } from "expo-router";
 
 export const CollapsibleLayout = ({
   renderHeader,
@@ -68,10 +70,20 @@ export const CollapsibleLayout = ({
       >
         {pages.map((page) => (
           <Tabs.Tab key={page.name} name={page.name}>
-            {page.component}
+            <LazyComponent>{page.component}</LazyComponent>
           </Tabs.Tab>
         ))}
       </Tabs.Container>
     </View>
   );
+};
+
+const LazyComponent = ({ children }: { children: ReactNode }) => {
+  const [show, setShow] = useState(false);
+
+  useFocusEffect(useCallback(() => setShow(true), []));
+
+  if (!show) return null;
+
+  return <>{children}</>;
 };
