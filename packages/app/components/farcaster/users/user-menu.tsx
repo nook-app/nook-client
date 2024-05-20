@@ -19,6 +19,9 @@ export const FarcasterUserMenu = ({
     <Menu trigger={trigger}>
       <AddUserToList user={user} />
       <MuteUser user={user} />
+      <Link href={`/users/${user.username}/feed`}>
+        <MenuItem Icon={MenuSquare} title="View feed" />
+      </Link>
       <CopyLink link={`https://nook.social/users/${user.username}`} />
       <OpenLink
         link={`https://warpcast.com/${user.username}`}
