@@ -1,4 +1,4 @@
-name: 'Deploy Scheduler'
+name: 'Deploy Services'
 
 on: 
   push:
@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        service: [scheduler, scheduled-consumer]
+        service: [farcaster-consumer, farcaster-publisher]
 
     steps:
       - name: Checkout code
@@ -26,12 +26,12 @@ jobs:
         id: turbo_ignore
         continue-on-error: true
         run: |
-          npx turbo-ignore scheduler
+          npx turbo-ignore farcaster
  
       - name: Railway Deploy
         if: steps.turbo_ignore.outcome == 'failure'
         uses: bervProject/railway-deploy@0.1.2-beta
         with:
           railway_token: ${{ secrets.RAILWAY_TOKEN }}
-          service: ${{ env.SERVICE }}
+          service: ${{ matrix.service }}
 
