@@ -23,5 +23,6 @@ export class ScheduledCastEventProcessor {
         publishedAt: new Date(),
       },
     });
+    console.log("hello world");
   }
 }
