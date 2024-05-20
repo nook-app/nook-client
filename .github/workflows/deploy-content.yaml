@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        service: [content-api, content:worker]
+        service: [content-api, "content:worker"]
 
     steps:
       - name: Checkout code
