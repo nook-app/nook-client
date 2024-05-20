@@ -67,6 +67,7 @@ export const CollapsibleLayout = ({
           backgroundColor: theme.color1.val,
         }}
         lazy
+        minHeaderHeight={NAVIGATION_HEIGHT}
       >
         {pages.map((page) => (
           <Tabs.Tab key={page.name} name={page.name}>

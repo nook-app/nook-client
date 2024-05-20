@@ -8,7 +8,7 @@
     "start:manual": "tsc && node dist/src/manual.js",
     "start:publisher": "node dist/src/publisher.js",
     "start:test": "tsc && node dist/test.js",
-    "start:backfill:enqueue": "node dist/backfill/enqueue.js",
+    "start:backfill:enqueue": "tsc && node dist/backfill/enqueue.js",
     "start:backfill:stats": "node dist/backfill/stats.js",
     "start:backfill:cache": "tsc && node dist/backfill/cache.js",
     "start:backfill:channels": "tsc && node dist/backfill/channels.js",
