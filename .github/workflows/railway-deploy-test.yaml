@@ -23,8 +23,8 @@ jobs:
           npm i -g turbo-ignore
      
       - name: try thing on its own
-        working-directory: ./app
         run: |
+          echo $(ls -a)
           turbo run "build" --filter="scheduler...[HEAD^]" --dry=json
 
       - name: Check turbo-ignore for changes
