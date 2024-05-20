@@ -1,7 +1,6 @@
-name: Your Workflow Name
+name: 'Your Workflow Name'
 
-on:
-  workflow_dispatch:
+on: workflow_dispatch
 
 jobs:
   deploy:
