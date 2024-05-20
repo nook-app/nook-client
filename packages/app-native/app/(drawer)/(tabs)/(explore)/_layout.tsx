@@ -49,6 +49,11 @@ export default function ExploreLayout() {
         getId={({ params }) => params?.username}
       />
       <Stack.Screen
+        name="users/[username]/feed"
+        options={{ title: "Feed" }}
+        getId={({ params }) => params?.username}
+      />
+      <Stack.Screen
         name="casts/[hash]/index"
         options={{ title: "Cast" }}
         getId={({ params }) => params?.hash}

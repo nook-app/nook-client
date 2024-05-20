@@ -23,15 +23,24 @@ export const Link = ({
 }) => {
   const memoChildren = useMemo(() => children, [children]);
 
+  let formattedHref = href;
+  if (
+    isExternal &&
+    typeof formattedHref === "string" &&
+    !formattedHref.startsWith("http")
+  ) {
+    formattedHref = `https://${formattedHref}`;
+  }
+
   if (asText) {
     return (
-      <TextLink href={href} target={target}>
+      <TextLink href={formattedHref} target={target}>
         {memoChildren}
       </TextLink>
     );
   }
   return (
-    <SolitoLink href={href} target={target}>
+    <SolitoLink href={formattedHref} target={target}>
       {memoChildren}
     </SolitoLink>
   );

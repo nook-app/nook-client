@@ -61,9 +61,11 @@ export class ContentService {
         },
       });
 
+      const formatted = [];
+
       for (const content of fetched) {
         if (!content.contentType) continue;
-        cacheMap[`${content.hash}:${content.uri}`] = {
+        const data = {
           uri: content.uri,
           protocol: content.protocol,
           host: content.host,
@@ -76,9 +78,11 @@ export class ContentService {
           frame: content.frame as Frame,
           hasFrame: content.hasFrame,
         } as UrlContentResponse;
+        formatted.push(data);
+        cacheMap[`${content.hash}:${content.uri}`] = data;
       }
 
-      await this.cache.setReferences(references, Object.values(cacheMap));
+      await this.cache.setReferences(references, formatted);
     }
 
     const stillMissing = missing.filter(
@@ -130,17 +134,19 @@ export class ContentService {
         cacheMap[`${value.hash}:${value.uri}`] = contentMap[value.uri];
       }
 
-      await this.cache.setReferences(references, Object.values(cacheMap));
-
-      const toQueue = stillMissing.filter(
-        (reference) => !contentMap[reference.uri],
+      await this.cache.setReferences(
+        references,
+        references.map(
+          (reference) => cacheMap[`${reference.hash}:${reference.uri}`],
+        ),
       );
+    }
 
-      if (skipFetch) {
-        await Promise.all(
-          toQueue.map((reference) => publishContent(reference)),
-        );
-      }
+    if (skipFetch) {
+      const toQueue = stillMissing.filter(
+        (reference) => !cacheMap[`${reference.hash}:${reference.uri}`],
+      );
+      await Promise.all(toQueue.map((reference) => publishContent(reference)));
     }
 
     return references.map(
@@ -152,9 +158,9 @@ export class ContentService {
     const uniqueUris = Array.from(new Set(uris));
     const cached = await this.cache.getContents(uniqueUris);
     const contentMap = cached.reduce(
-      (acc, content, index) => {
+      (acc, content) => {
         if (!content?.contentType) return acc;
-        acc[uniqueUris[index]] = content;
+        acc[content.uri] = content;
         return acc;
       },
       {} as Record<string, UrlContentResponse>,

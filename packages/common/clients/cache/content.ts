@@ -1,6 +1,8 @@
 import { RedisClient } from "./base";
 import { FarcasterContentReference, UrlContentResponse } from "../../types";
 
+const unquote = (uri: string) => uri.replace(/"/g, "").replace(/'/g, "");
+
 export class ContentCacheClient {
   private redis: RedisClient;
 
@@ -12,20 +14,22 @@ export class ContentCacheClient {
   }
 
   async getContent(url: string): Promise<UrlContentResponse | undefined> {
-    return await this.redis.getJson(`${this.CONTENT_CACHE_PREFIX}:${url}`);
+    return await this.redis.getJson(
+      `${this.CONTENT_CACHE_PREFIX}:${unquote(url)}`,
+    );
   }
 
   async getContents(
     urls: string[],
   ): Promise<(UrlContentResponse | undefined)[]> {
     return await this.redis.mgetJson(
-      urls.map((url) => `${this.CONTENT_CACHE_PREFIX}:${url}`),
+      urls.map((url) => `${this.CONTENT_CACHE_PREFIX}:${unquote(url)}`),
     );
   }
 
   async setContent(url: string, content: UrlContentResponse) {
     await this.redis.setJson(
-      `${this.CONTENT_CACHE_PREFIX}:${url}`,
+      `${this.CONTENT_CACHE_PREFIX}:${unquote(url)}`,
       content,
       86400,
     );
@@ -34,7 +38,7 @@ export class ContentCacheClient {
   async setContents(contents: UrlContentResponse[]) {
     await this.redis.msetJson(
       contents.map((content) => [
-        `${this.CONTENT_CACHE_PREFIX}:${content.uri}`,
+        `${this.CONTENT_CACHE_PREFIX}:${unquote(content.uri)}`,
         content,
       ]),
       86400,
@@ -47,7 +51,9 @@ export class ContentCacheClient {
     return await this.redis.mgetJson(
       references.map(
         (reference) =>
-          `${this.REFERENCE_CACHE_PREFIX}:${reference.hash}:${reference.uri}`,
+          `${this.REFERENCE_CACHE_PREFIX}:${reference.hash}:${unquote(
+            reference.uri,
+          )}`,
       ),
     );
   }
@@ -58,7 +64,9 @@ export class ContentCacheClient {
   ) {
     await this.redis.msetJson(
       references.map((reference, i) => [
-        `${this.REFERENCE_CACHE_PREFIX}:${reference.hash}:${reference.uri}`,
+        `${this.REFERENCE_CACHE_PREFIX}:${reference.hash}:${unquote(
+          reference.uri,
+        )}`,
         contents[i],
       ]),
       24 * 60 * 60 * 3,

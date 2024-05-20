@@ -4,7 +4,7 @@ import { useAuth } from "../../context/auth";
 
 export const NotificationsCount = () => {
   const { session } = useAuth();
-  const { data } = useNotificationsCount(!!session?.fid);
+  const { data } = useNotificationsCount(session?.fid);
 
   const count = data?.count || 0;
 

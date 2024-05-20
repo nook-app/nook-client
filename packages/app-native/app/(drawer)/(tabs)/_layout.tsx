@@ -145,9 +145,10 @@ const TabBarExplore = ({ focused }: { focused: boolean }) => {
 };
 
 const TabBarNotifications = ({ focused }: { focused: boolean }) => {
+  const { session } = useAuth();
   const theme = useTamaguiTheme();
 
-  const { data } = useNotificationsCount(true);
+  const { data } = useNotificationsCount(session?.fid);
 
   const count = data?.count || 0;
 
