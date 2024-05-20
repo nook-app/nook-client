@@ -29,7 +29,6 @@ jobs:
 
       - name: Check turbo-ignore for changes
         id: turbo_ignore
-        working-directory: ./app
         continue-on-error: true
         run: |
           turbo-ignore scheduler
