@@ -14,12 +14,25 @@ jobs:
         uses: actions/setup-node@v2
         with:
           node-version: '14'
-        
-      - name: check turbo-ignore for changes
+    
+      - name: Install Yarn
+        run: npm install -g yarn
+  
+      - name: Install dependencies
+        run: yarn install
+  
+      - name: Check turbo-ignore for changes
         id: turbo_ignore
         continue-on-error: true
         run: |
-          npx turbo-ignore scheduler
+          npx turbo-ignore scheduler 2> turbo_ignore_error.log
+  
+      - name: Upload turbo-ignore error log
+        if: steps.turbo_ignore.outcome == 'failure'
+        uses: actions/upload-artifact@v2
+        with:
+          name: turbo-ignore-error-log
+          path: turbo_ignore_error.log
 
       - name: Railway Deploy
         if: steps.turbo_ignore.outcome == 'failure'
