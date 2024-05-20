@@ -1,4 +1,4 @@
-name: 'Your Workflow Name'
+name: 'Deploy Scheduler'
 
 on: workflow_dispatch
 
