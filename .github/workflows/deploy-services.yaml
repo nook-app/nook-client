@@ -1,4 +1,4 @@
-name: 'Deploy Services'
+name: 'Deploy Standalone Node Services'
 
 on: 
   push:

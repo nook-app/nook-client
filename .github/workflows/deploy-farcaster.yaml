@@ -1,4 +1,4 @@
-name: 'Deploy Services'
+name: 'Deploy Farcaster Services'
 
 on: 
   push:

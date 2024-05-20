@@ -1,4 +1,4 @@
-name: 'Deploy Services'
+name: 'Deploy Content Services'
 
 on: 
   push:

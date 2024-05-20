@@ -1,4 +1,4 @@
-name: 'Deploy Scheduler'
+name: 'Deploy Scheduler Services'
 
 on: 
   push:
