@@ -1,24 +1,24 @@
 name: 'Deploy Scheduler'
 
-on: workflow_dispatch
-
+on: 
+  push:
+    branches:
+      - main
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
     
       - name: Set up Node.js
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v4
         with:
-          node-version: '14'
-      
-      - name: try thing on its own
-        run: |
-          npx turbo run "build" --filter="scheduler...[HEAD^]" --dry=json
-
+          node-version: '20'
+        
       - name: Check turbo-ignore for changes
         id: turbo_ignore
         continue-on-error: true
