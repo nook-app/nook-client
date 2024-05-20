@@ -233,16 +233,18 @@ const UploadImageButton = ({
   return (
     <ImagePicker onSelect={handleSelect}>
       <CdnAvatar size="$7" src={image}>
-        <View
-          justifyContent="center"
-          alignItems="center"
-          opacity={0.5}
-          flexGrow={1}
-        >
-          <NookText muted fontSize="$3" fontWeight="500">
-            optional
-          </NookText>
-        </View>
+        {!image && (
+          <View
+            justifyContent="center"
+            alignItems="center"
+            opacity={0.5}
+            flexGrow={1}
+          >
+            <NookText muted fontSize="$3" fontWeight="500">
+              optional
+            </NookText>
+          </View>
+        )}
       </CdnAvatar>
       {loading && (
         <View

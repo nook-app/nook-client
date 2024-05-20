@@ -50,13 +50,18 @@ export const Link = ({
   if (asText || unpressable) {
     if (isExternal) {
       return (
-        <Text onPress={() => Linking.openURL(formattedHref as string)}>
+        <Text
+          onPress={() => {
+            onPress?.();
+            Linking.openURL(formattedHref as string);
+          }}
+        >
           {children}
         </Text>
       );
     }
     return (
-      <ExpoLink href={formattedHref} asChild>
+      <ExpoLink href={formattedHref} asChild onPress={onPress}>
         {memoChildren}
       </ExpoLink>
     );
@@ -66,8 +71,8 @@ export const Link = ({
     return (
       <Pressable
         onPress={() => {
-          Linking.openURL(href as string);
           onPress?.();
+          Linking.openURL(href as string);
         }}
       >
         {memoChildren}
@@ -76,8 +81,8 @@ export const Link = ({
   }
 
   return (
-    <ExpoLink href={formattedHref} asChild>
-      <Pressable onPress={onPress}>{memoChildren}</Pressable>
+    <ExpoLink href={formattedHref} asChild onPress={onPress}>
+      <Pressable>{memoChildren}</Pressable>
     </ExpoLink>
   );
 };

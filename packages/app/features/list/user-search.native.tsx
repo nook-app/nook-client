@@ -75,6 +75,7 @@ export const ListUserSearch = ({
         paddingBottom,
       }}
       keyboardDismissMode="on-drag"
+      keyboardShouldPersistTaps="handled"
     />
   );
 };

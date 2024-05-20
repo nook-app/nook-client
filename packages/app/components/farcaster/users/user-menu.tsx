@@ -19,9 +19,7 @@ export const FarcasterUserMenu = ({
     <Menu trigger={trigger}>
       <AddUserToList user={user} />
       <MuteUser user={user} />
-      <Link href={`/users/${user.username}/feed`}>
-        <MenuItem Icon={MenuSquare} title="View feed" />
-      </Link>
+      <ViewFeed user={user} />
       <CopyLink link={`https://nook.social/users/${user.username}`} />
       <OpenLink
         link={`https://warpcast.com/${user.username}`}
@@ -31,6 +29,15 @@ export const FarcasterUserMenu = ({
         title="View on Warpcast"
       />
     </Menu>
+  );
+};
+
+const ViewFeed = ({ user }: { user: FarcasterUser }) => {
+  const { close } = useMenu();
+  return (
+    <Link href={`/users/${user.username}/feed`} onPress={close}>
+      <MenuItem Icon={MenuSquare} title="View feed" />
+    </Link>
   );
 };
 

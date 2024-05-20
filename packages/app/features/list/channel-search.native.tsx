@@ -75,6 +75,7 @@ export const ListChannelSearch = ({
         paddingBottom,
       }}
       keyboardDismissMode="on-drag"
+      keyboardShouldPersistTaps="handled"
     />
   );
 };

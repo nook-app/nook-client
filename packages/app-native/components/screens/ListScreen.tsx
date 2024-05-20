@@ -12,23 +12,13 @@ import { Button, NookText, Popover, XStack, YStack } from "@nook/app-ui";
 import { Loading } from "@nook/app/components/loading";
 import { ListHeader } from "@nook/app/features/list/list-header";
 import { useAuth } from "@nook/app/context/auth";
-import { Settings, UserPlus } from "@tamagui/lucide-icons";
+import { MoreHorizontal } from "@tamagui/lucide-icons";
 import { Link } from "@nook/app/components/link";
 import { Tabs } from "react-native-collapsible-tab-view";
 import { CollapsibleGradientLayout } from "../CollapsibleGradientLayout";
 import { IconButton } from "../IconButton";
-import { Menu } from "@nook/app/components/menu/menu";
-import {
-  Grid3x3,
-  Image,
-  MessageSquare,
-  MousePointerSquare,
-} from "@tamagui/lucide-icons";
-import { MenuItem } from "@nook/app/components/menu/menu-item";
-import { useMenu } from "@nook/app/components/menu/context";
-import { useListStore } from "@nook/app/store/useListStore";
-import { updateList } from "@nook/app/api/list";
 import { TransactionFeed } from "@nook/app/features/transactions/transaction-feed";
+import { ListMenu } from "@nook/app/features/list/list-menu";
 
 export default function ListScreen() {
   const { listId } = useLocalSearchParams();
@@ -53,18 +43,19 @@ export default function ListScreen() {
         </XStack>
       }
       src={list.imageUrl || list.name}
-      header={<ListHeader list={list} />}
+      header={<ListHeader list={list} disableMenu />}
       pages={getPages({ list })}
       right={
         session?.id === list.creatorId ? (
           <XStack gap="$2">
-            <Link href={`/lists/${listId}/settings`} unpressable>
-              <IconButton icon={Settings} />
-            </Link>
-            <DisplayModePicker list={list} />
-            <Link href={`/lists/${listId}/settings/items`} unpressable>
-              <IconButton icon={UserPlus} />
-            </Link>
+            <ListMenu
+              list={list}
+              trigger={
+                <Popover.Trigger asChild>
+                  <IconButton icon={MoreHorizontal} />
+                </Popover.Trigger>
+              }
+            />
           </XStack>
         ) : undefined
       }
@@ -204,56 +195,6 @@ const getPages = ({ list }: { list: List }) => {
       ),
     },
   ];
-};
-
-const DisplayModePicker = ({ list }: { list: List }) => {
-  return (
-    <Menu
-      trigger={
-        <Popover.Trigger asChild>
-          <IconButton icon={Image} />
-        </Popover.Trigger>
-      }
-    >
-      <DisplayModePickerInner list={list} />
-    </Menu>
-  );
-};
-
-const DisplayModePickerInner = ({ list }: { list: List }) => {
-  const { close } = useMenu();
-  const updateListStore = useListStore((state) => state.updateList);
-
-  const handleSelect = async (displayMode: Display) => {
-    updateListStore({ ...list, displayMode });
-    await updateList(list.id, { ...list, displayMode });
-    close();
-  };
-
-  return (
-    <>
-      <MenuItem
-        Icon={MessageSquare}
-        title="Default"
-        onPress={() => handleSelect(Display.CASTS)}
-      />
-      <MenuItem
-        Icon={MousePointerSquare}
-        title="Frames"
-        onPress={() => handleSelect(Display.FRAMES)}
-      />
-      <MenuItem
-        Icon={Image}
-        title="Media"
-        onPress={() => handleSelect(Display.MEDIA)}
-      />
-      <MenuItem
-        Icon={Grid3x3}
-        title="Media Grid"
-        onPress={() => handleSelect(Display.GRID)}
-      />
-    </>
-  );
 };
 
 const getDisplayModeFilters = (displayMode?: Display) => {

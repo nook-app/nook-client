@@ -141,6 +141,10 @@ export default function HomeLayout() {
         name="lists/[listId]/settings/items"
         options={{ headerShown: false }}
       />
+      <Stack.Screen
+        name="lists/[listId]/settings/display"
+        options={{ title: "Edit Display Mode" }}
+      />
     </Stack>
   );
 }
