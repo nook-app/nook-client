@@ -183,7 +183,10 @@ export const CreateCastItem = ({ index }: { index: number }) => {
               scaleIcon={1.5}
               circular
               icon={X}
-              onPress={() => removeCast(index)}
+              onPress={(e) => {
+                e.stopPropagation();
+                removeCast(index);
+              }}
             />
           )}
         </YStack>
