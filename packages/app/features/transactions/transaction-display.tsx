@@ -41,7 +41,7 @@ export const TransactionDisplay = ({
       cursor="pointer"
       padding="$2.5"
     >
-      <YStack alignItems="center" width="$4">
+      <YStack alignItems="center" width="$4" marginTop="$1">
         <FarcasterUserAvatar user={user} size="$4" asLink={!!user} />
       </YStack>
       <YStack flex={1} gap="$2">

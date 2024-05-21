@@ -22,7 +22,13 @@ export const EmbedImage = ({
   uri,
   noBorderRadius,
   skipCdn,
-}: { uri: string; noBorderRadius?: boolean; skipCdn?: boolean }) => {
+  blurhash,
+}: {
+  uri: string;
+  noBorderRadius?: boolean;
+  skipCdn?: boolean;
+  blurhash?: string;
+}) => {
   return (
     <View
       borderRadius={noBorderRadius ? "$0" : "$4"}

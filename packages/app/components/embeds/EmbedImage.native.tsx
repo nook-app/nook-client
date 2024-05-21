@@ -3,7 +3,6 @@ import { useState } from "react";
 import { View, XStack, Image as TImage } from "tamagui";
 import { formatToCDN } from "../../utils";
 import { Link } from "../link";
-import { SvgUri } from "react-native-svg";
 
 export const EmbedImages = ({ uris }: { uris: string[] }) => {
   if (uris.length === 1) {
@@ -50,7 +49,13 @@ export const EmbedImage = ({
   uri,
   noBorderRadius,
   skipCdn,
-}: { uri: string; noBorderRadius?: boolean; skipCdn?: boolean }) => {
+  blurhash,
+}: {
+  uri: string;
+  noBorderRadius?: boolean;
+  skipCdn?: boolean;
+  blurhash?: string;
+}) => {
   const [height, setHeight] = useState(0);
 
   return (
@@ -81,6 +86,8 @@ export const EmbedImage = ({
             width: "100%",
             height,
           }}
+          placeholder={{ blurhash }}
+          placeholderContentFit="cover"
         />
       </View>
     </Link>

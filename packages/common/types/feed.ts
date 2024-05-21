@@ -61,5 +61,12 @@ export type NftFeedRequest = {
 };
 
 export type NftFeedFilter = {
+  users: UserFilter;
   chains?: string[];
+  orderBy?: NftFeedOrderBy;
 };
+
+export type NftFeedOrderBy =
+  | "transfer_time__desc"
+  | "floor_price__desc"
+  | "name__asc";

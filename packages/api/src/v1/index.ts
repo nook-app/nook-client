@@ -1,3 +1,4 @@
+import { nftRoutes } from "./routes/nft";
 import { farcasterRoutes } from "./routes/farcaster";
 import { listRoutes } from "./routes/list";
 import { settingsRoutes } from "./routes/settings";
@@ -9,4 +10,5 @@ export const registerV1Routes = async (fastify: FastifyInstance) => {
   fastify.register(settingsRoutes, { prefix: "/v1" });
   fastify.register(listRoutes, { prefix: "/v1" });
   fastify.register(farcasterRoutes, { prefix: "/v1" });
+  fastify.register(nftRoutes, { prefix: "/v1" });
 };

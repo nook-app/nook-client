@@ -14,6 +14,7 @@ import { Search, MoreHorizontal } from "@tamagui/lucide-icons";
 import { FarcasterUserMenu } from "@nook/app/components/farcaster/users/user-menu";
 import { formatToCDN } from "@nook/app/utils";
 import { memo, useCallback, useState } from "react";
+import { NftFeed } from "@nook/app/features/nft/nft-feed";
 
 export default function UserScreen() {
   const { username } = useLocalSearchParams();
@@ -55,6 +56,22 @@ export default function UserScreen() {
                   },
                 },
                 onlyReplies: true,
+              }}
+              asTabs
+            />
+          ),
+        },
+        {
+          name: "Collectibles",
+          component: (
+            <NftFeed
+              filter={{
+                users: {
+                  type: UserFilterType.FID,
+                  data: {
+                    fid: user.fid,
+                  },
+                },
               }}
               asTabs
             />

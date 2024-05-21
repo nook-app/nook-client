@@ -7,6 +7,7 @@ import { formatToCDN } from "@nook/app/utils";
 import { TransactionFeed } from "@nook/app/features/transactions/transaction-feed";
 import { CollapsibleGradientLayout } from "../../../../components/CollapsibleGradientLayout";
 import { useAuth } from "@nook/app/context/auth";
+import { NftFeed } from "@nook/app/features/nft/nft-feed";
 
 export default function ProfileScreen() {
   const { user } = useAuth();
@@ -66,6 +67,22 @@ export default function ProfileScreen() {
           ),
         },
         {
+          name: "Collectibles",
+          component: (
+            <NftFeed
+              filter={{
+                users: {
+                  type: UserFilterType.FID,
+                  data: {
+                    fid: user.fid,
+                  },
+                },
+              }}
+              asTabs
+            />
+          ),
+        },
+        {
           name: "Transactions",
           component: (
             <TransactionFeed
@@ -94,6 +111,7 @@ export default function ProfileScreen() {
                 },
                 contentTypes: ["image"],
               }}
+              displayMode={Display.GRID}
               asTabs
             />
           ),

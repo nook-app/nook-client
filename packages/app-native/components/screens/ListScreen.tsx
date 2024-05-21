@@ -208,7 +208,7 @@ const Menu = memo(({ list }: { list: List }) => {
 
   useFocusEffect(useCallback(() => setShowMenu(true), []));
 
-  if (session?.fid !== list.creatorId) return null;
+  if (session?.id !== list.creatorId) return null;
 
   if (!showMenu) return <IconButton icon={MoreHorizontal} />;
 

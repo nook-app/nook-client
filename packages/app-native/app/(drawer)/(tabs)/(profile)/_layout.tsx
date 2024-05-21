@@ -98,6 +98,11 @@ export default function ProfileLayout() {
         name="lists/[listId]/settings/display"
         options={{ title: "Edit Display Mode" }}
       />
+      <Stack.Screen
+        name="nfts/[nftId]/index"
+        options={{ headerShown: false }}
+        getId={({ params }) => params?.nftId}
+      />
     </Stack>
   );
 }

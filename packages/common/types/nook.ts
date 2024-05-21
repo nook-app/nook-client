@@ -9,6 +9,7 @@ export type FarcasterUserListArgs = {
 export enum UserFilterType {
   FOLLOWING = "FOLLOWING",
   FIDS = "FIDS",
+  FID = "FID",
   POWER_BADGE = "POWER_BADGE",
   USER_LIST = "USER_LIST",
 }
@@ -16,6 +17,12 @@ export enum UserFilterType {
 export type UserFilter =
   | {
       type: UserFilterType.FOLLOWING;
+      data: {
+        fid: string;
+      };
+    }
+  | {
+      type: UserFilterType.FID;
       data: {
         fid: string;
       };
