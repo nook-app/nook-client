@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        service: [scheduler, list-api, events, notifications, farcaster-api,  signer-api, notifications-api, nft-api, nook-api, dashboard]
+        service: [scheduler, list-api, events, notifications, farcaster-api,  signer-api, notifications-api, nft-api, api, dashboard]
 
     steps:
       - name: Checkout code
