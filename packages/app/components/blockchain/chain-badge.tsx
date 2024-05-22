@@ -2,7 +2,10 @@ import { NookText, View, XStack } from "@nook/app-ui";
 import { CHAINS } from "../../utils/chains";
 import { ChainIcon } from "./chain-icon";
 
-export const ChainBadge = ({ chainId }: { chainId: number }) => {
+export const ChainBadge = ({
+  chainId,
+  fontSize,
+}: { chainId: string; fontSize?: string }) => {
   const chain = CHAINS[chainId];
 
   if (!chain) {
@@ -26,7 +29,8 @@ export const ChainBadge = ({ chainId }: { chainId: number }) => {
           numberOfLines={1}
           ellipsizeMode="tail"
           fontWeight="500"
-          fontSize="$3"
+          // @ts-ignore
+          fontSize={fontSize ?? "$3"}
         >
           {chain.name}
         </NookText>

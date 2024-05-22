@@ -1,3 +1,37 @@
+export const SIMPLEHASH_CHAINS: { id: string; crosschainId?: string }[] = [
+  { id: "ethereum", crosschainId: "eip155:1" },
+  //   { id: "solana", crosschainId: "solana:101" },
+  //   { id: "bitcoin" },
+  //   { id: "utxo" },
+  //   { id: "polygon", crosschainId: "eip155:137" },
+  //   { id: "tezos" },
+  //   { id: "arbitrum", crosschainId: "eip155:42161" },
+  //   { id: "arbitrum-nova", crosschainId: "eip155:42170" },
+  //   { id: "avalanche", crosschainId: "eip155:43114" },
+  { id: "base", crosschainId: "eip155:8453" },
+  //   { id: "blast", crosschainId: "eip155:81457" },
+  //   { id: "bsc", crosschainId: "eip155:56" },
+  //   { id: "celo", crosschainId: "eip155:42220" },
+  { id: "degen", crosschainId: "eip155:666666666" },
+  //   { id: "fantom", crosschainId: "eip155:250" },
+  //   { id: "flow" },
+  //   { id: "gnosis", crosschainId: "eip155:100" },
+  //   { id: "godwoken", crosschainId: "eip155:71402" },
+  //   { id: "linea", crosschainId: "eip155:59144" },
+  //   { id: "loot", crosschainId: "eip155:5151706" },
+  //   { id: "manta", crosschainId: "eip155:169" },
+  //   { id: "moonbeam", crosschainId: "eip155:1284" },
+  { id: "optimism", crosschainId: "eip155:10" },
+  //   { id: "palm", crosschainId: "eip155:11297108109" },
+  //   { id: "polygon-zkevm", crosschainId: "eip155:1442" },
+  //   { id: "proof-of-play", crosschainId: "eip155:70700" },
+  //   { id: "rari", crosschainId: "eip155:1380012617" },
+  //   { id: "scroll", crosschainId: "eip155:534352" },
+  //   { id: "xai", crosschainId: "eip155:660279" },
+  //   { id: "zksync-era", crosschainId: "eip155:324" },
+  { id: "zora", crosschainId: "eip155:7777777" },
+];
+
 export enum SimpleHashChain {
   Arbitrum = "arbitrum",
   Bsc = "bsc",
@@ -74,21 +108,33 @@ export type SimpleHashMarketplace = {
   verified: boolean | null;
 };
 
-type SimpleHashCollection = {
-  collection_id: string | null;
-  name: string | null;
-  description: string | null;
-  image_url: string | null;
-  banner_image_url: string | null;
-  external_url: string | null;
-  twitter_username: string | null;
-  discord_url: string | null;
-  marketplace_pages: SimpleHashMarketplace[];
-  metaplex_mint: string | null;
-  metaplex_first_verified_creator: string | null;
-  spam_score: number | null;
-  floor_prices: SimpleHashFloorPrice[];
+export type SimpleHashCollection = {
+  collection_id: string;
+  name: string;
+  description: string;
+  image_url: string;
+  image_properties: ImageProperties;
+  banner_image_url: string;
+  category: string;
+  is_nsfw: boolean;
+  external_url: null;
+  twitter_username: string;
+  discord_url: null;
+  instagram_username: null;
+  medium_username: null;
+  telegram_url: null;
+  marketplace_pages: MarketplacePage[];
+  metaplex_mint: null;
+  metaplex_candy_machine: null;
+  metaplex_first_verified_creator: null;
+  floor_prices: string[];
+  top_bids: string[];
+  distinct_owner_count: number;
+  distinct_nft_count: number;
+  total_quantity: number;
+  chains: string[];
   top_contracts: string[];
+  collection_royalties: CollectionRoyalty[];
 };
 
 export type SimpleHashNFT = {
@@ -206,3 +252,40 @@ export type SimpleHashNFTsResponse = {
   previous?: string;
   nfts: SimpleHashNFT[];
 };
+
+export interface SimplehashNftCollection {
+  collection_id: string;
+  distinct_nfts_owned: number;
+  distinct_nfts_owned_string: string;
+  total_copies_owned: number;
+  total_copies_owned_string: string;
+  last_acquired_date: Date;
+  nft_ids: string[];
+  collection_details: SimpleHashCollection;
+}
+
+export interface CollectionRoyalty {
+  source: string;
+  total_creator_fee_basis_points: number;
+  recipients: Recipient[];
+}
+
+export interface Recipient {
+  address: string;
+  percentage: number;
+  basis_points: number;
+}
+
+export interface ImageProperties {
+  width: number;
+  height: number;
+  mime_type: string;
+}
+
+export interface MarketplacePage {
+  marketplace_id: string;
+  marketplace_name: string;
+  marketplace_collection_id: string;
+  collection_url: string;
+  verified: boolean | null;
+}

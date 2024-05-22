@@ -12,10 +12,12 @@ export const CollapsibleLayout = ({
   renderHeader,
   pages,
   defaultIndex = 0,
+  minHeaderHeight = NAVIGATION_HEIGHT,
 }: {
   renderHeader: (props: TabBarProps) => ReactElement;
   pages: { name: string; component: ReactNode }[];
   defaultIndex?: number;
+  minHeaderHeight?: number;
 }) => {
   const theme = useTamaguiTheme();
 
@@ -67,7 +69,7 @@ export const CollapsibleLayout = ({
           backgroundColor: theme.color1.val,
         }}
         lazy
-        minHeaderHeight={NAVIGATION_HEIGHT}
+        minHeaderHeight={minHeaderHeight}
       >
         {pages.map((page) => (
           <Tabs.Tab key={page.name} name={page.name}>

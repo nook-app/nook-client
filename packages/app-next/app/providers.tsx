@@ -100,13 +100,14 @@ const AnalyticsProvider = memo(
     const { session } = useAuth();
 
     useEffect(() => {
-      if (session?.fid) {
+      if (session) {
         amplitude.init(
           "7819c3ae9a7a78fc6835dcc60cdeb018",
-          `fid:${session.fid}`,
+          `user:${session.id}`,
         );
+        amplitude.track("login", { fid: session.fid });
       }
-    }, [session?.fid]);
+    }, [session]);
 
     return <>{children}</>;
   },

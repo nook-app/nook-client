@@ -19,11 +19,11 @@ export const formatToCDN = (
   return `${CDN_BASE_URL}/${params.join(",")}/${encodeURIComponent(url)}`;
 };
 
-export function formatTimeAgo(timestamp: number) {
+export function formatTimeAgo(timestamp: number, suffix = false) {
   const seconds = Math.floor(
     (new Date().getTime() - new Date(timestamp).getTime()) / 1000,
   );
-  let interval = seconds / 86400; // Days
+  let interval = seconds / 86400;
 
   if (interval > 30) {
     const dateObj = new Date(timestamp);
@@ -32,18 +32,26 @@ export function formatTimeAgo(timestamp: number) {
     })} ${dateObj.getDate()}`;
   }
   if (interval > 1) {
-    return `${Math.floor(interval)}d`;
+    return `${Math.floor(interval)}${
+      suffix ? ` day${interval > 1 ? "s" : ""} ago` : "d"
+    }`;
   }
-  interval = seconds / 3600; // Hours
+  interval = seconds / 3600;
   if (interval > 1) {
-    return `${Math.floor(interval)}h`;
+    return `${Math.floor(interval)}${
+      suffix ? ` hour${interval > 1 ? "s" : ""} ago` : "h"
+    }`;
   }
-  interval = seconds / 60; // Minutes
+  interval = seconds / 60;
   if (interval > 1) {
-    return `${Math.floor(interval)}m`;
+    return `${Math.floor(interval)}${
+      suffix ? ` minute${interval > 1 ? "s" : ""} ago` : "m"
+    }`;
   }
 
-  return `${Math.floor(seconds)}s`; // Seconds
+  return `${Math.floor(seconds)}${
+    suffix ? ` second${seconds > 1 ? "s" : ""} ago` : "s"
+  }`;
 }
 
 export function formatNumber(num: number): string {

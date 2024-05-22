@@ -21,6 +21,7 @@ export const Tabs = ({
       $platform-web={{
         overflowX: "auto",
         overflowY: "auto",
+        scrollbarWidth: "none",
       }}
     >
       {tabs.map((tab, index) => (
@@ -48,7 +49,7 @@ const Tab = ({
           width: "100%",
           justifyContent: "center",
           alignItems: "center",
-          minWidth: 100,
+          minWidth: 120,
         },
       }}
     >

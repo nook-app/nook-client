@@ -91,16 +91,15 @@ const TabBarBackground = memo(() => {
 
   return (
     <BlurView
-      intensity={25}
+      intensity={50}
       tint={rootTheme}
       style={{
         flex: 1,
       }}
     >
       <View
-        backgroundColor="$color1"
         flex={1}
-        opacity={0.75}
+        opacity={0.5}
         borderTopWidth="$0.5"
         borderTopColor="$borderColorBg"
       />

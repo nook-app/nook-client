@@ -310,6 +310,18 @@ export class RedisClient {
     );
   }
 
+  async getSetPartition(key: string, start: number) {
+    return await this.redis.zrevrangebyscore(
+      key,
+      "+inf",
+      "-inf",
+      "WITHSCORES",
+      "LIMIT",
+      start,
+      25,
+    );
+  }
+
   async getAllSetData(key: string) {
     const results = await this.redis.zrange(key, 0, -1, "WITHSCORES");
 

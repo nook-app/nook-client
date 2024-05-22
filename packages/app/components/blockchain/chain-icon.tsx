@@ -1,7 +1,7 @@
 import { View } from "@nook/app-ui";
 import { CHAINS } from "../../utils/chains";
 
-export const ChainIcon = ({ chainId }: { chainId: number }) => {
+export const ChainIcon = ({ chainId }: { chainId: string }) => {
   const chain = CHAINS[chainId];
 
   return (

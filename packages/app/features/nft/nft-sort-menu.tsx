@@ -1,10 +1,15 @@
-import { Check, ChevronDown, History } from "@tamagui/lucide-icons";
-import { Adapt, Select, Sheet, Text, XStack } from "@nook/app-ui";
+import { Check, ChevronDown } from "@tamagui/lucide-icons";
+import { Adapt, Select, Sheet } from "@nook/app-ui";
 
 export const NftSortMenu = ({
+  options,
   value,
   onChange,
-}: { value: string; onChange: (value: string) => void }) => {
+}: {
+  options: { label: string; value: string }[];
+  value: string;
+  onChange: (value: string) => void;
+}) => {
   return (
     <Select value={value} onValueChange={onChange} disablePreventBodyScroll>
       <Select.Trigger
@@ -18,7 +23,7 @@ export const NftSortMenu = ({
         padding="$0"
         paddingHorizontal="$3"
       >
-        <Select.Value placeholder="Sort Collectibles" />
+        <Select.Value placeholder="Sort Collectibles" fontWeight="500" />
       </Select.Trigger>
       <Adapt when="sm" platform="touch">
         <Sheet modal dismissOnSnapToBottom animation="100ms">
@@ -39,32 +44,14 @@ export const NftSortMenu = ({
         <Select.Viewport minWidth={200}>
           <Select.Group>
             <Select.Label>Sort Collectibles</Select.Label>
-            <Select.Item
-              index={0}
-              key="transfer_time__desc"
-              value="transfer_time__desc"
-            >
-              <Select.ItemText>Most Recent</Select.ItemText>
-              <Select.ItemIndicator marginLeft="auto">
-                <Check size={16} />
-              </Select.ItemIndicator>
-            </Select.Item>
-            <Select.Item index={1} key="name__asc" value="name__asc">
-              <Select.ItemText>Alphabetical</Select.ItemText>
-              <Select.ItemIndicator marginLeft="auto">
-                <Check size={16} />
-              </Select.ItemIndicator>
-            </Select.Item>
-            <Select.Item
-              index={2}
-              key="floor_price__desc"
-              value="floor_price__desc"
-            >
-              <Select.ItemText>Floor Price</Select.ItemText>
-              <Select.ItemIndicator marginLeft="auto">
-                <Check size={16} />
-              </Select.ItemIndicator>
-            </Select.Item>
+            {options.map((option, i) => (
+              <Select.Item index={i} key={option.value} value={option.value}>
+                <Select.ItemText>{option.label}</Select.ItemText>
+                <Select.ItemIndicator marginLeft="auto">
+                  <Check size={16} />
+                </Select.ItemIndicator>
+              </Select.Item>
+            ))}
           </Select.Group>
         </Select.Viewport>
       </Select.Content>

@@ -1,12 +1,10 @@
 "use client";
 
-import { SimpleHashNFT } from "@nook/common/types";
 import { Separator, Spinner, View } from "@nook/app-ui";
 import { InfiniteScrollList } from "../../components/infinite-scroll-list";
-import { NftDisplay } from "./nft-display.native";
 
 export const NftInfiniteFeed = ({
-  nfts,
+  data,
   fetchNextPage,
   isFetchingNextPage,
   hasNextPage,
@@ -16,22 +14,26 @@ export const NftInfiniteFeed = ({
   paddingTop,
   paddingBottom,
   asTabs,
+  renderItem,
+  numColumns,
 }: {
-  nfts: SimpleHashNFT[];
+  data: unknown[];
   fetchNextPage?: () => void;
   isFetchingNextPage?: boolean;
   hasNextPage?: boolean;
   ListHeaderComponent?: JSX.Element;
-  refetch: () => Promise<void>;
-  isRefetching: boolean;
+  refetch?: () => Promise<void>;
+  isRefetching?: boolean;
   paddingTop?: number;
   paddingBottom?: number;
   asTabs?: boolean;
+  renderItem: ({ item }: { item: unknown }) => JSX.Element;
+  numColumns?: number;
 }) => {
   return (
     <InfiniteScrollList
-      data={nfts}
-      renderItem={({ item }) => <NftDisplay nft={item as SimpleHashNFT} />}
+      data={data}
+      renderItem={renderItem}
       onEndReached={fetchNextPage}
       ListFooterComponent={
         isFetchingNextPage ? (
@@ -40,11 +42,8 @@ export const NftInfiniteFeed = ({
           </View>
         ) : null
       }
-      ItemSeparatorComponent={() => (
-        <Separator width="100%" borderBottomColor="$borderColorBg" />
-      )}
       ListHeaderComponent={ListHeaderComponent}
-      numColumns={3}
+      numColumns={numColumns}
     />
   );
 };

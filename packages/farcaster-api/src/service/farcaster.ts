@@ -1223,10 +1223,13 @@ export class FarcasterService {
   }
 
   async getFidsForAddresses(addresses: string[]) {
+    const lowercasedAddresses = addresses.map((address) =>
+      address.toLowerCase(),
+    );
     const fids = await this.client.farcasterVerification.findMany({
       where: {
         address: {
-          in: addresses,
+          in: lowercasedAddresses,
         },
         protocol: 0,
       },
@@ -1240,7 +1243,7 @@ export class FarcasterService {
       {} as Record<string, string>,
     );
 
-    return addresses.map((address) => addressMap[address]);
+    return lowercasedAddresses.map((address) => addressMap[address]);
   }
 
   async getUsersForAddresses(addresses: string[], viewerFid?: string) {

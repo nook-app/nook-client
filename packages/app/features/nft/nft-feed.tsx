@@ -1,15 +1,20 @@
+"use client";
+
 import {
   FetchNftsResponse,
+  NftFeedDisplay,
   NftFeedFilter,
   NftFeedOrderBy,
+  SimpleHashNFT,
+  SimplehashNftCollection,
 } from "@nook/common/types";
 import { memo, useCallback, useState } from "react";
-import { useNftFeed } from "../../api/nft";
+import { useNftCollectionFeed, useNftFeed } from "../../api/nft";
 import { Loading } from "../../components/loading";
 import { NftInfiniteFeed } from "./infinite-feed";
-import { Button, XStack } from "@nook/app-ui";
-import { Grid3x3 } from "@tamagui/lucide-icons";
-import { NftSortMenu } from "./nft-sort-menu";
+import { NftFeedHeader } from "./nft-feed-header";
+import { NftDisplay } from "./nft-display";
+import { NftCollectionDisplay } from "./collection-display";
 
 export const NftFeed = ({
   filter,
@@ -24,83 +29,169 @@ export const NftFeed = ({
   paddingTop?: number;
   paddingBottom?: number;
 }) => {
-  const defaultSort = filter.orderBy || "transfer_time__desc";
-  const [isRefetching, setIsRefetching] = useState(false);
-  const [orderBy, setOrderBy] = useState<NftFeedOrderBy>(defaultSort);
-  const {
-    data,
-    isLoading,
-    refetch,
-    fetchNextPage,
-    isFetchingNextPage,
-    hasNextPage,
-  } = useNftFeed({ ...filter, orderBy }, initialData);
+  const [display, setDisplay] = useState<NftFeedDisplay>("tokens");
 
-  const nfts = data?.pages.flatMap((page) => page.data) ?? [];
-
-  const handleChange = useCallback(
-    (value: NftFeedOrderBy) => setOrderBy(value),
-    [],
-  );
-
-  if (isLoading) {
-    return <Loading />;
+  if (display === "tokens") {
+    return (
+      <NftFeedComponent
+        filter={filter}
+        initialData={initialData}
+        asTabs={asTabs}
+        paddingTop={paddingTop}
+        paddingBottom={paddingBottom}
+        setDisplay={setDisplay}
+      />
+    );
   }
 
-  const handleRefresh = async () => {
-    setIsRefetching(true);
-    await refetch();
-    setIsRefetching(false);
-  };
-
   return (
-    <NftInfiniteFeed
-      nfts={nfts}
-      fetchNextPage={fetchNextPage}
-      isFetchingNextPage={isFetchingNextPage}
-      hasNextPage={hasNextPage}
-      refetch={handleRefresh}
-      isRefetching={isRefetching}
+    <NftCollectionFeedComponent
+      filter={filter}
+      asTabs={asTabs}
       paddingTop={paddingTop}
       paddingBottom={paddingBottom}
-      asTabs={asTabs}
-      ListHeaderComponent={
-        <NftFeedHeader value={orderBy} onChange={handleChange} />
-      }
+      setDisplay={setDisplay}
     />
   );
 };
 
-const NftFeedHeader = memo(
+const NftFeedComponent = memo(
   ({
-    value,
-    onChange,
+    filter,
+    initialData,
+    asTabs,
+    paddingTop,
+    paddingBottom,
+    setDisplay,
   }: {
-    value: NftFeedOrderBy;
-    onChange: (value: NftFeedOrderBy) => void;
+    filter: NftFeedFilter;
+    initialData?: FetchNftsResponse;
+    asTabs?: boolean;
+    paddingTop?: number;
+    paddingBottom?: number;
+    setDisplay: (value: NftFeedDisplay) => void;
   }) => {
+    const defaultSort = filter.orderBy || "transfer_time__desc";
+    const [isRefetching, setIsRefetching] = useState(false);
+    const [orderBy, setOrderBy] = useState<NftFeedOrderBy>(defaultSort);
+    const {
+      data,
+      isLoading,
+      refetch,
+      fetchNextPage,
+      isFetchingNextPage,
+      hasNextPage,
+    } = useNftFeed({ ...filter, orderBy }, initialData);
+
+    const nfts = data?.pages.flatMap((page) => page.data) ?? [];
+
+    const handleChange = useCallback(
+      (value: NftFeedOrderBy) => setOrderBy(value),
+      [],
+    );
+
+    if (isLoading) {
+      return <Loading />;
+    }
+
+    const handleRefresh = async () => {
+      setIsRefetching(true);
+      await refetch();
+      setIsRefetching(false);
+    };
+
     return (
-      <XStack
-        alignItems="center"
-        justifyContent="space-between"
-        marginVertical="$1.5"
-        marginTop="$2"
-        marginHorizontal="$1.5"
-      >
-        <Button
-          icon={Grid3x3}
-          width="$3"
-          height="$3"
-          padding="$0"
-          borderRadius="$10"
-          scaleIcon={1.25}
-          color="white"
-        />
-        <NftSortMenu
-          value={value}
-          onChange={(v) => onChange(v as NftFeedOrderBy)}
-        />
-      </XStack>
+      <NftInfiniteFeed
+        data={nfts}
+        fetchNextPage={fetchNextPage}
+        isFetchingNextPage={isFetchingNextPage}
+        hasNextPage={hasNextPage}
+        refetch={handleRefresh}
+        isRefetching={isRefetching}
+        paddingTop={paddingTop}
+        paddingBottom={paddingBottom}
+        asTabs={asTabs}
+        ListHeaderComponent={
+          <NftFeedHeader
+            sort={orderBy}
+            onSortChange={handleChange}
+            display="tokens"
+            onDisplayChange={setDisplay}
+          />
+        }
+        renderItem={({ item }) => <NftDisplay nft={item as SimpleHashNFT} />}
+        numColumns={3}
+      />
+    );
+  },
+);
+
+const NftCollectionFeedComponent = memo(
+  ({
+    filter,
+    asTabs,
+    paddingTop,
+    paddingBottom,
+    setDisplay,
+  }: {
+    filter: NftFeedFilter;
+    asTabs?: boolean;
+    paddingTop?: number;
+    paddingBottom?: number;
+    setDisplay: (value: NftFeedDisplay) => void;
+  }) => {
+    const defaultSort = filter.orderBy || "transfer_time__desc";
+    const [isRefetching, setIsRefetching] = useState(false);
+    const [orderBy, setOrderBy] = useState<NftFeedOrderBy>(defaultSort);
+    const {
+      data,
+      isLoading,
+      refetch,
+      fetchNextPage,
+      isFetchingNextPage,
+      hasNextPage,
+    } = useNftCollectionFeed({ ...filter, orderBy });
+
+    const nfts = data?.pages.flatMap((page) => page.data) ?? [];
+
+    const handleChange = useCallback(
+      (value: NftFeedOrderBy) => setOrderBy(value),
+      [],
+    );
+
+    if (isLoading) {
+      return <Loading />;
+    }
+
+    const handleRefresh = async () => {
+      setIsRefetching(true);
+      await refetch();
+      setIsRefetching(false);
+    };
+
+    return (
+      <NftInfiniteFeed
+        data={nfts}
+        fetchNextPage={fetchNextPage}
+        isFetchingNextPage={isFetchingNextPage}
+        hasNextPage={hasNextPage}
+        refetch={handleRefresh}
+        isRefetching={isRefetching}
+        paddingTop={paddingTop}
+        paddingBottom={paddingBottom}
+        asTabs={asTabs}
+        ListHeaderComponent={
+          <NftFeedHeader
+            sort={orderBy}
+            onSortChange={handleChange}
+            display="collections"
+            onDisplayChange={setDisplay}
+          />
+        }
+        renderItem={({ item }) => (
+          <NftCollectionDisplay collection={item as SimplehashNftCollection} />
+        )}
+      />
     );
   },
 );

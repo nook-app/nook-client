@@ -70,3 +70,5 @@ export type NftFeedOrderBy =
   | "transfer_time__desc"
   | "floor_price__desc"
   | "name__asc";
+
+export type NftFeedDisplay = "collections" | "tokens";

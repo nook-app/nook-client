@@ -1,7 +1,6 @@
-import { useLocalSearchParams } from "expo-router";
+import { useFocusEffect, useLocalSearchParams } from "expo-router";
 import { useNft } from "@nook/app/hooks/useNft";
-import { ScrollView, Text, View, XStack, YStack } from "@nook/app-ui";
-import { EmbedImage } from "@nook/app/components/embeds/EmbedImage";
+import { Popover, ScrollView, View, XStack, YStack } from "@nook/app-ui";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { BlurView } from "expo-blur";
 import { useTheme } from "@nook/app/context/theme";
@@ -11,6 +10,15 @@ import { BackButton, IconButton } from "../IconButton";
 import { MoreHorizontal } from "@tamagui/lucide-icons";
 import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
 import { Image } from "expo-image";
+import { Link } from "@nook/app/components/link";
+import {
+  NftOverview,
+  NftProperties,
+  NftProvenance,
+} from "@nook/app/features/nft/nft-overview";
+import { memo, useCallback, useState } from "react";
+import { SimpleHashNFT } from "@nook/common/types";
+import { NftMenu } from "@nook/app/features/nft/nft-menu";
 
 export default function NftScreen() {
   const { nftId } = useLocalSearchParams();
@@ -67,42 +75,76 @@ export default function NftScreen() {
             paddingVertical="$2"
           >
             <BackButton />
-            <IconButton icon={MoreHorizontal} />
+            <Menu nft={nft} />
           </XStack>
           {nft.previews.image_medium_url && (
-            <View
-              shadowColor="$shadowColor"
-              shadowOffset={{ width: 0, height: 0 }}
-              shadowOpacity={0.25}
-              shadowRadius={10}
-              paddingHorizontal="$4"
-              alignItems="center"
+            <Link
+              href={{
+                pathname: "/image/[url]",
+                params: { url: nft.previews.image_medium_url },
+              }}
+              absolute
+              unpressable
             >
-              <Image
-                source={{ uri: nft.previews.image_medium_url }}
-                style={{
-                  aspectRatio:
-                    (nft.image_properties?.width || 1) /
-                    (nft.image_properties?.height || 1),
-                  width: "100%",
-                  maxHeight: 400,
-                  borderRadius: 16,
-                }}
-                placeholder={{ blurhash: nft.previews.blurhash || undefined }}
-                placeholderContentFit="cover"
-              />
-            </View>
+              <View marginHorizontal="$4" alignItems="center">
+                <View
+                  shadowColor="$shadowColor"
+                  shadowOffset={{ width: 0, height: 0 }}
+                  shadowOpacity={0.5}
+                  shadowRadius={10}
+                  backgroundColor={backgroundColor}
+                  borderRadius="$4"
+                >
+                  <View borderRadius="$4" overflow="hidden">
+                    <Image
+                      source={{ uri: nft.previews.image_medium_url }}
+                      style={{
+                        aspectRatio:
+                          (nft.image_properties?.width || 1) /
+                          (nft.image_properties?.height || 1),
+                        width: "100%",
+                        maxHeight: 400,
+                      }}
+                      placeholder={{
+                        blurhash: nft.previews.blurhash || undefined,
+                      }}
+                      placeholderContentFit="cover"
+                    />
+                  </View>
+                </View>
+              </View>
+            </Link>
           )}
-          <YStack paddingHorizontal="$4" gap="$2">
-            {nft.name && (
-              <Text fontWeight="700" fontSize="$8">
-                {nft.name}
-              </Text>
-            )}
-            {nft.description && <Text>{nft.description}</Text>}
+          <YStack paddingHorizontal="$4" gap="$6">
+            <NftOverview nft={nft} />
+            <NftProperties nft={nft} />
+            <NftProvenance nft={nft} />
           </YStack>
         </YStack>
       </ScrollView>
     </View>
   );
 }
+
+const Menu = memo(({ nft }: { nft: SimpleHashNFT }) => {
+  const [showMenu, setShowMenu] = useState(false);
+
+  useFocusEffect(useCallback(() => setShowMenu(true), []));
+
+  return (
+    <XStack gap="$2" justifyContent="flex-end">
+      {showMenu ? (
+        <NftMenu
+          nft={nft}
+          trigger={
+            <Popover.Trigger asChild>
+              <IconButton icon={MoreHorizontal} />
+            </Popover.Trigger>
+          }
+        />
+      ) : (
+        <IconButton icon={MoreHorizontal} />
+      )}
+    </XStack>
+  );
+});

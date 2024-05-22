@@ -4,7 +4,10 @@ import { ArrowLeft } from "@tamagui/lucide-icons";
 import { ReactNode, useCallback } from "react";
 import { CollapsibleLayout } from "./CollapsibleLayout";
 import { IconButton } from "./IconButton";
-import { useCurrentTabScrollY } from "react-native-collapsible-tab-view";
+import {
+  useCurrentTabScrollY,
+  useHeaderMeasurements,
+} from "react-native-collapsible-tab-view";
 import { useScroll } from "@nook/app/context/scroll";
 import Animated, {
   Extrapolation,
@@ -13,6 +16,7 @@ import Animated, {
   useAnimatedReaction,
   useAnimatedStyle,
 } from "react-native-reanimated";
+import { NAVIGATION_HEIGHT, TAB_HEIGHT } from "./PagerLayout";
 
 export const CollapsibleHeaderLayout = ({
   title,
@@ -31,11 +35,14 @@ export const CollapsibleHeaderLayout = ({
   );
 
   return (
-    <CollapsibleLayout
-      renderHeader={renderHeader}
-      pages={pages}
-      defaultIndex={defaultIndex}
-    />
+    <View flex={1} backgroundColor="$color1">
+      <CollapsibleLayout
+        renderHeader={renderHeader}
+        pages={pages}
+        defaultIndex={defaultIndex}
+        minHeaderHeight={TAB_HEIGHT}
+      />
+    </View>
   );
 };
 
@@ -76,22 +83,35 @@ const CollapsibleHeader = ({
     };
   });
 
+  const { top } = useHeaderMeasurements();
+
+  const stylez = useAnimatedStyle(() => {
+    return {
+      transform: [
+        {
+          translateY: -top.value,
+        },
+      ],
+    };
+  });
+
   return (
-    <View
-      height={40}
-      justifyContent="flex-end"
-      backgroundColor="$color1"
-      paddingHorizontal="$3"
-    >
-      <Animated.View style={headerTitleStyle}>
-        <XStack justifyContent="space-between" alignItems="center">
-          <IconButton icon={ArrowLeft} onPress={router.back} />
-          <NookText fontSize="$5" fontWeight="600">
-            {title}
-          </NookText>
-          {right || <View width="$2.5" />}
-        </XStack>
-      </Animated.View>
-    </View>
+    <Animated.View style={stylez}>
+      <View
+        height={NAVIGATION_HEIGHT}
+        justifyContent="flex-end"
+        paddingHorizontal="$3"
+      >
+        <Animated.View style={headerTitleStyle}>
+          <XStack justifyContent="space-between" alignItems="center">
+            <IconButton icon={ArrowLeft} onPress={router.back} />
+            <NookText fontSize="$5" fontWeight="600">
+              {title}
+            </NookText>
+            {right || <View width="$2.5" />}
+          </XStack>
+        </Animated.View>
+      </View>
+    </Animated.View>
   );
 };

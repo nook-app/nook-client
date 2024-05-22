@@ -9,20 +9,25 @@ export const CdnAvatar = ({
   size,
   absolute,
   children,
+  skipCdn,
+  borderRadius,
 }: {
   src?: string;
   size: string;
   absolute?: boolean;
   children?: ReactNode;
+  skipCdn?: boolean;
+  borderRadius?: string;
 }) => {
   const formattedSrc =
-    src && !src?.endsWith(".svg") && !absolute
+    src && !src?.endsWith(".svg") && !absolute && !skipCdn
       ? formatToCDN(src, { width: 168 })
       : src;
 
   return (
     <View
-      borderRadius="$10"
+      // @ts-ignore
+      borderRadius={borderRadius ?? "$10"}
       width={size}
       height={size}
       backgroundColor="$color3"

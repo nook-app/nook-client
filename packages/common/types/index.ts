@@ -11,6 +11,7 @@ export * from "./lists";
 export * from "./user";
 export * from "./swap";
 export * from "./simplehash";
+export * from "./nft";
 
 export type FnameTransfer = {
   id: string;

@@ -99,7 +99,7 @@ export const TransactionDisplay = ({
         <XStack justifyContent="space-between" alignItems="center">
           <View />
           <View>
-            <ChainBadge chainId={transaction.chainId} />
+            <ChainBadge chainId={`eip155:${transaction.chainId}`} />
           </View>
         </XStack>
       </YStack>
@@ -381,12 +381,12 @@ const TransactionText = ({ transaction }: { transaction: Transaction }) => {
       }
 
       if (variable.type === "chainID") {
-        const chain = CHAINS[variable.value as unknown as number];
+        const chain = CHAINS[`eip155:${variable.value}`];
         if (chain) {
           textParts.push(
             <>
               <NookText>
-                <ChainIcon chainId={chain.chainId} />{" "}
+                <ChainIcon chainId={`eip155:${variable.value}`} />{" "}
               </NookText>
               <NookText fontWeight="600">{`${chain.name} `}</NookText>
             </>,

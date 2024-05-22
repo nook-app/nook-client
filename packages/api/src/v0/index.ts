@@ -7,7 +7,6 @@ import { transactionRoutes } from "./routes/transactions";
 import { flagRoutes } from "./routes/flags";
 import { pendingCastRoutes } from "./routes/pending";
 import { farcasterFeedRoutes } from "./routes/farcaster/feed";
-import { nftRoutes } from "./routes/nfts";
 import { FastifyInstance } from "fastify";
 
 export const registerV0Routes = async (fastify: FastifyInstance) => {
@@ -20,5 +19,4 @@ export const registerV0Routes = async (fastify: FastifyInstance) => {
   fastify.register(notificationsRoutes, { prefix: "/v0" });
   fastify.register(flagRoutes, { prefix: "/v0" });
   fastify.register(pendingCastRoutes, { prefix: "/v0" });
-  fastify.register(nftRoutes, { prefix: "/v0" });
 };
