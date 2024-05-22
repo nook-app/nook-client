@@ -15,7 +15,7 @@ import {
 } from "@nook/common/types";
 import { decodeCursor, encodeCursor } from "@nook/common/utils";
 import { FastifyInstance } from "fastify";
-import { refreshCollectionOwnerships } from "@nook/common/queues/enqueue";
+import { refreshCollectionOwnerships } from "@nook/common/queues";
 
 const SIMPLEHASH_BASE_URL = "https://api.simplehash.com/api/v0";
 const SIMPLEHASH_API_KEY = process.env.SIMPLEHASH_API_KEY as string;
