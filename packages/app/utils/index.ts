@@ -32,26 +32,22 @@ export function formatTimeAgo(timestamp: number, suffix = false) {
     })} ${dateObj.getDate()}`;
   }
   if (interval > 1) {
-    return `${Math.floor(interval)}${
-      suffix ? ` day${interval > 1 ? "s" : ""} ago` : "d"
-    }`;
+    const amount = Math.floor(interval);
+    return `${amount}${suffix ? ` day${amount !== 1 ? "s" : ""} ago` : "d"}`;
   }
   interval = seconds / 3600;
   if (interval > 1) {
-    return `${Math.floor(interval)}${
-      suffix ? ` hour${interval > 1 ? "s" : ""} ago` : "h"
-    }`;
+    const amount = Math.floor(interval);
+    return `${amount}${suffix ? ` hour${amount !== 1 ? "s" : ""} ago` : "h"}`;
   }
   interval = seconds / 60;
   if (interval > 1) {
-    return `${Math.floor(interval)}${
-      suffix ? ` minute${interval > 1 ? "s" : ""} ago` : "m"
-    }`;
+    const amount = Math.floor(interval);
+    return `${amount}${suffix ? ` minute${amount !== 1 ? "s" : ""} ago` : "m"}`;
   }
 
-  return `${Math.floor(seconds)}${
-    suffix ? ` second${seconds > 1 ? "s" : ""} ago` : "s"
-  }`;
+  const amount = Math.floor(seconds);
+  return `${amount}${suffix ? ` second${amount !== 1 ? "s" : ""} ago` : "s"}`;
 }
 
 export function formatNumber(num: number): string {

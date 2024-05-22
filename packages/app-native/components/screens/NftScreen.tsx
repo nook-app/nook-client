@@ -115,7 +115,7 @@ export default function NftScreen() {
               </View>
             </Link>
           )}
-          <YStack paddingHorizontal="$4" gap="$6">
+          <YStack paddingHorizontal="$4" gap="$4">
             <NftOverview nft={nft} />
             <NftProperties nft={nft} />
             <NftProvenance nft={nft} />

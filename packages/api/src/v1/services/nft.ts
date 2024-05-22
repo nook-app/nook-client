@@ -167,8 +167,21 @@ export class NftService {
     const decodedCursor = decodeCursor(req.cursor);
     const currentPage = decodedCursor?.page ? Number(decodedCursor.page) : 0;
 
+    const fids = collectors.map(({ fid }) => fid).filter(Boolean) as string[];
+    const users = await this.farcasterApi.getUsers({ fids }, req.viewerFid);
+    const userMap = users.data.reduce(
+      (acc, user) => {
+        acc[user.fid] = user;
+        return acc;
+      },
+      {} as Record<string, FarcasterUser>,
+    );
+
     return {
-      data: collectors,
+      data: collectors.map((collector) => ({
+        ...collector,
+        user: collector.fid ? userMap[collector.fid] : undefined,
+      })),
       nextCursor:
         collectors.length >= MAX_PAGE_SIZE
           ? encodeCursor({
@@ -288,6 +301,25 @@ export class NftService {
     return await this.makeRequest(
       `/nfts/${chain}/${contractAddress}/${tokenId || 0}`,
     );
+  }
+
+  async getNftCollectionNfts(collectionId: string, cursor?: string) {
+    const params: Record<string, string> = {
+      limit: "24",
+    };
+    if (cursor) {
+      params.cursor = cursor;
+    }
+
+    const response = await this.makeRequest(
+      `/nfts/collection/${collectionId}`,
+      params,
+    );
+
+    return {
+      data: response.nfts,
+      nextCursor: response.next_cursor,
+    };
   }
 
   async getNftCollection(collectionId: string) {

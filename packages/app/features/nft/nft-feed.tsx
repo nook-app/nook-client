@@ -9,7 +9,11 @@ import {
   SimplehashNftCollection,
 } from "@nook/common/types";
 import { memo, useCallback, useState } from "react";
-import { useNftCollectionFeed, useNftFeed } from "../../api/nft";
+import {
+  useCollectionNfts,
+  useNftCollectionFeed,
+  useNftFeed,
+} from "../../api/nft";
 import { Loading } from "../../components/loading";
 import { NftInfiniteFeed } from "./infinite-feed";
 import { NftFeedHeader } from "./nft-feed-header";
@@ -195,3 +199,40 @@ const NftCollectionFeedComponent = memo(
     );
   },
 );
+
+export const CollectionNftsFeed = ({
+  collectionId,
+  initialData,
+  asTabs,
+  paddingTop,
+  paddingBottom,
+}: {
+  collectionId: string;
+  initialData?: FetchNftsResponse;
+  asTabs?: boolean;
+  paddingTop?: number;
+  paddingBottom?: number;
+}) => {
+  const { data, isLoading, fetchNextPage, isFetchingNextPage, hasNextPage } =
+    useCollectionNfts(collectionId, initialData);
+
+  const nfts = data?.pages.flatMap((page) => page.data) ?? [];
+
+  if (isLoading) {
+    return <Loading />;
+  }
+
+  return (
+    <NftInfiniteFeed
+      data={nfts}
+      fetchNextPage={fetchNextPage}
+      isFetchingNextPage={isFetchingNextPage}
+      hasNextPage={hasNextPage}
+      paddingTop={paddingTop}
+      paddingBottom={paddingBottom}
+      asTabs={asTabs}
+      renderItem={({ item }) => <NftDisplay nft={item as SimpleHashNFT} />}
+      numColumns={3}
+    />
+  );
+};

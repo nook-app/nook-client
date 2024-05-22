@@ -58,6 +58,37 @@ export const useUsers = (fids: string[]) => {
   });
 };
 
+export const fetchUsersByAddress = async (
+  addresses: string[],
+): Promise<FetchUsersResponse> => {
+  return await makeRequest("/farcaster/users", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ addresses }),
+  });
+};
+
+export const useUsersByAddress = (addresses: string[]) => {
+  const addUsers = useUserStore((state) => state.addUsers);
+  const queryClient = useQueryClient();
+  const initialData = queryClient.getQueryData<FetchUsersResponse>([
+    "users",
+    addresses.join(","),
+  ]);
+  return useQuery<FetchUsersResponse>({
+    queryKey: ["users", addresses.join(",")],
+    queryFn: async () => {
+      const users = await fetchUsersByAddress(addresses);
+      addUsers(users.data);
+      return users;
+    },
+    enabled: addresses.length > 0 && !initialData,
+    initialData,
+  });
+};
+
 export const fetchUserFollowers = async (username: string, cursor?: string) => {
   return await makeRequest(
     `/farcaster/users/${username}/followers${

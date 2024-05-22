@@ -38,6 +38,18 @@ export const nftRoutes = async (fastify: FastifyInstance) => {
       },
     );
 
+    fastify.get<{
+      Params: { collectionId: string };
+      Querystring: { cursor?: string };
+    }>("/nfts/collections/:collectionId/nfts", async (request, reply) => {
+      const response = await service.getNftCollectionNfts(
+        request.params.collectionId,
+        request.query.cursor,
+      );
+
+      return reply.send(response);
+    });
+
     fastify.get<{ Params: { collectionId: string } }>(
       "/nfts/collections/:collectionId/mutuals-preview",
       async (request, reply) => {

@@ -54,21 +54,3 @@ export type TransactionFeedFilter = {
   chains?: number[];
   contextActions?: string[];
 };
-
-export type NftFeedRequest = {
-  filter: NftFeedFilter;
-  cursor?: string;
-};
-
-export type NftFeedFilter = {
-  users: UserFilter;
-  chains?: string[];
-  orderBy?: NftFeedOrderBy;
-};
-
-export type NftFeedOrderBy =
-  | "transfer_time__desc"
-  | "floor_price__desc"
-  | "name__asc";
-
-export type NftFeedDisplay = "collections" | "tokens";

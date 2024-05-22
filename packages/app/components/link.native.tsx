@@ -3,6 +3,7 @@ import { Link as ExpoLink, useSegments } from "expo-router";
 import { Href } from "expo-router/build/link/href";
 import { memo, useMemo } from "react";
 import { Linking, Pressable } from "react-native";
+import { TouchableOpacity } from "react-native-gesture-handler";
 
 export const Link = memo(
   ({
@@ -14,6 +15,7 @@ export const Link = memo(
     unpressable,
     onPress,
     isExternal,
+    touchable,
   }: {
     href: Href;
     children: React.ReactNode;
@@ -23,6 +25,7 @@ export const Link = memo(
     unpressable?: boolean;
     onPress?: () => void;
     isExternal?: boolean;
+    touchable?: boolean;
   }) => {
     const [drawer, tabs, tab] = useSegments();
 
@@ -61,6 +64,7 @@ export const Link = memo(
           </Text>
         );
       }
+
       return (
         <ExpoLink href={formattedHref} asChild onPress={onPress}>
           {memoChildren}
@@ -78,6 +82,14 @@ export const Link = memo(
         >
           {memoChildren}
         </Pressable>
+      );
+    }
+
+    if (touchable) {
+      return (
+        <ExpoLink href={formattedHref} asChild onPress={onPress}>
+          <TouchableOpacity>{memoChildren}</TouchableOpacity>
+        </ExpoLink>
       );
     }
 

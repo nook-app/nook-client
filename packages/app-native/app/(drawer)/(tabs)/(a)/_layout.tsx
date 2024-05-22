@@ -151,6 +151,11 @@ export default function HomeLayout() {
         getId={({ params }) => params?.nftId}
       />
       <Stack.Screen
+        name="collections/[collectionId]/index"
+        options={{ headerShown: false }}
+        getId={({ params }) => params?.collectionId}
+      />
+      <Stack.Screen
         name="collections/[collectionId]/collectors"
         options={{ headerShown: false }}
         getId={({ params }) => params?.collectionId}

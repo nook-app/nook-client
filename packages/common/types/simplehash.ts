@@ -187,12 +187,7 @@ export type SimpleHashNFT = {
   status: string;
   token_count: number | null;
   owner_count: number | null;
-  owners: {
-    owner_address: string;
-    quantity: number;
-    first_acquired_date: string;
-    last_acquired_date: string;
-  }[];
+  owners: SimpleHashNftOwner[];
   last_sale: {
     from_address: string | null;
     to_address: string | null;
@@ -251,6 +246,13 @@ export type SimpleHashNFTsResponse = {
   next?: string;
   previous?: string;
   nfts: SimpleHashNFT[];
+};
+
+export type SimpleHashNftOwner = {
+  owner_address: string;
+  quantity: number;
+  first_acquired_date: string;
+  last_acquired_date: string;
 };
 
 export interface SimplehashNftCollection {

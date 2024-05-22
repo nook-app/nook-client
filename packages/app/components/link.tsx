@@ -11,6 +11,7 @@ export const Link = ({
   unpressable,
   onPress,
   isExternal,
+  touchable,
 }: {
   href: Href;
   children: React.ReactNode;
@@ -20,6 +21,7 @@ export const Link = ({
   unpressable?: boolean;
   onPress?: () => void;
   isExternal?: boolean;
+  touchable?: boolean;
 }) => {
   const memoChildren = useMemo(() => children, [children]);
 

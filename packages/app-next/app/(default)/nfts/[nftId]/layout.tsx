@@ -8,7 +8,7 @@ export default async function Home({
   const nft = await fetchNft(params.nftId);
   return (
     <>
-      <NavigationHeader title={nft.name || "NFT"} />
+      <NavigationHeader title={nft.name || "Collectible"} />
       {children}
     </>
   );

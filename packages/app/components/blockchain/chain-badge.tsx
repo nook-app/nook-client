@@ -5,7 +5,8 @@ import { ChainIcon } from "./chain-icon";
 export const ChainBadge = ({
   chainId,
   fontSize,
-}: { chainId: string; fontSize?: string }) => {
+  hideLabel,
+}: { chainId: string; fontSize?: string; hideLabel?: boolean }) => {
   const chain = CHAINS[chainId];
 
   if (!chain) {
@@ -24,17 +25,19 @@ export const ChainBadge = ({
       }}
     >
       <ChainIcon chainId={chainId} />
-      <View flexShrink={1}>
-        <NookText
-          numberOfLines={1}
-          ellipsizeMode="tail"
-          fontWeight="500"
-          // @ts-ignore
-          fontSize={fontSize ?? "$3"}
-        >
-          {chain.name}
-        </NookText>
-      </View>
+      {!hideLabel && (
+        <View flexShrink={1}>
+          <NookText
+            numberOfLines={1}
+            ellipsizeMode="tail"
+            fontWeight="500"
+            // @ts-ignore
+            fontSize={fontSize ?? "$3"}
+          >
+            {chain.name}
+          </NookText>
+        </View>
+      )}
     </XStack>
   );
 };

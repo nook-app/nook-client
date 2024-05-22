@@ -1,4 +1,5 @@
 import { FarcasterUser } from "./farcaster";
+import { UserFilter } from "./nook";
 
 export type NftMutualsPreview = {
   preview: FarcasterUser[];
@@ -35,7 +36,7 @@ export type NftFarcasterCollector = NftFarcasterOwner & {
 };
 
 export type FetchNftCollectorsResponse = {
-  data: NftOwner[];
+  data: (NftOwner & { user?: FarcasterUser })[];
   nextCursor?: string;
 };
 
@@ -43,3 +44,21 @@ export type FetchNftFarcasterCollectorsResponse = {
   data: NftFarcasterCollector[];
   nextCursor?: string;
 };
+
+export type NftFeedRequest = {
+  filter: NftFeedFilter;
+  cursor?: string;
+};
+
+export type NftFeedFilter = {
+  users: UserFilter;
+  chains?: string[];
+  orderBy?: NftFeedOrderBy;
+};
+
+export type NftFeedOrderBy =
+  | "transfer_time__desc"
+  | "floor_price__desc"
+  | "name__asc";
+
+export type NftFeedDisplay = "collections" | "tokens";
