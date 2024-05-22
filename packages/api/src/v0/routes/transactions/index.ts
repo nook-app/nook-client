@@ -93,7 +93,7 @@ export const transactionRoutes = async (fastify: FastifyInstance) => {
       const userMap = users.data.reduce(
         (acc, user) => {
           for (const address of user.verifiedAddresses ?? []) {
-            acc[address.address] = user;
+            acc[address.address.toLowerCase()] = user;
           }
           acc[user.fid] = user;
           return acc;
@@ -104,8 +104,8 @@ export const transactionRoutes = async (fastify: FastifyInstance) => {
       const enrichedData = rawData.map((tx) => {
         const users: Record<string, FarcasterUser> = {};
 
-        if (userMap[tx.from]) {
-          users[tx.from] = userMap[tx.from];
+        if (userMap[tx.from.toLowerCase()]) {
+          users[tx.from] = userMap[tx.from.toLowerCase()];
         }
 
         if (tx.enrichedParties) {

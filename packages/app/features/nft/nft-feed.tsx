@@ -18,7 +18,7 @@ import { Loading } from "../../components/loading";
 import { NftInfiniteFeed } from "./infinite-feed";
 import { NftFeedHeader } from "./nft-feed-header";
 import { NftDisplay } from "./nft-display";
-import { NftCollectionDisplay } from "./collection-display";
+import { NftCollectionDisplay } from "./nft-collection-display";
 
 export const NftFeed = ({
   filter,

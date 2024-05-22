@@ -1,6 +1,8 @@
 import {
   GetNftCollectionCollectorsRequest,
+  GetNftCollectionEventsRequest,
   GetNftCollectorsRequest,
+  GetNftEventsRequest,
   NftFeedRequest,
 } from "@nook/common/types";
 import { FastifyInstance } from "fastify";
@@ -31,6 +33,13 @@ export const nftRoutes = async (fastify: FastifyInstance) => {
       },
     );
 
+    fastify.post<{
+      Body: GetNftEventsRequest;
+    }>("/nfts/events", async (request, reply) => {
+      const response = await service.getNftEvents(request.body);
+      return reply.send(response);
+    });
+
     fastify.get<{ Params: { collectionId: string } }>(
       "/nfts/collections/:collectionId",
       async (request, reply) => {
@@ -41,6 +50,13 @@ export const nftRoutes = async (fastify: FastifyInstance) => {
         return reply.send(response);
       },
     );
+
+    fastify.post<{
+      Body: GetNftCollectionEventsRequest;
+    }>("/nfts/collections/events", async (request, reply) => {
+      const response = await service.getNftCollectionEvents(request.body);
+      return reply.send(response);
+    });
 
     fastify.get<{
       Params: { collectionId: string };

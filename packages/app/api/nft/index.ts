@@ -2,10 +2,13 @@ import {
   FarcasterUser,
   FetchNftCollectionsResponse,
   FetchNftCollectorsResponse,
+  FetchNftEventsResponse,
   FetchNftFarcasterCollectorsResponse,
   FetchNftsResponse,
   GetNftCollectionCollectorsRequest,
+  GetNftCollectionEventsRequest,
   GetNftCollectorsRequest,
+  GetNftEventsRequest,
   NftFeedFilter,
   NftMutualsPreview,
   SimpleHashCollection,
@@ -357,7 +360,7 @@ export const useNFtFarcasterCollectors = (
     string[],
     string | undefined
   >({
-    queryKey: ["nftCollectors", JSON.stringify(req)],
+    queryKey: ["nftCollectorsFarcaster", JSON.stringify(req)],
     queryFn: async ({ pageParam }) => {
       const data = await fetchNftFarcasterCollectors(req, pageParam);
       const users = data.data
@@ -402,13 +405,93 @@ export const useNFtFollowingCollectors = (
     string[],
     string | undefined
   >({
-    queryKey: ["nftCollectors", JSON.stringify(req)],
+    queryKey: ["nftCollectorsFollowing", JSON.stringify(req)],
     queryFn: async ({ pageParam }) => {
       const data = await fetchNftFollowingCollectors(req, pageParam);
       const users = data.data
         .filter((collector) => collector.user)
         .map((collector) => collector.user) as FarcasterUser[];
       addUsers(users);
+      return data;
+    },
+    getNextPageParam: (lastPage) => lastPage.nextCursor,
+    initialData: initialData
+      ? {
+          pages: [initialData],
+          pageParams: [undefined],
+        }
+      : undefined,
+    initialPageParam: initialData?.nextCursor,
+  });
+};
+
+export const fetchNftCollectionEvents = async (
+  req: GetNftCollectionEventsRequest,
+  cursor?: string,
+): Promise<FetchNftEventsResponse> => {
+  return await makeRequest("/v1/nfts/collections/events", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ ...req, cursor }),
+  });
+};
+
+export const useNftCollectionEvents = (
+  req: GetNftCollectionEventsRequest,
+  initialData?: FetchNftEventsResponse,
+) => {
+  return useInfiniteQuery<
+    FetchNftEventsResponse,
+    unknown,
+    InfiniteData<FetchNftEventsResponse>,
+    string[],
+    string | undefined
+  >({
+    queryKey: ["nftCollectionCollectors", JSON.stringify(req)],
+    queryFn: async ({ pageParam }) => {
+      const data = await fetchNftCollectionEvents(req, pageParam);
+      return data;
+    },
+    getNextPageParam: (lastPage) => lastPage.nextCursor,
+    initialData: initialData
+      ? {
+          pages: [initialData],
+          pageParams: [undefined],
+        }
+      : undefined,
+    initialPageParam: initialData?.nextCursor,
+  });
+};
+
+export const fetchNftEvents = async (
+  req: GetNftEventsRequest,
+  cursor?: string,
+): Promise<FetchNftEventsResponse> => {
+  return await makeRequest("/v1/nfts/events", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ ...req, cursor }),
+  });
+};
+
+export const useNftEvents = (
+  req: GetNftEventsRequest,
+  initialData?: FetchNftEventsResponse,
+) => {
+  return useInfiniteQuery<
+    FetchNftEventsResponse,
+    unknown,
+    InfiniteData<FetchNftEventsResponse>,
+    string[],
+    string | undefined
+  >({
+    queryKey: ["nftCollectionCollectors", JSON.stringify(req)],
+    queryFn: async ({ pageParam }) => {
+      const data = await fetchNftEvents(req, pageParam);
       return data;
     },
     getNextPageParam: (lastPage) => lastPage.nextCursor,

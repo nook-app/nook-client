@@ -291,3 +291,43 @@ export interface MarketplacePage {
   collection_url: string;
   verified: boolean | null;
 }
+
+export interface SimpleHashNFTEvent {
+  nft_id: string;
+  chain: string;
+  contract_address: string;
+  token_id: string;
+  collection_id: string;
+  event_type: string;
+  from_address: string;
+  to_address: string;
+  quantity: number;
+  quantity_string: string;
+  timestamp: Date;
+  block_number: number;
+  block_hash: string;
+  transaction: string;
+  transaction_initiator: string;
+  log_index: number;
+  batch_transfer_index: number;
+  sale_details: SaleDetails;
+  nft_details: SimpleHashNFT;
+}
+
+export interface SaleDetails {
+  marketplace_id: string;
+  marketplace_name: string;
+  is_bundle_sale: boolean;
+  payment_token: PaymentToken;
+  unit_price: number;
+  total_price: number;
+  unit_price_usd_cents: number;
+}
+
+export interface PaymentToken {
+  payment_token_id: string;
+  name: string;
+  symbol: string;
+  address: null;
+  decimals: number;
+}

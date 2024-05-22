@@ -23,12 +23,18 @@ export const EmbedImage = ({
   noBorderRadius,
   skipCdn,
   blurhash,
+  disableZoom,
 }: {
   uri: string;
   noBorderRadius?: boolean;
   skipCdn?: boolean;
   blurhash?: string;
+  disableZoom?: boolean;
 }) => {
+  const Component = <img src={skipCdn ? uri : formatToCDN(uri)} alt="" />;
+
+  if (disableZoom) return Component;
+
   return (
     <View
       borderRadius={noBorderRadius ? "$0" : "$4"}
@@ -38,9 +44,7 @@ export const EmbedImage = ({
         e.stopPropagation();
       }}
     >
-      <ZoomableImage uri={uri}>
-        <img src={skipCdn ? uri : formatToCDN(uri)} alt="" />
-      </ZoomableImage>
+      <ZoomableImage uri={uri}>{Component}</ZoomableImage>
     </View>
   );
 };

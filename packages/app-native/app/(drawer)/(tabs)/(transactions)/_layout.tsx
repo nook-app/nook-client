@@ -103,6 +103,46 @@ export default function TransactionsLayout() {
         name="lists/[listId]/settings/display"
         options={{ title: "Edit Display Mode" }}
       />
+      <Stack.Screen
+        name="collectibles/[nftId]/index"
+        options={{ headerShown: false }}
+        getId={({ params }) => params?.nftId}
+      />
+      <Stack.Screen
+        name="collectibles/[nftId]/collectors"
+        options={{ headerShown: false }}
+        getId={({ params }) => params?.nftId}
+      />
+      <Stack.Screen
+        name="collectibles/[nftId]/collectors-following"
+        options={{ headerShown: false }}
+        getId={({ params }) => params?.nftId}
+      />
+      <Stack.Screen
+        name="collectibles/[nftId]/collectors-farcaster"
+        options={{ headerShown: false }}
+        getId={({ params }) => params?.nftId}
+      />
+      <Stack.Screen
+        name="collections/[collectionId]/index"
+        options={{ headerShown: false }}
+        getId={({ params }) => params?.collectionId}
+      />
+      <Stack.Screen
+        name="collections/[collectionId]/collectors"
+        options={{ headerShown: false }}
+        getId={({ params }) => params?.collectionId}
+      />
+      <Stack.Screen
+        name="collections/[collectionId]/collectors-following"
+        options={{ headerShown: false }}
+        getId={({ params }) => params?.collectionId}
+      />
+      <Stack.Screen
+        name="collections/[collectionId]/collectors-farcaster"
+        options={{ headerShown: false }}
+        getId={({ params }) => params?.collectionId}
+      />
     </Stack>
   );
 }

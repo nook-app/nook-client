@@ -84,7 +84,7 @@ export const NftCollectionHeader = memo(
             )}
           </YStack>
         </YStack>
-        {bio && <FarcasterBioText text={bio} selectable />}
+        {bio && <FarcasterBioText text={bio} selectable numberOfLines={4} />}
         <XStack gap="$2">
           <View flexDirection="row" alignItems="center" gap="$1.5">
             <NookText fontWeight="600">
@@ -94,16 +94,14 @@ export const NftCollectionHeader = memo(
           </View>
           <Link
             href={`/collections/${collection.collection_id}/collectors-farcaster`}
-            unpressable
+            touchable
           >
-            <TouchableOpacity>
-              <View flexDirection="row" alignItems="center" gap="$1.5">
-                <NookText fontWeight="600">
-                  {formatNumber(collection.distinct_owner_count || 0)}
-                </NookText>
-                <NookText muted>collectors</NookText>
-              </View>
-            </TouchableOpacity>
+            <View flexDirection="row" alignItems="center" gap="$1.5">
+              <NookText fontWeight="600">
+                {formatNumber(collection.distinct_owner_count || 0)}
+              </NookText>
+              <NookText muted>collectors</NookText>
+            </View>
           </Link>
         </XStack>
       </YStack>

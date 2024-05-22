@@ -17,7 +17,6 @@ export const contentRoutes = async (fastify: FastifyInstance) => {
     fastify.post<{ Body: GetContentRequest }>(
       "/content",
       async (request, reply) => {
-        await request.jwtVerify();
         const data = await client.getContent(request.body.uri);
         if (!data) {
           reply.status(404).send({ message: "Content not found" });

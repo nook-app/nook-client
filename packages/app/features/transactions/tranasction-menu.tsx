@@ -23,7 +23,7 @@ export const TransactionMenu = ({
             absolute
           />
         }
-        title={"View in OnceUpon"}
+        title={"View on OnceUpon"}
         link={`https://www.onceupon.xyz/${transaction.hash}`}
       />
     </Menu>

@@ -10,10 +10,13 @@ import { useNftCollection } from "@nook/app/hooks/useNftCollection";
 import { NftCollectionMenu } from "@nook/app/features/nft/nft-collection-menu";
 import { NftCollectionHeader } from "@nook/app/features/nft/nft-collection-header";
 import { CollectionNftsFeed } from "@nook/app/features/nft/nft-feed";
+import { NftCollectionEvents } from "@nook/app/features/nft/nft-events";
+import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
 
 export default function NftCollectionScreen() {
   const { collectionId } = useLocalSearchParams();
   const { collection } = useNftCollection(collectionId as string);
+  const paddingBottom = useBottomTabBarHeight();
 
   if (!collection) return <Loading />;
 
@@ -25,12 +28,22 @@ export default function NftCollectionScreen() {
       pages={[
         {
           name: "Activity",
-          component: <></>,
+          component: (
+            <NftCollectionEvents
+              req={{ collectionId: collectionId as string }}
+              paddingBottom={paddingBottom}
+              asTabs
+            />
+          ),
         },
         {
           name: "Items",
           component: (
-            <CollectionNftsFeed collectionId={collectionId as string} asTabs />
+            <CollectionNftsFeed
+              collectionId={collectionId as string}
+              paddingBottom={paddingBottom}
+              asTabs
+            />
           ),
         },
       ]}

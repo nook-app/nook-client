@@ -89,12 +89,12 @@ export const FarcasterCollectorItem = memo(
   ({ collector }: { collector: NftFarcasterCollector }) => {
     if (!collector.user) return null;
 
-    let label = `${collector.quantity} items since ${formatTimeAgo(
-      collector.lastAcquiredDate,
-      true,
-    )}`;
-    if (collector.quantity === 1 && collector.tokens.length === 1) {
-      label = `#${collector.tokens[0].tokenId} since ${formatTimeAgo(
+    let label = `${collector.quantity} item${
+      collector.quantity > 1 ? "s" : ""
+    } since ${formatTimeAgo(collector.lastAcquiredDate, true)}`;
+    const tokenId = collector.tokens[0]?.tokenId;
+    if (collector.quantity === 1 && tokenId) {
+      label = `#${tokenId} since ${formatTimeAgo(
         collector.lastAcquiredDate,
         true,
       )}`;

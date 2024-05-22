@@ -14,7 +14,7 @@ import {
 } from "../../api/nft";
 import { NftInfiniteFeed } from "./infinite-feed";
 import { Loading } from "../../components/loading";
-import { CollectorItem, FarcasterCollectorItem } from "./collector-item";
+import { CollectorItem, FarcasterCollectorItem } from "./nft-collector-item";
 
 export const NftCollectionCollectors = ({
   req,

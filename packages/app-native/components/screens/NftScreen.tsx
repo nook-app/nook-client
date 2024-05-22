@@ -19,6 +19,7 @@ import {
 import { memo, useCallback, useState } from "react";
 import { SimpleHashNFT } from "@nook/common/types";
 import { NftMenu } from "@nook/app/features/nft/nft-menu";
+import { Loading } from "@nook/app/components/loading";
 
 export default function NftScreen() {
   const { nftId } = useLocalSearchParams();
@@ -27,7 +28,7 @@ export default function NftScreen() {
   const { rootTheme } = useTheme();
   const paddingBottom = useBottomTabBarHeight();
 
-  if (!nft) return null;
+  if (!nft) return <Loading />;
 
   const backgroundColor = nft.previews.predominant_color || "$color2";
   const darkenedBackgroundColor = nft.previews.predominant_color

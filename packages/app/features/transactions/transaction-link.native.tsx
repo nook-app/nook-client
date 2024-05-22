@@ -19,9 +19,6 @@ export const TransactionLink = ({
         opacity={1}
         scale={1}
         y={0}
-        onPress={() => {
-          Linking.openURL(`https://www.onceupon.xyz/${transaction.hash}`);
-        }}
       >
         <TransactionDisplay transaction={transaction} />
       </View>

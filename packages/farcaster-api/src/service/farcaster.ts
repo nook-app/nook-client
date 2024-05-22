@@ -1248,7 +1248,7 @@ export class FarcasterService {
     const fids = await this.client.farcasterVerification.findMany({
       where: {
         address: {
-          in: addresses,
+          in: addresses.map((address) => address.toLowerCase()),
         },
         protocol: 0,
       },

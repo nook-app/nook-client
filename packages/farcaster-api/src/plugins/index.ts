@@ -14,13 +14,7 @@ declare module "fastify" {
 }
 
 export const farcasterPlugin = fp(async (fastify, opts) => {
-  const client = new PrismaClient({
-    datasources: {
-      db: {
-        url: process.env.FARCASTER_READ_DATABASE_URL,
-      },
-    },
-  });
+  const client = new PrismaClient();
   await client.$connect();
   fastify.decorate("farcaster", { client });
   fastify.addHook("onClose", async (fastify) => {

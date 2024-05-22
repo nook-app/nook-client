@@ -72,7 +72,7 @@ type EnrichedParty = {
   symbol?: string;
 };
 
-type Asset = {
+export type Asset = {
   contract: string;
   imageUrl: string;
   tokenId: string;

@@ -50,13 +50,43 @@ export const EmbedImage = ({
   noBorderRadius,
   skipCdn,
   blurhash,
+  disableZoom,
 }: {
   uri: string;
   noBorderRadius?: boolean;
   skipCdn?: boolean;
   blurhash?: string;
+  disableZoom?: boolean;
 }) => {
   const [height, setHeight] = useState(0);
+
+  const Component = (
+    <View
+      borderRadius={noBorderRadius ? "$0" : "$4"}
+      overflow="hidden"
+      maxHeight={600}
+      onLayout={({ nativeEvent }) => {
+        TImage.getSize(uri, (w, h) => {
+          if (w > 0) {
+            setHeight((h / w) * nativeEvent.layout.width);
+          }
+        });
+      }}
+    >
+      <Image
+        recyclingKey={uri}
+        source={{ uri: skipCdn ? uri : formatToCDN(uri) }}
+        style={{
+          width: "100%",
+          height,
+        }}
+        placeholder={{ blurhash }}
+        placeholderContentFit="cover"
+      />
+    </View>
+  );
+
+  if (disableZoom) return Component;
 
   return (
     <Link
@@ -67,29 +97,7 @@ export const EmbedImage = ({
       absolute
       unpressable
     >
-      <View
-        borderRadius={noBorderRadius ? "$0" : "$4"}
-        overflow="hidden"
-        maxHeight={600}
-        onLayout={({ nativeEvent }) => {
-          TImage.getSize(uri, (w, h) => {
-            if (w > 0) {
-              setHeight((h / w) * nativeEvent.layout.width);
-            }
-          });
-        }}
-      >
-        <Image
-          recyclingKey={uri}
-          source={{ uri: skipCdn ? uri : formatToCDN(uri) }}
-          style={{
-            width: "100%",
-            height,
-          }}
-          placeholder={{ blurhash }}
-          placeholderContentFit="cover"
-        />
-      </View>
+      {Component}
     </Link>
   );
 };

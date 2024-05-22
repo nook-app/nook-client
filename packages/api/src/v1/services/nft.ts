@@ -3,14 +3,18 @@ import {
   FarcasterUser,
   FetchNftCollectionsResponse,
   FetchNftCollectorsResponse,
+  FetchNftEventsResponse,
   FetchNftFarcasterCollectorsResponse,
   FetchNftsResponse,
   GetNftCollectionCollectorsRequest,
+  GetNftCollectionEventsRequest,
   GetNftCollectorsRequest,
+  GetNftEventsRequest,
   NftFarcasterOwner,
   NftFeedRequest,
   NftOwner,
   SimpleHashNFT,
+  SimpleHashNFTEvent,
   UserFilter,
   UserFilterType,
 } from "@nook/common/types";
@@ -159,12 +163,12 @@ export class NftService {
   async getFarcasterCollectors(
     req: GetNftCollectorsRequest,
   ): Promise<FetchNftFarcasterCollectorsResponse> {
-    let collectors = (await this.cache.getNftFarcasterOwners(req.nftId)) as
+    let collectors = (await this.cache.getNftOwners(req, true)) as
       | NftFarcasterOwner[]
       | undefined;
     if (!collectors) {
       await this.refreshNftOwners(req.nftId);
-      collectors = await this.cache.getNftFarcasterOwners(req.nftId);
+      collectors = await this.cache.getNftOwners(req, true);
     }
     if (!collectors) {
       return { data: [] };
@@ -489,6 +493,126 @@ export class NftService {
     return {
       owners: formatted,
       farcasterOwners,
+    };
+  }
+
+  async getNftEvents(
+    req: GetNftEventsRequest,
+  ): Promise<FetchNftEventsResponse> {
+    const [chain, contractAddress, tokenId] = req.nftId.split(".");
+
+    const params: Record<string, string> = {
+      order_by: "timestamp_desc",
+      limit: "25",
+      include_nft_details: "1",
+    };
+
+    if (req.cursor) {
+      params.cursor = req.cursor;
+    }
+
+    const result: {
+      transfers: SimpleHashNFTEvent[];
+      next_cursor?: string;
+    } = await this.makeRequest(
+      `/nfts/transfers/${chain}/${contractAddress}/${tokenId || 0}`,
+      params,
+    );
+
+    const addresses = result.transfers.flatMap(
+      ({ from_address, to_address }) => {
+        const addresses = [];
+        if (from_address) {
+          addresses.push(from_address);
+        }
+        if (to_address) {
+          addresses.push(to_address);
+        }
+        return addresses;
+      },
+    );
+
+    const users = await this.farcasterApi.getUsers({ addresses });
+    const userMap = users.data.reduce(
+      (acc, user) => {
+        for (const address of user.verifiedAddresses || []) {
+          acc[address.address] = user;
+        }
+        return acc;
+      },
+      {} as Record<string, FarcasterUser>,
+    );
+
+    return {
+      data: result.transfers.map((event) => ({
+        ...event,
+        from_user: event.from_address
+          ? userMap[event.from_address.toLowerCase()]
+          : undefined,
+        to_user: event.to_address
+          ? userMap[event.to_address.toLowerCase()]
+          : undefined,
+      })),
+      nextCursor: result.next_cursor,
+    };
+  }
+
+  async getNftCollectionEvents(
+    req: GetNftCollectionEventsRequest,
+  ): Promise<FetchNftEventsResponse> {
+    const params: Record<string, string> = {
+      order_by: "timestamp_desc",
+      limit: "25",
+      include_nft_details: "1",
+    };
+
+    if (req.cursor) {
+      params.cursor = req.cursor;
+    }
+
+    const result: {
+      transfers: SimpleHashNFTEvent[];
+      next_cursor?: string;
+    } = await this.makeRequest(
+      `/nfts/transfers/collection/${req.collectionId}`,
+      params,
+    );
+
+    const addresses = result.transfers.flatMap(
+      ({ from_address, to_address }) => {
+        const addresses = [];
+        if (from_address) {
+          addresses.push(from_address);
+        }
+        if (to_address) {
+          addresses.push(to_address);
+        }
+        return addresses;
+      },
+    );
+
+    const users = await this.farcasterApi.getUsers({ addresses });
+    const userMap = users.data.reduce(
+      (acc, user) => {
+        for (const address of user.verifiedAddresses || []) {
+          acc[address.address] = user;
+        }
+        return acc;
+      },
+      {} as Record<string, FarcasterUser>,
+    );
+
+    return {
+      data: result.transfers.map((event) => ({
+        ...event,
+        from_user: event.from_address
+          ? userMap[event.from_address.toLowerCase()]
+          : undefined,
+        to_user: event.to_address
+          ? userMap[event.to_address.toLowerCase()]
+          : undefined,
+      })),
+      nextCursor: result.next_cursor,
     };
   }
 

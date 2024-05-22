@@ -1,7 +1,7 @@
 "use client";
 
 import { NookText, View, XStack, YStack } from "@nook/app-ui";
-import { Transaction } from "@nook/common/types";
+import { Asset, Transaction } from "@nook/common/types";
 import {
   FarcasterUserAvatar,
   FarcasterUserTooltip,
@@ -115,7 +115,13 @@ const TransactionContent = ({ transaction }: { transaction: Transaction }) => {
     : undefined;
   const value = contextAction?.value;
   const theme = value ? stringToTheme(value) : undefined;
-  return (
+  const chain = CHAINS[`eip155:${transaction.chainId}`];
+
+  const asset = transaction.assetsEnriched
+    ? Object.values(transaction.assetsEnriched)[0]
+    : undefined;
+
+  const Component = (
     <YStack
       borderWidth="$0.5"
       borderColor="$borderColorBg"
@@ -140,12 +146,25 @@ const TransactionContent = ({ transaction }: { transaction: Transaction }) => {
           {value?.replaceAll("_", " ") || "unknown"}
         </NookText>
       </View>
-      <TransactionEmbed transaction={transaction} />
+      {asset && <TransactionEmbed asset={asset} />}
       <View padding="$2">
         <TransactionText transaction={transaction} />
       </View>
     </YStack>
   );
+
+  if (value === "MINTED" && asset && chain) {
+    return (
+      <Link
+        href={`/collectibles/${chain.id}.${asset?.contract}.${asset?.tokenId}`}
+        touchable
+      >
+        {Component}
+      </Link>
+    );
+  }
+
+  return Component;
 };
 
 const TransactionText = ({ transaction }: { transaction: Transaction }) => {
@@ -462,15 +481,14 @@ const TransactionText = ({ transaction }: { transaction: Transaction }) => {
   );
 };
 
-const TransactionEmbed = ({ transaction }: { transaction: Transaction }) => {
-  if (!transaction.assetsEnriched) return null;
-  const asset = Object.values(transaction.assetsEnriched)[0];
-  if (!asset?.imageUrl) return null;
+const TransactionEmbed = ({ asset }: { asset: Asset }) => {
+  if (!asset.imageUrl) return null;
   return (
     <EmbedImage
       uri={`${asset.imageUrl.split("?")[0]}?width=600`}
       noBorderRadius
       skipCdn
+      disableZoom
     />
   );
 };

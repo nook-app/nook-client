@@ -1,5 +1,6 @@
 import { FarcasterUser } from "./farcaster";
 import { UserFilter } from "./nook";
+import { SimpleHashNFTEvent } from "./simplehash";
 
 export type NftMutualsPreview = {
   preview: FarcasterUser[];
@@ -38,6 +39,18 @@ export type GetNftCollectorsRequest = {
   viewerFid?: string;
 };
 
+export type GetNftCollectionEventsRequest = {
+  collectionId: string;
+  cursor?: string;
+  viewerFid?: string;
+};
+
+export type GetNftEventsRequest = {
+  nftId: string;
+  cursor?: string;
+  viewerFid?: string;
+};
+
 export type NftFarcasterCollector = NftFarcasterOwner & {
   user?: FarcasterUser;
 };
@@ -69,3 +82,13 @@ export type NftFeedOrderBy =
   | "name__asc";
 
 export type NftFeedDisplay = "collections" | "tokens";
+
+export type NftEvent = SimpleHashNFTEvent & {
+  from_user?: FarcasterUser;
+  to_user?: FarcasterUser;
+};
+
+export type FetchNftEventsResponse = {
+  data: NftEvent[];
+  nextCursor?: string;
+};
