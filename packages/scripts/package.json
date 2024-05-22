@@ -8,7 +8,8 @@
     "daily-active-users": "ts-node src/daily-active-users.ts",
     "users-per-client": "ts-node src/users-per-client.ts",
     "generate-token": "ts-node src/generate-token.ts",
-    "fix-followers": "ts-node src/fix-followers.ts"
+    "fix-followers": "ts-node src/fix-followers.ts",
+    "refresh-collection-ownerships": "ts-node src/refresh-collection-ownerships.ts"
   },
   "dependencies": {
     "@farcaster/auth-client": "^0.1.0",

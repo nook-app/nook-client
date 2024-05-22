@@ -44,7 +44,6 @@ model FarcasterContentReference {
     @@index([fid, parentUrl, parentHash, timestamp(sort: Desc)])
     @@index([contentType, fid, parentHash, timestamp(sort: Desc)])
     @@index([contentType, parentUrl, parentHash, timestamp(sort: Desc)])
-    @@index([parentUrl, contentType, parentHash, timestamp(sort: Desc)])
     @@index([hasFrame, fid, parentHash, timestamp(sort: Desc)])
     @@index([timestamp(sort: Desc), hasFrame, parentUrl, parentHash])
 }

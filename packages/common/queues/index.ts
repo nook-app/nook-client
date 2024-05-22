@@ -18,6 +18,7 @@ export enum QueueName {
   Notifications = "notifications",
   ScheduledCast = "scheduled-cast",
   Content = "content",
+  OwnershipRefresh = "ownership-refresh",
 }
 
 type QueueType = {
@@ -28,6 +29,7 @@ type QueueType = {
   [QueueName.Notifications]: Notification;
   [QueueName.ScheduledCast]: PendingCast;
   [QueueName.Content]: FarcasterContentReference;
+  [QueueName.OwnershipRefresh]: { collectionId?: string; nftId?: string };
 };
 
 const connection = new Redis({

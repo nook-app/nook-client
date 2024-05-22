@@ -57,3 +57,19 @@ export const publishContent = async (reference: FarcasterContentReference) => {
     },
   });
 };
+
+export const refreshCollectionOwnerships = async (collectionIds: string[]) => {
+  const queue = getQueue(QueueName.OwnershipRefresh);
+  await queue.addBulk(
+    collectionIds.map((collectionId) => ({
+      name: `collection-${collectionId}`,
+      data: { collectionId },
+      opts: {
+        jobId: `collection-${collectionId}`,
+        removeOnComplete: {
+          count: 10000,
+        },
+      },
+    })),
+  );
+};

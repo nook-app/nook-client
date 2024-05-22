@@ -15,6 +15,7 @@ import {
 } from "@nook/common/types";
 import { decodeCursor, encodeCursor } from "@nook/common/utils";
 import { FastifyInstance } from "fastify";
+import { refreshCollectionOwnerships } from "@nook/common/queues/enqueue";
 
 const SIMPLEHASH_BASE_URL = "https://api.simplehash.com/api/v0";
 const SIMPLEHASH_API_KEY = process.env.SIMPLEHASH_API_KEY as string;
@@ -231,6 +232,7 @@ export class NftService {
           : undefined,
     };
   }
+
   async refreshCollectionOwners(collectionId: string) {
     const owners: {
       nft_id: string;
@@ -354,7 +356,16 @@ export class NftService {
       params.order_by = request.filter.orderBy;
     }
 
-    const result = await this.makeRequest("/nfts/owners_v2", params);
+    const result: { nfts: SimpleHashNFT[]; next_cursor?: string } =
+      await this.makeRequest("/nfts/owners_v2", params);
+
+    const collectionIds = new Set<string>();
+    for (const nft of result.nfts) {
+      if (!nft.collection.collection_id) continue;
+      collectionIds.add(nft.collection.collection_id);
+    }
+
+    await refreshCollectionOwnerships(Array.from(collectionIds));
 
     return {
       data: result.nfts,

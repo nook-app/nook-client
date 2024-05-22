@@ -41,8 +41,6 @@ model FarcasterUsernameProof {
 
     timestamp DateTime
     deletedAt DateTime?
-
-    @@index([fid])
 }
 
 model FarcasterVerification {
@@ -102,8 +100,6 @@ model FarcasterCast {
     @@index([rootParentUrl, timestamp(sort: Desc), deletedAt, parentHash])
     @@index([fid, deletedAt, parentHash, timestamp(sort: Desc)])
     @@index([rootParentUrl, fid, deletedAt, parentHash, timestamp(sort: Desc)])
-    @@index([timestamp(sort: Desc), fid, deletedAt, parentHash])
-    @@index([timestamp(sort: Desc), rootParentUrl, deletedAt, parentHash])
     @@index([timestamp(sort: Desc), fid, rootParentUrl, deletedAt, parentHash])
     @@index([timestamp(sort: Desc), deletedAt, parentHash])
 }
@@ -206,7 +202,6 @@ model FarcasterLink {
     @@id([fid, linkType, targetFid])
     @@index([targetFid, linkType, timestamp(sort: Desc)])
     @@index([fid, linkType, timestamp(sort: Desc)])
-    @@index([timestamp(sort: Desc), targetFid, linkType])
     @@index([timestamp(sort: Desc), fid, linkType])
     @@index([fid, targetFid, linkType, deletedAt])
     @@index([targetFid, fid, linkType, deletedAt])
@@ -250,9 +245,6 @@ model FarcasterCastStats {
     recasts Int @default(0)
     replies Int @default(0)
     quotes  Int @default(0)
-
-    @@index([likes(sort: Desc)])
-    @@index([fid])
 }
 
 model FarcasterParentUrlStats {
@@ -262,13 +254,4 @@ model FarcasterParentUrlStats {
     replies Int @default(0)
 
     @@index([casts])
-}
-
-model FarcasterCashtagStats {
-    timestamp       DateTime
-    cashtag         String
-    count           Int
-    powerBadgeCount Int
-
-    @@id([timestamp, cashtag])
 }
