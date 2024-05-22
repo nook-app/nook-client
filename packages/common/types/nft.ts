@@ -24,8 +24,15 @@ export type NftFarcasterOwner = {
   tokens: NftOwner[];
 };
 
-export type GetNftCollectorsRequest = {
+export type GetNftCollectionCollectorsRequest = {
   collectionId: string;
+  cursor?: string;
+  sort?: "quantity" | "acquired";
+  viewerFid?: string;
+};
+
+export type GetNftCollectorsRequest = {
+  nftId: string;
   cursor?: string;
   sort?: "quantity" | "acquired";
   viewerFid?: string;

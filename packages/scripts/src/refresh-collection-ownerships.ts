@@ -2,12 +2,28 @@ import { QueueName, getWorker } from "@nook/common/queues";
 
 const run = async () => {
   const worker = getWorker(QueueName.OwnershipRefresh, async (job) => {
-    const { collectionId } = job.data as { collectionId?: string };
+    const { collectionId, nftId } = job.data as {
+      collectionId?: string;
+      nftId?: string;
+    };
 
+    console.log(`[${job.id}] processing`);
     if (collectionId) {
-      console.log(`[${job.id}] processing`);
       await fetch(
         "https://nook-api.up.railway.app/v1/nfts/collections/collectors/farcaster",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            collectionId,
+          }),
+        },
+      );
+    } else if (nftId) {
+      await fetch(
+        "https://nook-api.up.railway.app/v1/nfts/collectors/farcaster",
         {
           method: "POST",
           headers: {

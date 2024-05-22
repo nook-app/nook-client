@@ -56,14 +56,12 @@ export class FarcasterService {
   private cache: FarcasterCacheClient;
   private contentClient: ContentAPIClient;
   private hub: HubRpcClient;
-  private writeClient: PrismaClient;
 
   constructor(fastify: FastifyInstance) {
     this.client = fastify.farcaster.client;
     this.cache = new FarcasterCacheClient(fastify.redis.client);
     this.contentClient = new ContentAPIClient();
     this.hub = getSSLHubRpcClient(process.env.HUB_RPC_ENDPOINT as string);
-    this.writeClient = fastify.farcasterWrite.client;
   }
 
   async getUserFollowingFids(fid: string) {
@@ -1084,7 +1082,7 @@ export class FarcasterService {
             creatorId: channel.leadFid?.toString(),
           };
 
-          await this.writeClient.farcasterParentUrl.upsert({
+          await this.client.farcasterParentUrl.upsert({
             where: {
               url: channel.url,
             },

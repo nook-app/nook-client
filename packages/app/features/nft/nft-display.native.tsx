@@ -8,7 +8,7 @@ export const NftDisplay = ({ nft }: { nft: SimpleHashNFT }) => {
   return (
     <Link
       href={{
-        pathname: "/nfts/[nftId]",
+        pathname: "/collectibles/[nftId]",
         params: { nftId: nft.nft_id },
       }}
       unpressable

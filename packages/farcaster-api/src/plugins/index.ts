@@ -7,9 +7,6 @@ declare module "fastify" {
     farcaster: {
       client: PrismaClient;
     };
-    farcasterWrite: {
-      client: PrismaClient;
-    };
     redis: {
       client: RedisClient;
     };
@@ -28,15 +25,6 @@ export const farcasterPlugin = fp(async (fastify, opts) => {
   fastify.decorate("farcaster", { client });
   fastify.addHook("onClose", async (fastify) => {
     await fastify.farcaster.client.$disconnect();
-  });
-});
-
-export const farcasterWritePlugin = fp(async (fastify, opts) => {
-  const client = new PrismaClient();
-  await client.$connect();
-  fastify.decorate("farcasterWrite", { client });
-  fastify.addHook("onClose", async (fastify) => {
-    await fastify.farcasterWrite.client.$disconnect();
   });
 });
 

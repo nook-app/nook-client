@@ -3,34 +3,34 @@
 import {
   FetchNftCollectorsResponse,
   FetchNftFarcasterCollectorsResponse,
-  GetNftCollectionCollectorsRequest,
+  GetNftCollectorsRequest,
   NftFarcasterCollector,
   NftOwner,
 } from "@nook/common/types";
 import {
-  useNFtCollectionCollectors,
-  useNFtCollectionFarcasterCollectors,
-  useNFtCollectionFollowingCollectors,
+  useNFtCollectors,
+  useNFtFarcasterCollectors,
+  useNFtFollowingCollectors,
 } from "../../api/nft";
 import { NftInfiniteFeed } from "./infinite-feed";
 import { Loading } from "../../components/loading";
 import { CollectorItem, FarcasterCollectorItem } from "./collector-item";
 
-export const NftCollectionCollectors = ({
+export const NftCollectors = ({
   req,
   initialData,
   asTabs,
   paddingTop,
   paddingBottom,
 }: {
-  req: GetNftCollectionCollectorsRequest;
+  req: GetNftCollectorsRequest;
   initialData?: FetchNftCollectorsResponse;
   asTabs?: boolean;
   paddingTop?: number;
   paddingBottom?: number;
 }) => {
   const { data, isLoading, hasNextPage, fetchNextPage, isFetchingNextPage } =
-    useNFtCollectionCollectors(req, initialData);
+    useNFtCollectors(req, initialData);
 
   if (isLoading) {
     return <Loading />;
@@ -52,21 +52,21 @@ export const NftCollectionCollectors = ({
   );
 };
 
-export const NftCollectionFarcasterCollectors = ({
+export const NftFarcasterCollectors = ({
   req,
   initialData,
   asTabs,
   paddingTop,
   paddingBottom,
 }: {
-  req: GetNftCollectionCollectorsRequest;
+  req: GetNftCollectorsRequest;
   initialData?: FetchNftFarcasterCollectorsResponse;
   asTabs?: boolean;
   paddingTop?: number;
   paddingBottom?: number;
 }) => {
   const { data, isLoading, hasNextPage, fetchNextPage, isFetchingNextPage } =
-    useNFtCollectionFarcasterCollectors(req, initialData);
+    useNFtFarcasterCollectors(req, initialData);
 
   if (isLoading) {
     return <Loading />;
@@ -90,21 +90,21 @@ export const NftCollectionFarcasterCollectors = ({
   );
 };
 
-export const NftCollectionFollowingCollectors = ({
+export const NftFollowingCollectors = ({
   req,
   initialData,
   asTabs,
   paddingTop,
   paddingBottom,
 }: {
-  req: GetNftCollectionCollectorsRequest;
+  req: GetNftCollectorsRequest;
   initialData?: FetchNftFarcasterCollectorsResponse;
   asTabs?: boolean;
   paddingTop?: number;
   paddingBottom?: number;
 }) => {
   const { data, isLoading, hasNextPage, fetchNextPage, isFetchingNextPage } =
-    useNFtCollectionFollowingCollectors(req, initialData);
+    useNFtFollowingCollectors(req, initialData);
 
   if (isLoading) {
     return <Loading />;

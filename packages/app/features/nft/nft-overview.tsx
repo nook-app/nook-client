@@ -24,7 +24,10 @@ export const NftOverview = ({ nft }: { nft: SimpleHashNFT }) => {
           </Text>
         )}
         {nft.owner_count && nft.owner_count > 1 && (
-          <Link href={`/nfts/${nft.nft_id}/owners`} touchable>
+          <Link
+            href={`/collectibles/${nft.nft_id}/collectors-farcaster`}
+            touchable
+          >
             <Text
               fontWeight="600"
               numberOfLines={1}
@@ -107,19 +110,21 @@ export const NftCollection = ({ nft }: { nft: SimpleHashNFT }) => {
         </XStack>
       </Link>
       <XStack gap="$2">
-        <View
-          flexDirection="row"
-          alignItems="center"
-          gap="$1"
-          hitSlop={{ top: 10, right: 10, bottom: 10, left: 10 }}
-        >
-          <Text fontWeight="600" fontSize={15}>
-            {formatNumber(nft.collection?.distinct_nft_count || 0)}
-          </Text>
-          <Text opacity={0.8} fontSize={15}>
-            items
-          </Text>
-        </View>
+        <Link href={`/collections/${nft.collection.collection_id}`} touchable>
+          <View
+            flexDirection="row"
+            alignItems="center"
+            gap="$1"
+            hitSlop={{ top: 10, right: 10, bottom: 10, left: 10 }}
+          >
+            <Text fontWeight="600" fontSize={15}>
+              {formatNumber(nft.collection?.distinct_nft_count || 0)}
+            </Text>
+            <Text opacity={0.8} fontSize={15}>
+              {`item${nft.collection.distinct_nft_count === 1 ? "" : "s"}`}
+            </Text>
+          </View>
+        </Link>
         <Link
           href={`/collections/${nft.collection.collection_id}/collectors-farcaster`}
           touchable
@@ -134,7 +139,9 @@ export const NftCollection = ({ nft }: { nft: SimpleHashNFT }) => {
               {formatNumber(nft.collection?.distinct_owner_count || 0)}
             </Text>
             <Text opacity={0.8} fontSize={15}>
-              collectors
+              {`collector${
+                nft.collection.distinct_owner_count === 1 ? "" : "s"
+              }`}
             </Text>
           </View>
         </Link>

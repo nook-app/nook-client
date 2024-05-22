@@ -9,7 +9,7 @@ export const NftMenu = ({
 }: { nft: SimpleHashNFT; trigger: ReactNode }) => {
   return (
     <Menu trigger={trigger}>
-      <CopyLink link={`https://nook.social/nfts/${nft.nft_id}`} />
+      <CopyLink link={`https://nook.social/collectibles/${nft.nft_id}`} />
     </Menu>
   );
 };

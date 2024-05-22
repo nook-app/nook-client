@@ -5,7 +5,7 @@ import { Link } from "../../components/link";
 export const NftDisplay = ({ nft }: { nft: SimpleHashNFT }) => {
   const image = nft.previews.image_medium_url;
   return (
-    <Link href={`/nfts/${nft.nft_id}`} unpressable>
+    <Link href={`/collectibles/${nft.nft_id}`} unpressable>
       <View
         backgroundColor="$color2"
         aspectRatio={1}

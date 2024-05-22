@@ -146,7 +146,22 @@ export default function HomeLayout() {
         options={{ title: "Edit Display Mode" }}
       />
       <Stack.Screen
-        name="nfts/[nftId]/index"
+        name="collectibles/[nftId]/index"
+        options={{ headerShown: false }}
+        getId={({ params }) => params?.nftId}
+      />
+      <Stack.Screen
+        name="collectibles/[nftId]/collectors"
+        options={{ headerShown: false }}
+        getId={({ params }) => params?.nftId}
+      />
+      <Stack.Screen
+        name="collectibles/[nftId]/collectors-following"
+        options={{ headerShown: false }}
+        getId={({ params }) => params?.nftId}
+      />
+      <Stack.Screen
+        name="collectibles/[nftId]/collectors-farcaster"
         options={{ headerShown: false }}
         getId={({ params }) => params?.nftId}
       />

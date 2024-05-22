@@ -4,6 +4,7 @@ import {
   FetchNftCollectorsResponse,
   FetchNftFarcasterCollectorsResponse,
   FetchNftsResponse,
+  GetNftCollectionCollectorsRequest,
   GetNftCollectorsRequest,
   NftFeedFilter,
   NftMutualsPreview,
@@ -121,7 +122,7 @@ export const fetchCollectionMutualsPreview = async (
 };
 
 export const fetchNftCollectionCollectors = async (
-  req: GetNftCollectorsRequest,
+  req: GetNftCollectionCollectorsRequest,
   cursor?: string,
 ): Promise<FetchNftCollectorsResponse> => {
   return await makeRequest("/v1/nfts/collections/collectors", {
@@ -134,7 +135,7 @@ export const fetchNftCollectionCollectors = async (
 };
 
 export const useNFtCollectionCollectors = (
-  req: GetNftCollectorsRequest,
+  req: GetNftCollectionCollectorsRequest,
   initialData?: FetchNftCollectorsResponse,
 ) => {
   return useInfiniteQuery<
@@ -161,7 +162,7 @@ export const useNFtCollectionCollectors = (
 };
 
 export const fetchNftCollectionFarcasterCollectors = async (
-  req: GetNftCollectorsRequest,
+  req: GetNftCollectionCollectorsRequest,
   cursor?: string,
 ): Promise<FetchNftFarcasterCollectorsResponse> => {
   return await makeRequest("/v1/nfts/collections/collectors/farcaster", {
@@ -174,7 +175,7 @@ export const fetchNftCollectionFarcasterCollectors = async (
 };
 
 export const useNFtCollectionFarcasterCollectors = (
-  req: GetNftCollectorsRequest,
+  req: GetNftCollectionCollectorsRequest,
   initialData?: FetchNftFarcasterCollectorsResponse,
 ) => {
   const addUsers = useUserStore((state) => state.addUsers);
@@ -206,7 +207,7 @@ export const useNFtCollectionFarcasterCollectors = (
 };
 
 export const fetchNftCollectionFollowingCollectors = async (
-  req: GetNftCollectorsRequest,
+  req: GetNftCollectionCollectorsRequest,
   cursor?: string,
 ): Promise<FetchNftFarcasterCollectorsResponse> => {
   return await makeRequest("/v1/nfts/collections/collectors/following", {
@@ -219,7 +220,7 @@ export const fetchNftCollectionFollowingCollectors = async (
 };
 
 export const useNFtCollectionFollowingCollectors = (
-  req: GetNftCollectorsRequest,
+  req: GetNftCollectionCollectorsRequest,
   initialData?: FetchNftFarcasterCollectorsResponse,
 ) => {
   const addUsers = useUserStore((state) => state.addUsers);
@@ -288,5 +289,135 @@ export const useCollectionNfts = (
       : undefined,
     initialPageParam: initialData?.nextCursor,
     refetchOnWindowFocus: false,
+  });
+};
+
+export const fetchNftCollectors = async (
+  req: GetNftCollectorsRequest,
+  cursor?: string,
+): Promise<FetchNftCollectorsResponse> => {
+  return await makeRequest("/v1/nfts/collectors", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ ...req, cursor }),
+  });
+};
+
+export const useNFtCollectors = (
+  req: GetNftCollectorsRequest,
+  initialData?: FetchNftCollectorsResponse,
+) => {
+  return useInfiniteQuery<
+    FetchNftCollectorsResponse,
+    unknown,
+    InfiniteData<FetchNftCollectorsResponse>,
+    string[],
+    string | undefined
+  >({
+    queryKey: ["nftCollectors", JSON.stringify(req)],
+    queryFn: async ({ pageParam }) => {
+      const data = await fetchNftCollectors(req, pageParam);
+      return data;
+    },
+    getNextPageParam: (lastPage) => lastPage.nextCursor,
+    initialData: initialData
+      ? {
+          pages: [initialData],
+          pageParams: [undefined],
+        }
+      : undefined,
+    initialPageParam: initialData?.nextCursor,
+  });
+};
+
+export const fetchNftFarcasterCollectors = async (
+  req: GetNftCollectorsRequest,
+  cursor?: string,
+): Promise<FetchNftFarcasterCollectorsResponse> => {
+  return await makeRequest("/v1/nfts/collectors/farcaster", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ ...req, cursor }),
+  });
+};
+
+export const useNFtFarcasterCollectors = (
+  req: GetNftCollectorsRequest,
+  initialData?: FetchNftFarcasterCollectorsResponse,
+) => {
+  const addUsers = useUserStore((state) => state.addUsers);
+  return useInfiniteQuery<
+    FetchNftFarcasterCollectorsResponse,
+    unknown,
+    InfiniteData<FetchNftFarcasterCollectorsResponse>,
+    string[],
+    string | undefined
+  >({
+    queryKey: ["nftCollectors", JSON.stringify(req)],
+    queryFn: async ({ pageParam }) => {
+      const data = await fetchNftFarcasterCollectors(req, pageParam);
+      const users = data.data
+        .filter((collector) => collector.user)
+        .map((collector) => collector.user) as FarcasterUser[];
+      addUsers(users);
+      return data;
+    },
+    getNextPageParam: (lastPage) => lastPage.nextCursor,
+    initialData: initialData
+      ? {
+          pages: [initialData],
+          pageParams: [undefined],
+        }
+      : undefined,
+    initialPageParam: initialData?.nextCursor,
+  });
+};
+
+export const fetchNftFollowingCollectors = async (
+  req: GetNftCollectorsRequest,
+  cursor?: string,
+): Promise<FetchNftFarcasterCollectorsResponse> => {
+  return await makeRequest("/v1/nfts/collectors/following", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ ...req, cursor }),
+  });
+};
+
+export const useNFtFollowingCollectors = (
+  req: GetNftCollectorsRequest,
+  initialData?: FetchNftFarcasterCollectorsResponse,
+) => {
+  const addUsers = useUserStore((state) => state.addUsers);
+  return useInfiniteQuery<
+    FetchNftFarcasterCollectorsResponse,
+    unknown,
+    InfiniteData<FetchNftFarcasterCollectorsResponse>,
+    string[],
+    string | undefined
+  >({
+    queryKey: ["nftCollectors", JSON.stringify(req)],
+    queryFn: async ({ pageParam }) => {
+      const data = await fetchNftFollowingCollectors(req, pageParam);
+      const users = data.data
+        .filter((collector) => collector.user)
+        .map((collector) => collector.user) as FarcasterUser[];
+      addUsers(users);
+      return data;
+    },
+    getNextPageParam: (lastPage) => lastPage.nextCursor,
+    initialData: initialData
+      ? {
+          pages: [initialData],
+          pageParams: [undefined],
+        }
+      : undefined,
+    initialPageParam: initialData?.nextCursor,
   });
 };

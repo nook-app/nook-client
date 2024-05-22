@@ -1,4 +1,8 @@
-import { GetNftCollectorsRequest, NftFeedRequest } from "@nook/common/types";
+import {
+  GetNftCollectionCollectorsRequest,
+  GetNftCollectorsRequest,
+  NftFeedRequest,
+} from "@nook/common/types";
 import { FastifyInstance } from "fastify";
 import { NftService } from "../services/nft";
 
@@ -65,7 +69,7 @@ export const nftRoutes = async (fastify: FastifyInstance) => {
     );
 
     fastify.post<{
-      Body: GetNftCollectorsRequest;
+      Body: GetNftCollectionCollectorsRequest;
     }>("/nfts/collections/collectors", async (request, reply) => {
       let viewerFid: string | undefined;
       try {
@@ -82,7 +86,7 @@ export const nftRoutes = async (fastify: FastifyInstance) => {
     });
 
     fastify.post<{
-      Body: GetNftCollectorsRequest;
+      Body: GetNftCollectionCollectorsRequest;
     }>("/nfts/collections/collectors/farcaster", async (request, reply) => {
       let viewerFid: string | undefined;
       try {
@@ -97,8 +101,9 @@ export const nftRoutes = async (fastify: FastifyInstance) => {
 
       return reply.send(response);
     });
+
     fastify.post<{
-      Body: GetNftCollectorsRequest;
+      Body: GetNftCollectionCollectorsRequest;
     }>("/nfts/collections/collectors/following", async (request, reply) => {
       const { fid } = (await request.jwtDecode()) as { fid: string };
 
@@ -106,6 +111,50 @@ export const nftRoutes = async (fastify: FastifyInstance) => {
         request.body,
         fid,
       );
+
+      return reply.send(response);
+    });
+
+    fastify.post<{
+      Body: GetNftCollectorsRequest;
+    }>("/nfts/collectors", async (request, reply) => {
+      let viewerFid: string | undefined;
+      try {
+        const { fid } = (await request.jwtDecode()) as { fid: string };
+        viewerFid = fid;
+      } catch (e) {}
+
+      const response = await service.getCollectors({
+        ...request.body,
+        viewerFid,
+      });
+
+      return reply.send(response);
+    });
+
+    fastify.post<{
+      Body: GetNftCollectorsRequest;
+    }>("/nfts/collectors/farcaster", async (request, reply) => {
+      let viewerFid: string | undefined;
+      try {
+        const { fid } = (await request.jwtDecode()) as { fid: string };
+        viewerFid = fid;
+      } catch (e) {}
+
+      const response = await service.getFarcasterCollectors({
+        ...request.body,
+        viewerFid,
+      });
+
+      return reply.send(response);
+    });
+
+    fastify.post<{
+      Body: GetNftCollectorsRequest;
+    }>("/nfts/collectors/following", async (request, reply) => {
+      const { fid } = (await request.jwtDecode()) as { fid: string };
+
+      const response = await service.getFollowingCollectors(request.body, fid);
 
       return reply.send(response);
     });

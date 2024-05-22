@@ -5,6 +5,7 @@ import {
   FetchNftCollectorsResponse,
   FetchNftFarcasterCollectorsResponse,
   FetchNftsResponse,
+  GetNftCollectionCollectorsRequest,
   GetNftCollectorsRequest,
   NftFarcasterOwner,
   NftFeedRequest,
@@ -15,7 +16,10 @@ import {
 } from "@nook/common/types";
 import { decodeCursor, encodeCursor } from "@nook/common/utils";
 import { FastifyInstance } from "fastify";
-import { refreshCollectionOwnerships } from "@nook/common/queues";
+import {
+  refreshCollectionOwnerships,
+  refreshNftOwners,
+} from "@nook/common/queues";
 
 const SIMPLEHASH_BASE_URL = "https://api.simplehash.com/api/v0";
 const SIMPLEHASH_API_KEY = process.env.SIMPLEHASH_API_KEY as string;
@@ -65,8 +69,172 @@ export class NftService {
     this.cache = new NftCacheClient(fastify.feed.client);
   }
 
-  async getCollectionFollowingCollectors(
+  async getFollowingCollectors(
     req: GetNftCollectorsRequest,
+    viewerFid: string,
+  ) {
+    const getCollectors = async () => {
+      let collectors = await this.cache.getNftFarcasterOwners(req.nftId);
+      if (!collectors) {
+        await this.refreshNftOwners(req.nftId);
+        collectors = await this.cache.getNftFarcasterOwners(req.nftId);
+      }
+      return collectors;
+    };
+    const [collectors, following] = await Promise.all([
+      getCollectors(),
+      this.farcasterApi.getUserFollowingFids(viewerFid),
+    ]);
+
+    if (!collectors) {
+      return { data: [] };
+    }
+
+    const followingCollectors = collectors.filter(({ fid }) =>
+      following.data.includes(fid),
+    );
+
+    const fids = followingCollectors
+      .map(({ fid }) => fid)
+      .filter(Boolean) as string[];
+    const users = await this.farcasterApi.getUsers({ fids }, viewerFid);
+    const userMap = users.data.reduce(
+      (acc, user) => {
+        acc[user.fid] = user;
+        return acc;
+      },
+      {} as Record<string, FarcasterUser>,
+    );
+
+    return {
+      data: followingCollectors.map((collector) => ({
+        ...collector,
+        user: userMap[collector.fid],
+      })),
+    };
+  }
+
+  async getCollectors(
+    req: GetNftCollectorsRequest,
+  ): Promise<FetchNftCollectorsResponse> {
+    let collectors = (await this.cache.getNftOwners(req)) as
+      | NftOwner[]
+      | undefined;
+    if (!collectors) {
+      await this.refreshNftOwners(req.nftId);
+      collectors = await this.cache.getNftOwners(req);
+    }
+
+    if (!collectors) {
+      return { data: [] };
+    }
+
+    const decodedCursor = decodeCursor(req.cursor);
+    const currentPage = decodedCursor?.page ? Number(decodedCursor.page) : 0;
+
+    const fids = collectors.map(({ fid }) => fid).filter(Boolean) as string[];
+    const users = await this.farcasterApi.getUsers({ fids }, req.viewerFid);
+    const userMap = users.data.reduce(
+      (acc, user) => {
+        acc[user.fid] = user;
+        return acc;
+      },
+      {} as Record<string, FarcasterUser>,
+    );
+
+    return {
+      data: collectors.map((collector) => ({
+        ...collector,
+        user: collector.fid ? userMap[collector.fid] : undefined,
+      })),
+      nextCursor:
+        collectors.length >= MAX_PAGE_SIZE
+          ? encodeCursor({
+              page: currentPage + 1,
+            })
+          : undefined,
+    };
+  }
+
+  async getFarcasterCollectors(
+    req: GetNftCollectorsRequest,
+  ): Promise<FetchNftFarcasterCollectorsResponse> {
+    let collectors = (await this.cache.getNftFarcasterOwners(req.nftId)) as
+      | NftFarcasterOwner[]
+      | undefined;
+    if (!collectors) {
+      await this.refreshNftOwners(req.nftId);
+      collectors = await this.cache.getNftFarcasterOwners(req.nftId);
+    }
+    if (!collectors) {
+      return { data: [] };
+    }
+
+    const fids = collectors.map(({ fid }) => fid).filter(Boolean) as string[];
+    const users = await this.farcasterApi.getUsers({ fids }, req.viewerFid);
+    const userMap = users.data.reduce(
+      (acc, user) => {
+        acc[user.fid] = user;
+        return acc;
+      },
+      {} as Record<string, FarcasterUser>,
+    );
+
+    const decodedCursor = decodeCursor(req.cursor);
+    const currentPage = decodedCursor?.page ? Number(decodedCursor.page) : 0;
+
+    return {
+      data: collectors.map((collector) => ({
+        ...collector,
+        user: userMap[collector.fid],
+      })),
+      nextCursor:
+        collectors.length >= MAX_PAGE_SIZE
+          ? encodeCursor({
+              page: currentPage + 1,
+            })
+          : undefined,
+    };
+  }
+
+  async getCollectionMutualsPreview(collectionId: string, viewerFid: string) {
+    const cached = await this.cache.getMutuals(collectionId, viewerFid);
+    if (cached) {
+      return cached;
+    }
+
+    let owners = await this.cache.getCollectionFarcasterOwners(collectionId);
+    if (!owners || owners.length === 0) {
+      const refreshed = await this.refreshCollectionOwners(collectionId);
+      owners = refreshed.farcasterOwners;
+    }
+
+    const following = await this.farcasterApi.getUserFollowingFids(viewerFid);
+
+    const mutualOwners = owners.filter(
+      ({ fid }) => fid && following.data.includes(fid),
+    );
+
+    const previewFids = mutualOwners
+      .map(({ fid }) => fid)
+      .slice(0, 3) as string[];
+
+    const previewUsers = await this.farcasterApi.getUsers({
+      fids: previewFids,
+    });
+
+    const mutuals = {
+      preview: previewUsers.data,
+      total: mutualOwners.length,
+    };
+
+    await this.cache.setMutuals(collectionId, viewerFid, mutuals);
+
+    return mutuals;
+  }
+
+  async getCollectionFollowingCollectors(
+    req: GetNftCollectionCollectorsRequest,
     viewerFid: string,
   ) {
     const getCollectors = async () => {
@@ -114,44 +282,8 @@ export class NftService {
     };
   }
 
-  async getCollectionMutualsPreview(collectionId: string, viewerFid: string) {
-    const cached = await this.cache.getMutuals(collectionId, viewerFid);
-    if (cached) {
-      return cached;
-    }
-
-    let owners = await this.cache.getCollectionFarcasterOwners(collectionId);
-    if (!owners || owners.length === 0) {
-      const refreshed = await this.refreshCollectionOwners(collectionId);
-      owners = refreshed.farcasterOwners;
-    }
-
-    const following = await this.farcasterApi.getUserFollowingFids(viewerFid);
-
-    const mutualOwners = owners.filter(
-      ({ fid }) => fid && following.data.includes(fid),
-    );
-
-    const previewFids = mutualOwners
-      .map(({ fid }) => fid)
-      .slice(0, 3) as string[];
-
-    const previewUsers = await this.farcasterApi.getUsers({
-      fids: previewFids,
-    });
-
-    const mutuals = {
-      preview: previewUsers.data,
-      total: mutualOwners.length,
-    };
-
-    await this.cache.setMutuals(collectionId, viewerFid, mutuals);
-
-    return mutuals;
-  }
-
   async getCollectionCollectors(
-    req: GetNftCollectorsRequest,
+    req: GetNftCollectionCollectorsRequest,
   ): Promise<FetchNftCollectorsResponse> {
     let collectors = (await this.cache.getCollectionOwners(req)) as
       | NftOwner[]
@@ -193,7 +325,7 @@ export class NftService {
   }
 
   async getCollectionFarcasterCollectors(
-    req: GetNftCollectorsRequest,
+    req: GetNftCollectionCollectorsRequest,
   ): Promise<FetchNftFarcasterCollectorsResponse> {
     let collectors = (await this.cache.getCollectionOwners(req, true)) as
       | NftFarcasterOwner[]
@@ -230,6 +362,68 @@ export class NftService {
               page: currentPage + 1,
             })
           : undefined,
+    };
+  }
+
+  async refreshNftOwners(nftId: string) {
+    const [chain, contractAddress, tokenId] = nftId.split(".");
+    const owners: {
+      nft_id: string;
+      owner_address: string;
+      token_id: string;
+      quantity: number;
+      quantity_string: string;
+      first_acquired_date: string;
+      last_acquired_date: string;
+    }[] = [];
+
+    let nextCursor: string | undefined;
+    do {
+      const params: Record<string, string> = {
+        limit: "1000",
+      };
+      if (nextCursor) {
+        params.cursor = nextCursor;
+      }
+      const result = await this.makeRequest(
+        `/nfts/owners/${chain}/${contractAddress}/${tokenId || 0}`,
+        params,
+      );
+      owners.push(...result.owners);
+      nextCursor = result.next_cursor;
+    } while (nextCursor && owners.length < 50000);
+
+    const addresses = owners.map(({ owner_address }) => owner_address);
+
+    const fidPromises = [];
+    for (let i = 0; i < addresses.length; i += 1000) {
+      fidPromises.push(
+        this.farcasterApi.getUserFids({
+          addresses: addresses.slice(i, i + 1000),
+        }),
+      );
+    }
+    const fids = await Promise.all(fidPromises).then((results) =>
+      results.flatMap((result) => result.data),
+    );
+
+    const formatted: NftOwner[] = owners.map((owner, i) => ({
+      nftId: owner.nft_id,
+      ownerAddress: owner.owner_address,
+      tokenId: owner.token_id,
+      quantity: owner.quantity,
+      firstAcquiredDate: new Date(owner.first_acquired_date).getTime(),
+      lastAcquiredDate: new Date(owner.last_acquired_date).getTime(),
+      fid: fids[i],
+    }));
+
+    const farcasterOwners = this.toFarcasterOwners(formatted);
+
+    await this.cache.setNftOwners(nftId, formatted, farcasterOwners);
+
+    return {
+      owners: formatted,
+      farcasterOwners,
     };
   }
 
@@ -365,7 +559,13 @@ export class NftService {
       collectionIds.add(nft.collection.collection_id);
     }
 
+    const nftIds = new Set<string>();
+    for (const nft of result.nfts) {
+      nftIds.add(nft.nft_id);
+    }
+
     await refreshCollectionOwnerships(Array.from(collectionIds));
+    await refreshNftOwners(Array.from(nftIds));
 
     return {
       data: result.nfts,
