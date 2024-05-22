@@ -5704,7 +5704,6 @@ __metadata:
     "@react-native-async-storage/async-storage": "npm:^1.23.1"
     "@react-native-community/netinfo": "npm:11.1.0"
     "@react-navigation/drawer": "npm:^6.6.15"
-    "@ronradtke/react-native-markdown-display": "npm:^8.0.0"
     "@shopify/flash-list": "npm:^1.6.3"
     "@tamagui/babel-plugin": "npm:^1.97.0"
     "@tamagui/font-inter": "npm:^1.97.1"
@@ -7203,21 +7202,6 @@ __metadata:
     estree-walker: "npm:^2.0.1"
     picomatch: "npm:^2.2.2"
   checksum: 10c0/3ee56b2c8f1ed8dfd0a92631da1af3a2dfdd0321948f089b3752b4de1b54dc5076701eadd0e5fc18bd191b77af594ac1db6279e83951238ba16bf8a414c64c48
-  languageName: node
-  linkType: hard
-
-"@ronradtke/react-native-markdown-display@npm:^8.0.0":
-  version: 8.0.0
-  resolution: "@ronradtke/react-native-markdown-display@npm:8.0.0"
-  dependencies:
-    css-to-react-native: "npm:^3.2.0"
-    markdown-it: "npm:^13.0.1"
-    prop-types: "npm:^15.7.2"
-    react-native-fit-image: "npm:^1.5.5"
-  peerDependencies:
-    react: ">=16.2.0"
-    react-native: ">=0.50.4"
-  checksum: 10c0/36b4afa1efbef1ddf77a72c916864b7153e24fc671850b6b1fde2db33b2b4fe3429a16e6e63c3b98d425ee6e225e604ed9ce618211f04ecf661dc5e75ac6c46c
   languageName: node
   linkType: hard
 
@@ -14418,7 +14402,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"css-to-react-native@npm:^3.0.0, css-to-react-native@npm:^3.2.0":
+"css-to-react-native@npm:^3.0.0":
   version: 3.2.0
   resolution: "css-to-react-native@npm:3.2.0"
   dependencies:
@@ -15311,13 +15295,6 @@ __metadata:
   version: 2.0.3
   resolution: "entities@npm:2.0.3"
   checksum: 10c0/81463fde5f1e4432df6faa65afa00021f3979ac8387f81d3d111beeb08179e626130a4b7488e8c3cc3d74e0d04e99d3033ff7db80e05f4a1e961b5e1efe17731
-  languageName: node
-  linkType: hard
-
-"entities@npm:~3.0.1":
-  version: 3.0.1
-  resolution: "entities@npm:3.0.1"
-  checksum: 10c0/2d93f48fd86de0b0ed8ee34456aa47b4e74a916a5e663cfcc7048302e2c7e932002926daf5a00ad6d5691e3c90673a15d413704d86d7e1b9532f9bc00d975590
   languageName: node
   linkType: hard
 
@@ -20669,15 +20646,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"linkify-it@npm:^4.0.1":
-  version: 4.0.1
-  resolution: "linkify-it@npm:4.0.1"
-  dependencies:
-    uc.micro: "npm:^1.0.1"
-  checksum: 10c0/f1949ee2c7c2979c4f80c8c08f507d813f50775ebc5adfdb7ee662f28e0ee53dbd4a329d5231be67414405fc60d4e99b37536d6949702d311fe509a6bcbcf4a6
-  languageName: node
-  linkType: hard
-
 "listhen@npm:^1.7.2":
   version: 1.7.2
   resolution: "listhen@npm:1.7.2"
@@ -21083,21 +21051,6 @@ __metadata:
   bin:
     markdown-it: bin/markdown-it.js
   checksum: 10c0/7b2876599adb4c8bed0b45030db835d6e3e352e20b1c26624975d1b0f6d9ef54bbf6b63d29cb31b0cebb65b5ad7300aad063dc5d586a03c3745345bfc945c8fd
-  languageName: node
-  linkType: hard
-
-"markdown-it@npm:^13.0.1":
-  version: 13.0.2
-  resolution: "markdown-it@npm:13.0.2"
-  dependencies:
-    argparse: "npm:^2.0.1"
-    entities: "npm:~3.0.1"
-    linkify-it: "npm:^4.0.1"
-    mdurl: "npm:^1.0.1"
-    uc.micro: "npm:^1.0.5"
-  bin:
-    markdown-it: bin/markdown-it.js
-  checksum: 10c0/4fe0c41bc4c318c2901dc2923470c259cab137a4ab870001038877b942c9cc65072923e2d957f785de69a9da27c55657bd531607ccfd258246bd72a8deb8c2ee
   languageName: node
   linkType: hard
 
