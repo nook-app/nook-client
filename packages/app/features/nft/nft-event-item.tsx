@@ -9,9 +9,20 @@ import { ChainBadge } from "../../components/blockchain/chain-badge";
 import { useEns } from "../../hooks/useAddress";
 import { CdnAvatar } from "../../components/cdn-avatar";
 import { NftEventMenu } from "./nft-event-menu";
+import { formatUnits } from "viem";
 
 export const NftEventItem = ({ event }: { event: NftEvent }) => {
   const chain = SIMPLEHASH_CHAINS.find((chain) => chain.id === event.chain);
+
+  const user =
+    event.event_type === "mint" || event.event_type === "sale"
+      ? event.to_user
+      : event.from_user;
+  const address =
+    event.event_type === "mint" || event.event_type === "sale"
+      ? event.to_address
+      : event.from_address;
+
   return (
     <XStack
       gap="$2"
@@ -25,10 +36,8 @@ export const NftEventItem = ({ event }: { event: NftEvent }) => {
       padding="$2.5"
     >
       <YStack alignItems="center" width="$4" marginTop="$1">
-        {event.to_user && (
-          <FarcasterUserAvatar user={event.to_user} size="$4" asLink />
-        )}
-        {!event.to_user && <AddressAvatar address={event.to_address} />}
+        {user && <FarcasterUserAvatar user={user} size="$4" asLink />}
+        {!user && <AddressAvatar address={address} />}
       </YStack>
       <YStack flex={1} gap="$2">
         <YStack>
@@ -37,22 +46,16 @@ export const NftEventItem = ({ event }: { event: NftEvent }) => {
             alignItems="center"
             width="100%"
           >
-            {event.to_user && (
+            {user && (
               <XStack gap="$1.5" alignItems="center" flexShrink={1}>
                 <NookText
                   fontWeight="700"
                   numberOfLines={1}
                   ellipsizeMode="tail"
                 >
-                  {`${
-                    event.to_user.displayName ||
-                    event.to_user.username ||
-                    `!${event.to_user.fid}`
-                  }`}
+                  {`${user.displayName || user.username || `!${user.fid}`}`}
                 </NookText>
-                <FarcasterPowerBadge
-                  badge={event.to_user.badges?.powerBadge ?? false}
-                />
+                <FarcasterPowerBadge badge={user.badges?.powerBadge ?? false} />
                 <NookText
                   muted
                   numberOfLines={1}
@@ -60,16 +63,14 @@ export const NftEventItem = ({ event }: { event: NftEvent }) => {
                   flexShrink={1}
                 >
                   {`${
-                    event.to_user.username
-                      ? `@${event.to_user.username}`
-                      : `!${event.to_user.fid}`
+                    user.username ? `@${user.username}` : `!${user.fid}`
                   } · ${formatTimeAgo(new Date(event.timestamp).getTime())}`}
                 </NookText>
               </XStack>
             )}
-            {!event.to_user && (
+            {!user && (
               <XStack gap="$1.5" alignItems="center" flexShrink={1}>
-                <Address address={event.to_address} />
+                <Address address={address} fontWeight="700" />
                 <NookText
                   muted
                   numberOfLines={1}
@@ -96,11 +97,14 @@ export const NftEventItem = ({ event }: { event: NftEvent }) => {
   );
 };
 
-const Address = ({ address }: { address: string }) => {
+const Address = ({
+  address,
+  fontWeight,
+}: { address: string; fontWeight: "500" | "700" }) => {
   const { data } = useEns(address, true);
 
   return (
-    <NookText fontWeight="700" numberOfLines={1} ellipsizeMode="tail">
+    <NookText fontWeight={fontWeight} numberOfLines={1} ellipsizeMode="tail">
       {data?.ens ?? formatAddress(address)}
     </NookText>
   );
@@ -119,16 +123,44 @@ const AddressAvatar = ({ address }: { address: string }) => {
 };
 
 const EventText = ({ event }: { event: NftEvent }) => {
-  console.log(event);
   if (event.event_type === "mint") {
     return (
-      <Text lineHeight={20} fontWeight="500">
+      <Text lineHeight={24} fontWeight="500">
         Minted
       </Text>
     );
   }
+
+  if (event.event_type === "transfer") {
+    return (
+      <Text lineHeight={24}>
+        <Text fontWeight="500">Transferred</Text>
+        <Text>{" to "}</Text>
+        <Address address={event.to_address} fontWeight="500" />
+      </Text>
+    );
+  }
+
+  if (event.event_type === "sale") {
+    return (
+      <Text lineHeight={24}>
+        <Text fontWeight="500">Bought</Text>
+        <Text>{" from "}</Text>
+        <Address address={event.from_address} fontWeight="500" />
+        <Text>{" for "}</Text>
+        <Text fontWeight="500">
+          {formatUnits(
+            BigInt(event.sale_details.total_price),
+            event.sale_details.payment_token.decimals || 18,
+          )}{" "}
+          ETH
+        </Text>
+      </Text>
+    );
+  }
+
   return (
-    <Text lineHeight={20} fontWeight="500">
+    <Text lineHeight={24} fontWeight="500">
       {event.event_type}
     </Text>
   );

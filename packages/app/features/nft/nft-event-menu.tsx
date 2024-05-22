@@ -4,7 +4,6 @@ import { OpenLink } from "../../components/menu/menu-actions";
 import { CdnAvatar } from "../../components/cdn-avatar";
 
 export const NftEventMenu = ({ event }: { event: NftEvent }) => {
-  console.log(event);
   return (
     <Menu>
       <OpenLink

@@ -10,6 +10,7 @@ import { useNftCollectionEvents, useNftEvents } from "../../api/nft";
 import { NftInfiniteFeed } from "./infinite-feed";
 import { Loading } from "../../components/loading";
 import { NftEventItem } from "./nft-event-item";
+import { Separator } from "@nook/app-ui";
 
 export const NftEvents = ({
   req,
@@ -43,6 +44,9 @@ export const NftEvents = ({
       paddingTop={paddingTop}
       paddingBottom={paddingBottom}
       renderItem={({ item }) => <NftEventItem event={item as NftEvent} />}
+      ItemSeparatorComponent={() => (
+        <Separator width="100%" borderBottomColor="$borderColorBg" />
+      )}
     />
   );
 };
@@ -79,6 +83,9 @@ export const NftCollectionEvents = ({
       paddingTop={paddingTop}
       paddingBottom={paddingBottom}
       renderItem={({ item }) => <NftEventItem event={item as NftEvent} />}
+      ItemSeparatorComponent={() => (
+        <Separator width="100%" borderBottomColor="$borderColorBg" />
+      )}
     />
   );
 };

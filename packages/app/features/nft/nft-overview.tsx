@@ -104,7 +104,13 @@ export const NftCollection = ({ nft }: { nft: SimpleHashNFT }) => {
             size="$1"
             skipCdn
           />
-          <Text fontWeight="600" numberOfLines={1} fontSize="$5" opacity={0.8}>
+          <Text
+            fontWeight="600"
+            numberOfLines={1}
+            fontSize="$5"
+            opacity={0.8}
+            flexShrink={1}
+          >
             {nft.collection.name || formatAddress(nft.contract_address)}
           </Text>
         </XStack>

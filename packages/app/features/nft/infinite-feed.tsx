@@ -16,6 +16,7 @@ export const NftInfiniteFeed = ({
   asTabs,
   renderItem,
   numColumns,
+  ItemSeparatorComponent,
 }: {
   data: unknown[];
   fetchNextPage?: () => void;
@@ -29,6 +30,7 @@ export const NftInfiniteFeed = ({
   asTabs?: boolean;
   renderItem: ({ item }: { item: unknown }) => JSX.Element;
   numColumns?: number;
+  ItemSeparatorComponent?: () => JSX.Element;
 }) => {
   return (
     <InfiniteScrollList
@@ -44,6 +46,7 @@ export const NftInfiniteFeed = ({
       }
       ListHeaderComponent={ListHeaderComponent}
       numColumns={numColumns}
+      ItemSeparatorComponent={ItemSeparatorComponent}
     />
   );
 };
