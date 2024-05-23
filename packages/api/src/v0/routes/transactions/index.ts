@@ -65,7 +65,7 @@ export const transactionRoutes = async (fastify: FastifyInstance) => {
 
       const req: TransactionsControllerGetTransactionsRequest = {
         getTransactionDto: {
-          contextAddresses,
+          contextAddresses: contextAddresses.slice(0, 1000),
           filterAddresses: [],
           contextActions,
           sort: -1,
