@@ -11,12 +11,15 @@ export const ChainIcon = ({ chainId }: { chainId: string }) => {
       borderRadius="$10"
       overflow="hidden"
       display="inline-flex"
+      backgroundColor="$color5"
     >
-      <img
-        src={chain.image}
-        style={{ width: "100%", height: "100%" }}
-        alt={chain.name}
-      />
+      {chain && (
+        <img
+          src={chain.image}
+          style={{ width: "100%", height: "100%" }}
+          alt={chain.name}
+        />
+      )}
     </View>
   );
 };

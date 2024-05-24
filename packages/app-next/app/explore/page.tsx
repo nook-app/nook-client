@@ -1,10 +1,10 @@
 // TODO: Move this to backend with our own explore routes
 
 import { ExploreScreen } from "@nook/app/features/explore/explore-screen";
-import { getTrendingChannels } from "@nook/app/api/neynar";
+import { getRecommendedChannels } from "@nook/app/api/neynar";
 
 export default async function Explore() {
-  const channels = await getTrendingChannels();
+  const channels = await getRecommendedChannels();
 
   return <ExploreScreen channels={channels} />;
 }

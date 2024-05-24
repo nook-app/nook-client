@@ -22,7 +22,6 @@ import { useAuth } from "../../context/auth";
 import { fetchCollectionMutualsPreview } from "../../api/nft";
 import { useQuery } from "@tanstack/react-query";
 import { ChainBadge } from "../../components/blockchain/chain-badge";
-import { TouchableOpacity } from "react-native";
 
 export const NftCollectionHeader = memo(
   ({

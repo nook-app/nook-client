@@ -7,7 +7,7 @@ import {
   NftEvent,
 } from "@nook/common/types";
 import { useNftCollectionEvents, useNftEvents } from "../../api/nft";
-import { NftInfiniteFeed } from "./infinite-feed";
+import { InfiniteFeed } from "../../components/infinite-feed";
 import { Loading } from "../../components/loading";
 import { NftEventItem } from "./nft-event-item";
 import { Separator } from "@nook/app-ui";
@@ -35,7 +35,7 @@ export const NftEvents = ({
   const events = data?.pages.flatMap((page) => page.data) ?? [];
 
   return (
-    <NftInfiniteFeed
+    <InfiniteFeed
       data={events}
       fetchNextPage={fetchNextPage}
       isFetchingNextPage={isFetchingNextPage}
@@ -74,7 +74,7 @@ export const NftCollectionEvents = ({
   const events = data?.pages.flatMap((page) => page.data) ?? [];
 
   return (
-    <NftInfiniteFeed
+    <InfiniteFeed
       data={events}
       fetchNextPage={fetchNextPage}
       isFetchingNextPage={isFetchingNextPage}

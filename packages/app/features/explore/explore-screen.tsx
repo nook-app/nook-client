@@ -33,7 +33,7 @@ export const ExploreScreen = ({ channels }: { channels: Channel[] }) => {
         </View>
       </XStack>
       <View padding="$3">
-        <NookText variant="label">Trending Channels</NookText>
+        <NookText variant="label">Recommended Channels</NookText>
       </View>
       {channels.map((channel: Channel) => (
         <FarcasterChannelFeedItem

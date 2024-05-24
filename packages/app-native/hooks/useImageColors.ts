@@ -10,7 +10,7 @@ export type Colors = {
   detailColor: string;
 };
 
-export const useImageColors = (uri?: string) => {
+export const useImageColors = (uri?: string, fallbackId?: string) => {
   const theme = useTheme();
   const [colors, setColors] = useState<Colors>({
     backgroundColor: theme.color1.val,
@@ -18,6 +18,7 @@ export const useImageColors = (uri?: string) => {
     secondaryColor: theme.color1.val,
     detailColor: theme.color1.val,
   });
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const getAndSet = async () => {
@@ -54,8 +55,18 @@ export const useImageColors = (uri?: string) => {
         secondaryColor: color,
         detailColor: backgroundColor,
       });
+    } else if (fallbackId) {
+      const backgroundColor = stringToColor(fallbackId);
+      const color = darkenColor(backgroundColor);
+      setColors({
+        backgroundColor,
+        primaryColor: color,
+        secondaryColor: color,
+        detailColor: backgroundColor,
+      });
     }
-  }, [uri]);
+    setIsLoading(false);
+  }, [uri, fallbackId]);
 
-  return colors;
+  return { ...colors, isLoading };
 };

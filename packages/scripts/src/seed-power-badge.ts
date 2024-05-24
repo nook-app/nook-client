@@ -2,6 +2,7 @@ import { FarcasterCacheClient, RedisClient } from "@nook/common/clients";
 
 export const run = async () => {
   const client = new FarcasterCacheClient(new RedisClient());
+  const client2 = new FarcasterCacheClient(new RedisClient("feed"));
 
   const response = await fetch("https://api.warpcast.com/v2/power-badge-users");
 
@@ -25,6 +26,7 @@ export const run = async () => {
   );
 
   await client.setPowerBadgeUsers(newPowerBadgeUsers);
+  await client2.setPowerBadgeUsers(newPowerBadgeUsers);
 
   console.log(delta);
 

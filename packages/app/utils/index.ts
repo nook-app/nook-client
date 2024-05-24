@@ -50,14 +50,42 @@ export function formatTimeAgo(timestamp: number, suffix = false) {
   return `${amount}${suffix ? ` second${amount !== 1 ? "s" : ""} ago` : "s"}`;
 }
 
-export function formatNumber(num: number): string {
+export function formatNumber(num: number, decimals?: number): string {
+  if (num >= 1000000000000) {
+    return `${(Math.floor(num / 10000000000) / 100).toFixed(decimals ?? 2)}T`;
+  }
+  if (num >= 1000000000) {
+    return `${(Math.floor(num / 10000000) / 100).toFixed(decimals ?? 2)}B`;
+  }
+  if (num >= 1000000) {
+    return `${(Math.floor(num / 10000) / 100).toFixed(decimals ?? 2)}M`;
+  }
+  if (num >= 1000) {
+    return `${(Math.floor(num / 10) / 100).toFixed(decimals ?? 1)}K`;
+  }
+  if (decimals) {
+    return num.toFixed(4);
+  }
+  return num.toString();
+}
+
+export function formatPrice(num: number): string {
   if (num >= 1000000) {
     return `${(Math.floor(num / 10000) / 100).toFixed(2)}M`;
   }
-  if (num >= 1000) {
-    return `${(Math.floor(num / 10) / 100).toFixed(1)}K`;
+  if (num >= 10000) {
+    return `${(Math.floor(num / 10) / 100).toFixed(2)}K`;
   }
-  return num.toString();
+  if (num < 0.0001) {
+    return num.toFixed(6);
+  }
+  if (num < 1) {
+    return num.toFixed(4);
+  }
+  return num.toLocaleString("en-US", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
 }
 
 export function stringToColor(str: string): string {

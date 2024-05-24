@@ -12,7 +12,7 @@ import {
   useNFtCollectionFarcasterCollectors,
   useNFtCollectionFollowingCollectors,
 } from "../../api/nft";
-import { NftInfiniteFeed } from "./infinite-feed";
+import { InfiniteFeed } from "../../components/infinite-feed";
 import { Loading } from "../../components/loading";
 import { CollectorItem, FarcasterCollectorItem } from "./nft-collector-item";
 
@@ -39,7 +39,7 @@ export const NftCollectionCollectors = ({
   const collectors = data?.pages.flatMap((page) => page.data) ?? [];
 
   return (
-    <NftInfiniteFeed
+    <InfiniteFeed
       data={collectors}
       fetchNextPage={fetchNextPage}
       isFetchingNextPage={isFetchingNextPage}
@@ -75,7 +75,7 @@ export const NftCollectionFarcasterCollectors = ({
   const collectors = data?.pages.flatMap((page) => page.data) ?? [];
 
   return (
-    <NftInfiniteFeed
+    <InfiniteFeed
       data={collectors}
       fetchNextPage={fetchNextPage}
       isFetchingNextPage={isFetchingNextPage}
@@ -113,7 +113,7 @@ export const NftCollectionFollowingCollectors = ({
   const collectors = data?.pages.flatMap((page) => page.data) ?? [];
 
   return (
-    <NftInfiniteFeed
+    <InfiniteFeed
       data={collectors}
       fetchNextPage={fetchNextPage}
       isFetchingNextPage={isFetchingNextPage}

@@ -34,7 +34,7 @@ export const GradientIcon = ({
       end={[0, 0]}
       justifyContent="center"
       alignItems="center"
-      padding="$2.5"
+      padding={icon ? "$2.5" : "$1"}
     >
       {icon ? (
         <Image

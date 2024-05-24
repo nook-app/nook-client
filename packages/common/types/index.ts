@@ -12,6 +12,8 @@ export * from "./user";
 export * from "./swap";
 export * from "./simplehash";
 export * from "./nft";
+export * from "./token";
+export * from "./providers/zerion";
 
 export type FnameTransfer = {
   id: string;

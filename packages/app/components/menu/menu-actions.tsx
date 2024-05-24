@@ -36,7 +36,12 @@ export const OpenLink = ({
   }, [link, close]);
 
   return (
-    <MenuItem Icon={Icon} image={image} title={title} onPress={handlePress} />
+    <MenuItem
+      Icon={!image && !Icon ? Link : Icon}
+      image={image}
+      title={title}
+      onPress={handlePress}
+    />
   );
 };
 

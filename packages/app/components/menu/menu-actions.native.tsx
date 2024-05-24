@@ -1,6 +1,6 @@
 import { Link } from "@tamagui/lucide-icons";
 import { NamedExoticComponent, useCallback } from "react";
-import { Image, View, useToastController } from "@nook/app-ui";
+import { View, useToastController } from "@nook/app-ui";
 import { useMenu } from "./context";
 import { MenuItem } from "./menu-item";
 import * as Clipboard from "expo-clipboard";
@@ -40,7 +40,12 @@ export const OpenLink = ({
   }, [link, close]);
 
   return (
-    <MenuItem Icon={Icon} image={image} title={title} onPress={handlePress} />
+    <MenuItem
+      Icon={!image && !Icon ? Link : Icon}
+      image={image}
+      title={title}
+      onPress={handlePress}
+    />
   );
 };
 

@@ -5,10 +5,10 @@ import { NativeScrollEvent, NativeSyntheticEvent } from "react-native";
 import { useScrollToTop } from "@react-navigation/native";
 import { useRef } from "react";
 import { Tabs } from "react-native-collapsible-tab-view";
-import { useScroll } from "../../context/scroll";
-import { RefreshControl } from "../../components/refresh-control";
+import { useScroll } from "../context/scroll";
+import { RefreshControl } from "./refresh-control";
 
-export const NftInfiniteFeed = ({
+export const InfiniteFeed = ({
   data,
   fetchNextPage,
   isFetchingNextPage,

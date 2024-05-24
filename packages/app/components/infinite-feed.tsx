@@ -1,9 +1,9 @@
 "use client";
 
-import { Separator, Spinner, View } from "@nook/app-ui";
-import { InfiniteScrollList } from "../../components/infinite-scroll-list";
+import { Spinner, View } from "@nook/app-ui";
+import { InfiniteScrollList } from "./infinite-scroll-list";
 
-export const NftInfiniteFeed = ({
+export const InfiniteFeed = ({
   data,
   fetchNextPage,
   isFetchingNextPage,

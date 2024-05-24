@@ -69,17 +69,6 @@ export default function HomeScreen() {
               />
             ),
           },
-          {
-            name: "Trending",
-            component: (
-              <FarcasterFilteredFeed
-                paddingBottom={paddingBottom}
-                paddingTop={HEADER_HEIGHT}
-                api="https://api.neynar.com/v2/farcaster/feed/trending"
-                filter={{}}
-              />
-            ),
-          },
         ]}
       />
       <CreateActionButton />

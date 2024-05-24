@@ -15,6 +15,7 @@ import { FarcasterUserMenu } from "@nook/app/components/farcaster/users/user-men
 import { formatToCDN } from "@nook/app/utils";
 import { memo, useCallback, useState } from "react";
 import { NftFeed } from "@nook/app/features/nft/nft-feed";
+import { TokenHoldings } from "@nook/app/features/token/token-holdings";
 
 export default function UserScreen() {
   const { username } = useLocalSearchParams();
@@ -72,6 +73,17 @@ export default function UserScreen() {
                     fid: user.fid,
                   },
                 },
+              }}
+              asTabs
+            />
+          ),
+        },
+        {
+          name: "Tokens",
+          component: (
+            <TokenHoldings
+              filter={{
+                fid: user.fid,
               }}
               asTabs
             />

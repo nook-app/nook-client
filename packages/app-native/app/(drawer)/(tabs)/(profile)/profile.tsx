@@ -8,6 +8,7 @@ import { TransactionFeed } from "@nook/app/features/transactions/transaction-fee
 import { CollapsibleGradientLayout } from "../../../../components/CollapsibleGradientLayout";
 import { useAuth } from "@nook/app/context/auth";
 import { NftFeed } from "@nook/app/features/nft/nft-feed";
+import { TokenHoldings } from "@nook/app/features/token/token-holdings";
 
 export default function ProfileScreen() {
   const { user } = useAuth();
@@ -77,6 +78,17 @@ export default function ProfileScreen() {
                     fid: user.fid,
                   },
                 },
+              }}
+              asTabs
+            />
+          ),
+        },
+        {
+          name: "Tokens",
+          component: (
+            <TokenHoldings
+              filter={{
+                fid: user.fid,
               }}
               asTabs
             />

@@ -63,6 +63,7 @@ export default function SearchScreen({ isExplore }: { isExplore?: boolean }) {
       <ScrollView
         keyboardDismissMode="on-drag"
         contentContainerStyle={{ paddingBottom }}
+        keyboardShouldPersistTaps="handled"
       >
         {query ? (
           <SearchResults

@@ -187,10 +187,9 @@ const FrameButtonAction = ({
   button,
   onPress,
 }: { button: FrameButton; onPress: () => void }) => {
-  const { theme } = useTheme();
   const tamaguiTheme = useTamaguiTheme();
 
-  const { session, signer } = useAuth();
+  const { signer } = useAuth();
 
   const Component = (
     <Button
@@ -208,8 +207,8 @@ const FrameButtonAction = ({
         <>
           <Zap
             size={12}
-            color={!theme ? "$color1" : "$color12"}
-            fill={!theme ? tamaguiTheme.color1.val : tamaguiTheme.color12.val}
+            color="$color12"
+            fill={tamaguiTheme.color12.val}
             marginRight="$1"
           />
         </>
@@ -219,11 +218,7 @@ const FrameButtonAction = ({
       button.action === "post_redirect" ||
       button.action === "mint" ? (
         <>
-          <ExternalLink
-            size={12}
-            color={!theme ? "$color1" : "$color12"}
-            marginLeft="$1"
-          />
+          <ExternalLink size={12} color="$color12" marginLeft="$1" />
         </>
       ) : null}
     </Button>

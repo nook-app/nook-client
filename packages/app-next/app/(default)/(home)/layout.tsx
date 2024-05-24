@@ -23,16 +23,6 @@ export default async function Home({ children }: { children: ReactNode }) {
             href: "/for-you",
             auth: true,
           },
-          {
-            id: "trending",
-            label: "Trending",
-            href: "/trending",
-          },
-          {
-            id: "latest",
-            label: "Latest",
-            href: "/latest",
-          },
         ]}
         session={session}
       >

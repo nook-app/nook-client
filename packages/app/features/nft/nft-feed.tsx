@@ -15,7 +15,7 @@ import {
   useNftFeed,
 } from "../../api/nft";
 import { Loading } from "../../components/loading";
-import { NftInfiniteFeed } from "./infinite-feed";
+import { InfiniteFeed } from "../../components/infinite-feed";
 import { NftFeedHeader } from "./nft-feed-header";
 import { NftDisplay } from "./nft-display";
 import { NftCollectionDisplay } from "./nft-collection-display";
@@ -105,7 +105,7 @@ const NftFeedComponent = memo(
     };
 
     return (
-      <NftInfiniteFeed
+      <InfiniteFeed
         data={nfts}
         fetchNextPage={fetchNextPage}
         isFetchingNextPage={isFetchingNextPage}
@@ -174,7 +174,7 @@ const NftCollectionFeedComponent = memo(
     };
 
     return (
-      <NftInfiniteFeed
+      <InfiniteFeed
         data={nfts}
         fetchNextPage={fetchNextPage}
         isFetchingNextPage={isFetchingNextPage}
@@ -223,7 +223,7 @@ export const CollectionNftsFeed = ({
   }
 
   return (
-    <NftInfiniteFeed
+    <InfiniteFeed
       data={nfts}
       fetchNextPage={fetchNextPage}
       isFetchingNextPage={isFetchingNextPage}

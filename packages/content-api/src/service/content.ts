@@ -98,8 +98,8 @@ export class ContentService {
       );
 
       const data = stillMissing.map((reference) => ({
-        ...reference,
         ...contentMap[reference.uri],
+        ...reference,
         fid: BigInt(reference.fid),
         parentFid: reference.parentFid
           ? BigInt(reference.parentFid)
@@ -136,8 +136,8 @@ export class ContentService {
       }
 
       await this.cache.setReferences(
-        references,
-        references.map(
+        stillMissing,
+        stillMissing.map(
           (reference) => cacheMap[`${reference.hash}:${reference.uri}`],
         ),
       );

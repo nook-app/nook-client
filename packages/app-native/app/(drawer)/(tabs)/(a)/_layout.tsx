@@ -185,6 +185,11 @@ export default function HomeLayout() {
         options={{ headerShown: false }}
         getId={({ params }) => params?.collectionId}
       />
+      <Stack.Screen
+        name="tokens/[tokenId]/index"
+        options={{ headerShown: false }}
+        getId={({ params }) => params?.tokenId}
+      />
     </Stack>
   );
 }

@@ -340,9 +340,14 @@ export const farcasterRoutes = async (fastify: FastifyInstance) => {
     fastify.get<{ Querystring: { query: string } }>(
       "/search/preview",
       async (request, reply) => {
+        let viewerFid: string | undefined;
+        try {
+          const { fid } = (await request.jwtDecode()) as { fid: string };
+          viewerFid = fid;
+        } catch (e) {}
         const [users, channels] = await Promise.all([
-          client.searchUsers(request.query.query),
-          client.searchChannels(request.query.query),
+          client.searchUsers(request.query.query, 10, undefined, viewerFid),
+          client.searchChannels(request.query.query, 10, undefined, viewerFid),
         ]);
 
         return reply.send({ users: users.data, channels: channels.data });

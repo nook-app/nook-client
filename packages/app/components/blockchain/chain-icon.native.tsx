@@ -10,10 +10,12 @@ export const ChainIcon = ({ chainId }: { chainId: string }) => {
       width={16}
       height={16}
       borderRadius="$10"
-      backgroundColor="$color3"
+      backgroundColor="$color5"
       overflow="hidden"
     >
-      <Image source={chain.image} style={{ width: "100%", height: "100%" }} />
+      {chain && (
+        <Image source={chain.image} style={{ width: "100%", height: "100%" }} />
+      )}
     </View>
   );
 };

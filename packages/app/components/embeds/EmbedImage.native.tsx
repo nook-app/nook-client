@@ -37,6 +37,7 @@ export const EmbedImages = ({ uris }: { uris: string[] }) => {
               recyclingKey={uri}
               source={{ uri: formatToCDN(uri) }}
               style={{ width: "100%", height: "100%", resizeMode: "cover" }}
+              allowDownscaling={false}
             />
           </View>
         </Link>
@@ -82,6 +83,7 @@ export const EmbedImage = ({
         }}
         placeholder={{ blurhash }}
         placeholderContentFit="cover"
+        allowDownscaling={false}
       />
     </View>
   );

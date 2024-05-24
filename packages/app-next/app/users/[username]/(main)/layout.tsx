@@ -28,6 +28,11 @@ export default async function User({
             href: `/users/${user.username}/collectibles`,
           },
           {
+            id: "tokens",
+            label: "Tokens",
+            href: `/users/${user.username}/tokens`,
+          },
+          {
             id: "transactions",
             label: "Transactions",
             href: `/users/${user.username}/transactions`,

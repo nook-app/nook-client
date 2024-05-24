@@ -118,17 +118,23 @@ const scrapeMetadata = async (options: MetascraperOptions) => {
 
 const fetchUrlMetadata = async (url: string) => {
   const hostname = new URL(url).hostname;
+
+  const requestHeaders: Record<string, string> = {
+    "Sec-Fetch-Dest": "document",
+    "Sec-Fetch-Mode": "navigate",
+    "Sec-Fetch-Site": "same-origin",
+    "Sec-Fetch-User": "?1",
+  };
+
+  if (hostname !== "opensea.io") {
+    requestHeaders["user-agent"] =
+      USER_AGENT_OVERRIDES[hostname] ||
+      "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36";
+  }
+
   const res = await Promise.race([
     fetch(url, {
-      headers: {
-        "user-agent":
-          USER_AGENT_OVERRIDES[hostname] ||
-          "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
-        "Sec-Fetch-Dest": "document",
-        "Sec-Fetch-Mode": "navigate",
-        "Sec-Fetch-Site": "same-origin",
-        "Sec-Fetch-User": "?1",
-      },
+      headers: requestHeaders,
     }) as Promise<Response>,
     new Promise((_, reject) =>
       setTimeout(() => reject(new Error("Timed out getting frame")), 20000),
