@@ -1,10 +1,11 @@
 import { FastifyInstance } from "fastify";
-import { FarcasterAPIClient } from "@nook/common/clients";
+import { FarcasterAPIClient, NookCacheClient } from "@nook/common/clients";
 import { FarcasterFeedRequest } from "@nook/common/types/feed";
 
 export const farcasterFeedRoutes = async (fastify: FastifyInstance) => {
   fastify.register(async (fastify: FastifyInstance) => {
     const client = new FarcasterAPIClient();
+    const nook = new NookCacheClient(fastify.redis.client);
 
     fastify.post<{ Body: FarcasterFeedRequest }>(
       "/farcaster/casts/feed",
@@ -46,6 +47,40 @@ export const farcasterFeedRoutes = async (fastify: FastifyInstance) => {
               result.map((r) => r.cast_hash),
               viewerFid,
             );
+
+            if (viewerFid) {
+              const mutes = await nook.getUserMutes(viewerFid);
+              const channels = mutes
+                .filter((m) => m.startsWith("channel:"))
+                .map((m) => m.split(":")[1]);
+
+              const users = mutes
+                .filter((m) => m.startsWith("user:"))
+                .map((m) => m.split(":")[1]);
+
+              const words = mutes
+                .filter((m) => m.startsWith("word:"))
+                .map((m) => m.split(":")[1]);
+
+              const filteredCasts = casts.data.filter((cast) => {
+                if (cast.parentUrl && channels.includes(cast.parentUrl)) {
+                  return false;
+                }
+                if (cast.user && users.includes(cast.user.fid)) {
+                  return false;
+                }
+                if (words.some((word) => cast.text.includes(word))) {
+                  return false;
+                }
+                return true;
+              });
+
+              return reply.send({
+                data: filteredCasts,
+                nextCursor: (Number(request.body.cursor) || 0) + result.length,
+              });
+            }
+
             return reply.send({
               data: casts.data,
               nextCursor: (Number(request.body.cursor) || 0) + result.length,
