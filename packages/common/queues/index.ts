@@ -29,7 +29,11 @@ type QueueType = {
   [QueueName.Notifications]: Notification;
   [QueueName.ScheduledCast]: PendingCast;
   [QueueName.Content]: FarcasterContentReference;
-  [QueueName.OwnershipRefresh]: { collectionId?: string; nftId?: string };
+  [QueueName.OwnershipRefresh]: {
+    collectionId?: string;
+    nftId?: string;
+    tokenId?: string;
+  };
 };
 
 const connection = new Redis({

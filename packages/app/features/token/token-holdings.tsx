@@ -5,7 +5,6 @@ import {
   TokenHoldings as TokenHoldingsType,
   TokensFilter,
 } from "@nook/common/types";
-import { useTokenHoldings } from "../../api/token";
 import { Popover, Text, View, XStack, YStack } from "@nook/app-ui";
 import { CdnAvatar } from "../../components/cdn-avatar";
 import { InfiniteFeed } from "../../components/infinite-feed";
@@ -19,18 +18,19 @@ import { Menu } from "../../components/menu/menu";
 import { OpenLink } from "../../components/menu/menu-actions";
 import { useEns } from "../../hooks/useAddress";
 import { Link } from "../../components/link";
+import { useTokenHoldings } from "../../hooks/useTokenHoldings";
 
 export const TokenHoldings = ({
   filter,
   asTabs,
 }: { filter: TokensFilter; asTabs?: boolean }) => {
-  const { data, isLoading } = useTokenHoldings(filter);
+  const { tokenHoldings, isLoading } = useTokenHoldings(filter.fid);
 
   if (isLoading) {
     return <Loading />;
   }
 
-  if (!data) {
+  if (!tokenHoldings) {
     return (
       <YStack gap="$4" padding="$4" justifyContent="center" alignItems="center">
         <Text color="$mauve11" textAlign="center">
@@ -42,12 +42,12 @@ export const TokenHoldings = ({
 
   return (
     <InfiniteFeed
-      data={data?.data ?? []}
+      data={tokenHoldings?.data ?? []}
       renderItem={({ item }) => (
         <TokenHoldingDisplay token={item as TokenHolding} />
       )}
       asTabs={asTabs}
-      ListHeaderComponent={<TokenHoldingsHeader holdings={data} />}
+      ListHeaderComponent={<TokenHoldingsHeader holdings={tokenHoldings} />}
     />
   );
 };

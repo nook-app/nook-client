@@ -1,4 +1,4 @@
-export const SIMPLEHASH_CHAINS: { id: string; crosschainId?: string }[] = [
+const SIMPLEHASH_CHAINS: { id: string; crosschainId?: string }[] = [
   { id: "ethereum", crosschainId: "eip155:1" },
   //   { id: "solana", crosschainId: "solana:101" },
   //   { id: "bitcoin" },

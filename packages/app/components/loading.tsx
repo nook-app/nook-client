@@ -1,7 +1,7 @@
 "use client";
 import { Spinner, View } from "@nook/app-ui";
 
-export const Loading = () => (
+export const Loading = ({ asTabs }: { asTabs?: boolean }) => (
   <View
     flexGrow={1}
     justifyContent="center"

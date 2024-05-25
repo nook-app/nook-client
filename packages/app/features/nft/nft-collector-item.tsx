@@ -13,11 +13,12 @@ import { Link } from "../../components/link";
 import { formatAddress, formatTimeAgo } from "../../utils";
 import { useEns } from "../../hooks/useAddress";
 import { CdnAvatar } from "../../components/cdn-avatar";
+import { GradientIcon } from "../../components/gradient-icon";
 
 export const CollectorItem = memo(
   ({ collector }: { collector: NftOwner & { user?: FarcasterUser } }) => {
     if (!collector.user) {
-      return <AddressDisplay address={collector.ownerAddress} />;
+      return <AddressDisplay collector={collector} />;
     }
 
     let label = `${collector.quantity} items since ${formatTimeAgo(
@@ -92,7 +93,7 @@ export const FarcasterCollectorItem = memo(
     let label = `${collector.quantity} item${
       collector.quantity > 1 ? "s" : ""
     } since ${formatTimeAgo(collector.lastAcquiredDate, true)}`;
-    const tokenId = collector.tokens[0]?.tokenId;
+    const tokenId = collector.tokens?.[0]?.tokenId;
     if (collector.quantity === 1 && tokenId) {
       label = `#${tokenId} since ${formatTimeAgo(
         collector.lastAcquiredDate,
@@ -154,10 +155,24 @@ export const FarcasterCollectorItem = memo(
   },
 );
 
-const AddressDisplay = ({ address }: { address: string }) => {
-  const { data: ens } = useEns(address, true);
+const AddressDisplay = ({ collector }: { collector: NftOwner }) => {
+  const { data: ens } = useEns(collector.ownerAddress, true);
+
+  let label = `${collector.quantity} item${
+    collector.quantity > 1 ? "s" : ""
+  } since ${formatTimeAgo(collector.lastAcquiredDate, true)}`;
+  if (collector.quantity === 1) {
+    label = `#${collector.tokenId} since ${formatTimeAgo(
+      collector.lastAcquiredDate,
+      true,
+    )}`;
+  }
+
   return (
-    <Link href={`https://www.onceupon.xyz/${address}`} isExternal>
+    <Link
+      href={`https://www.onceupon.xyz/${collector.ownerAddress}`}
+      isExternal
+    >
       <XStack
         gap="$2.5"
         padding="$2.5"
@@ -166,11 +181,7 @@ const AddressDisplay = ({ address }: { address: string }) => {
           backgroundColor: "$color2",
         }}
       >
-        <CdnAvatar
-          src={ens?.avatar_small || ens?.avatar || ""}
-          size="$4"
-          skipCdn
-        />
+        <AddressAvatar address={collector.ownerAddress} />
         <YStack flexShrink={1} gap="$1" flexGrow={1}>
           <XStack justifyContent="space-between">
             <YStack gap="$1">
@@ -180,7 +191,7 @@ const AddressDisplay = ({ address }: { address: string }) => {
                   numberOfLines={1}
                   ellipsizeMode="tail"
                 >
-                  {ens?.ens ?? formatAddress(address)}
+                  {ens?.ens ?? formatAddress(collector.ownerAddress)}
                 </NookText>
               </XStack>
               <XStack gap="$1.5" alignItems="center" flexShrink={1}>
@@ -190,14 +201,33 @@ const AddressDisplay = ({ address }: { address: string }) => {
                   ellipsizeMode="middle"
                   flexShrink={1}
                 >
-                  {formatAddress(address)}
+                  {formatAddress(collector.ownerAddress)}
                 </NookText>
               </XStack>
             </YStack>
             <View />
           </XStack>
+          <NookText muted>{label}</NookText>
         </YStack>
       </XStack>
     </Link>
+  );
+};
+
+const AddressAvatar = ({ address }: { address: string }) => {
+  const { data } = useEns(address, true);
+
+  if (data?.avatar_small || data?.avatar) {
+    return (
+      <CdnAvatar src={data?.avatar_small || data?.avatar} size="$4" skipCdn />
+    );
+  }
+
+  return (
+    <GradientIcon
+      label={data?.ens ?? formatAddress(address)}
+      size="$4"
+      borderRadius="$10"
+    />
   );
 };

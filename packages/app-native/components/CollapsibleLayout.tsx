@@ -13,11 +13,13 @@ export const CollapsibleLayout = ({
   pages,
   defaultIndex = 0,
   minHeaderHeight = NAVIGATION_HEIGHT,
+  backgroundColor,
 }: {
   renderHeader: (props: TabBarProps) => ReactElement;
   pages: { name: string; component: ReactNode }[];
   defaultIndex?: number;
   minHeaderHeight?: number;
+  backgroundColor?: string;
 }) => {
   const theme = useTamaguiTheme();
 
@@ -44,6 +46,9 @@ export const CollapsibleLayout = ({
             paddingHorizontal: 2,
             marginHorizontal: props.tabNames.length > 1 ? 4 : 0,
           }}
+          style={{
+            backgroundColor: theme.color1.val,
+          }}
           scrollEnabled
           keepActiveTabCentered
         />
@@ -53,31 +58,29 @@ export const CollapsibleLayout = ({
   );
 
   return (
-    <View flexGrow={1} backgroundColor="$color1">
-      <Tabs.Container
-        initialTabName={pages[defaultIndex]?.name}
-        renderHeader={renderHeader}
-        renderTabBar={renderTabBar}
-        headerContainerStyle={{
-          shadowOpacity: 0,
-          elevation: 0,
-          borderBottomWidth: 1,
-          backgroundColor: theme.color1.val,
-          borderBottomColor: theme.borderColorBg.val,
-        }}
-        containerStyle={{
-          backgroundColor: theme.color1.val,
-        }}
-        lazy
-        minHeaderHeight={minHeaderHeight}
-      >
-        {pages.map((page) => (
-          <Tabs.Tab key={page.name} name={page.name}>
-            <LazyComponent>{page.component}</LazyComponent>
-          </Tabs.Tab>
-        ))}
-      </Tabs.Container>
-    </View>
+    <Tabs.Container
+      initialTabName={pages[defaultIndex]?.name}
+      renderHeader={renderHeader}
+      renderTabBar={renderTabBar}
+      headerContainerStyle={{
+        shadowOpacity: 0,
+        elevation: 0,
+        borderBottomWidth: 1,
+        backgroundColor: theme.color1.val,
+        borderBottomColor: theme.borderColorBg.val,
+      }}
+      containerStyle={{
+        backgroundColor: theme.color1.val,
+      }}
+      lazy
+      minHeaderHeight={minHeaderHeight}
+    >
+      {pages.map((page) => (
+        <Tabs.Tab key={page.name} name={page.name}>
+          <LazyComponent>{page.component}</LazyComponent>
+        </Tabs.Tab>
+      ))}
+    </Tabs.Container>
   );
 };
 

@@ -4,16 +4,23 @@ import { Token } from "@nook/common/types";
 import { CdnAvatar } from "../../components/cdn-avatar";
 import { GradientIcon } from "../../components/gradient-icon";
 import { Text, XStack, YStack, View, ScrollView } from "@nook/app-ui";
-import { CHAINS_BY_NAME } from "../../utils/chains";
+import { CHAINS_BY_NAME, ChainWithImage } from "../../utils/chains";
 import { ChainIcon } from "../../components/blockchain/chain-icon";
 import { formatNumber, formatPrice } from "../../utils";
 import { TokenChart } from "./token-chart";
 import { useState } from "react";
+import { useAuth } from "../../context/auth";
+import { useTokenHoldings } from "../../hooks/useTokenHoldings";
+import { LinkButton } from "../../components/link";
+import { ExternalLink } from "@tamagui/lucide-icons";
+import { useQuery } from "@tanstack/react-query";
+import { fetchTokenMutualsPreview } from "../../api/token";
 
 export const TokenOverview = ({
   token,
   color,
 }: { token: Token; color: string }) => {
+  const { session } = useAuth();
   const [focused, setFocused] = useState<
     { timestamp: number; value: number } | undefined
   >(undefined);
@@ -35,14 +42,19 @@ export const TokenOverview = ({
     });
   }
 
+  const chains = token.instances.map((instance) => instance.chainId);
+  const chainDatas = chains
+    .map((chainId) => CHAINS_BY_NAME[chainId])
+    .sort((a, b) => a.chainId - b.chainId);
+
   return (
-    <YStack gap="$6">
+    <YStack gap="$4" paddingVertical="$4">
       <XStack
         justifyContent="space-between"
         alignItems="center"
         paddingHorizontal="$4"
       >
-        <XStack alignItems="center" gap="$3">
+        <XStack alignItems="center" gap="$3" flexShrink={1}>
           <View
             shadowColor="$shadowColor"
             shadowOffset={{ width: 0, height: 0 }}
@@ -66,14 +78,20 @@ export const TokenOverview = ({
               </GradientIcon>
             )}
           </View>
-          <YStack gap="$1.5">
-            <Text fontSize="$8" fontWeight="600">
+          <YStack gap="$1.5" flexShrink={1}>
+            <Text
+              fontSize="$8"
+              fontWeight="600"
+              numberOfLines={1}
+              flexShrink={1}
+              ellipsizeMode="tail"
+            >
               {token.name}
             </Text>
-            <TokenHeaderChains token={token} />
+            <TokenHeaderChains chains={chainDatas} />
           </YStack>
         </XStack>
-        {focused?.value ? (
+        {focused?.value && focused?.timestamp ? (
           <YStack gap="$1.5" alignItems="flex-end">
             <Text fontSize="$8" fontWeight="600">
               {`$${formatPrice(focused.value)}`}
@@ -117,7 +135,8 @@ export const TokenOverview = ({
         onIndexChange={setFocused}
         onTimeframeChange={setPercent}
       />
-      {stats.length > 0 && (
+      {session?.fid && <TokenHoldings fid={session.fid} token={token} />}
+      {/* {stats.length > 0 && (
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
@@ -146,38 +165,30 @@ export const TokenOverview = ({
             ))}
           </XStack>
         </ScrollView>
-      )}
-      {token.description && (
-        <View paddingHorizontal="$4">
-          <Text fontWeight="600" fontSize="$5">
-            Description
-          </Text>
+      )} */}
+      {token.id !== "eth" && <TokenMutuals tokenId={token.id} />}
+      <View paddingHorizontal="$4">
+        <LinkButton
+          href={`https://app.uniswap.org/#/swap?outputCurrency=${token.instances[0].address}&chain=${chainDatas[0].id}`}
+        >
           <Text
-            lineHeight={24}
-            opacity={0.8}
-            fontSize={16}
-            color="$color12"
-            marginTop="$2"
-          >
-            {token.description}
-          </Text>
-        </View>
-      )}
+            fontWeight="600"
+            fontSize="$5"
+            color="$color1"
+          >{`Swap ${token.symbol} `}</Text>
+          <ExternalLink color="$color1" size={16} strokeWidth={2.5} />
+        </LinkButton>
+      </View>
     </YStack>
   );
 };
 
-const TokenHeaderChains = ({ token }: { token: Token }) => {
-  const chains = token.instances.map((instance) => instance.chainId);
-  const chainDatas = chains
-    .map((chainId) => CHAINS_BY_NAME[chainId])
-    .sort((a, b) => a.chainId - b.chainId);
-
+const TokenHeaderChains = ({ chains }: { chains: ChainWithImage[] }) => {
   if (chains.length === 1) {
     return (
       <XStack gap="$1.5" alignItems="center">
-        <ChainIcon chainId={chainDatas[0]?.crossChainId} />
-        <Text opacity={0.8}>{chainDatas[0]?.name || chains[0]}</Text>
+        <ChainIcon chainId={chains[0]?.crossChainId} />
+        <Text opacity={0.8}>{chains[0]?.name || chains[0]}</Text>
       </XStack>
     );
   }
@@ -185,7 +196,7 @@ const TokenHeaderChains = ({ token }: { token: Token }) => {
   return (
     <XStack gap="$2" alignItems="center">
       <XStack>
-        {chainDatas
+        {chains
           .filter(Boolean)
           .slice(0, 3)
           .map((chain) => (
@@ -195,6 +206,149 @@ const TokenHeaderChains = ({ token }: { token: Token }) => {
           ))}
       </XStack>
       <Text opacity={0.8}>{`${chains.length} chains`}</Text>
+    </XStack>
+  );
+};
+
+export const TokenDescription = ({ token }: { token: Token }) => {
+  if (!token.description) {
+    return null;
+  }
+
+  return (
+    <View paddingHorizontal="$4">
+      <Text
+        lineHeight={24}
+        opacity={0.8}
+        fontSize={16}
+        color="$color12"
+        marginTop="$2"
+      >
+        {token.description}
+      </Text>
+    </View>
+  );
+};
+
+const TokenHoldings = ({ fid, token }: { fid: string; token: Token }) => {
+  const { tokenHoldings } = useTokenHoldings(fid);
+
+  const holding = tokenHoldings?.data.find(
+    (holding) => holding.id === token.id,
+  );
+  if (!holding) {
+    return null;
+  }
+
+  return (
+    <XStack
+      gap="$4"
+      justifyContent="space-between"
+      alignItems="center"
+      paddingHorizontal="$4"
+    >
+      <YStack gap="$1">
+        <Text
+          fontWeight="600"
+          numberOfLines={1}
+          ellipsizeMode="tail"
+          fontSize="$7"
+        >
+          {`${formatNumber(holding.quantity.float, 2)} ${token.symbol}`}
+        </Text>
+        <Text
+          opacity={0.5}
+          fontWeight="600"
+          fontSize="$2"
+          textTransform="uppercase"
+        >
+          Balance
+        </Text>
+      </YStack>
+      <YStack gap="$1" alignItems="flex-end">
+        <Text
+          fontWeight="600"
+          numberOfLines={1}
+          ellipsizeMode="tail"
+          fontSize="$7"
+        >
+          {`$${formatPrice(holding.value)}`}
+        </Text>
+        <Text
+          opacity={0.5}
+          fontWeight="600"
+          fontSize="$2"
+          textTransform="uppercase"
+        >
+          Value
+        </Text>
+      </YStack>
+    </XStack>
+  );
+};
+
+export const TokenMutuals = ({ tokenId }: { tokenId: string }) => {
+  const { session } = useAuth();
+  const { data } = useQuery({
+    queryKey: ["tokenMutualsPreview", tokenId],
+    queryFn: async () => {
+      return await fetchTokenMutualsPreview(tokenId);
+    },
+    enabled: !!session?.fid,
+  });
+
+  if (!session || !data) return null;
+
+  const total = data?.total || 0;
+  const previews = data?.preview || [];
+  const other = total - previews.length;
+
+  let label = "Not owned by anyone you’re following";
+
+  switch (previews.length) {
+    case 3:
+      if (other > 0) {
+        label = `Owned by ${previews[0].username}, ${
+          previews[1].username
+        }, and ${other} other${other > 1 ? "s" : ""} you follow`;
+      } else {
+        label = `Owned by ${previews[0].username}, ${previews[1].username}, and ${previews[2].username}`;
+      }
+      break;
+    case 2:
+      label = `Owned by ${previews[0].username} and ${previews[1].username}`;
+      break;
+    case 1:
+      label = `Owned by ${previews[0].username}`;
+  }
+
+  return (
+    <XStack
+      gap="$3"
+      alignItems="center"
+      cursor="pointer"
+      group
+      paddingHorizontal="$4"
+    >
+      {previews.length > 0 && (
+        <XStack>
+          {previews.map((user) => (
+            <View key={user.fid} marginRight="$-2">
+              <CdnAvatar src={user.pfp} size="$1" />
+            </View>
+          ))}
+        </XStack>
+      )}
+      {/* @ts-ignore */}
+      <Text
+        opacity={0.8}
+        $group-hover={{
+          textDecoration: "underline",
+        }}
+        flexShrink={1}
+      >
+        {label}
+      </Text>
     </XStack>
   );
 };

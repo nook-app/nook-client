@@ -1,5 +1,6 @@
 export type { ZerionToken } from "./token";
 export type { ZerionTokenChart } from "./token-chart";
+export type { ZerionTransactions, ZerionTransaction } from "./transaction";
 
 export interface ZerionTokenHoldings {
   links: TokenHoldingsLinks;

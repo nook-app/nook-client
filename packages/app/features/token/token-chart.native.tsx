@@ -3,9 +3,8 @@ import { useCallback, useEffect, useState } from "react";
 import { useTokenChart } from "../../api/token";
 import { LineChart } from "react-native-wagmi-charts";
 import { haptics } from "../../utils/haptics";
-import { Button, Spinner, Text, View, XStack, YStack } from "@nook/app-ui";
+import { Spinner, Text, View, XStack, YStack } from "@nook/app-ui";
 import { TouchableOpacity } from "react-native-gesture-handler";
-import { Loading } from "../../components/loading";
 
 const timeframes = [
   {
@@ -63,6 +62,7 @@ export const TokenChart = ({
 
   const onCurrentIndexChange = useCallback(
     (index: number) => {
+      if (!points[index]) return;
       const { timestamp, value } = points[index];
       onIndexChange({ timestamp, value });
     },
@@ -82,7 +82,11 @@ export const TokenChart = ({
         </View>
       );
     }
-    return null;
+    if (data?.points.length === 0) {
+      return null;
+    }
+
+    return <View height={200} />;
   }
 
   return (

@@ -1,5 +1,5 @@
 import { NookText, Text, View } from "@nook/app-ui";
-import { NftEvent, SIMPLEHASH_CHAINS } from "@nook/common/types";
+import { NftEvent } from "@nook/common/types";
 import { XStack, YStack } from "@nook/app-ui";
 import { FarcasterUserAvatar } from "../../components/farcaster/users/user-display";
 import { FarcasterPowerBadge } from "../../components/farcaster/users/power-badge";
@@ -10,6 +10,8 @@ import { useEns } from "../../hooks/useAddress";
 import { CdnAvatar } from "../../components/cdn-avatar";
 import { NftEventMenu } from "./nft-event-menu";
 import { formatUnits } from "viem";
+import { GradientIcon } from "../../components/gradient-icon";
+import { SIMPLEHASH_CHAINS } from "@nook/common/utils";
 
 export const NftEventItem = ({ event }: { event: NftEvent }) => {
   const chain = SIMPLEHASH_CHAINS.find((chain) => chain.id === event.chain);
@@ -84,12 +86,12 @@ export const NftEventItem = ({ event }: { event: NftEvent }) => {
             <NftEventMenu event={event} />
           </XStack>
           <EventText event={event} />
-          <NftDisplay nft={event.nft_details} />
+          {event.nft_details && <NftDisplay nft={event.nft_details} />}
         </YStack>
         <XStack justifyContent="space-between" alignItems="center">
           <View />
           <View>
-            {chain?.crosschainId && <ChainBadge chainId={chain.crosschainId} />}
+            {chain?.crossChainId && <ChainBadge chainId={chain.crossChainId} />}
           </View>
         </XStack>
       </YStack>
@@ -113,11 +115,17 @@ const Address = ({
 const AddressAvatar = ({ address }: { address: string }) => {
   const { data } = useEns(address, true);
 
+  if (data?.avatar_small || data?.avatar) {
+    return (
+      <CdnAvatar src={data?.avatar_small || data?.avatar} size="$4" skipCdn />
+    );
+  }
+
   return (
-    <CdnAvatar
-      src={data?.avatar_small || data?.avatar || ""}
+    <GradientIcon
+      label={data?.ens ?? formatAddress(address)}
       size="$4"
-      skipCdn
+      borderRadius="$10"
     />
   );
 };

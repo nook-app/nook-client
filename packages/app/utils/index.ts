@@ -27,9 +27,12 @@ export function formatTimeAgo(timestamp: number, suffix = false) {
 
   if (interval > 30) {
     const dateObj = new Date(timestamp);
+    const currentYear = new Date().getFullYear();
+    const yearString =
+      dateObj.getFullYear() !== currentYear ? `, ${dateObj.getFullYear()}` : "";
     return `${dateObj.toLocaleString("default", {
       month: "short",
-    })} ${dateObj.getDate()}`;
+    })} ${dateObj.getDate()}${yearString}`;
   }
   if (interval > 1) {
     const amount = Math.floor(interval);
@@ -64,6 +67,12 @@ export function formatNumber(num: number, decimals?: number): string {
     return `${(Math.floor(num / 10) / 100).toFixed(decimals ?? 1)}K`;
   }
   if (decimals) {
+    if (Number.isInteger(num)) {
+      return num.toString();
+    }
+    if (num >= 10) {
+      return num.toFixed(2);
+    }
     return num.toFixed(4);
   }
   return num.toString();
@@ -137,6 +146,7 @@ export const darkenColor = (color: string): string => {
 };
 
 export const formatAddress = (address: string) => {
+  if (!address) return "";
   return `${address.slice(0, 6)}...${address.slice(-4)}`;
 };
 

@@ -28,12 +28,14 @@ export const CollapsibleGradientLayout = ({
   pages,
   src,
   right,
+  fallbackSrc,
 }: {
   title: ReactNode;
   header: ReactNode;
   pages: { name: string; component: ReactNode }[];
   src?: string;
   right?: ReactNode;
+  fallbackSrc?: string;
 }) => {
   const renderHeader = useCallback(() => {
     return (
@@ -42,10 +44,11 @@ export const CollapsibleGradientLayout = ({
         header={header}
         pages={pages}
         src={src}
+        fallbackSrc={fallbackSrc}
         right={right}
       />
     );
-  }, [title, header, pages, src, right]);
+  }, [title, header, pages, src, right, fallbackSrc]);
 
   return (
     <View flex={1} backgroundColor="$color1">
@@ -61,11 +64,13 @@ export const CollapsibleGradientHeader = memo(
     pages,
     src,
     right,
+    fallbackSrc,
   }: {
     title: ReactNode;
     header: ReactNode;
     pages: { name: string; component: ReactNode }[];
     src?: string;
+    fallbackSrc?: string;
     right?: ReactNode;
   }) => {
     const { rootTheme } = useTheme();
@@ -188,7 +193,10 @@ export const CollapsibleGradientHeader = memo(
   },
 );
 
-const Gradient = ({ src }: { src?: string }) => {
+const Gradient = ({
+  src,
+  fallbackSrc,
+}: { src?: string; fallbackSrc?: string }) => {
   const colors = useImageColors(src);
   return (
     <LinearGradient

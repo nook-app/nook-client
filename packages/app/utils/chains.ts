@@ -1,12 +1,10 @@
-export type Chain = {
-  chainId: number;
-  id: string;
-  crossChainId: string;
-  name: string;
+import { Chain } from "@nook/common/utils";
+
+export type ChainWithImage = Chain & {
   image: string;
 };
 
-export const CHAINS: Record<string, Chain> = {
+export const CHAINS: Record<string, ChainWithImage> = {
   "eip155:1": {
     chainId: 1,
     crossChainId: "eip155:1",
@@ -175,5 +173,5 @@ export const CHAINS_BY_NAME = Object.values(CHAINS).reduce(
     acc[chain.id] = chain;
     return acc;
   },
-  {} as Record<string, Chain>,
+  {} as Record<string, ChainWithImage>,
 );

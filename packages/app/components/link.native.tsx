@@ -1,4 +1,4 @@
-import { Text } from "@nook/app-ui";
+import { Button, Text } from "@nook/app-ui";
 import { Link as ExpoLink, useSegments } from "expo-router";
 import { Href } from "expo-router/build/link/href";
 import { memo, useMemo } from "react";
@@ -73,6 +73,18 @@ export const Link = memo(
     }
 
     if (isExternal) {
+      if (touchable) {
+        return (
+          <TouchableOpacity
+            onPress={() => {
+              onPress?.();
+              Linking.openURL(href as string);
+            }}
+          >
+            {memoChildren}
+          </TouchableOpacity>
+        );
+      }
       return (
         <Pressable
           onPress={() => {
@@ -100,3 +112,35 @@ export const Link = memo(
     );
   },
 );
+
+export const LinkButton = ({
+  children,
+  href,
+  ...props
+}: { children: React.ReactNode; href: string }) => {
+  return (
+    <Button
+      height="$5"
+      width="100%"
+      borderRadius="$10"
+      backgroundColor="$mauve12"
+      borderWidth="$0"
+      hoverStyle={{
+        backgroundColor: "$mauve11",
+        // @ts-ignore
+        transition: "all 0.2s ease-in-out",
+      }}
+      pressStyle={{
+        backgroundColor: "$mauve11",
+      }}
+      disabledStyle={{
+        backgroundColor: "$mauve10",
+      }}
+      onPress={() => {
+        Linking.openURL(href);
+      }}
+    >
+      {children}
+    </Button>
+  );
+};

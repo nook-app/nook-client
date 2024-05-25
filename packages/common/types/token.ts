@@ -1,5 +1,14 @@
+import { FarcasterUser } from "./farcaster";
+import { ZerionTransaction } from "./providers/zerion/transaction";
+
 export type TokensFilter = {
   fid: string;
+};
+
+export type TokenTransactionFilter = {
+  fid: string;
+  tokens: string[];
+  cursor?: string;
 };
 
 export type TokenHoldings = {
@@ -94,4 +103,37 @@ export type TokenChart = {
     last: number;
   };
   points: number[][]; // [timestamp, value]
+};
+
+export type TokenTransactions = {
+  data: ZerionTransaction[];
+  nextCursor?: string;
+  address: string;
+};
+
+export type TokenHolder = {
+  id: string;
+  chainId: string;
+  address: string;
+  ownerAddress: string;
+  quantity: number;
+  firstTransferredDate: number;
+  lastTransferredDate: number;
+  fid?: string;
+};
+
+export type GetTokenHoldersRequest = {
+  tokenId: string;
+  cursor?: string;
+  viewerFid?: string;
+};
+
+export type TokenMutualsPreview = {
+  preview: FarcasterUser[];
+  total: number;
+};
+
+export type FetchTokenHoldersResponse = {
+  data: (TokenHolder & { user?: FarcasterUser })[];
+  nextCursor?: string;
 };

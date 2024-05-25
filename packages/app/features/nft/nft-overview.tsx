@@ -1,16 +1,13 @@
 import { Text, View, XStack, YStack } from "@nook/app-ui";
 import { formatAddress, formatNumber, formatTimeAgo } from "@nook/app/utils";
-import {
-  SIMPLEHASH_CHAINS,
-  SimpleHashNFT,
-  SimpleHashNftOwner,
-} from "@nook/common/types";
+import { SimpleHashNFT, SimpleHashNftOwner } from "@nook/common/types";
 import { CdnAvatar } from "@nook/app/components/cdn-avatar";
 import { ChainBadge } from "../../components/blockchain/chain-badge";
 import { NftDescription } from "./nft-description";
 import { Link } from "../../components/link";
 import { NftCollectionMutuals } from "./nft-collection-header";
 import { useAddress } from "../../hooks/useAddress";
+import { SIMPLEHASH_CHAINS } from "@nook/common/utils";
 
 export const NftOverview = ({ nft }: { nft: SimpleHashNFT }) => {
   if (!nft.token_count || !nft.collection.collection_id) return null;
@@ -210,9 +207,9 @@ export const NftProvenance = ({ nft }: { nft: SimpleHashNFT }) => {
         {[
           {
             label: "Chain",
-            value: simplehashChain?.crosschainId ? (
+            value: simplehashChain?.crossChainId ? (
               <ChainBadge
-                chainId={simplehashChain.crosschainId}
+                chainId={simplehashChain.crossChainId}
                 fontSize="$4"
               />
             ) : (

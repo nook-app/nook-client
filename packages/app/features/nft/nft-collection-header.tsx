@@ -9,7 +9,7 @@ import {
   XStack,
   YStack,
 } from "@nook/app-ui";
-import { SIMPLEHASH_CHAINS, SimpleHashCollection } from "@nook/common/types";
+import { SimpleHashCollection } from "@nook/common/types";
 import { ZoomableImage } from "../../components/zoomable-image";
 import { CdnAvatar } from "../../components/cdn-avatar";
 import { FarcasterBioText } from "../../components/farcaster/bio-text";
@@ -22,6 +22,7 @@ import { useAuth } from "../../context/auth";
 import { fetchCollectionMutualsPreview } from "../../api/nft";
 import { useQuery } from "@tanstack/react-query";
 import { ChainBadge } from "../../components/blockchain/chain-badge";
+import { SIMPLEHASH_CHAINS } from "@nook/common/utils";
 
 export const NftCollectionHeader = memo(
   ({
@@ -32,7 +33,7 @@ export const NftCollectionHeader = memo(
     const contract = collection?.top_contracts?.[0];
     const chainId = SIMPLEHASH_CHAINS.find(
       (c) => c.id === contract?.split(".")[0],
-    )?.crosschainId;
+    )?.crossChainId;
     return (
       <YStack gap="$3" padding="$2.5">
         <YStack gap="$2">

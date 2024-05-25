@@ -1,10 +1,9 @@
 import { useFocusEffect, useLocalSearchParams } from "expo-router";
-import { Popover, ScrollView, View, XStack, YStack } from "@nook/app-ui";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { NookText, Popover, View, XStack } from "@nook/app-ui";
 import { BlurView } from "expo-blur";
 import { useTheme } from "@nook/app/context/theme";
 import { LinearGradient } from "@tamagui/linear-gradient";
-import { BackButton, IconButton } from "../IconButton";
+import { IconButton } from "../IconButton";
 import { MoreHorizontal } from "@tamagui/lucide-icons";
 import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
 import { memo, useCallback, useState } from "react";
@@ -12,21 +11,103 @@ import { TokenMenu } from "@nook/app/features/token/token-menu";
 import { Loading } from "@nook/app/components/loading";
 import { useImageColors } from "../../hooks/useImageColors";
 import { Token } from "@nook/common/types";
-import { TokenOverview } from "@nook/app/features/token/token-overview";
+import {
+  TokenDescription,
+  TokenOverview,
+} from "@nook/app/features/token/token-overview";
 import { useToken } from "@nook/app/hooks/useToken";
+import { TokenTransactionsFeed } from "@nook/app/features/token/token-transactions";
+import { CollapsibleGradientLayout } from "../CollapsibleGradientLayout";
+import { Tabs } from "react-native-collapsible-tab-view";
+import { useAuth } from "@nook/app/context/auth";
+import { SIMPLEHASH_CHAINS } from "@nook/common/utils";
+import {
+  FarcasterTokenHolders,
+  FollowingTokenHolders,
+  TokenHolders,
+} from "@nook/app/features/token/token-holders";
 
 export default function TokenScreen() {
+  const { session } = useAuth();
   const { tokenId } = useLocalSearchParams();
   const { token } = useToken(tokenId as string);
-  const insets = useSafeAreaInsets();
   const { rootTheme } = useTheme();
   const paddingBottom = useBottomTabBarHeight();
   const colors = useImageColors(token?.icon?.url, token?.name);
 
+  const chains = token?.instances.map((instance) => instance.chainId);
+  const holderInfoChains = SIMPLEHASH_CHAINS.filter(
+    (chain) => chain.simplehashFungibles,
+  ).map((chain) => chain.id);
+  const hasHolderInfo =
+    token?.id !== "eth" &&
+    chains?.some((chain) => holderInfoChains.includes(chain));
+
   if (!token || colors.isLoading) return <Loading />;
 
+  const tabs = [];
+  if (session?.fid && hasHolderInfo) {
+    tabs.push({
+      name: "Following",
+      component: (
+        <FollowingTokenHolders
+          token={token}
+          asTabs
+          paddingBottom={paddingBottom}
+        />
+      ),
+    });
+  }
+
+  if (hasHolderInfo) {
+    tabs.push({
+      name: "Farcaster",
+      component: (
+        <FarcasterTokenHolders
+          token={token}
+          asTabs
+          paddingBottom={paddingBottom}
+        />
+      ),
+    });
+    tabs.push({
+      name: "All Holders",
+      component: (
+        <TokenHolders token={token} asTabs paddingBottom={paddingBottom} />
+      ),
+    });
+  }
+
+  if (session?.fid) {
+    tabs.push({
+      name: "Your Activity",
+      component: (
+        <TokenTransactionsFeed
+          token={token}
+          filter={{
+            fid: session?.fid,
+            tokens: [token.id],
+          }}
+          asTabs
+          paddingBottom={paddingBottom}
+        />
+      ),
+    });
+  }
+
+  if (token.description) {
+    tabs.push({
+      name: "About",
+      component: (
+        <Tabs.ScrollView>
+          <TokenDescription token={token} />
+        </Tabs.ScrollView>
+      ),
+    });
+  }
+
   return (
-    <View flex={1} backgroundColor={"$color1"} paddingTop={insets.top}>
+    <View flex={1}>
       <LinearGradient
         start={{ x: 0, y: 0 }}
         end={{ x: 0, y: 1 }}
@@ -52,20 +133,14 @@ export default function TokenScreen() {
           flex: 1,
         }}
       />
-      <ScrollView>
-        <YStack gap="$4" paddingBottom={paddingBottom + 32}>
-          <XStack
-            justifyContent="space-between"
-            alignItems="center"
-            paddingHorizontal="$3"
-            paddingVertical="$2"
-          >
-            <BackButton />
-            <Menu token={token} />
-          </XStack>
-          <TokenOverview token={token} color={colors.backgroundColor} />
-        </YStack>
-      </ScrollView>
+      <CollapsibleGradientLayout
+        title={<Title token={token} />}
+        src={token.icon?.url}
+        fallbackSrc={token.name}
+        header={<TokenOverview token={token} color={colors.backgroundColor} />}
+        pages={tabs}
+        right={<Menu token={token} />}
+      />
     </View>
   );
 }
@@ -89,6 +164,22 @@ const Menu = memo(({ token }: { token: Token }) => {
       ) : (
         <IconButton icon={MoreHorizontal} />
       )}
+    </XStack>
+  );
+});
+
+const Title = memo(({ token }: { token: Token }) => {
+  return (
+    <XStack alignItems="center" gap="$2" flexShrink={1}>
+      <NookText
+        fontSize="$5"
+        fontWeight="700"
+        ellipsizeMode="tail"
+        numberOfLines={1}
+        flexShrink={1}
+      >
+        {token.name}
+      </NookText>
     </XStack>
   );
 });

@@ -22,6 +22,7 @@ export const InfiniteFeed = ({
   renderItem,
   numColumns,
   ItemSeparatorComponent,
+  alwaysBounceVertical,
 }: {
   data: unknown[];
   fetchNextPage?: () => void;
@@ -36,6 +37,7 @@ export const InfiniteFeed = ({
   renderItem: ({ item }: { item: unknown }) => JSX.Element;
   numColumns?: number;
   ItemSeparatorComponent?: () => JSX.Element;
+  alwaysBounceVertical?: boolean;
 }) => {
   const { setIsScrolling } = useScroll();
   const [lastScrollY, setLastScrollY] = useState(0);
@@ -94,6 +96,7 @@ export const InfiniteFeed = ({
       }}
       numColumns={numColumns}
       ItemSeparatorComponent={ItemSeparatorComponent}
+      alwaysBounceVertical={alwaysBounceVertical}
     />
   );
 };

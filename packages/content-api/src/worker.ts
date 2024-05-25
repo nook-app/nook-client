@@ -10,12 +10,14 @@ const run = async () => {
 
     await api.getReferences([reference]);
 
-    console.log(`[${job.id}] processed`);
+    console.log(`[embed-metadata] processed ${job.id?.split("?")[0]}`);
   });
 
   worker.on("failed", (job, err) => {
     if (job) {
-      console.log(`[${job.id}] failed with ${err.message}`);
+      console.log(
+        `[embed-metadata] failed ${job.id?.split("?")[0]} with ${err.message}`,
+      );
     }
   });
 };

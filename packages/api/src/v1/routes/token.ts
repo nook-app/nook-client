@@ -1,6 +1,10 @@
 import { FastifyInstance } from "fastify";
 import { TokenService } from "../services/token";
-import { TokensFilter } from "@nook/common/types";
+import {
+  GetTokenHoldersRequest,
+  TokenTransactionFilter,
+  TokensFilter,
+} from "@nook/common/types";
 
 export const tokenRoutes = async (fastify: FastifyInstance) => {
   fastify.register(async (fastify: FastifyInstance) => {
@@ -32,5 +36,74 @@ export const tokenRoutes = async (fastify: FastifyInstance) => {
         return reply.send(response);
       },
     );
+
+    fastify.post<{ Body: TokenTransactionFilter }>(
+      "/tokens/transactions",
+      async (request, reply) => {
+        const response = await service.getTokenTransactions(request.body);
+        return reply.send(response);
+      },
+    );
+
+    fastify.get<{ Params: { tokenId: string } }>(
+      "/tokens/:tokenId/mutuals-preview",
+      async (request, reply) => {
+        const { fid } = (await request.jwtDecode()) as { fid: string };
+
+        const response = await service.getTokenMutualsPreview(
+          request.params.tokenId,
+          fid,
+        );
+
+        return reply.send(response);
+      },
+    );
+
+    fastify.post<{
+      Body: GetTokenHoldersRequest;
+    }>("/tokens/holders", async (request, reply) => {
+      let viewerFid: string | undefined;
+      try {
+        const { fid } = (await request.jwtDecode()) as { fid: string };
+        viewerFid = fid;
+      } catch (e) {}
+
+      const response = await service.getTokenHolders({
+        ...request.body,
+        viewerFid,
+      });
+
+      return reply.send(response);
+    });
+
+    fastify.post<{
+      Body: GetTokenHoldersRequest;
+    }>("/tokens/holders/farcaster", async (request, reply) => {
+      let viewerFid: string | undefined;
+      try {
+        const { fid } = (await request.jwtDecode()) as { fid: string };
+        viewerFid = fid;
+      } catch (e) {}
+
+      const response = await service.getFarcasterTokenHolders({
+        ...request.body,
+        viewerFid,
+      });
+
+      return reply.send(response);
+    });
+
+    fastify.post<{
+      Body: GetTokenHoldersRequest;
+    }>("/tokens/holders/following", async (request, reply) => {
+      const { fid } = (await request.jwtDecode()) as { fid: string };
+
+      const response = await service.getFollowingTokenHolders(
+        request.body,
+        fid,
+      );
+
+      return reply.send(response);
+    });
   });
 };

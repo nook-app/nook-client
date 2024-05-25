@@ -89,3 +89,19 @@ export const refreshNftOwners = async (nftIds: string[]) => {
     })),
   );
 };
+
+export const refreshTokenOwners = async (tokenIds: string[]) => {
+  const queue = getQueue(QueueName.OwnershipRefresh);
+  await queue.addBulk(
+    tokenIds.map((tokenId) => ({
+      name: `token-${tokenId}`,
+      data: { tokenId },
+      opts: {
+        jobId: `token-${tokenId}`,
+        removeOnComplete: {
+          count: 10000,
+        },
+      },
+    })),
+  );
+};

@@ -1,4 +1,5 @@
 export * from "./contracts";
+export * from "./chains";
 
 export function decodeCursorTimestamp(
   cursor?: string,
