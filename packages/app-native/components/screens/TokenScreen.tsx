@@ -16,13 +16,19 @@ import {
   TokenOverview,
 } from "@nook/app/features/token/token-overview";
 import { useToken } from "@nook/app/hooks/useToken";
-import { TokenTransactionsFeed } from "@nook/app/features/token/token-transactions";
+import {
+  TokenTransactionsFeed,
+  TokenTransactionsFeedHeader,
+  TokenTransactionsFeedViewer,
+} from "@nook/app/features/token/token-transactions";
 import { CollapsibleGradientLayout } from "../CollapsibleGradientLayout";
 import { Tabs } from "react-native-collapsible-tab-view";
 import { useAuth } from "@nook/app/context/auth";
 import { SIMPLEHASH_CHAINS } from "@nook/common/utils";
-import { FarcasterTokenHolders } from "@nook/app/features/token/token-holders";
-import { Link } from "@nook/app/components/link";
+import {
+  FarcasterTokenHolders,
+  FarcasterTokenHoldersHeader,
+} from "@nook/app/features/token/token-holders";
 
 export default function TokenScreen() {
   const { session } = useAuth();
@@ -51,51 +57,7 @@ export default function TokenScreen() {
           token={token}
           asTabs
           paddingBottom={paddingBottom}
-          ListHeaderComponent={
-            <XStack
-              paddingHorizontal="$2.5"
-              gap="$2.5"
-              paddingTop="$2.5"
-              paddingBottom="$1.5"
-              alignItems="center"
-              justifyContent="space-between"
-            >
-              <Text color="$mauve111">Holders on Farcaster</Text>
-              <XStack gap="$2">
-                <Link
-                  href={`/tokens/${token.id}/holders-following`}
-                  unpressable
-                >
-                  <Button
-                    borderWidth="$0"
-                    backgroundColor="$color4"
-                    borderRadius="$10"
-                    height="$2.5"
-                    minHeight="$2.5"
-                    padding="$0"
-                    paddingHorizontal="$3"
-                    fontWeight="500"
-                  >
-                    View following
-                  </Button>
-                </Link>
-                <Link href={`/tokens/${token.id}/holders`} unpressable>
-                  <Button
-                    borderWidth="$0"
-                    backgroundColor="$color4"
-                    borderRadius="$10"
-                    height="$2.5"
-                    minHeight="$2.5"
-                    padding="$0"
-                    paddingHorizontal="$3"
-                    fontWeight="500"
-                  >
-                    View all
-                  </Button>
-                </Link>
-              </XStack>
-            </XStack>
-          }
+          ListHeaderComponent={<FarcasterTokenHoldersHeader token={token} />}
         />
       ),
     });
@@ -105,59 +67,9 @@ export default function TokenScreen() {
     tabs.push({
       name: "Activity",
       component: (
-        <TokenTransactionsFeed
+        <TokenTransactionsFeedViewer
           token={token}
-          filter={{
-            fid: session?.fid,
-            tokens: [token.id],
-          }}
-          asTabs
           paddingBottom={paddingBottom}
-          ListHeaderComponent={
-            <XStack
-              paddingHorizontal="$2.5"
-              gap="$2.5"
-              paddingTop="$2.5"
-              paddingBottom="$1.5"
-              alignItems="center"
-              justifyContent="space-between"
-            >
-              <Text color="$mauve11">Your Activity</Text>
-              {/* <XStack gap="$2">
-                <Link
-                  href={`/tokens/${token.id}/activity-following`}
-                  unpressable
-                >
-                  <Button
-                    borderWidth="$0"
-                    backgroundColor="$color4"
-                    borderRadius="$10"
-                    height="$2.5"
-                    minHeight="$2.5"
-                    padding="$0"
-                    paddingHorizontal="$3"
-                    fontWeight="500"
-                  >
-                    View Farcaster
-                  </Button>
-                </Link>
-                <Link href={`/tokens/${token.id}/activity`} unpressable>
-                  <Button
-                    borderWidth="$0"
-                    backgroundColor="$color4"
-                    borderRadius="$10"
-                    height="$2.5"
-                    minHeight="$2.5"
-                    padding="$0"
-                    paddingHorizontal="$3"
-                    fontWeight="500"
-                  >
-                    View all
-                  </Button>
-                </Link>
-              </XStack> */}
-            </XStack>
-          }
         />
       ),
     });

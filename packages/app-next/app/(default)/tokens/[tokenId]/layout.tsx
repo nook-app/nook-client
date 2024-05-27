@@ -5,10 +5,11 @@ export default async function Home({
   children,
   params,
 }: { children: React.ReactNode; params: { tokenId: string } }) {
-  const nft = await fetchToken(params.tokenId);
+  const token = await fetchToken(params.tokenId);
+
   return (
     <>
-      <NavigationHeader title={nft.name || "Token"} />
+      <NavigationHeader title={token.name || "Token"} />
       {children}
     </>
   );

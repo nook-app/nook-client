@@ -1,10 +1,12 @@
+"use client";
+
 import {
   Token,
   TokenTransactionFilter,
   ZerionTransaction,
 } from "@nook/common/types";
 import { useTokenTransactions } from "../../api/token";
-import { useState } from "react";
+import { memo, useState } from "react";
 import { Loading } from "../../components/loading";
 import { InfiniteFeed } from "../../components/infinite-feed";
 import { NookText, Text, View, XStack, YStack } from "@nook/app-ui";
@@ -14,7 +16,7 @@ import { formatNumber, formatPrice, formatTimeAgo } from "../../utils";
 import { Link } from "../../components/link";
 import { CHAINS_BY_NAME, ChainWithImage } from "../../utils/chains";
 import { ChainIcon } from "../../components/blockchain/chain-icon";
-import { Tabs } from "react-native-collapsible-tab-view";
+import { useAuth } from "../../context/auth";
 
 export const TokenTransactionsFeed = ({
   token,
@@ -49,18 +51,11 @@ export const TokenTransactionsFeed = ({
 
   if (transactions.length === 0) {
     return (
-      <Tabs.ScrollView>
-        <YStack
-          gap="$4"
-          padding="$4"
-          justifyContent="center"
-          alignItems="center"
-        >
-          <NookText muted textAlign="center">
-            No activity found.
-          </NookText>
-        </YStack>
-      </Tabs.ScrollView>
+      <YStack gap="$4" padding="$4" justifyContent="center" alignItems="center">
+        <NookText muted textAlign="center">
+          No activity found.
+        </NookText>
+      </YStack>
     );
   }
 
@@ -313,4 +308,40 @@ const toPastTense = (operation: string) => {
     default:
       return operation;
   }
+};
+
+export const TokenTransactionsFeedHeader = memo(() => (
+  <XStack
+    paddingHorizontal="$2.5"
+    gap="$2.5"
+    paddingTop="$2.5"
+    paddingBottom="$1.5"
+    alignItems="center"
+    justifyContent="space-between"
+  >
+    <Text color="$mauve11">Your Activity</Text>
+  </XStack>
+));
+
+export const TokenTransactionsFeedViewer = ({
+  token,
+  paddingBottom,
+}: { token: Token; paddingBottom?: number }) => {
+  const { session } = useAuth();
+  if (!session?.fid) {
+    return null;
+  }
+
+  return (
+    <TokenTransactionsFeed
+      token={token}
+      filter={{
+        fid: session?.fid,
+        tokens: [token.id],
+      }}
+      asTabs
+      paddingBottom={paddingBottom}
+      ListHeaderComponent={<TokenTransactionsFeedHeader />}
+    />
+  );
 };

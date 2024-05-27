@@ -14,6 +14,8 @@ import {
   useTokenHolders,
 } from "../../api/token";
 import { Button, Text, XStack, YStack } from "@nook/app-ui";
+import { Link } from "../../components/link";
+import { memo } from "react";
 
 export const TokenHolders = ({
   token,
@@ -131,3 +133,48 @@ export const FollowingTokenHolders = ({
     />
   );
 };
+
+export const FarcasterTokenHoldersHeader = memo(
+  ({ token }: { token: Token }) => (
+    <XStack
+      paddingHorizontal="$2.5"
+      gap="$2.5"
+      paddingTop="$2.5"
+      paddingBottom="$1.5"
+      alignItems="center"
+      justifyContent="space-between"
+    >
+      <Text color="$mauve111">Holders on Farcaster</Text>
+      <XStack gap="$2">
+        <Link href={`/tokens/${token.id}/holders-following`} unpressable>
+          <Button
+            borderWidth="$0"
+            backgroundColor="$color4"
+            borderRadius="$10"
+            height="$2.5"
+            minHeight="$2.5"
+            padding="$0"
+            paddingHorizontal="$3"
+            fontWeight="500"
+          >
+            View following
+          </Button>
+        </Link>
+        <Link href={`/tokens/${token.id}/holders`} unpressable>
+          <Button
+            borderWidth="$0"
+            backgroundColor="$color4"
+            borderRadius="$10"
+            height="$2.5"
+            minHeight="$2.5"
+            padding="$0"
+            paddingHorizontal="$3"
+            fontWeight="500"
+          >
+            View all
+          </Button>
+        </Link>
+      </XStack>
+    </XStack>
+  ),
+);

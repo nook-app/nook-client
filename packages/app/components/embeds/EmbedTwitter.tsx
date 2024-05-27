@@ -10,7 +10,6 @@ export const EmbedTwitter = ({
 }) => {
   if (!content.metadata) return null;
 
-  console.log(content);
   return (
     <Link href={content.uri} isExternal>
       <YStack

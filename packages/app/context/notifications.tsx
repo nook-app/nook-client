@@ -192,7 +192,6 @@ export const NotificationsProvider = ({ children }: SheetProviderProps) => {
           }
         }
 
-        console.log("routing to", navigationPath);
         router.push(navigationPath);
       });
 

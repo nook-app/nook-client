@@ -3,7 +3,7 @@
 import { Token } from "@nook/common/types";
 import { CdnAvatar } from "../../components/cdn-avatar";
 import { GradientIcon } from "../../components/gradient-icon";
-import { Text, XStack, YStack, View, ScrollView } from "@nook/app-ui";
+import { Text, XStack, YStack, View } from "@nook/app-ui";
 import { CHAINS_BY_NAME, ChainWithImage } from "../../utils/chains";
 import { ChainIcon } from "../../components/blockchain/chain-icon";
 import { formatNumber, formatPrice } from "../../utils";

@@ -34,17 +34,7 @@ export const TransactionDisplay = ({
   const user = transaction.users[transaction.from];
 
   return (
-    <XStack
-      gap="$2"
-      transition="all 0.2s ease-in-out"
-      hoverStyle={{
-        // @ts-ignore
-        transition: "all 0.2s ease-in-out",
-        backgroundColor: "$color2",
-      }}
-      cursor="pointer"
-      padding="$2.5"
-    >
+    <XStack gap="$2" cursor="pointer" padding="$2.5">
       <YStack alignItems="center" width="$4" marginTop="$1">
         <FarcasterUserAvatar user={user} size="$4" asLink={!!user} />
       </YStack>
