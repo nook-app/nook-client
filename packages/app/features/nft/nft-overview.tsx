@@ -500,10 +500,12 @@ const NftListing = ({ nft, ask }: { nft: SimpleHashNFT; ask: NftAsk }) => {
       </LinkButton>
       <XStack justifyContent="center">
         <Text opacity={0.6} fontWeight="500">
-          {`${formatUnits(
-            BigInt(ask.price.amount.raw),
-            ask.price.currency.decimals,
-          )} ${ask.price.currency.symbol}`}
+          {`${parseFloat(
+            formatUnits(
+              BigInt(ask.price.amount.raw),
+              ask.price.currency.decimals,
+            ),
+          ).toFixed(4)} ${ask.price.currency.symbol}`}
         </Text>
         {endTimeDisplay && (
           <Text opacity={0.6} fontWeight="500">

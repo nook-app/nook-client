@@ -95,9 +95,9 @@ export class TransactionService {
       if (!addressToUser[tx.to]) {
         missingParties.add(tx.to);
       }
-      for (const { type, value } of Object.values(tx.context.variables)) {
-        if (type === "address" && !addressToUser[value]) {
-          missingParties.add(value);
+      for (const variable of Object.values(tx.context.variables)) {
+        if (variable.type === "address" && !addressToUser[variable.value]) {
+          missingParties.add(variable.value);
         }
       }
     }
@@ -106,12 +106,13 @@ export class TransactionService {
     const missingCollectibles = new Set<string>();
     for (const tx of response.transactions) {
       const chain = CHAINS[`eip155:${tx.chainId}`];
+      if (!tx.assetTransfers) continue;
       for (const asset of tx.assetTransfers) {
-        if (chain.zerionId && asset.type === "erc20" && asset.contract) {
+        if (chain?.zerionId && asset.type === "erc20" && asset.contract) {
           missingTokens.add(`${chain.zerionId}-${asset.contract}`);
         }
         if (
-          chain.simplehashId &&
+          chain?.simplehashId &&
           (asset.type === "erc721" || asset.type === "erc1155") &&
           asset.contract &&
           asset.tokenId
@@ -138,7 +139,7 @@ export class TransactionService {
 
     const tokenMap = tokens.reduce(
       (acc, token) => {
-        if (!token) return acc;
+        if (!token?.instances) return acc;
         for (const instance of token.instances) {
           if (!instance?.address) continue;
           acc[instance.address] = token;
@@ -162,32 +163,35 @@ export class TransactionService {
         const chain = CHAINS[`eip155:${tx.chainId}`];
         const txTokens = [];
         const txCollectibles = [];
-        for (const asset of tx.assetTransfers) {
-          if (chain.zerionId && asset.type === "erc20" && asset.contract) {
-            txTokens.push(asset.contract);
-          }
-          if (
-            chain.simplehashId &&
-            (asset.type === "erc721" || asset.type === "erc1155") &&
-            asset.contract &&
-            asset.tokenId
-          ) {
-            txCollectibles.push(
-              `${chain.simplehashId}.${asset.contract}.${asset.tokenId}`,
-            );
+        if (tx.assetTransfers) {
+          for (const asset of tx.assetTransfers) {
+            if (chain?.zerionId && asset.type === "erc20" && asset.contract) {
+              txTokens.push(asset.contract);
+            }
+            if (
+              chain?.simplehashId &&
+              (asset.type === "erc721" || asset.type === "erc1155") &&
+              asset.contract &&
+              asset.tokenId
+            ) {
+              txCollectibles.push(
+                `${chain.simplehashId}.${asset.contract}.${asset.tokenId}`,
+              );
+            }
           }
         }
 
         return {
           ...tx,
-          users: tx.parties.reduce(
-            (acc, party) => {
-              if (!addressToUser[party]) return acc;
-              acc[party] = addressToUser[party];
-              return acc;
-            },
-            {} as Record<string, FarcasterUser>,
-          ),
+          users:
+            tx.parties?.reduce(
+              (acc, party) => {
+                if (!addressToUser[party]) return acc;
+                acc[party] = addressToUser[party];
+                return acc;
+              },
+              {} as Record<string, FarcasterUser>,
+            ) || {},
           tokens: txTokens.reduce(
             (acc, token) => {
               if (!tokenMap[token]) return acc;
@@ -278,7 +282,7 @@ export class TransactionService {
       );
 
       for (const token of tokens) {
-        if (!token) continue;
+        if (!token?.instances) continue;
         for (const instance of token.instances) {
           cacheMap[`${instance.chainId}-${instance.address}`] = token;
         }
@@ -347,6 +351,10 @@ export class TransactionService {
       },
       body: JSON.stringify(body),
     });
+    if (!response.ok) {
+      console.error(`Failed to fetch ${path}: ${response.status}`);
+      return;
+    }
     return response.json();
   }
 
@@ -361,6 +369,10 @@ export class TransactionService {
         "X-API-KEY": SIMPLEHASH_API_KEY,
       },
     });
+    if (!response.ok) {
+      console.error(`Failed to fetch ${path}: ${response.status}`);
+      return;
+    }
     return response.json();
   }
 
@@ -375,6 +387,10 @@ export class TransactionService {
         authorization: `Basic ${ZERION_API_KEY}`,
       },
     });
+    if (!response.ok) {
+      console.error(`Failed to fetch ${path}: ${response.status}`);
+      return;
+    }
     return response.json();
   }
 }

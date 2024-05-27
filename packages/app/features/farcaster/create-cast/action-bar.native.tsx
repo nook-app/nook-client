@@ -1,6 +1,7 @@
 import { NookText, XStack } from "@nook/app-ui";
 import { useCreateCast } from "./context";
 import { UploadImageButton } from "./action-buttons";
+import { AddCastButton } from "./add-cast-button";
 
 export const CreateCastActionBar = ({
   onSubmit,
@@ -22,6 +23,7 @@ export const CreateCastActionBar = ({
           fontWeight="500"
           fontSize="$4"
         >{`${activeCastLength} / 320`}</NookText>
+        <AddCastButton />
       </XStack>
     </XStack>
   );

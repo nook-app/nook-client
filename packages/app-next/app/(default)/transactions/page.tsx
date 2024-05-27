@@ -14,6 +14,7 @@ export default async function Home() {
               fid: session?.fid,
             },
           },
+          contextActions: ["MINTED", "SWAPPED"],
         }}
       />
     );

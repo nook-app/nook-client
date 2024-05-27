@@ -42,8 +42,9 @@ export const Link = ({
       </TextLink>
     );
   }
+
   return (
-    <SolitoLink href={formattedHref} target={target}>
+    <SolitoLink href={formattedHref} target={isExternal ? "_blank" : target}>
       {memoChildren}
     </SolitoLink>
   );

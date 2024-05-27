@@ -94,65 +94,97 @@ enum Title {
 }
 
 interface Variables {
-  recipient: MintReferral;
-  sender: MintReferral;
-  minted: MintReferral;
-  token?: Token;
-  price?: NumOfEth;
-  referrer?: Referrer;
-  numOfEth?: NumOfEth;
-  mintReferral?: MintReferral;
-  multipleERC721s?: MultipleERC721S;
-  amount?: Amount;
+  [key: string]:
+    | ContextActionVariables
+    | EthVariables
+    | DegenVariables
+    | AddressVariables
+    | Erc1155Variables
+    | Erc721Variables
+    | MultipleERC721sVariables
+    | Erc20Variables
+    | NumberVariables
+    | ChainIDVariables
+    | TransactionVariables
+    | LinkVariables
+    | StringVariables;
 }
 
-interface Amount {
-  type: string;
-  value: number;
-  unit: string;
+export interface ContextActionVariables {
+  type: "contextAction";
+  value: ContextAction;
 }
 
-interface MintReferral {
-  type: MintReferralType;
+export interface EthVariables {
+  type: "eth";
   value: string;
 }
 
-enum MintReferralType {
-  Address = "address",
-  ContextAction = "contextAction",
-  Eth = "eth",
+export interface DegenVariables {
+  type: "degen";
+  value: string;
 }
 
-interface MultipleERC721S {
-  type: AssetTransferType;
+export interface AddressVariables {
+  type: "address";
+  value: string;
+}
+
+export interface Erc1155Variables {
+  type: "erc1155";
+  token: string;
+  tokenId: string;
+  value: string;
+}
+
+export interface Erc721Variables {
+  type: "erc721";
+  token: string;
+  tokenId: string;
+}
+
+export interface MultipleERC721sVariables {
+  type: "multipleERC721s";
   token: string;
 }
 
-interface NumOfEth {
-  type: AssetTransferType;
+export interface Erc20Variables {
+  type: "erc20";
+  contract: string;
+  token: string;
   value: string;
-  unit: Unit;
 }
 
-enum Unit {
-  Wei = "wei",
+export interface NumberVariables {
+  type: "number";
+  value: string;
+  unit: string;
+  emphasis: boolean;
 }
 
-interface Referrer {
+export interface ChainIDVariables {
+  type: "chainID";
+  value: string;
+}
+
+export interface TransactionVariables {
+  type: "transaction";
+  value: string;
+}
+
+export interface LinkVariables {
+  type: "link";
+  link: string;
+  value: string;
+  truncate: boolean;
+  emphasis: boolean;
+}
+
+export interface StringVariables {
   type: string;
   value: string;
-  rawValue: string;
+  emphasis: boolean;
 }
-
-interface Token {
-  type: AssetTransferType;
-  token?: string;
-  tokenId: string;
-  value?: string;
-  contract?: string;
-  imageUrl?: string;
-}
-
 interface DatumDecoded {
   signature: string;
   signature_with_arg_names: string;
@@ -264,4 +296,22 @@ enum V {
   The0X0 = "0x0",
   The0X1 = "0x1",
   The0X422D = "0x422d",
+}
+
+export enum ContextAction {
+  BOUGHT = "BOUGHT",
+  BRIDGED = "BRIDGED",
+  DEPLOYED = "DEPLOYED",
+  MINTED = "MINTED",
+  SWAPPED = "SWAPPED",
+  SENT = "SENT",
+  RECEIVED = "RECEIVED",
+  COMMITTED_TO = "COMMITTED_TO", // Not yet used in this repo
+  RECEIVED_AIRDROP = "RECEIVED_AIRDROP",
+  GAVE_ACCESS = "GAVE_ACCESS",
+  REVOKED_ACCESS = "REVOKED_ACCESS",
+  INTERACTED_WITH = "INTERACTED_WITH", // Not yet used in this repo
+  CALLED = "CALLED", // Not yet used in this repo
+  SENT_MESSAGE = "SENT_MESSAGE",
+  CANCELED_A_PENDING_TRANSACTION = "CANCELED_A_PENDING_TRANSACTION",
 }

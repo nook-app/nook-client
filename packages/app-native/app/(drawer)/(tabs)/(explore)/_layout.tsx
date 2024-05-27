@@ -141,6 +141,26 @@ export default function ExploreLayout() {
         options={{ headerShown: false }}
         getId={({ params }) => params?.collectionId}
       />
+      <Stack.Screen
+        name="tokens/[tokenId]/index"
+        options={{ headerShown: false }}
+        getId={({ params }) => params?.tokenId}
+      />
+      <Stack.Screen
+        name="tokens/[tokenId]/holders"
+        options={{ headerShown: false }}
+        getId={({ params }) => params?.tokenId}
+      />
+      <Stack.Screen
+        name="tokens/[tokenId]/holders-following"
+        options={{ headerShown: false }}
+        getId={({ params }) => params?.tokenId}
+      />
+      <Stack.Screen
+        name="tokens/[tokenId]/holders-farcaster"
+        options={{ headerShown: false }}
+        getId={({ params }) => params?.tokenId}
+      />
     </Stack>
   );
 }

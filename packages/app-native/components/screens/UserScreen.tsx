@@ -5,7 +5,10 @@ import { FarcasterFilteredFeed } from "@nook/app/features/farcaster/cast-feed/fi
 import { Display, FarcasterUser, UserFilterType } from "@nook/common/types";
 import { NookText, Popover, XStack } from "@nook/app-ui";
 import { FarcasterPowerBadge } from "@nook/app/components/farcaster/users/power-badge";
-import { TransactionFeedWithGroupSelector } from "@nook/app/features/transactions/transaction-feed";
+import {
+  TransactionFeed,
+  TransactionFeedWithGroupSelector,
+} from "@nook/app/features/transactions/transaction-feed";
 import { CollapsibleGradientLayout } from "../CollapsibleGradientLayout";
 import { Loading } from "@nook/app/components/loading";
 import { Link } from "@nook/app/components/link";
@@ -98,7 +101,7 @@ export default function UserScreen() {
         {
           name: "Activity",
           component: (
-            <TransactionFeedWithGroupSelector
+            <TransactionFeed
               filter={{
                 users: {
                   type: UserFilterType.FIDS,
@@ -106,6 +109,7 @@ export default function UserScreen() {
                     fids: [user.fid],
                   },
                 },
+                contextActions: ["-RECEIVED_AIRDROP"],
               }}
               paddingBottom={paddingBottom}
               asTabs

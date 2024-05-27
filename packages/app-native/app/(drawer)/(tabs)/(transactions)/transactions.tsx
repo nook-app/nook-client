@@ -31,7 +31,7 @@ export default function TransactionsScreen() {
       }
       pages={[
         {
-          name: "Collectibles",
+          name: "For You",
           component: (
             <TransactionFeed
               paddingBottom={paddingBottom}
@@ -43,25 +43,7 @@ export default function TransactionsScreen() {
                     fid: session?.fid,
                   },
                 },
-                contextActions: ["MINTED"],
-              }}
-            />
-          ),
-        },
-        {
-          name: "Tokens",
-          component: (
-            <TransactionFeed
-              paddingBottom={paddingBottom}
-              paddingTop={HEADER_HEIGHT}
-              filter={{
-                users: {
-                  type: UserFilterType.FOLLOWING,
-                  data: {
-                    fid: session?.fid,
-                  },
-                },
-                contextActions: ["SWAPPED"],
+                contextActions: ["MINTED", "SWAPPED"],
               }}
             />
           ),

@@ -60,7 +60,7 @@ export const Link = memo(
               Linking.openURL(formattedHref as string);
             }}
           >
-            {children}
+            {memoChildren}
           </Text>
         );
       }

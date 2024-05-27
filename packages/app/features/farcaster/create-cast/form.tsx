@@ -10,6 +10,7 @@ import {
   useToastController,
   useDebounce,
   NookText,
+  Button,
 } from "@nook/app-ui";
 import { useCreateCast } from "./context";
 import { memo, useCallback, useEffect, useRef, useState } from "react";
@@ -177,12 +178,18 @@ export const CreateCastItem = ({ index }: { index: number }) => {
         </YStack>
         <YStack width="$3">
           {activeIndex === index && index > 0 && (
-            <NookButton
-              variant="ghost"
+            <Button
               size="$2"
               scaleIcon={1.5}
               circular
               icon={X}
+              backgroundColor="transparent"
+              borderWidth="$0"
+              hoverStyle={{
+                backgroundColor: "$color4",
+                // @ts-ignore
+                transition: "all 0.2s ease-in-out",
+              }}
               onPress={(e) => {
                 e.stopPropagation();
                 removeCast(index);

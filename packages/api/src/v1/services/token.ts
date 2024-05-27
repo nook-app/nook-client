@@ -272,6 +272,10 @@ export class TokenService {
             last_transferred_date: string;
           }[];
         } = await this.makeSimplehashRequest("/fungibles/top_wallets", params);
+        if (!result?.owners) {
+          nextCursor = undefined;
+          continue;
+        }
         owners.push(
           ...result.owners.map((owner) => ({
             id,
@@ -546,6 +550,12 @@ export class TokenService {
       `/wallets/${addresses[0]}/transactions`,
       params,
     );
+    if (!response?.data) {
+      return {
+        data: [],
+        address: addresses[0],
+      };
+    }
 
     let nextCursor: string | undefined;
     if (response.links.next) {
@@ -588,6 +598,10 @@ export class TokenService {
         authorization: `Basic ${ZERION_API_KEY}`,
       },
     });
+    if (!response.ok) {
+      console.error(`Failed to fetch ${path}: ${response.status}`);
+      return;
+    }
     return response.json();
   }
 
@@ -602,6 +616,10 @@ export class TokenService {
         "X-API-KEY": SIMPLEHASH_API_KEY,
       },
     });
+    if (!response.ok) {
+      console.error(`Failed to fetch ${path}: ${response.status}`);
+      return;
+    }
     return response.json();
   }
 }

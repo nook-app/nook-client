@@ -30,6 +30,14 @@ export default function NftScreen() {
 
   if (!nft) return <Loading />;
 
+  const uri = nft.previews.image_medium_url || nft.collection.image_url;
+  const aspectRatio = nft.image_properties
+    ? (nft.image_properties.width || 1) / (nft.image_properties.height || 1)
+    : nft.collection.image_properties
+      ? (nft.collection.image_properties.width || 1) /
+        (nft.collection.image_properties.height || 1)
+      : 1;
+
   const backgroundColor = nft.previews.predominant_color || "$color2";
   const darkenedBackgroundColor = nft.previews.predominant_color
     ? darkenColor(backgroundColor)
@@ -78,11 +86,11 @@ export default function NftScreen() {
             <BackButton />
             <Menu nft={nft} />
           </XStack>
-          {nft.previews.image_medium_url && (
+          {uri && (
             <Link
               href={{
                 pathname: "/image/[url]",
-                params: { url: nft.previews.image_medium_url },
+                params: { url: uri },
               }}
               absolute
               unpressable
@@ -98,11 +106,9 @@ export default function NftScreen() {
                 >
                   <View borderRadius="$4" overflow="hidden">
                     <Image
-                      source={{ uri: nft.previews.image_medium_url }}
+                      source={{ uri }}
                       style={{
-                        aspectRatio:
-                          (nft.image_properties?.width || 1) /
-                          (nft.image_properties?.height || 1),
+                        aspectRatio,
                         width: "100%",
                         maxHeight: 400,
                       }}

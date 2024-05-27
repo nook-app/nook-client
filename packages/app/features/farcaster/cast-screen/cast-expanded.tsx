@@ -29,7 +29,7 @@ import {
 } from "@nook/common/types";
 import { FarcasterInfiniteFeed } from "../cast-feed/infinite-feed";
 import { BarChartBig, Clock, Rocket } from "@tamagui/lucide-icons";
-import { Ref, useEffect, useRef, useState } from "react";
+import { Ref, memo, useEffect, useRef, useState } from "react";
 import { FarcasterCastResponseMenu } from "../../../components/farcaster/casts/cast-menu";
 import { FarcasterCastLink } from "../../../components/farcaster/casts/cast-link";
 import { View as RNView, ScrollView as RNScrollView } from "react-native";
@@ -55,213 +55,221 @@ function formatTimestampDate(timestamp: number) {
   return dateFormatter.format(date);
 }
 
-export const FarcasterExpandedCast = ({
-  cast,
-  initialData,
-  paddingBottom,
-}: {
-  cast: FarcasterCastResponse;
-  initialData?: FetchCastsResponse;
-  paddingBottom: number;
-}) => {
-  const [replySort, setReplySort] = useState<"best" | "top" | "new">("best");
-  const [isRefetching, setIsRefetching] = useState(false);
-  const { data, hasNextPage, fetchNextPage, isFetchingNextPage, refetch } =
-    useCastReplies(cast.hash, replySort, initialData);
+export const FarcasterExpandedCast = memo(
+  ({
+    cast,
+    initialData,
+    paddingBottom,
+  }: {
+    cast: FarcasterCastResponse;
+    initialData?: FetchCastsResponse;
+    paddingBottom: number;
+  }) => {
+    const [replySort, setReplySort] = useState<"best" | "top" | "new">("best");
+    const [isRefetching, setIsRefetching] = useState(false);
+    const { data, hasNextPage, fetchNextPage, isFetchingNextPage, refetch } =
+      useCastReplies(cast.hash, replySort, initialData);
 
-  const scrollViewRef = useRef<RNScrollView>(null);
-  const viewRef = useRef<RNView>(null);
+    const scrollViewRef = useRef<RNScrollView>(null);
+    const viewRef = useRef<RNView>(null);
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      if (scrollViewRef.current && viewRef.current) {
-        viewRef.current.measureLayout(
-          // @ts-ignore
-          scrollViewRef.current,
-          (x, y, width, height) => {
-            scrollViewRef.current?.scrollTo({ x: 0, y: y, animated: true });
-          },
-        );
-      }
-    }, 100);
-    return () => clearTimeout(timer);
-  }, []);
+    useEffect(() => {
+      const timer = setTimeout(() => {
+        if (scrollViewRef.current && viewRef.current) {
+          viewRef.current.measureLayout(
+            // @ts-ignore
+            scrollViewRef.current,
+            (x, y, width, height) => {
+              scrollViewRef.current?.scrollTo({ x: 0, y: y, animated: true });
+            },
+          );
+        }
+      }, 100);
+      return () => clearTimeout(timer);
+    }, []);
 
-  const casts = data?.pages.flatMap((page) => page.data) ?? [];
+    const casts = data?.pages.flatMap((page) => page.data) ?? [];
 
-  const handleRefresh = async () => {
-    setIsRefetching(true);
-    await refetch();
-    setIsRefetching(false);
-  };
+    const handleRefresh = async () => {
+      setIsRefetching(true);
+      await refetch();
+      setIsRefetching(false);
+    };
 
-  return (
-    <ScrollView ref={scrollViewRef}>
-      <FarcasterExpandedCastHeader
-        cast={cast}
-        replySort={replySort}
-        onReplySortChange={setReplySort}
-        viewRef={viewRef}
-      />
-      <FarcasterInfiniteFeed
-        casts={casts}
-        fetchNextPage={fetchNextPage}
-        isFetchingNextPage={isFetchingNextPage}
-        hasNextPage={hasNextPage}
-        displayMode={Display.REPLIES}
-        refetch={handleRefresh}
-        isRefetching={isRefetching}
-        paddingBottom={paddingBottom}
-      />
-    </ScrollView>
-  );
-};
-
-const FarcasterExpandedCastHeader = ({
-  cast,
-  replySort,
-  onReplySortChange,
-  viewRef,
-}: {
-  cast: FarcasterCastResponse;
-  replySort: "best" | "top" | "new";
-  onReplySortChange: (sort: "best" | "top" | "new") => void;
-  viewRef: Ref<RNView>;
-}) => {
-  const renderText = cast.text || cast.mentions.length > 0;
-  const renderEmbeds = cast.embeds.length > 0 || cast.embedCasts.length > 0;
-
-  const ancestors = cast.ancestors ? [...cast.ancestors].reverse() : undefined;
-
-  return (
-    <View>
-      {ancestors?.map((ancestor) => (
-        <FarcasterCastLink
-          key={ancestor.hash}
-          cast={ancestor}
-          displayMode={Display.LIST}
+    return (
+      <ScrollView ref={scrollViewRef}>
+        <FarcasterExpandedCastHeader
+          cast={cast}
+          replySort={replySort}
+          onReplySortChange={setReplySort}
+          viewRef={viewRef}
         />
-      ))}
-      <YStack gap="$3" padding="$2.5" ref={viewRef}>
-        <XStack justifyContent="space-between">
-          <FarcasterUserDisplay user={cast.user} asLink />
-          <FarcasterCastResponseMenu cast={cast} />
-        </XStack>
-        {renderText && <FarcasterCastResponseText cast={cast} fontSize="$6" />}
-        {renderEmbeds && <Embeds cast={cast} />}
-        <XStack
-          justifyContent="space-between"
-          alignItems="center"
-          flexWrap="wrap"
-          $sm={{
-            flexDirection: "column-reverse",
-            alignItems: "flex-start",
-            gap: "$3",
-          }}
-        >
-          <FarcasterCastResponseEngagement
-            cast={cast}
-            types={["likes", "replies", "quotes", "recasts"]}
+        <FarcasterInfiniteFeed
+          casts={casts}
+          fetchNextPage={fetchNextPage}
+          isFetchingNextPage={isFetchingNextPage}
+          hasNextPage={hasNextPage}
+          displayMode={Display.REPLIES}
+          refetch={handleRefresh}
+          isRefetching={isRefetching}
+          paddingBottom={paddingBottom}
+        />
+      </ScrollView>
+    );
+  },
+);
+
+const FarcasterExpandedCastHeader = memo(
+  ({
+    cast,
+    replySort,
+    onReplySortChange,
+    viewRef,
+  }: {
+    cast: FarcasterCastResponse;
+    replySort: "best" | "top" | "new";
+    onReplySortChange: (sort: "best" | "top" | "new") => void;
+    viewRef: Ref<RNView>;
+  }) => {
+    const renderText = cast.text || cast.mentions.length > 0;
+    const renderEmbeds = cast.embeds.length > 0 || cast.embedCasts.length > 0;
+
+    const ancestors = cast.ancestors
+      ? [...cast.ancestors].reverse()
+      : undefined;
+
+    return (
+      <View>
+        {ancestors?.map((ancestor) => (
+          <FarcasterCastLink
+            key={ancestor.hash}
+            cast={ancestor}
+            displayMode={Display.LIST}
           />
-          <XStack alignItems="center" gap="$1.5">
-            <NookText muted>{formatTimestampTime(cast.timestamp)}</NookText>
-            <NookText muted>{"·"}</NookText>
-            <NookText muted>{formatTimestampDate(cast.timestamp)}</NookText>
-            {cast.channel && (
-              <>
-                <NookText muted>{"·"}</NookText>
-                <FarcasterChannelBadge channel={cast.channel} asLink />
-              </>
-            )}
+        ))}
+        <YStack gap="$3" padding="$2.5" ref={viewRef}>
+          <XStack justifyContent="space-between">
+            <FarcasterUserDisplay user={cast.user} asLink />
+            <FarcasterCastResponseMenu cast={cast} />
           </XStack>
-        </XStack>
-      </YStack>
-      <XStack
-        alignItems="center"
-        justifyContent="space-around"
-        borderTopWidth="$0.5"
-        borderTopColor="$borderColorBg"
-        borderBottomWidth="$0.5"
-        borderBottomColor="$borderColorBg"
-        paddingVertical="$2"
-      >
-        <FarcasterReplyActionButton cast={cast} />
-        <FarcasterRecastActionButton cast={cast} />
-        <FarcasterLikeActionButton cast={cast} />
-        <FarcasterCustomActionButton cast={cast} />
-        <FarcasterShareButton cast={cast} />
-      </XStack>
-      <XStack
-        borderBottomWidth="$0.5"
-        borderBottomColor="$borderColorBg"
-        alignItems="center"
-        justifyContent="space-between"
-        paddingLeft="$2.5"
-      >
-        <NookText muted fontWeight="500" fontSize="$4" color="$mauve10">
-          Sort replies
-        </NookText>
-        <ToggleGroup
-          type="single"
-          borderWidth="$0"
-          width="auto"
-          alignSelf="flex-end"
-          justifyContent="center"
-          size="$3"
-          borderRadius="$0"
-          value={replySort}
-          onValueChange={(value) =>
-            onReplySortChange((value as "best" | "top" | "new") || replySort)
-          }
+          {renderText && (
+            <FarcasterCastResponseText cast={cast} fontSize="$6" />
+          )}
+          {renderEmbeds && <Embeds cast={cast} />}
+          <XStack
+            justifyContent="space-between"
+            alignItems="center"
+            flexWrap="wrap"
+            $sm={{
+              flexDirection: "column-reverse",
+              alignItems: "flex-start",
+              gap: "$3",
+            }}
+          >
+            <FarcasterCastResponseEngagement
+              cast={cast}
+              types={["likes", "replies", "quotes", "recasts"]}
+            />
+            <XStack alignItems="center" gap="$1.5">
+              <NookText muted>{formatTimestampTime(cast.timestamp)}</NookText>
+              <NookText muted>{"·"}</NookText>
+              <NookText muted>{formatTimestampDate(cast.timestamp)}</NookText>
+              {cast.channel && (
+                <>
+                  <NookText muted>{"·"}</NookText>
+                  <FarcasterChannelBadge channel={cast.channel} asLink />
+                </>
+              )}
+            </XStack>
+          </XStack>
+        </YStack>
+        <XStack
+          alignItems="center"
+          justifyContent="space-around"
+          borderTopWidth="$0.5"
+          borderTopColor="$borderColorBg"
+          borderBottomWidth="$0.5"
+          borderBottomColor="$borderColorBg"
+          paddingVertical="$2"
         >
-          {[
-            { value: "best", label: "Best", Icon: Rocket },
-            { value: "top", label: "Top", Icon: BarChartBig },
-            { value: "new", label: "New", Icon: Clock },
-          ].map(({ value, label, Icon }) => (
-            <Tooltip delay={100} placement="top" key={value}>
-              <Tooltip.Trigger>
-                <ToggleGroup.Item value={value}>
-                  <XStack gap="$2" alignItems="center">
-                    <Icon
-                      size={16}
-                      color={value === replySort ? "$color12" : "$mauve10"}
-                    />
-                    <NookText
-                      fontSize="$4"
-                      fontWeight="500"
-                      color={value === replySort ? "$color12" : "$mauve10"}
-                    >
-                      {label}
-                    </NookText>
-                  </XStack>
-                </ToggleGroup.Item>
-              </Tooltip.Trigger>
-              <Tooltip.Content
-                enterStyle={{ x: 0, y: -5, opacity: 0, scale: 0.9 }}
-                exitStyle={{ x: 0, y: -5, opacity: 0, scale: 0.9 }}
-                scale={1}
-                x={0}
-                y={0}
-                opacity={1}
-                animation={[
-                  "100ms",
-                  {
-                    opacity: {
-                      overshootClamping: true,
+          <FarcasterReplyActionButton cast={cast} />
+          <FarcasterRecastActionButton cast={cast} />
+          <FarcasterLikeActionButton cast={cast} />
+          <FarcasterCustomActionButton cast={cast} />
+          <FarcasterShareButton cast={cast} />
+        </XStack>
+        <XStack
+          borderBottomWidth="$0.5"
+          borderBottomColor="$borderColorBg"
+          alignItems="center"
+          justifyContent="space-between"
+          paddingLeft="$2.5"
+        >
+          <NookText muted fontWeight="500" fontSize="$4" color="$mauve10">
+            Sort replies
+          </NookText>
+          <ToggleGroup
+            type="single"
+            borderWidth="$0"
+            width="auto"
+            alignSelf="flex-end"
+            justifyContent="center"
+            size="$3"
+            borderRadius="$0"
+            value={replySort}
+            onValueChange={(value) =>
+              onReplySortChange((value as "best" | "top" | "new") || replySort)
+            }
+          >
+            {[
+              { value: "best", label: "Best", Icon: Rocket },
+              { value: "top", label: "Top", Icon: BarChartBig },
+              { value: "new", label: "New", Icon: Clock },
+            ].map(({ value, label, Icon }) => (
+              <Tooltip delay={100} placement="top" key={value}>
+                <Tooltip.Trigger>
+                  <ToggleGroup.Item value={value}>
+                    <XStack gap="$2" alignItems="center">
+                      <Icon
+                        size={16}
+                        color={value === replySort ? "$color12" : "$mauve10"}
+                      />
+                      <NookText
+                        fontSize="$4"
+                        fontWeight="500"
+                        color={value === replySort ? "$color12" : "$mauve10"}
+                      >
+                        {label}
+                      </NookText>
+                    </XStack>
+                  </ToggleGroup.Item>
+                </Tooltip.Trigger>
+                <Tooltip.Content
+                  enterStyle={{ x: 0, y: -5, opacity: 0, scale: 0.9 }}
+                  exitStyle={{ x: 0, y: -5, opacity: 0, scale: 0.9 }}
+                  scale={1}
+                  x={0}
+                  y={0}
+                  opacity={1}
+                  animation={[
+                    "100ms",
+                    {
+                      opacity: {
+                        overshootClamping: true,
+                      },
                     },
-                  },
-                ]}
-              >
-                <Tooltip.Arrow />
-                <NookText color="$color1" fontWeight="500" fontSize="$4">
-                  {label}
-                </NookText>
-              </Tooltip.Content>
-            </Tooltip>
-          ))}
-        </ToggleGroup>
-      </XStack>
-    </View>
-  );
-};
+                  ]}
+                >
+                  <Tooltip.Arrow />
+                  <NookText color="$color1" fontWeight="500" fontSize="$4">
+                    {label}
+                  </NookText>
+                </Tooltip.Content>
+              </Tooltip>
+            ))}
+          </ToggleGroup>
+        </XStack>
+      </View>
+    );
+  },
+);

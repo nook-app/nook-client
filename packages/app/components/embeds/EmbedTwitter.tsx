@@ -1,7 +1,7 @@
 import { Image, NookText, View, XStack, YStack } from "@nook/app-ui";
 import { UrlContentResponse } from "@nook/common/types";
-import { Link } from "solito/link";
-import { formatToCDN } from "../../utils";
+import { EmbedImage } from "./EmbedImage";
+import { Link } from "../link";
 
 export const EmbedTwitter = ({
   content,
@@ -9,8 +9,10 @@ export const EmbedTwitter = ({
   content: UrlContentResponse;
 }) => {
   if (!content.metadata) return null;
+
+  console.log(content);
   return (
-    <Link href={content.uri}>
+    <Link href={content.uri} isExternal>
       <YStack
         borderWidth="$0.5"
         borderColor="$borderColorBg"
@@ -19,13 +21,13 @@ export const EmbedTwitter = ({
         gap="$2"
       >
         <XStack gap="$1" alignItems="center">
-          {content.metadata.image && (
+          {content.metadata.logo && (
             <View marginRight="$1">
               <Image
                 source={{
                   width: 16,
                   height: 16,
-                  uri: formatToCDN(content.metadata.image),
+                  uri: content.metadata.logo,
                 }}
                 style={{
                   width: 16,
@@ -41,11 +43,12 @@ export const EmbedTwitter = ({
               textOverflow="ellipsis"
               numberOfLines={1}
             >
-              {content.metadata.title}
+              {content.metadata.title?.replace(" on X", "")}
             </NookText>
           </View>
         </XStack>
         <NookText>{content.metadata.description}</NookText>
+        {content.metadata.image && <EmbedImage uri={content.metadata.image} />}
       </YStack>
     </Link>
   );

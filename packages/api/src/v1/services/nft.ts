@@ -442,6 +442,10 @@ export class NftService {
         `/nfts/owners/${chain}/${contractAddress}/${tokenId || 0}`,
         params,
       );
+      if (!result?.owners) {
+        nextCursor = undefined;
+        continue;
+      }
       owners.push(...result.owners);
       nextCursor = result.next_cursor;
     } while (nextCursor && owners.length < 50000);
@@ -503,6 +507,10 @@ export class NftService {
         `/nfts/owners/collection/${collectionId}`,
         params,
       );
+      if (!result?.owners) {
+        nextCursor = undefined;
+        continue;
+      }
       owners.push(...result.owners);
       nextCursor = result.next_cursor;
     } while (nextCursor && owners.length < 50000);
@@ -567,6 +575,9 @@ export class NftService {
       `/nfts/transfers/${chain}/${contractAddress}/${tokenId || 0}`,
       params,
     );
+    if (!result?.transfers) {
+      return { data: [] };
+    }
 
     const addresses = result.transfers.flatMap(
       ({ from_address, to_address }) => {
@@ -626,6 +637,9 @@ export class NftService {
       `/nfts/transfers/collection/${req.collectionId}`,
       params,
     );
+    if (!result?.transfers) {
+      return { data: [] };
+    }
 
     const addresses = result.transfers.flatMap(
       ({ from_address, to_address }) => {
@@ -737,8 +751,8 @@ export class NftService {
     );
 
     return {
-      data: response.nfts,
-      nextCursor: response.next_cursor,
+      data: response?.nfts || [],
+      nextCursor: response?.next_cursor,
     };
   }
 
@@ -776,6 +790,9 @@ export class NftService {
 
     const result: { nfts: SimpleHashNFT[]; next_cursor?: string } =
       await this.makeRequest("/nfts/owners_v2", params);
+    if (!result?.nfts) {
+      return { data: [] };
+    }
 
     const collectionIds = new Set<string>();
     for (const nft of result.nfts) {
@@ -819,6 +836,9 @@ export class NftService {
 
     const result: { nfts: SimpleHashNFT[]; next_cursor?: string } =
       await this.makeRequest("/nfts/contract_owner", params);
+    if (!result?.nfts) {
+      return { data: [] };
+    }
 
     const collectionIds = new Set<string>();
     for (const nft of result.nfts) {
@@ -869,6 +889,9 @@ export class NftService {
       collections: SimplehashNftCollection[];
       next_cursor?: string;
     } = await this.makeRequest("/nfts/collections_by_wallets_v2", params);
+    if (!result?.collections) {
+      return { data: [] };
+    }
 
     await refreshCollectionOwnerships(
       result.collections.map((c) => c.collection_id),
@@ -907,6 +930,9 @@ export class NftService {
       }[];
       next_cursor?: string;
     } = await this.makeRequest("/contracts_by_owner", params);
+    if (!result?.contracts) {
+      return { data: [] };
+    }
 
     const collections = result.contracts.flatMap(
       ({ top_collections, deployment_date }) =>
@@ -951,6 +977,10 @@ export class NftService {
         "X-API-KEY": SIMPLEHASH_API_KEY,
       },
     });
+    if (!response.ok) {
+      console.error(`Failed to fetch ${path}: ${response.status}`);
+      return;
+    }
     return response.json();
   }
 
@@ -969,6 +999,10 @@ export class NftService {
         "X-API-KEY": SIMPLEHASH_API_KEY,
       },
     });
+    if (!response.ok) {
+      console.error(`Failed to fetch ${path}: ${response.status}`);
+      return;
+    }
     return response.json();
   }
 
