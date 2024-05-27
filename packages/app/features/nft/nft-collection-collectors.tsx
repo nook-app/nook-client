@@ -58,12 +58,14 @@ export const NftCollectionFarcasterCollectors = ({
   asTabs,
   paddingTop,
   paddingBottom,
+  ListHeaderComponent,
 }: {
   req: GetNftCollectionCollectorsRequest;
   initialData?: FetchNftFarcasterCollectorsResponse;
   asTabs?: boolean;
   paddingTop?: number;
   paddingBottom?: number;
+  ListHeaderComponent?: JSX.Element;
 }) => {
   const { data, isLoading, hasNextPage, fetchNextPage, isFetchingNextPage } =
     useNFtCollectionFarcasterCollectors(req, initialData);
@@ -86,6 +88,7 @@ export const NftCollectionFarcasterCollectors = ({
       renderItem={({ item }) => (
         <FarcasterCollectorItem collector={item as NftFarcasterCollector} />
       )}
+      ListHeaderComponent={ListHeaderComponent}
     />
   );
 };

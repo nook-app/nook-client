@@ -29,7 +29,7 @@ export const EmbedCast = ({
           borderWidth="$0.5"
           borderColor="$borderColorBg"
           borderRadius="$4"
-          padding="$2.5"
+          padding="$2"
           gap="$1.5"
         >
           <XStack alignItems="center">

@@ -2,6 +2,7 @@ import {
   FarcasterUser,
   FetchNftCollectionsResponse,
   FetchNftCollectorsResponse,
+  FetchNftCreatedCollectionsResponse,
   FetchNftEventsResponse,
   FetchNftFarcasterCollectorsResponse,
   FetchNftsResponse,
@@ -10,8 +11,10 @@ import {
   GetNftCollectorsRequest,
   GetNftEventsRequest,
   NftFeedFilter,
+  NftMarket,
   NftMutualsPreview,
   SimpleHashCollection,
+  SimpleHashNFT,
 } from "@nook/common/types";
 import { makeRequest } from "../utils";
 import { InfiniteData, useInfiniteQuery } from "@tanstack/react-query";
@@ -106,14 +109,110 @@ export const useNftCollectionFeed = (
   });
 };
 
-export const fetchNft = async (nftId: string) => {
+export const fetchNftCreatedFeed = async (
+  filter: NftFeedFilter,
+  cursor?: string,
+): Promise<FetchNftsResponse> => {
+  return await makeRequest("/v1/nfts/created", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ filter, cursor }),
+  });
+};
+
+export const useNftCreatedFeed = (
+  filter: NftFeedFilter,
+  initialData?: FetchNftsResponse,
+) => {
+  const addNfts = useNftStore((state) => state.addNfts);
+  return useInfiniteQuery<
+    FetchNftsResponse,
+    unknown,
+    InfiniteData<FetchNftsResponse>,
+    string[],
+    string | undefined
+  >({
+    queryKey: ["nftCreatedFeed", JSON.stringify(filter)],
+    queryFn: async ({ pageParam }) => {
+      const data = await fetchNftCreatedFeed(filter, pageParam);
+      addNfts(data.data);
+      return data;
+    },
+    getNextPageParam: (lastPage) => lastPage.nextCursor,
+    initialData: initialData
+      ? {
+          pages: [initialData],
+          pageParams: [undefined],
+        }
+      : undefined,
+    initialPageParam: initialData?.nextCursor,
+    refetchOnWindowFocus: false,
+  });
+};
+
+export const fetchNftCollectionCreatedFeed = async (
+  filter: NftFeedFilter,
+  cursor?: string,
+): Promise<FetchNftCreatedCollectionsResponse> => {
+  return await makeRequest("/v1/nfts/collections/created", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ filter, cursor }),
+  });
+};
+
+export const useNftCollectionCreatedFeed = (
+  filter: NftFeedFilter,
+  initialData?: FetchNftCreatedCollectionsResponse,
+) => {
+  const addCollections = useNftStore((state) => state.addCollections);
+  return useInfiniteQuery<
+    FetchNftCreatedCollectionsResponse,
+    unknown,
+    InfiniteData<FetchNftCreatedCollectionsResponse>,
+    string[],
+    string | undefined
+  >({
+    queryKey: ["nftCollectionCreatedFeed", JSON.stringify(filter)],
+    queryFn: async ({ pageParam }) => {
+      const data = await fetchNftCollectionCreatedFeed(filter, pageParam);
+      addCollections(data.data);
+      return data;
+    },
+    getNextPageParam: (lastPage) => lastPage.nextCursor,
+    initialData: initialData
+      ? {
+          pages: [initialData],
+          pageParams: [undefined],
+        }
+      : undefined,
+    initialPageParam: initialData?.nextCursor,
+    refetchOnWindowFocus: false,
+  });
+};
+
+export const fetchNft = async (nftId: string): Promise<SimpleHashNFT> => {
   return await makeRequest(`/v1/nfts/${nftId}`);
+};
+
+export const fetchNftMarkets = async (nftId: string): Promise<NftMarket> => {
+  return await makeRequest(`/v1/nfts/${nftId}/markets`);
 };
 
 export const fetchNftCollection = async (
   collectionId: string,
 ): Promise<SimpleHashCollection> => {
   return await makeRequest(`/v1/nfts/collections/${collectionId}`);
+};
+
+export const fetchNftMutualsPreview = async (
+  nftId: string,
+): Promise<NftMutualsPreview> => {
+  return await makeRequest(`/v1/nfts/${nftId}/mutuals-preview`);
 };
 
 export const fetchCollectionMutualsPreview = async (

@@ -52,6 +52,13 @@ export class TokenCacheClient {
     await this.redis.setJson(key, tokenHoldings, 60 * 30);
   }
 
+  async getTokens(tokenIds: string[]): Promise<(Token | undefined)[]> {
+    const keys = tokenIds.map(
+      (tokenId) => `${this.TOKEN_CACHE_PREFIX}:${tokenId}`,
+    );
+    return await this.redis.mgetJson(keys);
+  }
+
   async getToken(tokenId: string): Promise<Token | undefined> {
     const key = `${this.TOKEN_CACHE_PREFIX}:${tokenId}`;
     return await this.redis.getJson(key);
@@ -59,7 +66,41 @@ export class TokenCacheClient {
 
   async setToken(tokenId: string, token: Token): Promise<void> {
     const key = `${this.TOKEN_CACHE_PREFIX}:${tokenId}`;
-    await this.redis.setJson(key, token, 60 * 30);
+    const keys = [
+      key,
+      ...token.instances.map(
+        (instance) =>
+          `${this.TOKEN_CACHE_PREFIX}:${instance.chainId}-${instance.address}`,
+      ),
+    ];
+    await this.redis.msetJson(
+      keys.map((key) => [key, token]),
+      60 * 30,
+    );
+  }
+
+  async setTokens(tokens: Token[]) {
+    const pairs = tokens.flatMap((token) => {
+      const tokenPairs = [];
+      tokenPairs.push([`${this.TOKEN_CACHE_PREFIX}:${token.id}`, token]);
+      for (const instance of token.instances) {
+        tokenPairs.push([
+          `${this.TOKEN_CACHE_PREFIX}:${instance.chainId}-${instance.address}`,
+          token,
+        ]);
+      }
+      return tokenPairs as [string, Token][];
+    });
+
+    await this.redis.msetJson(pairs, 60 * 30);
+  }
+
+  async setTokensIgnore(tokens: string[]) {
+    const pairs = tokens.map((token) => [
+      `${this.TOKEN_CACHE_PREFIX}:${token}`,
+      {},
+    ]) as [string, Token][];
+    await this.redis.msetJson(pairs, 60 * 30);
   }
 
   async getTokenChart(

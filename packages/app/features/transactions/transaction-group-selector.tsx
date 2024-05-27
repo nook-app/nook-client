@@ -3,7 +3,7 @@ import { useState } from "react";
 
 const options = [
   {
-    label: "NFTs",
+    label: "Collectibles",
     contextActions: ["MINTED", "BOUGHT"],
   },
   {

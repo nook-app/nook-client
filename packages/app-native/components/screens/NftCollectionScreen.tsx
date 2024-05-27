@@ -1,6 +1,6 @@
 import { useFocusEffect, useLocalSearchParams } from "expo-router";
 import { SimpleHashCollection } from "@nook/common/types";
-import { NookText, Popover, XStack } from "@nook/app-ui";
+import { Button, NookText, Popover, Text, XStack } from "@nook/app-ui";
 import { CollapsibleGradientLayout } from "../CollapsibleGradientLayout";
 import { Loading } from "@nook/app/components/loading";
 import { IconButton } from "../IconButton";
@@ -12,6 +12,8 @@ import { NftCollectionHeader } from "@nook/app/features/nft/nft-collection-heade
 import { CollectionNftsFeed } from "@nook/app/features/nft/nft-feed";
 import { NftCollectionEvents } from "@nook/app/features/nft/nft-events";
 import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
+import { NftCollectionFarcasterCollectors } from "@nook/app/features/nft/nft-collection-collectors";
+import { Link } from "@nook/app/components/link";
 
 export default function NftCollectionScreen() {
   const { collectionId } = useLocalSearchParams();
@@ -43,6 +45,66 @@ export default function NftCollectionScreen() {
               collectionId={collectionId as string}
               paddingBottom={paddingBottom}
               asTabs
+            />
+          ),
+        },
+        {
+          name: "Holders",
+          component: (
+            <NftCollectionFarcasterCollectors
+              req={{
+                collectionId: collectionId as string,
+              }}
+              paddingBottom={paddingBottom}
+              asTabs
+              ListHeaderComponent={
+                <XStack
+                  justifyContent="space-between"
+                  paddingHorizontal="$2.5"
+                  gap="$2.5"
+                  paddingTop="$2.5"
+                  paddingBottom="$1.5"
+                  alignItems="center"
+                >
+                  <Text color="$mauve11">Collectors on Farcaster</Text>
+                  <Link
+                    href={`/collections/${collectionId}/collectors-following`}
+                    unpressable
+                  >
+                    <Button
+                      borderWidth="$0"
+                      backgroundColor="$color4"
+                      borderRadius="$10"
+                      height="$2.5"
+                      minHeight="$2.5"
+                      padding="$0"
+                      paddingHorizontal="$3"
+                      fontWeight="500"
+                      flexGrow={1}
+                    >
+                      View following
+                    </Button>
+                  </Link>
+                  <Link
+                    href={`/collections/${collectionId}/collectors`}
+                    unpressable
+                  >
+                    <Button
+                      borderWidth="$0"
+                      backgroundColor="$color4"
+                      borderRadius="$10"
+                      height="$2.5"
+                      minHeight="$2.5"
+                      padding="$0"
+                      paddingHorizontal="$3"
+                      fontWeight="500"
+                      flexGrow={1}
+                    >
+                      View all
+                    </Button>
+                  </Link>
+                </XStack>
+              }
             />
           ),
         },

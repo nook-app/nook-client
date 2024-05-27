@@ -31,6 +31,8 @@ import {
 import { submitFrameAction } from "../../../api/farcaster/actions";
 import { EnableSignerDialog } from "../../../features/farcaster/enable-signer/dialog";
 import { useAuth } from "../../../context/auth";
+import { CHAINS } from "@nook/common/utils";
+import { Link } from "../../link";
 
 export const EmbedFrame = ({
   cast,
@@ -119,16 +121,21 @@ export const EmbedFrame = ({
     }
   };
 
+  let uri = content.uri;
+
+  const mintAction = frame.buttons?.find((button) => button.action === "mint");
+  if (mintAction?.target) {
+    const parts = mintAction.target.split(":");
+    const chain = CHAINS[`${parts[0]}:${parts[1]}`];
+    if (chain?.simplehashId) {
+      uri = `/collectibles/${chain.simplehashId}.${parts[2]}.${parts[3]}`;
+    }
+  }
+
   return (
     <YStack gap="$2">
-      <YStack
-        borderRadius="$4"
-        overflow="hidden"
-        borderWidth="$0.25"
-        borderColor="$borderColor"
-      >
+      <YStack overflow="hidden">
         <View
-          backgroundColor="$color2"
           justifyContent="center"
           alignItems="center"
           position="absolute"
@@ -139,60 +146,58 @@ export const EmbedFrame = ({
         >
           {isLoading ? <Spinner /> : null}
         </View>
-        <Animated.View style={animatedStyle}>
-          {frame.image && (
-            <TapGestureHandler>
-              <View
-                style={{ position: "relative" }}
-                onPress={() => Linking.openURL(content.uri)}
-              >
-                <Image
-                  recyclingKey={frame.image}
-                  source={{ uri: frame.image }}
-                  style={{
-                    aspectRatio: frame.imageAspectRatio === "1:1" ? 1 : 1.91,
-                  }}
+        <TapGestureHandler>
+          <Animated.View style={animatedStyle}>
+            {frame.image && (
+              <Link href={uri} isExternal={uri.startsWith("http")}>
+                <View
+                  style={{ position: "relative" }}
+                  borderRadius="$4"
+                  overflow="hidden"
+                >
+                  <Image
+                    recyclingKey={frame.image}
+                    source={{ uri: frame.image }}
+                    style={{
+                      aspectRatio: frame.imageAspectRatio === "1:1" ? 1 : 1.91,
+                    }}
+                  />
+                </View>
+              </Link>
+            )}
+            <YStack gap="$2" theme="surface1" paddingTop="$2">
+              {frame.inputText && (
+                <Input
+                  value={inputText || ""}
+                  onChangeText={setInputText}
+                  placeholder={frame.inputText}
                 />
-              </View>
-            </TapGestureHandler>
-          )}
-          <YStack
-            backgroundColor="$color2"
-            padding="$2"
-            gap="$2"
-            theme="surface1"
-          >
-            {frame.inputText && (
-              <Input
-                value={inputText || ""}
-                onChangeText={setInputText}
-                placeholder={frame.inputText}
-              />
-            )}
-            {topButtons.length > 0 && (
-              <XStack gap="$2">
-                {topButtons.map((button, index) => (
-                  <FrameButtonAction
-                    button={button}
-                    onPress={() => handlePress(button, index)}
-                    key={`${button.action}-${index}`}
-                  />
-                ))}
-              </XStack>
-            )}
-            {bottomButtons.length > 0 && (
-              <XStack gap="$2">
-                {bottomButtons.map((button, index) => (
-                  <FrameButtonAction
-                    button={button}
-                    onPress={() => handlePress(button, 2 + index)}
-                    key={`${button.action}-${index}`}
-                  />
-                ))}
-              </XStack>
-            )}
-          </YStack>
-        </Animated.View>
+              )}
+              {topButtons.length > 0 && (
+                <XStack gap="$2">
+                  {topButtons.map((button, index) => (
+                    <FrameButtonAction
+                      button={button}
+                      onPress={() => handlePress(button, index)}
+                      key={`${button.action}-${index}`}
+                    />
+                  ))}
+                </XStack>
+              )}
+              {bottomButtons.length > 0 && (
+                <XStack gap="$2">
+                  {bottomButtons.map((button, index) => (
+                    <FrameButtonAction
+                      button={button}
+                      onPress={() => handlePress(button, 2 + index)}
+                      key={`${button.action}-${index}`}
+                    />
+                  ))}
+                </XStack>
+              )}
+            </YStack>
+          </Animated.View>
+        </TapGestureHandler>
       </YStack>
       {content.host && (
         <View alignSelf="flex-end">
@@ -213,7 +218,23 @@ const FrameButtonAction = ({
   const { signer } = useAuth();
 
   const Component = (
-    <Button onPress={signer?.state === "completed" ? onPress : undefined}>
+    <Button
+      onPress={signer?.state === "completed" ? onPress : undefined}
+      backgroundColor="$color12"
+      color="$color1"
+      borderWidth="$0"
+      hoverStyle={{
+        backgroundColor: "$mauve11",
+        // @ts-ignore
+        transition: "all 0.2s ease-in-out",
+      }}
+      pressStyle={{
+        backgroundColor: "$mauve11",
+      }}
+      disabledStyle={{
+        backgroundColor: "$mauve10",
+      }}
+    >
       <Text
         alignItems="center"
         gap="$1.5"
@@ -222,18 +243,18 @@ const FrameButtonAction = ({
         flexWrap="nowrap"
         numberOfLines={2}
         textAlign="center"
-        fontWeight="500"
+        color="$color1"
       >
         {button.action === "tx" && (
           <>
             <MaterialCommunityIcons
               name="lightning-bolt"
               size={12}
-              color={theme.mauve12.val}
+              color={theme.color1.val}
             />{" "}
           </>
         )}
-        <Text textAlign="center" fontWeight="500">
+        <Text textAlign="center" fontWeight="600" color="$color1">
           {button.label}
         </Text>
         {button.action === "link" ||
@@ -241,7 +262,7 @@ const FrameButtonAction = ({
         button.action === "mint" ? (
           <>
             {" "}
-            <ExternalLink size={12} />
+            <ExternalLink size={12} color="$color1" />
           </>
         ) : null}
       </Text>

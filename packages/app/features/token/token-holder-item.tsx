@@ -77,7 +77,7 @@ export const TokenHolderItem = memo(
               <ChainIcon
                 chainId={CHAINS_BY_NAME[holder.chainId]?.crossChainId}
               />
-              <NookText muted>{`${formatNumber(quantity)}${
+              <NookText muted>{`${formatNumber(quantity, 2)} ${token.symbol}${
                 token.stats.price > 0
                   ? ` · $${formatPrice(token.stats.price * quantity)}`
                   : ""
@@ -123,24 +123,29 @@ const AddressDisplay = ({
                   {ens?.ens ?? formatAddress(holder.ownerAddress)}
                 </NookText>
               </XStack>
-              <XStack gap="$1.5" alignItems="center" flexShrink={1}>
-                <NookText
-                  muted
-                  numberOfLines={1}
-                  ellipsizeMode="middle"
-                  flexShrink={1}
-                >
-                  {formatAddress(holder.ownerAddress)}
-                </NookText>
-              </XStack>
+              {ens?.ens && (
+                <XStack gap="$1.5" alignItems="center" flexShrink={1}>
+                  <NookText
+                    muted
+                    numberOfLines={1}
+                    ellipsizeMode="middle"
+                    flexShrink={1}
+                  >
+                    {formatAddress(holder.ownerAddress)}
+                  </NookText>
+                </XStack>
+              )}
             </YStack>
             <View />
           </XStack>
-          <NookText muted>{`${formatNumber(quantity)}${
-            token.stats.price > 0
-              ? ` · $${formatPrice(token.stats.price * quantity)}`
-              : ""
-          }`}</NookText>
+          <XStack gap="$1.5" alignItems="center">
+            <ChainIcon chainId={CHAINS_BY_NAME[holder.chainId]?.crossChainId} />
+            <NookText muted>{`${formatNumber(quantity)}${
+              token.stats.price > 0
+                ? ` · $${formatPrice(token.stats.price * quantity)}`
+                : ""
+            }`}</NookText>
+          </XStack>
         </YStack>
       </XStack>
     </Link>

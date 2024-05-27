@@ -16,10 +16,12 @@ import { formatToCDN } from "@nook/app/utils";
 import { memo, useCallback, useState } from "react";
 import { NftFeed } from "@nook/app/features/nft/nft-feed";
 import { TokenHoldings } from "@nook/app/features/token/token-holdings";
+import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
 
 export default function UserScreen() {
   const { username } = useLocalSearchParams();
   const { user } = useUser(username as string);
+  const paddingBottom = useBottomTabBarHeight();
 
   if (!user) return <Loading />;
 
@@ -41,6 +43,7 @@ export default function UserScreen() {
                   },
                 },
               }}
+              paddingBottom={paddingBottom}
               asTabs
             />
           ),
@@ -58,6 +61,7 @@ export default function UserScreen() {
                 },
                 onlyReplies: true,
               }}
+              paddingBottom={paddingBottom}
               asTabs
             />
           ),
@@ -74,6 +78,7 @@ export default function UserScreen() {
                   },
                 },
               }}
+              paddingBottom={paddingBottom}
               asTabs
             />
           ),
@@ -85,12 +90,13 @@ export default function UserScreen() {
               filter={{
                 fid: user.fid,
               }}
+              paddingBottom={paddingBottom}
               asTabs
             />
           ),
         },
         {
-          name: "Transactions",
+          name: "Activity",
           component: (
             <TransactionFeedWithGroupSelector
               filter={{
@@ -101,6 +107,7 @@ export default function UserScreen() {
                   },
                 },
               }}
+              paddingBottom={paddingBottom}
               asTabs
             />
           ),
@@ -119,6 +126,7 @@ export default function UserScreen() {
                 contentTypes: ["image"],
               }}
               displayMode={Display.GRID}
+              paddingBottom={paddingBottom}
               asTabs
             />
           ),
@@ -137,6 +145,7 @@ export default function UserScreen() {
                 onlyFrames: true,
               }}
               displayMode={Display.FRAMES}
+              paddingBottom={paddingBottom}
               asTabs
             />
           ),

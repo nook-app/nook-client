@@ -1176,6 +1176,17 @@ export class FarcasterService {
   async getAddressesForUserFilter(users: UserFilter) {
     let fidRequests: bigint[] = [];
     switch (users.type) {
+      case UserFilterType.FID: {
+        const user = (await this.getUserDatas([users.data.fid]))[0];
+        return (
+          user?.verifiedAddresses
+            ?.filter(({ protocol }) => protocol === 0)
+            .map(({ address }) => ({
+              address,
+              fid: user.fid,
+            })) || []
+        );
+      }
       case UserFilterType.FOLLOWING: {
         const fids = await this.getUserFollowingFids(users.data.fid);
         if (fids.length > 0) {
@@ -1183,11 +1194,18 @@ export class FarcasterService {
         }
         break;
       }
-      case UserFilterType.FIDS:
-        if (users.data.fids.length > 0) {
-          fidRequests = users.data.fids.map((fid) => BigInt(fid));
-        }
-        break;
+      case UserFilterType.FIDS: {
+        const usersData = await this.getUserDatas(users.data.fids);
+        return usersData.flatMap(
+          (user) =>
+            user.verifiedAddresses
+              ?.filter(({ protocol }) => protocol === 0)
+              .map(({ address }) => ({
+                address,
+                fid: user.fid,
+              })) || [],
+        );
+      }
       case UserFilterType.POWER_BADGE: {
         const [following, holders] = await Promise.all([
           users.data.fid ? this.getUserFollowingFids(users.data.fid) : [],
@@ -1258,6 +1276,35 @@ export class FarcasterService {
       fids.map(({ fid }) => fid.toString()),
       viewerFid,
     );
+  }
+
+  async getUsersForFilter(users: UserFilter, viewerFid?: string) {
+    switch (users.type) {
+      case UserFilterType.FID: {
+        return await this.getUsers([users.data.fid], viewerFid);
+      }
+      case UserFilterType.FOLLOWING: {
+        const fids = await this.getUserFollowingFids(users.data.fid);
+        return await this.getUsers(fids, viewerFid);
+      }
+      case UserFilterType.FIDS: {
+        return await this.getUsers(users.data.fids, viewerFid);
+      }
+      case UserFilterType.POWER_BADGE: {
+        const [following, holders] = await Promise.all([
+          users.data.fid ? this.getUserFollowingFids(users.data.fid) : [],
+          this.cache.getPowerBadgeUsers(),
+        ]);
+        const set = new Set(following);
+        for (const fid of holders) {
+          set.add(fid);
+        }
+        return await this.getUsers(
+          Array.from(set).map((fid) => fid.toString()),
+          viewerFid,
+        );
+      }
+    }
   }
 
   async getFidsForUsernames(usernames: string[]) {

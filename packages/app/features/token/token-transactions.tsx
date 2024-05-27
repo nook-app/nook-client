@@ -7,15 +7,14 @@ import { useTokenTransactions } from "../../api/token";
 import { useState } from "react";
 import { Loading } from "../../components/loading";
 import { InfiniteFeed } from "../../components/infinite-feed";
-import { Button, NookText, Text, View, XStack, YStack } from "@nook/app-ui";
+import { NookText, Text, View, XStack, YStack } from "@nook/app-ui";
 import { CdnAvatar } from "../../components/cdn-avatar";
 import { GradientIcon } from "../../components/gradient-icon";
 import { formatNumber, formatPrice, formatTimeAgo } from "../../utils";
-import { Link, LinkButton } from "../../components/link";
+import { Link } from "../../components/link";
 import { CHAINS_BY_NAME, ChainWithImage } from "../../utils/chains";
 import { ChainIcon } from "../../components/blockchain/chain-icon";
 import { Tabs } from "react-native-collapsible-tab-view";
-import { ExternalLink } from "@tamagui/lucide-icons";
 
 export const TokenTransactionsFeed = ({
   token,
@@ -23,12 +22,14 @@ export const TokenTransactionsFeed = ({
   asTabs,
   paddingTop,
   paddingBottom,
+  ListHeaderComponent,
 }: {
   token: Token;
   filter: TokenTransactionFilter;
   asTabs?: boolean;
   paddingTop?: number;
   paddingBottom?: number;
+  ListHeaderComponent?: JSX.Element;
 }) => {
   const [isRefetching, setIsRefetching] = useState(false);
   const {
@@ -87,6 +88,7 @@ export const TokenTransactionsFeed = ({
         />
       )}
       alwaysBounceVertical={false}
+      ListHeaderComponent={ListHeaderComponent}
     />
   );
 };

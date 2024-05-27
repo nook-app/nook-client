@@ -13,6 +13,7 @@ import {
   useFollowingTokenHolders,
   useTokenHolders,
 } from "../../api/token";
+import { Button, Text, XStack, YStack } from "@nook/app-ui";
 
 export const TokenHolders = ({
   token,
@@ -58,12 +59,14 @@ export const FarcasterTokenHolders = ({
   asTabs,
   paddingTop,
   paddingBottom,
+  ListHeaderComponent,
 }: {
   token: Token;
   initialData?: FetchTokenHoldersResponse;
   asTabs?: boolean;
   paddingTop?: number;
   paddingBottom?: number;
+  ListHeaderComponent?: JSX.Element;
 }) => {
   const { data, isLoading, hasNextPage, fetchNextPage, isFetchingNextPage } =
     useFarcasterTokenHolders({ tokenId: token.id }, initialData);
@@ -86,6 +89,7 @@ export const FarcasterTokenHolders = ({
       renderItem={({ item }) => (
         <TokenHolderItem token={token} holder={item as TokenHolder} />
       )}
+      ListHeaderComponent={ListHeaderComponent}
     />
   );
 };

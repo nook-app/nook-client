@@ -3,6 +3,7 @@ import {
   FarcasterUser,
   FetchNftCollectionsResponse,
   FetchNftCollectorsResponse,
+  FetchNftCreatedCollectionsResponse,
   FetchNftEventsResponse,
   FetchNftFarcasterCollectorsResponse,
   FetchNftsResponse,
@@ -12,13 +13,22 @@ import {
   GetNftEventsRequest,
   NftFarcasterOwner,
   NftFeedRequest,
+  NftAsk,
+  NftMarket,
+  NftMintStage,
   NftOwner,
+  SimpleHashCollection,
   SimpleHashNFT,
   SimpleHashNFTEvent,
+  SimplehashNftCollection,
   UserFilter,
   UserFilterType,
 } from "@nook/common/types";
-import { decodeCursor, encodeCursor } from "@nook/common/utils";
+import {
+  SIMPLEHASH_CHAINS,
+  decodeCursor,
+  encodeCursor,
+} from "@nook/common/utils";
 import { FastifyInstance } from "fastify";
 import {
   refreshCollectionOwnerships,
@@ -71,6 +81,42 @@ export class NftService {
   constructor(fastify: FastifyInstance) {
     this.farcasterApi = new FarcasterAPIClient();
     this.cache = new NftCacheClient(fastify.feed.client);
+  }
+
+  async getNftMutualsPreview(nftId: string, viewerFid: string) {
+    const cached = await this.cache.getNftMutuals(nftId, viewerFid);
+    if (cached) {
+      return cached;
+    }
+
+    let owners = await this.cache.getNftFarcasterOwners(nftId);
+    if (!owners || owners.length === 0) {
+      const refreshed = await this.refreshNftOwners(nftId);
+      owners = refreshed.farcasterOwners;
+    }
+
+    const following = await this.farcasterApi.getUserFollowingFids(viewerFid);
+
+    const mutualOwners = owners.filter(
+      ({ fid }) => fid && following.data.includes(fid),
+    );
+
+    const previewFids = mutualOwners
+      .map(({ fid }) => fid)
+      .slice(0, 3) as string[];
+
+    const previewUsers = await this.farcasterApi.getUsers({
+      fids: previewFids,
+    });
+
+    const mutuals = {
+      preview: previewUsers.data,
+      total: mutualOwners.length,
+    };
+
+    await this.cache.setNftMutuals(nftId, viewerFid, mutuals);
+
+    return mutuals;
   }
 
   async getFollowingCollectors(
@@ -202,7 +248,10 @@ export class NftService {
   }
 
   async getCollectionMutualsPreview(collectionId: string, viewerFid: string) {
-    const cached = await this.cache.getMutuals(collectionId, viewerFid);
+    const cached = await this.cache.getNftCollectionMutuals(
+      collectionId,
+      viewerFid,
+    );
     if (cached) {
       return cached;
     }
@@ -232,7 +281,7 @@ export class NftService {
       total: mutualOwners.length,
     };
 
-    await this.cache.setMutuals(collectionId, viewerFid, mutuals);
+    await this.cache.setNftCollectionMutuals(collectionId, viewerFid, mutuals);
 
     return mutuals;
   }
@@ -617,10 +666,61 @@ export class NftService {
   }
 
   async getNft(nftId: string): Promise<SimpleHashNFT> {
+    const cached = await this.cache.getNft(nftId);
+    if (cached) {
+      return cached;
+    }
+
     const [chain, contractAddress, tokenId] = nftId.split(".");
-    return await this.makeRequest(
+    const nft = await this.makeRequest(
       `/nfts/${chain}/${contractAddress}/${tokenId || 0}`,
     );
+    if (nft) {
+      await this.cache.setNft(nftId, nft);
+    }
+
+    return nft;
+  }
+
+  async getNftMarkets(nftId: string): Promise<NftMarket | undefined> {
+    const cached = await this.cache.getNftMarket(nftId);
+    if (cached) {
+      return cached;
+    }
+
+    const [chainId, contractAddress, tokenId] = nftId.split(".");
+    const chain = SIMPLEHASH_CHAINS.find((c) => c.simplehashId === chainId);
+    if (!chain?.reservoirId) return;
+    const response: {
+      tokens: {
+        token: {
+          contract: string;
+          tokenId: string;
+          mintStages: NftMintStage[];
+        };
+        market: { floorAsk: NftAsk; topBid: NftAsk };
+      }[];
+    } = await this.makeReservoirRequest(chain.reservoirId, "/tokens/v7", {
+      tokens: `${contractAddress}:${tokenId}`,
+      includeMintStages: "true",
+      includeTopBid: "true",
+    });
+    if (!response) return;
+
+    const token = response.tokens.find(
+      ({ token }) =>
+        token.contract === contractAddress && token.tokenId === tokenId,
+    );
+    if (!token) return;
+
+    const data: NftMarket = {
+      mintStages: token.token.mintStages,
+      market: token.market,
+    };
+
+    await this.cache.setNftMarket(nftId, data);
+
+    return data;
   }
 
   async getNftCollectionNfts(collectionId: string, cursor?: string) {
@@ -688,6 +788,49 @@ export class NftService {
       nftIds.add(nft.nft_id);
     }
 
+    await Promise.all([
+      refreshCollectionOwnerships(Array.from(collectionIds)),
+      refreshNftOwners(Array.from(nftIds)),
+    ]);
+
+    return {
+      data: result.nfts,
+      nextCursor: result.next_cursor,
+    };
+  }
+
+  async getNftsCreated(request: NftFeedRequest): Promise<FetchNftsResponse> {
+    const addresses = await this.getAddressesForUserFilter(
+      request.filter.users,
+    );
+    if (!addresses) {
+      return { data: [] };
+    }
+
+    const params: Record<string, string> = {
+      chains: CHAINS.map(({ id }) => id).join(","),
+      wallet_addresses: addresses.join(","),
+      limit: "24",
+    };
+
+    if (request.cursor) {
+      params.cursor = request.cursor;
+    }
+
+    const result: { nfts: SimpleHashNFT[]; next_cursor?: string } =
+      await this.makeRequest("/nfts/contract_owner", params);
+
+    const collectionIds = new Set<string>();
+    for (const nft of result.nfts) {
+      if (!nft.collection.collection_id) continue;
+      collectionIds.add(nft.collection.collection_id);
+    }
+
+    const nftIds = new Set<string>();
+    for (const nft of result.nfts) {
+      nftIds.add(nft.nft_id);
+    }
+
     await refreshCollectionOwnerships(Array.from(collectionIds));
     await refreshNftOwners(Array.from(nftIds));
 
@@ -722,13 +865,64 @@ export class NftService {
       params.order_by = request.filter.orderBy;
     }
 
-    const result = await this.makeRequest(
-      "/nfts/collections_by_wallets_v2",
-      params,
+    const result: {
+      collections: SimplehashNftCollection[];
+      next_cursor?: string;
+    } = await this.makeRequest("/nfts/collections_by_wallets_v2", params);
+
+    await refreshCollectionOwnerships(
+      result.collections.map((c) => c.collection_id),
     );
 
     return {
       data: result.collections,
+      nextCursor: result.next_cursor,
+    };
+  }
+
+  async getNftCollectionsCreated(
+    request: NftFeedRequest,
+  ): Promise<FetchNftCreatedCollectionsResponse> {
+    const addresses = await this.getAddressesForUserFilter(
+      request.filter.users,
+    );
+    if (!addresses) {
+      return { data: [] };
+    }
+
+    const params: Record<string, string> = {
+      chains: CHAINS.map(({ id }) => id).join(","),
+      wallet_addresses: addresses.join(","),
+      limit: "24",
+    };
+
+    if (request.cursor) {
+      params.cursor = request.cursor;
+    }
+
+    const result: {
+      contracts: {
+        deployment_date: string;
+        top_collections: SimpleHashCollection[];
+      }[];
+      next_cursor?: string;
+    } = await this.makeRequest("/contracts_by_owner", params);
+
+    const collections = result.contracts.flatMap(
+      ({ top_collections, deployment_date }) =>
+        top_collections.map((c) => ({
+          ...c,
+          deployment_date,
+        })),
+    );
+    await refreshCollectionOwnerships(collections.map((c) => c.collection_id));
+
+    return {
+      data: collections.sort(
+        (a, b) =>
+          new Date(b.deployment_date).getTime() -
+          new Date(a.deployment_date).getTime(),
+      ),
       nextCursor: result.next_cursor,
     };
   }
@@ -750,6 +944,24 @@ export class NftService {
     const url = `${SIMPLEHASH_BASE_URL}${path}?${new URLSearchParams(
       params || {},
     ).toString()}`;
+    const response = await fetch(url, {
+      method: "GET",
+      headers: {
+        accept: "application/json",
+        "X-API-KEY": SIMPLEHASH_API_KEY,
+      },
+    });
+    return response.json();
+  }
+
+  async makeReservoirRequest(
+    chain: string,
+    path: string,
+    params?: Record<string, string>,
+  ) {
+    const url = `https://api${
+      chain !== "" ? `-${chain}` : ""
+    }.reservoir.tools${path}?${new URLSearchParams(params || {}).toString()}`;
     const response = await fetch(url, {
       method: "GET",
       headers: {

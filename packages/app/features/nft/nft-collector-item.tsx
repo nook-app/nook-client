@@ -194,16 +194,18 @@ const AddressDisplay = ({ collector }: { collector: NftOwner }) => {
                   {ens?.ens ?? formatAddress(collector.ownerAddress)}
                 </NookText>
               </XStack>
-              <XStack gap="$1.5" alignItems="center" flexShrink={1}>
-                <NookText
-                  muted
-                  numberOfLines={1}
-                  ellipsizeMode="middle"
-                  flexShrink={1}
-                >
-                  {formatAddress(collector.ownerAddress)}
-                </NookText>
-              </XStack>
+              {ens?.ens && (
+                <XStack gap="$1.5" alignItems="center" flexShrink={1}>
+                  <NookText
+                    muted
+                    numberOfLines={1}
+                    ellipsizeMode="middle"
+                    flexShrink={1}
+                  >
+                    {formatAddress(collector.ownerAddress)}
+                  </NookText>
+                </XStack>
+              )}
             </YStack>
             <View />
           </XStack>

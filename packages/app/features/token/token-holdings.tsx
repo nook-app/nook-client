@@ -12,18 +12,27 @@ import { formatAddress, formatNumber, formatPrice } from "../../utils";
 import { CHAINS_BY_NAME } from "../../utils/chains";
 import { ChainIcon } from "../../components/blockchain/chain-icon";
 import { GradientIcon } from "../../components/gradient-icon";
-import { memo } from "react";
+import { memo, useState } from "react";
 import { Loading } from "../../components/loading";
 import { Menu } from "../../components/menu/menu";
 import { OpenLink } from "../../components/menu/menu-actions";
 import { useEns } from "../../hooks/useAddress";
 import { Link } from "../../components/link";
 import { useTokenHoldings } from "../../hooks/useTokenHoldings";
+import { Dropdown } from "../../components/dropdown";
 
 export const TokenHoldings = ({
   filter,
   asTabs,
-}: { filter: TokensFilter; asTabs?: boolean }) => {
+  paddingTop,
+  paddingBottom,
+}: {
+  filter: TokensFilter;
+  asTabs?: boolean;
+  paddingTop?: number;
+  paddingBottom?: number;
+}) => {
+  const [sort, setSort] = useState("value");
   const { tokenHoldings, isLoading } = useTokenHoldings(filter.fid);
 
   if (isLoading) {
@@ -40,35 +49,86 @@ export const TokenHoldings = ({
     );
   }
 
+  const sortedData = tokenHoldings.data.sort((a, b) => {
+    if (sort === "value") {
+      return b.value - a.value;
+    }
+    return a.name.localeCompare(b.name);
+  });
+
   return (
     <InfiniteFeed
-      data={tokenHoldings?.data ?? []}
+      data={sortedData}
       renderItem={({ item }) => (
         <TokenHoldingDisplay token={item as TokenHolding} />
       )}
       asTabs={asTabs}
-      ListHeaderComponent={<TokenHoldingsHeader holdings={tokenHoldings} />}
+      paddingTop={paddingTop}
+      paddingBottom={paddingBottom}
+      ListHeaderComponent={
+        <TokenHoldingsHeader
+          holdings={tokenHoldings}
+          sort={sort}
+          onSortChange={setSort}
+        />
+      }
     />
   );
 };
 
 const TokenHoldingsHeader = memo(
-  ({ holdings }: { holdings: TokenHoldingsType }) => {
+  ({
+    holdings,
+    sort,
+    onSortChange,
+  }: {
+    holdings: TokenHoldingsType;
+    sort: string;
+    onSortChange: (sort: string) => void;
+  }) => {
     return (
       <XStack
         paddingBottom="$2"
         paddingTop="$3"
-        paddingHorizontal="$4"
+        paddingHorizontal="$2.5"
         justifyContent="space-between"
-        alignItems="flex-end"
+        alignItems="center"
       >
-        <WalletsMenu addresses={holdings.addresses} />
-        <XStack gap="$2" alignItems="flex-end">
-          <Text color="$mauve11">Total</Text>
-          <Text fontWeight="600" fontSize="$5">{`$${formatPrice(
-            holdings.totalValue,
-          )}`}</Text>
-        </XStack>
+        <Menu
+          trigger={
+            <Popover.Trigger $platform-web={{ cursor: "pointer" }}>
+              <XStack gap="$1.5" alignItems="flex-end">
+                <Text fontWeight="600">{`$${formatPrice(
+                  holdings.totalValue,
+                )}`}</Text>
+                <Text color="$mauve11">across</Text>
+                <Text>
+                  <Text fontWeight="600">{holdings.addresses.length}</Text>
+                  <Text color="$mauve11">{` wallet${
+                    holdings.addresses.length > 1 ? "s" : ""
+                  }`}</Text>
+                </Text>
+              </XStack>
+            </Popover.Trigger>
+          }
+        >
+          {holdings.addresses.map((address) => (
+            <WalletMenuItem key={address} address={address} />
+          ))}
+        </Menu>
+        <Dropdown
+          label="Sort Tokens"
+          options={[
+            { label: "Value", value: "value" },
+            { label: "Alphabetical", value: "alphabetical" },
+          ]}
+          value={sort}
+          onChange={(v) => {
+            setTimeout(() => {
+              onSortChange(v);
+            }, 100);
+          }}
+        />
       </XStack>
     );
   },
@@ -103,13 +163,14 @@ const TokenHoldingDisplay = ({ token }: { token: TokenHolding }) => {
             <TokenHoldingChains token={token} />
           </YStack>
         </XStack>
-        <YStack gap="$1" alignItems="flex-end">
+        <YStack gap="$1" alignItems="flex-end" flexShrink={1}>
           <Text fontWeight="600" fontSize="$5">{`$${formatPrice(
             token.value,
           )}`}</Text>
-          <Text color="$mauve11">{`${formatNumber(token.quantity.float, 2)} ${
-            token.symbol
-          }`}</Text>
+          <Text color="$mauve11" numberOfLines={1}>{`${formatNumber(
+            token.quantity.float,
+            2,
+          )} ${token.symbol?.split(" ")[0]}`}</Text>
         </YStack>
       </XStack>
     </Link>
@@ -145,27 +206,6 @@ const TokenHoldingChains = ({ token }: { token: TokenHolding }) => {
       </XStack>
       <Text color="$mauve11">{`${chains.length} chains`}</Text>
     </XStack>
-  );
-};
-
-const WalletsMenu = ({ addresses }: { addresses: string[] }) => {
-  return (
-    <Menu
-      trigger={
-        <Popover.Trigger $platform-web={{ cursor: "pointer" }}>
-          <Text>
-            <Text fontWeight="600">{addresses.length}</Text>
-            <Text color="$mauve11">{` wallet${
-              addresses.length > 1 ? "s" : ""
-            }`}</Text>
-          </Text>
-        </Popover.Trigger>
-      }
-    >
-      {addresses.map((address) => (
-        <WalletMenuItem key={address} address={address} />
-      ))}
-    </Menu>
   );
 };
 

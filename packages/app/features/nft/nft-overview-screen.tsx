@@ -12,7 +12,7 @@ import { LinearGradient } from "@tamagui/linear-gradient";
 import { SimpleHashNFT } from "@nook/common/types";
 import { memo } from "react";
 
-export const NftOverviewScreen =  memo(({ nft }: { nft: SimpleHashNFT }) => {
+export const NftOverviewScreen = memo(({ nft }: { nft: SimpleHashNFT }) => {
   const backgroundColor = nft.previews.predominant_color || "$color2";
   const darkenedBackgroundColor = nft.previews.predominant_color
     ? darkenColor(backgroundColor)
@@ -62,4 +62,4 @@ export const NftOverviewScreen =  memo(({ nft }: { nft: SimpleHashNFT }) => {
       </YStack>
     </YStack>
   );
-})
+});

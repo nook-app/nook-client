@@ -1,4 +1,5 @@
 import { FarcasterUser } from "./farcaster";
+import { OnceUponTransaction } from "./providers/onceupon";
 
 export type TransactionResponse = {
   chainId: number;
@@ -78,4 +79,9 @@ export type Asset = {
   tokenId: string;
   type: string;
   value: string;
+};
+
+export type FetchTransactionsResponseV1 = {
+  data: OnceUponTransaction[];
+  nextCursor?: string;
 };

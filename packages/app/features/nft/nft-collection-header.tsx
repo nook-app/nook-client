@@ -104,6 +104,7 @@ export const NftCollectionHeader = memo(
             </View>
           </Link>
         </XStack>
+        <NftCollectionMutuals collection_id={collection.collection_id} />
       </YStack>
     );
   },

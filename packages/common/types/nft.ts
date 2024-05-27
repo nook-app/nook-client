@@ -1,6 +1,6 @@
 import { FarcasterUser } from "./farcaster";
 import { UserFilter } from "./nook";
-import { SimpleHashNFTEvent } from "./simplehash";
+import { SimpleHashNFT, SimpleHashNFTEvent } from "./simplehash";
 
 export type NftMutualsPreview = {
   preview: FarcasterUser[];
@@ -91,4 +91,52 @@ export type NftEvent = SimpleHashNFTEvent & {
 export type FetchNftEventsResponse = {
   data: NftEvent[];
   nextCursor?: string;
+};
+
+export type NftMarket = {
+  mintStages: NftMintStage[];
+  market: {
+    floorAsk: NftAsk | null;
+    topBid: NftAsk | null;
+  };
+};
+
+export type NftMintStage = {
+  stage: string;
+  kind: string;
+  tokenId: string;
+  price: NftPrice;
+  startTime: number;
+  endTime: number;
+  maxMintsPerWallet: number | null;
+};
+
+export type NftAsk = {
+  id: string;
+  price: NftPrice;
+  maker: string;
+  validFrom: number;
+  validUntil: number;
+  source: {
+    id: string;
+    domain: string;
+    name: string;
+    icon: string;
+    url: string;
+  };
+};
+
+type NftPrice = {
+  currency: {
+    contract: string;
+    name: string;
+    symbol: string;
+    decimals: number;
+  };
+  amount: {
+    raw: string;
+    decimal: number;
+    usd: number;
+    native: number;
+  };
 };

@@ -50,7 +50,7 @@ export type TransactionFeedRequest = {
 };
 
 export type TransactionFeedFilter = {
-  users?: UserFilter;
+  users: UserFilter;
   chains?: number[];
   contextActions?: string[];
 };

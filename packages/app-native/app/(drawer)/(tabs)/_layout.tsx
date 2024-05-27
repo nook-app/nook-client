@@ -45,7 +45,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="(transactions)"
         options={{
-          title: "Transactions",
+          title: "Activity",
           tabBarIcon: (props) => <TabBarTransactions {...props} />,
         }}
       />

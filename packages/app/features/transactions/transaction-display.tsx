@@ -29,6 +29,8 @@ export const TransactionDisplay = ({
 }) => {
   const user = transaction.users[transaction.from];
 
+  console.log(JSON.stringify(transaction, null, 2));
+
   return (
     <XStack
       gap="$2"

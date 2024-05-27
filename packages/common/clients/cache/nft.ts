@@ -2,8 +2,10 @@ import {
   GetNftCollectionCollectorsRequest,
   GetNftCollectorsRequest,
   NftFarcasterOwner,
+  NftMarket,
   NftMutualsPreview,
   NftOwner,
+  SimpleHashNFT,
 } from "../../types";
 import { decodeCursor } from "../../utils";
 import { RedisClient } from "./base";
@@ -11,7 +13,9 @@ import { RedisClient } from "./base";
 export class NftCacheClient {
   private redis: RedisClient;
 
+  NFT_CACHE_PREFIX = "nft";
   NFT_MUTUALS_CACHE_PREFIX = "nft-mutuals";
+  NFT_MARKET_CACHE_PREFIX = "nft-market";
   NFT_OWNERS_CACHE_PREFIX = "nft-owners:nft";
   NFT_COLLECTION_OWNERS_CACHE_PREFIX = "nft-owners:collection";
 
@@ -19,7 +23,68 @@ export class NftCacheClient {
     this.redis = redis;
   }
 
-  async getMutuals(
+  async getNft(nftId: string): Promise<SimpleHashNFT | undefined> {
+    const key = `${this.NFT_CACHE_PREFIX}:${nftId}`;
+    return this.redis.getJson(key);
+  }
+
+  async setNft(nftId: string, nft: SimpleHashNFT) {
+    const key = `${this.NFT_CACHE_PREFIX}:${nftId}`;
+    return this.redis.setJson(key, nft, 60 * 60 * 3);
+  }
+
+  async getNfts(nftIds: string[]): Promise<(SimpleHashNFT | undefined)[]> {
+    const keys = nftIds.map((nftId) => `${this.NFT_CACHE_PREFIX}:${nftId}`);
+    return this.redis.mgetJson(keys);
+  }
+
+  async setNfts(nfts: SimpleHashNFT[]) {
+    const keys = nfts.map(
+      (nft) =>
+        [`${this.NFT_CACHE_PREFIX}:${nft.nft_id}`, nft] as [
+          string,
+          SimpleHashNFT,
+        ],
+    );
+    return this.redis.msetJson(keys, 60 * 60 * 3);
+  }
+
+  async setNftsIgnore(nftIds: string[]) {
+    const pairs = nftIds.map((nftId) => [
+      `${this.NFT_CACHE_PREFIX}:${nftId}`,
+      {},
+    ]) as [string, SimpleHashNFT][];
+    return this.redis.msetJson(pairs, 60 * 60 * 3);
+  }
+
+  async getNftMarket(nftId: string): Promise<NftMarket | undefined> {
+    const key = `${this.NFT_MARKET_CACHE_PREFIX}:${nftId}`;
+    return this.redis.getJson(key);
+  }
+
+  async setNftMarket(nftId: string, nft: NftMarket) {
+    const key = `${this.NFT_MARKET_CACHE_PREFIX}:${nftId}`;
+    return this.redis.setJson(key, nft, 60 * 60 * 10);
+  }
+
+  async getNftMutuals(
+    nftId: string,
+    viewerFid: string,
+  ): Promise<NftMutualsPreview | undefined> {
+    const key = `${this.NFT_MUTUALS_CACHE_PREFIX}:${nftId}:${viewerFid}`;
+    return this.redis.getJson(key);
+  }
+
+  async setNftMutuals(
+    nftId: string,
+    viewerFid: string,
+    mutuals: NftMutualsPreview,
+  ) {
+    const key = `${this.NFT_MUTUALS_CACHE_PREFIX}:${nftId}:${viewerFid}`;
+    return this.redis.setJson(key, mutuals, 60 * 60 * 3);
+  }
+
+  async getNftCollectionMutuals(
     collectionId: string,
     viewerFid: string,
   ): Promise<NftMutualsPreview | undefined> {
@@ -27,7 +92,7 @@ export class NftCacheClient {
     return this.redis.getJson(key);
   }
 
-  async setMutuals(
+  async setNftCollectionMutuals(
     collectionId: string,
     viewerFid: string,
     mutuals: NftMutualsPreview,

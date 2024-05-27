@@ -38,6 +38,12 @@ export const userRoutes = async (fastify: FastifyInstance) => {
             request.headers["x-viewer-fid"] as string,
           );
           reply.send({ data: users });
+        } else if (request.body.filter) {
+          const users = await service.getUsersForFilter(
+            request.body.filter,
+            request.headers["x-viewer-fid"] as string,
+          );
+          reply.send({ data: users });
         } else {
           reply.status(400).send({ message: "Invalid request" });
         }

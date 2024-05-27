@@ -257,7 +257,7 @@ export class TokenService {
       do {
         const params: Record<string, string> = {
           fungible_id: id,
-          limit: "50",
+          limit: "300",
         };
         if (nextCursor) {
           params.cursor = nextCursor;
@@ -288,7 +288,7 @@ export class TokenService {
           })),
         );
         nextCursor = result.next_cursor;
-      } while (nextCursor && owners.length < 1000);
+      } while (nextCursor && owners.length < 3000);
       return owners;
     };
 

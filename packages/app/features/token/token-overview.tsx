@@ -11,7 +11,7 @@ import { TokenChart } from "./token-chart";
 import { useState } from "react";
 import { useAuth } from "../../context/auth";
 import { useTokenHoldings } from "../../hooks/useTokenHoldings";
-import { LinkButton } from "../../components/link";
+import { Link, LinkButton } from "../../components/link";
 import { ExternalLink } from "@tamagui/lucide-icons";
 import { useQuery } from "@tanstack/react-query";
 import { fetchTokenMutualsPreview } from "../../api/token";
@@ -166,7 +166,6 @@ export const TokenOverview = ({
           </XStack>
         </ScrollView>
       )} */}
-      {token.id !== "eth" && <TokenMutuals tokenId={token.id} />}
       <View paddingHorizontal="$4">
         <LinkButton
           href={`https://app.uniswap.org/#/swap?outputCurrency=${token.instances[0].address}&chain=${chainDatas[0].id}`}
@@ -179,6 +178,7 @@ export const TokenOverview = ({
           <ExternalLink color="$color1" size={16} strokeWidth={2.5} />
         </LinkButton>
       </View>
+      {token.id !== "eth" && <TokenMutuals tokenId={token.id} />}
     </YStack>
   );
 };
@@ -323,32 +323,34 @@ export const TokenMutuals = ({ tokenId }: { tokenId: string }) => {
   }
 
   return (
-    <XStack
-      gap="$3"
-      alignItems="center"
-      cursor="pointer"
-      group
-      paddingHorizontal="$4"
-    >
-      {previews.length > 0 && (
-        <XStack>
-          {previews.map((user) => (
-            <View key={user.fid} marginRight="$-2">
-              <CdnAvatar src={user.pfp} size="$1" />
-            </View>
-          ))}
-        </XStack>
-      )}
-      {/* @ts-ignore */}
-      <Text
-        opacity={0.8}
-        $group-hover={{
-          textDecoration: "underline",
-        }}
-        flexShrink={1}
+    <Link href={`/tokens/${tokenId}/holders-following`} touchable>
+      <XStack
+        gap="$3"
+        alignItems="center"
+        cursor="pointer"
+        group
+        paddingHorizontal="$4"
       >
-        {label}
-      </Text>
-    </XStack>
+        {previews.length > 0 && (
+          <XStack>
+            {previews.map((user) => (
+              <View key={user.fid} marginRight="$-2">
+                <CdnAvatar src={user.pfp} size="$1" />
+              </View>
+            ))}
+          </XStack>
+        )}
+        {/* @ts-ignore */}
+        <Text
+          opacity={0.8}
+          $group-hover={{
+            textDecoration: "underline",
+          }}
+          flexShrink={1}
+        >
+          {label}
+        </Text>
+      </XStack>
+    </Link>
   );
 };

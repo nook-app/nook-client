@@ -1,5 +1,5 @@
 import { useFocusEffect, useLocalSearchParams } from "expo-router";
-import { NookText, Popover, View, XStack } from "@nook/app-ui";
+import { Button, NookText, Popover, Text, View, XStack } from "@nook/app-ui";
 import { BlurView } from "expo-blur";
 import { useTheme } from "@nook/app/context/theme";
 import { LinearGradient } from "@tamagui/linear-gradient";
@@ -21,11 +21,8 @@ import { CollapsibleGradientLayout } from "../CollapsibleGradientLayout";
 import { Tabs } from "react-native-collapsible-tab-view";
 import { useAuth } from "@nook/app/context/auth";
 import { SIMPLEHASH_CHAINS } from "@nook/common/utils";
-import {
-  FarcasterTokenHolders,
-  FollowingTokenHolders,
-  TokenHolders,
-} from "@nook/app/features/token/token-holders";
+import { FarcasterTokenHolders } from "@nook/app/features/token/token-holders";
+import { Link } from "@nook/app/components/link";
 
 export default function TokenScreen() {
   const { session } = useAuth();
@@ -46,41 +43,67 @@ export default function TokenScreen() {
   if (!token || colors.isLoading) return <Loading />;
 
   const tabs = [];
-  if (session?.fid && hasHolderInfo) {
-    tabs.push({
-      name: "Following",
-      component: (
-        <FollowingTokenHolders
-          token={token}
-          asTabs
-          paddingBottom={paddingBottom}
-        />
-      ),
-    });
-  }
-
   if (hasHolderInfo) {
     tabs.push({
-      name: "Farcaster",
+      name: "Holders",
       component: (
         <FarcasterTokenHolders
           token={token}
           asTabs
           paddingBottom={paddingBottom}
+          ListHeaderComponent={
+            <XStack
+              paddingHorizontal="$2.5"
+              gap="$2.5"
+              paddingTop="$2.5"
+              paddingBottom="$1.5"
+              alignItems="center"
+              justifyContent="space-between"
+            >
+              <Text color="$mauve111">Holders on Farcaster</Text>
+              <XStack gap="$2">
+                <Link
+                  href={`/tokens/${token.id}/holders-following`}
+                  unpressable
+                >
+                  <Button
+                    borderWidth="$0"
+                    backgroundColor="$color4"
+                    borderRadius="$10"
+                    height="$2.5"
+                    minHeight="$2.5"
+                    padding="$0"
+                    paddingHorizontal="$3"
+                    fontWeight="500"
+                  >
+                    View following
+                  </Button>
+                </Link>
+                <Link href={`/tokens/${token.id}/holders`} unpressable>
+                  <Button
+                    borderWidth="$0"
+                    backgroundColor="$color4"
+                    borderRadius="$10"
+                    height="$2.5"
+                    minHeight="$2.5"
+                    padding="$0"
+                    paddingHorizontal="$3"
+                    fontWeight="500"
+                  >
+                    View all
+                  </Button>
+                </Link>
+              </XStack>
+            </XStack>
+          }
         />
-      ),
-    });
-    tabs.push({
-      name: "All Holders",
-      component: (
-        <TokenHolders token={token} asTabs paddingBottom={paddingBottom} />
       ),
     });
   }
 
   if (session?.fid) {
     tabs.push({
-      name: "Your Activity",
+      name: "Activity",
       component: (
         <TokenTransactionsFeed
           token={token}
@@ -90,6 +113,51 @@ export default function TokenScreen() {
           }}
           asTabs
           paddingBottom={paddingBottom}
+          ListHeaderComponent={
+            <XStack
+              paddingHorizontal="$2.5"
+              gap="$2.5"
+              paddingTop="$2.5"
+              paddingBottom="$1.5"
+              alignItems="center"
+              justifyContent="space-between"
+            >
+              <Text color="$mauve11">Your Activity</Text>
+              {/* <XStack gap="$2">
+                <Link
+                  href={`/tokens/${token.id}/activity-following`}
+                  unpressable
+                >
+                  <Button
+                    borderWidth="$0"
+                    backgroundColor="$color4"
+                    borderRadius="$10"
+                    height="$2.5"
+                    minHeight="$2.5"
+                    padding="$0"
+                    paddingHorizontal="$3"
+                    fontWeight="500"
+                  >
+                    View Farcaster
+                  </Button>
+                </Link>
+                <Link href={`/tokens/${token.id}/activity`} unpressable>
+                  <Button
+                    borderWidth="$0"
+                    backgroundColor="$color4"
+                    borderRadius="$10"
+                    height="$2.5"
+                    minHeight="$2.5"
+                    padding="$0"
+                    paddingHorizontal="$3"
+                    fontWeight="500"
+                  >
+                    View all
+                  </Button>
+                </Link>
+              </XStack> */}
+            </XStack>
+          }
         />
       ),
     });

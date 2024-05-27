@@ -11,7 +11,6 @@
     "@aws-sdk/client-s3": "^3.565.0",
     "@aws-sdk/credential-providers": "^3.565.0",
     "@aws-sdk/s3-request-presigner": "^3.565.0",
-    "@covalenthq/client-sdk": "^1.0.2",
     "@farcaster/auth-client": "^0.1.0",
     "@farcaster/hub-nodejs": "^0.11.3",
     "@fastify/cors": "^9.0.1",

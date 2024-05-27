@@ -24,14 +24,14 @@ export default function TransactionsScreen() {
         >
           <DrawerToggleButton />
           <NookText fontSize="$5" fontWeight="600">
-            Transactions
+            Activity
           </NookText>
           <View width="$2.5" />
         </View>
       }
       pages={[
         {
-          name: "NFTs",
+          name: "Collectibles",
           component: (
             <TransactionFeed
               paddingBottom={paddingBottom}

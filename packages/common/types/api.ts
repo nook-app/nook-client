@@ -12,7 +12,12 @@ import { Transaction } from "./transactions";
 import { Frame } from "./frames";
 import { CastAction } from "./user";
 import { List } from "./lists";
-import { SimpleHashNFT, SimplehashNftCollection } from "./simplehash";
+import {
+  SimpleHashCollection,
+  SimpleHashNFT,
+  SimplehashNftCollection,
+} from "./simplehash";
+import { UserFilter } from "./nook";
 
 export type FarcasterCastResponse = {
   hash: string;
@@ -66,6 +71,7 @@ export type GetFarcasterUserRequest = {
 export type GetFarcasterUsersRequest = {
   fids?: string[];
   addresses?: string[];
+  filter?: UserFilter;
 };
 
 export type GetFarcasterCastRequest = {
@@ -325,5 +331,10 @@ export type FetchNftsResponse = {
 
 export type FetchNftCollectionsResponse = {
   data: SimplehashNftCollection[];
+  nextCursor?: string;
+};
+
+export type FetchNftCreatedCollectionsResponse = {
+  data: SimpleHashCollection[];
   nextCursor?: string;
 };

@@ -5,7 +5,6 @@ import { FarcasterCastResponseText } from "../farcaster/casts/cast-text";
 import { FarcasterCastResponse } from "@nook/common/types";
 import { formatTimeAgo } from "../../utils";
 import { FarcasterPowerBadge } from "../farcaster/users/power-badge";
-import { Link } from "../link";
 import { useRouter } from "solito/navigation";
 
 export const EmbedCast = ({

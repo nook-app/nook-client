@@ -135,6 +135,7 @@ export type SimpleHashCollection = {
   chains: string[];
   top_contracts: string[];
   collection_royalties: CollectionRoyalty[];
+  deployment_date: string;
 };
 
 export type SimpleHashNFT = {
@@ -215,6 +216,7 @@ export type SimpleHashNFT = {
     symbol: string | null;
     deployed_by: string | null;
     deployed_via: string | null;
+    deployed_via_contract: string | null;
   };
   collection: SimpleHashCollection;
   rarity: SimpleHashRarity;

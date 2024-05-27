@@ -25,10 +25,47 @@ export const nftRoutes = async (fastify: FastifyInstance) => {
       },
     );
 
+    fastify.post<{ Body: NftFeedRequest }>(
+      "/nfts/created",
+      async (request, reply) => {
+        const response = await service.getNftsCreated(request.body);
+        return reply.send(response);
+      },
+    );
+
+    fastify.post<{ Body: NftFeedRequest }>(
+      "/nfts/collections/created",
+      async (request, reply) => {
+        const response = await service.getNftCollectionsCreated(request.body);
+        return reply.send(response);
+      },
+    );
+
     fastify.get<{ Params: { nftId: string } }>(
       "/nfts/:nftId",
       async (request, reply) => {
         const response = await service.getNft(request.params.nftId);
+        return reply.send(response);
+      },
+    );
+
+    fastify.get<{ Params: { nftId: string } }>(
+      "/nfts/:nftId/markets",
+      async (request, reply) => {
+        const response = await service.getNftMarkets(request.params.nftId);
+        return reply.send(response);
+      },
+    );
+
+    fastify.get<{ Params: { nftId: string } }>(
+      "/nfts/:nftId/mutuals-preview",
+      async (request, reply) => {
+        const { fid } = (await request.jwtDecode()) as { fid: string };
+
+        const response = await service.getNftMutualsPreview(
+          request.params.nftId,
+          fid,
+        );
         return reply.send(response);
       },
     );

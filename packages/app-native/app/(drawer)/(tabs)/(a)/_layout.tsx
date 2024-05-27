@@ -190,6 +190,21 @@ export default function HomeLayout() {
         options={{ headerShown: false }}
         getId={({ params }) => params?.tokenId}
       />
+      <Stack.Screen
+        name="tokens/[tokenId]/holders"
+        options={{ headerShown: false }}
+        getId={({ params }) => params?.tokenId}
+      />
+      <Stack.Screen
+        name="tokens/[tokenId]/holders-following"
+        options={{ headerShown: false }}
+        getId={({ params }) => params?.tokenId}
+      />
+      <Stack.Screen
+        name="tokens/[tokenId]/holders-farcaster"
+        options={{ headerShown: false }}
+        getId={({ params }) => params?.tokenId}
+      />
     </Stack>
   );
 }

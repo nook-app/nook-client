@@ -15,7 +15,7 @@ export const EmbedTwitter = ({
         borderWidth="$0.5"
         borderColor="$borderColorBg"
         borderRadius="$4"
-        padding="$2.5"
+        padding="$2"
         gap="$2"
       >
         <XStack gap="$1" alignItems="center">

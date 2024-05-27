@@ -13,11 +13,10 @@ import { useToastController } from "@tamagui/toast";
 import { FarcasterCastResponse, UrlContentResponse } from "@nook/common/types";
 import { Frame, FrameButton } from "@nook/common/types";
 import { useAuth } from "../../../context/auth";
-import { NookButton, NookText, Input, Image } from "@nook/app-ui";
+import { NookText, Input, Image } from "@nook/app-ui";
 import { submitFrameAction } from "../../../api/farcaster/actions";
 import { useRouter } from "solito/navigation";
 import { EnableSignerDialog } from "../../../features/farcaster/enable-signer/dialog";
-import { useTheme } from "../../../context/theme";
 import { Link } from "solito/link";
 
 export const EmbedFrame = ({
@@ -29,7 +28,7 @@ export const EmbedFrame = ({
   const [inputText, setInputText] = useState<string | undefined>();
   const [isLoading, setIsLoading] = useState(false);
   const [opacity, setOpacity] = useState(1);
-  const { session, login, signer } = useAuth();
+  const { session, login } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
@@ -99,7 +98,7 @@ export const EmbedFrame = ({
 
   return (
     <YStack gap="$2">
-      <YStack borderRadius="$4" overflow="hidden">
+      <YStack overflow="hidden">
         <View
           backgroundColor="$color2"
           justifyContent="center"
@@ -123,6 +122,8 @@ export const EmbedFrame = ({
               onPress={(e) => {
                 e.stopPropagation();
               }}
+              borderRadius="$4"
+              overflow="hidden"
             >
               <Link
                 style={{ position: "relative" }}
@@ -138,10 +139,9 @@ export const EmbedFrame = ({
               </Link>
             </View>
           )}
-          <YStack backgroundColor="$color3" padding="$2" gap="$2">
+          <YStack paddingTop="$2" gap="$2" theme="surface1">
             {frame.inputText && (
               <Input
-                theme="surface1"
                 value={inputText || ""}
                 onChangeText={setInputText}
                 placeholder={frame.inputText}
@@ -202,25 +202,52 @@ const FrameButtonAction = ({
             }
           : undefined
       }
+      backgroundColor="$color12"
+      color="$color1"
+      borderWidth="$0"
+      hoverStyle={{
+        backgroundColor: "$mauve11",
+        // @ts-ignore
+        transition: "all 0.2s ease-in-out",
+      }}
+      pressStyle={{
+        backgroundColor: "$mauve11",
+      }}
+      disabledStyle={{
+        backgroundColor: "$mauve10",
+      }}
     >
-      {button.action === "tx" && (
-        <>
-          <Zap
-            size={12}
-            color="$color12"
-            fill={tamaguiTheme.color12.val}
-            marginRight="$1"
-          />
-        </>
-      )}
-      {button.label}
-      {button.action === "link" ||
-      button.action === "post_redirect" ||
-      button.action === "mint" ? (
-        <>
-          <ExternalLink size={12} color="$color12" marginLeft="$1" />
-        </>
-      ) : null}
+      <Text
+        alignItems="center"
+        gap="$1.5"
+        flexShrink={1}
+        paddingHorizontal="$1"
+        flexWrap="nowrap"
+        numberOfLines={2}
+        textAlign="center"
+        color="$color1"
+      >
+        {button.action === "tx" && (
+          <>
+            <Zap
+              size={12}
+              color="$color1"
+              fill={tamaguiTheme.color1.val}
+            />{" "}
+          </>
+        )}
+        <Text textAlign="center" fontWeight="600" color="$color1">
+          {button.label}
+        </Text>
+        {button.action === "link" ||
+        button.action === "post_redirect" ||
+        button.action === "mint" ? (
+          <>
+            {" "}
+            <ExternalLink size={12} color="$color1" />
+          </>
+        ) : null}
+      </Text>
     </Button>
   );
 
