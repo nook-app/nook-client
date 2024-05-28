@@ -248,67 +248,70 @@ export class TransactionService {
       {} as Record<string, boolean>,
     );
 
-    const missing = tokenIds.filter((id) => !cacheMap[id] && !ignoreMap[id]);
-    if (missing.length > 0) {
-      const tokens = await Promise.all(
-        missing.map(async (id) => {
-          const [chainId, address] = id.split("-");
-          const response: { data: TokenData[] } = await this.makeZerionRequest(
-            "/fungibles",
-            {
-              "filter[implementation_chain_id]": chainId,
-              "filter[implementation_address]": address,
-            },
-          );
+    try {
+      const missing = tokenIds.filter((id) => !cacheMap[id] && !ignoreMap[id]);
+      if (missing.length > 0) {
+        const tokens = await Promise.all(
+          missing.map(async (id) => {
+            const [chainId, address] = id.split("-");
+            const response: { data: TokenData[] } =
+              await this.makeZerionRequest("/fungibles", {
+                "filter[implementation_chain_id]": chainId,
+                "filter[implementation_address]": address,
+              });
 
-          const data = response?.data[0];
-          if (!data) return;
+            const data = response?.data[0];
+            if (!data) return;
 
-          const instances = data.attributes.implementations.map((i) => ({
-            chainId: i.chain_id,
-            address: i.address,
-            decimals: i.decimals,
-          }));
+            const instances = data.attributes.implementations.map((i) => ({
+              chainId: i.chain_id,
+              address: i.address,
+              decimals: i.decimals,
+            }));
 
-          return {
-            id: data.id,
-            name: data.attributes.name,
-            symbol: data.attributes.symbol,
-            description: data.attributes.description,
-            icon: data.attributes.icon,
-            externalLinks: data.attributes.external_links,
-            instances,
-            stats: {
-              price: data.attributes.market_data.price,
-              circulatingSupply: data.attributes.market_data.circulating_supply,
-              totalSupply: data.attributes.market_data.total_supply,
-              marketCap: data.attributes.market_data.market_cap,
-              fullyDilutedValuation:
-                data.attributes.market_data.fully_diluted_valuation,
-              changes: {
-                percent1d: data.attributes.market_data.changes.percent_1d,
-                percent30d: data.attributes.market_data.changes.percent_30d,
-                percent90d: data.attributes.market_data.changes.percent_90d,
-                percent365d: data.attributes.market_data.changes.percent_365d,
+            return {
+              id: data.id,
+              name: data.attributes.name,
+              symbol: data.attributes.symbol,
+              description: data.attributes.description,
+              icon: data.attributes.icon,
+              externalLinks: data.attributes.external_links,
+              instances,
+              stats: {
+                price: data.attributes.market_data.price,
+                circulatingSupply:
+                  data.attributes.market_data.circulating_supply,
+                totalSupply: data.attributes.market_data.total_supply,
+                marketCap: data.attributes.market_data.market_cap,
+                fullyDilutedValuation:
+                  data.attributes.market_data.fully_diluted_valuation,
+                changes: {
+                  percent1d: data.attributes.market_data.changes.percent_1d,
+                  percent30d: data.attributes.market_data.changes.percent_30d,
+                  percent90d: data.attributes.market_data.changes.percent_90d,
+                  percent365d: data.attributes.market_data.changes.percent_365d,
+                },
               },
-            },
-          };
-        }),
-      );
+            };
+          }),
+        );
 
-      for (const token of tokens) {
-        if (!token?.instances) continue;
-        for (const instance of token.instances) {
-          cacheMap[`${instance.chainId}-${instance.address}`] = token;
+        for (const token of tokens) {
+          if (!token?.instances) continue;
+          for (const instance of token.instances) {
+            cacheMap[`${instance.chainId}-${instance.address}`] = token;
+          }
         }
+
+        await this.tokenCache.setTokens(tokens.filter(Boolean) as Token[]);
       }
 
-      await this.tokenCache.setTokens(tokens.filter(Boolean) as Token[]);
-    }
-
-    const stillMissing = tokenIds.filter((id) => !cacheMap[id]);
-    if (stillMissing.length > 0) {
-      await this.tokenCache.setTokensIgnore(stillMissing);
+      const stillMissing = tokenIds.filter((id) => !cacheMap[id]);
+      if (stillMissing.length > 0) {
+        await this.tokenCache.setTokensIgnore(stillMissing);
+      }
+    } catch (e) {
+      console.error(e);
     }
 
     return tokenIds.map((id) => cacheMap[id]);
@@ -402,6 +405,9 @@ export class TransactionService {
         authorization: `Basic ${ZERION_API_KEY}`,
       },
     });
+    if (!response.ok) {
+      throw new Error(`Failed to fetch ${path}: ${response.status}`);
+    }
     return response.json();
   }
 }
