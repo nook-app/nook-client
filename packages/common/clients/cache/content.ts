@@ -59,15 +59,14 @@ export class ContentCacheClient {
   }
 
   async setReferences(
-    references: FarcasterContentReference[],
-    contents: UrlContentResponse[],
+    pairs: [FarcasterContentReference, UrlContentResponse][],
   ) {
     await this.redis.msetJson(
-      references.map((reference, i) => [
-        `${this.REFERENCE_CACHE_PREFIX}:${reference.hash}:${unquote(
-          reference.uri,
+      pairs.map((pair, i) => [
+        `${this.REFERENCE_CACHE_PREFIX}:${pair[0].hash}:${unquote(
+          pair[0].uri,
         )}`,
-        contents[i],
+        pair[1],
       ]),
       24 * 60 * 60 * 3,
     );

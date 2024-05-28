@@ -1,8 +1,4 @@
-import {
-  ContentAPIClient,
-  FarcasterCacheClient,
-  NookCacheClient,
-} from "@nook/common/clients";
+import { FarcasterCacheClient, NookCacheClient } from "@nook/common/clients";
 import {
   FarcasterCast,
   Prisma,
@@ -28,51 +24,18 @@ function sanitizeInput(input: string): string {
 export class FeedService {
   private client: PrismaClient;
   private cache: FarcasterCacheClient;
-  private content: ContentAPIClient;
   private nook: NookCacheClient;
 
   constructor(fastify: FastifyInstance) {
     this.client = fastify.farcaster.client;
     this.cache = new FarcasterCacheClient(fastify.redis.client);
     this.nook = new NookCacheClient(fastify.redis.client);
-    this.content = new ContentAPIClient();
   }
 
   async getCastFeed(req: FarcasterFeedRequest) {
     const { filter, context, cursor, limit } = req;
-    const {
-      channels,
-      users,
-      text,
-      embeds,
-      contentTypes,
-      includeReplies,
-      onlyReplies,
-      onlyFrames,
-      minTimestamp,
-    } = filter;
-
-    if (
-      onlyFrames ||
-      (contentTypes && contentTypes.length > 0) ||
-      (embeds && embeds.length > 0)
-    ) {
-      const response = await this.content.getContentFeed(req);
-      const casts = await this.client.farcasterCast.findMany({
-        where: {
-          hash: {
-            in: response.data,
-          },
-        },
-        orderBy: {
-          timestamp: "desc",
-        },
-      });
-      return {
-        data: casts,
-        nextCursor: response.nextCursor,
-      };
-    }
+    const { channels, users, text, includeReplies, onlyReplies, minTimestamp } =
+      filter;
 
     const conditions: string[] = ['"deletedAt" IS NULL'];
 

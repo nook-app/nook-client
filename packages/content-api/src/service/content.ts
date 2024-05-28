@@ -62,28 +62,36 @@ export class ContentService {
         },
       });
 
-      const formatted = [];
+      const fetchedMap = fetched.reduce(
+        (acc, content) => {
+          if (!content.contentType) return acc;
+          acc[content.uri] = {
+            uri: content.uri,
+            protocol: content.protocol,
+            host: content.host,
+            path: content.path,
+            query: content.query,
+            fragment: content.fragment,
+            contentType: content.contentType,
+            length: content.length,
+            metadata: content.metadata as Metadata,
+            frame: content.frame as Frame,
+            hasFrame: content.hasFrame,
+          } as UrlContentResponse;
+          return acc;
+        },
+        {} as Record<string, UrlContentResponse>,
+      );
 
-      for (const content of fetched) {
-        if (!content.contentType) continue;
-        const data = {
-          uri: content.uri,
-          protocol: content.protocol,
-          host: content.host,
-          path: content.path,
-          query: content.query,
-          fragment: content.fragment,
-          contentType: content.contentType,
-          length: content.length,
-          metadata: content.metadata as Metadata,
-          frame: content.frame as Frame,
-          hasFrame: content.hasFrame,
-        } as UrlContentResponse;
-        formatted.push(data);
-        cacheMap[`${content.hash}:${content.uri}`] = data;
+      const pairs: [FarcasterContentReference, UrlContentResponse][] = [];
+      for (const reference of missing) {
+        const content = fetchedMap[reference.uri];
+        if (!content) continue;
+        pairs.push([reference, content]);
+        cacheMap[`${reference.hash}:${reference.uri}`] = content;
       }
 
-      await this.cache.setReferences(references, formatted);
+      await this.cache.setReferences(pairs);
     }
 
     const stillMissing = missing.filter(
@@ -131,23 +139,25 @@ export class ContentService {
         ),
       );
 
-      for (const value of data) {
-        cacheMap[`${value.hash}:${value.uri}`] = contentMap[value.uri];
+      const pairs: [FarcasterContentReference, UrlContentResponse][] = [];
+      for (const reference of stillMissing) {
+        const content = contentMap[reference.uri];
+        if (!content) continue;
+        pairs.push([reference, content]);
+        cacheMap[`${reference.hash}:${reference.uri}`] = content;
       }
-
-      await this.cache.setReferences(
-        stillMissing,
-        stillMissing.map(
-          (reference) => cacheMap[`${reference.hash}:${reference.uri}`],
-        ),
-      );
+      await this.cache.setReferences(pairs);
     }
 
     if (skipFetch) {
       const toQueue = stillMissing.filter(
         (reference) => !cacheMap[`${reference.hash}:${reference.uri}`],
       );
-      await Promise.all(toQueue.map((reference) => publishContent(reference)));
+      if (toQueue.length > 0) {
+        await Promise.all(
+          toQueue.map((reference) => publishContent(reference)),
+        );
+      }
     }
 
     return references.map(

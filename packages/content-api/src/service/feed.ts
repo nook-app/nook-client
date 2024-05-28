@@ -39,7 +39,7 @@ export class FeedService {
       onlyFrames,
     } = filter;
 
-    const conditions: string[] = [`"reference"."type" = 'EMBED'`];
+    const conditions: string[] = [];
 
     if (onlyFrames) {
       conditions.push(`"reference"."hasFrame"`);
@@ -69,12 +69,17 @@ export class FeedService {
       conditions.push(`(${embedConditions.join(" OR ")})`);
     }
 
-    if (users) {
-      conditions.push(...(await this.getUserFilter(users)));
+    const [userCondition, channelCondition] = await Promise.all([
+      this.getUserFilter(users),
+      this.getChannelFilter(channels),
+    ]);
+
+    if (userCondition) {
+      conditions.push(userCondition);
     }
 
-    if (channels) {
-      conditions.push(...(await this.getChannelFilter(channels)));
+    if (channelCondition) {
+      conditions.push(channelCondition);
     }
 
     if (cursor) {
@@ -106,14 +111,6 @@ export class FeedService {
       );
     }
 
-    console.log(`
-    SELECT DISTINCT "reference".hash, "reference".timestamp
-    FROM "FarcasterContentReference" AS "reference"
-    WHERE ${conditions.join(" AND ")}
-    ORDER BY "reference"."timestamp" DESC
-    LIMIT ${MAX_PAGE_SIZE}
-  `);
-
     const casts = await this.client.$queryRaw<
       { hash: string; timestamp: Date }[]
     >(
@@ -139,23 +136,22 @@ export class FeedService {
     };
   }
 
-  async getUserFilter(users: UserFilter) {
-    const conditions: string[] = [];
+  async getUserFilter(users?: UserFilter) {
+    if (!users) return;
+
     switch (users.type) {
       case UserFilterType.FOLLOWING: {
         const fids = await this.farcaster.getUserFollowingFids(users.data.fid);
         if (fids.data.length > 0) {
-          conditions.push(
-            `"fid" IN (${fids.data.map((fid) => BigInt(fid)).join(",")})`,
-          );
+          return `"fid" IN (${fids.data.map((fid) => BigInt(fid)).join(",")})`;
         }
         break;
       }
       case UserFilterType.FIDS:
         if (users.data.fids.length > 0) {
-          conditions.push(
-            `"fid" IN (${users.data.fids.map((fid) => BigInt(fid)).join(",")})`,
-          );
+          return `"fid" IN (${users.data.fids
+            .map((fid) => BigInt(fid))
+            .join(",")})`;
         }
         break;
       case UserFilterType.POWER_BADGE: {
@@ -171,30 +167,26 @@ export class FeedService {
           set.add(BigInt(fid));
         }
 
-        conditions.push(`"fid" IN (${Array.from(set).join(",")})`);
-        break;
+        return `"fid" IN (${Array.from(set).join(",")})`;
       }
     }
-    return conditions;
   }
 
-  async getChannelFilter(channels: ChannelFilter) {
-    const conditions: string[] = [];
+  async getChannelFilter(channels?: ChannelFilter) {
+    if (!channels) return;
+
     switch (channels.type) {
       case ChannelFilterType.CHANNEL_IDS: {
         const response = await this.farcaster.getChannels({
           channelIds: channels.data.channelIds,
         });
-        conditions.push(
-          `"parentUrl" IN ('${response.data.map((c) => c.url).join("','")}')`,
-        );
-        break;
+        return `"parentUrl" IN ('${response.data
+          .map((c) => c.url)
+          .join("','")}')`;
       }
       case ChannelFilterType.CHANNEL_URLS: {
-        conditions.push(`"parentUrl" IN ('${channels.data.urls.join("','")}')`);
-        break;
+        return `"parentUrl" IN ('${channels.data.urls.join("','")}')`;
       }
     }
-    return conditions;
   }
 }

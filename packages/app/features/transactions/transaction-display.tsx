@@ -168,7 +168,7 @@ const TransactionContentSwap = ({
     parseFloat(
       formatUnits(
         BigInt(swapFromContext.value),
-        swapFromToken.instances[0].decimals,
+        swapFromToken?.instances[0]?.decimals ?? 18,
       ),
     ),
     2,
@@ -178,7 +178,7 @@ const TransactionContentSwap = ({
     parseFloat(
       formatUnits(
         BigInt(swapToContext.value),
-        swapToToken.instances[0].decimals,
+        swapToToken?.instances[0]?.decimals ?? 18,
       ),
     ),
     2,
