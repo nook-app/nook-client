@@ -1,6 +1,7 @@
 export interface OnceUponTransactions {
   transactions: OnceUponTransaction[];
   cursor: string;
+  partiesEnriched: { [key: string]: PartyEnriched[] };
 }
 
 export interface OnceUponTransaction {
@@ -314,4 +315,38 @@ export enum ContextAction {
   CALLED = "CALLED", // Not yet used in this repo
   SENT_MESSAGE = "SENT_MESSAGE",
   CANCELED_A_PENDING_TRANSACTION = "CANCELED_A_PENDING_TRANSACTION",
+}
+
+export interface PartyEnriched {
+  chainId: number;
+  label: Label;
+  isContract: boolean;
+  imgUrl: string;
+  decimals: number;
+  symbol: string;
+  ensNew: Bns;
+  bns: Bns;
+  farcaster: Farcaster;
+  tokenStandard?: TokenStandard;
+}
+
+export interface Bns {
+  handle: null | string;
+  avatar: null | string;
+}
+
+export interface Farcaster {
+  handle: null | string;
+  avatar: null | string;
+  fid: number | null;
+}
+
+export interface Label {
+  public: string;
+}
+
+export enum TokenStandard {
+  Erc1155 = "erc1155",
+  Erc20 = "erc20",
+  Erc721 = "erc721",
 }

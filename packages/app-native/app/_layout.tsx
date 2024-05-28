@@ -12,7 +12,8 @@ import { Audio } from "expo-av";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { ToastProvider } from "@nook/app-ui";
 import { Toasts } from "../components/Toasts";
-import { NotificationsProvider } from "@nook/app/context/notifications";
+import { Notifications } from "../components/Notifications";
+import { Analytics } from "../components/Analytics";
 
 export { ErrorBoundary } from "expo-router";
 
@@ -51,70 +52,70 @@ function RootLayoutNav() {
       <QueryClientProvider client={queryClient}>
         <PrivyProvider appId={"clsnxqma102qxbyt1ght4j14w"}>
           <AuthProvider>
-            <NotificationsProvider>
-              <ThemeProvider>
-                <SafeAreaProvider>
-                  <ScrollProvider>
-                    <ToastProvider>
-                      <Toasts />
-                      <Stack>
-                        <Stack.Screen
-                          name="(drawer)"
-                          options={{ headerShown: false, animation: "fade" }}
-                        />
-                        <Stack.Screen
-                          name="(login)"
-                          options={{
-                            headerShown: false,
-                            animation: "fade",
-                          }}
-                        />
-                        <Stack.Screen
-                          name="(modals)/image/[url]"
-                          options={{
-                            headerShown: false,
-                            animation: "fade",
-                            animationDuration: 100,
-                            presentation: "transparentModal",
-                            contentStyle: {
-                              backgroundColor: "rgba(0, 0, 0, 0.90)",
-                            },
-                          }}
-                        />
-                        <Stack.Screen
-                          name="(modals)/create/cast"
-                          options={{
-                            headerShown: false,
-                            presentation: "transparentModal",
-                          }}
-                        />
-                        <Stack.Screen
-                          name="(modals)/create/list"
-                          options={{
-                            headerShown: false,
-                            presentation: "transparentModal",
-                          }}
-                        />
-                        <Stack.Screen
-                          name="(modals)/enable-signer"
-                          options={{
-                            headerShown: false,
-                            presentation: "transparentModal",
-                          }}
-                        />
-                        <Stack.Screen
-                          name="+not-found"
-                          options={{
-                            headerShown: false,
-                            animation: "fade",
-                          }}
-                        />
-                      </Stack>
-                    </ToastProvider>
-                  </ScrollProvider>
-                </SafeAreaProvider>
-              </ThemeProvider>
-            </NotificationsProvider>
+            <ThemeProvider>
+              <SafeAreaProvider>
+                <ScrollProvider>
+                  <ToastProvider>
+                    <Toasts />
+                    <Notifications />
+                    <Analytics />
+                    <Stack>
+                      <Stack.Screen
+                        name="(drawer)"
+                        options={{ headerShown: false, animation: "fade" }}
+                      />
+                      <Stack.Screen
+                        name="(login)"
+                        options={{
+                          headerShown: false,
+                          animation: "fade",
+                        }}
+                      />
+                      <Stack.Screen
+                        name="(modals)/image/[url]"
+                        options={{
+                          headerShown: false,
+                          animation: "fade",
+                          animationDuration: 100,
+                          presentation: "transparentModal",
+                          contentStyle: {
+                            backgroundColor: "rgba(0, 0, 0, 0.90)",
+                          },
+                        }}
+                      />
+                      <Stack.Screen
+                        name="(modals)/create/cast"
+                        options={{
+                          headerShown: false,
+                          presentation: "transparentModal",
+                        }}
+                      />
+                      <Stack.Screen
+                        name="(modals)/create/list"
+                        options={{
+                          headerShown: false,
+                          presentation: "transparentModal",
+                        }}
+                      />
+                      <Stack.Screen
+                        name="(modals)/enable-signer"
+                        options={{
+                          headerShown: false,
+                          presentation: "transparentModal",
+                        }}
+                      />
+                      <Stack.Screen
+                        name="+not-found"
+                        options={{
+                          headerShown: false,
+                          animation: "fade",
+                        }}
+                      />
+                    </Stack>
+                  </ToastProvider>
+                </ScrollProvider>
+              </SafeAreaProvider>
+            </ThemeProvider>
           </AuthProvider>
         </PrivyProvider>
       </QueryClientProvider>

@@ -7,6 +7,7 @@ import {
   FarcasterUser,
   FetchTransactionsResponseV1,
   OnceUponTransactions,
+  PartyEnriched,
   SimpleHashNFT,
   Token,
   TransactionFeedRequest,
@@ -80,6 +81,7 @@ export class TransactionService {
         chainIds,
         sort: -1,
         cursor: req.cursor,
+        includes: ["partiesEnriched"],
       },
     );
 
@@ -208,6 +210,19 @@ export class TransactionService {
             },
             {} as Record<string, SimpleHashNFT>,
           ),
+          enrichedParties:
+            tx.parties?.reduce(
+              (acc, party) => {
+                if (!response.partiesEnriched[party]) return acc;
+                const enrichedParty = response.partiesEnriched[party].find(
+                  ({ chainId }) => chainId === tx.chainId,
+                );
+                if (!enrichedParty) return acc;
+                acc[party] = enrichedParty;
+                return acc;
+              },
+              {} as Record<string, PartyEnriched>,
+            ) || {},
         };
       }),
       nextCursor: response?.cursor,
@@ -387,10 +402,6 @@ export class TransactionService {
         authorization: `Basic ${ZERION_API_KEY}`,
       },
     });
-    if (!response.ok) {
-      console.error(`Failed to fetch ${path}: ${response.status}`);
-      return;
-    }
     return response.json();
   }
 }

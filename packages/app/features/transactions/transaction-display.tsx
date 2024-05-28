@@ -138,31 +138,60 @@ const TransactionContentSwap = ({
     return null;
   }
 
-  const swapFromToken =
-    swapFromContext.type === "erc20"
-      ? transaction.tokens[swapFromContext.contract]
-      : {
-          id: "eth",
-          name: "Ethereum",
-          symbol: "ETH",
-          icon: {
-            url: "https://cdn.zerion.io/eth.png",
-          },
-          instances: [{ decimals: 18 }],
-        };
+  interface Data {
+    id?: string;
+    name: string;
+    symbol: string;
+    icon?: {
+      url: string;
+    } | null;
+    instances: {
+      decimals: number;
+    }[];
+  }
 
-  const swapToToken =
-    swapToContext.type === "erc20"
-      ? transaction.tokens[swapToContext.contract]
-      : {
-          id: "eth",
-          name: "Ethereum",
-          symbol: "ETH",
-          icon: {
-            url: "https://cdn.zerion.io/eth.png",
-          },
-          instances: [{ decimals: 18 }],
+  const eth: Data = {
+    id: "eth",
+    name: "Ethereum",
+    symbol: "ETH",
+    icon: {
+      url: "https://cdn.zerion.io/eth.png",
+    },
+    instances: [{ decimals: 18 }],
+  };
+
+  let swapFromToken: Data = eth;
+  if (swapFromContext.type === "erc20") {
+    if (transaction.tokens[swapFromContext.contract]) {
+      swapFromToken = transaction.tokens[swapFromContext.contract];
+    } else {
+      const enrichedFrom =
+        transaction.enrichedParties?.[swapFromContext.contract];
+      if (enrichedFrom) {
+        swapFromToken = {
+          name: enrichedFrom.symbol,
+          symbol: enrichedFrom.symbol,
+          instances: [{ decimals: enrichedFrom.decimals }],
         };
+      }
+    }
+  }
+
+  let swapToToken: Data = eth;
+  if (swapToContext.type === "erc20") {
+    if (transaction.tokens[swapToContext.contract]) {
+      swapToToken = transaction.tokens[swapToContext.contract];
+    } else {
+      const enrichedTo = transaction.enrichedParties?.[swapToContext.contract];
+      if (enrichedTo) {
+        swapToToken = {
+          name: enrichedTo.symbol,
+          symbol: enrichedTo.symbol,
+          instances: [{ decimals: enrichedTo.decimals }],
+        };
+      }
+    }
+  }
 
   const swapFromAmount = formatNumber(
     parseFloat(
@@ -196,10 +225,12 @@ const TransactionContentSwap = ({
           {"Swapped "}
         </Text>
         <Text fontSize={15} color="$mauve12">
-          {`${swapFromAmount} ${swapFromToken.symbol} for ${swapToAmount} ${swapToToken.symbol}`}
+          {`${swapFromAmount} ${
+            swapFromToken?.symbol || ""
+          } for ${swapToAmount} ${swapToToken?.symbol || ""}`}
         </Text>
       </Text>
-      <Link href={`/tokens/${swapFromToken.id}`} touchable>
+      <Link href={`/tokens/${swapFromToken?.id}`} touchable>
         <XStack
           padding="$2.5"
           alignItems="center"
@@ -209,7 +240,7 @@ const TransactionContentSwap = ({
           gap="$3"
         >
           <XStack gap="$3" alignItems="center" flexShrink={1}>
-            {swapFromToken.icon?.url ? (
+            {swapFromToken?.icon?.url ? (
               <CdnAvatar
                 src={swapFromToken.icon.url}
                 size="$3"
@@ -218,12 +249,12 @@ const TransactionContentSwap = ({
               />
             ) : (
               <GradientIcon
-                label={swapFromToken.name}
+                label={swapFromToken?.name || ""}
                 size="$3"
                 borderRadius="$10"
               >
                 <Text fontSize="$1" numberOfLines={1} fontWeight="500">
-                  {swapFromToken.name}
+                  {swapFromToken?.name}
                 </Text>
               </GradientIcon>
             )}
@@ -234,19 +265,19 @@ const TransactionContentSwap = ({
               flexShrink={1}
               ellipsizeMode="tail"
             >
-              {swapFromToken.name}
+              {swapFromToken?.name}
             </Text>
           </XStack>
 
           <Text fontSize="$4" color="$mauve11">
-            {`-${swapFromAmount} ${swapFromToken.symbol}`}
+            {`-${swapFromAmount} ${swapFromToken?.symbol || ""}`}
           </Text>
         </XStack>
       </Link>
       <View alignSelf="center" paddingVertical="$1">
         <ChevronDown />
       </View>
-      <Link href={`/tokens/${swapToToken.id}`} touchable>
+      <Link href={`/tokens/${swapToToken?.id}`} touchable>
         <XStack
           padding="$2.5"
           alignItems="center"
@@ -256,21 +287,21 @@ const TransactionContentSwap = ({
           gap="$3"
         >
           <XStack gap="$3" alignItems="center" flexShrink={1}>
-            {swapToToken.icon?.url ? (
+            {swapToToken?.icon?.url ? (
               <CdnAvatar
-                src={swapToToken.icon.url}
+                src={swapToToken?.icon.url}
                 size="$3"
                 skipCdn
                 borderRadius="$10"
               />
             ) : (
               <GradientIcon
-                label={swapToToken.name}
+                label={swapToToken?.name || ""}
                 size="$3"
                 borderRadius="$10"
               >
                 <Text fontSize="$1" numberOfLines={1} fontWeight="500">
-                  {swapToToken.name}
+                  {swapToToken?.name}
                 </Text>
               </GradientIcon>
             )}
@@ -281,11 +312,11 @@ const TransactionContentSwap = ({
               flexShrink={1}
               ellipsizeMode="tail"
             >
-              {swapToToken.name}
+              {swapToToken?.name}
             </Text>
           </XStack>
           <Text fontSize="$4" color="$green11">
-            {`+${swapToAmount} ${swapToToken.symbol}`}
+            {`+${swapToAmount} ${swapToToken?.symbol || ""}`}
           </Text>
         </XStack>
       </Link>

@@ -1,14 +1,6 @@
-import {
-  createContext,
-  useContext,
-  ReactNode,
-  useEffect,
-  useRef,
-  useState,
-  useCallback,
-} from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { useAuth } from "./auth";
+import { useAuth } from "@nook/app/context/auth";
 import * as Device from "expo-device";
 import * as ExpoNotifications from "expo-notifications";
 import { AppState, Platform } from "react-native";
@@ -28,7 +20,7 @@ import { Href } from "expo-router/build/link/href";
 import {
   createNotificationUser,
   deleteNotificationsUser,
-} from "../api/settings/notifications";
+} from "@nook/app/api/settings/notifications";
 
 ExpoNotifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -38,19 +30,7 @@ ExpoNotifications.setNotificationHandler({
   }),
 });
 
-type NotificationsContextType = {
-  registerForPushNotificationsAsync: () => Promise<void>;
-};
-
-const NotificationsContext = createContext<
-  NotificationsContextType | undefined
->(undefined);
-
-type SheetProviderProps = {
-  children: ReactNode;
-};
-
-export const NotificationsProvider = ({ children }: SheetProviderProps) => {
+export const Notifications = () => {
   const queryClient = useQueryClient();
   const { session } = useAuth();
   const notificationListener = useRef<ExpoNotifications.Subscription>();
@@ -209,23 +189,5 @@ export const NotificationsProvider = ({ children }: SheetProviderProps) => {
     };
   }, [session, registerForPushNotificationsAsync]);
 
-  return (
-    <NotificationsContext.Provider
-      value={{
-        registerForPushNotificationsAsync,
-      }}
-    >
-      {children}
-    </NotificationsContext.Provider>
-  );
-};
-
-export const useNotifications = () => {
-  const context = useContext(NotificationsContext);
-  if (context === undefined) {
-    throw new Error(
-      "useNotifications must be used within a NotificationsProvider",
-    );
-  }
-  return context;
+  return null;
 };

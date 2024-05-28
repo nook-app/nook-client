@@ -32,7 +32,6 @@ import {
   User as PrivyUser,
 } from "@privy-io/expo";
 import * as amplitude from "@amplitude/analytics-react-native";
-import { useGlobalSearchParams, usePathname } from "expo-router";
 
 type AuthContextType = {
   session?: Session;
@@ -66,12 +65,6 @@ export const AuthProvider = ({
   const [isInitializing, setIsInitializing] = useState(true);
   const { getAccessToken, logout: logoutPrivy, user: privyUser } = usePrivy();
   const { data } = useSettings(session);
-  const pathname = usePathname();
-  const params = useGlobalSearchParams();
-
-  useEffect(() => {
-    amplitude.track("pageview", { pathname, params });
-  }, [pathname, params]);
 
   const handleRefreshSigner = useCallback(async () => {
     if (!session) return;
