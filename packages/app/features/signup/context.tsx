@@ -17,7 +17,7 @@ import {
   useSwitchChain,
   useWaitForTransactionReceipt,
   useWriteContract,
-} from "wagmi";
+} from "wagmi2";
 import { encodeAbiParameters, hexToBigInt, parseAbiItem } from "viem";
 import { getPendingSigner } from "../../server/auth";
 import { PendingSignerResponse } from "@nook/common/types";

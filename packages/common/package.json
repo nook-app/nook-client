@@ -33,7 +33,6 @@
     "./prisma/lists": "./dist/prisma/lists.js",
     "./prisma/user": "./dist/prisma/user.js",
     "./farcaster": "./dist/farcaster/index.js",
-    "./onceupon": "./dist/onceupon/index.js",
     "./utils": "./dist/utils/index.js"
   },
   "dependencies": {

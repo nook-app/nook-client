@@ -25,26 +25,6 @@ export const Providers = ({
 }) => {
   return (
     <PrivyLoginProvider>
-      <OtherProviders session={session} user={user} signer={signer}>
-        {children}
-      </OtherProviders>
-    </PrivyLoginProvider>
-  );
-};
-
-const OtherProviders = memo(
-  ({
-    children,
-    session,
-    user,
-    signer,
-  }: {
-    children: React.ReactNode;
-    session?: Session;
-    user?: FarcasterUser;
-    signer?: GetSignerResponse;
-  }) => {
-    return (
       <QueryClientProvider client={queryClient}>
         <AuthProvider
           defaultSession={session}
@@ -61,9 +41,9 @@ const OtherProviders = memo(
           </ThemeProvider>
         </AuthProvider>
       </QueryClientProvider>
-    );
-  },
-);
+    </PrivyLoginProvider>
+  );
+};
 
 const PrivyLoginProvider = ({ children }: { children: React.ReactNode }) => {
   const pathname = usePathname();

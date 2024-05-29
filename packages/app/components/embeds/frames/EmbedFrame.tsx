@@ -2,99 +2,59 @@ import { ExternalLink, Zap } from "@tamagui/lucide-icons";
 import {
   Button,
   Spinner,
+  TamaguiElement,
   Text,
   View,
   XStack,
   YStack,
-  useTheme as useTamaguiTheme,
+  useTheme,
 } from "@nook/app-ui";
-import { useEffect, useState } from "react";
-import { useToastController } from "@tamagui/toast";
+import { ReactNode, forwardRef, useEffect, useState } from "react";
 import { FarcasterCastResponse, UrlContentResponse } from "@nook/common/types";
-import { Frame, FrameButton } from "@nook/common/types";
+import { FrameButton } from "@nook/common/types";
 import { useAuth } from "../../../context/auth";
 import { NookText, Input, Image } from "@nook/app-ui";
-import { submitFrameAction } from "../../../api/farcaster/actions";
-import { useRouter } from "solito/navigation";
 import { EnableSignerDialog } from "../../../features/farcaster/enable-signer/dialog";
 import { Link } from "solito/link";
+import { FrameProvider, useFrame } from "./context";
+import { WagmiProvider, useAccount } from "wagmi2";
+import { wagmiConfig } from "../../../utils/wagmi";
+import { usePrivy } from "@privy-io/react-auth";
+import { TransactionFrameSheet } from "./TransactionFrameSheet";
 
 export const EmbedFrame = ({
   cast,
   content,
-}: { cast?: FarcasterCastResponse; content: UrlContentResponse }) => {
-  const toast = useToastController();
-  const [frame, setFrame] = useState<Frame | undefined>(content.frame);
-  const [inputText, setInputText] = useState<string | undefined>();
-  const [isLoading, setIsLoading] = useState(false);
+}: { cast: FarcasterCastResponse; content: UrlContentResponse }) => {
+  if (!content.frame) return null;
+  return (
+    <WagmiProvider config={wagmiConfig}>
+      <FrameProvider cast={cast} url={content.uri} initialFrame={content.frame}>
+        <EmbedFrameInner />
+      </FrameProvider>
+    </WagmiProvider>
+  );
+};
+
+export const EmbedFrameInner = () => {
+  const {
+    host,
+    url,
+    frame,
+    inputText,
+    setInputText,
+    isLoading,
+    topButtons,
+    bottomButtons,
+    targetUrl,
+  } = useFrame();
   const [opacity, setOpacity] = useState(1);
-  const { session, login } = useAuth();
-  const router = useRouter();
 
   useEffect(() => {
     setOpacity(isLoading ? 0 : 1);
   }, [isLoading]);
 
   if (!frame) return null;
-
-  const topButtons = frame.buttons?.slice(0, 2) || [];
-  const bottomButtons = frame.buttons?.slice(2, 4) || [];
-
-  const handleLink = (url: string) => {
-    if (url.includes("warpcast.com/~/add-cast-action")) {
-      const parsed = new URL(url);
-      const urlParams = new URLSearchParams(parsed.search);
-      router.push(`/~/add-cast-action?${urlParams.toString()}`);
-    } else {
-      router.push(url);
-    }
-  };
-
-  const handlePress = async (frameButton: FrameButton, index: number) => {
-    if (!frame) return;
-    if (!session) {
-      login();
-      return;
-    }
-
-    const postUrl = frameButton.target ?? frame.postUrl ?? content.uri;
-    if (
-      frameButton.action === "post" ||
-      frameButton.action === "post_redirect" ||
-      !frameButton.action
-    ) {
-      try {
-        setIsLoading(true);
-        const response = await submitFrameAction({
-          url: content.uri || "",
-          castFid: cast?.user.fid || "0",
-          castHash: cast?.hash || "0x0000000000000000000000000000000000000000",
-          action: frameButton.action,
-          buttonIndex: index + 1,
-          postUrl: postUrl,
-          inputText: inputText,
-          state: frame.state,
-        });
-        if ("message" in response) {
-          toast.show(response.message);
-        } else if (response.location) {
-          handleLink(response.location);
-        } else if (response.frame) {
-          setFrame(response.frame);
-        }
-        setInputText(undefined);
-      } catch (err) {
-        toast.show("Could not fetch frame");
-      }
-      setIsLoading(false);
-    } else if (frameButton.action === "link") {
-      handleLink(frameButton.target);
-    } else if (frameButton.action === "mint") {
-      router.push(frame.postUrl);
-    } else if (frameButton.action === "tx") {
-      toast.show("Transction frames not supported yet");
-    }
-  };
 
   return (
     <YStack gap="$2">
@@ -127,7 +87,7 @@ export const EmbedFrame = ({
             >
               <Link
                 style={{ position: "relative" }}
-                href={content.uri}
+                href={targetUrl}
                 target="_blank"
               >
                 <Image
@@ -139,7 +99,14 @@ export const EmbedFrame = ({
               </Link>
             </View>
           )}
-          <YStack paddingTop="$2" gap="$2" theme="surface1">
+          <YStack
+            paddingTop="$2"
+            gap="$2"
+            theme="surface1"
+            onPress={(e) => {
+              e.stopPropagation();
+            }}
+          >
             {frame.inputText && (
               <Input
                 value={inputText || ""}
@@ -151,8 +118,8 @@ export const EmbedFrame = ({
               <XStack gap="$2">
                 {topButtons.map((button, index) => (
                   <FrameButtonAction
+                    index={index + 1}
                     button={button}
-                    onPress={() => handlePress(button, index)}
                     key={`${button.action}-${index}`}
                   />
                 ))}
@@ -162,8 +129,8 @@ export const EmbedFrame = ({
               <XStack gap="$2">
                 {bottomButtons.map((button, index) => (
                   <FrameButtonAction
+                    index={index + topButtons.length + 1}
                     button={button}
-                    onPress={() => handlePress(button, 2 + index)}
                     key={`${button.action}-${index}`}
                   />
                 ))}
@@ -172,10 +139,10 @@ export const EmbedFrame = ({
           </YStack>
         </View>
       </YStack>
-      {content.host && (
+      {host && (
         <View alignSelf="flex-end">
           <NookText muted fontWeight="500" fontSize="$3" opacity={0.75}>
-            {content.host.replaceAll("www.", "")}
+            {host.replaceAll("www.", "")}
           </NookText>
         </View>
       )}
@@ -185,83 +152,200 @@ export const EmbedFrame = ({
 
 const FrameButtonAction = ({
   button,
-  onPress,
-}: { button: FrameButton; onPress: () => void }) => {
-  const tamaguiTheme = useTamaguiTheme();
-
-  const { signer } = useAuth();
-
-  const Component = (
-    <Button
-      onPress={
-        signer?.state === "completed"
-          ? (e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              onPress();
-            }
-          : undefined
-      }
-      backgroundColor="$color12"
-      color="$color1"
-      borderWidth="$0"
-      hoverStyle={{
-        backgroundColor: "$mauve11",
-        // @ts-ignore
-        transition: "all 0.2s ease-in-out",
-      }}
-      pressStyle={{
-        backgroundColor: "$mauve11",
-      }}
-      disabledStyle={{
-        backgroundColor: "$mauve10",
-      }}
-    >
-      <Text
-        alignItems="center"
-        gap="$1.5"
-        flexShrink={1}
-        paddingHorizontal="$1"
-        flexWrap="nowrap"
-        numberOfLines={2}
-        textAlign="center"
-        color="$color1"
-      >
-        {button.action === "tx" && (
-          <>
-            <Zap
-              size={12}
-              color="$color1"
-              fill={tamaguiTheme.color1.val}
-            />{" "}
-          </>
-        )}
-        <Text textAlign="center" fontWeight="600" color="$color1">
-          {button.label}
-        </Text>
-        {button.action === "link" ||
-        button.action === "post_redirect" ||
-        button.action === "mint" ? (
-          <>
-            {" "}
-            <ExternalLink size={12} color="$color1" />
-          </>
-        ) : null}
-      </Text>
-    </Button>
-  );
-
-  if (signer?.state === "completed") {
+  index,
+}: { button: FrameButton; index: number }) => {
+  if (button.action === "tx") {
     return (
       <View flex={1} theme="surface4">
-        {Component}
+        <TransactionFrameButton button={button} index={index} />
+      </View>
+    );
+  }
+
+  if (button.action === "link") {
+    return <LinkFrameButton button={button} index={index} />;
+  }
+
+  if (button.action === "mint") {
+    return <MintFrameButton button={button} index={index} />;
+  }
+
+  return <PostFrameButton button={button} index={index} />;
+};
+
+const PostFrameButton = ({
+  button,
+  index,
+}: { button: FrameButton; index: number }) => {
+  const { signer } = useAuth();
+  const { handlePostAction } = useFrame();
+
+  const label = (
+    <>
+      {button.label}
+      {button.action === "post_redirect" && (
+        <ExternalLink size={12} color="$color1" marginLeft="$2" />
+      )}
+    </>
+  );
+
+  if (!signer) {
+    return <EnableSignerButton>{label}</EnableSignerButton>;
+  }
+
+  return (
+    <View flex={1} theme="surface4">
+      <FrameActionButton onPress={() => handlePostAction(button, index)}>
+        {label}
+      </FrameActionButton>
+    </View>
+  );
+};
+
+const LinkFrameButton = ({
+  button,
+  index,
+}: { button: FrameButton; index: number }) => {
+  const { signer } = useAuth();
+  const { handleNavigateAction } = useFrame();
+
+  const label = (
+    <>
+      {button.label}
+      <ExternalLink size={12} color="$color1" marginLeft="$2" />
+    </>
+  );
+
+  if (!signer) {
+    return <EnableSignerButton>{label}</EnableSignerButton>;
+  }
+
+  return (
+    <View flex={1} theme="surface4">
+      <FrameActionButton
+        onPress={() => handleNavigateAction(button.target || "#")}
+      >
+        {label}
+      </FrameActionButton>
+    </View>
+  );
+};
+
+const MintFrameButton = ({
+  button,
+  index,
+}: { button: FrameButton; index: number }) => {
+  const { signer } = useAuth();
+  const { handleNavigateAction } = useFrame();
+
+  const label = (
+    <>
+      {button.label}
+      <ExternalLink size={12} color="$color1" marginLeft="$2" />
+    </>
+  );
+
+  if (!signer) {
+    return <EnableSignerButton>{label}</EnableSignerButton>;
+  }
+
+  return (
+    <View flex={1} theme="surface4">
+      <FrameActionButton
+        onPress={() => handleNavigateAction(button.target || "#")}
+      >
+        {label}
+      </FrameActionButton>
+    </View>
+  );
+};
+
+const TransactionFrameButton = ({
+  button,
+  index,
+}: { button: FrameButton; index: number }) => {
+  const { signer } = useAuth();
+  const theme = useTheme();
+  const { address } = useAccount();
+  const { connectWallet } = usePrivy();
+
+  const label = (
+    <>
+      <Zap
+        size={12}
+        color={theme.color1.val}
+        fill={theme.color1.val}
+        style={{ marginRight: 4 }}
+      />
+      {button.label}
+    </>
+  );
+
+  if (!signer) {
+    return <EnableSignerButton>{label}</EnableSignerButton>;
+  }
+
+  if (!address) {
+    return (
+      <View flex={1} theme="surface4">
+        <FrameActionButton onPress={connectWallet}>{label}</FrameActionButton>
       </View>
     );
   }
 
   return (
     <View flex={1} theme="surface4">
-      <EnableSignerDialog>{Component}</EnableSignerDialog>
+      <TransactionFrameSheet button={button} index={index}>
+        <FrameActionButton>{label}</FrameActionButton>
+      </TransactionFrameSheet>
     </View>
   );
 };
+
+const EnableSignerButton = ({ children }: { children: ReactNode }) => {
+  return (
+    <View flex={1} theme="surface4">
+      <EnableSignerDialog>
+        <FrameActionButton>{children}</FrameActionButton>
+      </EnableSignerDialog>
+    </View>
+  );
+};
+
+const FrameActionButton = forwardRef<
+  TamaguiElement,
+  { children: ReactNode; onPress?: () => void }
+>(({ children, onPress }, ref) => (
+  <Button
+    ref={ref}
+    onPress={onPress}
+    backgroundColor="$color12"
+    color="$color1"
+    borderWidth="$0"
+    hoverStyle={{
+      backgroundColor: "$mauve11",
+      // @ts-ignore
+      transition: "all 0.2s ease-in-out",
+    }}
+    pressStyle={{
+      backgroundColor: "$mauve11",
+    }}
+    disabledStyle={{
+      backgroundColor: "$mauve10",
+    }}
+  >
+    <Text
+      alignItems="center"
+      gap="$1.5"
+      flexShrink={1}
+      paddingHorizontal="$1"
+      flexWrap="nowrap"
+      numberOfLines={2}
+      textAlign="center"
+      color="$color1"
+      fontWeight="600"
+    >
+      {children}
+    </Text>
+  </Button>
+));

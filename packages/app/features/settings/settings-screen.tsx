@@ -7,7 +7,7 @@ import { User } from "@nook/common/types";
 import { ActionSettings } from "./action-settings";
 import { ProfileSettings } from "./profile-settings";
 import { UsernameSettings } from "./username-settings";
-import { WagmiProvider } from "wagmi";
+import { WagmiProvider } from "wagmi2";
 import { wagmiConfig } from "../../utils/wagmi";
 
 export const SettingsScreen = ({ settings }: { settings: User }) => {

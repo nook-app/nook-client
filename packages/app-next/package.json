@@ -31,7 +31,7 @@
     "tamagui": "^1.97.0",
     "vercel": "latest",
     "viem": "^2.7.9",
-    "wagmi": "^2.5.18"
+    "wagmi2": "npm:wagmi@2.5.18"
   },
   "devDependencies": {
     "@tamagui/next-plugin": "^1.97.0",

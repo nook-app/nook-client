@@ -54,6 +54,7 @@ export default function HomeScreen() {
                       fid: session?.fid,
                     },
                   },
+                  onlyFrames: true,
                 }}
               />
             ),

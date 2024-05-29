@@ -21,7 +21,7 @@ import {
   useAccount,
   useChainId,
   useReadContract,
-} from "wagmi";
+} from "wagmi2";
 import { FnameTransfer } from "@nook/common/types";
 import { CONTRACTS } from "@nook/common/utils";
 import { submitUserDataAdd } from "../../api/farcaster/actions";

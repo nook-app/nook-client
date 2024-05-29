@@ -5,7 +5,8 @@
     "app/**/*.tsx",
     "components/**/*.ts",
     "components/**/*.tsx",
-    "hooks/**/*.ts"
+    "hooks/**/*.ts",
+    "utils/**/*.ts"
   ],
   "compilerOptions": {
     "composite": true,

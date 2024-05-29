@@ -7,7 +7,7 @@ export const farcasterRoutes = async (fastify: FastifyInstance) => {
     const api = new FarcasterAPIClient();
 
     fastify.post<{ Body: FarcasterFeedRequest }>(
-      "/feeds/farcaster",
+      "/farcaster/feeds",
       async (request, reply) => {
         let viewerFid: string | undefined;
         try {

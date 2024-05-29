@@ -6,10 +6,9 @@ import {
   FarcasterUser,
 } from "./farcaster";
 import { NotificationResponse, RawNotificationResponse } from "./notifications";
-import { TransactionDto } from "../onceupon";
 import { PendingCast } from "../prisma/nook";
 import { Transaction } from "./transactions";
-import { Frame } from "./frames";
+import { Frame, TransactionTargetResponse } from "./frames";
 import { CastAction } from "./user";
 import { List } from "./lists";
 import {
@@ -18,6 +17,7 @@ import {
   SimplehashNftCollection,
 } from "./simplehash";
 import { UserFilter } from "./nook";
+import { OnceUponTransaction } from "./providers/onceupon";
 
 export type FarcasterCastResponse = {
   hash: string;
@@ -243,6 +243,7 @@ export type FramePayload = {
 export type SubmitFrameActionResponse = {
   location?: string;
   frame?: Frame;
+  transaction?: TransactionTargetResponse;
 };
 
 export type GetNotificationsRequest = {
@@ -257,7 +258,7 @@ export type GetNotificationsResponse = {
 };
 
 export type GetTransactionsResponse = {
-  data: TransactionDto[];
+  data: OnceUponTransaction[];
   nextCursor?: string;
 };
 
@@ -285,7 +286,7 @@ export type NftsByIdsOrRangeRequest = {
 };
 
 export type GetNftsResponse = {
-  nfts: TransactionDto[];
+  nfts: OnceUponTransaction[];
   next_cursor?: string;
 };
 

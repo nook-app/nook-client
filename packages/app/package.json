@@ -12,6 +12,7 @@
     "@privy-io/expo": "^0.15.1",
     "@privy-io/react-auth": "^1.60.6",
     "@privy-io/wagmi": "^0.2.2",
+    "@rainbow-me/rainbowkit": "^2.1.1",
     "@shopify/flash-list": "^1.6.3",
     "@tamagui/animations-react-native": "^1.97.0",
     "@tamagui/colors": "^1.97.0",
@@ -39,7 +40,7 @@
     "react-player": "^2.16.0",
     "solito": "^4.2.2",
     "viem": "^2.7.9",
-    "wagmi": "^2.5.18",
+    "wagmi2": "npm:wagmi@2.5.18",
     "zustand": "^4.5.2"
   },
   "devDependencies": {

@@ -1,6 +1,5 @@
 import { ExternalLink } from "@tamagui/lucide-icons";
 import { Image } from "expo-image";
-import { Linking } from "react-native";
 import { TapGestureHandler } from "react-native-gesture-handler";
 import {
   Spinner,
@@ -12,43 +11,56 @@ import {
   XStack,
   YStack,
   useTheme,
+  TamaguiElement,
 } from "@nook/app-ui";
-import { useEffect, useRef, useState } from "react";
-import { useToastController } from "@tamagui/toast";
+import { ReactNode, forwardRef, useEffect } from "react";
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
   withTiming,
 } from "react-native-reanimated";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { router } from "expo-router";
 import {
   FarcasterCastResponse,
-  Frame,
   FrameButton,
   UrlContentResponse,
 } from "@nook/common/types";
-import { submitFrameAction } from "../../../api/farcaster/actions";
 import { EnableSignerDialog } from "../../../features/farcaster/enable-signer/dialog";
 import { useAuth } from "../../../context/auth";
-import { CHAINS } from "@nook/common/utils";
 import { Link } from "../../link";
+import { FrameProvider, useFrame } from "./context";
+import { TransactionFrameSheet } from "./TransactionFrameSheet.native";
+
+// @ts-ignore: this import is not included in package.json because of version conflicts
+import { useWeb3Modal } from "@web3modal/wagmi-react-native";
+// @ts-ignore: these imports are not included in package.json because of version conflicts
+import { useAccount } from "wagmi";
 
 export const EmbedFrame = ({
   cast,
   content,
-}: { cast?: FarcasterCastResponse; content: UrlContentResponse }) => {
-  const toast = useToastController();
-  const [frame, setFrame] = useState<Frame | undefined>(content.frame);
-  const [inputText, setInputText] = useState<string | undefined>();
-  const [isLoading, setIsLoading] = useState(false);
-  const opacity = useSharedValue(1);
-  const frameRef = useRef(content.frame?.image);
+}: { cast: FarcasterCastResponse; content: UrlContentResponse }) => {
+  if (!content.frame) return null;
+  return (
+    <FrameProvider cast={cast} url={content.uri} initialFrame={content.frame}>
+      <EmbedFrameInner />
+    </FrameProvider>
+  );
+};
 
-  if (frameRef.current !== content.frame?.image) {
-    setFrame(content.frame);
-    frameRef.current = content.frame?.image;
-  }
+export const EmbedFrameInner = () => {
+  const {
+    host,
+    url,
+    frame,
+    inputText,
+    setInputText,
+    isLoading,
+    topButtons,
+    bottomButtons,
+    targetUrl,
+  } = useFrame();
+  const opacity = useSharedValue(1);
 
   useEffect(() => {
     opacity.value = withTiming(isLoading ? 0 : 1, { duration: 500 });
@@ -59,78 +71,6 @@ export const EmbedFrame = ({
       opacity: opacity.value,
     };
   });
-
-  if (!frame) return null;
-
-  const topButtons = frame.buttons?.slice(0, 2) || [];
-  const bottomButtons = frame.buttons?.slice(2, 4) || [];
-
-  const handleLink = (url: string) => {
-    if (url.includes("warpcast.com/~/add-cast-action")) {
-      const params = new URL(url).searchParams;
-      router.push({
-        pathname: "/~/add-cast-action",
-        params: {
-          ...Object.fromEntries(params),
-        },
-      });
-    } else {
-      Linking.openURL(url);
-    }
-  };
-
-  const handlePress = async (frameButton: FrameButton, index: number) => {
-    if (!frame) return;
-
-    const postUrl = frameButton.target ?? frame.postUrl ?? content.uri;
-    if (
-      frameButton.action === "post" ||
-      frameButton.action === "post_redirect" ||
-      !frameButton.action
-    ) {
-      try {
-        setIsLoading(true);
-        const response = await submitFrameAction({
-          url: content.uri || "",
-          castFid: cast?.user.fid || "0",
-          castHash: cast?.hash || "0x0000000000000000000000000000000000000000",
-          action: frameButton.action,
-          buttonIndex: index + 1,
-          postUrl: postUrl,
-          inputText: inputText,
-          state: frame.state,
-        });
-        if ("message" in response) {
-          toast.show(response.message);
-        } else if (response.location) {
-          handleLink(response.location);
-        } else if (response.frame) {
-          setFrame(response.frame);
-        }
-        setInputText(undefined);
-      } catch (err) {
-        toast.show("Could not fetch frame");
-      }
-      setIsLoading(false);
-    } else if (frameButton.action === "link") {
-      handleLink(frameButton.target);
-    } else if (frameButton.action === "mint") {
-      router.push(frame.postUrl);
-    } else if (frameButton.action === "tx") {
-      toast.show("Transction frames not supported yet");
-    }
-  };
-
-  let uri = content.uri;
-
-  const mintAction = frame.buttons?.find((button) => button.action === "mint");
-  if (mintAction?.target) {
-    const parts = mintAction.target.split(":");
-    const chain = CHAINS[`${parts[0]}:${parts[1]}`];
-    if (chain?.simplehashId) {
-      uri = `/collectibles/${chain.simplehashId}.${parts[2]}.${parts[3]}`;
-    }
-  }
 
   return (
     <YStack gap="$2">
@@ -149,7 +89,7 @@ export const EmbedFrame = ({
         <TapGestureHandler>
           <Animated.View style={animatedStyle}>
             {frame.image && (
-              <Link href={uri} isExternal={uri.startsWith("http")}>
+              <Link href={targetUrl} isExternal={targetUrl.startsWith("http")}>
                 <View
                   style={{ position: "relative" }}
                   borderRadius="$4"
@@ -177,8 +117,8 @@ export const EmbedFrame = ({
                 <XStack gap="$2">
                   {topButtons.map((button, index) => (
                     <FrameButtonAction
+                      index={index + 1}
                       button={button}
-                      onPress={() => handlePress(button, index)}
                       key={`${button.action}-${index}`}
                     />
                   ))}
@@ -188,8 +128,8 @@ export const EmbedFrame = ({
                 <XStack gap="$2">
                   {bottomButtons.map((button, index) => (
                     <FrameButtonAction
+                      index={index + topButtons.length + 1}
                       button={button}
-                      onPress={() => handlePress(button, 2 + index)}
                       key={`${button.action}-${index}`}
                     />
                   ))}
@@ -199,11 +139,13 @@ export const EmbedFrame = ({
           </Animated.View>
         </TapGestureHandler>
       </YStack>
-      {content.host && (
+      {host && (
         <View alignSelf="flex-end">
-          <NookText muted fontWeight="500" fontSize="$3" opacity={0.75}>
-            {content.host.replaceAll("www.", "")}
-          </NookText>
+          <Link asText href={url}>
+            <NookText muted fontWeight="500" fontSize="$3" opacity={0.75}>
+              {host.replaceAll("www.", "")}
+            </NookText>
+          </Link>
         </View>
       )}
     </YStack>
@@ -212,74 +154,200 @@ export const EmbedFrame = ({
 
 const FrameButtonAction = ({
   button,
-  onPress,
-}: { button: FrameButton; onPress: () => void }) => {
-  const theme = useTheme();
-  const { signer } = useAuth();
-
-  const Component = (
-    <Button
-      onPress={signer?.state === "completed" ? onPress : undefined}
-      backgroundColor="$color12"
-      color="$color1"
-      borderWidth="$0"
-      hoverStyle={{
-        backgroundColor: "$mauve11",
-        // @ts-ignore
-        transition: "all 0.2s ease-in-out",
-      }}
-      pressStyle={{
-        backgroundColor: "$mauve11",
-      }}
-      disabledStyle={{
-        backgroundColor: "$mauve10",
-      }}
-    >
-      <Text
-        alignItems="center"
-        gap="$1.5"
-        flexShrink={1}
-        paddingHorizontal="$1"
-        flexWrap="nowrap"
-        numberOfLines={2}
-        textAlign="center"
-        color="$color1"
-      >
-        {button.action === "tx" && (
-          <>
-            <MaterialCommunityIcons
-              name="lightning-bolt"
-              size={12}
-              color={theme.color1.val}
-            />{" "}
-          </>
-        )}
-        <Text textAlign="center" fontWeight="600" color="$color1">
-          {button.label}
-        </Text>
-        {button.action === "link" ||
-        button.action === "post_redirect" ||
-        button.action === "mint" ? (
-          <>
-            {" "}
-            <ExternalLink size={12} color="$color1" />
-          </>
-        ) : null}
-      </Text>
-    </Button>
-  );
-
-  if (signer?.state === "completed") {
+  index,
+}: { button: FrameButton; index: number }) => {
+  if (button.action === "tx") {
     return (
       <View flex={1} theme="surface4">
-        {Component}
+        <TransactionFrameButton button={button} index={index} />
+      </View>
+    );
+  }
+
+  if (button.action === "link") {
+    return <LinkFrameButton button={button} index={index} />;
+  }
+
+  if (button.action === "mint") {
+    return <MintFrameButton button={button} index={index} />;
+  }
+
+  return <PostFrameButton button={button} index={index} />;
+};
+
+const PostFrameButton = ({
+  button,
+  index,
+}: { button: FrameButton; index: number }) => {
+  const { signer } = useAuth();
+  const { handlePostAction } = useFrame();
+
+  const label = (
+    <>
+      {button.label}
+      {button.action === "post_redirect" && (
+        <ExternalLink size={12} color="$color1" marginLeft="$2" />
+      )}
+    </>
+  );
+
+  if (!signer) {
+    return <EnableSignerButton>{label}</EnableSignerButton>;
+  }
+
+  return (
+    <View flex={1} theme="surface4">
+      <FrameActionButton onPress={() => handlePostAction(button, index)}>
+        {label}
+      </FrameActionButton>
+    </View>
+  );
+};
+
+const LinkFrameButton = ({
+  button,
+  index,
+}: { button: FrameButton; index: number }) => {
+  const { signer } = useAuth();
+  const { handleNavigateAction } = useFrame();
+
+  const label = (
+    <>
+      {button.label}
+      <ExternalLink size={12} color="$color1" marginLeft="$2" />
+    </>
+  );
+
+  if (!signer) {
+    return <EnableSignerButton>{label}</EnableSignerButton>;
+  }
+
+  return (
+    <View flex={1} theme="surface4">
+      <FrameActionButton
+        onPress={() => handleNavigateAction(button.target || "#")}
+      >
+        {label}
+      </FrameActionButton>
+    </View>
+  );
+};
+
+const MintFrameButton = ({
+  button,
+  index,
+}: { button: FrameButton; index: number }) => {
+  const { signer } = useAuth();
+  const { handleNavigateAction } = useFrame();
+
+  const label = (
+    <>
+      {button.label}
+      <ExternalLink size={12} color="$color1" marginLeft="$2" />
+    </>
+  );
+
+  if (!signer) {
+    return <EnableSignerButton>{label}</EnableSignerButton>;
+  }
+
+  return (
+    <View flex={1} theme="surface4">
+      <FrameActionButton
+        onPress={() => handleNavigateAction(button.target || "#")}
+      >
+        {label}
+      </FrameActionButton>
+    </View>
+  );
+};
+
+const TransactionFrameButton = ({
+  button,
+  index,
+}: { button: FrameButton; index: number }) => {
+  const { open } = useWeb3Modal();
+  const { address } = useAccount();
+  const { signer } = useAuth();
+  const theme = useTheme();
+
+  const label = (
+    <>
+      <MaterialCommunityIcons
+        name="lightning-bolt"
+        size={12}
+        color={theme.color1.val}
+        style={{ marginRight: 4 }}
+      />
+      {button.label}
+    </>
+  );
+
+  if (!signer) {
+    return <EnableSignerButton>{label}</EnableSignerButton>;
+  }
+
+  if (!address) {
+    return (
+      <View flex={1} theme="surface4">
+        <FrameActionButton onPress={open}>{label}</FrameActionButton>
       </View>
     );
   }
 
   return (
     <View flex={1} theme="surface4">
-      <EnableSignerDialog>{Component}</EnableSignerDialog>
+      <TransactionFrameSheet button={button} index={index}>
+        <FrameActionButton>{label}</FrameActionButton>
+      </TransactionFrameSheet>
     </View>
   );
 };
+
+const EnableSignerButton = ({ children }: { children: ReactNode }) => {
+  return (
+    <View flex={1} theme="surface4">
+      <EnableSignerDialog>
+        <FrameActionButton>{children}</FrameActionButton>
+      </EnableSignerDialog>
+    </View>
+  );
+};
+
+const FrameActionButton = forwardRef<
+  TamaguiElement,
+  { children: ReactNode; onPress?: () => void }
+>(({ children, onPress }, ref) => (
+  <Button
+    ref={ref}
+    onPress={onPress}
+    backgroundColor="$color12"
+    color="$color1"
+    borderWidth="$0"
+    hoverStyle={{
+      backgroundColor: "$mauve11",
+      // @ts-ignore
+      transition: "all 0.2s ease-in-out",
+    }}
+    pressStyle={{
+      backgroundColor: "$mauve11",
+    }}
+    disabledStyle={{
+      backgroundColor: "$mauve10",
+    }}
+  >
+    <Text
+      alignItems="center"
+      gap="$1.5"
+      flexShrink={1}
+      paddingHorizontal="$1"
+      flexWrap="nowrap"
+      numberOfLines={2}
+      textAlign="center"
+      color="$color1"
+      fontWeight="600"
+    >
+      {children}
+    </Text>
+  </Button>
+));

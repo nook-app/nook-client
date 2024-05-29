@@ -98,23 +98,21 @@ const FarcasterCastResponseFrameDisplay = ({
         <FarcasterCastResponseMenu cast={cast} />
       </XStack>
       <EmbedFrame cast={cast} content={frameEmbed} />
-      <YStack padding="$2.5" gap="$2">
-        <XStack
-          alignItems="center"
-          justifyContent="space-between"
-          marginHorizontal="$-2"
-        >
-          <XStack gap="$2" alignItems="center">
-            <FarcasterReplyActionButton cast={cast} />
-            <FarcasterRecastActionButton cast={cast} />
-            <FarcasterLikeActionButton cast={cast} />
-          </XStack>
-          <XStack gap="$2" alignItems="center">
-            <FarcasterCustomActionButton cast={cast} />
-            <FarcasterShareButton cast={cast} />
-          </XStack>
+      <XStack
+        alignItems="center"
+        justifyContent="space-between"
+        marginHorizontal="$-2"
+      >
+        <XStack gap="$2" alignItems="center">
+          <FarcasterReplyActionButton cast={cast} />
+          <FarcasterRecastActionButton cast={cast} />
+          <FarcasterLikeActionButton cast={cast} />
         </XStack>
-      </YStack>
+        <XStack gap="$2" alignItems="center">
+          <FarcasterCustomActionButton cast={cast} />
+          <FarcasterShareButton cast={cast} />
+        </XStack>
+      </XStack>
     </YStack>
   );
 };

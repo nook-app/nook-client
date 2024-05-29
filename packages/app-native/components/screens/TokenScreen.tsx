@@ -1,5 +1,5 @@
 import { useFocusEffect, useLocalSearchParams } from "expo-router";
-import { Button, NookText, Popover, Text, View, XStack } from "@nook/app-ui";
+import { NookText, Popover, View, XStack } from "@nook/app-ui";
 import { BlurView } from "expo-blur";
 import { useTheme } from "@nook/app/context/theme";
 import { LinearGradient } from "@tamagui/linear-gradient";
@@ -16,11 +16,7 @@ import {
   TokenOverview,
 } from "@nook/app/features/token/token-overview";
 import { useToken } from "@nook/app/hooks/useToken";
-import {
-  TokenTransactionsFeed,
-  TokenTransactionsFeedHeader,
-  TokenTransactionsFeedViewer,
-} from "@nook/app/features/token/token-transactions";
+import { TokenTransactionsFeedViewer } from "@nook/app/features/token/token-transactions";
 import { CollapsibleGradientLayout } from "../CollapsibleGradientLayout";
 import { Tabs } from "react-native-collapsible-tab-view";
 import { useAuth } from "@nook/app/context/auth";

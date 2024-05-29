@@ -15,7 +15,6 @@ export const feedRoutes = async (fastify: FastifyInstance) => {
 
     fastify.post<{
       Body: FarcasterFeedRequest;
-      Querystring: { cursor?: string };
     }>("/feed/casts", async (request, reply) => {
       try {
         const { onlyFrames, contentTypes, embeds } = request.body.filter;
@@ -56,7 +55,6 @@ export const feedRoutes = async (fastify: FastifyInstance) => {
 
     fastify.post<{
       Body: FarcasterFeedRequest;
-      Querystring: { cursor?: string };
     }>("/feed", async (request, reply) => {
       try {
         const { newCasts, currentCasts, oldCasts } = await service.getFeed(
@@ -73,18 +71,14 @@ export const feedRoutes = async (fastify: FastifyInstance) => {
           .sort((a, b) => b.timestamp - a.timestamp)
           .slice(0, MAX_PAGE_SIZE);
 
-        const cursor =
-          sortedCasts.length > 0
-            ? Math.min(...sortedCasts.map((cast) => cast.timestamp))?.toString()
-            : undefined;
-
         reply.send({
           data: sortedCasts,
-          cursor: cursor
-            ? encodeCursor({
-                timestamp: cursor,
-              })
-            : undefined,
+          nextCursor:
+            sortedCasts.length === MAX_PAGE_SIZE
+              ? encodeCursor({
+                  timestamp: sortedCasts[sortedCasts.length - 1]?.timestamp,
+                })
+              : undefined,
         });
       } catch (e) {
         console.error(e);

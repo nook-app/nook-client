@@ -18,7 +18,7 @@ import { usePrivy } from "@privy-io/react-auth";
 import { useUser } from "../../api/farcaster";
 import { useTheme } from "../../context/theme";
 import { isAddress } from "viem";
-import { WagmiProvider } from "wagmi";
+import { WagmiProvider } from "wagmi2";
 import { wagmiConfig } from "../../utils/wagmi";
 import { formatAddress } from "../../utils";
 import { useAuth } from "../../context/auth";
