@@ -1552,10 +1552,7 @@ export class FarcasterService {
 
     await this.cache.setUserContext(
       viewerFid,
-      Object.entries(fetchedMap).map(([fid, context]) => ({
-        fid,
-        ...context,
-      })),
+      Object.entries(fetchedMap).map(([fid, context]) => [fid, context]),
     );
 
     return fids.map((fid) => cacheMap[fid] || fetchedMap[fid]);
@@ -1835,10 +1832,7 @@ export class FarcasterService {
 
     await this.cache.setCastContext(
       viewerFid,
-      Object.entries(fetchedMap).map(([hash, context]) => ({
-        hash,
-        ...context,
-      })),
+      Object.entries(fetchedMap).map(([hash, context]) => [hash, context]),
     );
 
     return hashes.map((hash) => cacheMap[hash] || fetchedMap[hash]);

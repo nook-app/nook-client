@@ -1,7 +1,9 @@
 import { RedisClient } from "./base";
 import {
   BaseFarcasterCast,
+  BaseFarcasterCastV1,
   BaseFarcasterUser,
+  BaseFarcasterUserV1,
   CastContextType,
   CastEngagementType,
   Channel,
@@ -27,6 +29,10 @@ type FeedCacheItem = {
 export class FarcasterCacheClient {
   private redis: RedisClient;
 
+  CAST_V1_CACHE_PREFIX = "farcaster:cast:v1";
+  USER_V1_CACHE_PREFIX = "farcaster:user:v1";
+  SIGNER_V1_CACHE_PREFIX = "farcaster:signer:v1";
+
   CAST_CACHE_PREFIX = "farcaster:cast";
   USER_CACHE_PREFIX = "farcaster:user";
   CHANNEL_CACHE_PREFIX = "farcaster:channel";
@@ -44,9 +50,202 @@ export class FarcasterCacheClient {
   FEED_CACHE_PREFIX = "feed:farcaster";
 
   TTL = 24 * 60 * 60 * 3;
+  TTL_V1 = 60 * 60 * 3;
 
   constructor(redis: RedisClient) {
     this.redis = redis;
+  }
+
+  async getCastsV1(
+    hashes: string[],
+  ): Promise<(BaseFarcasterCastV1 | undefined)[]> {
+    return await this.redis.mgetJson(
+      hashes.map((hash) => `${this.CAST_V1_CACHE_PREFIX}:${hash}`),
+    );
+  }
+
+  async setCastsV1(casts: BaseFarcasterCastV1[]) {
+    await this.redis.msetJson(
+      casts.map((cast) => [`${this.CAST_V1_CACHE_PREFIX}:${cast.hash}`, cast]),
+      this.TTL_V1,
+    );
+  }
+
+  async getUsersV1(
+    fids: string[],
+  ): Promise<(BaseFarcasterUserV1 | undefined)[]> {
+    return await this.redis.mgetJson(
+      fids.map((fid) => `${this.USER_V1_CACHE_PREFIX}:${fid}`),
+    );
+  }
+
+  async setUsersV1(users: BaseFarcasterUserV1[]) {
+    await this.redis.msetJson(
+      users.flatMap((user) => {
+        const pairs = [[`${this.USER_V1_CACHE_PREFIX}:${user.fid}`, user]] as [
+          string,
+          BaseFarcasterUserV1,
+        ][];
+        if (user.username) {
+          pairs.push([`${this.USER_V1_CACHE_PREFIX}:${user.username}`, user]);
+        }
+        return pairs;
+      }),
+      this.TTL_V1,
+    );
+  }
+
+  async getAppFidsV1(signers: string[]): Promise<(string | null)[]> {
+    return await this.redis.mget(
+      signers.map((signer) => `${this.SIGNER_V1_CACHE_PREFIX}:${signer}`),
+    );
+  }
+
+  async setAppFidsV1(pairs: [string, string][]) {
+    await this.redis.mset(
+      pairs.map(([signer, fid]) => [
+        `${this.SIGNER_V1_CACHE_PREFIX}:${signer}`,
+        fid,
+      ]),
+      this.TTL_V1,
+    );
+  }
+
+  async getUserContext(
+    viewerFid: string,
+    fids: string[],
+  ): Promise<(FarcasterUserContext | undefined)[]> {
+    return await this.redis.mgetJson(
+      fids.map(
+        (fid) => `${this.USER_CONTEXT_CACHE_PREFIX}:${fid}:${viewerFid}`,
+      ),
+    );
+  }
+
+  async setUserContext(
+    viewerFid: string,
+    data: [string, FarcasterUserContext][],
+  ) {
+    await this.redis.msetJson(
+      data.map(([fid, context]) => [
+        `${this.USER_CONTEXT_CACHE_PREFIX}:${fid}:${viewerFid}`,
+        context,
+      ]),
+      this.TTL_V1,
+    );
+  }
+
+  async updateUserContext(
+    fid: string,
+    viewerFid: string,
+    type: UserContextType,
+    value: boolean,
+  ) {
+    const key = `${this.USER_CONTEXT_CACHE_PREFIX}:${fid}:${viewerFid}`;
+    const data = (await this.redis.getJson(key)) as
+      | FarcasterUserContext
+      | undefined;
+    if (!data) return;
+
+    if (type === "following") {
+      data.following = value;
+    }
+
+    if (type === "followers") {
+      data.followers = value;
+    }
+
+    await this.redis.setJson(key, data, this.TTL_V1);
+  }
+
+  async getCastContext(
+    viewerFid: string,
+    hashes: string[],
+  ): Promise<(FarcasterCastContext | undefined)[]> {
+    return await this.redis.mgetJson(
+      hashes.map(
+        (hash) => `${this.CAST_CONTEXT_CACHE_PREFIX}:${hash}:${viewerFid}`,
+      ),
+    );
+  }
+
+  async setCastContext(
+    viewerFid: string,
+    data: [string, FarcasterCastContext][],
+  ) {
+    await this.redis.msetJson(
+      data.map(([hash, context]) => [
+        `${this.CAST_CONTEXT_CACHE_PREFIX}:${hash}:${viewerFid}`,
+        context,
+      ]),
+      this.TTL_V1,
+    );
+  }
+
+  async updateCastContext(
+    viewerFid: string,
+    hash: string,
+    type: CastContextType,
+    value: boolean,
+  ) {
+    const key = `${this.CAST_CONTEXT_CACHE_PREFIX}:${hash}:${viewerFid}`;
+    const data = (await this.redis.getJson(key)) as
+      | FarcasterCastContext
+      | undefined;
+    if (!data) return;
+
+    if (type === "likes") {
+      data.liked = value;
+    }
+    if (type === "recasts") {
+      data.recasted = value;
+    }
+
+    await this.redis.setJson(key, data, this.TTL_V1);
+  }
+
+  async updateCastEngagementV1(
+    hash: string,
+    type: CastEngagementType,
+    value: number,
+  ) {
+    const cast = (await this.redis.getJson(
+      `${this.CAST_V1_CACHE_PREFIX}:${hash}`,
+    )) as BaseFarcasterCastV1 | undefined;
+    if (!cast) return;
+    await this.redis.setJson(
+      `${this.CAST_V1_CACHE_PREFIX}:${hash}`,
+      {
+        ...cast,
+        engagement: {
+          ...cast.engagement,
+          [type]: cast.engagement[type] + value,
+        },
+      },
+      this.TTL_V1,
+    );
+  }
+
+  async updateUserEngagementV1(
+    fid: string,
+    type: UserEngagementType,
+    value: number,
+  ) {
+    const user = (await this.redis.getJson(
+      `${this.USER_V1_CACHE_PREFIX}:${fid}`,
+    )) as BaseFarcasterUserV1 | undefined;
+    if (!user) return;
+    await this.redis.setJson(
+      `${this.USER_V1_CACHE_PREFIX}:${fid}`,
+      {
+        ...user,
+        engagement: {
+          ...user.engagement,
+          [type]: user.engagement[type] + value,
+        },
+      },
+      this.TTL_V1,
+    );
   }
 
   async getCast(hash: string): Promise<BaseFarcasterCast> {
@@ -125,52 +324,6 @@ export class FarcasterCacheClient {
     await this.redis.setJson(key, data, this.TTL);
   }
 
-  async getCastContext(
-    viewerFid: string,
-    hashes: string[],
-  ): Promise<(FarcasterCastContext | undefined)[]> {
-    return await this.redis.mgetJson(
-      hashes.map(
-        (hash) => `${this.CAST_CONTEXT_CACHE_PREFIX}:${hash}:${viewerFid}`,
-      ),
-    );
-  }
-
-  async setCastContext(
-    viewerFid: string,
-    data: (FarcasterCastContext & { hash: string })[],
-  ) {
-    await this.redis.msetJson(
-      data.map((context) => [
-        `${this.CAST_CONTEXT_CACHE_PREFIX}:${context.hash}:${viewerFid}`,
-        context,
-      ]),
-      this.TTL,
-    );
-  }
-
-  async updateCastContext(
-    viewerFid: string,
-    hash: string,
-    type: CastContextType,
-    value: boolean,
-  ) {
-    const key = `${this.CAST_CONTEXT_CACHE_PREFIX}:${hash}:${viewerFid}`;
-    const data = (await this.redis.getJson(key)) as
-      | FarcasterCastContext
-      | undefined;
-    if (!data) return;
-
-    if (type === "likes") {
-      data.liked = value;
-    }
-    if (type === "recasts") {
-      data.recasted = value;
-    }
-
-    await this.redis.setJson(key, data, this.TTL);
-  }
-
   async getUser(fid: string): Promise<BaseFarcasterUser> {
     return await this.redis.getJson(`${this.USER_CACHE_PREFIX}:${fid}`);
   }
@@ -236,53 +389,6 @@ export class FarcasterCacheClient {
     }
     if (type === "following") {
       data.following += value;
-    }
-
-    await this.redis.setJson(key, data, this.TTL);
-  }
-
-  async getUserContext(
-    viewerFid: string,
-    fids: string[],
-  ): Promise<(FarcasterUserContext | undefined)[]> {
-    return await this.redis.mgetJson(
-      fids.map(
-        (fid) => `${this.USER_CONTEXT_CACHE_PREFIX}:${fid}:${viewerFid}`,
-      ),
-    );
-  }
-
-  async setUserContext(
-    viewerFid: string,
-    data: (FarcasterUserContext & { fid: string })[],
-  ) {
-    await this.redis.msetJson(
-      data.map((context) => [
-        `${this.USER_CONTEXT_CACHE_PREFIX}:${context.fid}:${viewerFid}`,
-        context,
-      ]),
-      this.TTL,
-    );
-  }
-
-  async updateUserContext(
-    fid: string,
-    viewerFid: string,
-    type: UserContextType,
-    value: boolean,
-  ) {
-    const key = `${this.USER_CONTEXT_CACHE_PREFIX}:${fid}:${viewerFid}`;
-    const data = (await this.redis.getJson(key)) as
-      | FarcasterUserContext
-      | undefined;
-    if (!data) return;
-
-    if (type === "following") {
-      data.following = value;
-    }
-
-    if (type === "followers") {
-      data.followers = value;
     }
 
     await this.redis.setJson(key, data, this.TTL);

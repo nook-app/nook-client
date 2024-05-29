@@ -1,3 +1,5 @@
+import { UrlContentResponse } from "./content";
+
 export type CastEngagementType = "likes" | "recasts" | "replies" | "quotes";
 export type CastContextType = "likes" | "recasts";
 export type UserEngagementType = "followers" | "following";
@@ -91,4 +93,77 @@ export type Channel = {
   followerCount?: number;
   createdAt: Date;
   updatedAt: Date;
+};
+
+export type BaseFarcasterUserV1 = {
+  fid: string;
+  username?: string;
+  pfp?: string;
+  displayName?: string;
+  bio?: string;
+  url?: string;
+  verifiedAddresses: { protocol: number; address: string }[];
+  engagement: FarcasterUserEngagement;
+  badges: FarcasterUserBadges;
+};
+
+export type FarcasterUserV1 = BaseFarcasterUserV1 & {
+  context?: FarcasterUserContext;
+};
+
+export type BaseFarcasterCastV1 = {
+  hash: string;
+  timestamp: number;
+  user: BaseFarcasterUserV1;
+  text: string;
+  mentions: {
+    user: BaseFarcasterUserV1;
+    position: string;
+  }[];
+  embedHashes: string[];
+  embedUrls: string[];
+  parent?: BaseFarcasterCastV1;
+  parentFid?: string;
+  parentHash?: string;
+  parentUrl?: string;
+  rootParent?: BaseFarcasterCastV1;
+  rootParentFid?: string;
+  rootParentHash?: string;
+  rootParentUrl?: string;
+  embeds: {
+    urls: UrlContentResponse[];
+    casts: BaseFarcasterCastV1[];
+  };
+  signer: string;
+  appFid: string;
+  engagement: FarcasterCastEngagement;
+};
+
+export type FarcasterCastV1 = {
+  hash: string;
+  timestamp: number;
+  user: FarcasterUserV1;
+  text: string;
+  mentions: {
+    user: FarcasterUserV1;
+    position: string;
+  }[];
+  embedHashes: string[];
+  embedUrls: string[];
+  parent?: FarcasterCastV1;
+  parentFid?: string;
+  parentHash?: string;
+  parentUrl?: string;
+  rootParent?: FarcasterCastV1;
+  rootParentFid?: string;
+  rootParentHash?: string;
+  rootParentUrl?: string;
+  embeds: {
+    urls: UrlContentResponse[];
+    casts: FarcasterCastV1[];
+  };
+  signer: string;
+  appFid: string;
+  engagement: FarcasterCastEngagement;
+  context?: FarcasterCastContext;
 };

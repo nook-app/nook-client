@@ -81,37 +81,47 @@ const NftOwners = ({ nft }: { nft: SimpleHashNFT }) => {
     </Text>
   );
 
-  parts.push(<FormattedText>Collected by </FormattedText>);
+  parts.push(<FormattedText key="collected-by">Collected by </FormattedText>);
 
   if (previews[0]) {
     parts.push(
-      <CdnAvatar src={previews[0].pfp} size="$1" />,
-      <FormattedText>{` ${previews[0].username}`}</FormattedText>,
+      <CdnAvatar key="collected-by-avatar-0" src={previews[0].pfp} size="$1" />,
+      <FormattedText key="collected-by-user-0">{` ${previews[0].username}`}</FormattedText>,
     );
   }
 
   if (previews[1]) {
     if (other === 0) {
-      parts.push(<FormattedText>{" and "}</FormattedText>);
+      parts.push(
+        <FormattedText key="collected-by-and-0">{" and "}</FormattedText>,
+      );
     } else {
-      parts.push(<FormattedText>{", "}</FormattedText>);
+      parts.push(
+        <FormattedText key="collected-by-comma-0">{", "}</FormattedText>,
+      );
     }
     parts.push(
-      <CdnAvatar src={previews[1].pfp} size="$1" />,
-      <FormattedText>{` ${previews[1].username}`}</FormattedText>,
+      <CdnAvatar key="collected-by-avatar-1" src={previews[1].pfp} size="$1" />,
+      <FormattedText key="collected-by-user-1">{` ${previews[1].username}`}</FormattedText>,
     );
     if (other > 0) {
-      parts.push(<FormattedText>{","}</FormattedText>);
+      parts.push(
+        <FormattedText key="collected-by-comma-1">{","}</FormattedText>,
+      );
     }
   }
 
   if (other === 1) {
     parts.push(
-      <FormattedText>{` and ${formatNumber(other)} other`}</FormattedText>,
+      <FormattedText key="collected-by-other-1">{` and ${formatNumber(
+        other,
+      )} other`}</FormattedText>,
     );
   } else if (other > 1) {
     parts.push(
-      <FormattedText>{` and ${formatNumber(other)} others`}</FormattedText>,
+      <FormattedText key="collected-by-other-2">{` and ${formatNumber(
+        other,
+      )} others`}</FormattedText>,
     );
   }
 
