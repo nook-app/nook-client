@@ -89,7 +89,7 @@ export const farcasterFeedRoutes = async (fastify: FastifyInstance) => {
 
           if (request.body.api.includes("api.neynar.com")) {
             const response = await fetch(
-              `${request.body.api}?time_window=1h${
+              `${request.body.api}?time_window=6h${
                 request.body.cursor ? `&cursor=${request.body.cursor}` : ""
               }`,
               {

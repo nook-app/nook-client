@@ -256,9 +256,8 @@ const SessionItem = () => {
               variant="primary"
               width="$5"
               padding="$0"
-              backgroundColor="transparent"
-              borderColor={!theme ? "$color12" : "$color9"}
-              borderWidth="$1"
+              onPress={login}
+              backgroundColor={!theme ? "$color12" : "$color9"}
             >
               <UserRoundPlus
                 size={24}
