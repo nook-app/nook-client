@@ -106,9 +106,9 @@ export const UserHeader = memo(
 const MutualsPreview = ({ user }: { user: FarcasterUserV1 }) => {
   const { session } = useAuth();
   const { data } = useQuery({
-    queryKey: ["userMutuals", user.username || user.fid],
+    queryKey: ["userMutuals", user.fid],
     queryFn: async () => {
-      return await fetchUserMutualsPreview(user.username || user.fid);
+      return await fetchUserMutualsPreview(user.fid);
     },
   });
 

@@ -46,29 +46,6 @@ export const castRoutes = async (fastify: FastifyInstance) => {
     });
 
     fastify.get<{
-      Params: GetFarcasterCastRequest;
-    }>("/casts/:hash/hub", async (request, reply) => {
-      const cast = await service.getCastFromHub(
-        request.params.hash,
-        request.headers["x-viewer-fid"] as string,
-      );
-      if (!cast) {
-        reply.status(404).send({ message: "Cast not found" });
-        return;
-      }
-
-      if (cast.parentHash && !cast.ancestors) {
-        const ancestors = await service.getCastAncestors(
-          cast,
-          request.headers["x-viewer-fid"] as string,
-        );
-        cast.ancestors = ancestors;
-      }
-
-      reply.send(cast);
-    });
-
-    fastify.get<{
       Params: GetFarcasterCastRepliesRequest;
       Querystring: { cursor?: string };
     }>("/casts/:hash/replies", async (request, reply) => {

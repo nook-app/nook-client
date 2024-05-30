@@ -235,7 +235,6 @@ export class SignerService {
   async validateSignerByPublicKey(
     publicKey: string,
   ): Promise<ValidateSignerResponse> {
-    console.log({ publicKey });
     await this.client.signer.updateMany({
       where: {
         publicKey,

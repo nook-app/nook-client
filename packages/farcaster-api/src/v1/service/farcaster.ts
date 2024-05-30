@@ -17,6 +17,8 @@ import {
 } from "@nook/common/farcaster";
 import {
   FarcasterCast,
+  FarcasterCastStats,
+  FarcasterParentUrl,
   Prisma,
   PrismaClient,
 } from "@nook/common/prisma/farcaster";
@@ -32,11 +34,17 @@ import {
   FarcasterFeedRequest,
   FarcasterUserContext,
   FarcasterUserV1,
+  FetchCastsResponse,
+  FetchUsersResponse,
   UrlContentResponse,
   UserFilter,
   UserFilterType,
 } from "@nook/common/types";
-import { decodeCursor, encodeCursor } from "@nook/common/utils";
+import {
+  decodeCursor,
+  decodeCursorTimestamp,
+  encodeCursor,
+} from "@nook/common/utils";
 import { FastifyInstance } from "fastify";
 
 const MAX_PAGE_SIZE = 25;
@@ -335,14 +343,14 @@ export class FarcasterService {
         channels,
         relatedCasts,
       ] = await Promise.all([
-        this.getSignerAppFids(casts),
-        this.getUrlEmbeds(casts),
-        this.getRelatedUsers(casts),
+        this.getCastSignerAppFids(casts),
+        this.getCastRelatedEmbeds(casts),
+        this.getCastRelatedUsers(casts),
         this.getCastEngagement(casts),
-        this.getRelatedChannels(casts),
+        this.getCastRelatedChannels(casts),
         disableCastEmbeds
           ? ({} as Record<string, BaseFarcasterCastV1>)
-          : this.getRelatedCasts(casts, viewerFid),
+          : this.getCastRelatedCasts(casts, viewerFid),
       ]);
 
       const baseCasts: BaseFarcasterCastV1[] = casts.map((cast) => {
@@ -460,7 +468,7 @@ export class FarcasterService {
     return engagementMap;
   }
 
-  async getRelatedChannels(casts: FarcasterCast[]) {
+  async getCastRelatedChannels(casts: FarcasterCast[]) {
     const channelIds = new Set<string>();
     const channelUrls = new Set<string>();
 
@@ -479,15 +487,7 @@ export class FarcasterService {
     );
   }
 
-  parseChannelMentions(text: string): string[] {
-    return text
-      .split(/\s+/)
-      .filter((word) => word.startsWith("/"))
-      .map((mention) => mention.slice(1).trim())
-      .filter(Boolean);
-  }
-
-  async getRelatedUsers(casts: FarcasterCast[]) {
+  async getCastRelatedUsers(casts: FarcasterCast[]) {
     const users = new Set<string>();
     for (const cast of casts) {
       users.add(cast.fid.toString());
@@ -498,7 +498,7 @@ export class FarcasterService {
     return await this.getBaseUsers(Array.from(users));
   }
 
-  async getRelatedCasts(casts: FarcasterCast[], viewerFid?: string) {
+  async getCastRelatedCasts(casts: FarcasterCast[], viewerFid?: string) {
     const hashes = new Set<string>();
     for (const cast of casts) {
       if (cast.parentHash) hashes.add(cast.parentHash);
@@ -511,7 +511,7 @@ export class FarcasterService {
     return await this.getBaseCasts(Array.from(hashes), viewerFid, true);
   }
 
-  async getUrlEmbeds(
+  async getCastRelatedEmbeds(
     casts: FarcasterCast[],
   ): Promise<Record<string, UrlContentResponse>> {
     const references = casts.flatMap((cast) => {
@@ -542,7 +542,87 @@ export class FarcasterService {
     );
   }
 
-  async getUser(
+  async getCastSignerAppFids(
+    casts: FarcasterCast[],
+  ): Promise<Record<string, string>> {
+    const uniqueSigners = Array.from(new Set(casts.map((cast) => cast.signer)));
+    const cached = await this.cache.getAppFidsV1(uniqueSigners);
+    const cacheMap = cached.reduce(
+      (acc, fid, i) => {
+        if (!fid) return acc;
+        acc[uniqueSigners[i]] = fid;
+        return acc;
+      },
+      {} as Record<string, string>,
+    );
+
+    const missing = casts.filter((cast) => !cacheMap[cast.signer]);
+    if (missing.length > 0) {
+      const appFids = await Promise.all(
+        missing.map((cast) => this.getCastSignerAppFid(cast)),
+      );
+
+      const appFidMap: Record<string, string> = {};
+      for (const [i, cast] of missing.entries()) {
+        const appFid = appFids[i];
+        if (!appFid) continue;
+        appFidMap[cast.signer] = appFid;
+        cacheMap[cast.signer] = appFid;
+      }
+
+      await this.cache.setAppFidsV1(
+        Object.entries(appFidMap).map(([signer, fid]) => [signer, fid]),
+      );
+    }
+
+    return cacheMap;
+  }
+
+  async getCastSignerAppFid(cast: FarcasterCast): Promise<string | undefined> {
+    const response = await this.hub.getOnChainSigner({
+      fid: Number(cast.fid),
+      signer: Buffer.from(cast.signer.replace("0x", ""), "hex"),
+    });
+    if (response.isErr()) {
+      console.error(
+        `ERROR: Failed to get signer appId. userId: ${cast.fid} signer: ${cast.signer}`,
+        response.error,
+      );
+      return;
+    }
+    const event = response.value;
+    if (!event.signerEventBody?.metadata) {
+      console.error(
+        `No signerEventBody or metadata for signer event. userId: ${cast.fid} signer: ${cast.signer}`,
+      );
+      return;
+    }
+    const metadata = event.signerEventBody.metadata;
+    // metadata is abi-encoded; skip the first 32 bytes which contain the pointer
+    // to start of struct
+    const clientFid = BigInt(
+      `0x${Buffer.from(metadata.subarray(32, 64)).toString("hex")}`,
+    );
+
+    if (!clientFid) {
+      console.error(
+        `Failed to parse event metadata. userId: ${cast.fid} signer: ${cast.signer}`,
+      );
+      return;
+    }
+
+    return clientFid.toString();
+  }
+
+  async getUserByFid(
+    fid: string,
+    viewerFid?: string,
+  ): Promise<FarcasterUserV1 | undefined> {
+    const users = await this.getUsers([fid], viewerFid);
+    return users[fid];
+  }
+
+  async getUserByUsername(
     username: string,
     viewerFid?: string,
   ): Promise<FarcasterUserV1 | undefined> {
@@ -569,6 +649,56 @@ export class FarcasterService {
     const inputFid = userData.fid.toString();
     const users = await this.getUsers([inputFid], viewerFid);
     return users[inputFid];
+  }
+
+  async getUsersForAddresses(
+    addresses: string[],
+    viewerFid?: string,
+  ): Promise<FarcasterUserV1[]> {
+    const fids = await this.getFidsForAddresses(addresses);
+    const users = await this.getUsers(fids, viewerFid);
+    return Object.values(users);
+  }
+
+  async getUsersForFilter(filter: UserFilter, viewerFid?: string) {
+    const fids = await this.getFidsFromUserFilter(filter);
+    const users = await this.getUsers(fids, viewerFid);
+    return Object.values(users);
+  }
+
+  async getAddressesForFilter(
+    filter: UserFilter,
+  ): Promise<{ fid: string; address: string }[]> {
+    const fids = await this.getFidsFromUserFilter(filter);
+    const verifications = await this.client.farcasterVerification.findMany({
+      where: {
+        fid: {
+          in: fids.map((fid) => BigInt(fid)),
+        },
+        protocol: 0,
+      },
+    });
+    return verifications.map((verification) => ({
+      fid: verification.fid.toString(),
+      address: verification.address,
+    }));
+  }
+
+  async getFidsForAddresses(addresses: string[]): Promise<string[]> {
+    const lowercased = addresses.map((address) => address.toLowerCase());
+    const verifications = await this.getVerificationsForAddresses(lowercased);
+    return verifications.map((verification) => verification.fid.toString());
+  }
+
+  async getVerificationsForAddresses(addresses: string[]) {
+    return this.client.farcasterVerification.findMany({
+      where: {
+        address: {
+          in: addresses.map((address) => address.toLowerCase()),
+        },
+        protocol: 0,
+      },
+    });
   }
 
   async getUsers(
@@ -821,302 +951,6 @@ export class FarcasterService {
     return cacheMap;
   }
 
-  async getSignerAppFids(
-    casts: FarcasterCast[],
-  ): Promise<Record<string, string>> {
-    const uniqueSigners = Array.from(new Set(casts.map((cast) => cast.signer)));
-    const cached = await this.cache.getAppFidsV1(uniqueSigners);
-    const cacheMap = cached.reduce(
-      (acc, fid, i) => {
-        if (!fid) return acc;
-        acc[uniqueSigners[i]] = fid;
-        return acc;
-      },
-      {} as Record<string, string>,
-    );
-
-    const missing = casts.filter((cast) => !cacheMap[cast.signer]);
-    if (missing.length > 0) {
-      const appFids = await Promise.all(
-        missing.map((cast) => this.getSignerAppFid(cast)),
-      );
-
-      const appFidMap: Record<string, string> = {};
-      for (const [i, cast] of missing.entries()) {
-        const appFid = appFids[i];
-        if (!appFid) continue;
-        appFidMap[cast.signer] = appFid;
-        cacheMap[cast.signer] = appFid;
-      }
-
-      await this.cache.setAppFidsV1(
-        Object.entries(appFidMap).map(([signer, fid]) => [signer, fid]),
-      );
-    }
-
-    return cacheMap;
-  }
-
-  async getSignerAppFid(cast: FarcasterCast): Promise<string | undefined> {
-    const response = await this.hub.getOnChainSigner({
-      fid: Number(cast.fid),
-      signer: Buffer.from(cast.signer.replace("0x", ""), "hex"),
-    });
-    if (response.isErr()) {
-      console.error(
-        `ERROR: Failed to get signer appId. userId: ${cast.fid} signer: ${cast.signer}`,
-        response.error,
-      );
-      return;
-    }
-    const event = response.value;
-    if (!event.signerEventBody?.metadata) {
-      console.error(
-        `No signerEventBody or metadata for signer event. userId: ${cast.fid} signer: ${cast.signer}`,
-      );
-      return;
-    }
-    const metadata = event.signerEventBody.metadata;
-    // metadata is abi-encoded; skip the first 32 bytes which contain the pointer
-    // to start of struct
-    const clientFid = BigInt(
-      `0x${Buffer.from(metadata.subarray(32, 64)).toString("hex")}`,
-    );
-
-    if (!clientFid) {
-      console.error(
-        `Failed to parse event metadata. userId: ${cast.fid} signer: ${cast.signer}`,
-      );
-      return;
-    }
-
-    return clientFid.toString();
-  }
-
-  async getCasts(req: FarcasterFeedRequest, viewerFid?: string) {
-    const { filter, context, cursor, limit } = req;
-    const {
-      channels,
-      users,
-      text,
-      includeReplies,
-      onlyReplies,
-      onlyFrames,
-      contentTypes,
-      embeds,
-    } = filter;
-
-    if (
-      onlyFrames ||
-      (contentTypes && contentTypes.length > 0) ||
-      (embeds && embeds.length > 0)
-    ) {
-      const response = await this.contentApi.getContentFeed(req);
-      const casts = await this.getCastsForHashes(
-        response.data,
-        viewerFid || context?.viewerFid,
-      );
-      return {
-        data: casts,
-        nextCursor: response.nextCursor,
-      };
-    }
-
-    const conditions: string[] = ['"deletedAt" IS NULL'];
-
-    if (text) {
-      const queryConditions = text.map(
-        (q) =>
-          `(to_tsvector('english', "text") @@ to_tsquery('english', '${sanitizeInput(
-            q,
-          ).replaceAll(" ", "<->")}'))`,
-      );
-      conditions.push(`(${queryConditions.join(" OR ")})`);
-    }
-
-    const [userCondition, channelCondition, muteCondition] = await Promise.all([
-      this.getUserFilter(users),
-      this.getChannelFilter(channels),
-      this.getMuteFilter(context?.viewerFid),
-    ]);
-
-    if (userCondition) {
-      conditions.push(userCondition);
-    }
-    if (channelCondition) {
-      conditions.push(channelCondition);
-    }
-    if (muteCondition?.words) {
-      conditions.push(
-        `NOT (${muteCondition.words
-          .map(
-            (word) =>
-              `to_tsvector('english', "text") @@ to_tsquery('english', '${sanitizeInput(
-                word,
-              ).replaceAll(" ", "<->")}')`,
-          )
-          .join(" OR ")})`,
-      );
-    }
-
-    if (muteCondition?.users) {
-      conditions.push(
-        `"fid" NOT IN (${muteCondition.users
-          .map((fid) => BigInt(fid))
-          .join(",")})`,
-      );
-    }
-
-    if (muteCondition?.channels) {
-      if (onlyReplies)
-        conditions.push(
-          `"rootParentUrl" NOT IN ('${muteCondition.channels.join("','")}')`,
-        );
-    }
-
-    if (cursor) {
-      const decodedCursor = decodeCursor(cursor);
-      if (decodedCursor) {
-        conditions.push(
-          `"timestamp" < '${new Date(decodedCursor.timestamp).toISOString()}'`,
-        );
-      }
-    }
-
-    if (onlyReplies) {
-      conditions.push(`"parentHash" IS NOT NULL`);
-    } else if (!includeReplies) {
-      conditions.push(`"parentHash" IS NULL`);
-    }
-
-    const hashes = await this.client.$queryRaw<{ hash: string }[]>(
-      Prisma.sql([
-        `
-            SELECT "hash"
-            FROM "FarcasterCast"
-            WHERE ${conditions.join(" AND ")}
-            ORDER BY "timestamp" DESC
-            LIMIT ${limit || MAX_PAGE_SIZE}
-          `,
-      ]),
-    );
-
-    const casts = await this.getCastsForHashes(
-      hashes.map((hash) => hash.hash),
-      viewerFid || context?.viewerFid,
-    );
-    const data = hashes.map((hash) => casts[hash.hash]);
-
-    return {
-      data,
-      nextCursor:
-        data.length === MAX_PAGE_SIZE
-          ? encodeCursor({
-              timestamp: data[data.length - 1]?.timestamp,
-            })
-          : undefined,
-    };
-  }
-
-  async getUserFilter(users?: UserFilter) {
-    if (!users) return;
-
-    switch (users.type) {
-      case UserFilterType.FOLLOWING: {
-        const fids = await this.getFollowingFids(users.data.fid);
-        if (fids.length > 0) {
-          return `"FarcasterCast"."fid" IN (${fids.join(",")})`;
-        }
-        break;
-      }
-      case UserFilterType.FIDS:
-        if (users.data.fids.length > 0) {
-          return `"FarcasterCast"."fid" IN (${users.data.fids
-            .map((fid) => BigInt(fid))
-            .join(",")})`;
-        }
-        break;
-      case UserFilterType.POWER_BADGE: {
-        const [following, holders] = await Promise.all([
-          users.data.fid ? this.getFollowingFids(users.data.fid) : [],
-          this.cache.getPowerBadgeUsers(),
-        ]);
-
-        const set = new Set(following);
-        for (const fid of holders) {
-          set.add(BigInt(fid));
-        }
-        return `"FarcasterCast"."fid" IN (${Array.from(set).join(",")})`;
-      }
-    }
-  }
-
-  async getFollowingFids(fid: string) {
-    const cachedFollowing = await this.cache.getUserFollowingFids(fid);
-    if (cachedFollowing.length > 0) {
-      return cachedFollowing.map((fid) => BigInt(fid));
-    }
-    const following = await this.client.farcasterLink.findMany({
-      where: {
-        linkType: "follow",
-        fid: BigInt(fid),
-        deletedAt: null,
-      },
-    });
-    await this.cache.setUserFollowingFids(
-      fid,
-      following.map((link) => link.targetFid.toString()),
-    );
-    return following.map((link) => link.targetFid);
-  }
-
-  async getChannelFilter(channels?: ChannelFilter) {
-    if (!channels) return;
-
-    switch (channels.type) {
-      case ChannelFilterType.CHANNEL_IDS: {
-        const response = (
-          await this.cache.getChannels(channels.data.channelIds)
-        ).filter(Boolean) as Channel[];
-        return `"rootParentUrl" IN ('${response
-          .map((c) => c.url)
-          .join("','")}')`;
-      }
-      case ChannelFilterType.CHANNEL_URLS: {
-        return `"rootParentUrl" IN ('${channels.data.urls.join("','")}')`;
-      }
-    }
-  }
-
-  async getMuteFilter(fid?: string) {
-    if (!fid) return;
-
-    let mutes: string[] = [];
-    if (fid) {
-      try {
-        mutes = await this.nook.getUserMutes(fid);
-      } catch (e) {}
-    }
-
-    const channels = mutes
-      .filter((m) => m.startsWith("channel:"))
-      .map((m) => m.split(":")[1]);
-
-    const users = mutes
-      .filter((m) => m.startsWith("user:"))
-      .map((m) => m.split(":")[1]);
-
-    const words = mutes
-      .filter((m) => m.startsWith("word:"))
-      .map((m) => m.split(":")[1]);
-
-    return {
-      channels: channels.length > 0 ? channels : undefined,
-      users: users.length > 0 ? users : undefined,
-      words: words.length > 0 ? words : undefined,
-    };
-  }
-
   async getChannels(urls?: string[], ids?: string[]) {
     const keys = (urls || []).concat(ids || []);
     const channels = await this.cache.getChannels(keys);
@@ -1242,5 +1076,991 @@ export class FarcasterService {
     }
 
     return channelMap;
+  }
+
+  async getCasts(req: FarcasterFeedRequest, viewerFid?: string) {
+    const { filter, context, cursor, limit } = req;
+    const {
+      channels,
+      users,
+      text,
+      includeReplies,
+      onlyReplies,
+      onlyFrames,
+      contentTypes,
+      embeds,
+    } = filter;
+
+    if (
+      onlyFrames ||
+      (contentTypes && contentTypes.length > 0) ||
+      (embeds && embeds.length > 0)
+    ) {
+      const response = await this.contentApi.getContentFeed(req);
+      const casts = await this.getCastsForHashes(
+        response.data,
+        viewerFid || context?.viewerFid,
+      );
+      return {
+        data: casts,
+        nextCursor: response.nextCursor,
+      };
+    }
+
+    const conditions: string[] = ['"deletedAt" IS NULL'];
+
+    if (text) {
+      const queryConditions = text.map(
+        (q) =>
+          `(to_tsvector('english', "text") @@ to_tsquery('english', '${sanitizeInput(
+            q,
+          ).replaceAll(" ", "<->")}'))`,
+      );
+      conditions.push(`(${queryConditions.join(" OR ")})`);
+    }
+
+    const [userCondition, channelCondition, muteCondition] = await Promise.all([
+      this.getUserFilterCondition(users),
+      this.getChannelFilterCondition(channels),
+      this.getMuteFilterCondition(context?.viewerFid),
+    ]);
+
+    if (userCondition) {
+      conditions.push(userCondition);
+    }
+    if (channelCondition) {
+      conditions.push(channelCondition);
+    }
+    if (muteCondition?.words) {
+      conditions.push(
+        `NOT (${muteCondition.words
+          .map(
+            (word) =>
+              `to_tsvector('english', "text") @@ to_tsquery('english', '${sanitizeInput(
+                word,
+              ).replaceAll(" ", "<->")}')`,
+          )
+          .join(" OR ")})`,
+      );
+    }
+
+    if (muteCondition?.users) {
+      conditions.push(
+        `"fid" NOT IN (${muteCondition.users
+          .map((fid) => BigInt(fid))
+          .join(",")})`,
+      );
+    }
+
+    if (muteCondition?.channels) {
+      if (onlyReplies)
+        conditions.push(
+          `"rootParentUrl" NOT IN ('${muteCondition.channels.join("','")}')`,
+        );
+    }
+
+    if (cursor) {
+      const decodedCursor = decodeCursor(cursor);
+      if (decodedCursor) {
+        conditions.push(
+          `"timestamp" < '${new Date(decodedCursor.timestamp).toISOString()}'`,
+        );
+      }
+    }
+
+    if (onlyReplies) {
+      conditions.push(`"parentHash" IS NOT NULL`);
+    } else if (!includeReplies) {
+      conditions.push(`"parentHash" IS NULL`);
+    }
+
+    const hashes = await this.client.$queryRaw<{ hash: string }[]>(
+      Prisma.sql([
+        `
+            SELECT "hash"
+            FROM "FarcasterCast"
+            WHERE ${conditions.join(" AND ")}
+            ORDER BY "timestamp" DESC
+            LIMIT ${limit || MAX_PAGE_SIZE}
+          `,
+      ]),
+    );
+
+    const casts = await this.getCastsForHashes(
+      hashes.map((hash) => hash.hash),
+      viewerFid || context?.viewerFid,
+    );
+    const data = hashes.map((hash) => casts[hash.hash]);
+
+    return {
+      data,
+      nextCursor:
+        data.length === MAX_PAGE_SIZE
+          ? encodeCursor({
+              timestamp: data[data.length - 1]?.timestamp,
+            })
+          : undefined,
+    };
+  }
+
+  async getUserFilterCondition(users?: UserFilter) {
+    if (!users) return;
+    const fids = await this.getFidsFromUserFilter(users);
+    if (fids.length === 0) return;
+    return `"FarcasterCast"."fid" IN (${fids.join(",")})`;
+  }
+
+  async getChannelFilterCondition(channels?: ChannelFilter) {
+    if (!channels) return;
+
+    switch (channels.type) {
+      case ChannelFilterType.CHANNEL_IDS: {
+        const response = (
+          await this.cache.getChannels(channels.data.channelIds)
+        ).filter(Boolean) as Channel[];
+        return `"rootParentUrl" IN ('${response
+          .map((c) => c.url)
+          .join("','")}')`;
+      }
+      case ChannelFilterType.CHANNEL_URLS: {
+        return `"rootParentUrl" IN ('${channels.data.urls.join("','")}')`;
+      }
+    }
+  }
+
+  async getMuteFilterCondition(fid?: string) {
+    if (!fid) return;
+
+    let mutes: string[] = [];
+    if (fid) {
+      try {
+        mutes = await this.nook.getUserMutes(fid);
+      } catch (e) {}
+    }
+
+    const channels = mutes
+      .filter((m) => m.startsWith("channel:"))
+      .map((m) => m.split(":")[1]);
+
+    const users = mutes
+      .filter((m) => m.startsWith("user:"))
+      .map((m) => m.split(":")[1]);
+
+    const words = mutes
+      .filter((m) => m.startsWith("word:"))
+      .map((m) => m.split(":")[1]);
+
+    return {
+      channels: channels.length > 0 ? channels : undefined,
+      users: users.length > 0 ? users : undefined,
+      words: words.length > 0 ? words : undefined,
+    };
+  }
+
+  async getFidsFromUserFilter(users: UserFilter) {
+    switch (users.type) {
+      case UserFilterType.FOLLOWING: {
+        const fids = await this.getUserFollowingFids(users.data.fid);
+        return fids.map((fid) => fid.toString());
+      }
+      case UserFilterType.FID:
+        return [users.data.fid];
+      case UserFilterType.FIDS:
+        return users.data.fids;
+      case UserFilterType.POWER_BADGE: {
+        const [following, holders] = await Promise.all([
+          users.data.fid ? this.getUserFollowingFids(users.data.fid) : [],
+          this.cache.getPowerBadgeUsers(),
+        ]);
+
+        const set = new Set(following.map((fid) => fid.toString()));
+        for (const fid of holders) {
+          set.add(fid);
+        }
+        return Array.from(set);
+      }
+      default:
+        return [];
+    }
+  }
+
+  async getUserFollowingFids(fid: string) {
+    const cachedFollowing = await this.cache.getUserFollowingFids(fid);
+    if (cachedFollowing.length > 0) {
+      return cachedFollowing.map((fid) => BigInt(fid));
+    }
+
+    const following = await this.client.farcasterLink.findMany({
+      where: {
+        linkType: "follow",
+        fid: BigInt(fid),
+        deletedAt: null,
+      },
+    });
+
+    await this.cache.setUserFollowingFids(
+      fid,
+      following.map((link) => link.targetFid.toString()),
+    );
+
+    return following.map((link) => link.targetFid);
+  }
+
+  async getUserFollowers(
+    fid: string,
+    cursor?: string,
+    viewerFid?: string,
+  ): Promise<FetchUsersResponse> {
+    const followers = await this.client.farcasterLink.findMany({
+      where: {
+        timestamp: decodeCursorTimestamp(cursor),
+        linkType: "follow",
+        targetFid: BigInt(fid),
+        deletedAt: null,
+      },
+      orderBy: {
+        timestamp: "desc",
+      },
+      take: MAX_PAGE_SIZE,
+    });
+
+    const fids = followers.map((link) => link.fid.toString());
+    const users = await this.getUsers(fids, viewerFid);
+
+    return {
+      data: fids.map((fid) => users[fid]),
+      nextCursor:
+        followers.length === MAX_PAGE_SIZE
+          ? encodeCursor({
+              timestamp: followers[followers.length - 1]?.timestamp.getTime(),
+            })
+          : undefined,
+    };
+  }
+
+  async getUserFollowing(
+    fid: string,
+    cursor?: string,
+    viewerFid?: string,
+  ): Promise<FetchUsersResponse> {
+    const following = await this.client.farcasterLink.findMany({
+      where: {
+        timestamp: decodeCursorTimestamp(cursor),
+        linkType: "follow",
+        fid: BigInt(fid),
+        deletedAt: null,
+      },
+      orderBy: {
+        timestamp: "desc",
+      },
+      take: MAX_PAGE_SIZE,
+    });
+
+    const fids = following.map((link) => link.targetFid.toString());
+    const users = await this.getUsers(fids, viewerFid);
+
+    return {
+      data: fids.map((fid) => users[fid]),
+      nextCursor:
+        following.length === MAX_PAGE_SIZE
+          ? encodeCursor({
+              timestamp: following[following.length - 1]?.timestamp.getTime(),
+            })
+          : undefined,
+    };
+  }
+
+  async getUserMutuals(
+    fid: string,
+    targetFid: string,
+    cursor?: string,
+  ): Promise<FetchUsersResponse> {
+    const mutuals = await this.getAllUserMutuals(fid, targetFid);
+
+    const cursorFid = decodeCursor(cursor)?.fid;
+
+    const filteredMutals = cursorFid
+      ? mutuals.filter((user) => Number(user) > Number(cursorFid))
+      : mutuals;
+
+    const sortedMutals = filteredMutals
+      .sort((a, b) => Number(a) - Number(b))
+      .slice(0, MAX_PAGE_SIZE);
+
+    const users = await this.getUsers(sortedMutals, fid);
+
+    return {
+      data: sortedMutals.map((fid) => users[fid.toString()]),
+      nextCursor:
+        sortedMutals.length === MAX_PAGE_SIZE
+          ? encodeCursor({
+              fid: Number(sortedMutals[sortedMutals.length - 1]),
+            })
+          : undefined,
+    };
+  }
+
+  async getUserMutualsPreview(fid: string, targetFid: string) {
+    const cached = await this.cache.getMutualPreview(fid, targetFid);
+    if (cached) return cached;
+
+    const mutuals = await this.getAllUserMutuals(fid, targetFid);
+    const users = await this.getUsers(mutuals.slice(0, 3));
+
+    const data = {
+      preview: Object.values(users),
+      total: mutuals.length,
+    };
+
+    await this.cache.setMutualPreview(fid, targetFid, data);
+    return data;
+  }
+
+  async getAllUserMutuals(fid: string, targetFid: string) {
+    const cached = await this.cache.getMutualFids(fid, targetFid);
+    if (cached && cached.length > 0) return cached;
+
+    const following = await this.getUserFollowingFids(fid);
+    const mutuals = await this.client.farcasterLink.findMany({
+      where: {
+        fid: {
+          in: following.map((user) => BigInt(user)),
+        },
+        targetFid: BigInt(targetFid),
+        deletedAt: null,
+      },
+    });
+
+    const mutualFids = mutuals.map((mutual) => mutual.fid.toString());
+    await this.cache.setMutualFids(fid, targetFid, mutualFids);
+    return mutualFids;
+  }
+
+  async searchUsers(
+    query?: string,
+    limit?: number,
+    cursor?: string,
+    viewerFid?: string,
+  ): Promise<FetchUsersResponse> {
+    const decodedCursor = decodeCursor(cursor);
+
+    const conditions: string[] = [];
+    if (query) {
+      conditions.push(
+        `(((to_tsvector('english', "value") @@ to_tsquery('english', '${sanitizeInput(
+          query,
+        ).replaceAll(
+          " ",
+          "<->",
+        )}')) AND type IN (2, 6)) OR (type = 6 AND value LIKE '${sanitizeInput(
+          query,
+        ).toLowerCase()}%'))`,
+      );
+    }
+
+    if (decodedCursor?.followers) {
+      conditions.push(`stats.followers < ${decodedCursor.followers}`);
+    }
+
+    const whereClause =
+      conditions.length > 0 ? conditions.join(" AND ") : "true";
+
+    const data = await this.client.$queryRaw<
+      { fid: string; followers: number }[]
+    >(
+      Prisma.sql([
+        `
+          SELECT DISTINCT u.fid AS fid, followers
+          FROM "FarcasterUserData" u
+          JOIN "FarcasterUserStats" stats ON u.fid = stats.fid
+          WHERE ${whereClause}
+          ORDER BY stats.followers DESC
+          LIMIT ${limit || MAX_PAGE_SIZE}
+        `,
+      ]),
+    );
+
+    const users = await this.getUsers(
+      data.map(({ fid }) => fid.toString()),
+      viewerFid,
+    );
+    return {
+      data: data.map(({ fid }) => users[fid.toString()]),
+      nextCursor:
+        data.length === MAX_PAGE_SIZE
+          ? encodeCursor({
+              followers: data[data.length - 1]?.followers,
+            })
+          : undefined,
+    };
+  }
+
+  async searchChannels(query: string, limit?: number, cursor?: string) {
+    const conditions: string[] = [
+      `(name ILIKE '%${sanitizeInput(
+        query,
+      )}%' OR "channelId" ILIKE '%${sanitizeInput(query)}%')`,
+    ];
+
+    if (cursor) {
+      const decodedCursor = decodeCursor(cursor);
+      if (decodedCursor?.casts) {
+        conditions.push(`"casts" < '${decodedCursor.casts}'`);
+      }
+    }
+
+    const whereClause = conditions.join(" AND ");
+    const data = await this.client.$queryRaw<
+      (FarcasterParentUrl & { casts: number })[]
+    >(
+      Prisma.sql([
+        `
+          SELECT u.*, casts
+          FROM "FarcasterParentUrl" u
+          JOIN "FarcasterParentUrlStats" stats ON u.url = stats.url
+          WHERE ${whereClause}
+          ORDER BY casts DESC
+          LIMIT ${limit || MAX_PAGE_SIZE}
+        `,
+      ]),
+    );
+
+    const channels = await this.getChannels(data.map((channel) => channel.url));
+
+    return {
+      data: data.map((channel) => channels[channel.url]),
+      nextCursor:
+        data.length === MAX_PAGE_SIZE
+          ? encodeCursor({
+              casts: data[data.length - 1].casts,
+            })
+          : undefined,
+    };
+  }
+  async getCastLikes(
+    hash: string,
+    cursor?: string,
+    viewerFid?: string,
+  ): Promise<FetchUsersResponse> {
+    const likes = await this.client.farcasterCastReaction.findMany({
+      where: {
+        targetHash: hash,
+        reactionType: 1,
+        timestamp: decodeCursorTimestamp(cursor),
+        deletedAt: null,
+      },
+      orderBy: {
+        timestamp: "desc",
+      },
+      take: MAX_PAGE_SIZE,
+    });
+
+    const fids = likes.map((reaction) => reaction.fid.toString());
+    const users = await this.getUsers(fids, viewerFid);
+
+    return {
+      data: fids.map((fid) => users[fid]),
+      nextCursor:
+        likes.length === MAX_PAGE_SIZE
+          ? encodeCursor({
+              timestamp: likes[likes.length - 1]?.timestamp.getTime(),
+            })
+          : undefined,
+    };
+  }
+
+  async getCastRecasts(
+    hash: string,
+    cursor?: string,
+    viewerFid?: string,
+  ): Promise<FetchUsersResponse> {
+    const recasts = await this.client.farcasterCastReaction.findMany({
+      where: {
+        targetHash: hash,
+        reactionType: 2,
+        timestamp: decodeCursorTimestamp(cursor),
+        deletedAt: null,
+      },
+      orderBy: {
+        timestamp: "desc",
+      },
+      take: MAX_PAGE_SIZE,
+    });
+
+    const fids = recasts.map((reaction) => reaction.fid.toString());
+    const users = await this.getUsers(fids, viewerFid);
+
+    return {
+      data: fids.map((fid) => users[fid]),
+      nextCursor:
+        recasts.length === MAX_PAGE_SIZE
+          ? encodeCursor({
+              timestamp: recasts[recasts.length - 1]?.timestamp.getTime(),
+            })
+          : undefined,
+    };
+  }
+
+  async getCastQuotes(
+    hash: string,
+    cursor?: string,
+    viewerFid?: string,
+  ): Promise<FetchCastsResponse> {
+    const embeds = await this.client.farcasterCastEmbedCast.findMany({
+      where: {
+        embedHash: hash,
+        timestamp: decodeCursorTimestamp(cursor),
+        deletedAt: null,
+      },
+      orderBy: {
+        timestamp: "desc",
+      },
+      take: MAX_PAGE_SIZE,
+    });
+
+    const hashes = embeds.map((embed) => embed.hash);
+    const casts = await this.getCastsForHashes(hashes, viewerFid);
+
+    const data = hashes.map((hash) => casts[hash]);
+    return {
+      data,
+      nextCursor:
+        data.length === MAX_PAGE_SIZE
+          ? encodeCursor({
+              timestamp: data[data.length - 1]?.timestamp,
+            })
+          : undefined,
+    };
+  }
+
+  async getNewCastReplies(
+    hash: string,
+    cursor?: string,
+    viewerFid?: string,
+  ): Promise<FetchCastsResponse> {
+    const decodedCursor = decodeCursor(cursor);
+
+    const cached = await this.cache.getCastReplies(hash, "new");
+
+    const sortedCached = cached.sort(
+      (a, b) => b.score - a.score || a.hash.localeCompare(b.hash),
+    );
+
+    let filteredCached = sortedCached;
+    if (decodedCursor?.score && decodedCursor?.hash) {
+      filteredCached = sortedCached.filter(
+        (reply) =>
+          reply.score < Number(decodedCursor.score) ||
+          (reply.score === Number(decodedCursor.score) &&
+            reply.hash.localeCompare(decodedCursor.hash) > 0),
+      );
+    }
+    const slicedCached = filteredCached.slice(0, MAX_PAGE_SIZE);
+
+    if (slicedCached.length > 0) {
+      const hashes = slicedCached.map((reply) => reply.hash);
+      const data = await this.getCastsForHashes(hashes, viewerFid);
+
+      return {
+        data: hashes.map((hash) => data[hash]),
+        nextCursor:
+          slicedCached.length === MAX_PAGE_SIZE
+            ? encodeCursor({
+                hash: slicedCached[slicedCached.length - 1].hash,
+                score: slicedCached[slicedCached.length - 1].score,
+              })
+            : undefined,
+      };
+    }
+
+    const casts = await this.client.farcasterCast.findMany({
+      where: {
+        parentHash: hash,
+        deletedAt: null,
+      },
+      orderBy: {
+        timestamp: "desc",
+      },
+    });
+
+    const scoredReplies = casts.map((reply) => ({
+      reply,
+      score: reply.timestamp.getTime(),
+    }));
+
+    await this.cache.addCastReplies(
+      hash,
+      scoredReplies.map((reply) => ({
+        hash: reply.reply.hash,
+        score: reply.score,
+      })),
+      "new",
+    );
+
+    const sortedReplies = scoredReplies.sort(
+      (a, b) => b.score - a.score || a.reply.hash.localeCompare(b.reply.hash),
+    );
+
+    let filteredReplies = sortedReplies;
+    if (decodedCursor?.score && decodedCursor?.hash) {
+      filteredReplies = sortedReplies.filter(
+        (reply) =>
+          reply.score < Number(decodedCursor.score) ||
+          (reply.score === Number(decodedCursor.score) &&
+            reply.reply.hash.localeCompare(decodedCursor.hash) < 0),
+      );
+    }
+
+    const slicedReplies = filteredReplies.slice(0, MAX_PAGE_SIZE);
+
+    const hashes = slicedReplies.map((reply) => reply.reply.hash);
+    const data = await this.getCastsForHashes(hashes, viewerFid);
+    return {
+      data: hashes.map((hash) => data[hash]),
+      nextCursor:
+        slicedReplies.length === MAX_PAGE_SIZE
+          ? encodeCursor({
+              hash: slicedReplies[slicedReplies.length - 1].reply.hash,
+              score: slicedReplies[slicedReplies.length - 1].score,
+            })
+          : undefined,
+    };
+  }
+
+  async getTopCastReplies(
+    hash: string,
+    cursor?: string,
+    viewerFid?: string,
+  ): Promise<FetchCastsResponse> {
+    const decodedCursor = decodeCursor(cursor);
+
+    const cached = await this.cache.getCastReplies(hash, "top");
+
+    const sortedCached = cached.sort(
+      (a, b) => b.score - a.score || a.hash.localeCompare(b.hash),
+    );
+
+    let filteredCached = sortedCached;
+    if (decodedCursor?.score && decodedCursor?.hash) {
+      filteredCached = sortedCached.filter(
+        (reply) =>
+          reply.score < Number(decodedCursor.score) ||
+          (reply.score === Number(decodedCursor.score) &&
+            reply.hash.localeCompare(decodedCursor.hash) > 0),
+      );
+    }
+    const slicedCached = filteredCached.slice(0, MAX_PAGE_SIZE);
+
+    if (slicedCached.length > 0) {
+      const hashes = slicedCached.map((reply) => reply.hash);
+      const data = await this.getCastsForHashes(hashes, viewerFid);
+
+      return {
+        data: hashes.map((hash) => data[hash]),
+        nextCursor:
+          slicedCached.length === MAX_PAGE_SIZE
+            ? encodeCursor({
+                hash: slicedCached[slicedCached.length - 1].hash,
+                score: slicedCached[slicedCached.length - 1].score,
+              })
+            : undefined,
+      };
+    }
+
+    const conditions: string[] = [
+      `"parentHash" = '${sanitizeInput(hash)}'`,
+      `"deletedAt" IS NULL`,
+    ];
+
+    if (decodedCursor?.likes !== undefined) {
+      const likes = Number(decodedCursor.likes);
+      if (likes > 0) {
+        const cursorConditions = ["stats.likes IS NULL"];
+        cursorConditions.push(`stats.likes < ${likes}`);
+        cursorConditions.push(
+          `(stats.likes = ${
+            decodedCursor.likes
+          } AND c."timestamp" < '${new Date(
+            decodedCursor.timestamp,
+          ).toISOString()}')`,
+        );
+        conditions.push(`(${cursorConditions.join(" OR ")})`);
+      } else {
+        conditions.push(
+          `(stats.likes IS NULL OR stats.likes = 0) AND timestamp < '${new Date(
+            decodedCursor.timestamp,
+          ).toISOString()}'`,
+        );
+      }
+    }
+
+    const whereClause = conditions.join(" AND ");
+
+    const casts = await this.client.$queryRaw<
+      (FarcasterCast & { likes: number })[]
+    >(
+      Prisma.sql([
+        `
+          SELECT c.*, "stats".likes
+          FROM "FarcasterCast" c
+          LEFT JOIN "FarcasterCastStats" stats ON c.hash = stats.hash
+          WHERE ${whereClause}
+          ORDER BY stats.likes DESC NULLS LAST, timestamp DESC
+        `,
+      ]),
+    );
+
+    const scoredReplies = casts.map((reply) => ({
+      reply,
+      score: reply.likes || 0,
+    }));
+
+    await this.cache.addCastReplies(
+      hash,
+      scoredReplies.map((reply) => ({
+        hash: reply.reply.hash,
+        score: reply.score,
+      })),
+      "top",
+    );
+
+    const sortedReplies = scoredReplies.sort(
+      (a, b) => b.score - a.score || a.reply.hash.localeCompare(b.reply.hash),
+    );
+
+    let filteredReplies = sortedReplies;
+    if (decodedCursor?.score && decodedCursor?.hash) {
+      filteredReplies = sortedReplies.filter(
+        (reply) =>
+          reply.score < Number(decodedCursor.score) ||
+          (reply.score === Number(decodedCursor.score) &&
+            reply.reply.hash.localeCompare(decodedCursor.hash) < 0),
+      );
+    }
+
+    const slicedReplies = filteredReplies.slice(0, MAX_PAGE_SIZE);
+    const hashes = slicedReplies.map((reply) => reply.reply.hash);
+    const data = await this.getCastsForHashes(hashes, viewerFid);
+
+    return {
+      data: hashes.map((hash) => data[hash]),
+      nextCursor:
+        slicedReplies.length === MAX_PAGE_SIZE
+          ? encodeCursor({
+              hash: slicedReplies[slicedReplies.length - 1].reply.hash,
+              score: slicedReplies[slicedReplies.length - 1].score,
+            })
+          : undefined,
+    };
+  }
+
+  async getCastReplies(
+    hash: string,
+    cursor?: string,
+    viewerFid?: string,
+  ): Promise<FetchCastsResponse> {
+    const decodedCursor = decodeCursor(cursor);
+
+    const cached = await this.cache.getCastReplies(hash, "best");
+
+    const sortedCached = cached.sort(
+      (a, b) => b.score - a.score || a.hash.localeCompare(b.hash),
+    );
+
+    let filteredCached = sortedCached;
+    if (decodedCursor?.score && decodedCursor?.hash) {
+      filteredCached = sortedCached.filter(
+        (reply) =>
+          reply.score < Number(decodedCursor.score) ||
+          (reply.score === Number(decodedCursor.score) &&
+            reply.hash.localeCompare(decodedCursor.hash) > 0),
+      );
+    }
+    const slicedCached = filteredCached.slice(0, MAX_PAGE_SIZE);
+
+    if (slicedCached.length > 0) {
+      const hashes = slicedCached.map((reply) => reply.hash);
+      const data = await this.getCastsForHashes(hashes, viewerFid);
+
+      return {
+        data: hashes.map((hash) => data[hash]),
+        nextCursor:
+          slicedCached.length === MAX_PAGE_SIZE
+            ? encodeCursor({
+                hash: slicedCached[slicedCached.length - 1].hash,
+                score: slicedCached[slicedCached.length - 1].score,
+              })
+            : undefined,
+      };
+    }
+
+    const [cast, replies] = await Promise.all([
+      await this.client.farcasterCast.findUnique({
+        where: {
+          hash,
+        },
+      }),
+      await this.client.farcasterCast.findMany({
+        where: {
+          parentHash: hash,
+          deletedAt: null,
+        },
+        orderBy: {
+          timestamp: "desc",
+        },
+      }),
+    ]);
+
+    if (!cast) {
+      throw new Error("Cast not found");
+    }
+
+    const op = cast.fid;
+    const replyHashes = replies.map((reply) => reply.hash);
+    const replyFids = replies.map((reply) => reply.fid.toString());
+
+    const [opLikes, opReplies, opFollows, powerBadges, stats] =
+      await Promise.all([
+        await this.client.farcasterCastReaction.findMany({
+          where: {
+            fid: BigInt(op),
+            targetHash: {
+              in: replyHashes,
+            },
+          },
+        }),
+        await this.client.farcasterCast.findMany({
+          where: {
+            fid: BigInt(op),
+            parentHash: {
+              in: replyHashes,
+            },
+          },
+        }),
+        await this.client.farcasterLink.findMany({
+          where: {
+            fid: BigInt(op),
+            linkType: "follow",
+            targetFid: {
+              in: replyFids.map((fid) => BigInt(fid)),
+            },
+          },
+        }),
+        await this.cache.getUserPowerBadges(replyFids),
+        await this.client.farcasterCastStats.findMany({
+          where: {
+            hash: {
+              in: replyHashes,
+            },
+          },
+        }),
+      ]);
+
+    const opLikeMap = opLikes.reduce(
+      (acc, like) => {
+        acc[like.targetHash] = true;
+        return acc;
+      },
+      {} as Record<string, boolean>,
+    );
+
+    const opReplyMap = opReplies.reduce(
+      (acc, reply) => {
+        if (!reply.parentHash) return acc;
+        acc[reply.parentHash] = true;
+        return acc;
+      },
+      {} as Record<string, boolean>,
+    );
+
+    const opFollowMap = opFollows.reduce(
+      (acc, follow) => {
+        acc[follow.targetFid.toString()] = true;
+        return acc;
+      },
+      {} as Record<string, boolean>,
+    );
+
+    const badgesMap = powerBadges.reduce(
+      (acc, badge, i) => {
+        if (!badge) return acc;
+        acc[replyFids[i]] = true;
+        return acc;
+      },
+      {} as Record<string, boolean>,
+    );
+
+    const statsMap = stats.reduce(
+      (acc, stat) => {
+        acc[stat.hash] = stat;
+        return acc;
+      },
+      {} as Record<string, FarcasterCastStats>,
+    );
+
+    const scoredReplies = replies.map((reply) => {
+      let score = statsMap[reply.hash]?.likes || 0;
+      if (reply.fid === reply.parentFid) {
+        score += 5_000_000;
+      } else if (opReplyMap[reply.hash]) {
+        score += 4_000_000;
+      } else if (opLikeMap[reply.hash]) {
+        score += 3_000_000;
+      } else if (opFollowMap[reply.fid.toString()]) {
+        score += 2_000_000;
+      } else if (badgesMap[reply.fid.toString()]) {
+        score += 1_000_000;
+      }
+      return {
+        reply,
+        score,
+      };
+    });
+
+    await this.cache.addCastReplies(
+      hash,
+      scoredReplies.map((reply) => ({
+        hash: reply.reply.hash,
+        score: reply.score,
+      })),
+      "best",
+    );
+
+    const sortedReplies = scoredReplies.sort(
+      (a, b) => b.score - a.score || a.reply.hash.localeCompare(b.reply.hash),
+    );
+
+    let filteredReplies = sortedReplies;
+    if (decodedCursor?.score && decodedCursor?.hash) {
+      filteredReplies = sortedReplies.filter(
+        (reply) =>
+          reply.score < Number(decodedCursor.score) ||
+          (reply.score === Number(decodedCursor.score) &&
+            reply.reply.hash.localeCompare(decodedCursor.hash) < 0),
+      );
+    }
+
+    const slicedReplies = filteredReplies.slice(0, MAX_PAGE_SIZE);
+    const hashes = slicedReplies.map((reply) => reply.reply.hash);
+    const data = await this.getCastsForHashes(hashes, viewerFid);
+
+    return {
+      data: hashes.map((hash) => data[hash]),
+      nextCursor:
+        slicedReplies.length === MAX_PAGE_SIZE
+          ? encodeCursor({
+              hash: slicedReplies[slicedReplies.length - 1].reply.hash,
+              score: slicedReplies[slicedReplies.length - 1].score,
+            })
+          : undefined,
+    };
+  }
+
+  parseChannelMentions(text: string): string[] {
+    return text
+      .split(/\s+/)
+      .filter((word) => word.startsWith("/"))
+      .map((mention) => mention.slice(1).trim())
+      .filter(Boolean);
   }
 }

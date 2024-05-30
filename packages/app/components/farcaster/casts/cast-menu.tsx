@@ -258,8 +258,6 @@ const ViewCastEngagements = ({ cast }: { cast: FarcasterCastV1 }) => {
 const CastSource = ({ cast }: { cast: FarcasterCastV1 }) => {
   const { data } = useUser(cast.appFid, true);
 
-  console.log(data);
-
   return (
     <OpenLink
       image={

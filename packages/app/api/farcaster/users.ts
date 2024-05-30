@@ -35,9 +35,9 @@ export const useUser = (username: string, fid?: boolean) => {
 };
 
 export const fetchUserMutualsPreview = async (
-  username: string,
+  fid: string,
 ): Promise<FarcasterUserMutualsPreview> => {
-  return await makeRequest(`/farcaster/users/${username}/mutuals-preview`);
+  return await makeRequest(`/farcaster/users/${fid}/mutuals-preview`);
 };
 
 export const fetchUsers = async (

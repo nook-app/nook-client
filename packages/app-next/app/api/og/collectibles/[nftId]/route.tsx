@@ -65,9 +65,6 @@ const NftPreview = ({
   nft,
   creator,
 }: { nft: SimpleHashNFT; creator?: FarcasterUserV1 }) => {
-  console.log(
-    `linear-gradient(0deg, ${colors.blackA.blackA12}, ${colors.blackA.blackA11})`,
-  );
   return (
     <div
       tw="flex flex-row w-full h-full items-center p-8"

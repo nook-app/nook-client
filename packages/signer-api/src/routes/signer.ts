@@ -110,7 +110,6 @@ export const signerRoutes = async (fastify: FastifyInstance) => {
       Reply: { id: string; hash: string | null } | { message: string };
     }>("/signer/cast-add/scheduled", async (request, reply) => {
       try {
-        console.log("submitting pending casts");
         const response = await signerService.submitPendingCast(
           request.body.data,
         );
