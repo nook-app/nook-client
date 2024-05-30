@@ -33,6 +33,7 @@ export default function TabLayout() {
           opacity: isScrolling ? 0.5 : 1,
         },
         tabBarShowLabel: false,
+        lazy: false,
       }}
     >
       <Tabs.Screen
