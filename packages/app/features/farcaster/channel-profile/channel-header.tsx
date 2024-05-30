@@ -16,9 +16,9 @@ import { formatNumber } from "../../../utils";
 import { FarcasterChannelMenu } from "../../../components/farcaster/channels/channel-menu";
 import { MoreHorizontal } from "@tamagui/lucide-icons";
 import { ChannelFollowBadge } from "../../../components/farcaster/channels/channel-follow-badge";
-import { useUsers } from "../../../api/farcaster";
 import { Link } from "../../../components/link";
 import { memo } from "react";
+import { useUsers } from "../../../hooks/api/users";
 
 export const ChannelHeader = ({
   channel,

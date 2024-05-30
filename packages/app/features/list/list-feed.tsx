@@ -23,14 +23,14 @@ export const ListFeed = ({
   paddingBottom?: number;
   asTabs?: boolean;
 }) => {
-  const [isRefetching, setIsRefetching] = useState(false);
   const {
     data,
     isLoading,
     hasNextPage,
     fetchNextPage,
     isFetchingNextPage,
-    refetch,
+    refresh,
+    isRefetching,
   } = useFollowedLists(filter, initialData);
 
   if (isLoading) {
@@ -39,19 +39,13 @@ export const ListFeed = ({
 
   const lists = data?.pages.flatMap((page) => page.data) ?? [];
 
-  const handleRefresh = async () => {
-    setIsRefetching(true);
-    await refetch();
-    setIsRefetching(false);
-  };
-
   return (
     <ListInfiniteFeed
       lists={lists}
       fetchNextPage={fetchNextPage}
       isFetchingNextPage={isFetchingNextPage}
       hasNextPage={hasNextPage}
-      refetch={handleRefresh}
+      refetch={refresh}
       isRefetching={isRefetching}
       paddingTop={paddingTop}
       paddingBottom={paddingBottom}

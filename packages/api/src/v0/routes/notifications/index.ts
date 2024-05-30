@@ -117,20 +117,24 @@ export const notificationsRoutes = async (fastify: FastifyInstance) => {
       } catch (e) {}
 
       try {
+        console.time("1");
         const data = await client.getNotifications(
           request.body,
           request.query.cursor,
         );
+        console.timeEnd("1");
 
         const fids = data.data
           .flatMap((n) => n.fids)
           .filter(Boolean) as string[];
         const hashes = data.data.map((n) => n.hash).filter(Boolean) as string[];
 
+        console.time("2");
         const [users, casts] = await Promise.all([
           farcaster.getUsers({ fids }, viewerFid),
           farcaster.getCastsForHashes(hashes, viewerFid),
         ]);
+        console.timeEnd("2");
 
         const castMap = casts.data.reduce(
           (acc, cast) => {

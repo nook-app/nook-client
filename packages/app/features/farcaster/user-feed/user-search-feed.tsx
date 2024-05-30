@@ -1,10 +1,9 @@
 "use client";
 
-import { useSearchUsers } from "../../../api/farcaster";
 import { Loading } from "../../../components/loading";
 import { FetchUsersResponse } from "@nook/common/types";
 import { FarcasterUserInfiniteFeed } from "./user-feed";
-import { useState } from "react";
+import { useSearchUsers } from "../../../hooks/api/users";
 
 export const UserSearchFeed = ({
   q,
@@ -19,14 +18,14 @@ export const UserSearchFeed = ({
   paddingBottom?: number;
   asTabs?: boolean;
 }) => {
-  const [isRefetching, setIsRefetching] = useState(false);
   const {
     data,
     isLoading,
     hasNextPage,
     fetchNextPage,
     isFetchingNextPage,
-    refetch,
+    refresh,
+    isRefetching,
   } = useSearchUsers(q, undefined, initialData);
 
   if (isLoading) {
@@ -35,19 +34,13 @@ export const UserSearchFeed = ({
 
   const users = data?.pages.flatMap((page) => page.data) ?? [];
 
-  const handleRefresh = async () => {
-    setIsRefetching(true);
-    await refetch();
-    setIsRefetching(false);
-  };
-
   return (
     <FarcasterUserInfiniteFeed
       users={users}
       fetchNextPage={fetchNextPage}
       isFetchingNextPage={isFetchingNextPage}
       hasNextPage={hasNextPage}
-      refetch={handleRefresh}
+      refetch={refresh}
       isRefetching={isRefetching}
       paddingTop={paddingTop}
       paddingBottom={paddingBottom}

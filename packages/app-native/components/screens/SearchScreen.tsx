@@ -9,7 +9,7 @@ import { FarcasterUserBadge } from "@nook/app/components/farcaster/users/user-di
 import { FarcasterChannelBadge } from "@nook/app/components/farcaster/channels/channel-display";
 import { SearchResults } from "@nook/app/features/search/search-bar";
 import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
-import { useRecommendedChannels } from "@nook/app/api/farcaster";
+import { useRecommendedChannels } from "@nook/app/hooks/api/channels";
 import { Channel } from "@nook/common/types";
 import { FarcasterChannelFeedItem } from "@nook/app/features/farcaster/channel-feed/channel-feed-item";
 

@@ -1,4 +1,4 @@
-import { useCast } from "../../api/farcaster";
+import { useCast } from "../../hooks/api/casts";
 import { UrlContentResponse } from "@nook/common/types";
 import { EmbedCast } from "./EmbedCast";
 

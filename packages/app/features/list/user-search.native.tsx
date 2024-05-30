@@ -1,11 +1,11 @@
 import { useCallback, useRef, useState } from "react";
 import { useScroll } from "../../context/scroll";
 import { NativeScrollEvent, NativeSyntheticEvent } from "react-native";
-import { useSearchUsers } from "../../api/farcaster";
 import { Input, Separator, Spinner, View } from "@nook/app-ui";
 import { FlashList } from "@shopify/flash-list";
 import { ItemUser } from "./item-user";
 import { List } from "@nook/common/types";
+import { useSearchUsers } from "../../hooks/api/users";
 
 export const ListUserSearch = ({
   list,

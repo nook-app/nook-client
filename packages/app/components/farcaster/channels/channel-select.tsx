@@ -2,7 +2,7 @@ import { ReactNode, useEffect, useMemo, useState } from "react";
 import {
   useRecommendedChannels,
   useSearchChannels,
-} from "../../../api/farcaster";
+} from "../../../hooks/api/channels";
 import {
   Adapt,
   Input,

@@ -7,7 +7,7 @@ import { FarcasterChannelDisplay } from "../../components/farcaster/channels/cha
 import { useMuteChannel } from "../../hooks/useMuteChannel";
 import { Link } from "../../components/link";
 import { useMuteStore } from "../../store/useMuteStore";
-import { useChannelUrls } from "../../api/farcaster";
+import { useChannelUrls } from "../../hooks/api/channels";
 
 export const MutedChannels = ({ settings }: { settings: User }) => {
   const channels = useMuteStore((state) => state.channels);

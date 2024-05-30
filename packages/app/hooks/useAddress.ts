@@ -1,7 +1,7 @@
 import { useUserStore } from "../store/useUserStore";
-import { useUsersByAddress } from "../api/farcaster";
 import { useQuery } from "@tanstack/react-query";
 import { makeUrlRequest } from "../api/utils";
+import { useUsersByAddress } from "./api/users";
 
 export const useAddress = (address: string) => {
   const storedUser = useUserStore((state) => state.addresses[address]);

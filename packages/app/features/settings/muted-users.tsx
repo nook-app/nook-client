@@ -2,12 +2,12 @@
 
 import { NookText, Spinner, View, XStack, YStack } from "@nook/app-ui";
 import { FarcasterUserV1, User } from "@nook/common/types";
-import { useUsers } from "../../api/farcaster";
 import { FarcasterUserDisplay } from "../../components/farcaster/users/user-display";
 import { VolumeX } from "@tamagui/lucide-icons";
 import { useMuteUser } from "../../hooks/useMuteUser";
 import { Link } from "../../components/link";
 import { useMuteStore } from "../../store/useMuteStore";
+import { useUsers } from "../../hooks/api/users";
 
 export const MutedUsers = ({ settings }: { settings: User }) => {
   const users = useMuteStore((state) => state.users);

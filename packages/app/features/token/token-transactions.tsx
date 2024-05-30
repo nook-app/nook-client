@@ -33,14 +33,14 @@ export const TokenTransactionsFeed = ({
   paddingBottom?: number;
   ListHeaderComponent?: JSX.Element;
 }) => {
-  const [isRefetching, setIsRefetching] = useState(false);
   const {
     data,
     isLoading,
-    refetch,
+    refresh,
     fetchNextPage,
     isFetchingNextPage,
     hasNextPage,
+    isRefetching,
   } = useTokenTransactions(filter);
 
   const transactions = data?.pages.flatMap((page) => page.data) ?? [];
@@ -59,19 +59,13 @@ export const TokenTransactionsFeed = ({
     );
   }
 
-  const handleRefresh = async () => {
-    setIsRefetching(true);
-    await refetch();
-    setIsRefetching(false);
-  };
-
   return (
     <InfiniteFeed
       data={transactions}
       fetchNextPage={fetchNextPage}
       isFetchingNextPage={isFetchingNextPage}
       hasNextPage={hasNextPage}
-      refetch={handleRefresh}
+      refetch={refresh}
       isRefetching={isRefetching}
       paddingTop={paddingTop}
       paddingBottom={paddingBottom}

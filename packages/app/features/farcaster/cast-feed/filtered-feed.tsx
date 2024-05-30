@@ -5,10 +5,10 @@ import {
   FarcasterFeedFilter,
   FetchCastsResponse,
 } from "@nook/common/types";
-import { useCastFeed } from "../../../api/farcaster";
 import { FarcasterInfiniteFeed } from "./infinite-feed";
 import { Loading } from "../../../components/loading";
-import { memo, useState } from "react";
+import { memo } from "react";
+import { useCastFeed } from "../../../hooks/api/feed";
 
 export const FarcasterFilteredFeed = memo(
   ({
@@ -28,14 +28,14 @@ export const FarcasterFilteredFeed = memo(
     paddingBottom?: number;
     asTabs?: boolean;
   }) => {
-    const [isRefetching, setIsRefetching] = useState(false);
     const {
       data,
       isLoading,
       hasNextPage,
       fetchNextPage,
       isFetchingNextPage,
-      refetch,
+      refresh,
+      isRefetching,
     } = useCastFeed(filter, api, initialData);
 
     if (isLoading) {
@@ -44,12 +44,6 @@ export const FarcasterFilteredFeed = memo(
 
     const casts = data?.pages.flatMap((page) => page.data) ?? [];
 
-    const handleRefresh = async () => {
-      setIsRefetching(true);
-      await refetch();
-      setIsRefetching(false);
-    };
-
     return (
       <FarcasterInfiniteFeed
         casts={casts}
@@ -57,7 +51,7 @@ export const FarcasterFilteredFeed = memo(
         isFetchingNextPage={isFetchingNextPage}
         hasNextPage={hasNextPage}
         displayMode={displayMode}
-        refetch={handleRefresh}
+        refetch={refresh}
         isRefetching={isRefetching}
         paddingTop={paddingTop}
         paddingBottom={paddingBottom}

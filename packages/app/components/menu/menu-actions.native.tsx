@@ -5,7 +5,7 @@ import { useMenu } from "./context";
 import { MenuItem } from "./menu-item";
 import * as Clipboard from "expo-clipboard";
 import { Linking } from "react-native";
-import { useUser } from "../../api/farcaster";
+import { useUser } from "../../hooks/api/users";
 import { CdnAvatar } from "../cdn-avatar";
 
 export const CopyLink = ({ link }: { link: string }) => {

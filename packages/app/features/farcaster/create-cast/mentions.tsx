@@ -1,4 +1,3 @@
-import { useSearchChannels, useSearchUsers } from "../../../api/farcaster";
 import {
   Adapt,
   Popover,
@@ -15,6 +14,8 @@ import { FarcasterUserDisplay } from "../../../components/farcaster/users/user-d
 import { KeyboardAvoidingView, Platform } from "react-native";
 import { SubmitCastAddRequest } from "@nook/common/types";
 import { FullWindowOverlay } from "react-native-screens";
+import { useSearchUsers } from "../../../hooks/api/users";
+import { useSearchChannels } from "../../../hooks/api/channels";
 
 export const CreateCastMentions = ({ children }: { children: ReactNode }) => {
   const { activeCast, updateText, activeIndex } = useCreateCast();

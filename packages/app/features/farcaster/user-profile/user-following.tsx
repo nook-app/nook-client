@@ -1,9 +1,9 @@
 "use client";
 
-import { useUserFollowing } from "../../../api/farcaster";
 import { Loading } from "../../../components/loading";
 import { FetchUsersResponse } from "@nook/common/types";
 import { FarcasterUserInfiniteFeed } from "../user-feed/user-feed";
+import { useUserFollowing } from "../../../hooks/api/users";
 
 export const FarcasterUserFollowing = ({
   fid,

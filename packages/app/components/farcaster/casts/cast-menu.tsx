@@ -10,7 +10,7 @@ import {
 } from "@tamagui/lucide-icons";
 import { Channel, FarcasterCastV1, FarcasterUserV1 } from "@nook/common/types";
 import { useCallback, useState } from "react";
-import { useUser } from "../../../api/farcaster";
+import { useUser } from "../../../hooks/api/users";
 import { Spinner, View } from "@nook/app-ui";
 import { useFollowUser } from "../../../hooks/useFollowUser";
 import { CdnAvatar } from "../../cdn-avatar";

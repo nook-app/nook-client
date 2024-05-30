@@ -1,6 +1,6 @@
 "use client";
 
-import { useSearchChannels } from "../../../api/farcaster";
+import { useSearchChannels } from "../../../hooks/api/channels";
 import { Loading } from "../../../components/loading";
 import { FetchChannelsResponse } from "@nook/common/types";
 import { FarcasterChannelInfiniteFeed } from "./channel-feed";
@@ -19,14 +19,14 @@ export const ChannelSearchFeed = ({
   paddingBottom?: number;
   asTabs?: boolean;
 }) => {
-  const [isRefetching, setIsRefetching] = useState(false);
   const {
     data,
     isLoading,
     hasNextPage,
     fetchNextPage,
     isFetchingNextPage,
-    refetch,
+    refresh,
+    isRefetching,
   } = useSearchChannels(q, undefined, initialData);
 
   if (isLoading) {
@@ -35,19 +35,13 @@ export const ChannelSearchFeed = ({
 
   const channels = data?.pages.flatMap((page) => page.data) ?? [];
 
-  const handleRefresh = async () => {
-    setIsRefetching(true);
-    await refetch();
-    setIsRefetching(false);
-  };
-
   return (
     <FarcasterChannelInfiniteFeed
       channels={channels}
       fetchNextPage={fetchNextPage}
       isFetchingNextPage={isFetchingNextPage}
       hasNextPage={hasNextPage}
-      refetch={handleRefresh}
+      refetch={refresh}
       isRefetching={isRefetching}
       paddingTop={paddingTop}
       paddingBottom={paddingBottom}

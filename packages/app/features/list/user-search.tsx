@@ -1,12 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { useSearchUsers } from "../../api/farcaster";
 import { Input, Separator, Spinner, View } from "@nook/app-ui";
 import { ItemUser } from "./item-user";
 import { InfiniteScrollList } from "../../components/infinite-scroll-list";
 import { FarcasterUserV1, List } from "@nook/common/types";
 import { Loading } from "../../components/loading";
+import { useSearchUsers } from "../../hooks/api/users";
 
 export const ListUserSearch = ({
   list,

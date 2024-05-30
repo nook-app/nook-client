@@ -2,11 +2,11 @@
 
 import { NookText, View, XStack, YStack } from "@nook/app-ui";
 import { Channel } from "@nook/common/types";
-import { useUsers } from "../../../api/farcaster";
 import { FarcasterUserDisplay } from "../../../components/farcaster/users/user-display";
 import { FarcasterUserFollowButton } from "../../../components/farcaster/users/user-follow-button";
 import { SearchBar } from "../../search/search-bar";
 import { ChannelOverview } from "../../../components/farcaster/channels/channel-overview";
+import { useUsers } from "../../../hooks/api/users";
 
 export const ChannelSidebar = ({ channel }: { channel: Channel }) => {
   return (

@@ -12,12 +12,12 @@ import {
 import { ReactNode, useCallback, useEffect, useState } from "react";
 import { useAuth } from "../../context/auth";
 import { Session } from "@nook/common/types";
-import { useUsers } from "../../api/farcaster";
 import { FarcasterUserDisplay } from "../../components/farcaster/users/user-display";
 import { Check } from "@tamagui/lucide-icons";
 import { getSessions } from "../../utils/local-storage";
 import { Link } from "../../components/link";
 import { Platform } from "react-native";
+import { useUsers } from "../../hooks/api/users";
 
 export const AccountSwitcher = ({ children }: { children: ReactNode }) => {
   const [open, setOpen] = useState<boolean>(false);

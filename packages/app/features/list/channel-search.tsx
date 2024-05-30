@@ -1,12 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { useSearchChannels } from "../../api/farcaster";
 import { Input, Separator, Spinner, View } from "@nook/app-ui";
 import { ItemChannel } from "./item-channel";
 import { InfiniteScrollList } from "../../components/infinite-scroll-list";
 import { Channel, List } from "@nook/common/types";
 import { Loading } from "../../components/loading";
+import { useSearchChannels } from "../../hooks/api/channels";
 
 export const ListChannelSearch = ({
   list,

@@ -14,7 +14,7 @@ import { FarcasterCastResponseText } from "../../../components/farcaster/casts/c
 import { Embeds } from "../../../components/embeds/Embed";
 import { FarcasterCastResponseEngagement } from "../../../components/farcaster/casts/cast-engagement";
 import { FarcasterChannelBadge } from "../../../components/farcaster/channels/channel-display";
-import { fetchCast, useCastReplies } from "../../../api/farcaster";
+import { fetchCast } from "../../../api/farcaster";
 import {
   FarcasterLikeActionButton,
   FarcasterRecastActionButton,
@@ -34,6 +34,7 @@ import { FarcasterCastResponseMenu } from "../../../components/farcaster/casts/c
 import { FarcasterCastLink } from "../../../components/farcaster/casts/cast-link";
 import { View as RNView, ScrollView as RNScrollView } from "react-native";
 import { useQuery } from "@tanstack/react-query";
+import { useCastReplies } from "../../../hooks/api/feed";
 
 function formatTimestampTime(timestamp: number) {
   const timeFormatter = new Intl.DateTimeFormat("en-US", {
@@ -67,9 +68,14 @@ export const FarcasterExpandedCast = memo(
     paddingBottom: number;
   }) => {
     const [replySort, setReplySort] = useState<"best" | "top" | "new">("best");
-    const [isRefetching, setIsRefetching] = useState(false);
-    const { data, hasNextPage, fetchNextPage, isFetchingNextPage, refetch } =
-      useCastReplies(cast.hash, replySort, initialData);
+    const {
+      data,
+      hasNextPage,
+      fetchNextPage,
+      isFetchingNextPage,
+      refresh,
+      isRefetching,
+    } = useCastReplies(cast.hash, replySort, initialData);
 
     const scrollViewRef = useRef<RNScrollView>(null);
     const viewRef = useRef<RNView>(null);
@@ -80,12 +86,6 @@ export const FarcasterExpandedCast = memo(
     });
 
     const casts = data?.pages.flatMap((page) => page.data) ?? [];
-
-    const handleRefresh = async () => {
-      setIsRefetching(true);
-      await refetch();
-      setIsRefetching(false);
-    };
 
     return (
       <ScrollView
@@ -128,7 +128,7 @@ export const FarcasterExpandedCast = memo(
             isFetchingNextPage={isFetchingNextPage}
             hasNextPage={hasNextPage}
             displayMode={Display.REPLIES}
-            refetch={handleRefresh}
+            refetch={refresh}
             isRefetching={isRefetching}
             paddingBottom={paddingBottom}
           />

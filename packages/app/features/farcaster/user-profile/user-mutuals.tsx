@@ -1,9 +1,9 @@
 "use client";
 
-import { useUserMutuals } from "../../../api/farcaster";
 import { Loading } from "../../../components/loading";
 import { FetchUsersResponse } from "@nook/common/types";
 import { FarcasterUserInfiniteFeed } from "../user-feed/user-feed";
+import { useUserMutuals } from "../../../hooks/api/users";
 
 export const FarcasterUserMutuals = ({
   fid,

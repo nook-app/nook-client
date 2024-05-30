@@ -1,8 +1,7 @@
 "use client";
 
 import { FarcasterUserInfiniteFeed } from "../user-feed/user-feed";
-import { useState } from "react";
-import { useUsers } from "../../../api/farcaster";
+import { useUsers } from "../../../hooks/api/users";
 import { useChannel } from "../../../hooks/useChannel";
 
 export const FarcasterChannelHosts = ({
@@ -10,7 +9,6 @@ export const FarcasterChannelHosts = ({
 }: {
   channelId: string;
 }) => {
-  const [isRefetching, setIsRefetching] = useState(false);
   const { channel } = useChannel(channelId);
 
   const fids = [];

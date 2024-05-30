@@ -14,7 +14,10 @@ import {
   useInfiniteQuery,
   useQuery,
   InfiniteData,
+  UseInfiniteQueryResult,
+  useQueryClient,
 } from "@tanstack/react-query";
+import { useState } from "react";
 
 export const fetchTokenHoldings = async (
   filter: TokensFilter,
@@ -81,15 +84,22 @@ export const fetchTokenTransactions = async (
 export const useTokenTransactions = (
   req: TokenTransactionFilter,
   initialData?: TokenTransactions,
-) => {
-  return useInfiniteQuery<
+): UseInfiniteQueryResult<InfiniteData<TokenTransactions>, unknown> & {
+  refresh: () => Promise<void>;
+} => {
+  const [isRefetching, setIsRefetching] = useState(false);
+  const queryClient = useQueryClient();
+
+  const queryKey = ["tokenTransactions", JSON.stringify(req)];
+
+  const props = useInfiniteQuery<
     TokenTransactions,
     unknown,
     InfiniteData<TokenTransactions>,
     string[],
     string | undefined
   >({
-    queryKey: ["tokenTransactions", JSON.stringify(req)],
+    queryKey,
     queryFn: async ({ pageParam }) => {
       const data = await fetchTokenTransactions({ ...req, cursor: pageParam });
       return data;
@@ -104,6 +114,24 @@ export const useTokenTransactions = (
     initialPageParam: initialData?.nextCursor,
     refetchOnWindowFocus: false,
   });
+
+  const refresh = async () => {
+    setIsRefetching(true);
+    queryClient.setQueryData<InfiniteData<TokenTransactions>>(
+      queryKey,
+      (data) => {
+        if (!data) return undefined;
+        return {
+          pages: data.pages.slice(0, 1),
+          pageParams: data.pageParams.slice(0, 1),
+        };
+      },
+    );
+    await props.refetch();
+    setIsRefetching(false);
+  };
+
+  return { ...props, refresh, isRefetching };
 };
 
 export const fetchTokenHolders = async (

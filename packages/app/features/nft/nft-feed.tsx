@@ -113,12 +113,12 @@ const NftFeedComponent = memo(
     setCreated: (value: boolean) => void;
   }) => {
     const defaultSort = filter.orderBy || "transfer_time__desc";
-    const [isRefetching, setIsRefetching] = useState(false);
     const [orderBy, setOrderBy] = useState<NftFeedOrderBy>(defaultSort);
     const {
       data,
       isLoading,
-      refetch,
+      refresh,
+      isRefetching,
       fetchNextPage,
       isFetchingNextPage,
       hasNextPage,
@@ -135,19 +135,13 @@ const NftFeedComponent = memo(
       return <Loading />;
     }
 
-    const handleRefresh = async () => {
-      setIsRefetching(true);
-      await refetch();
-      setIsRefetching(false);
-    };
-
     return (
       <InfiniteFeed
         data={nfts}
         fetchNextPage={fetchNextPage}
         isFetchingNextPage={isFetchingNextPage}
         hasNextPage={hasNextPage}
-        refetch={handleRefresh}
+        refetch={refresh}
         isRefetching={isRefetching}
         paddingTop={paddingTop}
         paddingBottom={paddingBottom}
@@ -186,12 +180,12 @@ const NftCollectionFeedComponent = memo(
     setCreated: (value: boolean) => void;
   }) => {
     const defaultSort = filter.orderBy || "transfer_time__desc";
-    const [isRefetching, setIsRefetching] = useState(false);
     const [orderBy, setOrderBy] = useState<NftFeedOrderBy>(defaultSort);
     const {
       data,
       isLoading,
-      refetch,
+      refresh,
+      isRefetching,
       fetchNextPage,
       isFetchingNextPage,
       hasNextPage,
@@ -208,19 +202,13 @@ const NftCollectionFeedComponent = memo(
       return <Loading />;
     }
 
-    const handleRefresh = async () => {
-      setIsRefetching(true);
-      await refetch();
-      setIsRefetching(false);
-    };
-
     return (
       <InfiniteFeed
         data={nfts}
         fetchNextPage={fetchNextPage}
         isFetchingNextPage={isFetchingNextPage}
         hasNextPage={hasNextPage}
-        refetch={handleRefresh}
+        refetch={refresh}
         isRefetching={isRefetching}
         paddingTop={paddingTop}
         paddingBottom={paddingBottom}
@@ -259,11 +247,11 @@ const NftCreatedFeedComponent = memo(
     setDisplay: (value: NftFeedDisplay) => void;
     setCreated: (value: boolean) => void;
   }) => {
-    const [isRefetching, setIsRefetching] = useState(false);
     const {
       data,
       isLoading,
-      refetch,
+      refresh,
+      isRefetching,
       fetchNextPage,
       isFetchingNextPage,
       hasNextPage,
@@ -275,19 +263,13 @@ const NftCreatedFeedComponent = memo(
       return <Loading />;
     }
 
-    const handleRefresh = async () => {
-      setIsRefetching(true);
-      await refetch();
-      setIsRefetching(false);
-    };
-
     return (
       <InfiniteFeed
         data={nfts}
         fetchNextPage={fetchNextPage}
         isFetchingNextPage={isFetchingNextPage}
         hasNextPage={hasNextPage}
-        refetch={handleRefresh}
+        refetch={refresh}
         isRefetching={isRefetching}
         paddingTop={paddingTop}
         paddingBottom={paddingBottom}
@@ -323,11 +305,11 @@ const NftCollectionCreatedFeedComponent = memo(
     setDisplay: (value: NftFeedDisplay) => void;
     setCreated: (value: boolean) => void;
   }) => {
-    const [isRefetching, setIsRefetching] = useState(false);
     const {
       data,
       isLoading,
-      refetch,
+      refresh,
+      isRefetching,
       fetchNextPage,
       isFetchingNextPage,
       hasNextPage,
@@ -339,19 +321,13 @@ const NftCollectionCreatedFeedComponent = memo(
       return <Loading />;
     }
 
-    const handleRefresh = async () => {
-      setIsRefetching(true);
-      await refetch();
-      setIsRefetching(false);
-    };
-
     return (
       <InfiniteFeed
         data={nfts}
         fetchNextPage={fetchNextPage}
         isFetchingNextPage={isFetchingNextPage}
         hasNextPage={hasNextPage}
-        refetch={handleRefresh}
+        refetch={refresh}
         isRefetching={isRefetching}
         paddingTop={paddingTop}
         paddingBottom={paddingBottom}

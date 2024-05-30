@@ -1,7 +1,7 @@
 import { useCallback, useRef, useState } from "react";
 import { useScroll } from "../../context/scroll";
 import { NativeScrollEvent, NativeSyntheticEvent } from "react-native";
-import { useSearchChannels } from "../../api/farcaster";
+import { useSearchChannels } from "../../hooks/api/channels";
 import { Input, Separator, Spinner, View } from "@nook/app-ui";
 import { FlashList } from "@shopify/flash-list";
 import { ItemChannel } from "./item-channel";

@@ -19,7 +19,7 @@ import { useAuth } from "../../../context/auth";
 import { ChevronDown, X } from "@tamagui/lucide-icons";
 import { useParams, useRouter } from "solito/navigation";
 import { UrlContentResponse } from "@nook/common/types";
-import { fetchChannel, useCast } from "../../../api/farcaster";
+import { fetchChannel } from "../../../api/farcaster";
 import { fetchContent } from "../../../api/content";
 import { EmbedCast } from "../../../components/embeds/EmbedCast";
 import { Embed } from "../../../components/embeds/Embed";
@@ -31,6 +31,7 @@ import {
 import { ChannelSelect } from "../../../components/farcaster/channels/channel-select";
 import { CreateCastMentions } from "./mentions";
 import { useTheme } from "../../../context/theme";
+import { useCast } from "../../../hooks/api/casts";
 
 export const CreateCastButton = ({ onSubmit }: { onSubmit?: () => void }) => {
   const { allCastsValid, isCasting, cast, reset, thread } = useCreateCast();

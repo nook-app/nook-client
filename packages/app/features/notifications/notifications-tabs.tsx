@@ -38,14 +38,14 @@ export const NotificationsPriorityFeed = ({
   asTabs?: boolean;
 }) => {
   const queryClient = useQueryClient();
-  const [isRefetching, setIsRefetching] = useState(false);
   const {
     data,
     isLoading,
     hasNextPage,
     fetchNextPage,
     isFetchingNextPage,
-    refetch,
+    refresh,
+    isRefetching,
   } = usePriorityNotifications(fid, initialData);
 
   const notifications = data?.pages.flatMap((page) => page.data) ?? [];
@@ -62,19 +62,13 @@ export const NotificationsPriorityFeed = ({
     return <Loading />;
   }
 
-  const handleRefresh = async () => {
-    setIsRefetching(true);
-    await refetch();
-    setIsRefetching(false);
-  };
-
   return (
     <NotificationsInfiniteFeed
       notifications={notifications}
       fetchNextPage={fetchNextPage}
       isFetchingNextPage={isFetchingNextPage}
       hasNextPage={hasNextPage}
-      refetch={handleRefresh}
+      refetch={refresh}
       isRefetching={isRefetching}
       paddingTop={paddingTop}
       paddingBottom={paddingBottom}
@@ -96,14 +90,14 @@ export const NotificationsMentionsFeed = ({
   paddingBottom?: number;
   asTabs?: boolean;
 }) => {
-  const [isRefetching, setIsRefetching] = useState(false);
   const {
     data,
     isLoading,
     hasNextPage,
     fetchNextPage,
     isFetchingNextPage,
-    refetch,
+    refresh,
+    isRefetching,
   } = useMentionsNotifications(fid, initialData);
 
   const notifications = data?.pages.flatMap((page) => page.data) ?? [];
@@ -112,19 +106,13 @@ export const NotificationsMentionsFeed = ({
     return <Loading />;
   }
 
-  const handleRefresh = async () => {
-    setIsRefetching(true);
-    await refetch();
-    setIsRefetching(false);
-  };
-
   return (
     <NotificationsInfiniteFeed
       notifications={notifications}
       fetchNextPage={fetchNextPage}
       isFetchingNextPage={isFetchingNextPage}
       hasNextPage={hasNextPage}
-      refetch={handleRefresh}
+      refetch={refresh}
       isRefetching={isRefetching}
       paddingTop={paddingTop}
       paddingBottom={paddingBottom}
@@ -147,14 +135,14 @@ export const NotificationsAllFeed = ({
   asTabs?: boolean;
 }) => {
   const [types, setTypes] = useState<NotificationType[]>([]);
-  const [isRefetching, setIsRefetching] = useState(false);
   const {
     data,
     isLoading,
     hasNextPage,
     fetchNextPage,
     isFetchingNextPage,
-    refetch,
+    refresh,
+    isRefetching,
   } = useAllNotifications(
     fid,
     types,
@@ -206,12 +194,6 @@ export const NotificationsAllFeed = ({
     return <Loading />;
   }
 
-  const handleRefresh = async () => {
-    setIsRefetching(true);
-    await refetch();
-    setIsRefetching(false);
-  };
-
   return (
     <View flexGrow={1}>
       <XStack
@@ -254,7 +236,7 @@ export const NotificationsAllFeed = ({
         fetchNextPage={fetchNextPage}
         isFetchingNextPage={isFetchingNextPage}
         hasNextPage={hasNextPage}
-        refetch={handleRefresh}
+        refetch={refresh}
         isRefetching={isRefetching}
         paddingTop={paddingTop}
         paddingBottom={paddingBottom}

@@ -15,7 +15,7 @@ import {
   useCreateAccount,
 } from "./context";
 import { usePrivy } from "@privy-io/react-auth";
-import { useUser } from "../../api/farcaster";
+import { useUser } from "../../hooks/api/users";
 import { useTheme } from "../../context/theme";
 import { isAddress } from "viem";
 import { WagmiProvider } from "wagmi2";

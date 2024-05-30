@@ -26,11 +26,11 @@ export const TransactionFeed = ({
   paddingBottom?: number;
   ListHeaderComponent?: JSX.Element;
 }) => {
-  const [isRefetching, setIsRefetching] = useState(false);
   const {
     data,
     isLoading,
-    refetch,
+    refresh,
+    isRefetching,
     fetchNextPage,
     isFetchingNextPage,
     hasNextPage,
@@ -42,19 +42,13 @@ export const TransactionFeed = ({
     return <Loading />;
   }
 
-  const handleRefresh = async () => {
-    setIsRefetching(true);
-    await refetch();
-    setIsRefetching(false);
-  };
-
   return (
     <TransactionInfiniteFeed
       transactions={transactions}
       fetchNextPage={fetchNextPage}
       isFetchingNextPage={isFetchingNextPage}
       hasNextPage={hasNextPage}
-      refetch={handleRefresh}
+      refetch={refresh}
       isRefetching={isRefetching}
       paddingTop={paddingTop}
       paddingBottom={paddingBottom}
