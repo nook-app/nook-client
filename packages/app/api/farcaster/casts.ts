@@ -9,6 +9,18 @@ export const fetchCast = async (hash: string): Promise<FarcasterCastV1> => {
   return await makeRequest(`/farcaster/casts/${hash}`);
 };
 
+export const fetchCasts = async (
+  hashes: string[],
+): Promise<FetchCastsResponse> => {
+  return await makeRequest("/farcaster/casts/hashes", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ hashes }),
+  });
+};
+
 export const fetchCastLikes = async (
   hash: string,
   cursor?: string,

@@ -6,7 +6,7 @@ import {
   GetNftEventsRequest,
   NftEvent,
 } from "@nook/common/types";
-import { useNftCollectionEvents, useNftEvents } from "../../api/nft";
+import { useNftCollectionEvents, useNftEvents } from "../../hooks/api/nfts";
 import { InfiniteFeed } from "../../components/infinite-feed";
 import { Loading } from "../../components/loading";
 import { NftEventItem } from "./nft-event-item";

@@ -1,9 +1,9 @@
 "use client";
 
 import { FetchCastActionsResponse } from "@nook/common/types";
-import { useFarcasterActions } from "../../api/warpcast";
 import { FarcasterActionsFeed } from "./actions-feed";
 import { Loading } from "../../components/loading";
+import { useFarcasterActions } from "../../hooks/api/warpcast";
 
 export const ExploreActions = ({
   initialData,

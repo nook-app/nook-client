@@ -10,7 +10,7 @@ import {
 } from "@nook/common/types";
 import { Loading } from "../../components/loading";
 import { useCallback, useRef, useState } from "react";
-import { useFollowedLists } from "../../api/list";
+import { useFollowedLists } from "../../hooks/api/lists";
 import { useScroll } from "../../context/scroll";
 import { NativeScrollEvent, NativeSyntheticEvent } from "react-native";
 import { Separator } from "@nook/app-ui";

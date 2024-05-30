@@ -7,7 +7,7 @@ import {
 } from "@nook/common/types";
 import { Loading } from "../../components/loading";
 import { useState } from "react";
-import { useFollowedLists } from "../../api/list";
+import { useFollowedLists } from "../../hooks/api/lists";
 import { ListInfiniteFeed } from "./infinite-feed";
 
 export const ListFeed = ({

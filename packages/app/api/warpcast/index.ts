@@ -3,11 +3,6 @@ import {
   FnameTransfer,
   SubmitFnameTransfer,
 } from "@nook/common/types";
-import {
-  InfiniteData,
-  useInfiniteQuery,
-  useQuery,
-} from "@tanstack/react-query";
 import { makeUrlRequest } from "../utils";
 
 export const getFarcasterActions = async (
@@ -49,30 +44,6 @@ export const getFarcasterActions = async (
     })),
     nextCursor: data.next?.cursor,
   };
-};
-
-export const useFarcasterActions = (initialData?: FetchCastActionsResponse) => {
-  return useInfiniteQuery<
-    FetchCastActionsResponse,
-    unknown,
-    InfiniteData<FetchCastActionsResponse>,
-    string[],
-    string | undefined
-  >({
-    queryKey: ["actions"],
-    queryFn: async ({ pageParam }) => {
-      const data = await getFarcasterActions(pageParam);
-      return data;
-    },
-    getNextPageParam: (lastPage) => lastPage.nextCursor,
-    initialData: initialData
-      ? {
-          pages: [initialData],
-          pageParams: [undefined],
-        }
-      : undefined,
-    initialPageParam: initialData?.nextCursor,
-  });
 };
 
 export const fetchCurrentFnameTransfer = async (fname: string) => {
@@ -128,15 +99,4 @@ export const fetchChannelFollowingStatus = async (
   return await makeUrlRequest(
     `https://api.warpcast.com/v1/user-channel?fid=${fid}&channelId=${channelId}`,
   );
-};
-
-export const useChannelFollowingStatus = (channelId: string, fid?: string) => {
-  return useQuery({
-    queryKey: ["channel-following", fid, channelId],
-    queryFn: async () => {
-      if (!fid) return;
-      return await fetchChannelFollowingStatus(fid, channelId);
-    },
-    enabled: !!fid,
-  });
 };

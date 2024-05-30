@@ -1,6 +1,6 @@
 import { Token } from "@nook/common/types";
 import { useCallback, useEffect, useState } from "react";
-import { useTokenChart } from "../../api/token";
+import { useTokenChart } from "../../hooks/api/tokens";
 import { LineChart } from "react-native-wagmi-charts";
 import { haptics } from "../../utils/haptics";
 import { Spinner, Text, View, XStack, YStack } from "@nook/app-ui";

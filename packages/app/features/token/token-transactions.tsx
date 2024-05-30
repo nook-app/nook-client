@@ -5,7 +5,7 @@ import {
   TokenTransactionFilter,
   ZerionTransaction,
 } from "@nook/common/types";
-import { useTokenTransactions } from "../../api/token";
+import { useTokenTransactions } from "../../hooks/api/tokens";
 import { memo, useState } from "react";
 import { Loading } from "../../components/loading";
 import { InfiniteFeed } from "../../components/infinite-feed";

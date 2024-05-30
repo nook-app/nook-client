@@ -11,7 +11,7 @@ import {
   useNFtCollectionCollectors,
   useNFtCollectionFarcasterCollectors,
   useNFtCollectionFollowingCollectors,
-} from "../../api/nft";
+} from "../../hooks/api/nfts";
 import { InfiniteFeed } from "../../components/infinite-feed";
 import { Loading } from "../../components/loading";
 import { CollectorItem, FarcasterCollectorItem } from "./nft-collector-item";

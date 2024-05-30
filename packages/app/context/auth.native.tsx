@@ -24,7 +24,7 @@ import {
   removeSession,
   updateSession,
 } from "../utils/local-storage";
-import { useSettings } from "../api/settings";
+import { useSettings } from "../hooks/api/settings";
 import { fetchUser } from "../api/farcaster";
 import {
   useLoginWithFarcaster,

@@ -16,7 +16,7 @@ import {
   useNftCollectionFeed,
   useNftCreatedFeed,
   useNftFeed,
-} from "../../api/nft";
+} from "../../hooks/api/nfts";
 import { Loading } from "../../components/loading";
 import { InfiniteFeed } from "../../components/infinite-feed";
 import { NftFeedHeader } from "./nft-feed-header";

@@ -5,7 +5,7 @@ import {
   useAllNotifications,
   useMentionsNotifications,
   usePriorityNotifications,
-} from "../../api/notifications";
+} from "../../hooks/api/notifications";
 import { NotificationsInfiniteFeed } from "./notifications-feed";
 import {
   FetchNotificationsResponse,

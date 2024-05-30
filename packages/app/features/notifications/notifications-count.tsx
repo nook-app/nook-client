@@ -1,5 +1,5 @@
 import { NookText, View } from "@nook/app-ui";
-import { useNotificationsCount } from "../../api/notifications";
+import { useNotificationsCount } from "../../hooks/api/notifications";
 import { useAuth } from "../../context/auth";
 
 export const NotificationsCount = () => {

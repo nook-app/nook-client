@@ -11,16 +11,14 @@ import {
 import { Search } from "@tamagui/lucide-icons";
 import { SearchInput } from "./search-input";
 import { useEffect, useRef, useState } from "react";
-import { useSearchPreview } from "../../api/discover";
+import { useSearchPreview } from "../../hooks/api/search";
 import {
   FarcasterUserAvatar,
   FarcasterUserBadge,
-  FarcasterUserDisplay,
 } from "../../components/farcaster/users/user-display";
 import {
   FarcasterChannelAvatar,
   FarcasterChannelBadge,
-  FarcasterChannelDisplay,
 } from "../../components/farcaster/channels/channel-display";
 import { useRouter } from "solito/navigation";
 import { NativeSyntheticEvent, TextInputKeyPressEventData } from "react-native";

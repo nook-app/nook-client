@@ -9,7 +9,7 @@ import {
   ListType,
 } from "@nook/common/types";
 import { Loading } from "../../components/loading";
-import { useFollowedLists } from "../../api/list";
+import { useFollowedLists } from "../../hooks/api/lists";
 import { Separator } from "@nook/app-ui";
 import { ManageListItem } from "./manage-list-item";
 import { ListEmptyState } from "./list-empty-state";

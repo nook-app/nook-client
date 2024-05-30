@@ -12,7 +12,7 @@ import {
   useFarcasterTokenHolders,
   useFollowingTokenHolders,
   useTokenHolders,
-} from "../../api/token";
+} from "../../hooks/api/tokens";
 import { Button, Text, XStack, YStack } from "@nook/app-ui";
 import { Link } from "../../components/link";
 import { memo } from "react";

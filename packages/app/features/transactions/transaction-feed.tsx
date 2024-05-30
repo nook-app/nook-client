@@ -1,6 +1,6 @@
 "use client";
 
-import { useTransactionFeed } from "../../api/transactions";
+import { useTransactionFeed } from "../../hooks/api/transactions";
 import {
   FetchTransactionsResponse,
   TransactionFeedFilter,
