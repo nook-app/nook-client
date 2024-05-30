@@ -221,7 +221,7 @@ export const farcasterRoutes = async (fastify: FastifyInstance) => {
 
       const response = await client.getUser(
         request.params.username,
-        request.query.fid || !Number.isNaN(Number(request.query.fid)),
+        request.query.fid || !Number.isNaN(Number(request.params.username)),
         viewerFid,
       );
 
