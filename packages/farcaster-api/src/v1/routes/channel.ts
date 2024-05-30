@@ -53,7 +53,10 @@ export const channelRoutes = async (fastify: FastifyInstance) => {
           request.body.parentUrls,
           request.body.channelIds,
         );
-        reply.send({ data: Object.values(channels) });
+        const keys = (request.body.parentUrls || []).concat(
+          request.body.channelIds || [],
+        );
+        reply.send({ data: keys.map((key) => channels[key]) });
       },
     );
   });
