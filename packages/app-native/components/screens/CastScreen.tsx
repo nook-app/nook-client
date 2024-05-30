@@ -8,7 +8,7 @@ import { useCallback, useState } from "react";
 
 export default function CastScreen() {
   const { hash } = useLocalSearchParams();
-  const { cast } = useCast(hash as string, true);
+  const { cast } = useCast(hash as string);
   const paddingBottom = useBottomTabBarHeight();
   const [show, setShow] = useState(false);
 

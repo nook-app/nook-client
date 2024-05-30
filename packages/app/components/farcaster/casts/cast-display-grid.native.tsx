@@ -1,11 +1,11 @@
 import { View } from "@nook/app-ui";
-import { FarcasterCastResponse } from "@nook/common/types";
+import { FarcasterCastV1 } from "@nook/common/types";
 import { Image } from "expo-image";
 import { formatToCDN } from "../../../utils";
 
 export const FarcasterCastResponseGridDisplay = ({
   cast,
-}: { cast: FarcasterCastResponse }) => {
+}: { cast: FarcasterCastV1 }) => {
   const imageEmbed = cast.embeds.find(
     (embed) =>
       embed.contentType?.startsWith("image") || embed.uri.startsWith("data:"),

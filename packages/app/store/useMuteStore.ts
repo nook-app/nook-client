@@ -1,8 +1,8 @@
 import { create } from "zustand";
 import {
   Channel,
-  FarcasterCastResponse,
-  FarcasterUser,
+  FarcasterCastV1,
+  FarcasterUserV1,
   UserSettings,
 } from "@nook/common/types";
 
@@ -10,16 +10,16 @@ interface MuteStore {
   users: Record<string, boolean>;
   channels: Record<string, boolean>;
   words: Record<string, boolean>;
-  muteUser: (user: FarcasterUser) => void;
+  muteUser: (user: FarcasterUserV1) => void;
   muteChannel: (channel: Channel) => void;
   muteWord: (word: string) => void;
-  unmuteUser: (user: FarcasterUser) => void;
+  unmuteUser: (user: FarcasterUserV1) => void;
   unmuteChannel: (channel: Channel) => void;
   unmuteWord: (word: string) => void;
   updateFromSettings(settings: UserSettings): void;
   // re-using store for cast deletions
   casts: Record<string, boolean>;
-  deleteCast: (cast: FarcasterCastResponse) => void;
+  deleteCast: (cast: FarcasterCastV1) => void;
 }
 
 export const useMuteStore = create<MuteStore>((set, get) => ({
@@ -27,7 +27,7 @@ export const useMuteStore = create<MuteStore>((set, get) => ({
   channels: {},
   words: {},
   casts: {},
-  muteUser: (user: FarcasterUser) => {
+  muteUser: (user: FarcasterUserV1) => {
     set((state) => ({
       users: { ...state.users, [user.fid]: true },
     }));
@@ -38,7 +38,7 @@ export const useMuteStore = create<MuteStore>((set, get) => ({
   muteWord: (word: string) => {
     set((state) => ({ words: { ...state.words, [word]: true } }));
   },
-  unmuteUser: (user: FarcasterUser) => {
+  unmuteUser: (user: FarcasterUserV1) => {
     set((state) => ({
       users: { ...state.users, [user.fid]: false },
     }));
@@ -49,7 +49,7 @@ export const useMuteStore = create<MuteStore>((set, get) => ({
   unmuteWord: (word: string) => {
     set((state) => ({ words: { ...state.words, [word]: false } }));
   },
-  deleteCast: (cast: FarcasterCastResponse) => {
+  deleteCast: (cast: FarcasterCastV1) => {
     set((state) => ({ casts: { ...state.casts, [cast.hash]: true } }));
   },
   updateFromSettings: (settings: UserSettings) => {

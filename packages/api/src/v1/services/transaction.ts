@@ -4,7 +4,7 @@ import {
   TokenCacheClient,
 } from "@nook/common/clients";
 import {
-  FarcasterUser,
+  FarcasterUserV1,
   FetchTransactionsResponseV1,
   OnceUponTransactions,
   PartyEnriched,
@@ -45,8 +45,8 @@ export class TransactionService {
       viewerFid,
     );
 
-    const addressToUser: Record<string, FarcasterUser> = {};
-    const fidToUser: Record<string, FarcasterUser> = {};
+    const addressToUser: Record<string, FarcasterUserV1> = {};
+    const fidToUser: Record<string, FarcasterUserV1> = {};
     for (const user of users.data) {
       fidToUser[user.fid] = user;
       for (const address of user.verifiedAddresses ?? []) {
@@ -192,7 +192,7 @@ export class TransactionService {
                 acc[party] = addressToUser[party];
                 return acc;
               },
-              {} as Record<string, FarcasterUser>,
+              {} as Record<string, FarcasterUserV1>,
             ) || {},
           tokens: txTokens.reduce(
             (acc, token) => {

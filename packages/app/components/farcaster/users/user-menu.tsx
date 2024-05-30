@@ -1,6 +1,6 @@
 import { useAuth } from "../../../context/auth";
 import { MenuSquare, Volume, VolumeX } from "@tamagui/lucide-icons";
-import { FarcasterUser } from "@nook/common/types";
+import { FarcasterUserV1 } from "@nook/common/types";
 import { useMuteUser } from "../../../hooks/useMuteUser";
 import { useMenu } from "../../menu/context";
 import { ReactNode, useCallback } from "react";
@@ -13,7 +13,7 @@ import { Platform } from "react-native";
 export const FarcasterUserMenu = ({
   user,
   trigger,
-}: { user: FarcasterUser; trigger: ReactNode }) => {
+}: { user: FarcasterUserV1; trigger: ReactNode }) => {
   return (
     <Menu trigger={trigger}>
       <AddUserToList user={user} />
@@ -25,7 +25,7 @@ export const FarcasterUserMenu = ({
   );
 };
 
-const ViewFeed = ({ user }: { user: FarcasterUser }) => {
+const ViewFeed = ({ user }: { user: FarcasterUserV1 }) => {
   const { close } = useMenu();
   return (
     <Link href={`/users/${user.username}/feed`} onPress={close}>
@@ -34,7 +34,7 @@ const ViewFeed = ({ user }: { user: FarcasterUser }) => {
   );
 };
 
-const MuteUser = ({ user }: { user: FarcasterUser }) => {
+const MuteUser = ({ user }: { user: FarcasterUserV1 }) => {
   const { session } = useAuth();
   const { isMuted, muteUser, unmuteUser } = useMuteUser(user);
   const { close } = useMenu();
@@ -60,7 +60,7 @@ const MuteUser = ({ user }: { user: FarcasterUser }) => {
   return <MenuItem Icon={Icon} title={title} onPress={handlePress} />;
 };
 
-const AddUserToList = ({ user }: { user: FarcasterUser }) => {
+const AddUserToList = ({ user }: { user: FarcasterUserV1 }) => {
   const { session } = useAuth();
   const { close } = useMenu();
 

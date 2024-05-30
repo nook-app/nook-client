@@ -1,5 +1,5 @@
 import {
-  FarcasterCastResponse,
+  FarcasterCastV1,
   FarcasterFollowNotification,
   FarcasterLikeNotification,
   FarcasterMentionNotification,
@@ -203,7 +203,7 @@ const formatPushNotification = async (
   }
 };
 
-export const formatCastText = (cast: FarcasterCastResponse) => {
+export const formatCastText = (cast: FarcasterCastV1) => {
   const parts = [];
   const textBuffer = Buffer.from(cast.text.replaceAll(/\uFFFC/g, ""), "utf-8");
   let index = textBuffer.length;

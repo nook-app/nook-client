@@ -1,7 +1,7 @@
 import { NookText, View } from "@nook/app-ui";
-import { FarcasterUser } from "@nook/common/types";
+import { FarcasterUserV1 } from "@nook/common/types";
 
-export const UserFollowBadge = ({ user }: { user: FarcasterUser }) => {
+export const UserFollowBadge = ({ user }: { user: FarcasterUserV1 }) => {
   let badge: string | undefined;
   if (user.context?.following && user.context?.followers) {
     badge = "Mutuals";

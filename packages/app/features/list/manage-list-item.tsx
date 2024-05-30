@@ -1,4 +1,4 @@
-import { Channel, FarcasterUser, List, ListType } from "@nook/common/types";
+import { Channel, FarcasterUserV1, List, ListType } from "@nook/common/types";
 import { AnimatePresence, NookText, View, XStack, YStack } from "@nook/app-ui";
 import { memo } from "react";
 import { GradientIcon } from "../../components/gradient-icon";
@@ -14,7 +14,7 @@ export const ManageListItem = memo(
     list,
     user,
     channel,
-  }: { list: List; user?: FarcasterUser; channel?: Channel }) => {
+  }: { list: List; user?: FarcasterUserV1; channel?: Channel }) => {
     const listStore = useListStore((state) => state.lists[list.id]);
     const deletedLists = useListStore((state) => state.deletedLists);
     if (deletedLists[list.id]) return null;
@@ -44,7 +44,7 @@ export const ManageListItem = memo(
   },
 );
 
-const ManageUser = ({ list, user }: { list: List; user: FarcasterUser }) => {
+const ManageUser = ({ list, user }: { list: List; user: FarcasterUserV1 }) => {
   const { addUser, removeUser, isAdded } = useAddUserToList(list, user);
 
   return (

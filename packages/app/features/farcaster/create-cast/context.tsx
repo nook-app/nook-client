@@ -9,7 +9,7 @@ import { useToastController } from "@tamagui/toast";
 import {
   Channel,
   SubmitCastAddRequest,
-  FarcasterCastResponse,
+  FarcasterCastV1,
 } from "@nook/common/types";
 import { fetchCast } from "../../../api/farcaster";
 import { submitCastAdds } from "../../../api/farcaster/actions";
@@ -23,7 +23,7 @@ type CreateCastContextType = {
   thread: SubmitCastAddRequest;
   allCastsValid: boolean;
   isCasting: boolean;
-  cast: () => Promise<FarcasterCastResponse | undefined>;
+  cast: () => Promise<FarcasterCastV1 | undefined>;
   updateCast: (index: number, cast: SubmitCastAddRequest) => void;
   channel?: Channel;
   updateChannel: (channel?: Channel) => void;
@@ -80,7 +80,7 @@ export const CreateCastProvider = ({
     });
   };
 
-  const handleCast = async (): Promise<FarcasterCastResponse | undefined> => {
+  const handleCast = async (): Promise<FarcasterCastV1 | undefined> => {
     setIsCasting(true);
 
     const response = await submitCastAdds(

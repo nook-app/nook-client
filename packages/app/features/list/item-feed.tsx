@@ -2,7 +2,7 @@
 
 import { NookText, Separator, YStack } from "@nook/app-ui";
 import { ItemUser } from "./item-user";
-import { Channel, FarcasterUser, List, ListType } from "@nook/common/types";
+import { Channel, FarcasterUserV1, List, ListType } from "@nook/common/types";
 import { ItemChannel } from "./item-channel";
 import { InfiniteScrollList } from "../../components/infinite-scroll-list";
 
@@ -16,7 +16,7 @@ export const ItemFeed = ({
       <InfiniteScrollList
         data={list.users}
         renderItem={({ item }) => (
-          <ItemUser list={list} user={item as FarcasterUser} />
+          <ItemUser list={list} user={item as FarcasterUserV1} />
         )}
         ItemSeparatorComponent={() => (
           <Separator width="100%" borderBottomColor="$borderColorBg" />

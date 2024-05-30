@@ -1,4 +1,4 @@
-import { Channel, FarcasterUser, ListType } from "@nook/common/types";
+import { Channel, FarcasterUserV1, ListType } from "@nook/common/types";
 import {
   Dialog,
   NookButton,
@@ -18,7 +18,7 @@ export const ManageListDialog = ({
   open,
   setOpen,
 }: {
-  user?: FarcasterUser;
+  user?: FarcasterUserV1;
   channel?: Channel;
   open: boolean;
   setOpen: (open: boolean) => void;

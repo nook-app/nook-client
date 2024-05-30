@@ -1,4 +1,4 @@
-import { Channel, FarcasterUser } from "./farcaster";
+import { Channel, FarcasterUserV1 } from "./farcaster";
 import { Display } from "./feed";
 
 export enum ListType {
@@ -40,7 +40,7 @@ export type List = ListMetadata & {
   followerCount: number;
   itemCount: number;
   items: ListItem[];
-  users?: FarcasterUser[];
+  users?: FarcasterUserV1[];
   channels?: Channel[];
 };
 

@@ -1,5 +1,5 @@
 import { useCallback } from "react";
-import { FarcasterCastResponse } from "@nook/common/types";
+import { FarcasterCastV1 } from "@nook/common/types";
 import {
   submitReactionAdd,
   submitReactionRemove,
@@ -8,7 +8,7 @@ import { useToastController } from "@nook/app-ui";
 import { useCastStore } from "../store/useCastStore";
 import { haptics } from "../utils/haptics";
 
-export const useLikeCast = (cast: FarcasterCastResponse) => {
+export const useLikeCast = (cast: FarcasterCastV1) => {
   const toast = useToastController();
 
   const storeCast = useCastStore((state) => state.casts[cast.hash]);

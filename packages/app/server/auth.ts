@@ -1,7 +1,7 @@
 "use server";
 
 import {
-  FarcasterUser,
+  FarcasterUserV1,
   GetSignerResponse,
   PendingSignerResponse,
   Session,
@@ -42,11 +42,11 @@ export const getPendingSigner = async (
   return await makeRequest(`/signer/${address}`);
 };
 
-export const updateUser = async (user: FarcasterUser) => {
+export const updateUser = async (user: FarcasterUserV1) => {
   cookies().set("user", JSON.stringify(user), { secure: true });
 };
 
-export const getUser = async (): Promise<FarcasterUser | undefined> => {
+export const getUser = async (): Promise<FarcasterUserV1 | undefined> => {
   const user = cookies().get("user");
   return user?.value ? JSON.parse(user.value) : undefined;
 };

@@ -1,11 +1,11 @@
 import { useCallback } from "react";
-import { FarcasterUser } from "@nook/common/types";
+import { FarcasterUserV1 } from "@nook/common/types";
 import { useUserStore } from "../store/useUserStore";
 import { useToastController } from "@nook/app-ui";
 import { submitLinkAdd, submitLinkRemove } from "../api/farcaster/actions";
 import { haptics } from "../utils/haptics";
 
-export const useFollowUser = (user: FarcasterUser) => {
+export const useFollowUser = (user: FarcasterUserV1) => {
   const toast = useToastController();
 
   const storeUser = useUserStore(

@@ -1,23 +1,20 @@
 import { create } from "zustand";
-import {
-  FarcasterCastResponse,
-  NotificationResponse,
-} from "@nook/common/types";
+import { FarcasterCastV1, NotificationResponse } from "@nook/common/types";
 
 interface CastStore {
-  casts: Record<string, FarcasterCastResponse>;
-  addCasts: (casts: FarcasterCastResponse[]) => void;
-  addCastsFromCasts: (casts: FarcasterCastResponse[]) => void;
+  casts: Record<string, FarcasterCastV1>;
+  addCasts: (casts: FarcasterCastV1[]) => void;
+  addCastsFromCasts: (casts: FarcasterCastV1[]) => void;
   addCastsFromNotifications: (notifications: NotificationResponse[]) => void;
-  likeCast: (cast: FarcasterCastResponse) => void;
-  unlikeCast: (cast: FarcasterCastResponse) => void;
-  recastCast: (cast: FarcasterCastResponse) => void;
-  unrecastCast: (cast: FarcasterCastResponse) => void;
+  likeCast: (cast: FarcasterCastV1) => void;
+  unlikeCast: (cast: FarcasterCastV1) => void;
+  recastCast: (cast: FarcasterCastV1) => void;
+  unrecastCast: (cast: FarcasterCastV1) => void;
 }
 
 export const useCastStore = create<CastStore>((set, get) => ({
   casts: {},
-  addCasts: (casts: FarcasterCastResponse[]) => {
+  addCasts: (casts: FarcasterCastV1[]) => {
     const currentCasts = get().casts;
     const newCasts = casts.reduce(
       (acc, cast) => {
@@ -25,23 +22,23 @@ export const useCastStore = create<CastStore>((set, get) => ({
         acc[cast.hash] = cast;
         return acc;
       },
-      {} as Record<string, FarcasterCastResponse>,
+      {} as Record<string, FarcasterCastV1>,
     );
     set({ casts: { ...currentCasts, ...newCasts } });
   },
-  addCastsFromCasts: (inputCasts: FarcasterCastResponse[]) => {
+  addCastsFromCasts: (inputCasts: FarcasterCastV1[]) => {
     const currentCasts = get().casts;
     const casts = inputCasts.flatMap((cast) => {
       const casts = [cast];
-      for (const embed of cast.embedCasts) {
-        casts.push(embed);
-      }
-      if (cast.parent) {
-        casts.push(cast.parent);
-        for (const embed of cast.parent.embedCasts) {
-          casts.push(embed);
-        }
-      }
+      // for (const embed of cast.embedCasts) {
+      //   casts.push(embed);
+      // }
+      // if (cast.parent) {
+      //   casts.push(cast.parent);
+      //   for (const embed of cast.parent.embedCasts) {
+      //     casts.push(embed);
+      //   }
+      // }
       return casts;
     });
     const newCasts = casts.reduce(
@@ -50,7 +47,7 @@ export const useCastStore = create<CastStore>((set, get) => ({
         acc[cast.hash] = cast;
         return acc;
       },
-      {} as Record<string, FarcasterCastResponse>,
+      {} as Record<string, FarcasterCastV1>,
     );
     set({ casts: { ...currentCasts, ...newCasts } });
   },
@@ -77,11 +74,11 @@ export const useCastStore = create<CastStore>((set, get) => ({
         acc[cast.hash] = cast;
         return acc;
       },
-      {} as Record<string, FarcasterCastResponse>,
+      {} as Record<string, FarcasterCastV1>,
     );
     set({ casts: { ...currentCasts, ...newCasts } });
   },
-  likeCast: (cast: FarcasterCastResponse) => {
+  likeCast: (cast: FarcasterCastV1) => {
     const storeCast = get().casts[cast.hash] ?? cast;
     const newCast = {
       ...storeCast,
@@ -102,7 +99,7 @@ export const useCastStore = create<CastStore>((set, get) => ({
       },
     }));
   },
-  unlikeCast: (cast: FarcasterCastResponse) => {
+  unlikeCast: (cast: FarcasterCastV1) => {
     const storeCast = get().casts[cast.hash] ?? cast;
     const newCast = {
       ...storeCast,
@@ -123,7 +120,7 @@ export const useCastStore = create<CastStore>((set, get) => ({
       },
     }));
   },
-  recastCast: (cast: FarcasterCastResponse) => {
+  recastCast: (cast: FarcasterCastV1) => {
     const storeCast = get().casts[cast.hash] ?? cast;
     const newCast = {
       ...storeCast,
@@ -144,7 +141,7 @@ export const useCastStore = create<CastStore>((set, get) => ({
       },
     }));
   },
-  unrecastCast: (cast: FarcasterCastResponse) => {
+  unrecastCast: (cast: FarcasterCastV1) => {
     const storeCast = get().casts[cast.hash] ?? cast;
     const newCast = {
       ...storeCast,

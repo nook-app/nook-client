@@ -2,9 +2,9 @@
 
 import { YStack } from "@nook/app-ui";
 import { SearchBar } from "../../search/search-bar";
-import { FarcasterUser } from "@nook/common/types";
+import { FarcasterUserV1 } from "@nook/common/types";
 
-export const UserSidebar = ({ user }: { user: FarcasterUser }) => {
+export const UserSidebar = ({ user }: { user: FarcasterUserV1 }) => {
   return (
     <YStack
       padding="$3"

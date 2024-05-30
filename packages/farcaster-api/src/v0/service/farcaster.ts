@@ -9,8 +9,8 @@ import {
   BaseFarcasterCast,
   BaseFarcasterUser,
   Channel,
-  FarcasterCastResponse,
-  FarcasterUser,
+  FarcasterCastV1,
+  FarcasterUserV1,
   GetFarcasterCastsResponse,
   GetFarcasterUsersResponse,
   UrlContentResponse,
@@ -526,9 +526,9 @@ export class FarcasterService {
   }
 
   async getCastAncestors(
-    cast: FarcasterCastResponse,
+    cast: FarcasterCastV1,
     viewerFid?: string,
-  ): Promise<FarcasterCastResponse[]> {
+  ): Promise<FarcasterCastV1[]> {
     const ancestorRawCasts: BaseFarcasterCast[] = [];
     if (!cast.parentHash) return [];
 
@@ -567,9 +567,9 @@ export class FarcasterService {
   }
 
   async getCastThread(
-    cast: FarcasterCastResponse,
+    cast: FarcasterCastV1,
     viewerFid?: string,
-  ): Promise<FarcasterCastResponse[]> {
+  ): Promise<FarcasterCastV1[]> {
     if (!cast.rootParentHash) return [];
 
     const threadCasts = await this.client.farcasterCast.findMany({
@@ -605,7 +605,7 @@ export class FarcasterService {
     hashes: string[],
     viewerFid?: string,
     withAncestors?: boolean,
-  ): Promise<FarcasterCastResponse[]> {
+  ): Promise<FarcasterCastV1[]> {
     const casts = await this.getRawCasts(hashes, viewerFid);
     return await this.getCasts(casts, viewerFid, withAncestors ? hashes : []);
   }
@@ -613,7 +613,7 @@ export class FarcasterService {
   async getCastFromHub(
     hash: string,
     viewerFid?: string,
-  ): Promise<FarcasterCastResponse | undefined> {
+  ): Promise<FarcasterCastV1 | undefined> {
     const message = await this.hub.getCast({
       fid: Number(viewerFid),
       hash: hexToBuffer(hash),
@@ -712,7 +712,7 @@ export class FarcasterService {
     data: DBFarcasterCast[],
     viewerFid?: string,
     extraHashes?: string[],
-  ): Promise<FarcasterCastResponse[]> {
+  ): Promise<FarcasterCastV1[]> {
     const casts = data.map((cast, i) => ({
       hash: cast.hash,
       fid: cast.fid.toString(),
@@ -851,7 +851,7 @@ export class FarcasterService {
         acc[user.fid] = user;
         return acc;
       },
-      {} as Record<string, FarcasterUser>,
+      {} as Record<string, FarcasterUserV1>,
     );
 
     const channelMap = channels.reduce(
@@ -923,7 +923,7 @@ export class FarcasterService {
         };
         return acc;
       },
-      {} as Record<string, FarcasterCastResponse>,
+      {} as Record<string, FarcasterCastV1>,
     );
 
     const castsToReturn = casts.map((cast) => {
@@ -1342,7 +1342,10 @@ export class FarcasterService {
     return usernames.map((username) => cacheMap[username]);
   }
 
-  async getUsers(fids: string[], viewerFid?: string): Promise<FarcasterUser[]> {
+  async getUsers(
+    fids: string[],
+    viewerFid?: string,
+  ): Promise<FarcasterUserV1[]> {
     if (fids.length === 0) return [];
 
     const [users, powerBadges, context, engagement] = await Promise.all([

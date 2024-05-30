@@ -1,12 +1,12 @@
 import { useCallback } from "react";
-import { FarcasterUser } from "@nook/common/types";
+import { FarcasterUserV1 } from "@nook/common/types";
 import { useToastController } from "@nook/app-ui";
 import { useAuth } from "../context/auth";
 import { useMuteStore } from "../store/useMuteStore";
 import { muteUser, unmuteUser } from "../api/settings";
 import { haptics } from "../utils/haptics";
 
-export const useMuteUser = (user: FarcasterUser) => {
+export const useMuteUser = (user: FarcasterUserV1) => {
   const { settings, session, login } = useAuth();
   const toast = useToastController();
 

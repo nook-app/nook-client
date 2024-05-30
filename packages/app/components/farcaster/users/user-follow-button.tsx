@@ -1,13 +1,13 @@
 import { NookButton, View } from "@nook/app-ui";
 import { useFollowUser } from "../../../hooks/useFollowUser";
-import { FarcasterUser } from "@nook/common/types";
+import { FarcasterUserV1 } from "@nook/common/types";
 import { useAuth } from "../../../context/auth";
 import { EnableSignerDialog } from "../../../features/farcaster/enable-signer/dialog";
 
 export const FarcasterUserFollowButton = ({
   user,
 }: {
-  user: FarcasterUser;
+  user: FarcasterUserV1;
 }) => {
   const { session, login, signer } = useAuth();
   const { followUser, unfollowUser, isFollowing } = useFollowUser(user);

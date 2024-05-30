@@ -1,26 +1,26 @@
 import { create } from "zustand";
 import {
-  FarcasterCastResponse,
-  FarcasterUser,
+  FarcasterCastV1,
+  FarcasterUserV1,
   NotificationResponse,
   List,
 } from "@nook/common/types";
 
 interface UserStore {
-  users: Record<string, FarcasterUser>;
-  addresses: Record<string, FarcasterUser>;
-  addUsers: (users: FarcasterUser[]) => void;
-  addUsersFromCasts: (casts: FarcasterCastResponse[]) => void;
+  users: Record<string, FarcasterUserV1>;
+  addresses: Record<string, FarcasterUserV1>;
+  addUsers: (users: FarcasterUserV1[]) => void;
+  addUsersFromCasts: (casts: FarcasterCastV1[]) => void;
   addUsersFromNotifications: (notifications: NotificationResponse[]) => void;
   addUsersFromLists(lists: List[]): void;
-  followUser: (user: FarcasterUser) => void;
-  unfollowUser: (user: FarcasterUser) => void;
+  followUser: (user: FarcasterUserV1) => void;
+  unfollowUser: (user: FarcasterUserV1) => void;
 }
 
 export const useUserStore = create<UserStore>((set, get) => ({
   users: {},
   addresses: {},
-  addUsers: (users: FarcasterUser[]) => {
+  addUsers: (users: FarcasterUserV1[]) => {
     const currentUsers = get().users;
     const currentAddresses = get().addresses;
     const newUsers = users.reduce(
@@ -30,7 +30,7 @@ export const useUserStore = create<UserStore>((set, get) => ({
         acc[user.username || user.fid] = user;
         return acc;
       },
-      {} as Record<string, FarcasterUser>,
+      {} as Record<string, FarcasterUserV1>,
     );
     const newAddresses = Object.values(newUsers).reduce(
       (acc, user) => {
@@ -40,14 +40,14 @@ export const useUserStore = create<UserStore>((set, get) => ({
         }
         return acc;
       },
-      {} as Record<string, FarcasterUser>,
+      {} as Record<string, FarcasterUserV1>,
     );
     set({
       users: { ...currentUsers, ...newUsers },
       addresses: { ...currentAddresses, ...newAddresses },
     });
   },
-  addUsersFromCasts: (casts: FarcasterCastResponse[]) => {
+  addUsersFromCasts: (casts: FarcasterCastV1[]) => {
     const currentUsers = get().users;
     const currentAddresses = get().addresses;
     const users = casts.flatMap((cast) => {
@@ -76,7 +76,7 @@ export const useUserStore = create<UserStore>((set, get) => ({
         acc[user.username || user.fid] = user;
         return acc;
       },
-      {} as Record<string, FarcasterUser>,
+      {} as Record<string, FarcasterUserV1>,
     );
     const newAddresses = Object.values(newUsers).reduce(
       (acc, user) => {
@@ -86,7 +86,7 @@ export const useUserStore = create<UserStore>((set, get) => ({
         }
         return acc;
       },
-      {} as Record<string, FarcasterUser>,
+      {} as Record<string, FarcasterUserV1>,
     );
     set({
       users: { ...currentUsers, ...newUsers },
@@ -124,7 +124,7 @@ export const useUserStore = create<UserStore>((set, get) => ({
         acc[user.username || user.fid] = user;
         return acc;
       },
-      {} as Record<string, FarcasterUser>,
+      {} as Record<string, FarcasterUserV1>,
     );
     const newAddresses = Object.values(newUsers).reduce(
       (acc, user) => {
@@ -134,7 +134,7 @@ export const useUserStore = create<UserStore>((set, get) => ({
         }
         return acc;
       },
-      {} as Record<string, FarcasterUser>,
+      {} as Record<string, FarcasterUserV1>,
     );
     set({
       users: { ...currentUsers, ...newUsers },
@@ -152,7 +152,7 @@ export const useUserStore = create<UserStore>((set, get) => ({
         acc[user.username || user.fid] = user;
         return acc;
       },
-      {} as Record<string, FarcasterUser>,
+      {} as Record<string, FarcasterUserV1>,
     );
     const newAddresses = Object.values(newUsers).reduce(
       (acc, user) => {
@@ -162,14 +162,14 @@ export const useUserStore = create<UserStore>((set, get) => ({
         }
         return acc;
       },
-      {} as Record<string, FarcasterUser>,
+      {} as Record<string, FarcasterUserV1>,
     );
     set({
       users: { ...currentUsers, ...newUsers },
       addresses: { ...currentAddresses, ...newAddresses },
     });
   },
-  followUser: (user: FarcasterUser) => {
+  followUser: (user: FarcasterUserV1) => {
     const storeUser = get().users[user.username || user.fid] ?? user;
     const newUser = {
       ...storeUser,
@@ -190,7 +190,7 @@ export const useUserStore = create<UserStore>((set, get) => ({
       },
     }));
   },
-  unfollowUser: (user: FarcasterUser) => {
+  unfollowUser: (user: FarcasterUserV1) => {
     const storeUser = get().users[user.username || user.fid] ?? user;
     const newUser = {
       ...storeUser,

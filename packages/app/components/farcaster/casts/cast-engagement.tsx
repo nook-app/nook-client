@@ -1,5 +1,5 @@
 import { NookText, XStack } from "@nook/app-ui";
-import { FarcasterCastResponse } from "@nook/common/types";
+import { FarcasterCastV1 } from "@nook/common/types";
 import { useCastStore } from "../../../store/useCastStore";
 import { Link } from "../../link";
 
@@ -15,7 +15,7 @@ const singular = {
 export const FarcasterCastResponseEngagement = ({
   cast,
   types,
-}: { cast: FarcasterCastResponse; types: CastEngagementTypes[] }) => {
+}: { cast: FarcasterCastV1; types: CastEngagementTypes[] }) => {
   return (
     <XStack gap="$2" alignItems="center" flexWrap="wrap">
       {types.map((type) => {
@@ -34,7 +34,7 @@ export const FarcasterCastResponseEngagement = ({
 const FarcasterCastResponseEngagementItem = ({
   cast,
   type,
-}: { cast: FarcasterCastResponse; type: CastEngagementTypes }) => {
+}: { cast: FarcasterCastV1; type: CastEngagementTypes }) => {
   const storeCast = useCastStore((state) => state.casts[cast.hash]);
 
   const amount = storeCast?.engagement[type] ?? cast.engagement[type];

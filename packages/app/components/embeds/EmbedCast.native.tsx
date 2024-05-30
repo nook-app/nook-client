@@ -2,7 +2,7 @@ import { EmbedMedia } from "./EmbedMedia";
 import { CdnAvatar } from "../cdn-avatar";
 import { NookText, View, XStack, YStack } from "@nook/app-ui";
 import { FarcasterCastResponseText } from "../farcaster/casts/cast-text";
-import { FarcasterCastResponse } from "@nook/common/types";
+import { FarcasterCastV1 } from "@nook/common/types";
 import { formatTimeAgo } from "../../utils";
 import { FarcasterPowerBadge } from "../farcaster/users/power-badge";
 import { Link } from "../link";
@@ -11,7 +11,7 @@ export const EmbedCast = ({
   cast,
   disableLink,
 }: {
-  cast: FarcasterCastResponse;
+  cast: FarcasterCastV1;
   disableLink?: boolean;
 }) => {
   return (

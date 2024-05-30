@@ -14,7 +14,7 @@ import {
   TokenTransactions,
   TokenHolder,
   GetTokenHoldersRequest,
-  FarcasterUser,
+  FarcasterUserV1,
   FetchTokenHoldersResponse,
 } from "@nook/common/types";
 import { FastifyInstance } from "fastify";
@@ -121,7 +121,7 @@ export class TokenService {
         acc[user.fid] = user;
         return acc;
       },
-      {} as Record<string, FarcasterUser>,
+      {} as Record<string, FarcasterUserV1>,
     );
 
     return {
@@ -161,7 +161,7 @@ export class TokenService {
         acc[user.fid] = user;
         return acc;
       },
-      {} as Record<string, FarcasterUser>,
+      {} as Record<string, FarcasterUserV1>,
     );
 
     return {
@@ -203,7 +203,7 @@ export class TokenService {
         acc[user.fid] = user;
         return acc;
       },
-      {} as Record<string, FarcasterUser>,
+      {} as Record<string, FarcasterUserV1>,
     );
 
     const decodedCursor = decodeCursor(req.cursor);

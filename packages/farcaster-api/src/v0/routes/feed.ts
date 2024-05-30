@@ -52,40 +52,5 @@ export const feedRoutes = async (fastify: FastifyInstance) => {
         });
       }
     });
-
-    fastify.post<{
-      Body: FarcasterFeedRequest;
-    }>("/feed", async (request, reply) => {
-      try {
-        const { newCasts, currentCasts, oldCasts } = await service.getFeed(
-          request.body,
-        );
-
-        const casts = await farcasterService.getCastsFromData(
-          newCasts.concat(oldCasts),
-          request.body.context?.viewerFid,
-          currentCasts,
-        );
-
-        const sortedCasts = casts
-          .sort((a, b) => b.timestamp - a.timestamp)
-          .slice(0, MAX_PAGE_SIZE);
-
-        reply.send({
-          data: sortedCasts,
-          nextCursor:
-            sortedCasts.length === MAX_PAGE_SIZE
-              ? encodeCursor({
-                  timestamp: sortedCasts[sortedCasts.length - 1]?.timestamp,
-                })
-              : undefined,
-        });
-      } catch (e) {
-        console.error(e);
-        reply.send({
-          data: [],
-        });
-      }
-    });
   });
 };

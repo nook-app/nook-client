@@ -6,6 +6,7 @@ import {
 import {
   ContentAPIClient,
   FarcasterAPIClient,
+  FarcasterAPIV1Client,
   FarcasterCacheClient,
 } from "@nook/common/clients";
 import { RedisClient } from "@nook/common/clients";
@@ -29,12 +30,14 @@ import { publishNotification } from "@nook/common/queues";
 
 export class FarcasterProcessor {
   private farcasterClient: FarcasterAPIClient;
+  private farcasterV1: FarcasterAPIV1Client;
   private cacheClient: FarcasterCacheClient;
   private contentClient: ContentAPIClient;
   private hub: HubRpcClient;
 
   constructor() {
     this.farcasterClient = new FarcasterAPIClient();
+    this.farcasterV1 = new FarcasterAPIV1Client();
     this.cacheClient = new FarcasterCacheClient(new RedisClient());
     this.contentClient = new ContentAPIClient();
     this.hub = getSSLHubRpcClient(process.env.HUB_RPC_ENDPOINT as string);
@@ -93,10 +96,11 @@ export class FarcasterProcessor {
   }
 
   async processCastAdd(data: FarcasterCast) {
-    const cast = await this.farcasterClient.getCast(
-      data.hash,
-      data.parentFid?.toString(),
-    );
+    const [cast, castV1] = await Promise.all([
+      this.farcasterClient.getCast(data.hash, data.parentFid?.toString()),
+      this.farcasterV1.getCast(data.hash, data.parentFid?.toString()),
+    ]);
+
     if (!cast) return;
 
     const promises = [];

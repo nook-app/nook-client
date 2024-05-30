@@ -7,7 +7,11 @@ import { PrivyProvider } from "@privy-io/react-auth";
 import { AuthProvider, useAuth } from "@nook/app/context/auth";
 import * as amplitude from "@amplitude/analytics-browser";
 import { Toasts } from "@nook/app/components/toasts";
-import { FarcasterUser, GetSignerResponse, Session } from "@nook/common/types";
+import {
+  FarcasterUserV1,
+  GetSignerResponse,
+  Session,
+} from "@nook/common/types";
 import { ThemeProvider } from "@nook/app/context/theme";
 import { usePathname } from "next/navigation";
 
@@ -20,7 +24,7 @@ export const Providers = ({
 }: {
   children: React.ReactNode;
   session?: Session;
-  user?: FarcasterUser;
+  user?: FarcasterUserV1;
   signer?: GetSignerResponse;
 }) => {
   return (

@@ -1,4 +1,4 @@
-import { FarcasterUser, Transaction } from "@nook/common/types";
+import { FarcasterUserV1, Transaction } from "@nook/common/types";
 import { Menu } from "../../components/menu/menu";
 import { OpenLink } from "../../components/menu/menu-actions";
 import { CdnAvatar } from "../../components/cdn-avatar";
@@ -30,7 +30,7 @@ export const TransactionMenu = ({
   );
 };
 
-const AddUserToList = ({ user }: { user: FarcasterUser }) => {
+const AddUserToList = ({ user }: { user: FarcasterUserV1 }) => {
   const { session } = useAuth();
   const { close } = useMenu();
 

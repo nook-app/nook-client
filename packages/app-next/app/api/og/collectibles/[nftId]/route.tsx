@@ -1,6 +1,6 @@
 import { ImageResponse } from "next/og";
 import * as colors from "@tamagui/colors";
-import { FarcasterUser, SimpleHashNFT } from "@nook/common/types";
+import { FarcasterUserV1, SimpleHashNFT } from "@nook/common/types";
 import { fetchNft } from "@nook/app/api/nft";
 import { fetchUsersByAddress } from "@nook/app/api/farcaster";
 
@@ -64,7 +64,7 @@ export async function GET(
 const NftPreview = ({
   nft,
   creator,
-}: { nft: SimpleHashNFT; creator?: FarcasterUser }) => {
+}: { nft: SimpleHashNFT; creator?: FarcasterUserV1 }) => {
   console.log(
     `linear-gradient(0deg, ${colors.blackA.blackA12}, ${colors.blackA.blackA11})`,
   );

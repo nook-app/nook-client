@@ -1,13 +1,13 @@
 import { FarcasterCastReaction, FarcasterLink } from "../prisma/farcaster";
 import {
-  FarcasterCastResponse,
+  FarcasterCastV1,
   Notification,
   NotificationService,
   NotificationType,
 } from "../types";
 
 export const parseNotificationsFromCast = (
-  data: FarcasterCastResponse,
+  data: FarcasterCastV1,
 ): Notification[] => {
   const notifications: Notification[] = [];
   notifications.push({

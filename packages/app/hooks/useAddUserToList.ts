@@ -1,12 +1,12 @@
 import { useCallback } from "react";
-import { FarcasterUser, List, ListItemType } from "@nook/common/types";
+import { FarcasterUserV1, List, ListItemType } from "@nook/common/types";
 import { useToastController } from "@nook/app-ui";
 import { useAuth } from "../context/auth";
 import { haptics } from "../utils/haptics";
 import { useListStore } from "../store/useListStore";
 import { addToList, removeFromList } from "../api/list";
 
-export const useAddUserToList = (list: List, user: FarcasterUser) => {
+export const useAddUserToList = (list: List, user: FarcasterUserV1) => {
   const { session, login } = useAuth();
   const toast = useToastController();
 

@@ -1,6 +1,6 @@
 import { FarcasterAPIClient, NftCacheClient } from "@nook/common/clients";
 import {
-  FarcasterUser,
+  FarcasterUserV1,
   FetchNftCollectionsResponse,
   FetchNftCollectorsResponse,
   FetchNftCreatedCollectionsResponse,
@@ -153,7 +153,7 @@ export class NftService {
         acc[user.fid] = user;
         return acc;
       },
-      {} as Record<string, FarcasterUser>,
+      {} as Record<string, FarcasterUserV1>,
     );
 
     return {
@@ -189,7 +189,7 @@ export class NftService {
         acc[user.fid] = user;
         return acc;
       },
-      {} as Record<string, FarcasterUser>,
+      {} as Record<string, FarcasterUserV1>,
     );
 
     return {
@@ -227,7 +227,7 @@ export class NftService {
         acc[user.fid] = user;
         return acc;
       },
-      {} as Record<string, FarcasterUser>,
+      {} as Record<string, FarcasterUserV1>,
     );
 
     const decodedCursor = decodeCursor(req.cursor);
@@ -324,7 +324,7 @@ export class NftService {
         acc[user.fid] = user;
         return acc;
       },
-      {} as Record<string, FarcasterUser>,
+      {} as Record<string, FarcasterUserV1>,
     );
 
     return {
@@ -360,7 +360,7 @@ export class NftService {
         acc[user.fid] = user;
         return acc;
       },
-      {} as Record<string, FarcasterUser>,
+      {} as Record<string, FarcasterUserV1>,
     );
 
     return {
@@ -398,7 +398,7 @@ export class NftService {
         acc[user.fid] = user;
         return acc;
       },
-      {} as Record<string, FarcasterUser>,
+      {} as Record<string, FarcasterUserV1>,
     );
 
     const decodedCursor = decodeCursor(req.cursor);
@@ -600,7 +600,7 @@ export class NftService {
         }
         return acc;
       },
-      {} as Record<string, FarcasterUser>,
+      {} as Record<string, FarcasterUserV1>,
     );
 
     return {
@@ -662,7 +662,7 @@ export class NftService {
         }
         return acc;
       },
-      {} as Record<string, FarcasterUser>,
+      {} as Record<string, FarcasterUserV1>,
     );
 
     return {

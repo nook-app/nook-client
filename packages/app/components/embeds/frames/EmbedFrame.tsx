@@ -10,7 +10,7 @@ import {
   useTheme,
 } from "@nook/app-ui";
 import { ReactNode, forwardRef, useEffect, useState } from "react";
-import { FarcasterCastResponse, UrlContentResponse } from "@nook/common/types";
+import { FarcasterCastV1, UrlContentResponse } from "@nook/common/types";
 import { FrameButton } from "@nook/common/types";
 import { useAuth } from "../../../context/auth";
 import { NookText, Input, Image } from "@nook/app-ui";
@@ -25,7 +25,7 @@ import { TransactionFrameSheet } from "./TransactionFrameSheet";
 export const EmbedFrame = ({
   cast,
   content,
-}: { cast: FarcasterCastResponse; content: UrlContentResponse }) => {
+}: { cast?: FarcasterCastV1; content: UrlContentResponse }) => {
   if (!content.frame) return null;
   return (
     <WagmiProvider config={wagmiConfig}>

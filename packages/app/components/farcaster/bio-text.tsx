@@ -197,7 +197,11 @@ export const FarcasterBioText = ({
   textParts.reverse();
 
   return (
-    <NookText selectable={selectable} numberOfLines={numberOfLines}>
+    <NookText
+      userSelect={selectable ? "auto" : "none"}
+      numberOfLines={numberOfLines}
+      lineHeight={20}
+    >
       {textParts}
     </NookText>
   );

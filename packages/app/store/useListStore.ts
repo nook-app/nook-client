@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { Channel, FarcasterUser, List } from "@nook/common/types";
+import { Channel, FarcasterUserV1, List } from "@nook/common/types";
 
 interface ListStore {
   lists: Record<string, List>;
@@ -7,8 +7,8 @@ interface ListStore {
   addLists: (lists: List[]) => void;
   updateList: (list: List) => void;
   deleteList: (listId: string) => void;
-  addUserToList: (list: List, user: FarcasterUser) => void;
-  removeUserFromList: (list: List, user: FarcasterUser) => void;
+  addUserToList: (list: List, user: FarcasterUserV1) => void;
+  removeUserFromList: (list: List, user: FarcasterUserV1) => void;
   addChannelToList: (list: List, channel: Channel) => void;
   removeChannelFromList: (list: List, channel: Channel) => void;
 }
@@ -38,7 +38,7 @@ export const useListStore = create<ListStore>((set, get) => ({
       deletedLists: { ...state.deletedLists, [listId]: true },
     }));
   },
-  addUserToList: (list: List, user: FarcasterUser) => {
+  addUserToList: (list: List, user: FarcasterUserV1) => {
     let currentList = get().lists[list.id];
     if (!currentList) {
       currentList = list;
@@ -56,7 +56,7 @@ export const useListStore = create<ListStore>((set, get) => ({
       },
     });
   },
-  removeUserFromList: (list: List, user: FarcasterUser) => {
+  removeUserFromList: (list: List, user: FarcasterUserV1) => {
     let currentList = get().lists[list.id];
     if (!currentList) {
       currentList = list;

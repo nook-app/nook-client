@@ -8,11 +8,7 @@ import {
   Volume,
   VolumeX,
 } from "@tamagui/lucide-icons";
-import {
-  Channel,
-  FarcasterCastResponse,
-  FarcasterUser,
-} from "@nook/common/types";
+import { Channel, FarcasterCastV1, FarcasterUserV1 } from "@nook/common/types";
 import { useCallback, useState } from "react";
 import { useUser } from "../../../api/farcaster";
 import { Spinner, View } from "@nook/app-ui";
@@ -31,11 +27,12 @@ import { ManageListDialog } from "../../../features/list/manage-list-dialog";
 
 export const FarcasterCastResponseMenu = ({
   cast,
-}: { cast: FarcasterCastResponse }) => {
+}: { cast: FarcasterCastV1 }) => {
   const [manageUserListDialogOpen, setManageUserListDialogOpen] =
     useState(false);
   const [manageChannelListDialogOpen, setManageChannelListDialogOpen] =
     useState(false);
+
   return (
     <>
       <Menu>
@@ -74,7 +71,7 @@ export const FarcasterCastResponseMenu = ({
   );
 };
 
-const DeleteCast = ({ cast }: { cast: FarcasterCastResponse }) => {
+const DeleteCast = ({ cast }: { cast: FarcasterCastV1 }) => {
   const { session } = useAuth();
   const { isDeleting, deleteCast } = useDeleteCast(cast);
   const { close } = useMenu();
@@ -101,7 +98,7 @@ const DeleteCast = ({ cast }: { cast: FarcasterCastResponse }) => {
 const AddUserToList = ({
   user,
   onPress,
-}: { user: FarcasterUser; onPress: () => void }) => {
+}: { user: FarcasterUserV1; onPress: () => void }) => {
   const { session } = useAuth();
   const { close } = useMenu();
 
@@ -172,7 +169,7 @@ const AddChannelToList = ({
   );
 };
 
-const FollowUser = ({ cast }: { cast: FarcasterCastResponse }) => {
+const FollowUser = ({ cast }: { cast: FarcasterCastV1 }) => {
   const { session } = useAuth();
   const { isFollowing, followUser, unfollowUser } = useFollowUser(cast.user);
   const { close } = useMenu();
@@ -198,7 +195,7 @@ const FollowUser = ({ cast }: { cast: FarcasterCastResponse }) => {
   return <MenuItem Icon={Icon} title={title} onPress={handlePress} />;
 };
 
-const MuteUser = ({ user }: { user: FarcasterUser }) => {
+const MuteUser = ({ user }: { user: FarcasterUserV1 }) => {
   const { session } = useAuth();
   const { isMuted, muteUser, unmuteUser } = useMuteUser(user);
   const { close } = useMenu();
@@ -248,7 +245,7 @@ const MuteChannel = ({ channel }: { channel: Channel }) => {
   return <MenuItem Icon={Icon} title={title} onPress={handlePress} />;
 };
 
-const ViewCastEngagements = ({ cast }: { cast: FarcasterCastResponse }) => {
+const ViewCastEngagements = ({ cast }: { cast: FarcasterCastV1 }) => {
   const { close } = useMenu();
 
   return (
@@ -258,8 +255,10 @@ const ViewCastEngagements = ({ cast }: { cast: FarcasterCastResponse }) => {
   );
 };
 
-const CastSource = ({ cast }: { cast: FarcasterCastResponse }) => {
-  const { data } = useUser(cast.appFid || "");
+const CastSource = ({ cast }: { cast: FarcasterCastV1 }) => {
+  const { data } = useUser(cast.appFid, true);
+
+  console.log(data);
 
   return (
     <OpenLink
@@ -268,7 +267,7 @@ const CastSource = ({ cast }: { cast: FarcasterCastResponse }) => {
           <CdnAvatar size="$0.9" src={data?.pfp} />
         </View>
       }
-      title={data ? `Casted via ${data.displayName}` : ""}
+      title={data ? `Casted via ${data.displayName || data.username}` : ""}
       link={`https://warpcast.com/~/conversations/${cast.hash}`}
     />
   );

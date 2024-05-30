@@ -105,6 +105,27 @@ export const userRoutes = async (fastify: FastifyInstance) => {
 
     fastify.get<{
       Params: GetFarcasterUserRequest;
+    }>("/users/:fid/mutuals-preview", async (request, reply) => {
+      let fid = request.params.fid;
+      if (Number.isNaN(Number(fid))) {
+        fid = (await service.getFidsForUsernames([fid]))[0];
+      }
+
+      if (!fid) {
+        reply.status(404).send({ message: "User not found" });
+        return;
+      }
+
+      const response = await service.getUserMutualsPreview(
+        request.headers["x-viewer-fid"] as string,
+        fid,
+      );
+
+      reply.send(response);
+    });
+
+    fastify.get<{
+      Params: GetFarcasterUserRequest;
       Querystring: { cursor?: string };
     }>("/users/:fid/followers", async (request, reply) => {
       let fid = request.params.fid;

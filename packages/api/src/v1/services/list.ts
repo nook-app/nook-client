@@ -1,7 +1,7 @@
 import { FarcasterAPIClient } from "@nook/common/clients";
 import {
   Channel,
-  FarcasterUser,
+  FarcasterUserV1,
   List,
   ListItemType,
   ListType,
@@ -34,7 +34,7 @@ export class ListService {
         acc[user.fid] = user;
         return acc;
       },
-      {} as Record<string, FarcasterUser>,
+      {} as Record<string, FarcasterUserV1>,
     );
 
     const channelMap = channels.data.reduce(

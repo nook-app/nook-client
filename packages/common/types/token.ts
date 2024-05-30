@@ -1,4 +1,4 @@
-import { FarcasterUser } from "./farcaster";
+import { FarcasterUserV1 } from "./farcaster";
 import { ZerionTransaction } from "./providers/zerion/transaction";
 
 export type TokensFilter = {
@@ -129,11 +129,11 @@ export type GetTokenHoldersRequest = {
 };
 
 export type TokenMutualsPreview = {
-  preview: FarcasterUser[];
+  preview: FarcasterUserV1[];
   total: number;
 };
 
 export type FetchTokenHoldersResponse = {
-  data: (TokenHolder & { user?: FarcasterUser })[];
+  data: (TokenHolder & { user?: FarcasterUserV1 })[];
   nextCursor?: string;
 };

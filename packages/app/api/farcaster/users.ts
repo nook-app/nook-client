@@ -1,4 +1,8 @@
-import { FarcasterUser, FetchUsersResponse } from "@nook/common/types";
+import {
+  FarcasterUserV1,
+  FarcasterUserMutualsPreview,
+  FetchUsersResponse,
+} from "@nook/common/types";
 import { makeRequest } from "../utils";
 import {
   useQuery,
@@ -8,23 +12,32 @@ import {
 } from "@tanstack/react-query";
 import { useUserStore } from "../../store/useUserStore";
 
-export const fetchUser = async (username: string): Promise<FarcasterUser> => {
-  return await makeRequest(`/farcaster/users/${username}`);
+export const fetchUser = async (
+  username: string,
+  fid?: boolean,
+): Promise<FarcasterUserV1> => {
+  return await makeRequest(
+    `/v1/farcaster/users/${username}${fid ? `?fid=${fid}` : ""}`,
+  );
 };
 
-export const useUser = (username: string, disableCache?: boolean) => {
+export const useUser = (username: string, fid?: boolean) => {
   const addUsers = useUserStore((state) => state.addUsers);
-  return useQuery<FarcasterUser>({
+  return useQuery<FarcasterUserV1>({
     queryKey: ["user", username],
     queryFn: async () => {
-      const user = await fetchUser(username);
-      if (!disableCache) {
-        addUsers([user]);
-      }
+      const user = await fetchUser(username, fid);
+      addUsers([user]);
       return user;
     },
     enabled: !!username,
   });
+};
+
+export const fetchUserMutualsPreview = async (
+  username: string,
+): Promise<FarcasterUserMutualsPreview> => {
+  return await makeRequest(`/farcaster/users/${username}/mutuals-preview`);
 };
 
 export const fetchUsers = async (

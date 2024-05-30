@@ -9,7 +9,8 @@
     "users-per-client": "ts-node src/users-per-client.ts",
     "generate-token": "ts-node src/generate-token.ts",
     "fix-followers": "ts-node src/fix-followers.ts",
-    "refresh-collection-ownerships": "ts-node src/refresh-collection-ownerships.ts"
+    "refresh-collection-ownerships": "ts-node src/refresh-collection-ownerships.ts",
+    "profile-feeds": "ts-node src/profile-feeds.ts"
   },
   "dependencies": {
     "@farcaster/auth-client": "^0.1.0",

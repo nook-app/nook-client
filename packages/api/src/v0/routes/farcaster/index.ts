@@ -201,6 +201,18 @@ export const farcasterRoutes = async (fastify: FastifyInstance) => {
       },
     );
 
+    fastify.get<{ Params: { fid: string } }>(
+      "/farcaster/users/:fid/mutuals-preview",
+      async (request, reply) => {
+        const { fid } = (await request.jwtDecode()) as { fid: string };
+        const response = await client.getUserMutualsPreview(
+          request.params.fid,
+          fid,
+        );
+        reply.send(response);
+      },
+    );
+
     fastify.get<{ Params: { fid: string }; Querystring: { cursor?: string } }>(
       "/farcaster/users/:fid/mutuals",
       async (request, reply) => {

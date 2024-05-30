@@ -11,11 +11,10 @@ export const castRoutes = async (fastify: FastifyInstance) => {
         hash: string;
       };
     }>("/casts/:hash", async (request, reply) => {
-      const casts = await service.getCasts(
-        [request.params.hash],
+      const cast = await service.getCast(
+        request.params.hash,
         request.headers["x-viewer-fid"] as string,
       );
-      const cast = casts[request.params.hash];
 
       if (!cast) {
         reply.status(404).send({ message: "Cast not found" });
@@ -28,7 +27,7 @@ export const castRoutes = async (fastify: FastifyInstance) => {
     fastify.post<{
       Body: FarcasterFeedRequest;
     }>("/casts", async (request, reply) => {
-      const casts = await service.getCastFeed(
+      const casts = await service.getCasts(
         request.body,
         request.headers["x-viewer-fid"] as string,
       );

@@ -8,7 +8,7 @@ import {
   useEffect,
 } from "react";
 import {
-  FarcasterUser,
+  FarcasterUserV1,
   GetSignerResponse,
   Session,
   UserSettings,
@@ -38,8 +38,8 @@ type AuthContextType = {
   setSession: (session: Session) => Promise<void>;
   refreshSigner: () => Promise<string | undefined>;
   refreshSignerByPublicKey: () => Promise<string | undefined>;
-  user?: FarcasterUser;
-  setUser: (user: FarcasterUser) => void;
+  user?: FarcasterUserV1;
+  setUser: (user: FarcasterUserV1) => void;
   signer?: GetSignerResponse;
   setSigner: (signer: GetSignerResponse) => void;
   settings?: UserSettings;
@@ -57,14 +57,14 @@ export const AuthProvider = ({
 }: {
   children: ReactNode;
   defaultSession?: Session;
-  defaultUser?: FarcasterUser;
+  defaultUser?: FarcasterUserV1;
   defaultSigner?: GetSignerResponse;
 }) => {
   const [session, setSession] = useState<Session | undefined>(defaultSession);
   const [signer, setSigner] = useState<GetSignerResponse | undefined>(
     defaultSigner,
   );
-  const [user, setUser] = useState<FarcasterUser | undefined>(defaultUser);
+  const [user, setUser] = useState<FarcasterUserV1 | undefined>(defaultUser);
   const { getAccessToken, logout: logoutPrivy, user: privyUser } = usePrivy();
   const { data } = useSettings(session);
 
@@ -132,7 +132,7 @@ export const AuthProvider = ({
         setSigner(signer);
         updateSigner(signer);
       }),
-      fetchUser(session.fid).then((user) => {
+      fetchUser(session.fid, true).then((user) => {
         setUser(user);
         updateUser(user);
       }),

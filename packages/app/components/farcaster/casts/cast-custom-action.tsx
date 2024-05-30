@@ -10,7 +10,7 @@ import {
 } from "@nook/app-ui";
 import { Dot, LayoutGrid, Search, Settings } from "@tamagui/lucide-icons";
 import { useCallback, useState } from "react";
-import { CastAction, FarcasterCastResponse } from "@nook/common/types";
+import { CastAction, FarcasterCastV1 } from "@nook/common/types";
 import { useAuth } from "../../../context/auth";
 import { submitFrameAction } from "../../../api/farcaster/actions";
 import { GradientIcon } from "../../gradient-icon";
@@ -19,7 +19,7 @@ import { EnableSignerDialog } from "../../../features/farcaster/enable-signer/di
 
 export const FarcasterCustomActionButton = ({
   cast,
-}: { cast: FarcasterCastResponse }) => {
+}: { cast: FarcasterCastV1 }) => {
   const [open, setOpen] = useState(false);
   const { settings, session, signer } = useAuth();
 
@@ -191,7 +191,7 @@ const CustomActionButton = ({
   onPress,
 }: {
   action: CastAction | null;
-  cast: FarcasterCastResponse;
+  cast: FarcasterCastV1;
   onPress: () => void;
 }) => {
   const toast = useToastController();

@@ -15,12 +15,12 @@ import { formatNumber } from "../../../utils";
 import { FarcasterPowerBadge } from "../../../components/farcaster/users/power-badge";
 import { FarcasterUserFollowButton } from "../../../components/farcaster/users/user-follow-button";
 import { UserFollowBadge } from "../../../components/farcaster/users/user-follow-badge";
-import { FarcasterUser } from "@nook/common/types";
+import { FarcasterUserV1 } from "@nook/common/types";
 import { useAuth } from "../../../context/auth";
 import { FarcasterUserMenu } from "../../../components/farcaster/users/user-menu";
 import { Link } from "../../../components/link";
 import { MoreHorizontal } from "@tamagui/lucide-icons";
-import { fetchUser } from "../../../api/farcaster";
+import { fetchUser, fetchUserMutualsPreview } from "../../../api/farcaster";
 import { useQuery } from "@tanstack/react-query";
 import { memo } from "react";
 
@@ -29,7 +29,7 @@ export const UserHeader = memo(
     user,
     size,
     disableMenu,
-  }: { user: FarcasterUser; size?: string; disableMenu?: boolean }) => {
+  }: { user: FarcasterUserV1; size?: string; disableMenu?: boolean }) => {
     const { session } = useAuth();
     const bio = user?.bio?.trim().replace(/\n\s*\n/g, "\n");
     return (
@@ -103,20 +103,19 @@ export const UserHeader = memo(
   },
 );
 
-const MutualsPreview = ({ user }: { user: FarcasterUser }) => {
+const MutualsPreview = ({ user }: { user: FarcasterUserV1 }) => {
   const { session } = useAuth();
   const { data } = useQuery({
     queryKey: ["userMutuals", user.username || user.fid],
     queryFn: async () => {
-      return await fetchUser(user.username || user.fid);
+      return await fetchUserMutualsPreview(user.username || user.fid);
     },
   });
-  const mutuals = data?.context?.mutuals;
 
-  if (!session || !mutuals) return null;
+  if (!session || !data) return null;
 
-  const total = mutuals?.total || 0;
-  const previews = mutuals?.preview || [];
+  const total = data?.total || 0;
+  const previews = data?.preview || [];
   const other = total - previews.length;
 
   let label = "Not followed by anyone you’re following";

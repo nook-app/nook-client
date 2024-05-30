@@ -4,8 +4,8 @@ import {
   NotificationsAPIClient,
 } from "@nook/common/clients";
 import {
-  FarcasterCastResponse,
-  FarcasterUser,
+  FarcasterCastV1,
+  FarcasterUserV1,
   GetNotificationsRequest,
   NotificationPreferences,
 } from "@nook/common/types";
@@ -137,7 +137,7 @@ export const notificationsRoutes = async (fastify: FastifyInstance) => {
             acc[cast.hash] = cast;
             return acc;
           },
-          {} as Record<string, FarcasterCastResponse>,
+          {} as Record<string, FarcasterCastV1>,
         );
 
         const userMap = users.data.reduce(
@@ -145,7 +145,7 @@ export const notificationsRoutes = async (fastify: FastifyInstance) => {
             acc[user.fid] = user;
             return acc;
           },
-          {} as Record<string, FarcasterUser>,
+          {} as Record<string, FarcasterUserV1>,
         );
 
         return reply.send({

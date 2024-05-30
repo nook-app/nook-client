@@ -1,5 +1,5 @@
 import {
-  FarcasterCastResponse,
+  FarcasterCastV1,
   Frame,
   FrameButton,
   TransactionTargetResponse,
@@ -43,7 +43,7 @@ type FrameContextType = {
 const FrameContext = createContext<FrameContextType | undefined>(undefined);
 
 type SheetProviderProps = {
-  cast: FarcasterCastResponse;
+  cast?: FarcasterCastV1;
   url: string;
   initialFrame: Frame;
   children: ReactNode;
@@ -90,8 +90,8 @@ export const FrameProvider = ({
         setIsLoading(true);
         const response = await submitFrameAction({
           url,
-          castFid: cast.user.fid || "0",
-          castHash: cast.hash || "0x0000000000000000000000000000000000000000",
+          castFid: cast?.user.fid || "0",
+          castHash: cast?.hash || "0x0000000000000000000000000000000000000000",
           action: frameButton.action,
           buttonIndex: index,
           postUrl: postUrl,
@@ -148,8 +148,8 @@ export const FrameProvider = ({
         setIsLoading(true);
         const response = await submitFrameAction({
           url,
-          castFid: cast.user.fid || "0",
-          castHash: cast.hash || "0x0000000000000000000000000000000000000000",
+          castFid: cast?.user.fid || "0",
+          castHash: cast?.hash || "0x0000000000000000000000000000000000000000",
           action: frameButton.action,
           buttonIndex: index,
           postUrl: postUrl,

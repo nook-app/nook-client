@@ -24,7 +24,7 @@ import {
 } from "../../components/farcaster/channels/channel-display";
 import { useRouter } from "solito/navigation";
 import { NativeSyntheticEvent, TextInputKeyPressEventData } from "react-native";
-import { Channel, FarcasterUser } from "@nook/common/types";
+import { Channel, FarcasterUserV1 } from "@nook/common/types";
 import { Link } from "../../components/link";
 import { FarcasterPowerBadge } from "../../components/farcaster/users/power-badge";
 import { UserFollowBadge } from "../../components/farcaster/users/user-follow-badge";
@@ -34,7 +34,7 @@ export const SearchBar = ({
   user,
   channel,
   defaultValue,
-}: { user?: FarcasterUser; channel?: Channel; defaultValue?: string }) => {
+}: { user?: FarcasterUserV1; channel?: Channel; defaultValue?: string }) => {
   const [value, setValue] = useState<string>(defaultValue || "");
   const [open, setOpen] = useState<boolean>(false);
   const closeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -122,7 +122,7 @@ export const SearchResults = ({
   value,
   user,
   channel,
-}: { value: string; user?: FarcasterUser; channel?: Channel }) => {
+}: { value: string; user?: FarcasterUserV1; channel?: Channel }) => {
   const { data, isLoading } = useSearchPreview(value);
 
   if (!value || !data) {
@@ -322,7 +322,7 @@ const ChannelContextSearchResult = ({
 const UserContextSearchResult = ({
   user,
   value,
-}: { user: FarcasterUser; value: string }) => {
+}: { user: FarcasterUserV1; value: string }) => {
   return (
     <Link href={`/search?q=${encodeURIComponent(value)}`}>
       <View

@@ -2,7 +2,7 @@ import { UserHeader } from "@nook/app/features/farcaster/user-profile/user-heade
 import { useUser } from "@nook/app/hooks/useUser";
 import { useFocusEffect, useLocalSearchParams } from "expo-router";
 import { FarcasterFilteredFeed } from "@nook/app/features/farcaster/cast-feed/filtered-feed";
-import { Display, FarcasterUser, UserFilterType } from "@nook/common/types";
+import { Display, FarcasterUserV1, UserFilterType } from "@nook/common/types";
 import { NookText, Popover, XStack } from "@nook/app-ui";
 import { FarcasterPowerBadge } from "@nook/app/components/farcaster/users/power-badge";
 import {
@@ -160,7 +160,7 @@ export default function UserScreen() {
   );
 }
 
-const Menu = memo(({ user }: { user: FarcasterUser }) => {
+const Menu = memo(({ user }: { user: FarcasterUserV1 }) => {
   const [showMenu, setShowMenu] = useState(false);
 
   useFocusEffect(useCallback(() => setShowMenu(true), []));
@@ -192,7 +192,7 @@ const Menu = memo(({ user }: { user: FarcasterUser }) => {
   );
 });
 
-const Title = memo(({ user }: { user: FarcasterUser }) => {
+const Title = memo(({ user }: { user: FarcasterUserV1 }) => {
   return (
     <XStack alignItems="center" gap="$2" flexShrink={1}>
       <NookText

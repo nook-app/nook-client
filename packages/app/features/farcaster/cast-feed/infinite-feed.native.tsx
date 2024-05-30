@@ -1,4 +1,4 @@
-import { Display, FarcasterCastResponse } from "@nook/common/types";
+import { Display, FarcasterCastV1 } from "@nook/common/types";
 import { Separator, Spinner, View } from "@nook/app-ui";
 import { FlashList } from "@shopify/flash-list";
 import { FarcasterCastLink } from "../../../components/farcaster/casts/cast-link";
@@ -23,7 +23,7 @@ export const FarcasterInfiniteFeed = ({
   paddingBottom,
   asTabs,
 }: {
-  casts: FarcasterCastResponse[];
+  casts: FarcasterCastV1[];
   fetchNextPage?: () => void;
   isFetchingNextPage?: boolean;
   hasNextPage?: boolean;
@@ -60,9 +60,7 @@ export const FarcasterInfiniteFeed = ({
   const List = asTabs ? Tabs.FlashList : FlashList;
 
   const handleViewableItemsChanged = useCallback(
-    ({
-      viewableItems,
-    }: { viewableItems: { item: FarcasterCastResponse }[] }) => {
+    ({ viewableItems }: { viewableItems: { item: FarcasterCastV1 }[] }) => {
       const videos = viewableItems.flatMap(({ item }) =>
         item.embeds.map(({ contentType, uri }) =>
           contentType?.startsWith("video") ||
@@ -83,7 +81,7 @@ export const FarcasterInfiniteFeed = ({
       renderItem={({ item, index }) => {
         return (
           <FarcasterCastLink
-            cast={item as FarcasterCastResponse}
+            cast={item as FarcasterCastV1}
             displayMode={displayMode}
           />
         );

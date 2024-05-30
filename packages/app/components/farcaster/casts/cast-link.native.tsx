@@ -1,12 +1,12 @@
 import { AnimatePresence, View } from "@nook/app-ui";
-import { Display, FarcasterCastResponse } from "@nook/common/types";
+import { Display, FarcasterCastV1 } from "@nook/common/types";
 import { FarcasterCastResponseDisplay } from "./cast-display";
 import { Link } from "../../link";
 
 export const FarcasterCastLink = ({
   cast,
   displayMode,
-}: { cast: FarcasterCastResponse; displayMode: Display }) => {
+}: { cast: FarcasterCastV1; displayMode: Display }) => {
   return (
     <AnimatePresence>
       <View

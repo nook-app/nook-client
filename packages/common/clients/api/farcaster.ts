@@ -1,7 +1,7 @@
 import {
-  FarcasterUser,
+  FarcasterUserV1,
   GetFarcasterUsersResponse,
-  FarcasterCastResponse,
+  FarcasterCastV1,
   GetFarcasterCastsResponse,
   Channel,
   GetFarcasterUsersRequest,
@@ -61,8 +61,23 @@ export class FarcasterAPIClient extends BaseAPIClient {
     return response.json();
   }
 
-  async getUser(fid: string, viewerFid?: string): Promise<FarcasterUser> {
+  async getUser(fid: string, viewerFid?: string): Promise<FarcasterUserV1> {
     const response = await this.makeRequest(`/users/${fid}`, { viewerFid });
+
+    if (!response.ok) {
+      throw new Error(response.statusText);
+    }
+
+    return response.json();
+  }
+
+  async getUserMutualsPreview(
+    fid: string,
+    viewerFid: string,
+  ): Promise<FarcasterUserV1> {
+    const response = await this.makeRequest(`/users/${fid}/mutuals-preview`, {
+      viewerFid,
+    });
 
     if (!response.ok) {
       throw new Error(response.statusText);
@@ -194,7 +209,7 @@ export class FarcasterAPIClient extends BaseAPIClient {
   async getCast(
     hash: string,
     viewerFid?: string,
-  ): Promise<FarcasterCastResponse | undefined> {
+  ): Promise<FarcasterCastV1 | undefined> {
     const response = await this.makeRequest(`/casts/${hash}`, { viewerFid });
 
     if (response.status === 404) {
@@ -211,7 +226,7 @@ export class FarcasterAPIClient extends BaseAPIClient {
   async getCastFromHub(
     hash: string,
     viewerFid?: string,
-  ): Promise<FarcasterCastResponse | undefined> {
+  ): Promise<FarcasterCastV1 | undefined> {
     const response = await this.makeRequest(`/casts/${hash}/hub`, {
       viewerFid,
     });

@@ -9,6 +9,7 @@ import {
   Channel,
   FarcasterCastContext,
   FarcasterCastEngagement,
+  FarcasterCastRelationsV1,
   FarcasterFeedFilter,
   FarcasterFeedRequest,
   FarcasterUserContext,
@@ -32,6 +33,7 @@ export class FarcasterCacheClient {
   CAST_V1_CACHE_PREFIX = "farcaster:cast:v1";
   USER_V1_CACHE_PREFIX = "farcaster:user:v1";
   SIGNER_V1_CACHE_PREFIX = "farcaster:signer:v1";
+  CAST_RELATIONS_V1_CACHE_PREFIX = "farcaster:cast-relations:v1";
 
   CAST_CACHE_PREFIX = "farcaster:cast";
   USER_CACHE_PREFIX = "farcaster:user";
@@ -50,10 +52,26 @@ export class FarcasterCacheClient {
   FEED_CACHE_PREFIX = "feed:farcaster";
 
   TTL = 24 * 60 * 60 * 3;
-  TTL_V1 = 60 * 60 * 3;
+  TTL_V1 = 24 * 60 * 60 * 1;
 
   constructor(redis: RedisClient) {
     this.redis = redis;
+  }
+
+  async getCastRelationsV1(
+    hash: string,
+  ): Promise<FarcasterCastRelationsV1 | undefined> {
+    return await this.redis.getJson(
+      `${this.CAST_RELATIONS_V1_CACHE_PREFIX}:${hash}`,
+    );
+  }
+
+  async setCastRelationsV1(hash: string, relations: FarcasterCastRelationsV1) {
+    await this.redis.setJson(
+      `${this.CAST_RELATIONS_V1_CACHE_PREFIX}:${hash}`,
+      relations,
+      this.TTL,
+    );
   }
 
   async getCastsV1(
@@ -79,6 +97,16 @@ export class FarcasterCacheClient {
     );
   }
 
+  async getUsersByUsernameV1(
+    usernames: string[],
+  ): Promise<(BaseFarcasterUserV1 | undefined)[]> {
+    return await this.redis.mgetJson(
+      usernames.map(
+        (username) => `${this.USER_V1_CACHE_PREFIX}:username:${username}`,
+      ),
+    );
+  }
+
   async setUsersV1(users: BaseFarcasterUserV1[]) {
     await this.redis.msetJson(
       users.flatMap((user) => {
@@ -87,7 +115,10 @@ export class FarcasterCacheClient {
           BaseFarcasterUserV1,
         ][];
         if (user.username) {
-          pairs.push([`${this.USER_V1_CACHE_PREFIX}:${user.username}`, user]);
+          pairs.push([
+            `${this.USER_V1_CACHE_PREFIX}:username:${user.username}`,
+            user,
+          ]);
         }
         return pairs;
       }),
@@ -701,38 +732,5 @@ export class FarcasterCacheClient {
       ]),
       this.TTL,
     );
-  }
-
-  async getFeedFromCache(
-    request: FarcasterFeedRequest,
-  ): Promise<FeedCacheItem[]> {
-    const key = await this.getFeedKey(request.filter);
-    const decodedCursor = decodeCursor(request.cursor);
-    const cursor = decodedCursor ? Number(decodedCursor.timestamp) : undefined;
-    const response = await this.redis.getSet(key, cursor);
-
-    const items = [];
-    for (let i = 0; i < response.length; i += 2) {
-      items.push(JSON.parse(response[i]));
-    }
-
-    return items;
-  }
-
-  async addToFeedCache(request: FarcasterFeedRequest, items: FeedCacheItem[]) {
-    const key = await this.getFeedKey(request.filter);
-    await this.redis.batchAddToSet(
-      key,
-      items.map((item) => ({
-        value: JSON.stringify(item),
-        score: item.timestamp,
-      })),
-    );
-  }
-
-  async getFeedKey(filter: FarcasterFeedFilter) {
-    return `${this.FEED_CACHE_PREFIX}:${createHash("md5")
-      .update(JSON.stringify(filter))
-      .digest("hex")}`;
   }
 }

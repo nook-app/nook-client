@@ -4,7 +4,7 @@ import { EmbedUrl } from "./EmbedUrl";
 import { EmbedTwitter } from "./EmbedTwitter";
 import { Text, View, XStack, YStack } from "tamagui";
 import { EmbedNook } from "./EmbedNook";
-import { FarcasterCastResponse, UrlContentResponse } from "@nook/common/types";
+import { FarcasterCastV1, UrlContentResponse } from "@nook/common/types";
 import { EmbedCast } from "./EmbedCast";
 import { Link as LinkIcon } from "@tamagui/lucide-icons";
 import { Link } from "solito/link";
@@ -16,7 +16,7 @@ export const Embed = ({
   cast,
 }: {
   content: UrlContentResponse;
-  cast?: FarcasterCastResponse;
+  cast?: FarcasterCastV1;
 }) => {
   if (
     content.uri.startsWith("nook://") ||
@@ -58,8 +58,13 @@ export const Embed = ({
 export const Embeds = ({
   cast,
 }: {
-  cast: FarcasterCastResponse;
+  cast: FarcasterCastV1;
 }) => {
+  const missingEmbeds = cast.embedUrls.filter((url) => {
+    const embed = cast.embeds.find((embed) => embed.uri === url);
+    return !embed;
+  });
+
   const isAllImages = cast.embeds.every(
     (embed) =>
       embed.contentType?.startsWith("image/") ||
@@ -72,6 +77,9 @@ export const Embeds = ({
         {cast.embedCasts.map((embedCast) => (
           <EmbedCast key={embedCast.hash} cast={embedCast} />
         ))}
+        {missingEmbeds.map((uri) => (
+          <EmbedUrlNoContent uri={uri} />
+        ))}
       </>
     );
   }
@@ -83,6 +91,9 @@ export const Embeds = ({
       ))}
       {cast.embedCasts.map((embedCast) => (
         <EmbedCast key={embedCast.hash} cast={embedCast} />
+      ))}
+      {missingEmbeds.map((uri) => (
+        <EmbedUrlNoContent uri={uri} />
       ))}
     </>
   );

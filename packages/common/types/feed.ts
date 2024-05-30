@@ -14,7 +14,6 @@ export type FarcasterFeedFilter = {
   includeReplies?: boolean;
   onlyReplies?: boolean;
   onlyFrames?: boolean;
-  minTimestamp?: number;
 };
 
 export type FeedContext = {

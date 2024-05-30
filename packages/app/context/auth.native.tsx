@@ -8,7 +8,7 @@ import {
   useMemo,
 } from "react";
 import {
-  FarcasterUser,
+  FarcasterUserV1,
   GetSignerResponse,
   Session,
   UserSettings,
@@ -41,8 +41,8 @@ type AuthContextType = {
   setSession: (session: Session) => Promise<void>;
   refreshSigner: () => Promise<string | undefined>;
   refreshSignerByPublicKey: () => Promise<string | undefined>;
-  user?: FarcasterUser;
-  setUser: (user: FarcasterUser) => void;
+  user?: FarcasterUserV1;
+  setUser: (user: FarcasterUserV1) => void;
   signer?: GetSignerResponse;
   setSigner: (signer: GetSignerResponse) => void;
   settings?: UserSettings;
@@ -61,7 +61,7 @@ export const AuthProvider = ({
   const [signer, setSigner] = useState<GetSignerResponse | undefined>(
     undefined,
   );
-  const [user, setUser] = useState<FarcasterUser | undefined>(undefined);
+  const [user, setUser] = useState<FarcasterUserV1 | undefined>(undefined);
   const [isInitializing, setIsInitializing] = useState(true);
   const { getAccessToken, logout: logoutPrivy, user: privyUser } = usePrivy();
   const { data } = useSettings(session);
@@ -120,7 +120,7 @@ export const AuthProvider = ({
       getSigner().then((signer) => {
         setSigner(signer);
       }),
-      fetchUser(session.fid).then((user) => {
+      fetchUser(session.fid, true).then((user) => {
         setUser(user);
       }),
     ]);

@@ -102,6 +102,7 @@ model FarcasterCast {
     @@index([rootParentUrl, fid, deletedAt, parentHash, timestamp(sort: Desc)])
     @@index([timestamp(sort: Desc), fid, rootParentUrl, deletedAt, parentHash])
     @@index([timestamp(sort: Desc), deletedAt, parentHash])
+    @@index([rootParentHash, deletedAt, timestamp(sort: Desc)])
 }
 
 model FarcasterCastMention {

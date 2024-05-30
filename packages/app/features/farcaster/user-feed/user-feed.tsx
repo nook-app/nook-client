@@ -1,6 +1,6 @@
 "use client";
 
-import { FarcasterUser } from "@nook/common/types";
+import { FarcasterUserV1 } from "@nook/common/types";
 import { AnimatePresence, Spinner, View } from "@nook/app-ui";
 import { InfiniteScrollList } from "../../../components/infinite-scroll-list";
 import { FarcasterUserItem } from "./user-item";
@@ -16,7 +16,7 @@ export const FarcasterUserInfiniteFeed = ({
   paddingBottom,
   asTabs,
 }: {
-  users: FarcasterUser[];
+  users: FarcasterUserV1[];
   fetchNextPage: () => void;
   isFetchingNextPage: boolean;
   hasNextPage: boolean;
@@ -43,7 +43,7 @@ export const FarcasterUserInfiniteFeed = ({
             scale={1}
             y={0}
           >
-            <FarcasterUserItem user={item as FarcasterUser} />
+            <FarcasterUserItem user={item as FarcasterUserV1} />
           </View>
         </AnimatePresence>
       )}

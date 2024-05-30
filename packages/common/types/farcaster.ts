@@ -32,13 +32,7 @@ export type BaseFarcasterUser = {
   displayName?: string;
   bio?: string;
   url?: string;
-  verifiedAddresses?: { protocol: number; address: string }[];
-};
-
-export type FarcasterUser = BaseFarcasterUser & {
-  engagement: FarcasterUserEngagement;
-  context?: FarcasterUserContext;
-  badges?: FarcasterUserBadges;
+  verifiedAddresses: { protocol: number; address: string }[];
 };
 
 export type FarcasterCastEngagement = {
@@ -122,21 +116,24 @@ export type BaseFarcasterCastV1 = {
   }[];
   embedHashes: string[];
   embedUrls: string[];
-  parent?: BaseFarcasterCastV1;
-  parentFid?: string;
-  parentHash?: string;
-  parentUrl?: string;
+  embedCasts: FarcasterCastV1[];
+  embeds: UrlContentResponse[];
   rootParent?: BaseFarcasterCastV1;
   rootParentFid?: string;
   rootParentHash?: string;
   rootParentUrl?: string;
-  embeds: {
-    urls: UrlContentResponse[];
-    casts: BaseFarcasterCastV1[];
-  };
+  parent?: BaseFarcasterCastV1;
+  parentFid?: string;
+  parentHash?: string;
+  parentUrl?: string;
+  channel?: Channel;
+  channelMentions: {
+    channel: Channel;
+    position: string;
+  }[];
+  engagement: FarcasterCastEngagement;
   signer: string;
   appFid: string;
-  engagement: FarcasterCastEngagement;
 };
 
 export type FarcasterCastV1 = {
@@ -150,20 +147,30 @@ export type FarcasterCastV1 = {
   }[];
   embedHashes: string[];
   embedUrls: string[];
-  parent?: FarcasterCastV1;
-  parentFid?: string;
-  parentHash?: string;
-  parentUrl?: string;
+  embedCasts: FarcasterCastV1[];
+  embeds: UrlContentResponse[];
   rootParent?: FarcasterCastV1;
   rootParentFid?: string;
   rootParentHash?: string;
   rootParentUrl?: string;
-  embeds: {
-    urls: UrlContentResponse[];
-    casts: FarcasterCastV1[];
-  };
-  signer: string;
-  appFid: string;
+  parent?: FarcasterCastV1;
+  parentFid?: string;
+  parentHash?: string;
+  parentUrl?: string;
+  channel?: Channel;
+  channelMentions: {
+    channel: Channel;
+    position: string;
+  }[];
   engagement: FarcasterCastEngagement;
   context?: FarcasterCastContext;
+  ancestors?: FarcasterCastV1[];
+  thread?: FarcasterCastV1[];
+  signer: string;
+  appFid: string;
+};
+
+export type FarcasterCastRelationsV1 = {
+  ancestors: string[];
+  thread: string[];
 };

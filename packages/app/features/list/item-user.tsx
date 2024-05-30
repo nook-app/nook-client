@@ -1,4 +1,4 @@
-import { FarcasterUser, List } from "@nook/common/types";
+import { FarcasterUserV1, List } from "@nook/common/types";
 import { NookButton, NookText, XStack, YStack } from "@nook/app-ui";
 import { FarcasterUserAvatar } from "../../components/farcaster/users/user-display";
 import { memo, useState } from "react";
@@ -9,7 +9,7 @@ import { Link } from "../../components/link";
 import { useAddUserToList } from "../../hooks/useAddUserToList";
 
 export const ItemUser = memo(
-  ({ list, user }: { list: List; user: FarcasterUser }) => {
+  ({ list, user }: { list: List; user: FarcasterUserV1 }) => {
     const { addUser, removeUser, isAdded } = useAddUserToList(list, user);
 
     const bio = user?.bio?.trim().replace(/\n\s*\n/g, "\n");

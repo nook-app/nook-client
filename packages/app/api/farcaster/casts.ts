@@ -1,5 +1,5 @@
 import {
-  FarcasterCastResponse,
+  FarcasterCastV1,
   FetchCastsResponse,
   FetchUsersResponse,
 } from "@nook/common/types";
@@ -13,25 +13,13 @@ import { useCastStore } from "../../store/useCastStore";
 import { useUserStore } from "../../store/useUserStore";
 import { useChannelStore } from "../../store/useChannelStore";
 
-export const fetchCast = async (
-  hash: string,
-): Promise<FarcasterCastResponse> => {
-  return await makeRequest(`/farcaster/casts/${hash}`);
-};
-
-export const fetchCasts = async (hashes: string[]) => {
-  return await makeRequest("/farcaster/casts", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ hashes }),
-  });
+export const fetchCast = async (hash: string): Promise<FarcasterCastV1> => {
+  return await makeRequest(`/v1/farcaster/casts/${hash}`);
 };
 
 export const useCast = (hash: string) => {
   const addCasts = useCastStore((state) => state.addCasts);
-  return useQuery<FarcasterCastResponse>({
+  return useQuery<FarcasterCastV1>({
     queryKey: ["cast", hash],
     queryFn: async () => {
       const cast = await fetchCast(hash);

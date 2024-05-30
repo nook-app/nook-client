@@ -2,7 +2,7 @@
 
 import {
   Channel,
-  FarcasterUser,
+  FarcasterUserV1,
   FetchListsResponse,
   GetListsRequest,
   List,
@@ -32,7 +32,7 @@ export const ManageListFeed = ({
   paddingTop?: number;
   paddingBottom?: number;
   asTabs?: boolean;
-  user?: FarcasterUser;
+  user?: FarcasterUserV1;
   channel?: Channel;
 }) => {
   const { data, isLoading } = useFollowedLists(filter, initialData);

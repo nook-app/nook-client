@@ -1,5 +1,4 @@
-import { FarcasterCastResponse } from "./api";
-import { FarcasterUser } from "./farcaster";
+import { FarcasterUserV1, FarcasterCastV1 } from "./farcaster";
 
 export type BaseNotification = {
   fid: string;
@@ -104,9 +103,9 @@ export type RawNotificationResponse = {
 
 export type NotificationResponse = {
   type: NotificationType;
-  cast?: FarcasterCastResponse;
+  cast?: FarcasterCastV1;
   timestamp: number;
-  users?: FarcasterUser[];
+  users?: FarcasterUserV1[];
 };
 
 export type NotificationPreferences = {

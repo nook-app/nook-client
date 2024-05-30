@@ -3,12 +3,12 @@ import { EmbedVideo } from "./EmbedVideo";
 import { EmbedTwitter } from "./EmbedTwitter";
 import { NookText } from "@nook/app-ui";
 import { formatToCDN } from "../../utils";
-import { FarcasterCastResponse, UrlContentResponse } from "@nook/common/types";
+import { FarcasterCastV1, UrlContentResponse } from "@nook/common/types";
 
 export const EmbedMedia = ({
   cast,
 }: {
-  cast: FarcasterCastResponse;
+  cast: FarcasterCastV1;
 }) => {
   const isAllImages = cast.embeds.every(
     (embed) =>

@@ -1,4 +1,4 @@
-import { CastAction, Display, FarcasterCastResponse } from "@nook/common/types";
+import { CastAction, Display, FarcasterCastV1 } from "@nook/common/types";
 import { Separator, Spinner, View } from "@nook/app-ui";
 import { FlashList } from "@shopify/flash-list";
 import { useCallback, useState } from "react";

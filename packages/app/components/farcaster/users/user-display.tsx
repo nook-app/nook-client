@@ -1,4 +1,4 @@
-import { FarcasterUser } from "@nook/common/types";
+import { FarcasterUserV1 } from "@nook/common/types";
 import { NookText, Tooltip, View, XStack, YStack } from "@nook/app-ui";
 import { FarcasterPowerBadge } from "./power-badge";
 import { CdnAvatar } from "../../cdn-avatar";
@@ -14,7 +14,7 @@ export const FarcasterUserTextDisplay = ({
   withBio,
   suffix,
 }: {
-  user: FarcasterUser;
+  user: FarcasterUserV1;
   orientation?: "horizontal" | "vertical";
   asLink?: boolean;
   withBio?: boolean;
@@ -69,7 +69,7 @@ export const FarcasterUserDisplay = ({
   size,
   suffix,
 }: {
-  user: FarcasterUser;
+  user: FarcasterUserV1;
   asLink?: boolean;
   withBio?: boolean;
   size?: string;
@@ -91,7 +91,7 @@ export const FarcasterUserAvatar = ({
   user,
   size,
   asLink,
-}: { user: FarcasterUser; size: string; asLink?: boolean }) => {
+}: { user: FarcasterUserV1; size: string; asLink?: boolean }) => {
   const Component = <CdnAvatar src={user?.pfp} size={size} />;
 
   if (asLink) {
@@ -117,7 +117,7 @@ export const FarcasterUserTooltip = ({
   user,
   children,
 }: {
-  user: FarcasterUser;
+  user: FarcasterUserV1;
   children: ReactNode;
 }) => {
   return (
@@ -154,7 +154,7 @@ export const FarcasterUserTooltip = ({
 export const FarcasterUserBadge = ({
   user,
   asLink,
-}: { user: FarcasterUser; asLink?: boolean }) => {
+}: { user: FarcasterUserV1; asLink?: boolean }) => {
   const Component = (
     <XStack
       gap="$1.5"

@@ -1,4 +1,4 @@
-import { FarcasterUser, Token, TokenHolder } from "@nook/common/types";
+import { FarcasterUserV1, Token, TokenHolder } from "@nook/common/types";
 import { NookText, View, XStack, YStack } from "@nook/app-ui";
 import { FarcasterUserAvatar } from "../../components/farcaster/users/user-display";
 import { FarcasterUserFollowButton } from "../../components/farcaster/users/user-follow-button";
@@ -18,7 +18,7 @@ export const TokenHolderItem = memo(
   ({
     token,
     holder,
-  }: { token: Token; holder: TokenHolder & { user?: FarcasterUser } }) => {
+  }: { token: Token; holder: TokenHolder & { user?: FarcasterUserV1 } }) => {
     if (!holder.user) {
       return <AddressDisplay token={token} holder={holder} />;
     }

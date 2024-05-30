@@ -1,5 +1,5 @@
 import {
-  FarcasterUser,
+  FarcasterUserV1,
   FetchNftCollectionsResponse,
   FetchNftCollectorsResponse,
   FetchNftCreatedCollectionsResponse,
@@ -293,7 +293,7 @@ export const useNFtCollectionFarcasterCollectors = (
       const data = await fetchNftCollectionFarcasterCollectors(req, pageParam);
       const users = data.data
         .filter((collector) => collector.user)
-        .map((collector) => collector.user) as FarcasterUser[];
+        .map((collector) => collector.user) as FarcasterUserV1[];
       addUsers(users);
       return data;
     },
@@ -338,7 +338,7 @@ export const useNFtCollectionFollowingCollectors = (
       const data = await fetchNftCollectionFollowingCollectors(req, pageParam);
       const users = data.data
         .filter((collector) => collector.user)
-        .map((collector) => collector.user) as FarcasterUser[];
+        .map((collector) => collector.user) as FarcasterUserV1[];
       addUsers(users);
       return data;
     },
@@ -464,7 +464,7 @@ export const useNFtFarcasterCollectors = (
       const data = await fetchNftFarcasterCollectors(req, pageParam);
       const users = data.data
         .filter((collector) => collector.user)
-        .map((collector) => collector.user) as FarcasterUser[];
+        .map((collector) => collector.user) as FarcasterUserV1[];
       addUsers(users);
       return data;
     },
@@ -509,7 +509,7 @@ export const useNFtFollowingCollectors = (
       const data = await fetchNftFollowingCollectors(req, pageParam);
       const users = data.data
         .filter((collector) => collector.user)
-        .map((collector) => collector.user) as FarcasterUser[];
+        .map((collector) => collector.user) as FarcasterUserV1[];
       addUsers(users);
       return data;
     },

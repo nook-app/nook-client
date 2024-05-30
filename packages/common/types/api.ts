@@ -1,10 +1,5 @@
 import { UrlContentResponse } from "./content";
-import {
-  Channel,
-  FarcasterCastContext,
-  FarcasterCastEngagement,
-  FarcasterUser,
-} from "./farcaster";
+import { Channel, FarcasterCastV1, FarcasterUserV1 } from "./farcaster";
 import { NotificationResponse, RawNotificationResponse } from "./notifications";
 import { PendingCast } from "../prisma/nook";
 import { Transaction } from "./transactions";
@@ -18,37 +13,6 @@ import {
 } from "./simplehash";
 import { UserFilter } from "./nook";
 import { OnceUponTransaction } from "./providers/onceupon";
-
-export type FarcasterCastResponse = {
-  hash: string;
-  timestamp: number;
-  user: FarcasterUser;
-  text: string;
-  mentions: {
-    user: FarcasterUser;
-    position: string;
-  }[];
-  embedCasts: FarcasterCastResponse[];
-  embeds: UrlContentResponse[];
-  rootParentFid?: string;
-  rootParentHash?: string;
-  rootParentUrl?: string;
-  parentFid?: string;
-  parentHash?: string;
-  parent?: FarcasterCastResponse;
-  parentUrl?: string;
-  channel?: Channel;
-  channelMentions: {
-    channel: Channel;
-    position: string;
-  }[];
-  engagement: FarcasterCastEngagement;
-  context?: FarcasterCastContext;
-  ancestors?: FarcasterCastResponse[];
-  thread?: FarcasterCastResponse[];
-  signer: string;
-  appFid: string;
-};
 
 export type GetFarcasterChannelRequest = {
   id: string;
@@ -91,12 +55,12 @@ export type GetFarcasterCastsRequest = {
 };
 
 export type GetFarcasterCastsResponse = {
-  data: FarcasterCastResponse[];
+  data: FarcasterCastV1[];
   nextCursor?: string;
 };
 
 export type GetFarcasterUsersResponse = {
-  data: FarcasterUser[];
+  data: FarcasterUserV1[];
   nextCursor?: string;
 };
 
@@ -291,12 +255,12 @@ export type GetNftsResponse = {
 };
 
 export type FetchCastsResponse = {
-  data: FarcasterCastResponse[];
+  data: FarcasterCastV1[];
   nextCursor?: string;
 };
 
 export type FetchUsersResponse = {
-  data: FarcasterUser[];
+  data: FarcasterUserV1[];
   nextCursor?: string;
 };
 

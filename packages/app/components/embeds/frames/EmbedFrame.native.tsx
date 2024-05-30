@@ -21,7 +21,7 @@ import Animated, {
 } from "react-native-reanimated";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import {
-  FarcasterCastResponse,
+  FarcasterCastV1,
   FrameButton,
   UrlContentResponse,
 } from "@nook/common/types";
@@ -39,7 +39,7 @@ import { useAccount } from "wagmi";
 export const EmbedFrame = ({
   cast,
   content,
-}: { cast: FarcasterCastResponse; content: UrlContentResponse }) => {
+}: { cast?: FarcasterCastV1; content: UrlContentResponse }) => {
   if (!content.frame) return null;
   return (
     <FrameProvider cast={cast} url={content.uri} initialFrame={content.frame}>

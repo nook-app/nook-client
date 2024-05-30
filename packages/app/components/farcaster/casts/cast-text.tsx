@@ -1,6 +1,6 @@
 import { GetThemeValueForKey } from "@tamagui/core";
 import { Buffer } from "buffer";
-import { FarcasterCastResponse } from "@nook/common/types";
+import { FarcasterCastV1 } from "@nook/common/types";
 import { NookText } from "@nook/app-ui";
 import { FarcasterUserTooltip } from "../users/user-display";
 import { FarcasterChannelTooltip } from "../channels/channel-tooltip";
@@ -13,7 +13,7 @@ export const FarcasterCastResponseText = ({
   fontSize = 15,
   selectable,
 }: {
-  cast: FarcasterCastResponse;
+  cast: FarcasterCastV1;
   disableLinks?: boolean;
   color?: string;
   fontSize?: string | number;
@@ -211,7 +211,7 @@ export const FarcasterCastResponseText = ({
   textParts.reverse();
 
   return (
-    <NookText selectable={selectable} lineHeight={20}>
+    <NookText userSelect={selectable ? "auto" : "none"} lineHeight={20}>
       {textParts}
     </NookText>
   );

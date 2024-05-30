@@ -4,7 +4,7 @@ import {
   CreateCastQuoteTrigger,
   CreateCastReplyTrigger,
 } from "../../../features/farcaster/create-cast/trigger";
-import { FarcasterCastResponse } from "@nook/common/types";
+import { FarcasterCastV1 } from "@nook/common/types";
 import { useLikeCast } from "../../../hooks/useLikeCast";
 import { useRecastCast } from "../../../hooks/useRecastCast";
 import { EnableSignerDialog } from "../../../features/farcaster/enable-signer/dialog";
@@ -16,13 +16,13 @@ import { Platform } from "react-native";
 
 export const FarcasterReplyActionButton = ({
   cast,
-}: { cast: FarcasterCastResponse }) => {
+}: { cast: FarcasterCastV1 }) => {
   return <CreateCastReplyTrigger cast={cast} />;
 };
 
 export const FarcasterRecastActionButton = ({
   cast,
-}: { cast: FarcasterCastResponse }) => {
+}: { cast: FarcasterCastV1 }) => {
   const { session, login, signer } = useAuth();
 
   if (!session) {
@@ -67,7 +67,7 @@ export const FarcasterRecastActionButton = ({
 
 export const FarcasterLikeActionButton = ({
   cast,
-}: { cast: FarcasterCastResponse }) => {
+}: { cast: FarcasterCastV1 }) => {
   const theme = useTheme();
   const { likeCast, unlikeCast, isLiked } = useLikeCast(cast);
   const { session, login, signer } = useAuth();
@@ -132,9 +132,7 @@ export const FarcasterLikeActionButton = ({
   return <EnableSignerDialog>{Component}</EnableSignerDialog>;
 };
 
-export const FarcasterShareButton = ({
-  cast,
-}: { cast: FarcasterCastResponse }) => {
+export const FarcasterShareButton = ({ cast }: { cast: FarcasterCastV1 }) => {
   return (
     <Menu
       trigger={

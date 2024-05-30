@@ -1,9 +1,9 @@
 import { View } from "@nook/app-ui";
-import { FarcasterCastResponse } from "@nook/common/types";
+import { FarcasterCastV1 } from "@nook/common/types";
 
 export const FarcasterCastResponseGridDisplay = ({
   cast,
-}: { cast: FarcasterCastResponse }) => {
+}: { cast: FarcasterCastV1 }) => {
   const imageEmbed = cast.embeds.find((embed) =>
     embed.contentType?.startsWith("image"),
   );

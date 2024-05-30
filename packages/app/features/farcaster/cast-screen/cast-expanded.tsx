@@ -14,7 +14,7 @@ import { FarcasterCastResponseText } from "../../../components/farcaster/casts/c
 import { Embeds } from "../../../components/embeds/Embed";
 import { FarcasterCastResponseEngagement } from "../../../components/farcaster/casts/cast-engagement";
 import { FarcasterChannelBadge } from "../../../components/farcaster/channels/channel-display";
-import { useCastReplies } from "../../../api/farcaster";
+import { fetchCast, useCastReplies } from "../../../api/farcaster";
 import {
   FarcasterLikeActionButton,
   FarcasterRecastActionButton,
@@ -24,7 +24,7 @@ import {
 import { FarcasterCustomActionButton } from "../../../components/farcaster/casts/cast-custom-action";
 import {
   Display,
-  FarcasterCastResponse,
+  FarcasterCastV1,
   FetchCastsResponse,
 } from "@nook/common/types";
 import { FarcasterInfiniteFeed } from "../cast-feed/infinite-feed";
@@ -33,6 +33,7 @@ import { Ref, memo, useEffect, useRef, useState } from "react";
 import { FarcasterCastResponseMenu } from "../../../components/farcaster/casts/cast-menu";
 import { FarcasterCastLink } from "../../../components/farcaster/casts/cast-link";
 import { View as RNView, ScrollView as RNScrollView } from "react-native";
+import { useQuery } from "@tanstack/react-query";
 
 function formatTimestampTime(timestamp: number) {
   const timeFormatter = new Intl.DateTimeFormat("en-US", {
@@ -61,7 +62,7 @@ export const FarcasterExpandedCast = memo(
     initialData,
     paddingBottom,
   }: {
-    cast: FarcasterCastResponse;
+    cast: FarcasterCastV1;
     initialData?: FetchCastsResponse;
     paddingBottom: number;
   }) => {
@@ -73,20 +74,10 @@ export const FarcasterExpandedCast = memo(
     const scrollViewRef = useRef<RNScrollView>(null);
     const viewRef = useRef<RNView>(null);
 
-    useEffect(() => {
-      const timer = setTimeout(() => {
-        if (scrollViewRef.current && viewRef.current) {
-          viewRef.current.measureLayout(
-            // @ts-ignore
-            scrollViewRef.current,
-            (x, y, width, height) => {
-              scrollViewRef.current?.scrollTo({ x: 0, y: y, animated: true });
-            },
-          );
-        }
-      }, 100);
-      return () => clearTimeout(timer);
-    }, []);
+    const { data: ancestors } = useQuery({
+      queryKey: ["castAncestors", cast.hash],
+      queryFn: () => fetchCast(cast.hash),
+    });
 
     const casts = data?.pages.flatMap((page) => page.data) ?? [];
 
@@ -97,23 +88,51 @@ export const FarcasterExpandedCast = memo(
     };
 
     return (
-      <ScrollView ref={scrollViewRef}>
+      <ScrollView
+        ref={scrollViewRef}
+        onContentSizeChange={() => {
+          if (scrollViewRef.current && viewRef.current) {
+            viewRef.current.measureLayout(
+              // @ts-ignore
+              scrollViewRef.current,
+              (x, y, width, height) => {
+                scrollViewRef.current?.scrollTo({
+                  x: 0,
+                  y: y,
+                  animated: false,
+                });
+              },
+            );
+          }
+        }}
+      >
+        <YStack gap="$3">
+          {ancestors?.ancestors?.map((ancestor) => (
+            <FarcasterCastLink
+              key={ancestor.hash}
+              cast={ancestor}
+              displayMode={Display.LIST}
+            />
+          ))}
+        </YStack>
         <FarcasterExpandedCastHeader
           cast={cast}
           replySort={replySort}
           onReplySortChange={setReplySort}
           viewRef={viewRef}
         />
-        <FarcasterInfiniteFeed
-          casts={casts}
-          fetchNextPage={fetchNextPage}
-          isFetchingNextPage={isFetchingNextPage}
-          hasNextPage={hasNextPage}
-          displayMode={Display.REPLIES}
-          refetch={handleRefresh}
-          isRefetching={isRefetching}
-          paddingBottom={paddingBottom}
-        />
+        <View minHeight={500}>
+          <FarcasterInfiniteFeed
+            casts={casts}
+            fetchNextPage={fetchNextPage}
+            isFetchingNextPage={isFetchingNextPage}
+            hasNextPage={hasNextPage}
+            displayMode={Display.REPLIES}
+            refetch={handleRefresh}
+            isRefetching={isRefetching}
+            paddingBottom={paddingBottom}
+          />
+        </View>
       </ScrollView>
     );
   },
@@ -126,7 +145,7 @@ const FarcasterExpandedCastHeader = memo(
     onReplySortChange,
     viewRef,
   }: {
-    cast: FarcasterCastResponse;
+    cast: FarcasterCastV1;
     replySort: "best" | "top" | "new";
     onReplySortChange: (sort: "best" | "top" | "new") => void;
     viewRef: Ref<RNView>;
@@ -134,19 +153,8 @@ const FarcasterExpandedCastHeader = memo(
     const renderText = cast.text || cast.mentions.length > 0;
     const renderEmbeds = cast.embeds.length > 0 || cast.embedCasts.length > 0;
 
-    const ancestors = cast.ancestors
-      ? [...cast.ancestors].reverse()
-      : undefined;
-
     return (
       <View>
-        {ancestors?.map((ancestor) => (
-          <FarcasterCastLink
-            key={ancestor.hash}
-            cast={ancestor}
-            displayMode={Display.LIST}
-          />
-        ))}
         <YStack gap="$3" padding="$2.5" ref={viewRef}>
           <XStack justifyContent="space-between">
             <FarcasterUserDisplay user={cast.user} asLink />

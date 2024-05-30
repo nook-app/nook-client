@@ -1,5 +1,5 @@
 import { NookText, Separator, XStack, YStack } from "@nook/app-ui";
-import { FarcasterCastResponse } from "@nook/common/types";
+import { FarcasterCastV1 } from "@nook/common/types";
 import {
   FarcasterUserAvatar,
   FarcasterUserTextDisplay,
@@ -11,7 +11,7 @@ import { FarcasterCastResponseText } from "./cast-text";
 export const FarcasterCastResponsePreview = ({
   cast,
   isConnected,
-}: { cast: FarcasterCastResponse; isConnected?: boolean }) => {
+}: { cast: FarcasterCastV1; isConnected?: boolean }) => {
   const renderText = cast.text || cast.mentions.length > 0;
   const renderEmbeds = cast.embeds.length > 0 || cast.embedCasts.length > 0;
 

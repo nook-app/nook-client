@@ -3,9 +3,9 @@
 import { YStack } from "@nook/app-ui";
 import { SearchBar } from "../../search/search-bar";
 import { ChannelOverview } from "../../../components/farcaster/channels/channel-overview";
-import { FarcasterCastResponse } from "@nook/common/types";
+import { FarcasterCastV1 } from "@nook/common/types";
 
-export const CastSidebar = ({ cast }: { cast: FarcasterCastResponse }) => {
+export const CastSidebar = ({ cast }: { cast: FarcasterCastV1 }) => {
   return (
     <YStack
       padding="$3"

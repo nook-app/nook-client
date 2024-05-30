@@ -12,6 +12,8 @@ import {
   getCastEmbeds,
   getEmbedUrls,
   getMentions,
+  hexToBuffer,
+  messageToCast,
 } from "@nook/common/farcaster";
 import {
   FarcasterCast,
@@ -57,12 +59,85 @@ export class FarcasterService {
     this.nook = new NookCacheClient(fastify.redis.client);
     this.hub = getSSLHubRpcClient(process.env.HUB_RPC_ENDPOINT as string);
   }
+  async getCast(
+    hash: string,
+    viewerFid?: string,
+  ): Promise<FarcasterCastV1 | undefined> {
+    const casts = await this.getCastsForHashes([hash], viewerFid);
+    const cast = casts[hash];
+    if (!cast) return;
 
-  async getCasts(
+    let relations = await this.cache.getCastRelationsV1(hash);
+    if (!relations) {
+      const relatedCasts = await this.client.farcasterCast.findMany({
+        where: {
+          rootParentHash: cast.rootParentHash || cast.hash,
+          deletedAt: null,
+        },
+        orderBy: {
+          timestamp: "asc",
+        },
+        select: {
+          fid: true,
+          hash: true,
+          parentHash: true,
+          parentFid: true,
+        },
+      });
+
+      const tree = relatedCasts.reduce(
+        (acc, cast) => {
+          acc[cast.hash] = cast.parentHash;
+          return acc;
+        },
+        {} as Record<string, string | null>,
+      );
+
+      const ancestors: string[] = [];
+      const thread: string[] = [];
+
+      let currentHash: string | null = cast.parentHash || null;
+      while (currentHash) {
+        ancestors.push(currentHash);
+        currentHash = tree[currentHash];
+      }
+
+      currentHash = cast.hash;
+      while (currentHash) {
+        const nextCast = relatedCasts.find(
+          (cast) =>
+            cast.parentHash === currentHash && cast.fid === cast.parentFid,
+        );
+        if (!nextCast) break;
+        currentHash = nextCast.hash;
+        thread.push(currentHash);
+      }
+
+      relations = {
+        ancestors,
+        thread,
+      };
+    }
+
+    const allCasts = [...relations.ancestors, ...relations.thread];
+    if (allCasts.length === 0) {
+      return cast;
+    }
+
+    const relatedCasts = await this.getCastsForHashes(allCasts, viewerFid);
+
+    return {
+      ...cast,
+      ancestors: relations.ancestors.map((hash) => relatedCasts[hash]),
+      thread: relations.thread.map((hash) => relatedCasts[hash]),
+    };
+  }
+
+  async getCastsForHashes(
     hashes: string[],
     viewerFid?: string,
   ): Promise<Record<string, FarcasterCastV1>> {
-    const casts = await this.getBaseCasts(hashes);
+    const casts = await this.getBaseCasts(hashes, viewerFid);
 
     const relatedHashes = new Set<string>();
     const relatedUsers = new Set<string>();
@@ -77,7 +152,7 @@ export class FarcasterService {
         relatedHashes.add(cast.rootParent.hash);
         relatedUsers.add(cast.rootParent.user.fid);
       }
-      for (const embed of cast.embeds.casts) {
+      for (const embed of cast.embedCasts) {
         relatedHashes.add(embed.hash);
         relatedUsers.add(embed.user.fid);
       }
@@ -126,17 +201,14 @@ export class FarcasterService {
                 context: castContexts[cast.rootParent.hash],
               }
             : undefined,
-          embeds: {
-            ...cast.embeds,
-            casts: cast.embeds.casts.map((embed) => ({
-              ...embed,
-              user: {
-                ...embed.user,
-                context: userContexts[embed.user.fid],
-              },
-              context: castContexts[embed.hash],
-            })),
-          },
+          embedCasts: cast.embedCasts.map((embed) => ({
+            ...embed,
+            user: {
+              ...embed.user,
+              context: userContexts[embed.user.fid],
+            },
+            context: castContexts[embed.hash],
+          })),
           context: castContexts[cast.hash],
         };
         return acc;
@@ -212,6 +284,7 @@ export class FarcasterService {
 
   async getBaseCasts(
     hashes: string[],
+    viewerFid?: string,
     disableCastEmbeds?: boolean,
   ): Promise<Record<string, BaseFarcasterCastV1>> {
     const cached = await this.cache.getCastsV1(hashes);
@@ -235,46 +308,103 @@ export class FarcasterService {
         },
       });
 
-      const [signerAppFids, content, relatedUsers, engagement, relatedCasts] =
-        await Promise.all([
-          this.getSignerAppFids(casts),
-          this.getUrlEmbeds(casts),
-          this.getRelatedUsers(casts),
-          this.getCastEngagement(casts),
-          disableCastEmbeds
-            ? ({} as Record<string, BaseFarcasterCastV1>)
-            : this.getRelatedCasts(casts),
-        ]);
+      const stillMissing = missing.filter(
+        (hash) => !casts.find((cast) => cast.hash === hash),
+      );
+      if (stillMissing.length > 0 && viewerFid) {
+        const missingCasts = await Promise.all(
+          stillMissing.map(async (hash) => {
+            const message = await this.hub.getCast({
+              fid: Number(viewerFid),
+              hash: hexToBuffer(hash),
+            });
+            if (message.isErr()) return;
+            const cast = messageToCast(message.value);
+            if (!cast) return;
+            return cast;
+          }),
+        );
+        casts.push(...(missingCasts.filter(Boolean) as FarcasterCast[]));
+      }
 
-      const baseCasts: BaseFarcasterCastV1[] = casts.map((cast) => ({
-        hash: cast.hash,
-        user: relatedUsers[cast.fid.toString()],
-        timestamp: cast.timestamp.getTime(),
-        text: cast.text,
-        mentions: getMentions(cast).map(({ fid, position }) => ({
-          user: relatedUsers[fid],
-          position,
-        })),
-        embedHashes: getCastEmbeds(cast).map(({ hash }) => hash),
-        embedUrls: getEmbedUrls(cast),
-        rootParentFid: cast.rootParentFid?.toString(),
-        rootParentHash: cast.rootParentHash || undefined,
-        rootParentUrl: cast.rootParentUrl || undefined,
-        parentFid: cast.parentFid?.toString(),
-        parentHash: cast.parentHash || undefined,
-        parentUrl: cast.parentUrl || undefined,
-        signer: cast.signer,
-        appFid: signerAppFids[cast.signer],
-        parent: cast.parentHash ? relatedCasts[cast.parentHash] : undefined,
-        rootParent: cast.rootParentHash
-          ? relatedCasts[cast.rootParentHash]
-          : undefined,
-        embeds: {
-          urls: getEmbedUrls(cast).map((url) => content[url]),
-          casts: getCastEmbeds(cast).map(({ hash }) => relatedCasts[hash]),
-        },
-        engagement: engagement[cast.hash],
-      }));
+      const [
+        signerAppFids,
+        content,
+        relatedUsers,
+        engagement,
+        channels,
+        relatedCasts,
+      ] = await Promise.all([
+        this.getSignerAppFids(casts),
+        this.getUrlEmbeds(casts),
+        this.getRelatedUsers(casts),
+        this.getCastEngagement(casts),
+        this.getRelatedChannels(casts),
+        disableCastEmbeds
+          ? ({} as Record<string, BaseFarcasterCastV1>)
+          : this.getRelatedCasts(casts, viewerFid),
+      ]);
+
+      const baseCasts: BaseFarcasterCastV1[] = casts.map((cast) => {
+        const channelMentions = cast.text.split(" ").reduce(
+          (acc, word) => {
+            if (!word.startsWith("/")) return acc;
+            const position = cast.text.indexOf(word, acc.lastIndex);
+            const channel = channels[word.slice(1)];
+            if (channel) {
+              acc.mentions.push({
+                channel,
+                position: Buffer.from(
+                  cast.text.slice(0, position),
+                ).length.toString(),
+              });
+            }
+            acc.lastIndex = position + word.length;
+            return acc;
+          },
+          { mentions: [], lastIndex: 0 } as {
+            mentions: {
+              channel: Channel;
+              position: string;
+            }[];
+            lastIndex: number;
+          },
+        );
+
+        return {
+          hash: cast.hash,
+          user: relatedUsers[cast.fid.toString()],
+          timestamp: cast.timestamp.getTime(),
+          text: cast.text,
+          mentions: getMentions(cast).map(({ fid, position }) => ({
+            user: relatedUsers[fid],
+            position,
+          })),
+          embedHashes: getCastEmbeds(cast).map(({ hash }) => hash),
+          embedUrls: getEmbedUrls(cast),
+          embeds: getEmbedUrls(cast)
+            .map((url) => content[url])
+            .filter(Boolean),
+          embedCasts: getCastEmbeds(cast)
+            .map(({ hash }) => relatedCasts[hash])
+            .filter(Boolean),
+          rootParent: cast.rootParentHash
+            ? relatedCasts[cast.rootParentHash]
+            : undefined,
+          rootParentFid: cast.rootParentFid?.toString(),
+          rootParentHash: cast.rootParentHash || undefined,
+          rootParentUrl: cast.rootParentUrl || undefined,
+          parent: cast.parentHash ? relatedCasts[cast.parentHash] : undefined,
+          parentFid: cast.parentFid?.toString(),
+          parentHash: cast.parentHash || undefined,
+          parentUrl: cast.parentUrl || undefined,
+          channel: cast.parentUrl ? channels[cast.parentUrl] : undefined,
+          channelMentions: channelMentions.mentions,
+          signer: cast.signer,
+          appFid: signerAppFids[cast.signer],
+          engagement: engagement[cast.hash],
+        };
+      });
 
       await this.cache.setCastsV1(baseCasts);
 
@@ -304,7 +434,7 @@ export class FarcasterService {
       },
     });
 
-    return engagement.reduce(
+    const engagementMap = engagement.reduce(
       (acc, cast) => {
         acc[cast.hash] = {
           likes: cast.likes,
@@ -316,6 +446,45 @@ export class FarcasterService {
       },
       {} as Record<string, FarcasterCastEngagement>,
     );
+
+    const missing = casts.filter((cast) => !engagementMap[cast.hash]);
+    for (const cast of missing) {
+      engagementMap[cast.hash] = {
+        likes: 0,
+        recasts: 0,
+        replies: 0,
+        quotes: 0,
+      };
+    }
+
+    return engagementMap;
+  }
+
+  async getRelatedChannels(casts: FarcasterCast[]) {
+    const channelIds = new Set<string>();
+    const channelUrls = new Set<string>();
+
+    for (const cast of casts) {
+      if (cast.parentUrl) {
+        channelUrls.add(cast.parentUrl);
+      }
+      for (const channelId of this.parseChannelMentions(cast.text)) {
+        channelIds.add(channelId);
+      }
+    }
+
+    return await this.getChannels(
+      Array.from(channelUrls),
+      Array.from(channelIds),
+    );
+  }
+
+  parseChannelMentions(text: string): string[] {
+    return text
+      .split(/\s+/)
+      .filter((word) => word.startsWith("/"))
+      .map((mention) => mention.slice(1).trim())
+      .filter(Boolean);
   }
 
   async getRelatedUsers(casts: FarcasterCast[]) {
@@ -329,7 +498,7 @@ export class FarcasterService {
     return await this.getBaseUsers(Array.from(users));
   }
 
-  async getRelatedCasts(casts: FarcasterCast[]) {
+  async getRelatedCasts(casts: FarcasterCast[], viewerFid?: string) {
     const hashes = new Set<string>();
     for (const cast of casts) {
       if (cast.parentHash) hashes.add(cast.parentHash);
@@ -339,7 +508,7 @@ export class FarcasterService {
       }
     }
 
-    return await this.getBaseCasts(Array.from(hashes), true);
+    return await this.getBaseCasts(Array.from(hashes), viewerFid, true);
   }
 
   async getUrlEmbeds(
@@ -365,11 +534,41 @@ export class FarcasterService {
     const embeds = await this.contentApi.getReferences(references);
     return embeds.data.reduce(
       (acc, embed) => {
+        if (!embed) return acc;
         acc[embed.uri] = embed;
         return acc;
       },
       {} as Record<string, UrlContentResponse>,
     );
+  }
+
+  async getUser(
+    username: string,
+    viewerFid?: string,
+  ): Promise<FarcasterUserV1 | undefined> {
+    const usersByUsername = await this.cache.getUsersByUsernameV1([username]);
+    if (usersByUsername[0]) {
+      const context = await this.getUserContexts(
+        [usersByUsername[0].fid],
+        viewerFid,
+      );
+      return {
+        ...usersByUsername[0],
+        context: context[usersByUsername[0].fid],
+      };
+    }
+
+    const userData = await this.client.farcasterUserData.findFirst({
+      where: {
+        type: UserDataType.USERNAME,
+        value: username,
+      },
+    });
+    if (!userData?.fid) return;
+
+    const inputFid = userData.fid.toString();
+    const users = await this.getUsers([inputFid], viewerFid);
+    return users[inputFid];
   }
 
   async getUsers(
@@ -694,10 +893,34 @@ export class FarcasterService {
     return clientFid.toString();
   }
 
-  async getCastFeed(req: FarcasterFeedRequest, viewerFid?: string) {
+  async getCasts(req: FarcasterFeedRequest, viewerFid?: string) {
     const { filter, context, cursor, limit } = req;
-    const { channels, users, text, includeReplies, onlyReplies, minTimestamp } =
-      filter;
+    const {
+      channels,
+      users,
+      text,
+      includeReplies,
+      onlyReplies,
+      onlyFrames,
+      contentTypes,
+      embeds,
+    } = filter;
+
+    if (
+      onlyFrames ||
+      (contentTypes && contentTypes.length > 0) ||
+      (embeds && embeds.length > 0)
+    ) {
+      const response = await this.contentApi.getContentFeed(req);
+      const casts = await this.getCastsForHashes(
+        response.data,
+        viewerFid || context?.viewerFid,
+      );
+      return {
+        data: casts,
+        nextCursor: response.nextCursor,
+      };
+    }
 
     const conditions: string[] = ['"deletedAt" IS NULL'];
 
@@ -760,12 +983,6 @@ export class FarcasterService {
       }
     }
 
-    if (minTimestamp) {
-      conditions.push(
-        `"timestamp" > '${new Date(minTimestamp).toISOString()}'`,
-      );
-    }
-
     if (onlyReplies) {
       conditions.push(`"parentHash" IS NOT NULL`);
     } else if (!includeReplies) {
@@ -784,9 +1001,9 @@ export class FarcasterService {
       ]),
     );
 
-    const casts = await this.getCasts(
+    const casts = await this.getCastsForHashes(
       hashes.map((hash) => hash.hash),
-      viewerFid,
+      viewerFid || context?.viewerFid,
     );
     const data = hashes.map((hash) => casts[hash.hash]);
 
@@ -898,5 +1115,132 @@ export class FarcasterService {
       users: users.length > 0 ? users : undefined,
       words: words.length > 0 ? words : undefined,
     };
+  }
+
+  async getChannels(urls?: string[], ids?: string[]) {
+    const keys = (urls || []).concat(ids || []);
+    const channels = await this.cache.getChannels(keys);
+    const channelMap = channels.reduce(
+      (acc, channel) => {
+        if (!channel) return acc;
+        acc[channel.url] = channel;
+        acc[channel.channelId] = channel;
+        return acc;
+      },
+      {} as Record<string, Channel>,
+    );
+
+    const missingUrls = urls?.filter((url) => !channelMap[url]) || [];
+    const missingIds = ids?.filter((id) => !channelMap[id]) || [];
+
+    if (missingUrls.length > 0 || missingIds.length > 0) {
+      const data = await this.client.farcasterParentUrl.findMany({
+        where: {
+          OR: [
+            {
+              channelId: {
+                in: missingIds,
+              },
+            },
+            {
+              url: {
+                in: missingUrls,
+              },
+            },
+          ],
+        },
+      });
+
+      const fetchedChannels = data.map((channel) => ({
+        ...channel,
+        creatorId: channel.creatorId?.toString(),
+      }));
+
+      await this.cache.setChannels(fetchedChannels);
+
+      for (const channel of fetchedChannels) {
+        channelMap[channel.url] = channel;
+        channelMap[channel.channelId] = channel;
+      }
+
+      const stillMissingUrls = missingUrls.filter((url) => !channelMap[url]);
+      const stillMissingIds = missingIds.filter((id) => !channelMap[id]);
+      const missingFollowerCount = Object.values(channelMap)
+        .filter((channel) => !channel.followerCount)
+        .map((channel) => channel.channelId);
+
+      if (
+        stillMissingUrls.length > 0 ||
+        stillMissingIds.length > 0 ||
+        missingFollowerCount.length > 0
+      ) {
+        const response = await fetch(
+          "https://api.warpcast.com/v2/all-channels",
+        );
+        const data = await response.json();
+        const channelsFromWarpcast: {
+          id: string;
+          url: string;
+          name: string;
+          description: string;
+          imageUrl: string;
+          leadFid?: number;
+          createdAt: number;
+          followerCount: number;
+          hostFids: number[];
+        }[] = data?.result?.channels || [];
+
+        const channelsToUpsert = channelsFromWarpcast.filter((channel) => {
+          return (
+            stillMissingUrls.includes(channel.url) ||
+            stillMissingIds.includes(channel.id) ||
+            missingFollowerCount.includes(channel.id)
+          );
+        });
+
+        const upsertedChannels = await Promise.all(
+          channelsToUpsert.map(async (channel) => {
+            const channelData = {
+              url: channel.url,
+              channelId: channel.id,
+              name: channel.name,
+              description: channel.description,
+              imageUrl: channel.imageUrl,
+              createdAt: new Date(channel.createdAt * 1000),
+              updatedAt: new Date(),
+              creatorId: channel.leadFid?.toString(),
+            };
+
+            await this.client.farcasterParentUrl.upsert({
+              where: {
+                url: channel.url,
+              },
+              update: channelData,
+              create: channelData,
+            });
+
+            return {
+              ...channelData,
+              followerCount: channel.followerCount,
+              hostFids: channel.hostFids?.map((h: number) => h.toString()),
+            };
+          }),
+        );
+
+        for (const channel of upsertedChannels) {
+          channelMap[channel.url] = channel;
+          channelMap[channel.channelId] = channel;
+        }
+
+        await this.cache.setChannels(upsertedChannels);
+      }
+
+      const stillMissingKeys = keys.filter((key) => !channelMap[key]);
+      if (stillMissingKeys.length > 0) {
+        await this.cache.setNotChannels(stillMissingKeys);
+      }
+    }
+
+    return channelMap;
   }
 }

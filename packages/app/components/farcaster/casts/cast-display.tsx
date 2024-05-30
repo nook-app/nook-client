@@ -1,6 +1,6 @@
 "use client";
 
-import { Display, FarcasterCastResponse } from "@nook/common/types";
+import { Display, FarcasterCastV1 } from "@nook/common/types";
 import { NookText, Separator, View, XStack, YStack } from "@nook/app-ui";
 import { FarcasterCastResponseText } from "../../../components/farcaster/casts/cast-text";
 import {
@@ -29,7 +29,7 @@ import { FarcasterCastResponseGridDisplay } from "./cast-display-grid";
 export const FarcasterCastResponseDisplay = ({
   cast,
   displayMode,
-}: { cast: FarcasterCastResponse; displayMode: Display }) => {
+}: { cast: FarcasterCastV1; displayMode: Display }) => {
   const mutedUsers = useMuteStore((state) => state.users);
   const mutedChannels = useMuteStore((state) => state.channels);
   const deletedCasts = useMuteStore((state) => state.casts);
@@ -71,7 +71,7 @@ export const FarcasterCastResponseDisplay = ({
 
 const FarcasterCastResponseFrameDisplay = ({
   cast,
-}: { cast: FarcasterCastResponse }) => {
+}: { cast: FarcasterCastV1 }) => {
   const frameEmbed = cast.embeds.find((embed) => embed.frame);
 
   if (!frameEmbed) {
@@ -119,7 +119,7 @@ const FarcasterCastResponseFrameDisplay = ({
 
 const FarcasterCastResponseMediaDisplay = ({
   cast,
-}: { cast: FarcasterCastResponse }) => {
+}: { cast: FarcasterCastV1 }) => {
   const imageEmbed = cast.embeds.find((embed) =>
     embed.contentType?.startsWith("image"),
   );
@@ -181,7 +181,7 @@ const FarcasterCastResponseMediaDisplay = ({
 };
 const FarcasterCastResponseNotificationDisplay = ({
   cast,
-}: { cast: FarcasterCastResponse }) => {
+}: { cast: FarcasterCastV1 }) => {
   const renderText = cast.text || cast.mentions.length > 0;
   const renderEmbeds = cast.embeds.length > 0 || cast.embedCasts.length > 0;
   const renderEngagementBar =
@@ -285,12 +285,15 @@ const FarcasterCastResponseNotificationDisplay = ({
 const FarcasterCastResponseDefaultDisplay = ({
   cast,
   isConnected,
-}: { cast: FarcasterCastResponse; isConnected?: boolean }) => {
+}: { cast: FarcasterCastV1; isConnected?: boolean }) => {
   const renderText = cast.text || cast.mentions.length > 0;
-  const renderEmbeds = cast.embeds.length > 0 || cast.embedCasts.length > 0;
   const renderEngagementBar =
     !!cast.channel ||
     Object.values(cast.engagement || {}).some((value) => value > 0);
+  const renderEmbeds =
+    cast.embeds.length > 0 ||
+    cast.embedCasts.length > 0 ||
+    cast.embedUrls.length > 0;
 
   return (
     <XStack

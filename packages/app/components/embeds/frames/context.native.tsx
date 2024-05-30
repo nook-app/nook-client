@@ -1,5 +1,5 @@
 import {
-  FarcasterCastResponse,
+  FarcasterCastV1,
   Frame,
   FrameButton,
   TransactionTargetResponse,
@@ -46,7 +46,7 @@ type FrameContextType = {
 const FrameContext = createContext<FrameContextType | undefined>(undefined);
 
 type SheetProviderProps = {
-  cast: FarcasterCastResponse;
+  cast: FarcasterCastV1;
   url: string;
   initialFrame: Frame;
   children: ReactNode;

@@ -1,7 +1,4 @@
-import {
-  FarcasterCastResponse,
-  SubmitCastAddRequest,
-} from "@nook/common/types";
+import { FarcasterCastV1, SubmitCastAddRequest } from "@nook/common/types";
 import { ReactNode } from "react";
 import { Popover, View, useTheme } from "@nook/app-ui";
 import {
@@ -51,7 +48,7 @@ export const CreateCastTrigger = ({
 export const CreateCastReplyTrigger = ({
   cast,
 }: {
-  cast: FarcasterCastResponse;
+  cast: FarcasterCastV1;
 }) => {
   return (
     <CreateCastTrigger
@@ -78,7 +75,7 @@ export const CreateCastReplyTrigger = ({
 export const CreateCastQuoteTrigger = ({
   cast,
 }: {
-  cast: FarcasterCastResponse;
+  cast: FarcasterCastV1;
 }) => {
   const { isRecasted } = useRecastCast(cast);
   const theme = useTheme();
@@ -121,7 +118,7 @@ export const CreateCastQuoteTrigger = ({
 
 const CreateCastQuoteTriggerMenuItem = ({
   cast,
-}: { cast: FarcasterCastResponse }) => {
+}: { cast: FarcasterCastV1 }) => {
   const { recastCast, unrecastCast, isRecasted } = useRecastCast(cast);
   const { signer } = useAuth();
   const { close } = useMenu();

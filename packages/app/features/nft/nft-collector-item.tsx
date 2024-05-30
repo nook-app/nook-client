@@ -1,5 +1,5 @@
 import {
-  FarcasterUser,
+  FarcasterUserV1,
   NftFarcasterCollector,
   NftOwner,
 } from "@nook/common/types";
@@ -16,7 +16,7 @@ import { CdnAvatar } from "../../components/cdn-avatar";
 import { GradientIcon } from "../../components/gradient-icon";
 
 export const CollectorItem = memo(
-  ({ collector }: { collector: NftOwner & { user?: FarcasterUser } }) => {
+  ({ collector }: { collector: NftOwner & { user?: FarcasterUserV1 } }) => {
     if (!collector.user) {
       return <AddressDisplay collector={collector} />;
     }
