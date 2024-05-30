@@ -14,7 +14,7 @@ import { useUserStore } from "../../store/useUserStore";
 import { useChannelStore } from "../../store/useChannelStore";
 
 export const fetchCast = async (hash: string): Promise<FarcasterCastV1> => {
-  return await makeRequest(`/v1/farcaster/casts/${hash}`);
+  return await makeRequest(`/farcaster/casts/${hash}`);
 };
 
 export const useCast = (hash: string) => {

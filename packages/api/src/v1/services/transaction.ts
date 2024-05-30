@@ -1,5 +1,5 @@
 import {
-  FarcasterAPIClient,
+  FarcasterAPIV1Client,
   NftCacheClient,
   TokenCacheClient,
 } from "@nook/common/clients";
@@ -31,7 +31,7 @@ export class TransactionService {
   private nftCache;
 
   constructor(fastify: FastifyInstance) {
-    this.farcasterApi = new FarcasterAPIClient();
+    this.farcasterApi = new FarcasterAPIV1Client();
     this.tokenCache = new TokenCacheClient(fastify.feed.client);
     this.nftCache = new NftCacheClient(fastify.feed.client);
   }
@@ -77,8 +77,7 @@ export class TransactionService {
         filterAddresses: [],
         contextActions,
         functionSelectors: [],
-        tokenTransfers: [],
-        chainIds,
+        chainIds: Object.values(CHAINS).map(({ chainId }) => chainId),
         sort: -1,
         cursor: req.cursor,
         includes: ["partiesEnriched"],
@@ -370,7 +369,9 @@ export class TransactionService {
       body: JSON.stringify(body),
     });
     if (!response.ok) {
-      console.error(`Failed to fetch ${path}: ${response.status}`);
+      console.error(
+        `Failed to fetch ${path}: ${response.status} ${await response.text()}`,
+      );
       return;
     }
     return response.json();

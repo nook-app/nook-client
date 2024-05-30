@@ -1,6 +1,6 @@
 import { FarcasterUserMutuals } from "@nook/app/features/farcaster/user-profile/user-mutuals";
 import { getServerSession } from "@nook/app/server/session";
-import { fetchUserMutuals } from "@nook/app/api/farcaster/users";
+import { fetchUser, fetchUserMutuals } from "@nook/app/api/farcaster/users";
 import { notFound } from "next/navigation";
 
 export default async function User({
@@ -8,11 +8,7 @@ export default async function User({
 }: { params: { username: string } }) {
   const session = await getServerSession();
   if (!session) return notFound();
-  const initialData = await fetchUserMutuals(params.username);
-  return (
-    <FarcasterUserMutuals
-      username={params.username}
-      initialData={initialData}
-    />
-  );
+  const user = await fetchUser(params.username);
+  const initialData = await fetchUserMutuals(user.fid);
+  return <FarcasterUserMutuals fid={user.fid} initialData={initialData} />;
 }

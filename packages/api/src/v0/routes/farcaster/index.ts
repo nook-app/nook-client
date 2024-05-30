@@ -1,11 +1,12 @@
 import { FastifyInstance } from "fastify";
-import { FarcasterAPIClient } from "@nook/common/clients";
+import { FarcasterAPIV1Client } from "@nook/common/clients";
+import { FarcasterFeedRequest } from "@nook/common/types";
 
 export const farcasterRoutes = async (fastify: FastifyInstance) => {
   fastify.register(async (fastify: FastifyInstance) => {
-    const client = new FarcasterAPIClient();
+    const client = new FarcasterAPIV1Client();
 
-    fastify.post<{ Body: { hashes: string[] } }>(
+    fastify.post<{ Body: FarcasterFeedRequest }>(
       "/farcaster/casts",
       async (request, reply) => {
         let viewerFid: string | undefined;
@@ -13,7 +14,25 @@ export const farcasterRoutes = async (fastify: FastifyInstance) => {
           const { fid } = (await request.jwtDecode()) as { fid: string };
           viewerFid = fid;
         } catch (e) {}
-        const response = await client.getCasts(request.body.hashes, viewerFid);
+
+        const response = await client.getCasts(request.body, viewerFid);
+
+        return reply.send(response);
+      },
+    );
+
+    fastify.post<{ Body: { hashes: string[] } }>(
+      "/farcaster/casts/hashes",
+      async (request, reply) => {
+        let viewerFid: string | undefined;
+        try {
+          const { fid } = (await request.jwtDecode()) as { fid: string };
+          viewerFid = fid;
+        } catch (e) {}
+        const response = await client.getCastsForHashes(
+          request.body.hashes,
+          viewerFid,
+        );
         if (!response) {
           reply.status(404);
           return;
@@ -30,12 +49,14 @@ export const farcasterRoutes = async (fastify: FastifyInstance) => {
           const { fid } = (await request.jwtDecode()) as { fid: string };
           viewerFid = fid;
         } catch (e) {}
+
         const response = await client.getCast(request.params.hash, viewerFid);
         if (!response) {
           reply.status(404);
           return;
         }
-        reply.send(response);
+
+        return reply.send(response);
       },
     );
 
@@ -188,18 +209,24 @@ export const farcasterRoutes = async (fastify: FastifyInstance) => {
       },
     );
 
-    fastify.get<{ Params: { fid: string } }>(
-      "/farcaster/users/:fid",
-      async (request, reply) => {
-        let viewerFid: string | undefined;
-        try {
-          const { fid } = (await request.jwtDecode()) as { fid: string };
-          viewerFid = fid;
-        } catch (e) {}
-        const response = await client.getUser(request.params.fid, viewerFid);
-        reply.send(response);
-      },
-    );
+    fastify.get<{
+      Params: { username: string };
+      Querystring: { fid?: boolean };
+    }>("/farcaster/users/:username", async (request, reply) => {
+      let viewerFid: string | undefined;
+      try {
+        const { fid } = (await request.jwtDecode()) as { fid: string };
+        viewerFid = fid;
+      } catch (e) {}
+
+      const response = await client.getUser(
+        request.params.username,
+        request.query.fid,
+        viewerFid,
+      );
+
+      return reply.send(response);
+    });
 
     fastify.get<{ Params: { fid: string } }>(
       "/farcaster/users/:fid/mutuals-preview",

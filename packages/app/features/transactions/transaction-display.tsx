@@ -511,7 +511,7 @@ const TransactionContentLegacy = ({
       if (variable.type === "contextAction") {
         textParts.push(
           <NookText
-            key={`var-${i}`}
+            key={`var-${i}-context-action`}
             color="$mauve12"
             fontWeight="600"
             textTransform="capitalize"
@@ -524,7 +524,7 @@ const TransactionContentLegacy = ({
 
       if (variable.type === "eth") {
         textParts.push(
-          <NookText key={`var-${i}`} color="$mauve12" whiteSpace="nowrap">
+          <NookText key={`var-${i}-eth`} color="$mauve12" whiteSpace="nowrap">
             {`${(+formatEther(BigInt(variable.value))).toFixed(4)} ETH`}{" "}
           </NookText>,
         );
@@ -533,7 +533,7 @@ const TransactionContentLegacy = ({
 
       if (variable.type === "degen") {
         textParts.push(
-          <NookText key={`var-${i}`} color="$mauve12" whiteSpace="nowrap">
+          <NookText key={`var-${i}-degen`} color="$mauve12" whiteSpace="nowrap">
             {`${(+formatEther(BigInt(variable.value))).toFixed(4)} DEGEN`}{" "}
           </NookText>,
         );
@@ -544,7 +544,7 @@ const TransactionContentLegacy = ({
         if (transaction.users[variable.value]) {
           const user = transaction.users[variable.value];
           textParts.push(
-            <View display="inline-flex">
+            <View display="inline-flex" key={`var-${i}-user`}>
               <Link asText href={`/users/${user.username}`}>
                 <NookText>
                   <CdnAvatar src={user.pfp} size="$0.8" />{" "}
@@ -574,7 +574,7 @@ const TransactionContentLegacy = ({
         const asset = transaction.assetsEnriched[id];
 
         textParts.push(
-          <NookText key={id}>
+          <NookText key={`var-${i}-erc1155`}>
             <NookText color="$mauve12">{variable.value} </NookText>
             {asset && (
               <>
@@ -594,7 +594,7 @@ const TransactionContentLegacy = ({
         const asset = transaction.assetsEnriched[id];
 
         textParts.push(
-          <NookText key={id}>
+          <NookText key={`var-${i}-erc721`}>
             {asset && (
               <>
                 <CdnAvatar src={asset.imageUrl} size="$0.8" absolute />{" "}
@@ -622,7 +622,7 @@ const TransactionContentLegacy = ({
       if (variable.type === "erc20" && "token" in variable) {
         const token = transaction.tokens[variable.token || variable.contract];
         textParts.push(
-          <NookText key={variable.token || variable.contract}>
+          <NookText key={`var-${i}-erc20`}>
             <NookText color="$mauve12">
               {formatNumber(
                 +(+formatUnits(
@@ -645,7 +645,7 @@ const TransactionContentLegacy = ({
       if (variable.type === "number" && "unit" in variable) {
         textParts.push(
           <NookText
-            key={`var-${i}`}
+            key={`var-${i}-number`}
             color="$mauve12"
             fontWeight={variable.emphasis ? "600" : "400"}
           >
@@ -660,15 +660,15 @@ const TransactionContentLegacy = ({
         if (chain) {
           textParts.push(
             <>
-              <NookText>
+              <NookText key={`var-${i}-chain-icon`}>
                 <ChainIcon chainId={`eip155:${variable.value}`} />{" "}
               </NookText>
-              <NookText>{`${chain.name} `}</NookText>
+              <NookText key={`var-${i}-chain`}>{`${chain.name} `}</NookText>
             </>,
           );
         } else {
           textParts.push(
-            <NookText key={`var-${i}`} color="$mauve12">
+            <NookText key={`var-${i}-chain`} color="$mauve12">
               {variable.value}{" "}
             </NookText>,
           );
@@ -680,7 +680,7 @@ const TransactionContentLegacy = ({
         textParts.push(
           <Link
             asText
-            key={`var-${i}`}
+            key={`var-${i}-tx`}
             href={`https://www.onceupon.xyz/${variable.value}`}
             target="_blank"
           >
@@ -702,7 +702,7 @@ const TransactionContentLegacy = ({
         textParts.push(
           <Link asText key={`var-${i}`} href={variable.link} target="_blank">
             <NookText
-              key={`var-${i}`}
+              key={`var-${i}-link`}
               color="$mauve12"
               hoverStyle={{
                 textDecorationLine: "underline",
@@ -721,7 +721,7 @@ const TransactionContentLegacy = ({
       if ("value" in variable) {
         textParts.push(
           <NookText
-            key={`var-${i}`}
+            key={`var-${i}-value`}
             color="$mauve12"
             fontWeight={
               "emphasis" in variable && variable.emphasis ? "600" : "400"

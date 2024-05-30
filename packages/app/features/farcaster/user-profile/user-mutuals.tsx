@@ -6,16 +6,16 @@ import { FetchUsersResponse } from "@nook/common/types";
 import { FarcasterUserInfiniteFeed } from "../user-feed/user-feed";
 
 export const FarcasterUserMutuals = ({
-  username,
+  fid,
   initialData,
   asTabs,
 }: {
-  username: string;
+  fid: string;
   initialData?: FetchUsersResponse;
   asTabs?: boolean;
 }) => {
   const { data, isLoading, hasNextPage, fetchNextPage, isFetchingNextPage } =
-    useUserMutuals(username, initialData);
+    useUserMutuals(fid, initialData);
 
   if (isLoading) {
     return <Loading />;

@@ -1,10 +1,10 @@
 import { FastifyInstance } from "fastify";
-import { FarcasterAPIClient, NookCacheClient } from "@nook/common/clients";
+import { FarcasterAPIV1Client, NookCacheClient } from "@nook/common/clients";
 import { FarcasterFeedRequest } from "@nook/common/types/feed";
 
 export const farcasterFeedRoutes = async (fastify: FastifyInstance) => {
   fastify.register(async (fastify: FastifyInstance) => {
-    const client = new FarcasterAPIClient();
+    const client = new FarcasterAPIV1Client();
     const nook = new NookCacheClient(fastify.redis.client);
 
     fastify.post<{ Body: FarcasterFeedRequest }>(
@@ -18,7 +18,7 @@ export const farcasterFeedRoutes = async (fastify: FastifyInstance) => {
 
         try {
           if (!request.body.api) {
-            const response = await client.getCastFeed({
+            const response = await client.getCasts({
               ...request.body,
               context: {
                 viewerFid,
@@ -43,7 +43,7 @@ export const farcasterFeedRoutes = async (fastify: FastifyInstance) => {
             }: {
               result: { cast_hash: string }[];
             } = await response.json();
-            const casts = await client.getCasts(
+            const casts = await client.getCastsForHashes(
               result.map((r) => r.cast_hash),
               viewerFid,
             );
@@ -101,7 +101,10 @@ export const farcasterFeedRoutes = async (fastify: FastifyInstance) => {
             );
             const { casts, next } = await response.json();
             const hashes = casts.map((cast: { hash: string }) => cast.hash);
-            const castResponse = await client.getCasts(hashes, viewerFid);
+            const castResponse = await client.getCastsForHashes(
+              hashes,
+              viewerFid,
+            );
             return reply.send({
               data: castResponse.data,
               nextCursor: next.cursor,
@@ -128,7 +131,7 @@ export const farcasterFeedRoutes = async (fastify: FastifyInstance) => {
             nextCursor,
           }: { data: string[]; nextCursor?: number | string } =
             await response.json();
-          const casts = await client.getCasts(data, viewerFid);
+          const casts = await client.getCastsForHashes(data, viewerFid);
           return reply.send({
             data: casts.data,
             nextCursor,

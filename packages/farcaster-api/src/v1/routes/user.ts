@@ -10,11 +10,22 @@ export const userRoutes = async (fastify: FastifyInstance) => {
       Params: { fidOrUsername: string };
       Querystring: { fid?: boolean };
     }>("/users/:fidOrUsername", async (request, reply) => {
-      const fn = request.query.fid
-        ? service.getUserByFid
-        : service.getUserByUsername;
+      if (request.query.fid) {
+        const user = await service.getUserByFid(
+          request.params.fidOrUsername,
+          request.headers["x-viewer-fid"] as string,
+        );
 
-      const user = await fn(
+        if (!user) {
+          reply.status(404).send({ message: "User not found" });
+          return;
+        }
+
+        reply.send(user);
+        return;
+      }
+
+      const user = await service.getUserByUsername(
         request.params.fidOrUsername,
         request.headers["x-viewer-fid"] as string,
       );
@@ -107,7 +118,7 @@ export const userRoutes = async (fastify: FastifyInstance) => {
             request.body.fids,
             request.headers["x-viewer-fid"] as string,
           );
-          reply.send({ data: users });
+          reply.send({ data: request.body.fids.map((fid) => users[fid]) });
         } else if (request.body.addresses) {
           const users = await service.getUsersForAddresses(
             request.body.addresses,

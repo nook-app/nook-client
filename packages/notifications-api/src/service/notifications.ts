@@ -14,18 +14,18 @@ import {
 } from "@nook/common/types";
 import { FastifyInstance } from "fastify";
 import { decodeCursorTimestamp, encodeCursor } from "@nook/common/utils";
-import { FarcasterAPIClient } from "@nook/common/clients";
+import { FarcasterAPIV1Client } from "@nook/common/clients";
 
 export const DB_MAX_PAGE_SIZE = 100;
 export const MAX_PAGE_SIZE = 25;
 
 export class NotificationsService {
   private client: PrismaClient;
-  private farcaster: FarcasterAPIClient;
+  private farcaster: FarcasterAPIV1Client;
 
   constructor(fastify: FastifyInstance) {
     this.client = fastify.notifications.client;
-    this.farcaster = new FarcasterAPIClient();
+    this.farcaster = new FarcasterAPIV1Client();
   }
 
   async getNotificationUser(

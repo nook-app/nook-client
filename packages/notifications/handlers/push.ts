@@ -11,10 +11,10 @@ import {
   NotificationType,
 } from "@nook/common/types";
 import { Expo, ExpoPushMessage } from "expo-server-sdk";
-import { FarcasterAPIClient } from "@nook/common/clients";
+import { FarcasterAPIV1Client } from "@nook/common/clients";
 
 const expo = new Expo();
-const farcasterApi = new FarcasterAPIClient();
+const farcasterApi = new FarcasterAPIV1Client();
 
 export const DB_MAX_PAGE_SIZE = 1000;
 export const MAX_PAGE_SIZE = 25;
@@ -44,7 +44,7 @@ const formatPushNotification = async (
     case NotificationType.LIKE: {
       const n = notification as FarcasterLikeNotification;
       const [user, cast] = await Promise.all([
-        farcasterApi.getUser(n.sourceFid),
+        farcasterApi.getUser(n.sourceFid, true),
         farcasterApi.getCast(n.data.targetHash),
       ]);
       return users.map((u) => ({
@@ -67,7 +67,7 @@ const formatPushNotification = async (
     case NotificationType.RECAST: {
       const n = notification as FarcasterRecastNotification;
       const [user, cast] = await Promise.all([
-        farcasterApi.getUser(n.sourceFid),
+        farcasterApi.getUser(n.sourceFid, true),
         farcasterApi.getCast(n.data.targetHash),
       ]);
       return users.map((u) => ({
@@ -90,7 +90,7 @@ const formatPushNotification = async (
     case NotificationType.REPLY: {
       const n = notification as FarcasterReplyNotification;
       const [user, cast] = await Promise.all([
-        farcasterApi.getUser(n.sourceFid),
+        farcasterApi.getUser(n.sourceFid, true),
         farcasterApi.getCast(n.data.hash),
       ]);
       return users.map((u) => ({
@@ -113,7 +113,7 @@ const formatPushNotification = async (
     case NotificationType.MENTION: {
       const n = notification as FarcasterMentionNotification;
       const [user, cast] = await Promise.all([
-        farcasterApi.getUser(n.sourceFid),
+        farcasterApi.getUser(n.sourceFid, true),
         farcasterApi.getCast(n.data.hash),
       ]);
       return users.map((u) => ({
@@ -136,7 +136,7 @@ const formatPushNotification = async (
     case NotificationType.QUOTE: {
       const n = notification as FarcasterQuoteNotification;
       const [user, cast] = await Promise.all([
-        farcasterApi.getUser(n.sourceFid),
+        farcasterApi.getUser(n.sourceFid, true),
         farcasterApi.getCast(n.data.hash),
       ]);
       return users.map((u) => ({
@@ -158,7 +158,9 @@ const formatPushNotification = async (
     }
     case NotificationType.FOLLOW: {
       const n = notification as FarcasterFollowNotification;
-      const [user] = await Promise.all([farcasterApi.getUser(n.sourceFid)]);
+      const [user] = await Promise.all([
+        farcasterApi.getUser(n.sourceFid, true),
+      ]);
       return users.map((u) => ({
         to: u.token,
         title: `${user?.username || n.sourceFid} followed you`,
@@ -178,7 +180,7 @@ const formatPushNotification = async (
     case NotificationType.POST: {
       const n = notification as FarcasterPostNotification;
       const [user, cast] = await Promise.all([
-        farcasterApi.getUser(n.sourceFid),
+        farcasterApi.getUser(n.sourceFid, true),
         farcasterApi.getCast(n.data.hash),
       ]);
       return users.map((u) => ({

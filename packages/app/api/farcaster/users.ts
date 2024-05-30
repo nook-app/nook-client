@@ -17,7 +17,7 @@ export const fetchUser = async (
   fid?: boolean,
 ): Promise<FarcasterUserV1> => {
   return await makeRequest(
-    `/v1/farcaster/users/${username}${fid ? `?fid=${fid}` : ""}`,
+    `/farcaster/users/${username}${fid ? `?fid=${fid}` : ""}`,
   );
 };
 
@@ -111,7 +111,7 @@ export const fetchUserFollowers = async (username: string, cursor?: string) => {
 };
 
 export const useUserFollowers = (
-  username: string,
+  fid: string,
   initialData?: FetchUsersResponse,
 ) => {
   const addUsers = useUserStore((state) => state.addUsers);
@@ -122,9 +122,9 @@ export const useUserFollowers = (
     string[],
     string | undefined
   >({
-    queryKey: ["user-followers", username],
+    queryKey: ["user-followers", fid],
     queryFn: async ({ pageParam }) => {
-      const data = await fetchUserFollowers(username, pageParam);
+      const data = await fetchUserFollowers(fid, pageParam);
       addUsers(data.data);
       return data;
     },
@@ -139,16 +139,14 @@ export const useUserFollowers = (
   });
 };
 
-export const fetchUserFollowing = async (username: string, cursor?: string) => {
+export const fetchUserFollowing = async (fid: string, cursor?: string) => {
   return await makeRequest(
-    `/farcaster/users/${username}/following${
-      cursor ? `?cursor=${cursor}` : ""
-    }`,
+    `/farcaster/users/${fid}/following${cursor ? `?cursor=${cursor}` : ""}`,
   );
 };
 
 export const useUserFollowing = (
-  username: string,
+  fid: string,
   initialData?: FetchUsersResponse,
 ) => {
   const addUsers = useUserStore((state) => state.addUsers);
@@ -159,9 +157,9 @@ export const useUserFollowing = (
     string[],
     string | undefined
   >({
-    queryKey: ["user-following", username],
+    queryKey: ["user-following", fid],
     queryFn: async ({ pageParam }) => {
-      const data = await fetchUserFollowing(username, pageParam);
+      const data = await fetchUserFollowing(fid, pageParam);
       addUsers(data.data);
       return data;
     },
@@ -176,14 +174,14 @@ export const useUserFollowing = (
   });
 };
 
-export const fetchUserMutuals = async (username: string, cursor?: string) => {
+export const fetchUserMutuals = async (fid: string, cursor?: string) => {
   return await makeRequest(
-    `/farcaster/users/${username}/mutuals${cursor ? `?cursor=${cursor}` : ""}`,
+    `/farcaster/users/${fid}/mutuals${cursor ? `?cursor=${cursor}` : ""}`,
   );
 };
 
 export const useUserMutuals = (
-  username: string,
+  fid: string,
   initialData?: FetchUsersResponse,
 ) => {
   const addUsers = useUserStore((state) => state.addUsers);
@@ -194,9 +192,9 @@ export const useUserMutuals = (
     string[],
     string | undefined
   >({
-    queryKey: ["user-mutuals", username],
+    queryKey: ["user-mutuals", fid],
     queryFn: async ({ pageParam }) => {
-      const data = await fetchUserMutuals(username, pageParam);
+      const data = await fetchUserMutuals(fid, pageParam);
       addUsers(data.data);
       return data;
     },

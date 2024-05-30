@@ -1,4 +1,7 @@
-import { FarcasterAPIClient, FarcasterCacheClient } from "@nook/common/clients";
+import {
+  FarcasterAPIV1Client,
+  FarcasterCacheClient,
+} from "@nook/common/clients";
 import { Prisma, PrismaClient } from "@nook/common/prisma/content";
 import {
   ChannelFilter,
@@ -18,12 +21,12 @@ function sanitizeInput(input: string): string {
 
 export class FeedService {
   private client: PrismaClient;
-  private farcaster: FarcasterAPIClient;
+  private farcaster: FarcasterAPIV1Client;
   private farcasterCache: FarcasterCacheClient;
 
   constructor(fastify: FastifyInstance) {
     this.client = fastify.content.client;
-    this.farcaster = new FarcasterAPIClient();
+    this.farcaster = new FarcasterAPIV1Client();
     this.farcasterCache = new FarcasterCacheClient(fastify.redis.client);
   }
 

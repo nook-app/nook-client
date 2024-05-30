@@ -5,7 +5,6 @@ import {
 } from "@farcaster/hub-nodejs";
 import {
   ContentAPIClient,
-  FarcasterAPIClient,
   FarcasterAPIV1Client,
   FarcasterCacheClient,
 } from "@nook/common/clients";
@@ -29,14 +28,12 @@ import {
 import { publishNotification } from "@nook/common/queues";
 
 export class FarcasterProcessor {
-  private farcasterClient: FarcasterAPIClient;
   private farcasterV1: FarcasterAPIV1Client;
   private cacheClient: FarcasterCacheClient;
   private contentClient: ContentAPIClient;
   private hub: HubRpcClient;
 
   constructor() {
-    this.farcasterClient = new FarcasterAPIClient();
     this.farcasterV1 = new FarcasterAPIV1Client();
     this.cacheClient = new FarcasterCacheClient(new RedisClient());
     this.contentClient = new ContentAPIClient();
@@ -96,10 +93,10 @@ export class FarcasterProcessor {
   }
 
   async processCastAdd(data: FarcasterCast) {
-    const [cast, castV1] = await Promise.all([
-      this.farcasterClient.getCast(data.hash, data.parentFid?.toString()),
-      this.farcasterV1.getCast(data.hash, data.parentFid?.toString()),
-    ]);
+    const cast = await this.farcasterV1.getCast(
+      data.hash,
+      data.parentFid?.toString(),
+    );
 
     if (!cast) return;
 
@@ -188,7 +185,7 @@ export class FarcasterProcessor {
   }
 
   async processCastRemove(data: FarcasterCast) {
-    const cast = await this.farcasterClient.getCast(data.hash);
+    const cast = await this.farcasterV1.getCast(data.hash);
     if (!cast) return;
 
     const promises = [];
@@ -519,7 +516,7 @@ export class FarcasterProcessor {
   }
 
   async processUserDataAdd(data: FarcasterUserData) {
-    const user = await this.farcasterClient.getUser(data.fid.toString());
+    const user = await this.farcasterV1.getUser(data.fid.toString(), true);
     if (!user) return;
 
     switch (data.type) {
@@ -549,7 +546,7 @@ export class FarcasterProcessor {
   }
 
   async processVerificationAdd(data: FarcasterVerification) {
-    const user = await this.farcasterClient.getUser(data.fid.toString());
+    const user = await this.farcasterV1.getUser(data.fid.toString(), true);
     if (!user) return;
 
     user.verifiedAddresses = user.verifiedAddresses || [];
@@ -562,7 +559,7 @@ export class FarcasterProcessor {
   }
 
   async processVerificationRemove(data: FarcasterVerification) {
-    const user = await this.farcasterClient.getUser(data.fid.toString());
+    const user = await this.farcasterV1.getUser(data.fid.toString(), true);
     if (!user) return;
 
     user.verifiedAddresses = user.verifiedAddresses || [];

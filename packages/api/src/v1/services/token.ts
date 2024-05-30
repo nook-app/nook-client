@@ -1,4 +1,4 @@
-import { FarcasterAPIClient, TokenCacheClient } from "@nook/common/clients";
+import { FarcasterAPIV1Client, TokenCacheClient } from "@nook/common/clients";
 import {
   TokensFilter,
   TokenHolding,
@@ -39,7 +39,7 @@ export class TokenService {
   private cache;
 
   constructor(fastify: FastifyInstance) {
-    this.farcasterApi = new FarcasterAPIClient();
+    this.farcasterApi = new FarcasterAPIV1Client();
     this.cache = new TokenCacheClient(fastify.feed.client);
   }
 
@@ -572,7 +572,7 @@ export class TokenService {
   }
 
   async getAddressesForFid(fid: string) {
-    const user = await this.farcasterApi.getUser(fid);
+    const user = await this.farcasterApi.getUser(fid, true);
     if (!user?.verifiedAddresses || user.verifiedAddresses.length === 0) {
       return [];
     }

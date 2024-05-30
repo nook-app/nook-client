@@ -1,4 +1,4 @@
-import { FarcasterAPIClient, NftCacheClient } from "@nook/common/clients";
+import { FarcasterAPIV1Client, NftCacheClient } from "@nook/common/clients";
 import {
   FarcasterUserV1,
   FetchNftCollectionsResponse,
@@ -79,7 +79,7 @@ export class NftService {
   private cache;
 
   constructor(fastify: FastifyInstance) {
-    this.farcasterApi = new FarcasterAPIClient();
+    this.farcasterApi = new FarcasterAPIV1Client();
     this.cache = new NftCacheClient(fastify.feed.client);
   }
 
@@ -956,7 +956,7 @@ export class NftService {
   async getAddressesForUserFilter(filter: UserFilter) {
     switch (filter.type) {
       case UserFilterType.FID: {
-        const user = await this.farcasterApi.getUser(filter.data.fid);
+        const user = await this.farcasterApi.getUser(filter.data.fid, true);
         return user.verifiedAddresses?.map(({ address }) =>
           address.toLowerCase(),
         );

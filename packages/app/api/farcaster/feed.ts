@@ -17,7 +17,7 @@ export const fetchCastFeed = async (
   req: FarcasterFeedRequest,
   requestInit?: RequestInit,
 ): Promise<FetchCastsResponse> => {
-  return await makeRequest("/v1/farcaster/casts", {
+  return await makeRequest("/farcaster/casts", {
     ...requestInit,
     method: "POST",
     headers: {

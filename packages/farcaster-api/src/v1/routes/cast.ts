@@ -116,7 +116,7 @@ export const castRoutes = async (fastify: FastifyInstance) => {
         request.body.hashes,
         request.headers["x-viewer-fid"] as string,
       );
-      reply.send({ data: casts });
+      reply.send({ data: request.body.hashes.map((hash) => casts[hash]) });
     });
   });
 };

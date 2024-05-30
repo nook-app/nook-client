@@ -1,6 +1,6 @@
 import { FastifyInstance } from "fastify";
 import {
-  FarcasterAPIClient,
+  FarcasterAPIV1Client,
   NotificationsAPIClient,
 } from "@nook/common/clients";
 import {
@@ -13,7 +13,7 @@ import {
 export const notificationsRoutes = async (fastify: FastifyInstance) => {
   fastify.register(async (fastify: FastifyInstance) => {
     const client = new NotificationsAPIClient();
-    const farcaster = new FarcasterAPIClient();
+    const farcaster = new FarcasterAPIV1Client();
 
     fastify.get("/notifications/user", async (request, reply) => {
       if (!request.headers.authorization) {
@@ -129,7 +129,7 @@ export const notificationsRoutes = async (fastify: FastifyInstance) => {
 
         const [users, casts] = await Promise.all([
           farcaster.getUsers({ fids }, viewerFid),
-          farcaster.getCasts(hashes, viewerFid),
+          farcaster.getCastsForHashes(hashes, viewerFid),
         ]);
 
         const castMap = casts.data.reduce(

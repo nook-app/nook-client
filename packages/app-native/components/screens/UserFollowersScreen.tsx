@@ -17,21 +17,15 @@ export default function UserFollowersScreen() {
       pages={[
         {
           name: "Followers you know",
-          component: (
-            <FarcasterUserMutuals username={username as string} asTabs />
-          ),
+          component: <FarcasterUserMutuals fid={user.fid} asTabs />,
         },
         {
           name: "Followers",
-          component: (
-            <FarcasterUserFollowers username={username as string} asTabs />
-          ),
+          component: <FarcasterUserFollowers fid={user.fid} asTabs />,
         },
         {
           name: "Following",
-          component: (
-            <FarcasterUserFollowing username={username as string} asTabs />
-          ),
+          component: <FarcasterUserFollowing fid={user.fid} asTabs />,
         },
       ]}
       defaultIndex={1}

@@ -1,4 +1,4 @@
-import { FarcasterAPIClient } from "@nook/common/clients";
+import { FarcasterAPIV1Client } from "@nook/common/clients";
 import {
   Channel,
   FarcasterUserV1,
@@ -12,7 +12,7 @@ export class ListService {
   private farcasterApi;
 
   constructor(fastify: FastifyInstance) {
-    this.farcasterApi = new FarcasterAPIClient();
+    this.farcasterApi = new FarcasterAPIV1Client();
   }
 
   async enrichLists(lists: List[]): Promise<List[]> {

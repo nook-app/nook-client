@@ -1,5 +1,5 @@
 import { FastifyInstance } from "fastify";
-import { FarcasterAPIClient, SignerAPIClient } from "@nook/common/clients";
+import { FarcasterAPIV1Client, SignerAPIClient } from "@nook/common/clients";
 import {
   SubmitCastAddRequest,
   SubmitCastRemoveRequest,
@@ -13,7 +13,7 @@ import {
 export const farcasterSignerRoutes = async (fastify: FastifyInstance) => {
   fastify.register(async (fastify: FastifyInstance) => {
     const client = new SignerAPIClient();
-    const farcaster = new FarcasterAPIClient();
+    const farcaster = new FarcasterAPIV1Client();
 
     fastify.get("/signer", async (request, reply) => {
       if (!request.headers.authorization) {

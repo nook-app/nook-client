@@ -394,7 +394,7 @@ export class FarcasterAPIV1Client extends BaseAPIClient {
     req: FarcasterFeedRequest,
     viewerFid?: string,
   ): Promise<FetchCastsResponse> {
-    const response = await this.makeRequest("/v1/casts", {
+    const response = await this.makeRequest("/casts", {
       method: "POST",
       body: JSON.stringify(req),
       viewerFid,

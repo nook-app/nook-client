@@ -3,7 +3,7 @@ import { Notification, NotificationType } from "@nook/common/types";
 import { Job } from "bullmq";
 import { pushNotification } from "./push";
 import {
-  FarcasterAPIClient,
+  FarcasterAPIV1Client,
   FarcasterCacheClient,
   RedisClient,
 } from "@nook/common/clients";
@@ -12,7 +12,7 @@ export const getNotificationsHandler = async () => {
   const client = new PrismaClient();
   const redis = new RedisClient();
   const farcasterCache = new FarcasterCacheClient(redis);
-  const farcasterApi = new FarcasterAPIClient();
+  const farcasterApi = new FarcasterAPIV1Client();
 
   const getFollowingFids = async (fid: string) => {
     const cached = await farcasterCache.getUserFollowingFids(fid);
