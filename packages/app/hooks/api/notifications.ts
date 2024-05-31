@@ -67,7 +67,6 @@ export const usePriorityNotifications = (
   >({
     queryKey,
     queryFn: async ({ pageParam }) => {
-      console.log("yo", pageParam);
       const data = await fetchNotifications({ fid, priority: true }, pageParam);
       addCastsFromNotifications(data.data);
       addUsersFromNotifications(data.data);

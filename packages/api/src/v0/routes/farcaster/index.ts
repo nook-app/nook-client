@@ -1,10 +1,11 @@
 import { FastifyInstance } from "fastify";
-import { FarcasterAPIV1Client } from "@nook/common/clients";
+import { FarcasterAPIV1Client, NookCacheClient } from "@nook/common/clients";
 import { FarcasterFeedRequest } from "@nook/common/types";
 
 export const farcasterRoutes = async (fastify: FastifyInstance) => {
   fastify.register(async (fastify: FastifyInstance) => {
     const client = new FarcasterAPIV1Client();
+    const nook = new NookCacheClient(fastify.redis.client);
 
     fastify.post<{ Body: FarcasterFeedRequest }>(
       "/farcaster/casts",
@@ -14,6 +15,66 @@ export const farcasterRoutes = async (fastify: FastifyInstance) => {
           const { fid } = (await request.jwtDecode()) as { fid: string };
           viewerFid = fid;
         } catch (e) {}
+
+        if (request.body.api?.includes("k3l.io")) {
+          const response = await fetch(
+            `${request.body.api}${
+              request.body.cursor ? `?offset=${request.body.cursor}` : ""
+            }`,
+          );
+          if (!response.ok) {
+            console.error(await response.text());
+            reply.status(500);
+            return;
+          }
+          const {
+            result,
+          }: {
+            result: { cast_hash: string }[];
+          } = await response.json();
+          const casts = await client.getCastsForHashes(
+            result.map((r) => r.cast_hash),
+            viewerFid,
+          );
+
+          if (viewerFid) {
+            const mutes = await nook.getUserMutes(viewerFid);
+            const channels = mutes
+              .filter((m) => m.startsWith("channel:"))
+              .map((m) => m.split(":")[1]);
+
+            const users = mutes
+              .filter((m) => m.startsWith("user:"))
+              .map((m) => m.split(":")[1]);
+
+            const words = mutes
+              .filter((m) => m.startsWith("word:"))
+              .map((m) => m.split(":")[1]);
+
+            const filteredCasts = casts.data.filter((cast) => {
+              if (cast.parentUrl && channels.includes(cast.parentUrl)) {
+                return false;
+              }
+              if (cast.user && users.includes(cast.user.fid)) {
+                return false;
+              }
+              if (words.some((word) => cast.text.includes(word))) {
+                return false;
+              }
+              return true;
+            });
+
+            return reply.send({
+              data: filteredCasts,
+              nextCursor: (Number(request.body.cursor) || 0) + result.length,
+            });
+          }
+
+          return reply.send({
+            data: casts.data,
+            nextCursor: (Number(request.body.cursor) || 0) + result.length,
+          });
+        }
 
         const response = await client.getCasts(request.body, viewerFid);
 
