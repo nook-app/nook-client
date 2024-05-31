@@ -25,6 +25,7 @@ import { CdnAvatar } from "../../components/cdn-avatar";
 import { GradientIcon } from "../../components/gradient-icon";
 import { ChevronDown } from "@tamagui/lucide-icons";
 import { ChainIcon } from "../../components/blockchain/chain-icon";
+import { NftMintAction } from "../nft/nft-mint-action";
 
 export const TransactionDisplay = ({
   transaction,
@@ -215,7 +216,7 @@ const TransactionContentSwap = ({
 
   return (
     <YStack>
-      <Text lineHeight={20} selectable paddingBottom="$2">
+      <Text lineHeight={20} userSelect="auto" paddingBottom="$2">
         <Text
           textTransform="capitalize"
           fontWeight="600"
@@ -355,9 +356,11 @@ const TransactionContentMint = ({
     return null;
   }
 
+  const publicMint = asset.mintStages?.find(({ kind }) => kind === "public");
+
   return (
     <YStack gap="$2">
-      <Text lineHeight={20} selectable>
+      <Text lineHeight={20} userSelect="auto">
         <Text
           textTransform="capitalize"
           fontWeight="600"
@@ -385,6 +388,7 @@ const TransactionContentMint = ({
       <Link href={`/collectibles/${assetId}`} touchable>
         <TransactionDisplayNFT nft={asset} />
       </Link>
+      {/* {publicMint && <NftMintAction nft={asset} mint={publicMint} />} */}
     </YStack>
   );
 };
@@ -421,7 +425,7 @@ const TransactionContentMultiMint = ({
 
   return (
     <YStack gap="$2">
-      <Text lineHeight={20} selectable>
+      <Text lineHeight={20} userSelect="auto">
         <Text
           textTransform="capitalize"
           fontWeight="600"

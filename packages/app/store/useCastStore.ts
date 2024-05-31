@@ -28,20 +28,7 @@ export const useCastStore = create<CastStore>((set, get) => ({
   },
   addCastsFromCasts: (inputCasts: FarcasterCastV1[]) => {
     const currentCasts = get().casts;
-    const casts = inputCasts.flatMap((cast) => {
-      const casts = [cast];
-      // for (const embed of cast.embedCasts) {
-      //   casts.push(embed);
-      // }
-      // if (cast.parent) {
-      //   casts.push(cast.parent);
-      //   for (const embed of cast.parent.embedCasts) {
-      //     casts.push(embed);
-      //   }
-      // }
-      return casts;
-    });
-    const newCasts = casts.reduce(
+    const newCasts = inputCasts.reduce(
       (acc, cast) => {
         if (currentCasts[cast.hash]) return acc;
         acc[cast.hash] = cast;
@@ -57,15 +44,6 @@ export const useCastStore = create<CastStore>((set, get) => ({
       if (!notification.cast) return [];
       const cast = notification.cast;
       const casts = [cast];
-      for (const embed of cast.embedCasts) {
-        casts.push(embed);
-      }
-      if (cast.parent) {
-        casts.push(cast.parent);
-        for (const embed of cast.parent.embedCasts) {
-          casts.push(embed);
-        }
-      }
       return casts;
     });
     const newCasts = casts.reduce(

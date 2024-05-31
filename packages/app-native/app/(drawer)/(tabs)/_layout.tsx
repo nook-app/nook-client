@@ -75,12 +75,14 @@ export default function TabLayout() {
         name="(media)"
         options={{
           href: null,
+          lazy: true,
         }}
       />
       <Tabs.Screen
         name="(frames)"
         options={{
           href: null,
+          lazy: true,
         }}
       />
     </Tabs>

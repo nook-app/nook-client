@@ -29,10 +29,6 @@ export const useCastFeed = (
 
   const queryKey = ["castFeed", JSON.stringify(filter), api || ""];
 
-  const cachedData = queryClient.getQueryData<
-    InfiniteData<FetchCastsResponse, string>
-  >(["castFeed", JSON.stringify(filter), api || ""]);
-
   const props = useInfiniteQuery<
     FetchCastsResponse,
     unknown,
@@ -58,8 +54,7 @@ export const useCastFeed = (
           pages: [initialData],
           pageParams: [undefined],
         }
-      : cachedData,
-    enabled: !cachedData,
+      : undefined,
     initialPageParam: initialData?.nextCursor,
     refetchOnWindowFocus: false,
   });
