@@ -96,15 +96,17 @@ export const FarcasterExpandedCast = memo(
         paddingBottom={paddingBottom}
         ListHeaderComponent={
           <>
-            <YStack gap="$3">
-              {ancestors?.ancestors?.map((ancestor) => (
-                <FarcasterCastLink
-                  key={ancestor.hash}
-                  cast={ancestor}
-                  displayMode={Display.LIST}
-                />
-              ))}
-            </YStack>
+            {ancestors?.ancestors && ancestors.ancestors.length > 0 && (
+              <YStack gap="$3">
+                {[...ancestors.ancestors].reverse().map((ancestor) => (
+                  <FarcasterCastLink
+                    key={ancestor.hash}
+                    cast={ancestor}
+                    displayMode={Display.LIST}
+                  />
+                ))}
+              </YStack>
+            )}
             <FarcasterExpandedCastHeader
               cast={cast}
               replySort={replySort}
