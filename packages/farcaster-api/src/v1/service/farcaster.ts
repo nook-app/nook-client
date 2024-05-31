@@ -382,16 +382,20 @@ export class FarcasterService {
         let parent = undefined;
         if (cast.parentHash) {
           parent = relatedCasts[cast.parentHash];
-          parent.parent = undefined;
-          parent.rootParent = undefined;
+          if (parent) {
+            parent.parent = undefined;
+            parent.rootParent = undefined;
+          }
         }
 
-        const embeds = [];
+        const embedCasts = [];
         for (const embed of getCastEmbeds(cast)) {
           const relatedEmbed = relatedCasts[embed.hash];
-          relatedEmbed.parent = undefined;
-          relatedEmbed.rootParent = undefined;
-          embeds.push(relatedEmbed);
+          if (relatedEmbed) {
+            relatedEmbed.parent = undefined;
+            relatedEmbed.rootParent = undefined;
+            embedCasts.push(relatedEmbed);
+          }
         }
 
         return {
@@ -408,9 +412,7 @@ export class FarcasterService {
           embeds: getEmbedUrls(cast)
             .map((url) => content[url])
             .filter(Boolean),
-          embedCasts: getCastEmbeds(cast)
-            .map(({ hash }) => relatedCasts[hash])
-            .filter(Boolean),
+          embedCasts,
           rootParent: cast.rootParentHash
             ? relatedCasts[cast.rootParentHash]
             : undefined,
