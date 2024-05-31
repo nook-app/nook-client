@@ -379,6 +379,21 @@ export class FarcasterService {
           },
         );
 
+        let parent = undefined;
+        if (cast.parentHash) {
+          parent = relatedCasts[cast.parentHash];
+          parent.parent = undefined;
+          parent.rootParent = undefined;
+        }
+
+        const embeds = [];
+        for (const embed of getCastEmbeds(cast)) {
+          const relatedEmbed = relatedCasts[embed.hash];
+          relatedEmbed.parent = undefined;
+          relatedEmbed.rootParent = undefined;
+          embeds.push(relatedEmbed);
+        }
+
         return {
           hash: cast.hash,
           user: relatedUsers[cast.fid.toString()],
@@ -402,7 +417,7 @@ export class FarcasterService {
           rootParentFid: cast.rootParentFid?.toString(),
           rootParentHash: cast.rootParentHash || undefined,
           rootParentUrl: cast.rootParentUrl || undefined,
-          parent: cast.parentHash ? relatedCasts[cast.parentHash] : undefined,
+          parent,
           parentFid: cast.parentFid?.toString(),
           parentHash: cast.parentHash || undefined,
           parentUrl: cast.parentUrl || undefined,
