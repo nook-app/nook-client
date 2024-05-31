@@ -6,6 +6,10 @@ import {
 import {
   FarcasterUserV1,
   FetchTransactionsResponseV1,
+  NFTWithMarket,
+  NftAsk,
+  NftMarket,
+  NftMintStage,
   OnceUponTransactions,
   PartyEnriched,
   SimpleHashNFT,
@@ -14,7 +18,7 @@ import {
   ZerionToken,
 } from "@nook/common/types";
 import { TokenData } from "@nook/common/types/providers/zerion/token";
-import { CHAINS } from "@nook/common/utils";
+import { CHAINS, SIMPLEHASH_CHAINS } from "@nook/common/utils";
 import { FastifyInstance } from "fastify";
 
 const ONCEUPON_BASE_URL = "https://api.onceupon.gg/v3";
@@ -156,7 +160,7 @@ export class TransactionService {
         acc[nft.nft_id] = nft;
         return acc;
       },
-      {} as Record<string, SimpleHashNFT>,
+      {} as Record<string, NFTWithMarket>,
     );
 
     return {
@@ -207,7 +211,7 @@ export class TransactionService {
               acc[nft] = collectibleMap[nft];
               return acc;
             },
-            {} as Record<string, SimpleHashNFT>,
+            {} as Record<string, NFTWithMarket>,
           ),
           enrichedParties:
             tx.parties?.reduce(
@@ -324,7 +328,7 @@ export class TransactionService {
         acc[tokenIds[i]] = nft;
         return acc;
       },
-      {} as Record<string, SimpleHashNFT>,
+      {} as Record<string, NFTWithMarket>,
     );
 
     const ignoreMap = cached.reduce(
@@ -338,17 +342,34 @@ export class TransactionService {
 
     const missing = tokenIds.filter((id) => !cacheMap[id] && !ignoreMap[id]);
     if (missing.length > 0) {
-      const response: { nfts: SimpleHashNFT[] } =
-        await this.makeSimplehashRequest("/nfts/assets", {
-          nft_ids: missing.join(","),
+      const getNfts = async (
+        ids: string[],
+      ): Promise<{ nfts: SimpleHashNFT[] }> => {
+        return await this.makeSimplehashRequest("/nfts/assets", {
+          nft_ids: ids.join(","),
         });
+      };
+
+      const [response, markets] = await Promise.all([
+        getNfts(missing),
+        this.getMarkets(missing),
+      ]);
+
+      const nfts = [];
 
       for (const nft of response.nfts) {
         if (!nft) continue;
-        cacheMap[nft.nft_id] = nft;
+        nfts.push({
+          ...nft,
+          ...markets[nft.nft_id],
+        });
+        cacheMap[nft.nft_id] = {
+          ...nft,
+          ...markets[nft.nft_id],
+        };
       }
 
-      await this.nftCache.setNfts(response.nfts.filter(Boolean));
+      await this.nftCache.setNfts(nfts);
     }
 
     const stillMissing = tokenIds.filter((id) => !cacheMap[id]);
@@ -357,6 +378,64 @@ export class TransactionService {
     }
 
     return tokenIds.map((id) => cacheMap[id]);
+  }
+
+  async getMarkets(tokenIds: string[]) {
+    const tokensByChain = tokenIds.reduce(
+      (acc, token) => {
+        const [chainId] = token.split(".");
+        const chain = SIMPLEHASH_CHAINS.find((c) => c.simplehashId === chainId);
+        if (!chain?.reservoirId) return acc;
+        if (!acc[chain.reservoirId]) acc[chain.reservoirId] = [];
+        acc[chain.reservoirId].push(token);
+        return acc;
+      },
+      {} as Record<string, string[]>,
+    );
+
+    const responses = await Promise.all(
+      Object.entries(tokensByChain).map(async ([chainId, tokens]) => {
+        const tokenIds = tokens.map((token) => {
+          const [_, contractAddress, tokenId] = token.split(".");
+          return `${contractAddress}:${tokenId}`;
+        });
+        const response: {
+          tokens: {
+            token: {
+              contract: string;
+              tokenId: string;
+              mintStages: NftMintStage[];
+            };
+            market: { floorAsk: NftAsk; topBid: NftAsk };
+          }[];
+        } = await this.makeReservoirRequest(chainId, "/tokens/v7", {
+          tokens: tokenIds,
+          includeMintStages: "true",
+          includeTopBid: "true",
+        });
+        if (!response) return [];
+        return response.tokens;
+      }),
+    );
+
+    const tokens = responses.flat();
+
+    return tokenIds.reduce(
+      (acc, token) => {
+        const [_, contractAddress, tokenId] = token.split(".");
+        const market = tokens.find(
+          ({ token }) =>
+            token.contract === contractAddress && token.tokenId === tokenId,
+        );
+        if (!market) return acc;
+        acc[token] = {
+          mintStages: market.token.mintStages,
+          market: market.market,
+        };
+        return acc;
+      },
+      {} as Record<string, NftMarket>,
+    );
   }
 
   // biome-ignore lint/suspicious/noExplicitAny: request body
@@ -408,6 +487,41 @@ export class TransactionService {
     });
     if (!response.ok) {
       throw new Error(`Failed to fetch ${path}: ${response.status}`);
+    }
+    return response.json();
+  }
+
+  async makeReservoirRequest(
+    chain: string,
+    path: string,
+    params?: Record<string, string | string[]>,
+  ) {
+    const urlParams = new URLSearchParams();
+    if (params) {
+      for (const [key, value] of Object.entries(params)) {
+        if (Array.isArray(value)) {
+          for (const v of value) {
+            urlParams.append(key, v);
+          }
+        } else {
+          urlParams.append(key, value);
+        }
+      }
+    }
+
+    const url = `https://api${
+      chain !== "" ? `-${chain}` : ""
+    }.reservoir.tools${path}?${urlParams.toString()}`;
+    const response = await fetch(url, {
+      method: "GET",
+      headers: {
+        accept: "application/json",
+        "X-API-KEY": SIMPLEHASH_API_KEY,
+      },
+    });
+    if (!response.ok) {
+      console.error(`Failed to fetch ${path}: ${response.status}`);
+      return;
     }
     return response.json();
   }

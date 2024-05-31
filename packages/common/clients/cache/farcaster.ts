@@ -10,22 +10,12 @@ import {
   FarcasterCastContext,
   FarcasterCastEngagement,
   FarcasterCastRelationsV1,
-  FarcasterFeedFilter,
-  FarcasterFeedRequest,
   FarcasterUserContext,
   FarcasterUserEngagement,
   FarcasterUserMutualsPreview,
   UserContextType,
   UserEngagementType,
 } from "../../types";
-import { createHash } from "crypto";
-import { decodeCursor } from "../../utils";
-
-type FeedCacheItem = {
-  fid: string;
-  hash: string;
-  timestamp: number;
-};
 
 export class FarcasterCacheClient {
   private redis: RedisClient;

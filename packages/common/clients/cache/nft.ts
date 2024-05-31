@@ -1,6 +1,7 @@
 import {
   GetNftCollectionCollectorsRequest,
   GetNftCollectorsRequest,
+  NFTWithMarket,
   NftFarcasterOwner,
   NftMarket,
   NftMutualsPreview,
@@ -33,17 +34,17 @@ export class NftCacheClient {
     return this.redis.setJson(key, nft, 60 * 60 * 3);
   }
 
-  async getNfts(nftIds: string[]): Promise<(SimpleHashNFT | undefined)[]> {
+  async getNfts(nftIds: string[]): Promise<(NFTWithMarket | undefined)[]> {
     const keys = nftIds.map((nftId) => `${this.NFT_CACHE_PREFIX}:${nftId}`);
     return this.redis.mgetJson(keys);
   }
 
-  async setNfts(nfts: SimpleHashNFT[]) {
+  async setNfts(nfts: NFTWithMarket[]) {
     const keys = nfts.map(
       (nft) =>
         [`${this.NFT_CACHE_PREFIX}:${nft.nft_id}`, nft] as [
           string,
-          SimpleHashNFT,
+          NFTWithMarket,
         ],
     );
     return this.redis.msetJson(keys, 60 * 60 * 3);
@@ -53,7 +54,7 @@ export class NftCacheClient {
     const pairs = nftIds.map((nftId) => [
       `${this.NFT_CACHE_PREFIX}:${nftId}`,
       {},
-    ]) as [string, SimpleHashNFT][];
+    ]) as [string, NFTWithMarket][];
     return this.redis.msetJson(pairs, 60 * 60 * 3);
   }
 

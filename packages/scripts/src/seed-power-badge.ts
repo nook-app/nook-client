@@ -18,19 +18,21 @@ export const run = async () => {
     throw new Error("No fids found");
   }
 
-  const oldPowerBadgeUsers = await client.getPowerBadgeUsers();
   const newPowerBadgeUsers = fids.map((fid: number) => fid.toString());
 
-  const delta = newPowerBadgeUsers.filter(
-    (fid) => !oldPowerBadgeUsers.includes(fid),
-  );
+  const oldPowerBadgeUsers = await client.getPowerBadgeUsers();
+  if (oldPowerBadgeUsers && oldPowerBadgeUsers.length > 0) {
+    const delta = newPowerBadgeUsers.filter(
+      (fid) => !oldPowerBadgeUsers.includes(fid),
+    );
+
+    console.log(delta);
+  }
 
   await client.setPowerBadgeUsers(newPowerBadgeUsers);
   await client2.setPowerBadgeUsers(newPowerBadgeUsers);
 
-  console.log(delta);
-
-  console.log(`Added ${delta.length} new power badge users`);
+  console.log(`Added ${newPowerBadgeUsers.length} new power badge users`);
 };
 
 run()
