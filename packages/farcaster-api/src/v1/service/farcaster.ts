@@ -169,10 +169,31 @@ export class FarcasterService {
       }
     }
 
-    const [castContexts, userContexts] = await Promise.all([
+    const [castContexts, userContexts, embeds] = await Promise.all([
       this.getCastContexts(Array.from(relatedHashes), viewerFid),
       this.getUserContexts(Array.from(relatedUsers), viewerFid),
+      this.getCastRelatedEmbeds(Object.values(casts)),
     ]);
+
+    const formatCast = (
+      cast?: BaseFarcasterCastV1,
+    ): FarcasterCastV1 | undefined => {
+      if (!cast) return;
+      return {
+        ...cast,
+        user: {
+          ...cast.user,
+          context: userContexts[cast.user.fid],
+        },
+        context: castContexts[cast.hash],
+        embeds: cast.embedUrls.map((url) => embeds[url]).filter(Boolean),
+        parent: formatCast(cast.parent),
+        rootParent: formatCast(cast.rootParent),
+        embedCasts: cast.embedCasts
+          .map(formatCast)
+          .filter(Boolean) as FarcasterCastV1[],
+      };
+    };
 
     return Object.values(casts).reduce(
       (acc, cast) => {
@@ -189,35 +210,13 @@ export class FarcasterService {
             },
             position,
           })),
-          parent: cast.parent
-            ? {
-                ...cast.parent,
-                user: {
-                  ...cast.parent.user,
-                  context: userContexts[cast.parent.user.fid],
-                },
-                context: castContexts[cast.parent.hash],
-              }
-            : undefined,
-          rootParent: cast.rootParent
-            ? {
-                ...cast.rootParent,
-                user: {
-                  ...cast.rootParent.user,
-                  context: userContexts[cast.rootParent.user.fid],
-                },
-                context: castContexts[cast.rootParent.hash],
-              }
-            : undefined,
-          embedCasts: cast.embedCasts.map((embed) => ({
-            ...embed,
-            user: {
-              ...embed.user,
-              context: userContexts[embed.user.fid],
-            },
-            context: castContexts[embed.hash],
-          })),
+          parent: formatCast(cast.parent),
+          rootParent: formatCast(cast.rootParent),
+          embedCasts: cast.embedCasts
+            .map(formatCast)
+            .filter(Boolean) as FarcasterCastV1[],
           context: castContexts[cast.hash],
+          embeds: cast.embedUrls.map((url) => embeds[url]).filter(Boolean),
         };
         return acc;
       },
@@ -335,23 +334,16 @@ export class FarcasterService {
         casts.push(...(missingCasts.filter(Boolean) as FarcasterCast[]));
       }
 
-      const [
-        signerAppFids,
-        content,
-        relatedUsers,
-        engagement,
-        channels,
-        relatedCasts,
-      ] = await Promise.all([
-        this.getCastSignerAppFids(casts),
-        this.getCastRelatedEmbeds(casts),
-        this.getCastRelatedUsers(casts),
-        this.getCastEngagement(casts),
-        this.getCastRelatedChannels(casts),
-        disableCastEmbeds
-          ? ({} as Record<string, BaseFarcasterCastV1>)
-          : this.getCastRelatedCasts(casts, viewerFid),
-      ]);
+      const [signerAppFids, relatedUsers, engagement, channels, relatedCasts] =
+        await Promise.all([
+          this.getCastSignerAppFids(casts),
+          this.getCastRelatedUsers(casts),
+          this.getCastEngagement(casts),
+          this.getCastRelatedChannels(casts),
+          disableCastEmbeds
+            ? ({} as Record<string, BaseFarcasterCastV1>)
+            : this.getCastRelatedCasts(casts, viewerFid),
+        ]);
 
       const baseCasts: BaseFarcasterCastV1[] = casts.map((cast) => {
         const channelMentions = cast.text.split(" ").reduce(
@@ -409,9 +401,6 @@ export class FarcasterService {
           })),
           embedHashes: getCastEmbeds(cast).map(({ hash }) => hash),
           embedUrls: getEmbedUrls(cast),
-          embeds: getEmbedUrls(cast)
-            .map((url) => content[url])
-            .filter(Boolean),
           embedCasts,
           rootParent: cast.rootParentHash
             ? relatedCasts[cast.rootParentHash]
@@ -529,23 +518,43 @@ export class FarcasterService {
   }
 
   async getCastRelatedEmbeds(
-    casts: FarcasterCast[],
+    casts: BaseFarcasterCastV1[],
   ): Promise<Record<string, UrlContentResponse>> {
+    const castToReference = (url: string, cast: BaseFarcasterCastV1) => ({
+      fid: cast.user.fid,
+      hash: cast.hash,
+      parentFid: cast.parentFid?.toString(),
+      parentHash: cast.parentHash || undefined,
+      parentUrl: cast.parentUrl || undefined,
+      uri: url,
+      timestamp: new Date(cast.timestamp),
+      text: cast.text,
+      rootParentFid: cast.rootParentFid?.toString(),
+      rootParentHash: cast.rootParentHash || undefined,
+      rootParentUrl: cast.rootParentUrl || undefined,
+    });
+
     const references = casts.flatMap((cast) => {
-      const embeds = getEmbedUrls(cast);
-      return embeds.map((url) => ({
-        fid: cast.fid.toString(),
-        hash: cast.hash,
-        parentFid: cast.parentFid?.toString(),
-        parentHash: cast.parentHash || undefined,
-        parentUrl: cast.parentUrl || undefined,
-        uri: url,
-        timestamp: new Date(cast.timestamp),
-        text: cast.text,
-        rootParentFid: cast.rootParentFid?.toString(),
-        rootParentHash: cast.rootParentHash || undefined,
-        rootParentUrl: cast.rootParentUrl || undefined,
-      }));
+      const values = [];
+      for (const url of cast.embedUrls) {
+        values.push(castToReference(url, cast));
+      }
+      if (cast.parent) {
+        for (const url of cast.parent.embedUrls) {
+          values.push(castToReference(url, cast.parent));
+        }
+      }
+      if (cast.rootParent) {
+        for (const url of cast.rootParent.embedUrls) {
+          values.push(castToReference(url, cast.rootParent));
+        }
+      }
+      for (const embed of cast.embedCasts) {
+        for (const url of embed.embedUrls) {
+          values.push(castToReference(url, embed));
+        }
+      }
+      return values;
     });
 
     const embeds = await this.contentApi.getReferences(references);

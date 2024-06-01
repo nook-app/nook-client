@@ -116,8 +116,7 @@ export type BaseFarcasterCastV1 = {
   }[];
   embedHashes: string[];
   embedUrls: string[];
-  embedCasts: FarcasterCastV1[];
-  embeds: UrlContentResponse[];
+  embedCasts: BaseFarcasterCastV1[];
   rootParent?: BaseFarcasterCastV1;
   rootParentFid?: string;
   rootParentHash?: string;
