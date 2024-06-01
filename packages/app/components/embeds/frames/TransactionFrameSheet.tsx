@@ -17,7 +17,7 @@ import { TouchableOpacity } from "react-native";
 import { formatAddress } from "../../../utils";
 import { useEns } from "../../../hooks/useAddress";
 import { ChainBadge } from "../../blockchain/chain-badge";
-import { useAccount, useSwitchChain, useSendTransaction } from "wagmi2";
+import { useAccount, useSwitchChain, useSendTransaction } from "wagmi";
 import { usePrivy } from "@privy-io/react-auth";
 
 export const TransactionFrameSheet = ({

@@ -16,7 +16,7 @@ import {
   useSwitchChain,
   useWaitForTransactionReceipt,
   useWriteContract,
-} from "wagmi2";
+} from "wagmi";
 import { CONTRACTS } from "@nook/common/utils";
 import { encodeAbiParameters, parseAbiItem } from "viem";
 import { Loading } from "../../../components/loading";

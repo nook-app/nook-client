@@ -14,16 +14,16 @@ import { ToastProvider } from "@nook/app-ui";
 import { Toasts } from "../components/Toasts";
 import { Notifications } from "../components/Notifications";
 import { Analytics } from "../components/Analytics";
-import { WagmiConfig } from "wagmi";
-import { mainnet, base, optimism, zora, arbitrum } from "viem/chains";
+import { WagmiProvider } from "wagmi";
+import { mainnet, arbitrum, base, optimism, zora } from "@wagmi/core/chains";
 import {
   createWeb3Modal,
   defaultWagmiConfig,
   Web3Modal,
 } from "@web3modal/wagmi-react-native";
-import { CoinbaseConnector } from "@web3modal/coinbase-wagmi-react-native";
 import { handleResponse } from "@coinbase/wallet-mobile-sdk";
 import { Linking } from "react-native";
+import { coinbaseConnector } from "@web3modal/coinbase-wagmi-react-native";
 
 const projectId = "302e299e8d6c292b6aeb9f313321e134";
 
@@ -38,25 +38,21 @@ const metadata = {
   },
 };
 
-const chains = [arbitrum, mainnet, base, optimism, zora];
+const chains = [arbitrum, mainnet, base, optimism, zora] as const;
 
-const coinbaseConnector = new CoinbaseConnector({
-  chains,
-  options: {
-    redirect: metadata.redirect.native,
-  },
+const coinbase = coinbaseConnector({
+  redirect: metadata.redirect.native,
 });
 
 const wagmiConfig = defaultWagmiConfig({
   chains,
   projectId,
   metadata,
-  extraConnectors: [coinbaseConnector],
+  extraConnectors: [coinbase],
 });
 
 createWeb3Modal({
   projectId,
-  chains,
   wagmiConfig,
   defaultChain: base,
   featuredWalletIds: [
@@ -109,7 +105,7 @@ export default function RootLayout() {
 function RootLayoutNav() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <WagmiConfig config={wagmiConfig}>
+      <WagmiProvider config={wagmiConfig}>
         <QueryClientProvider client={queryClient}>
           <PrivyProvider appId={"clsnxqma102qxbyt1ght4j14w"}>
             <AuthProvider>
@@ -181,7 +177,7 @@ function RootLayoutNav() {
             </AuthProvider>
           </PrivyProvider>
         </QueryClientProvider>
-      </WagmiConfig>
+      </WagmiProvider>
     </GestureHandlerRootView>
   );
 }

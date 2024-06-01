@@ -17,11 +17,8 @@ import { TouchableOpacity } from "react-native";
 import { formatAddress } from "../../../utils";
 import { useEns } from "../../../hooks/useAddress";
 import { ChainBadge } from "../../blockchain/chain-badge";
-
-// @ts-ignore: this import is not included in package.json because of version conflicts
 import { useWeb3Modal } from "@web3modal/wagmi-react-native";
-// @ts-ignore: these imports are not included in package.json because of version conflicts
-import { useAccount, useSwitchNetwork, useSendTransaction } from "wagmi";
+import { useAccount, useSwitchChain, useSendTransaction } from "wagmi";
 
 export const TransactionFrameSheet = ({
   button,
@@ -41,7 +38,7 @@ export const TransactionFrameSheet = ({
   const { address } = useAccount();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | undefined>(undefined);
-  const { switchNetworkAsync } = useSwitchNetwork();
+  const { switchChainAsync } = useSwitchChain();
   const { sendTransactionAsync } = useSendTransaction();
   const toast = useToastController();
 
@@ -51,9 +48,9 @@ export const TransactionFrameSheet = ({
     setIsLoading(true);
     try {
       const chainId = Number(transaction.chainId.replace("eip155:", ""));
-      if (switchNetworkAsync) await switchNetworkAsync(chainId);
+      if (switchChainAsync) await switchChainAsync({ chainId });
 
-      const { hash } = await sendTransactionAsync({
+      const hash = await sendTransactionAsync({
         chainId,
         to: transaction.params.to,
         data: transaction.params.data,

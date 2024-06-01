@@ -1,5 +1,5 @@
-import { createConfig } from "wagmi2";
-import { mainnet, optimism, zora, base, arbitrum } from "wagmi2/chains";
+import { createConfig } from "wagmi";
+import { mainnet, optimism, zora, base, arbitrum } from "wagmi/chains";
 import { http } from "viem";
 
 export const wagmiConfig = createConfig({

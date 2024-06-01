@@ -17,7 +17,7 @@ import { NookText, Input, Image } from "@nook/app-ui";
 import { EnableSignerDialog } from "../../../features/farcaster/enable-signer/dialog";
 import { Link } from "solito/link";
 import { FrameProvider, useFrame } from "./context";
-import { WagmiProvider, useAccount } from "wagmi2";
+import { WagmiProvider, useAccount } from "wagmi";
 import { wagmiConfig } from "../../../utils/wagmi";
 import { usePrivy } from "@privy-io/react-auth";
 import { TransactionFrameSheet } from "./TransactionFrameSheet";
