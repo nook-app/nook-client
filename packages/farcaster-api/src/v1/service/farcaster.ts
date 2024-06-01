@@ -1128,7 +1128,7 @@ export class FarcasterService {
         viewerFid || context?.viewerFid,
       );
       return {
-        data: casts,
+        data: response.data.map((hash) => casts[hash]).filter(Boolean),
         nextCursor: response.nextCursor,
       };
     }
