@@ -13,13 +13,13 @@ import { Loading } from "@nook/app/components/loading";
 import { ListHeader } from "@nook/app/features/list/list-header";
 import { useAuth } from "@nook/app/context/auth";
 import { MoreHorizontal } from "@tamagui/lucide-icons";
-import { Link } from "@nook/app/components/link";
 import { Tabs } from "react-native-collapsible-tab-view";
 import { CollapsibleGradientLayout } from "../CollapsibleGradientLayout";
 import { IconButton } from "../IconButton";
 import { TransactionFeed } from "@nook/app/features/transactions/transaction-feed";
 import { ListMenu } from "@nook/app/features/list/list-menu";
 import { memo, useCallback, useState } from "react";
+import { ListItemEmptyState } from "@nook/app/features/list/list-item-empty-state";
 
 export default function ListScreen() {
   const { listId } = useLocalSearchParams();
@@ -146,38 +146,7 @@ const getPages = ({ list }: { list: List }) => {
       name: "Casts",
       component: (
         <Tabs.ScrollView>
-          <YStack
-            gap="$4"
-            padding="$4"
-            justifyContent="center"
-            alignItems="center"
-          >
-            <NookText muted>
-              {`Add ${
-                list.type === ListType.USERS ? "users" : "channels"
-              } to this list to see casts here.`}
-            </NookText>
-            <Link href={`/lists/${list.id}/settings/items`} unpressable>
-              <Button
-                height="$4"
-                width="100%"
-                borderRadius="$10"
-                fontWeight="600"
-                fontSize="$5"
-                backgroundColor="$mauve12"
-                borderWidth="$0"
-                color="$mauve1"
-                pressStyle={{
-                  backgroundColor: "$mauve11",
-                }}
-                disabledStyle={{
-                  backgroundColor: "$mauve10",
-                }}
-              >
-                {`Add ${list.type === ListType.USERS ? "Users" : "Channels"}`}
-              </Button>
-            </Link>
-          </YStack>
+          <ListItemEmptyState list={list} />
         </Tabs.ScrollView>
       ),
     },
