@@ -17,6 +17,7 @@ import {
   CastAddMessage,
   toFarcasterTime,
   makeUserDataAdd,
+  CastType,
 } from "@farcaster/hub-nodejs";
 import { bufferToHex, hexToBuffer } from "@nook/common/farcaster";
 import { PrismaClient, Signer } from "@nook/common/prisma/signer";
@@ -406,6 +407,7 @@ export class SignerService {
         embedsDeprecated: [],
         parentCastId,
         parentUrl: req.parentUrl,
+        type: CastType.CAST,
       },
       {
         fid: parseInt(fid, 10),

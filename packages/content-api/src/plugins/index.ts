@@ -23,7 +23,7 @@ export const contentPlugin = fp(async (fastify, opts) => {
 });
 
 export const redisPlugin = fp(async (fastify, opts) => {
-  const client = new RedisClient("feed");
+  const client = new RedisClient();
   await client.connect();
   fastify.decorate("redis", { client });
   fastify.addHook("onClose", async (fastify) => {

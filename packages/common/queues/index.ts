@@ -37,10 +37,10 @@ type QueueType = {
 };
 
 const connection = new Redis({
-  host: process.env.DRAGONFLY_HOST,
-  port: Number(process.env.DRAGONFLY_PORT),
-  username: process.env.DRAGONFLY_USER,
-  password: process.env.DRAGONFLY_PASSWORD,
+  host: process.env.QUEUE_CACHE_HOST,
+  port: Number(process.env.QUEUE_CACHE_PORT),
+  username: process.env.QUEUE_CACHE_USER,
+  password: process.env.QUEUE_CACHE_PASSWORD,
   maxRetriesPerRequest: null,
 });
 

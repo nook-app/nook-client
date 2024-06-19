@@ -39,7 +39,7 @@ export class FarcasterCacheClient {
   CAST_CONTEXT_CACHE_PREFIX = "farcaster:cast:context";
   USER_ENGAGEMENT_CACHE_PREFIX = "farcaster:user:engagement";
   USER_CONTEXT_CACHE_PREFIX = "farcaster:user:context";
-  FEED_CACHE_PREFIX = "feed:farcaster";
+  APP_CACHE_PREFIX = "feed:farcaster";
 
   TTL = 24 * 60 * 60 * 3;
   TTL_V1 = 24 * 60 * 60 * 1;

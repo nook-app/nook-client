@@ -1,7 +1,8 @@
 import fastify from "fastify";
 import { farcasterPlugin, redisPlugin } from "./plugins";
-import { registerV0Routes } from "./v0";
-import { registerV1Routes } from "./v1";
+import { castRoutes } from "./routes/cast";
+import { userRoutes } from "./routes/user";
+import { channelRoutes } from "./routes/channel";
 
 const buildApp = () => {
   const app = fastify({
@@ -22,8 +23,9 @@ const buildApp = () => {
   app.register(farcasterPlugin);
   app.register(redisPlugin);
 
-  registerV0Routes(app);
-  registerV1Routes(app);
+  app.register(castRoutes, { prefix: "/v1" });
+  app.register(userRoutes, { prefix: "/v1" });
+  app.register(channelRoutes, { prefix: "/v1" });
 
   return app;
 };

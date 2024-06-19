@@ -23,6 +23,5 @@
     "**/dist/",
     "node_modules",
     "**/*.spec.ts",
-    "**/*.test.ts"
   ]
 }

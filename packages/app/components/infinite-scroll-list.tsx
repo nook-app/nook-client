@@ -1,3 +1,5 @@
+// source: https://github.com/showtime-xyz/showtime-frontend/blob/staging/packages/design-system/infinite-scroll-list/infinite-scroll-list.tsx
+
 import {
   useEffect,
   useRef,

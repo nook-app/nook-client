@@ -7,7 +7,7 @@ import { Metadata } from "metascraper";
 
 const run = async () => {
   const client = new PrismaClient();
-  const cache = new ContentCacheClient(new RedisClient("feed"));
+  const cache = new ContentCacheClient(new RedisClient());
   const url = process.argv[2];
 
   const content = await getUrlContent(url);

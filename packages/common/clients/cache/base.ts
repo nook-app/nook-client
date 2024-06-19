@@ -31,24 +31,14 @@ const replacer = (key: string, value: any) => {
 export class RedisClient {
   redis: Redis;
 
-  constructor(config: "default" | "feed" = "default") {
-    if (config === "feed") {
-      this.redis = new Redis({
-        host: process.env.FEED_CACHE_HOST,
-        port: Number(process.env.FEED_CACHE_PORT),
-        username: process.env.FEED_CACHE_USER,
-        password: process.env.FEED_CACHE_PASSWORD,
-        maxRetriesPerRequest: null,
-      });
-    } else {
-      this.redis = new Redis({
-        host: process.env.APP_CACHE_HOST,
-        port: Number(process.env.APP_CACHE_PORT),
-        username: process.env.APP_CACHE_USER,
-        password: process.env.APP_CACHE_PASSWORD,
-        maxRetriesPerRequest: null,
-      });
-    }
+  constructor() {
+    this.redis = new Redis({
+      host: process.env.APP_CACHE_HOST,
+      port: Number(process.env.APP_CACHE_PORT),
+      username: process.env.APP_CACHE_USER,
+      password: process.env.APP_CACHE_PASSWORD,
+      maxRetriesPerRequest: null,
+    });
   }
 
   async connect(): Promise<void> {

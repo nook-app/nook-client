@@ -3,7 +3,6 @@ import { getSession } from "../utils/local-storage";
 
 const BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL || process.env.EXPO_PUBLIC_API_BASE_URL;
-// const BASE_URL = "https://nook-api.up.railway.app/v0";
 
 export const makeRequest = async (path: string, requestInit?: RequestInit) => {
   if (path.startsWith("/v1")) {

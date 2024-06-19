@@ -5,13 +5,6 @@
   "scripts": {
     "clean": "find . -type d \\( -name \"dist\" -o -name \"node_modules\" \\) -exec rm -rf {} +",
     "build": "yarn workspaces foreach --all --exclude @nook/app-next --topological-dev run build",
-    "test": "yarn workspaces foreach --all run jest",
-    "test:api": "yarn workspace @nook/api run jest",
-    "test:common": "yarn workspace @nook/common run jest",
-    "test:dashboard": "yarn workspace @nook/dashboard run jest",
-    "test:events": "yarn workspace @nook/events run jest",
-    "test:farcaster": "yarn workspace @nook/farcaster run jest",
-    "test:sdk": "yarn workspace @nook/sdk run jest",
     "start:dashboard": "yarn workspace @nook/dashboard start",
     "start:farcaster:consumer": "yarn workspace @nook/farcaster start:consumer",
     "start:farcaster:publisher": "yarn workspace @nook/farcaster start:publisher",
@@ -29,19 +22,14 @@
     "dev:lists:api": " nodemon --exec 'yarn workspace @nook/list-api dev' --config ./packages/list-api/nodemon.json",
     "dev:farcaster:api": " nodemon --exec 'yarn workspace @nook/farcaster-api dev' --config ./packages/farcaster-api/nodemon.json",
     "dev:nft:api": "nodemon --exec 'yarn workspace @nook/nft-api dev' --config ./packages/nft-api/nodemon.json",
-    "native": "cd packages/expo && yarn start",
-    "next": "yarn workspace @nook/app-next dev"
+    "native": "cd apps/expo && yarn start",
+    "next": "yarn workspace @nook/next dev"
   },
-  "workspaces": [
-    "packages/*"
-  ],
+  "workspaces": ["apps/*", "packages/*"],
   "devDependencies": {
     "@biomejs/biome": "1.4.1",
-    "@types/jest": "^29.5.11",
     "@types/node": "^20.11.14",
-    "jest": "^29.7.0",
     "nodemon": "^3.1.0",
-    "ts-jest": "^29.1.2",
     "ts-node": "^10.9.2",
     "tsconfig-paths": "^4.2.0",
     "typescript": "^5.3.3"
